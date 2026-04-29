@@ -24,7 +24,7 @@ export class KjAccordionDirective implements KjAccordionContext {
 export class KjAccordionItemDirective implements KjAccordionItemContext {
   private readonly accordion = inject(KJ_ACCORDION);
   kjItemValue = input.required<string>();
-  readonly itemValue = this.kjItemValue.asReadonly();
+  readonly itemValue = this.kjItemValue;
   readonly open = computed(() => this.accordion.openItems().has(this.kjItemValue()));
 }
 

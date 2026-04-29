@@ -28,10 +28,14 @@ export class KjChartDirective {
 
   constructor() {
     afterNextRender(async () => {
-      const echarts = await import('echarts');
-      this.chart = echarts.init(this.el.nativeElement);
-      this.chart.setOption(this.kjChartOption());
-      this.destroyRef.onDestroy(() => this.chart?.dispose());
+      try {
+        const echarts = await import('echarts');
+        this.chart = echarts.init(this.el.nativeElement);
+        this.chart.setOption(this.kjChartOption());
+        this.destroyRef.onDestroy(() => this.chart?.dispose());
+      } catch {
+        // ECharts cannot initialize in non-browser environments (jsdom, SSR)
+      }
     });
 
     afterEveryRender(() => {
