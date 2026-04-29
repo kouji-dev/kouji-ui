@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { KjAccordionDirective, KjAccordionItemDirective, KjAccordionTriggerDirective, KjAccordionContentDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-accordion',
   standalone: true,
   imports: [KjAccordionDirective, KjAccordionItemDirective, KjAccordionTriggerDirective, KjAccordionContentDirective],
   styles: [`

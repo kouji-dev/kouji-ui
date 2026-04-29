@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { KjButtonDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-button-retro',
   standalone: true,
   imports: [KjButtonDirective],
   styles: [`

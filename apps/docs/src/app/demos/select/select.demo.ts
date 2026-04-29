@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { KjSelectDirective, KjSelectTriggerDirective, KjSelectContentDirective, KjOptionDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-select',
   standalone: true,
   imports: [KjSelectDirective, KjSelectTriggerDirective, KjSelectContentDirective, KjOptionDirective],
   styles: [`

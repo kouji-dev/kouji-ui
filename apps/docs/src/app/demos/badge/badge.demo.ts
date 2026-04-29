@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { KjBadgeDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-badge',
   standalone: true,
   imports: [KjBadgeDirective],
   styles: [`

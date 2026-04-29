@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-tabs',
   standalone: true,
   imports: [KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective],
   styles: [`

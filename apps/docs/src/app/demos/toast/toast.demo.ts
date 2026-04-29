@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { KjToastDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-toast',
   standalone: true,
   imports: [KjToastDirective],
   styles: [`

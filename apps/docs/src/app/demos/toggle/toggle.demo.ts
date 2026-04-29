@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { KjToggleDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-toggle',
   standalone: true,
   imports: [KjToggleDirective],
   styles: [`

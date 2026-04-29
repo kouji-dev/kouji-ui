@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { KjDialogDirective, KjDialogTriggerDirective, KjDialogContentDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-dialog',
   standalone: true,
   imports: [KjDialogDirective, KjDialogTriggerDirective, KjDialogContentDirective],
   styles: [`

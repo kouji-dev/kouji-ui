@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { KjButtonDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-button',
   standalone: true,
   imports: [KjButtonDirective],
   styles: [`

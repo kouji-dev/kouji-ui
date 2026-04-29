@@ -3,6 +3,7 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjInputDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-input',
   standalone: true,
   imports: [KjInputDirective, ReactiveFormsModule],
   styles: [`

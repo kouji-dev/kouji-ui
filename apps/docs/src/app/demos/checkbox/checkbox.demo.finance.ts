@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { KjCheckboxDirective } from '@kouji-ui/core';
 
 @Component({
+  selector: 'kj-demo-checkbox-finance',
   standalone: true,
   imports: [KjCheckboxDirective],
   styles: [`
