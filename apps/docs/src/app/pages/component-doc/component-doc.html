@@ -1,8 +1,6 @@
 <div class="docs-layout">
   <aside class="sidebar">
-    <nav class="sidebar-nav">
-      <a routerLink="/docs" class="sidebar-back">← All components</a>
-    </nav>
+    <kj-docs-sidebar />
   </aside>
 
   <main class="doc-main">
@@ -40,7 +38,7 @@
                   <div class="input-row">
                     <code class="inp-name">
                       {{ inp.name }}
-                      @if (inp.required) { <span class="required">*</span> }
+                      @if (inp.required) {<span class="required">*</span>}
                     </code>
                     <code class="inp-type">{{ inp.type }}</code>
                     <code class="inp-default">{{ inp.defaultValue ?? '—' }}</code>

@@ -1,23 +1,6 @@
 <div class="docs-layout">
   <aside class="sidebar">
-    <nav class="sidebar-nav">
-      <a routerLink="/" class="sidebar-back">← Home</a>
-      <div class="sidebar-section">
-        <a routerLink="/docs/getting-started" class="sidebar-link">Getting Started</a>
-      </div>
-      @for (cat of categories; track cat) {
-        @if (byCategory(cat).length) {
-          <div class="sidebar-section">
-            <span class="sidebar-category">{{ cat }}</span>
-            @for (comp of byCategory(cat); track comp.slug) {
-              <a [routerLink]="['/docs/components', comp.slug]" class="sidebar-link">
-                {{ comp.name }}
-              </a>
-            }
-          </div>
-        }
-      }
-    </nav>
+    <kj-docs-sidebar />
   </aside>
   <main class="docs-main">
     <div class="docs-hero">

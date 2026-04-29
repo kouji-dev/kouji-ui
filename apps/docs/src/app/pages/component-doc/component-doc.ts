@@ -3,11 +3,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { DocsService, ComponentDoc } from '../../services/docs.service';
+import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 
 @Component({
   selector: 'app-component-doc',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DocsSidebarComponent],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
 })

@@ -1,0 +1,73 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 1.5rem 0.75rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.sidebar-top {
+  padding: 0 0.75rem 1.5rem;
+  border-bottom: 1px solid #1a1a1a;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-home {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.sidebar-home:hover { opacity: 1; }
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
+
+.sidebar-category {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  padding: 0 0.75rem 0.6rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sidebar-link {
+  color: #484848;
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  transition: color 0.15s, background 0.15s;
+  border-radius: 2px;
+  line-height: 1.4;
+}
+
+.sidebar-link:hover {
+  color: #f0ede6;
+  background: #141414;
+}
+
+.sidebar-link.active {
+  color: #b8f500;
+  background: rgba(184, 245, 0, 0.06);
+}
+
+.sidebar-link-special {
+  color: #555;
+  font-size: 0.78rem;
+}
+
+.sidebar-link-special.active {
+  color: #b8f500;
+}

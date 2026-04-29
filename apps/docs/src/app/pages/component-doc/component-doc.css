@@ -1,6 +1,6 @@
 .docs-layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 220px 1fr;
   min-height: 100dvh;
   background: #0c0c0c;
   color: #f0ede6;
@@ -8,23 +8,13 @@
 }
 
 .sidebar {
-  border-right: 1px solid #1e1e1e;
-  padding: 2rem 1rem;
+  border-right: 1px solid #1a1a1a;
   position: sticky;
   top: 0;
   height: 100dvh;
+  overflow: hidden;
+  background: #080808;
 }
-
-.sidebar-nav { display: flex; flex-direction: column; }
-
-.sidebar-back {
-  color: #444;
-  text-decoration: none;
-  font-size: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  transition: color 0.15s;
-}
-.sidebar-back:hover { color: #f0ede6; }
 
 .doc-main {
   padding: 4rem;

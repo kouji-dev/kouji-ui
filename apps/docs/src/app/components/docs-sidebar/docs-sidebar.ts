@@ -1,18 +1,16 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DocsService, ComponentDoc } from '../../services/docs.service';
-import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 
 @Component({
-  selector: 'app-docs-index',
+  selector: 'kj-docs-sidebar',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent],
-  templateUrl: './docs-index.html',
-  styleUrl: './docs-index.css',
+  imports: [RouterLink, RouterLinkActive],
+  templateUrl: './docs-sidebar.html',
+  styleUrl: './docs-sidebar.css',
 })
-export class DocsIndexComponent {
+export class DocsSidebarComponent {
   private readonly docs = inject(DocsService);
-  protected readonly components = this.docs.components;
   protected readonly categories = ['foundation', 'overlay', 'data', 'charts', 'a11y'] as const;
 
   protected byCategory(cat: string): ComponentDoc[] {

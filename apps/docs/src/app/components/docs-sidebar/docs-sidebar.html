@@ -1,0 +1,48 @@
+<nav class="sidebar-nav" aria-label="Documentation navigation">
+  <div class="sidebar-top">
+    <a routerLink="/" class="sidebar-home" aria-label="kouji home">
+      <svg width="24" height="24" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line x1="10" y1="10" x2="10" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
+        <line x1="10" y1="32" x2="34" y2="10" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
+        <line x1="10" y1="32" x2="34" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 24 L50 48 Q50 56 42 56 Q38 56 36 54" stroke="#f0ede6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="50" cy="14" r="4" fill="#f0ede6"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <a
+      routerLink="/docs/getting-started"
+      routerLinkActive="active"
+      class="sidebar-link sidebar-link-special"
+    >
+      Getting Started
+    </a>
+    <a
+      routerLink="/docs"
+      [routerLinkActiveOptions]="{ exact: true }"
+      routerLinkActive="active"
+      class="sidebar-link sidebar-link-special"
+    >
+      All Components
+    </a>
+  </div>
+
+  @for (cat of categories; track cat) {
+    @if (byCategory(cat).length) {
+      <div class="sidebar-section">
+        <span class="sidebar-category">{{ cat }}</span>
+        @for (comp of byCategory(cat); track comp.slug) {
+          <a
+            [routerLink]="['/docs/components', comp.slug]"
+            routerLinkActive="active"
+            class="sidebar-link"
+          >
+            {{ comp.name }}
+          </a>
+        }
+      </div>
+    }
+  }
+</nav>
