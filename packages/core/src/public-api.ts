@@ -13,3 +13,9 @@ export * from './menu/index';
 
 // Toast
 export * from './toast/index';
+
+// Table
+export * from './table/index';
+
+// Chart
+export * from './chart/index';
