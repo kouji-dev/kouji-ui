@@ -16,17 +16,8 @@ import { Directive } from '@angular/core';
   selector: '[kjVisuallyHidden]',
   standalone: true,
   host: {
-    style: [
-      'position:absolute',
-      'width:1px',
-      'height:1px',
-      'padding:0',
-      'margin:-1px',
-      'overflow:hidden',
-      'clip:rect(0,0,0,0)',
-      'white-space:nowrap',
-      'border-width:0',
-    ].join(';'),
+    style:
+      'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0',
   },
 })
 export class KjVisuallyHiddenDirective {}
