@@ -16,9 +16,9 @@
     </div>
   }
 
-  @if (demoComponent(); as demo) {
+  @if (hasDemo()) {
     <div class="preview-frame" [attr.data-preview-theme]="activeTheme()">
-      <ng-container *ngComponentOutlet="demo" />
+      <ng-container #previewHost />
     </div>
   }
 

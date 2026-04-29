@@ -1,4 +1,4 @@
-import { Component, Type, computed, inject, input, signal } from '@angular/core';
+import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
 import { DemoRegistryService } from '../../demos/demo-registry';
@@ -37,6 +37,26 @@ export class CodePreviewComponent {
   );
 
   protected readonly hasDemo = computed(() => this.slug() ? this.registry.hasDemo(this.slug()) : false);
+
+  // Per-theme computed signals
+  protected readonly demoDefault  = computed(() => this.registry.get(this.slug(), 'default'));
+  protected readonly demoRetro    = computed(() => this.registry.get(this.slug(), 'retro'));
+  protected readonly demoFinance  = computed(() => this.registry.get(this.slug(), 'finance'));
+
+  /** Signal-based view query — resolves to the ViewContainerRef when #previewHost exists in the DOM. */
+  private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', { read: ViewContainerRef });
+
+  constructor() {
+    // Runs whenever demoComponent() OR previewHost() changes (including when it first becomes available).
+    // viewChild() returns undefined until the @if(hasDemo()) block renders the ng-container.
+    effect(() => {
+      const vcr = this.previewHost();
+      const comp = this.demoComponent();
+      if (!vcr) return;
+      vcr.clear();
+      if (comp) vcr.createComponent(comp);
+    });
+  }
 
   protected readonly activeIndex = signal(0);
   protected readonly copied = signal(false);
