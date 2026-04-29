@@ -139,13 +139,13 @@ export class DocsService {
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
-      const path = comp.categoryPath.length >= 2
-        ? comp.categoryPath
-        : ['Core', comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
+      const fallback = ['Core', comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
+      const path = comp.categoryPath.length >= 3 ? comp.categoryPath : fallback;
 
-      const pkg = path[0];      // 'Core' | 'UI'
-      const cat = path[1];      // 'Foundation' | 'Overlay' etc.
-      const label = path[2] ?? comp.name;
+      // path = ['Core', 'Inputs', 'Button'] — always use last 3 segments
+      const pkg = path[path.length - 3] ?? path[0];   // 'Core' | 'UI'
+      const cat = path[path.length - 2] ?? path[1];   // 'Inputs' | 'Navigation' etc.
+      const label = path[path.length - 1] ?? comp.name; // 'Button' | 'Checkbox' etc.
 
       if (!tree[pkg]) tree[pkg] = {};
       if (!tree[pkg][cat]) tree[pkg][cat] = [];

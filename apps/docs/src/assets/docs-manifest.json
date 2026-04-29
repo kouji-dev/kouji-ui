@@ -1,11 +1,10 @@
 {
-  "generatedAt": "2026-04-29T21:17:19.543Z",
+  "generatedAt": "2026-04-29T21:21:52.046Z",
   "components": [
     {
       "name": "Button",
       "slug": "button",
       "categoryPath": [
-        "Core",
         "Core",
         "Inputs",
         "Button"
@@ -17,7 +16,6 @@
           "className": "KjButtonDirective",
           "selector": "[kjButton]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Button"
@@ -139,7 +137,6 @@
       "slug": "checkbox",
       "categoryPath": [
         "Core",
-        "Core",
         "Inputs",
         "Checkbox"
       ],
@@ -150,7 +147,6 @@
           "className": "KjCheckboxDirective",
           "selector": "[kjCheckbox]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Checkbox"
@@ -191,7 +187,6 @@
       "slug": "form",
       "categoryPath": [
         "Core",
-        "Core",
         "Inputs",
         "Form"
       ],
@@ -202,7 +197,6 @@
           "className": "KjFormFieldDirective",
           "selector": "[kjFormField]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Form"
@@ -228,7 +222,6 @@
           "selector": "[kjFormLabel]",
           "categoryPath": [
             "Core",
-            "Core",
             "Inputs",
             "Form"
           ],
@@ -243,7 +236,6 @@
           "className": "KjFormErrorDirective",
           "selector": "[kjFormError]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Form"
@@ -264,7 +256,6 @@
       "slug": "input",
       "categoryPath": [
         "Core",
-        "Core",
         "Inputs",
         "Input"
       ],
@@ -275,7 +266,6 @@
           "className": "KjInputDirective",
           "selector": "[kjInput]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Input"
@@ -316,7 +306,6 @@
       "slug": "radio",
       "categoryPath": [
         "Core",
-        "Core",
         "Inputs",
         "Radio"
       ],
@@ -327,7 +316,6 @@
           "className": "KjRadioGroupDirective",
           "selector": "[kjRadioGroup]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Radio"
@@ -352,7 +340,6 @@
           "className": "KjRadioDirective",
           "selector": "[kjRadio]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Radio"
@@ -387,7 +374,6 @@
       "slug": "select",
       "categoryPath": [
         "Core",
-        "Core",
         "Inputs",
         "Select"
       ],
@@ -398,7 +384,6 @@
           "className": "KjSelectDirective",
           "selector": "[kjSelect]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Select"
@@ -424,7 +409,6 @@
           "selector": "[kjSelectTrigger]",
           "categoryPath": [
             "Core",
-            "Core",
             "Inputs",
             "Select"
           ],
@@ -442,7 +426,6 @@
           "selector": "[kjSelectContent]",
           "categoryPath": [
             "Core",
-            "Core",
             "Inputs",
             "Select"
           ],
@@ -459,7 +442,6 @@
           "className": "KjOptionDirective",
           "selector": "[kjOption]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Select"
@@ -508,7 +490,6 @@
       "slug": "toggle",
       "categoryPath": [
         "Core",
-        "Core",
         "Inputs",
         "Toggle"
       ],
@@ -519,7 +500,6 @@
           "className": "KjToggleDirective",
           "selector": "[kjToggle]",
           "categoryPath": [
-            "Core",
             "Core",
             "Inputs",
             "Toggle"
@@ -554,7 +534,6 @@
       "slug": "accordion",
       "categoryPath": [
         "Core",
-        "Core",
         "Navigation",
         "Accordion"
       ],
@@ -565,7 +544,6 @@
           "className": "KjAccordionDirective",
           "selector": "[kjAccordion]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Accordion"
@@ -591,7 +569,6 @@
           "selector": "[kjAccordionItem]",
           "categoryPath": [
             "Core",
-            "Core",
             "Navigation",
             "Accordion"
           ],
@@ -616,7 +593,6 @@
           "selector": "[kjAccordionTrigger]",
           "categoryPath": [
             "Core",
-            "Core",
             "Navigation",
             "Accordion"
           ],
@@ -633,7 +609,6 @@
           "className": "KjAccordionContentDirective",
           "selector": "[kjAccordionContent]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Accordion"
@@ -654,7 +629,6 @@
       "slug": "menu",
       "categoryPath": [
         "Core",
-        "Core",
         "Navigation",
         "Menu"
       ],
@@ -665,7 +639,6 @@
           "className": "KjMenuTriggerDirective",
           "selector": "[kjMenuTrigger]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Menu"
@@ -692,7 +665,6 @@
           "selector": "[kjMenu]",
           "categoryPath": [
             "Core",
-            "Core",
             "Navigation",
             "Menu"
           ],
@@ -709,7 +681,6 @@
           "className": "KjMenuItemDirective",
           "selector": "[kjMenuItem]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Menu"
@@ -738,7 +709,6 @@
       "slug": "tabs",
       "categoryPath": [
         "Core",
-        "Core",
         "Navigation",
         "Tabs"
       ],
@@ -749,7 +719,6 @@
           "className": "KjTabsDirective",
           "selector": "[kjTabs]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Tabs"
@@ -781,7 +750,6 @@
           "selector": "[kjTabList]",
           "categoryPath": [
             "Core",
-            "Core",
             "Navigation",
             "Tabs"
           ],
@@ -796,7 +764,6 @@
           "className": "KjTabDirective",
           "selector": "[kjTab]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Tabs"
@@ -821,7 +788,6 @@
           "className": "KjTabPanelDirective",
           "selector": "[kjTabPanel]",
           "categoryPath": [
-            "Core",
             "Core",
             "Navigation",
             "Tabs"
@@ -849,7 +815,6 @@
       "slug": "dialog",
       "categoryPath": [
         "Core",
-        "Core",
         "Overlays",
         "Dialog"
       ],
@@ -860,7 +825,6 @@
           "className": "KjDialogDirective",
           "selector": "[kjDialog]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Dialog"
@@ -879,7 +843,6 @@
           "selector": "[kjDialogContent]",
           "categoryPath": [
             "Core",
-            "Core",
             "Overlays",
             "Dialog"
           ],
@@ -896,7 +859,6 @@
           "className": "KjDialogTriggerDirective",
           "selector": "[kjDialogTrigger]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Dialog"
@@ -917,7 +879,6 @@
       "slug": "popover",
       "categoryPath": [
         "Core",
-        "Core",
         "Overlays",
         "Popover"
       ],
@@ -928,7 +889,6 @@
           "className": "KjPopoverDirective",
           "selector": "[kjPopover]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Popover"
@@ -947,7 +907,6 @@
           "selector": "[kjPopoverTrigger]",
           "categoryPath": [
             "Core",
-            "Core",
             "Overlays",
             "Popover"
           ],
@@ -962,7 +921,6 @@
           "className": "KjPopoverContentDirective",
           "selector": "[kjPopoverContent]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Popover"
@@ -981,7 +939,6 @@
       "slug": "toast",
       "categoryPath": [
         "Core",
-        "Core",
         "Overlays",
         "Toast"
       ],
@@ -992,7 +949,6 @@
           "className": "KjToastDirective",
           "selector": "[kjToast]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Toast"
@@ -1020,7 +976,6 @@
       "slug": "tooltip",
       "categoryPath": [
         "Core",
-        "Core",
         "Overlays",
         "Tooltip"
       ],
@@ -1031,7 +986,6 @@
           "className": "KjTooltipDirective",
           "selector": "[kjTooltip]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Tooltip"
@@ -1050,7 +1004,6 @@
           "selector": "[kjTooltipTrigger]",
           "categoryPath": [
             "Core",
-            "Core",
             "Overlays",
             "Tooltip"
           ],
@@ -1065,7 +1018,6 @@
           "className": "KjTooltipContentDirective",
           "selector": "[kjTooltipContent]",
           "categoryPath": [
-            "Core",
             "Core",
             "Overlays",
             "Tooltip"
@@ -1084,7 +1036,6 @@
       "slug": "chart",
       "categoryPath": [
         "Core",
-        "Core",
         "Data",
         "Chart"
       ],
@@ -1095,7 +1046,6 @@
           "className": "KjChartDirective",
           "selector": "[kjChart]",
           "categoryPath": [
-            "Core",
             "Core",
             "Data",
             "Chart"
@@ -1129,7 +1079,6 @@
       "slug": "table",
       "categoryPath": [
         "Core",
-        "Core",
         "Data",
         "Table"
       ],
@@ -1140,7 +1089,6 @@
           "className": "KjTableDirective",
           "selector": "[kjTable]",
           "categoryPath": [
-            "Core",
             "Core",
             "Data",
             "Table"
@@ -1166,7 +1114,6 @@
           "selector": "[kjTableHeader]",
           "categoryPath": [
             "Core",
-            "Core",
             "Data",
             "Table"
           ],
@@ -1186,7 +1133,6 @@
       "slug": "avatar",
       "categoryPath": [
         "Core",
-        "Core",
         "Display",
         "Avatar"
       ],
@@ -1197,7 +1143,6 @@
           "className": "KjAvatarDirective",
           "selector": "[kjAvatar]",
           "categoryPath": [
-            "Core",
             "Core",
             "Display",
             "Avatar"
@@ -1216,7 +1161,6 @@
           "selector": "[kjAvatarImage]",
           "categoryPath": [
             "Core",
-            "Core",
             "Display",
             "Avatar"
           ],
@@ -1231,7 +1175,6 @@
           "className": "KjAvatarFallbackDirective",
           "selector": "[kjAvatarFallback]",
           "categoryPath": [
-            "Core",
             "Core",
             "Display",
             "Avatar"
@@ -1250,7 +1193,6 @@
       "slug": "badge",
       "categoryPath": [
         "Core",
-        "Core",
         "Display",
         "Badge"
       ],
@@ -1261,7 +1203,6 @@
           "className": "KjBadgeDirective",
           "selector": "[kjBadge]",
           "categoryPath": [
-            "Core",
             "Core",
             "Display",
             "Badge"
@@ -1289,7 +1230,6 @@
       "slug": "a11y",
       "categoryPath": [
         "Core",
-        "Core",
         "Accessibility",
         "AriaDescribedBy"
       ],
@@ -1300,7 +1240,6 @@
           "className": "KjAriaDescribedByDirective",
           "selector": "[kjAriaDescribedBy]",
           "categoryPath": [
-            "Core",
             "Core",
             "Accessibility",
             "AriaDescribedBy"
@@ -1326,7 +1265,6 @@
           "selector": "[kjFocusTrap]",
           "categoryPath": [
             "Core",
-            "Core",
             "Accessibility",
             "FocusTrap"
           ],
@@ -1350,7 +1288,6 @@
           "className": "KjLiveRegionDirective",
           "selector": "[kjLiveRegion]",
           "categoryPath": [
-            "Core",
             "Core",
             "Accessibility",
             "LiveRegion"
@@ -1376,7 +1313,6 @@
           "selector": "[kjRovingTabindexItem]",
           "categoryPath": [
             "Core",
-            "Core",
             "Accessibility",
             "RovingTabindex"
           ],
@@ -1394,7 +1330,6 @@
           "selector": "[kjRovingTabindex]",
           "categoryPath": [
             "Core",
-            "Core",
             "Accessibility",
             "RovingTabindex"
           ],
@@ -1411,7 +1346,6 @@
           "className": "KjVisuallyHiddenDirective",
           "selector": "[kjVisuallyHidden]",
           "categoryPath": [
-            "Core",
             "Core",
             "Accessibility",
             "VisuallyHidden"
@@ -1432,7 +1366,6 @@
       "slug": "primitives",
       "categoryPath": [
         "Core",
-        "Core",
         "Primitives",
         "FormControl"
       ],
@@ -1443,7 +1376,6 @@
           "className": "KjFormControlDirective",
           "selector": "[kjFormControl]",
           "categoryPath": [
-            "Core",
             "Core",
             "Primitives",
             "FormControl"
@@ -1459,7 +1391,6 @@
           "className": "KjDisabledDirective",
           "selector": "[kjDisabled]",
           "categoryPath": [
-            "Core",
             "Core",
             "Primitives",
             "Disabled"
@@ -1484,7 +1415,6 @@
           "className": "KjFocusRingDirective",
           "selector": "[kjFocusRing]",
           "categoryPath": [
-            "Core",
             "Core",
             "Primitives",
             "FocusRing"

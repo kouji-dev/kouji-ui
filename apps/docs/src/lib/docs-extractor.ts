@@ -586,8 +586,10 @@ function processSourceFile(
     const comp = componentMap.get(folder)!;
     if (!comp.description && description) comp.description = description;
 
-    // Prepend package name to directive categoryPath, then propagate to component
-    const fullPath = categoryPath.length ? [pkgName, ...categoryPath] : [];
+    // Prepend package name to directive categoryPath (skip if already present to avoid duplication)
+    const fullPath = categoryPath.length
+      ? (categoryPath[0] === pkgName ? categoryPath : [pkgName, ...categoryPath])
+      : [];
     if (!comp.categoryPath.length && fullPath.length) {
       comp.categoryPath = fullPath;
     }

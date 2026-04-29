@@ -508,7 +508,9 @@ async function main() {
           : exampleFiles;
 
         // Prepend package name to categoryPath
-        const fullPath = categoryPath.length ? [pkgName, ...categoryPath] : [];
+        const fullPath = categoryPath.length
+          ? (categoryPath[0] === pkgName ? categoryPath : [pkgName, ...categoryPath])
+          : [];
 
         const directive: DirectiveDef = {
           className,
