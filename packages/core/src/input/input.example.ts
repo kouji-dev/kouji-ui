@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { KjInputDirective } from './input.directive';
+import { KjInputDirective } from '@kouji-ui/core';
 
 @Component({
   standalone: true,

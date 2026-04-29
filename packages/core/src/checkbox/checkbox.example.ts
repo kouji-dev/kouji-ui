@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { KjCheckboxDirective } from './checkbox.directive';
+import { KjCheckboxDirective } from '@kouji-ui/core';
 
 @Component({
   standalone: true,

@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { KjButtonDirective } from './button.directive';
+import { KjButtonDirective } from '@kouji-ui/core';
 
 @Component({
   standalone: true,

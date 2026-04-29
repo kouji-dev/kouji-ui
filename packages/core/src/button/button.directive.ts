@@ -14,7 +14,7 @@ export type KjButtonSize = 'sm' | 'md' | 'lg' | 'icon';
  *  @doc-file button.example.ts
  *    ```typescript
  *       import { Component, signal } from '@angular/core';
- *       import { KjButtonDirective } from './button.directive';
+ *       import { KjButtonDirective } from '@kouji-ui/core';
  *
  *       @Component({
  *         standalone: true,

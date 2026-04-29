@@ -11,7 +11,7 @@ import { KJ_TABS, KjTabsContext } from './tabs.context';
  *  @doc-file tabs.example.ts
  *    ```typescript
  *       import { Component, signal } from '@angular/core';
- *       import { KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective } from './tabs.directive';
+ *       import { KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective } from '@kouji-ui/core';
  *
  *       @Component({
  *         standalone: true,

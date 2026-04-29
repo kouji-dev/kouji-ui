@@ -13,7 +13,7 @@ import { KjDisabledDirective, KjFocusRingDirective, KjFormControlDirective } fro
  *  @doc-file checkbox.example.ts
  *    ```typescript
  *       import { Component, signal } from '@angular/core';
- *       import { KjCheckboxDirective } from './checkbox.directive';
+ *       import { KjCheckboxDirective } from '@kouji-ui/core';
  *
  *       @Component({
  *         standalone: true,
