@@ -6,53 +6,59 @@ import { KjButtonDirective } from '@kouji-ui/core';
   standalone: true,
   imports: [KjButtonDirective],
   styles: [`
-    :host { display: block; padding: 1.5rem 1.75rem; background: #0a0e14; font-family: 'Courier New', monospace; }
-    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    :host { display: block; padding: 1.75rem 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; }
+    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
     button[kjButton] {
-      padding: 0.3rem 0.875rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-weight: bold;
-      border: 1px solid;
+      padding: 0.5rem 1rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 6px;
+      border: 1px solid transparent;
       cursor: pointer;
-      border-radius: 0;
-      transition: background 0.08s;
+      transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, opacity 0.12s;
+      line-height: 1.5;
     }
     [data-variant="default"] {
-      background: #ff8c00;
-      color: #0a0e14;
-      border-color: #ff8c00;
+      background: #3b82f6;
+      color: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    [data-variant="default"]:hover { background: #e07800; border-color: #e07800; }
+    [data-variant="default"]:hover {
+      background: #2563eb;
+      border-color: #2563eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
     [data-variant="destructive"] {
-      background: transparent;
-      color: #ff3333;
-      border-color: #ff3333;
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    [data-variant="destructive"]:hover { background: rgba(255,51,51,0.12); }
+    [data-variant="destructive"]:hover { background: #dc2626; border-color: #dc2626; }
     [data-variant="outline"] {
-      background: transparent;
-      color: #00b050;
-      border-color: #00b050;
+      background: #ffffff;
+      color: #374151;
+      border-color: #d1d5db;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
-    [data-variant="outline"]:hover { background: rgba(0,176,80,0.1); }
+    [data-variant="outline"]:hover { background: #f9fafb; border-color: #9ca3af; }
     [data-variant="ghost"] {
       background: transparent;
-      color: #8b949e;
-      border-color: #1f2d3d;
+      color: #6b7280;
+      border-color: transparent;
     }
-    [data-variant="ghost"]:hover { color: #c9d1d9; border-color: #8b949e; }
-    [aria-disabled="true"] { opacity: 0.3; cursor: not-allowed; }
+    [data-variant="ghost"]:hover { background: #f3f4f6; color: #374151; }
+    [aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
   `],
   template: `
     <div class="row">
-      <button kjButton [kjVariant]="'default'">EXECUTE</button>
-      <button kjButton [kjVariant]="'destructive'">SELL</button>
-      <button kjButton [kjVariant]="'outline'">BUY</button>
-      <button kjButton [kjVariant]="'ghost'">DETAILS</button>
-      <button kjButton [kjDisabled]="true">SUSPENDED</button>
+      <button kjButton [kjVariant]="'default'">Primary</button>
+      <button kjButton [kjVariant]="'destructive'">Delete</button>
+      <button kjButton [kjVariant]="'outline'">Secondary</button>
+      <button kjButton [kjVariant]="'ghost'">Ghost</button>
+      <button kjButton [kjDisabled]="true">Disabled</button>
     </div>
   `,
 })
