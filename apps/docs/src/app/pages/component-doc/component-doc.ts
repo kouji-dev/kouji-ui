@@ -5,11 +5,13 @@ import { switchMap, map } from 'rxjs/operators';
 import { DocsService } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
+import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
+import { PageTocComponent } from '../../components/page-toc/page-toc';
 
 @Component({
   selector: 'app-component-doc',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent, CodePreviewComponent],
+  imports: [RouterLink, DocsSidebarComponent, CodePreviewComponent, PageTocDirective, PageTocComponent],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
 })

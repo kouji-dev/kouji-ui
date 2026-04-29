@@ -1,0 +1,21 @@
+<nav class="toc-nav" aria-label="On this page">
+  <span class="toc-heading">On this page</span>
+  @if (toc().entries().length) {
+    <ul class="toc-list">
+      @for (entry of toc().entries(); track entry.id) {
+        <li class="toc-item" [class.toc-level-3]="entry.level === 3">
+          <a
+            [href]="'#' + entry.id"
+            class="toc-link"
+            [class.active]="toc().activeId() === entry.id"
+            (click)="scroll($event, entry.id)"
+          >
+            {{ entry.label }}
+          </a>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="toc-empty">—</p>
+  }
+</nav>

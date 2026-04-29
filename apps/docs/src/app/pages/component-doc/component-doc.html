@@ -3,7 +3,7 @@
     <kj-docs-sidebar />
   </aside>
 
-  <main class="doc-main">
+  <main class="doc-main" kjPageToc #pageToc="kjPageToc">
     @if (component(); as comp) {
       <header class="doc-header">
         <span class="tag">{{ comp.category }}</span>
@@ -14,7 +14,7 @@
       </header>
 
       @for (directive of comp.directives; track directive.className) {
-        <section class="directive-section">
+        <section class="directive-section" [id]="directive.className">
           <div class="directive-header">
             <code class="directive-selector">{{ directive.selector }}</code>
             <span class="directive-class">{{ directive.className }}</span>
@@ -76,4 +76,8 @@
       </div>
     }
   </main>
+
+  <aside class="toc-col">
+    <kj-page-toc [toc]="pageToc" />
+  </aside>
 </div>
