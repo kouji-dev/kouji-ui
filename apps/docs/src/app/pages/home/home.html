@@ -1,0 +1,130 @@
+<div class="noise">
+<div class="page">
+
+  <!-- Nav -->
+  <nav>
+    <a class="nav-logo" routerLink="/">kouji</a>
+    <ul class="nav-links">
+      <li><a routerLink="/docs">Docs</a></li>
+      <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <span class="hero-tag">Angular 21 · Headless · WCAG AAA</span>
+    <h1 class="hero-title">Build<br/><em>without</em><br/>limits.</h1>
+    <div class="hero-sub">
+      <p class="hero-desc">
+        A headless Angular UI library built on signals and CDK primitives.
+        Zero CSS in the core. Full accessibility. Your styles, your rules.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-primary" routerLink="/docs">
+          Get started
+          <span>→</span>
+        </a>
+        <a class="btn-secondary" href="https://github.com" target="_blank" rel="noopener">
+          View on GitHub
+          <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">21</div>
+      <div class="stat-label">Angular version</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">18+</div>
+      <div class="stat-label">Components</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">AAA</div>
+      <div class="stat-label">WCAG compliance</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">CSS in core</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="section-label">Why kouji</div>
+    <div class="features-grid">
+      <div class="feature">
+        <span class="feature-icon">◈</span>
+        <h3 class="feature-title">Directive-first</h3>
+        <p class="feature-desc">Everything in core is a directive. Compose behaviors via hostDirectives. No components, no templates, no opinions.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⚡</span>
+        <h3 class="feature-title">Signals everywhere</h3>
+        <p class="feature-desc">Built for Angular 21. Signal inputs, signal contexts, afterNextRender. No RxJS, no lifecycle interfaces.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">♿</span>
+        <h3 class="feature-title">WCAG 2.1 AAA</h3>
+        <p class="feature-desc">Every component targets AAA compliance. Full keyboard nav, ARIA patterns, focus management, live regions.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">◎</span>
+        <h3 class="feature-title">CDK-powered</h3>
+        <p class="feature-desc">Wraps Angular CDK primitives for overlays, menus, listbox, accordion. Battle-tested patterns, not reinvented.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">∅</span>
+        <h3 class="feature-title">Zero-CSS core</h3>
+        <p class="feature-desc">The core has no styles. Bring Tailwind, CSS modules, vanilla CSS, or anything else. The impl package ships Tailwind v4.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⊞</span>
+        <h3 class="feature-title">TanStack + ECharts</h3>
+        <p class="feature-desc">Complex data components powered by TanStack Table for data grids and Apache ECharts for charts.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="install">
+    <div>
+      <h2 class="install-title">Start in<br/>seconds.</h2>
+      <p class="install-sub">Install the headless core and style it yourself,<br/>or grab the Tailwind v4 implementation package.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-title">Installation</span>
+      </div>
+      <div class="code-lines">
+        <div class="code-line">
+          <span class="prompt">$</span>
+          <span>pnpm add </span>
+          <span class="pkg">&#64;kouji-ui/core</span>
+        </div>
+        <div class="code-line">
+          <span class="prompt">#</span>
+          <span style="color:#333"> or with styled components</span>
+        </div>
+        <div class="code-line">
+          <span class="prompt">$</span>
+          <span>pnpm add </span>
+          <span class="pkg">&#64;kouji-ui/ui</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <span class="footer-logo">kouji</span>
+    <span class="footer-copy">MIT License · Built with Angular 21</span>
+  </footer>
+
+</div>
+</div>
+
+<router-outlet />
