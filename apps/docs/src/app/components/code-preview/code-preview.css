@@ -86,8 +86,8 @@
 
 .preview-frame {
   background: var(--bg);
-  min-height: 120px;
   border-bottom: 1px solid var(--border);
+  /* Height matches content — no fixed min-height */
 }
 
 .strip-spacer { flex: 1; }
