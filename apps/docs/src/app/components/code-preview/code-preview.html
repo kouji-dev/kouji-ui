@@ -6,11 +6,23 @@
         <button
           class="theme-pill"
           [class.active]="activeTheme() === t.value"
-          (click)="activeTheme.set(t.value)"
+          (click)="activeTheme.set(t.value); activeIndex.set(0); showCode.set(false)"
           type="button"
           [title]="t.description"
         >
           {{ t.label }}
+        </button>
+      }
+      <div class="strip-spacer"></div>
+      @if (activeFiles().length) {
+        <button class="code-toggle-btn" (click)="showCode.set(!showCode())" type="button">
+          @if (showCode()) {
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+            Hide code
+          } @else {
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Show code
+          }
         </button>
       }
     </div>
@@ -22,10 +34,10 @@
     </div>
   }
 
-  @if (examples().length) {
+  @if (activeFiles().length && showCode()) {
     <div class="preview-toolbar">
       <div class="file-tabs">
-        @for (ex of examples(); track ex.filename; let i = $index) {
+        @for (ex of activeFiles(); track ex.filename; let i = $index) {
           <button
             class="file-tab"
             [class.active]="i === activeIndex()"
@@ -53,7 +65,37 @@
     </div>
 
     @if (activeExample(); as ex) {
-      <kj-code-editor [code]="ex.content" [lang]="ex.lang" />
+      <kj-code-editor [code]="ex.content" [lang]="ex.lang" [showHeader]="false" />
+    }
+  }
+
+  @if (!hasDemo() && activeFiles().length) {
+    <!-- No live demo — always show the code (no toggle needed) -->
+    <div class="preview-toolbar">
+      <div class="file-tabs">
+        @for (ex of activeFiles(); track ex.filename; let i = $index) {
+          <button class="file-tab" [class.active]="i === activeIndex()" (click)="setActive(i)" type="button">
+            {{ ex.filename }}
+          </button>
+        }
+      </div>
+      <div class="toolbar-actions">
+        <button class="copy-btn" (click)="copyActive()" type="button" [title]="copied() ? 'Copied!' : 'Copy'">
+          @if (copied()) {
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b8f500" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          } @else {
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          }
+          {{ copied() ? 'Copied' : 'Copy' }}
+        </button>
+        <button class="stackblitz-btn" (click)="openInStackBlitz()" type="button" title="Open in StackBlitz">
+          <svg width="14" height="14" viewBox="0 0 28 28" fill="currentColor"><path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5z"/></svg>
+          Open in StackBlitz
+        </button>
+      </div>
+    </div>
+    @if (activeExample(); as ex) {
+      <kj-code-editor [code]="ex.content" [lang]="ex.lang" [showHeader]="false" />
     }
   }
 

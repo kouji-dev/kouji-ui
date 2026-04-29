@@ -18,8 +18,11 @@ export interface CodeExample {
   styleUrl: './code-preview.css',
 })
 export class CodePreviewComponent {
-  /** Example files to show. First file is shown by default. */
+  /** Default example files (used as fallback when no themed examples exist). */
   examples = input<CodeExample[]>([]);
+
+  /** Per-theme example files — keyed by theme name. Overrides `examples` when available. */
+  themedExamples = input<Record<string, CodeExample[]>>({});
 
   /** Component name for StackBlitz project title. */
   componentName = input<string>('Example');
@@ -58,11 +61,28 @@ export class CodePreviewComponent {
     });
   }
 
+  /** Whether the code editor panel is visible. Hidden by default. */
+  protected readonly showCode = signal(false);
+
   protected readonly activeIndex = signal(0);
   protected readonly copied = signal(false);
 
+  /**
+   * Active example files for the current theme.
+   * - Multi-theme mode (themedExamples has keys): only shows files for the exact active theme.
+   *   Returns [] if no files defined for that theme (code section hides).
+   * - Single-theme mode (no themedExamples): falls back to exampleFiles.
+   */
+  protected readonly activeFiles = computed((): CodeExample[] => {
+    const themed = this.themedExamples();
+    const theme = this.activeTheme();
+    const hasAnyThemed = Object.keys(themed).length > 0;
+    if (hasAnyThemed) return themed[theme] ?? [];
+    return this.examples();
+  });
+
   protected readonly activeExample = computed(() => {
-    const list = this.examples();
+    const list = this.activeFiles();
     return list[this.activeIndex()] ?? null;
   });
 
@@ -83,7 +103,7 @@ export class CodePreviewComponent {
   }
 
   protected async openInStackBlitz(): Promise<void> {
-    const examples = this.examples();
+    const examples = this.activeFiles();
     if (!examples.length) return;
 
     const { default: sdk } = await import('@stackblitz/sdk');

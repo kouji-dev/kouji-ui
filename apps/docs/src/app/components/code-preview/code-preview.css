@@ -90,6 +90,25 @@
   border-bottom: 1px solid var(--border);
 }
 
+.strip-spacer { flex: 1; }
+
+.code-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-left: auto;
+}
+.code-toggle-btn:hover { color: var(--text-secondary); border-color: var(--text-muted); }
+
 .preview-theme-strip {
   display: flex;
   gap: 0.35rem;
