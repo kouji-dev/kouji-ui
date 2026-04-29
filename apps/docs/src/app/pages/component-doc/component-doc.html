@@ -59,10 +59,13 @@
                   [examples]="directive.exampleFiles"
                   [componentName]="comp.name"
                 />
-              } @else {
-                <!-- Fallback: inline @example blocks in pre tags -->
+              } @else if (directive.examples.length) {
+                <!-- Fallback: inline @example blocks rendered with CodeMirror -->
                 @for (ex of directive.examples; track $index) {
-                  <pre class="code-example"><code>{{ ex }}</code></pre>
+                  <kj-code-editor
+                    [code]="ex"
+                    [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
+                  />
                 }
               }
             </div>

@@ -5,6 +5,7 @@ import { switchMap, map } from 'rxjs/operators';
 import { DocsService } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
+import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
 
@@ -15,6 +16,7 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
     RouterLink,
     DocsSidebarComponent,
     CodePreviewComponent,
+    CodeEditorComponent,
     PageTocDirective,
     PageTocComponent,
   ],

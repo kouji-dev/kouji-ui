@@ -22,6 +22,7 @@ export class CodePreviewComponent {
   componentName = input<string>('Example');
 
   protected readonly activeIndex = signal(0);
+  protected readonly copied = signal(false);
 
   protected readonly activeExample = computed(() => {
     const list = this.examples();
@@ -30,6 +31,18 @@ export class CodePreviewComponent {
 
   protected setActive(i: number): void {
     this.activeIndex.set(i);
+  }
+
+  protected async copyActive(): Promise<void> {
+    const ex = this.activeExample();
+    if (!ex) return;
+    try {
+      await navigator.clipboard.writeText(ex.content);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch {
+      // clipboard not available
+    }
   }
 
   protected async openInStackBlitz(): Promise<void> {

@@ -38,6 +38,28 @@
   border-bottom-color: #b8f500;
 }
 
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: #444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.15s;
+  letter-spacing: 0.03em;
+}
+.copy-btn:hover { color: #888; }
+
 .stackblitz-btn {
   display: flex;
   align-items: center;
