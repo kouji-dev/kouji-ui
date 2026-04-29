@@ -1,0 +1,135 @@
+<div class="docs-layout">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <a routerLink="/docs" class="sidebar-back">← All components</a>
+      <div class="toc">
+        <span class="toc-title">On this page</span>
+        <a href="#installation" class="toc-link">Installation</a>
+        <a href="#quick-start" class="toc-link">Quick start</a>
+        <a href="#headless" class="toc-link">Headless usage</a>
+        <a href="#tailwind" class="toc-link">With Tailwind v4</a>
+        <a href="#forms" class="toc-link">Angular forms</a>
+        <a href="#accessibility" class="toc-link">Accessibility</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="gs-main">
+    <header class="gs-header">
+      <span class="tag">Guide</span>
+      <h1>Getting Started</h1>
+      <p class="lead">kouji-ui is a headless Angular 21 UI library. The core has zero CSS — bring your own styles or use the Tailwind v4 implementation package.</p>
+    </header>
+
+    <!-- Installation -->
+    <section id="installation" class="section">
+      <h2>Installation</h2>
+      <p>Install the headless core for custom styling:</p>
+      <pre class="code"><code><span class="prompt">$</span> pnpm add @kouji-ui/core</code></pre>
+      <p>Or install the Tailwind v4 styled implementation:</p>
+      <pre class="code"><code><span class="prompt">$</span> pnpm add @kouji-ui/ui</code></pre>
+      <div class="callout">
+        <span class="callout-icon">◈</span>
+        <p><strong>Requires Angular 21.</strong> The library uses signal inputs, <code>afterNextRender</code>, and <code>inject()</code> — all Angular 21+ features.</p>
+      </div>
+    </section>
+
+    <!-- Quick start -->
+    <section id="quick-start" class="section">
+      <h2>Quick start</h2>
+      <p>Import directive directly — no NgModules needed.</p>
+      <pre class="code"><code><span class="keyword">import</span> &#123; KjButtonDirective &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core'</span>;
+
+<span class="decorator">&#64;Component</span>(&#123;
+  standalone: <span class="bool">true</span>,
+  imports: [KjButtonDirective],
+  template: <span class="string">`
+    &lt;button kjButton [kjVariant]="'destructive'"&gt;
+      Delete
+    &lt;/button&gt;
+  `</span>,
+&#125;)</code></pre>
+    </section>
+
+    <!-- Headless usage -->
+    <section id="headless" class="section">
+      <h2>Headless usage</h2>
+      <p>The core package ships zero CSS. Directives add ARIA attributes and <code>data-*</code> attributes you can target in your stylesheets:</p>
+      <pre class="code"><code><span class="comment">/* Style via data attributes — works with any CSS approach */</span>
+[kjButton] &#123;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary);
+&#125;
+
+[kjButton][data-variant="destructive"] &#123;
+  background: var(--color-danger);
+&#125;
+
+[kjButton][aria-disabled="true"] &#123;
+  opacity: 0.5;
+  cursor: not-allowed;
+&#125;</code></pre>
+    </section>
+
+    <!-- Tailwind v4 -->
+    <section id="tailwind" class="section">
+      <h2>With Tailwind v4</h2>
+      <p>Import <code>@kouji-ui/ui</code>'s stylesheet to get the pre-built Tailwind v4 component styles:</p>
+      <pre class="code"><code><span class="comment">/* In your global styles.css */</span>
+<span class="keyword">@import</span> <span class="string">"@kouji-ui/ui/styles/kj.css"</span>;</code></pre>
+      <p>Then use styled components from <code>@kouji-ui/ui</code>:</p>
+      <pre class="code"><code><span class="keyword">import</span> &#123; KjButton &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/ui'</span>;
+
+<span class="comment">// KjButton is a pre-styled Angular component wrapping KjButtonDirective</span></code></pre>
+    </section>
+
+    <!-- Angular forms -->
+    <section id="forms" class="section">
+      <h2>Angular forms</h2>
+      <p>Form controls compose <code>KjFormControlDirective</code> via <code>hostDirectives</code>, so they work with reactive forms out of the box:</p>
+      <pre class="code"><code><span class="keyword">import</span> &#123; KjInputDirective &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core'</span>;
+<span class="keyword">import</span> &#123; ReactiveFormsModule, FormControl &#125; <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
+
+<span class="decorator">&#64;Component</span>(&#123;
+  standalone: <span class="bool">true</span>,
+  imports: [KjInputDirective, ReactiveFormsModule],
+  template: <span class="string">`
+    &lt;input kjInput [formControl]="email" type="email" /&gt;
+    &lt;span *ngIf="email.invalid &amp;&amp; email.touched"&gt;
+      Invalid email
+    &lt;/span&gt;
+  `</span>,
+&#125;)
+<span class="keyword">export class</span> MyForm &#123;
+  email = <span class="keyword">new</span> FormControl(<span class="string">''</span>);
+&#125;</code></pre>
+    </section>
+
+    <!-- Accessibility -->
+    <section id="accessibility" class="section">
+      <h2>Accessibility</h2>
+      <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are handled by the CDK primitives under the hood.</p>
+      <p>Use the a11y utilities to enhance your own components:</p>
+      <pre class="code"><code><span class="keyword">import</span> &#123;
+  KjFocusTrapDirective,
+  KjLiveRegionDirective,
+  KjRovingTabindexDirective,
+  KjVisuallyHiddenDirective,
+&#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core/a11y'</span>;</code></pre>
+      <div class="callout callout-green">
+        <span class="callout-icon">♿</span>
+        <p>All overlay components (Dialog, Menu, Select) use Angular CDK's <code>FocusTrap</code>, <code>FocusKeyManager</code>, and <code>LiveAnnouncer</code> for full keyboard and screen reader support.</p>
+      </div>
+    </section>
+
+    <div class="next-steps">
+      <h2>Next steps</h2>
+      <div class="next-grid">
+        <a routerLink="/docs" class="next-card">
+          <span class="next-title">Browse components →</span>
+          <span class="next-desc">Explore all 20 components with auto-generated API docs</span>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
