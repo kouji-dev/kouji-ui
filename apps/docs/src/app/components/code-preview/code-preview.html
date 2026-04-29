@@ -1,38 +1,51 @@
 <div class="preview-wrap">
-  @if (examples().length) {
-    <div class="preview-toolbar">
-      <div class="file-tabs">
-        @for (ex of examples(); track ex.filename; let i = $index) {
-          <button
-            class="file-tab"
-            [class.active]="i === activeIndex()"
-            (click)="setActive(i)"
-            type="button"
-          >
-            {{ ex.filename }}
-          </button>
-        }
-      </div>
-      <div class="toolbar-actions">
-        <button class="copy-btn" (click)="copyActive()" type="button" [title]="copied() ? 'Copied!' : 'Copy'">
-          @if (copied()) {
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b8f500" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          } @else {
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          }
-          {{ copied() ? 'Copied' : 'Copy' }}
-        </button>
-        <button class="stackblitz-btn" (click)="openInStackBlitz()" type="button" title="Open in StackBlitz">
-          <svg width="14" height="14" viewBox="0 0 28 28" fill="currentColor"><path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5z"/></svg>
-          Open in StackBlitz
-        </button>
-      </div>
+  @if (demoComponent()) {
+    <div class="view-tabs">
+      <button class="view-tab" [class.active]="activeTab() === 'code'" (click)="activeTab.set('code')" type="button">Code</button>
+      <button class="view-tab" [class.active]="activeTab() === 'preview'" (click)="activeTab.set('preview')" type="button">Preview</button>
     </div>
+  }
 
-    @if (activeExample(); as ex) {
-      <kj-code-editor [code]="ex.content" [lang]="ex.lang" />
-    }
+  @if (activeTab() === 'preview' && demoComponent(); as demo) {
+    <div class="preview-frame">
+      <ng-container *ngComponentOutlet="demo" />
+    </div>
   } @else {
-    <div class="no-examples">No examples available.</div>
+    @if (examples().length) {
+      <div class="preview-toolbar">
+        <div class="file-tabs">
+          @for (ex of examples(); track ex.filename; let i = $index) {
+            <button
+              class="file-tab"
+              [class.active]="i === activeIndex()"
+              (click)="setActive(i)"
+              type="button"
+            >
+              {{ ex.filename }}
+            </button>
+          }
+        </div>
+        <div class="toolbar-actions">
+          <button class="copy-btn" (click)="copyActive()" type="button" [title]="copied() ? 'Copied!' : 'Copy'">
+            @if (copied()) {
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b8f500" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else {
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            }
+            {{ copied() ? 'Copied' : 'Copy' }}
+          </button>
+          <button class="stackblitz-btn" (click)="openInStackBlitz()" type="button" title="Open in StackBlitz">
+            <svg width="14" height="14" viewBox="0 0 28 28" fill="currentColor"><path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5z"/></svg>
+            Open in StackBlitz
+          </button>
+        </div>
+      </div>
+
+      @if (activeExample(); as ex) {
+        <kj-code-editor [code]="ex.content" [lang]="ex.lang" />
+      }
+    } @else {
+      <div class="no-examples">No examples available.</div>
+    }
   }
 </div>

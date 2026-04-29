@@ -14,7 +14,12 @@
       </header>
 
       @for (directive of comp.directives; track directive.className) {
-        <section class="directive-section" [id]="directive.className">
+        <section
+          class="directive-section"
+          [id]="directive.className"
+          [attr.data-toc-entry]="directive.selector"
+          data-toc-level="2"
+        >
           <div class="directive-header">
             <code class="directive-selector">{{ directive.selector }}</code>
             <span class="directive-class">{{ directive.className }}</span>
@@ -58,6 +63,7 @@
                 <kj-code-preview
                   [examples]="directive.exampleFiles"
                   [componentName]="comp.name"
+                  [slug]="comp.slug"
                 />
               } @else if (directive.examples.length) {
                 <!-- Fallback: inline @example blocks rendered with CodeMirror -->

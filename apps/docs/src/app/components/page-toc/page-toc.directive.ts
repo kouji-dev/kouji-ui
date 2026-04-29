@@ -52,16 +52,21 @@ export class PageTocDirective {
 
   private scanHeadings(): void {
     const container = this.el.nativeElement as HTMLElement;
-    const headings = Array.from(
-      container.querySelectorAll('h2[id], h3[id]')
+    // Scan standard headings AND elements with data-toc-entry (e.g. directive sections)
+    const els = Array.from(
+      container.querySelectorAll('h2[id], h3[id], [data-toc-entry]')
     ) as HTMLElement[];
     const found: TocEntry[] = [];
-    for (const h of headings) {
-      found.push({
-        id: h.id,
-        label: h.textContent?.trim() ?? '',
-        level: parseInt(h.tagName[1], 10),
-      });
+    for (const el of els) {
+      const id = el.id;
+      if (!id) continue;
+      const label = el.getAttribute('data-toc-entry') ?? el.textContent?.trim() ?? '';
+      const tagLevel = el.tagName.match(/^H(\d)$/)?.[1];
+      // data-toc-entry elements get level from data-toc-level attr (default 2)
+      const level = tagLevel
+        ? parseInt(tagLevel, 10)
+        : parseInt(el.getAttribute('data-toc-level') ?? '2', 10);
+      found.push({ id, label, level });
     }
     this.entries.set(found);
     if (found.length) this.activeId.set(found[0].id);
@@ -70,7 +75,7 @@ export class PageTocDirective {
   private observeHeadings(): void {
     const container = this.el.nativeElement as HTMLElement;
     const headings = Array.from(
-      container.querySelectorAll('h2[id], h3[id]')
+      container.querySelectorAll('h2[id], h3[id], [data-toc-entry]')
     ) as HTMLElement[];
     if (!headings.length) return;
 

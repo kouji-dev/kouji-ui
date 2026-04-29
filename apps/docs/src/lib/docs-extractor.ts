@@ -233,6 +233,46 @@ function extractDecoratorProp(decoratorArg: string, prop: string): string | unde
   return decoratorArg.match(new RegExp(`${prop}:\\s*['"\`]([^'"\`]+)['"\`]`))?.[1];
 }
 
+/**
+ * Extracts inputs exposed via hostDirectives with their public aliases.
+ * e.g. `hostDirectives: [{ directive: KjDisabledDirective, inputs: ['disabled: kjDisabled'] }]`
+ * emits an InputDef with name='kjDisabled', type='boolean', description='(from KjDisabledDirective)'
+ */
+function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
+  const results: InputDef[] = [];
+  // Find hostDirectives array content
+  const hdMatch = decoratorArg.match(/hostDirectives\s*:\s*\[([\s\S]*?)\]/);
+  if (!hdMatch) return results;
+
+  const hdContent = hdMatch[1];
+  // Find all inputs: ['...'] arrays inside hostDirectives entries
+  const inputsRe = /inputs\s*:\s*\[([^\]]*)\]/g;
+  for (const inputsMatch of hdContent.matchAll(inputsRe)) {
+    const inputsList = inputsMatch[1];
+    // Each entry: 'originalName: aliasName' or just 'name'
+    const entryRe = /['"`]([^'"`]+)['"`]/g;
+    for (const entry of inputsList.matchAll(entryRe)) {
+      const raw = entry[1].trim();
+      const parts = raw.split(':').map(s => s.trim());
+      const alias = parts[1] ?? parts[0]; // public alias (what users write in templates)
+      const original = parts[0];
+
+      // Only expose inputs aliased with the kj prefix — CDK inputs without kj alias are internals
+      if (!alias || !alias.startsWith('kj')) continue;
+
+      results.push({
+        name: alias,
+        type: 'unknown',  // full type resolution requires compilation; shown as 'unknown' in docs
+        required: false,
+        isModel: false,
+        description: `Forwarded from host directive (original: \`${original}\`).`,
+        defaultValue: undefined,
+      });
+    }
+  }
+  return results;
+}
+
 // ── Signal input extraction using ts-query ────────────────────────────────────
 
 function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): InputDef[] {
@@ -344,7 +384,9 @@ function processSourceFile(
     const description = getJsDocDescription(cls);
     const examples = getJsDocExamples(cls);
     const exampleFiles = getDocFiles(cls, tsSourceFile);
-    const inputs = extractInputs(cls, tsSourceFile);
+    const ownInputs = extractInputs(cls, tsSourceFile);
+    const hdInputs = extractHostDirectiveInputs(decoratorArg);
+    const inputs = [...ownInputs, ...hdInputs];
     const categoryPath = getCategoryPath(cls);
 
     if (!componentMap.has(folder)) {

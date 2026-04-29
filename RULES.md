@@ -98,6 +98,27 @@ Do not create directives that only add `data-*` attributes with no behavior. A d
 - `KjTableRowDirective` that only sets `[attr.data-row]="''"` — pointless; use CSS selectors on `tr` instead
 - `KjTableCellDirective` that only sets `[attr.data-cell]="''"` — same
 
+## hostDirectives Input/Output Aliasing
+
+All inputs and outputs forwarded via `hostDirectives` from external packages (CDK, TanStack, etc.) **must** be aliased with the `kj` prefix. Un-aliased CDK inputs are never exposed as part of the public API.
+
+```ts
+// ✅ Correct — CDK input aliased to kj prefix
+@Directive({
+  hostDirectives: [
+    { directive: CdkMenuTrigger, inputs: ['cdkMenuTriggerFor: kjMenuTriggerFor'] },
+    { directive: KjDisabledDirective, inputs: ['disabled: kjDisabled'] },
+  ],
+})
+
+// ❌ Wrong — CDK input leaked without alias
+@Directive({
+  hostDirectives: [CdkMenuTrigger],  // exposes cdkMenuTriggerFor as-is
+})
+```
+
+The docs extractor only surfaces inputs aliased with `kj` prefix — anything else is treated as an internal implementation detail.
+
 ## CDK Wrapping Rule — Don't Reimplement What CDK Already Provides
 
 If Angular CDK has a primitive for a component, **wrap or extend it** — never reimplement the logic from scratch.

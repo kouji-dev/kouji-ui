@@ -1,5 +1,7 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, Type, computed, inject, input, signal } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
+import { DemoRegistryService } from '../../demos/demo-registry';
 
 export interface CodeExample {
   lang: 'ts' | 'html' | 'css';
@@ -10,7 +12,7 @@ export interface CodeExample {
 @Component({
   selector: 'kj-code-preview',
   standalone: true,
-  imports: [CodeEditorComponent],
+  imports: [CodeEditorComponent, NgComponentOutlet],
   templateUrl: './code-preview.html',
   styleUrl: './code-preview.css',
 })
@@ -20,6 +22,17 @@ export class CodePreviewComponent {
 
   /** Component name for StackBlitz project title. */
   componentName = input<string>('Example');
+
+  /** Demo slug to show in the Preview tab. */
+  slug = input<string>('');
+
+  private readonly registry = inject(DemoRegistryService);
+
+  readonly activeTab = signal<'code' | 'preview'>('code');
+
+  readonly demoComponent = computed((): Type<unknown> | null =>
+    this.slug() ? this.registry.get(this.slug()) : null
+  );
 
   protected readonly activeIndex = signal(0);
   protected readonly copied = signal(false);

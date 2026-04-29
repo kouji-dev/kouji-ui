@@ -83,3 +83,29 @@
   font-size: 0.8rem;
   color: #333;
 }
+
+.view-tabs {
+  display: flex;
+  background: #080808;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.view-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #444;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  letter-spacing: 0.03em;
+}
+.view-tab:hover { color: #888; }
+.view-tab.active { color: #f0ede6; border-bottom-color: #b8f500; }
+
+.preview-frame {
+  background: #0c0c0c;
+  min-height: 120px;
+}
