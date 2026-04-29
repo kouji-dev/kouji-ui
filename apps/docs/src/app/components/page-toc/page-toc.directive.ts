@@ -45,8 +45,17 @@ export class PageTocDirective {
 
   constructor() {
     afterNextRender(() => {
+      // Initial scan — catches SSR-prerendered content
       this.scanHeadings();
       this.observeHeadings();
+
+      // Re-scan after a short delay to catch dynamically rendered content
+      // (e.g. directive sections that render after loadManifest() resolves)
+      setTimeout(() => {
+        this.observer?.disconnect();
+        this.scanHeadings();
+        this.observeHeadings();
+      }, 400);
     });
   }
 
