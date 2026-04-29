@@ -1,0 +1,8 @@
+{
+  "name": "docs",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "ng build docs",
+    "test:e2e": "playwright test"
+  }
+}
