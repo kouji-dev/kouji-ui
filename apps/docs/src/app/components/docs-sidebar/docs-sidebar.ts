@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { DocsService, ComponentDoc } from '../../services/docs.service';
+import { DocsService, SidebarNode } from '../../services/docs.service';
 
 @Component({
   selector: 'kj-docs-sidebar',
@@ -9,11 +9,13 @@ import { DocsService, ComponentDoc } from '../../services/docs.service';
   templateUrl: './docs-sidebar.html',
   styleUrl: './docs-sidebar.css',
 })
-export class DocsSidebarComponent {
+export class DocsSidebarComponent implements OnInit {
   private readonly docs = inject(DocsService);
-  protected readonly categories = ['foundation', 'overlay', 'data', 'charts', 'a11y'] as const;
+  protected readonly tree = signal<SidebarNode[]>([]);
 
-  protected byCategory(cat: string): ComponentDoc[] {
-    return this.docs.byCategory(cat as ComponentDoc['category']);
+  ngOnInit(): void {
+    this.docs.loadManifest().subscribe(() => {
+      this.tree.set(this.docs.getSidebarTree());
+    });
   }
 }

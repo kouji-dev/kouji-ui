@@ -71,3 +71,12 @@
 .sidebar-link-special.active {
   color: #b8f500;
 }
+
+.sidebar-link-nested {
+  padding-left: 1.5rem;
+  font-size: 0.75rem;
+  color: #3a3a3a;
+}
+.sidebar-link-nested:hover { color: #f0ede6; background: #141414; }
+.sidebar-link-nested.active { color: #b8f500; background: rgba(184,245,0,0.06); }
+.sidebar-group { color: #2e2e2e; cursor: default; }

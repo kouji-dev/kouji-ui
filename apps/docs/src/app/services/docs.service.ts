@@ -16,6 +16,7 @@ export interface DirectiveDef {
   className: string;
   selector: string;
   exportAs?: string;
+  categoryPath: string[];
   description: string;
   inputs: InputDef[];
   examples: string[];
@@ -35,11 +36,18 @@ export interface TypeAliasDef {
 export interface ComponentDoc {
   name: string;
   slug: string;
+  categoryPath: string[];
   category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
   typeAliases: TypeAliasDef[];
+}
+
+export interface SidebarNode {
+  label: string;
+  slug: string | null;
+  children: SidebarNode[];
 }
 
 export interface DocsManifest {
@@ -105,5 +113,31 @@ export class DocsService {
   static getSlugs(): string[] {
     // This is only called server-side via getDocsSlugs() now
     return [];
+  }
+
+  /** Builds a nested category tree from component categoryPath values. */
+  getSidebarTree(): SidebarNode[] {
+    const components = this._manifest?.components ?? [];
+    const tree: Record<string, SidebarNode> = {};
+
+    for (const comp of components) {
+      const path = comp.categoryPath.length
+        ? comp.categoryPath
+        : [comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
+
+      const topLevel = path[0];
+      if (!tree[topLevel]) {
+        tree[topLevel] = { label: topLevel, slug: null, children: [] };
+      }
+
+      if (path.length === 1) {
+        tree[topLevel].children.push({ label: comp.name, slug: comp.slug, children: [] });
+      } else {
+        // path[1] is typically the component name; deeper nesting supported
+        tree[topLevel].children.push({ label: path[path.length - 1] || comp.name, slug: comp.slug, children: [] });
+      }
+    }
+
+    return Object.values(tree);
   }
 }

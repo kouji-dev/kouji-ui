@@ -12,37 +12,41 @@
   </div>
 
   <div class="sidebar-section">
-    <a
-      routerLink="/docs/getting-started"
-      routerLinkActive="active"
-      class="sidebar-link sidebar-link-special"
-    >
+    <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special">
       Getting Started
     </a>
-    <a
-      routerLink="/docs"
-      [routerLinkActiveOptions]="{ exact: true }"
-      routerLinkActive="active"
-      class="sidebar-link sidebar-link-special"
-    >
+    <a routerLink="/docs" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" class="sidebar-link sidebar-link-special">
       All Components
     </a>
   </div>
 
-  @for (cat of categories; track cat) {
-    @if (byCategory(cat).length) {
-      <div class="sidebar-section">
-        <span class="sidebar-category">{{ cat }}</span>
-        @for (comp of byCategory(cat); track comp.slug) {
+  @for (node of tree(); track node.label) {
+    <div class="sidebar-section">
+      <span class="sidebar-category">{{ node.label }}</span>
+      @for (child of node.children; track child.slug) {
+        @if (child.slug) {
           <a
-            [routerLink]="['/docs/components', comp.slug]"
+            [routerLink]="['/docs/components', child.slug]"
             routerLinkActive="active"
             class="sidebar-link"
           >
-            {{ comp.name }}
+            {{ child.label }}
           </a>
+        } @else {
+          <span class="sidebar-link sidebar-group">{{ child.label }}</span>
+          @for (leaf of child.children; track leaf.slug) {
+            @if (leaf.slug) {
+              <a
+                [routerLink]="['/docs/components', leaf.slug]"
+                routerLinkActive="active"
+                class="sidebar-link sidebar-link-nested"
+              >
+                {{ leaf.label }}
+              </a>
+            }
+          }
         }
-      </div>
-    }
+      }
+    </div>
   }
 </nav>

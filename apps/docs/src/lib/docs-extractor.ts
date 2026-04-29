@@ -29,6 +29,7 @@ export interface DirectiveDef {
   className: string;
   selector: string;
   exportAs?: string;
+  categoryPath: string[];
   description: string;
   inputs: InputDef[];
   examples: string[];
@@ -37,6 +38,7 @@ export interface DirectiveDef {
 export interface ComponentDoc {
   name: string;
   slug: string;
+  categoryPath: string[];
   category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
@@ -84,6 +86,9 @@ const INJECTION_TOKEN_SELECTOR =
 const TYPE_ALIAS_SELECTOR =
   'TypeAliasDeclaration:has(ExportKeyword)';
 
+/** @category tag — e.g. "@category Foundation/Button" */
+const CATEGORY_TAG_SELECTOR = 'JSDocTag[tagName.text="category"]';
+
 // ── JSDoc extraction using ts-query ──────────────────────────────────────────
 
 function getJsDocDescription(node: ts.Node): string {
@@ -109,6 +114,16 @@ function getJsDocExamples(node: ts.Node): string[] {
       return raw.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').trim();
     })
     .filter(Boolean);
+}
+
+function getCategoryPath(node: ts.Node): string[] {
+  const tags = tsquery<ts.JSDocTag>(node, CATEGORY_TAG_SELECTOR);
+  if (!tags.length) return [];
+  const comment = tags[0].comment;
+  const raw = typeof comment === 'string'
+    ? comment
+    : (comment ?? []).map((x: any) => x.text ?? '').join('');
+  return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
 }
 
 // ── Directive decorator metadata extraction ───────────────────────────────────
@@ -252,11 +267,13 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       const description = getJsDocDescription(cls);
       const examples = getJsDocExamples(cls);
       const inputs = extractInputs(cls, tsSourceFile);
+      const categoryPath = getCategoryPath(cls);
 
       const directive: DirectiveDef = {
         className,
         selector,
         ...(exportAs ? { exportAs } : {}),
+        categoryPath,
         description,
         inputs,
         examples,
@@ -266,6 +283,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
         componentMap.set(folder, {
           name: folder.charAt(0).toUpperCase() + folder.slice(1),
           slug: folder,
+          categoryPath: [],
           category: getCategory(folder),
           description: '',
           directives: [],
@@ -276,6 +294,10 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
       const comp = componentMap.get(folder)!;
       if (!comp.description && description) comp.description = description;
+      // Use first directive's @category path for the component
+      if (!comp.categoryPath.length && categoryPath.length) {
+        comp.categoryPath = categoryPath;
+      }
       comp.directives.push(directive);
     }
 
@@ -284,6 +306,25 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       const comp = componentMap.get(folder)!;
       comp.tokens.push(...extractTokens(tsSourceFile));
       comp.typeAliases.push(...extractTypeAliases(tsSourceFile));
+    }
+  }
+
+  // Fill in categoryPath for components that had no @category tag
+  const categoryFallbacks: Record<string, string[]> = {
+    foundation: ['Foundation'],
+    overlay: ['Overlay'],
+    data: ['Data'],
+    charts: ['Charts'],
+    a11y: ['Accessibility'],
+    primitives: ['Primitives'],
+  };
+
+  for (const comp of componentMap.values()) {
+    if (!comp.categoryPath.length) {
+      comp.categoryPath = [
+        ...(categoryFallbacks[comp.category] ?? ['Foundation']),
+        comp.name,
+      ];
     }
   }
 
