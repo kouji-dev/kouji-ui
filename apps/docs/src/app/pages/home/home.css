@@ -15,8 +15,8 @@
 
 .page {
   min-height: 100dvh;
-  background: #0c0c0c;
-  color: #f0ede6;
+  background: var(--bg);
+  color: var(--text);
   font-family: 'JetBrains Mono', monospace;
   overflow-x: hidden;
 }
@@ -27,7 +27,7 @@ nav {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 3rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   background: rgba(12, 12, 12, 0.9);
@@ -47,7 +47,7 @@ nav {
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: -0.02em;
-  color: #b8f500;
+  color: var(--accent);
 }
 
 .nav-links {
@@ -59,7 +59,7 @@ nav {
 }
 
 .nav-links a {
-  color: #666;
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -68,13 +68,13 @@ nav {
 }
 
 .nav-links a:hover {
-  color: #f0ede6;
+  color: var(--text);
 }
 
 /* ── Hero ── */
 .hero {
   padding: 8rem 3rem 6rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 
@@ -83,8 +83,8 @@ nav {
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #b8f500;
-  border: 1px solid #b8f500;
+  color: var(--accent);
+  border: 1px solid var(--accent);
   padding: 0.25rem 0.75rem;
   margin-bottom: 2.5rem;
   font-family: 'JetBrains Mono', monospace;
@@ -97,13 +97,13 @@ nav {
   line-height: 0.9;
   letter-spacing: -0.04em;
   margin: 0 0 3rem;
-  color: #f0ede6;
+  color: var(--text);
   max-width: 14ch;
 }
 
 .hero-title em {
   font-style: normal;
-  color: #b8f500;
+  color: var(--accent);
   -webkit-text-stroke: 0px;
 }
 
@@ -133,8 +133,8 @@ nav {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  background: #b8f500;
-  color: #0c0c0c;
+  background: var(--accent);
+  color: var(--accent-fg);
   padding: 0.875rem 2rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.875rem;
@@ -153,30 +153,30 @@ nav {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  color: #666;
+  color: var(--text-secondary);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.875rem;
   text-decoration: none;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--text-muted);
   padding-bottom: 0.125rem;
   transition: color 0.15s, border-color 0.15s;
 }
 
 .btn-secondary:hover {
-  color: #f0ede6;
-  border-color: #666;
+  color: var(--text);
+  border-color: var(--text-secondary);
 }
 
 /* ── Stats bar ── */
 .stats {
   display: flex;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border);
 }
 
 .stat {
   flex: 1;
   padding: 2rem 3rem;
-  border-right: 1px solid #1e1e1e;
+  border-right: 1px solid var(--border);
 }
 
 .stat:last-child {
@@ -187,7 +187,7 @@ nav {
   font-family: 'Syne', sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #b8f500;
+  color: var(--accent);
   line-height: 1;
   margin-bottom: 0.5rem;
 }
@@ -196,20 +196,20 @@ nav {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #444;
+  color: var(--text-muted);
 }
 
 /* ── Features ── */
 .features {
   padding: 6rem 3rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-label {
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #444;
+  color: var(--text-muted);
   margin-bottom: 3rem;
   display: flex;
   align-items: center;
@@ -220,7 +220,7 @@ nav {
   content: '';
   flex: 1;
   height: 1px;
-  background: #1e1e1e;
+  background: var(--border);
   max-width: 200px;
 }
 
@@ -232,8 +232,8 @@ nav {
 
 .feature {
   padding: 2.5rem;
-  border-right: 1px solid #1e1e1e;
-  border-bottom: 1px solid #1e1e1e;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .feature:nth-child(3n) {
@@ -255,20 +255,20 @@ nav {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
-  color: #f0ede6;
+  color: var(--text);
   letter-spacing: -0.01em;
 }
 
 .feature-desc {
   font-size: 0.8rem;
   line-height: 1.7;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 /* ── Install ── */
 .install {
   padding: 6rem 3rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6rem;
@@ -281,19 +281,19 @@ nav {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: #f0ede6;
+  color: var(--text);
   margin: 0 0 1rem;
 }
 
 .install-sub {
   font-size: 0.85rem;
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
 .code-block {
-  background: #111;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
   padding: 2rem;
 }
 
@@ -303,14 +303,14 @@ nav {
   justify-content: space-between;
   margin-bottom: 1.25rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid var(--border);
 }
 
 .code-block-title {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #444;
+  color: var(--text-muted);
 }
 
 .code-lines {
@@ -326,17 +326,17 @@ nav {
 }
 
 .code-line .prompt {
-  color: #b8f500;
+  color: var(--accent);
   margin-right: 0.75rem;
   user-select: none;
 }
 
 .code-line .pkg {
-  color: #f0ede6;
+  color: var(--text);
 }
 
 .code-line .flag {
-  color: #b8f500;
+  color: var(--accent);
   opacity: 0.7;
 }
 
@@ -352,13 +352,13 @@ footer {
   font-family: 'Syne', sans-serif;
   font-weight: 800;
   font-size: 1rem;
-  color: #333;
+  color: var(--text-muted);
   letter-spacing: -0.02em;
 }
 
 .footer-copy {
   font-size: 0.7rem;
-  color: #333;
+  color: var(--text-muted);
   letter-spacing: 0.05em;
 }
 
@@ -368,7 +368,7 @@ footer {
   .hero { padding: 4rem 1.5rem 3rem; }
   .hero-sub { grid-template-columns: 1fr; gap: 2rem; }
   .stats { flex-direction: column; }
-  .stat { border-right: none; border-bottom: 1px solid #1e1e1e; }
+  .stat { border-right: none; border-bottom: 1px solid var(--border); }
   .features-grid { grid-template-columns: 1fr; }
   .feature { border-right: none !important; }
   .install { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }
