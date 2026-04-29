@@ -2,11 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { LoadingScreenComponent } from './components/loading-screen/loading-screen';
 import { LoadingService } from './services/loading.service';
+import { SearchComponent } from './components/search/search.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, LoadingScreenComponent],
+  imports: [RouterOutlet, LoadingScreenComponent, SearchComponent],
   template: `
     @if (loading.isLoading()) {
       <kj-loading-screen />
@@ -14,6 +15,7 @@ import { LoadingService } from './services/loading.service';
     <div [class.content-hidden]="loading.isLoading()">
       <router-outlet />
     </div>
+    <kj-search />
   `,
   styles: [`
     .content-hidden { visibility: hidden; }

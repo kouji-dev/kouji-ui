@@ -101,3 +101,27 @@
 .sidebar-link-nested:hover { color: #f0ede6; background: #141414; }
 .sidebar-link-nested.active { color: #b8f500; background: rgba(184,245,0,0.06); }
 .sidebar-group { color: #2e2e2e; cursor: default; }
+
+.sidebar-search-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: #111;
+  border: 1px solid #1a1a1a;
+  color: #444;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.15s, color 0.15s;
+  text-align: left;
+}
+.sidebar-search-btn:hover { border-color: #333; color: #888; }
+.sidebar-search-btn kbd {
+  margin-left: auto;
+  font-size: 0.6rem;
+  color: #2a2a2a;
+  font-family: 'JetBrains Mono', monospace;
+}
