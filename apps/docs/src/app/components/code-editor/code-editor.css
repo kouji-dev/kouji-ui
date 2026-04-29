@@ -1,20 +1,18 @@
 :host {
   display: block;
-  border: 1px solid #1a1a1a;
+  border: 1px solid var(--border);
   overflow: hidden;
+  background: var(--bg-surface);
 }
 
-.editor-wrap {
-  display: flex;
-  flex-direction: column;
-}
+.editor-wrap { display: flex; flex-direction: column; }
 
 .editor-header {
   display: flex;
   align-items: center;
   padding: 0.5rem 1.25rem;
-  background: #080808;
-  border-bottom: 1px solid #1a1a1a;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
 }
 
 .lang-badge {
@@ -22,19 +20,17 @@
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #b8f500;
-  background: rgba(184,245,0,0.08);
+  color: var(--accent);
+  background: var(--accent-dim);
   padding: 0.15rem 0.5rem;
-  border: 1px solid rgba(184,245,0,0.2);
+  border: 1px solid var(--accent-border);
 }
 
 .editor-host {
-  /* No min-height — CodeMirror sizes to its content naturally */
   max-height: 500px;
   overflow-y: auto;
 }
 
-/* Override CodeMirror scrollbar to match theme */
 .editor-host ::-webkit-scrollbar { width: 6px; height: 6px; }
-.editor-host ::-webkit-scrollbar-track { background: #080808; }
-.editor-host ::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+.editor-host ::-webkit-scrollbar-track { background: transparent; }
+.editor-host ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

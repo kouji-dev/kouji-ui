@@ -1,6 +1,8 @@
 <div class="editor-wrap">
-  <div class="editor-header">
-    <span class="lang-badge">{{ lang() }}</span>
-  </div>
+  @if (showHeader()) {
+    <div class="editor-header">
+      <span class="lang-badge">{{ lang() }}</span>
+    </div>
+  }
   <div #editorHost class="editor-host"></div>
 </div>

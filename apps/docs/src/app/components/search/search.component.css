@@ -13,8 +13,8 @@
   left: 50%;
   transform: translateX(-50%);
   width: min(640px, 92vw);
-  background: #0e0e0e;
-  border: 1px solid #1e1e1e;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   z-index: 1001;
   overflow: hidden;
   animation: slide-in 0.15s ease-out;
@@ -28,28 +28,28 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--border);
 }
 
-.search-icon { color: #444; flex-shrink: 0; }
+.search-icon { color: var(--text-muted); flex-shrink: 0; }
 
 .search-input {
   flex: 1;
   background: none;
   border: none;
-  color: #f0ede6;
+  color: var(--text);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem;
   outline: none;
 }
-.search-input::placeholder { color: #333; }
+.search-input::placeholder { color: var(--text-muted); }
 
 .search-esc {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: #333;
-  background: #111;
-  border: 1px solid #1e1e1e;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
   padding: 0.15rem 0.4rem;
   cursor: pointer;
 }
@@ -75,8 +75,8 @@
 
 .search-result:hover,
 .search-result.active {
-  background: #141414;
-  border-left-color: #b8f500;
+  background: var(--bg-hover);
+  border-left-color: var(--accent);
 }
 
 .result-main {
@@ -88,7 +88,7 @@
 .result-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.875rem;
-  color: #f0ede6;
+  color: var(--text);
 }
 
 .result-type {
@@ -101,7 +101,7 @@
   opacity: 0.6;
 }
 
-.result-type-component { color: #b8f500; }
+.result-type-component { color: var(--accent); }
 .result-type-directive { color: #82aaff; }
 .result-type-selector  { color: #c792ea; }
 .result-type-input     { color: #f78c6c; }
@@ -109,7 +109,7 @@
 .result-path {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: #333;
+  color: var(--text-muted);
 }
 
 .search-empty,
@@ -117,7 +117,7 @@
   padding: 1.5rem 1rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
-  color: #333;
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -125,23 +125,23 @@
   display: flex;
   gap: 1.5rem;
   padding: 0.5rem 1rem;
-  border-top: 1px solid #1a1a1a;
-  background: #080808;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
 }
 
 .search-footer span {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: #2a2a2a;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .search-footer kbd {
-  background: #111;
-  border: 1px solid #1e1e1e;
-  color: #444;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.6rem;
   padding: 0.1rem 0.35rem;
