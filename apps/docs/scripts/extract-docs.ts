@@ -1,5 +1,5 @@
 import { Project, Node } from 'ts-morph';
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -14,17 +14,26 @@ interface InputDef {
   defaultValue?: string;
 }
 
+interface ExampleFile {
+  lang: 'ts' | 'html' | 'css';
+  filename: string;
+  content: string;
+}
+
 interface DirectiveDef {
   className: string;
   selector: string;
+  categoryPath: string[];
   description: string;
   inputs: InputDef[];
   examples: string[];
+  exampleFiles: ExampleFile[];
 }
 
 interface ComponentDoc {
   name: string;
   slug: string;
+  categoryPath: string[];
   category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
@@ -52,10 +61,17 @@ function extractSelector(decoratorArgs: string): string {
 }
 
 /** Extract clean text from a JSDoc comment node */
-function extractJsDocText(node: Node): { description: string; examples: string[] } {
+function extractJsDocText(node: Node, sourceFilePath: string): {
+  description: string;
+  examples: string[];
+  categoryPath: string[];
+  exampleFiles: ExampleFile[];
+} {
   const jsDocs = (node as any).getJsDocs?.() ?? [];
   let description = '';
   const examples: string[] = [];
+  let categoryPath: string[] = [];
+  const exampleFiles: ExampleFile[] = [];
 
   for (const doc of jsDocs) {
     const comment = doc.getComment() ?? '';
@@ -70,11 +86,32 @@ function extractJsDocText(node: Node): { description: string; examples: string[]
           ? text.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').trim()
           : '';
         if (cleaned) examples.push(cleaned);
+      } else if (tagName === 'category') {
+        const text = tag.getComment() ?? '';
+        const raw = typeof text === 'string' ? text : '';
+        categoryPath = raw.trim().split('/').map((s: string) => s.trim()).filter(Boolean);
+      } else if (tagName === 'example-file') {
+        const text = tag.getComment() ?? '';
+        const relativePath = (typeof text === 'string' ? text : '').trim();
+        if (relativePath) {
+          const dir = dirname(sourceFilePath);
+          const absPath = join(dir, relativePath);
+          try {
+            const content = readFileSync(absPath, 'utf-8');
+            const ext = relativePath.split('.').pop() as string;
+            const lang: 'ts' | 'html' | 'css' = (['ts', 'html', 'css'] as string[]).includes(ext)
+              ? ext as 'ts' | 'html' | 'css'
+              : 'ts';
+            exampleFiles.push({ lang, filename: relativePath.split('/').pop() ?? relativePath, content });
+          } catch {
+            // file not found — skip
+          }
+        }
       }
     }
   }
 
-  return { description, examples };
+  return { description, examples, categoryPath, exampleFiles };
 }
 
 /** Extract signal input definitions from a class */
@@ -115,6 +152,28 @@ function extractInputs(cls: any): InputDef[] {
   return inputs;
 }
 
+function pkgNameForPath(filePath: string): string {
+  if (filePath.includes('/packages/ui/src/')) return 'UI';
+  return 'Core';
+}
+
+function folderFromPath(filePath: string): string | null {
+  const coreMatch = filePath.split('/packages/core/src/')[1];
+  if (coreMatch) return coreMatch.split('/')[0] ?? null;
+  const uiMatch = filePath.split('/packages/ui/src/')[1];
+  if (uiMatch) return uiMatch.split('/')[0] ?? null;
+  return null;
+}
+
+const categoryFallbacks: Record<string, string[]> = {
+  foundation: ['Core', 'Foundation'],
+  overlay: ['Core', 'Overlay'],
+  data: ['Core', 'Data'],
+  charts: ['Core', 'Charts'],
+  a11y: ['Core', 'Accessibility'],
+  primitives: ['Core', 'Primitives'],
+};
+
 async function main() {
   const project = new Project({
     tsConfigFilePath: join(root, 'packages/core/tsconfig.lib.json'),
@@ -129,57 +188,87 @@ async function main() {
 
   const componentMap = new Map<string, ComponentDoc>();
 
-  for (const sourceFile of project.getSourceFiles()) {
-    const filePath = sourceFile.getFilePath();
+  function processSourceFiles(pkgPath: string) {
+    for (const sourceFile of project.getSourceFiles()) {
+      const filePath = sourceFile.getFilePath();
 
-    // Skip spec files and index files
-    if (filePath.includes('.spec.') || filePath.endsWith('index.ts') || filePath.endsWith('public-api.ts')) continue;
-    if (!filePath.includes('/packages/core/src/')) continue;
+      // Skip spec files and index files
+      if (filePath.includes('.spec.') || filePath.endsWith('index.ts') || filePath.endsWith('public-api.ts')) continue;
+      if (!filePath.includes(pkgPath)) continue;
 
-    // Determine folder (component name)
-    const parts = filePath.split('/packages/core/src/')[1]?.split('/') ?? [];
-    const folder = parts[0] ?? 'unknown';
+      // Determine folder (component name)
+      const folder = folderFromPath(filePath);
+      if (!folder || folder === 'unknown') continue;
 
-    for (const cls of sourceFile.getClasses()) {
-      if (!cls.isExported()) continue;
+      const pkgName = pkgNameForPath(filePath);
 
-      // Check for @Directive decorator
-      const directiveDecorator = cls.getDecorator('Directive');
-      if (!directiveDecorator) continue;
+      for (const cls of sourceFile.getClasses()) {
+        if (!cls.isExported()) continue;
 
-      const decoratorArgs = directiveDecorator.getArguments()[0]?.getText() ?? '';
-      const selector = extractSelector(decoratorArgs);
-      if (!selector) continue;
+        // Check for @Directive decorator
+        const directiveDecorator = cls.getDecorator('Directive');
+        if (!directiveDecorator) continue;
 
-      const { description, examples } = extractJsDocText(cls);
-      const inputs = extractInputs(cls);
-      const className = cls.getName() ?? '';
+        const decoratorArgs = directiveDecorator.getArguments()[0]?.getText() ?? '';
+        const selector = extractSelector(decoratorArgs);
+        if (!selector) continue;
 
-      const directive: DirectiveDef = {
-        className,
-        selector,
-        description,
-        inputs,
-        examples,
-      };
+        const { description, examples, categoryPath, exampleFiles } = extractJsDocText(cls, filePath);
+        const inputs = extractInputs(cls);
+        const className = cls.getName() ?? '';
 
-      // Group into component
-      if (!componentMap.has(folder)) {
-        componentMap.set(folder, {
-          name: folder.charAt(0).toUpperCase() + folder.slice(1),
-          slug: folder,
-          category: getCategory(folder),
-          description: '',
-          directives: [],
-        });
+        // Prepend package name to categoryPath
+        const fullPath = categoryPath.length ? [pkgName, ...categoryPath] : [];
+
+        const directive: DirectiveDef = {
+          className,
+          selector,
+          categoryPath: fullPath,
+          description,
+          inputs,
+          examples,
+          exampleFiles,
+        };
+
+        // Group into component
+        if (!componentMap.has(folder)) {
+          componentMap.set(folder, {
+            name: folder.charAt(0).toUpperCase() + folder.slice(1),
+            slug: folder,
+            categoryPath: [],
+            category: getCategory(folder),
+            description: '',
+            directives: [],
+          });
+        }
+
+        const comp = componentMap.get(folder)!;
+        // Use first directive's description as component description
+        if (!comp.description && description) {
+          comp.description = description;
+        }
+        if (!comp.categoryPath.length && fullPath.length) {
+          comp.categoryPath = fullPath;
+        }
+        comp.directives.push(directive);
       }
+    }
+  }
 
-      const comp = componentMap.get(folder)!;
-      // Use first directive's description as component description
-      if (!comp.description && description) {
-        comp.description = description;
-      }
-      comp.directives.push(directive);
+  // Pass 1: packages/core
+  processSourceFiles('/packages/core/src/');
+
+  // Pass 2: packages/ui
+  project.addSourceFilesAtPaths([join(root, 'packages/ui/src/**/*.ts')]);
+  processSourceFiles('/packages/ui/src/');
+
+  // Fill in categoryPath for components that had no @category tag
+  for (const comp of componentMap.values()) {
+    if (!comp.categoryPath.length) {
+      comp.categoryPath = [
+        ...(categoryFallbacks[comp.category] ?? ['Core', 'Foundation']),
+        comp.name,
+      ];
     }
   }
 

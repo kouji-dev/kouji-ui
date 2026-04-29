@@ -1,7 +1,8 @@
-import { Project } from 'ts-morph';
+import { Project, SourceFile } from 'ts-morph';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 // ── Exported types ──────────────────────────────────────────────────────────
 
@@ -25,6 +26,12 @@ export interface TypeAliasDef {
   description: string;
 }
 
+export interface ExampleFile {
+  lang: 'ts' | 'html' | 'css';
+  filename: string;
+  content: string;
+}
+
 export interface DirectiveDef {
   className: string;
   selector: string;
@@ -33,6 +40,7 @@ export interface DirectiveDef {
   description: string;
   inputs: InputDef[];
   examples: string[];
+  exampleFiles: ExampleFile[];
 }
 
 export interface ComponentDoc {
@@ -89,6 +97,9 @@ const TYPE_ALIAS_SELECTOR =
 /** @category tag — e.g. "@category Foundation/Button" */
 const CATEGORY_TAG_SELECTOR = 'JSDocTag[tagName.text="category"]';
 
+/** @example-file tag — points to a separate example file */
+const EXAMPLE_FILE_SELECTOR = 'JSDocTag[tagName.text="example-file"]';
+
 // ── JSDoc extraction using ts-query ──────────────────────────────────────────
 
 function getJsDocDescription(node: ts.Node): string {
@@ -124,6 +135,31 @@ function getCategoryPath(node: ts.Node): string[] {
     ? comment
     : (comment ?? []).map((x: any) => x.text ?? '').join('');
   return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
+}
+
+function getExampleFiles(node: ts.Node, sourceFilePath: string): ExampleFile[] {
+  const tags = tsquery<ts.JSDocTag>(node, EXAMPLE_FILE_SELECTOR);
+  const results: ExampleFile[] = [];
+
+  for (const tag of tags) {
+    const c = tag.comment;
+    const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
+    const relativePath = raw.trim();
+    if (!relativePath) continue;
+
+    const dir = dirname(sourceFilePath);
+    const absPath = join(dir, relativePath);
+    try {
+      const content = readFileSync(absPath, 'utf-8');
+      const ext = relativePath.split('.').pop() as 'ts' | 'html' | 'css';
+      const lang = (['ts', 'html', 'css'] as string[]).includes(ext) ? ext as 'ts' | 'html' | 'css' : 'ts';
+      results.push({ lang, filename: relativePath.split('/').pop() ?? relativePath, content });
+    } catch {
+      // file not found — skip
+    }
+  }
+
+  return results;
 }
 
 // ── Directive decorator metadata extraction ───────────────────────────────────
@@ -200,12 +236,109 @@ function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
   });
 }
 
+// ── Shared per-file processing ────────────────────────────────────────────────
+
+function pkgNameForPath(filePath: string): string {
+  if (filePath.includes('/packages/ui/src/')) return 'UI';
+  return 'Core';
+}
+
+function folderFromPath(filePath: string): string | null {
+  const coreMatch = filePath.split('/packages/core/src/')[1];
+  if (coreMatch) return coreMatch.split('/')[0] ?? null;
+  const uiMatch = filePath.split('/packages/ui/src/')[1];
+  if (uiMatch) return uiMatch.split('/')[0] ?? null;
+  return null;
+}
+
+function processSourceFile(
+  morphFile: SourceFile,
+  componentMap: Map<string, ComponentDoc>,
+): void {
+  const filePath = morphFile.getFilePath();
+
+  const folder = folderFromPath(filePath);
+  if (!folder || folder === 'unknown') return;
+
+  const pkgName = pkgNameForPath(filePath);
+
+  // Reparse source text with workspace TypeScript so tsquery's TS version matches.
+  // ts-morph bundles its own TS version which conflicts with tsquery's TS dependency.
+  const tsSourceFile = tsquery.ast(
+    morphFile.getFullText(),
+    morphFile.getFilePath(),
+    ts.ScriptKind.TS,
+  );
+
+  // ── Extract directives via ts-query ──────────────────────────────────────
+  const directiveClasses = tsquery<ts.ClassDeclaration>(tsSourceFile, DIRECTIVE_CLASS_SELECTOR);
+
+  for (const cls of directiveClasses) {
+    // Only exported classes
+    const isExported = cls.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
+    if (!isExported) continue;
+
+    const decoratorArg = getDecoratorArg(cls);
+    const selector = extractDecoratorProp(decoratorArg, 'selector');
+    if (!selector) continue;
+
+    const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
+    const className = cls.name?.text ?? '';
+    const description = getJsDocDescription(cls);
+    const examples = getJsDocExamples(cls);
+    const exampleFiles = getExampleFiles(cls, filePath);
+    const inputs = extractInputs(cls, tsSourceFile);
+    const categoryPath = getCategoryPath(cls);
+
+    if (!componentMap.has(folder)) {
+      componentMap.set(folder, {
+        name: folder.charAt(0).toUpperCase() + folder.slice(1),
+        slug: folder,
+        categoryPath: [],
+        category: getCategory(folder),
+        description: '',
+        directives: [],
+        tokens: [],
+        typeAliases: [],
+      });
+    }
+
+    const comp = componentMap.get(folder)!;
+    if (!comp.description && description) comp.description = description;
+
+    // Prepend package name to directive categoryPath, then propagate to component
+    const fullPath = categoryPath.length ? [pkgName, ...categoryPath] : [];
+    if (!comp.categoryPath.length && fullPath.length) {
+      comp.categoryPath = fullPath;
+    }
+
+    const directiveWithPkg: DirectiveDef = {
+      className,
+      selector,
+      ...(exportAs ? { exportAs } : {}),
+      categoryPath: fullPath,
+      description,
+      inputs,
+      examples,
+      exampleFiles,
+    };
+    comp.directives.push(directiveWithPkg);
+  }
+
+  // ── Extract InjectionTokens and type aliases ──────────────────────────────
+  if (componentMap.has(folder)) {
+    const comp = componentMap.get(folder)!;
+    comp.tokens.push(...extractTokens(tsSourceFile));
+    comp.typeAliases.push(...extractTypeAliases(tsSourceFile));
+  }
+}
+
 // ── Main extraction ───────────────────────────────────────────────────────────
 
 let _cached: DocsManifest | null = null;
 
 /**
- * Extracts the full docs manifest from `@kouji-ui/core` source files.
+ * Extracts the full docs manifest from `@kouji-ui/core` and `@kouji-ui/ui` source files.
  * Uses ts-morph for project/tsconfig resolution and ts-query for AST querying.
  * Result is cached in memory after the first call.
  *
@@ -225,10 +358,9 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
   const componentMap = new Map<string, ComponentDoc>();
 
+  // ── Pass 1: packages/core ─────────────────────────────────────────────────
   for (const morphFile of project.getSourceFiles()) {
     const filePath = morphFile.getFilePath();
-
-    // Skip non-source files
     if (
       filePath.includes('.spec.') ||
       filePath.endsWith('index.ts') ||
@@ -237,92 +369,38 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       !filePath.includes('/packages/core/src/')
     ) continue;
 
-    // Determine component folder from path
-    const parts = filePath.split('/packages/core/src/')[1]?.split('/') ?? [];
-    const folder = parts[0] ?? 'unknown';
-    if (folder === 'unknown') continue;
+    processSourceFile(morphFile, componentMap);
+  }
 
-    // Reparse source text with workspace TypeScript so tsquery's TS version matches.
-    // ts-morph bundles its own TS version which conflicts with tsquery's TS dependency.
-    const tsSourceFile = tsquery.ast(
-      morphFile.getFullText(),
-      morphFile.getFilePath(),
-      ts.ScriptKind.TS,
-    );
+  // ── Pass 2: packages/ui ───────────────────────────────────────────────────
+  project.addSourceFilesAtPaths([join(root, 'packages/ui/src/**/*.ts')]);
 
-    // ── Extract directives via ts-query ────────────────────────────────────
-    const directiveClasses = tsquery<ts.ClassDeclaration>(tsSourceFile, DIRECTIVE_CLASS_SELECTOR);
+  for (const morphFile of project.getSourceFiles()) {
+    const filePath = morphFile.getFilePath();
+    if (
+      !filePath.includes('/packages/ui/src/') ||
+      filePath.includes('.spec.') ||
+      filePath.endsWith('index.ts') ||
+      filePath.endsWith('public-api.ts')
+    ) continue;
 
-    for (const cls of directiveClasses) {
-      // Only exported classes
-      const isExported = cls.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
-      if (!isExported) continue;
-
-      const decoratorArg = getDecoratorArg(cls);
-      const selector = extractDecoratorProp(decoratorArg, 'selector');
-      if (!selector) continue;
-
-      const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
-      const className = cls.name?.text ?? '';
-      const description = getJsDocDescription(cls);
-      const examples = getJsDocExamples(cls);
-      const inputs = extractInputs(cls, tsSourceFile);
-      const categoryPath = getCategoryPath(cls);
-
-      const directive: DirectiveDef = {
-        className,
-        selector,
-        ...(exportAs ? { exportAs } : {}),
-        categoryPath,
-        description,
-        inputs,
-        examples,
-      };
-
-      if (!componentMap.has(folder)) {
-        componentMap.set(folder, {
-          name: folder.charAt(0).toUpperCase() + folder.slice(1),
-          slug: folder,
-          categoryPath: [],
-          category: getCategory(folder),
-          description: '',
-          directives: [],
-          tokens: [],
-          typeAliases: [],
-        });
-      }
-
-      const comp = componentMap.get(folder)!;
-      if (!comp.description && description) comp.description = description;
-      // Use first directive's @category path for the component
-      if (!comp.categoryPath.length && categoryPath.length) {
-        comp.categoryPath = categoryPath;
-      }
-      comp.directives.push(directive);
-    }
-
-    // ── Extract InjectionTokens and type aliases ────────────────────────────
-    if (componentMap.has(folder)) {
-      const comp = componentMap.get(folder)!;
-      comp.tokens.push(...extractTokens(tsSourceFile));
-      comp.typeAliases.push(...extractTypeAliases(tsSourceFile));
-    }
+    processSourceFile(morphFile, componentMap);
   }
 
   // Fill in categoryPath for components that had no @category tag
   const categoryFallbacks: Record<string, string[]> = {
-    foundation: ['Foundation'],
-    overlay: ['Overlay'],
-    data: ['Data'],
-    charts: ['Charts'],
-    a11y: ['Accessibility'],
-    primitives: ['Primitives'],
+    foundation: ['Core', 'Foundation'],
+    overlay: ['Core', 'Overlay'],
+    data: ['Core', 'Data'],
+    charts: ['Core', 'Charts'],
+    a11y: ['Core', 'Accessibility'],
+    primitives: ['Core', 'Primitives'],
   };
 
   for (const comp of componentMap.values()) {
     if (!comp.categoryPath.length) {
       comp.categoryPath = [
-        ...(categoryFallbacks[comp.category] ?? ['Foundation']),
+        ...(categoryFallbacks[comp.category] ?? ['Core', 'Foundation']),
         comp.name,
       ];
     }
