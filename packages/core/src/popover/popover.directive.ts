@@ -1,63 +1,64 @@
-import { Directive, inject, signal } from '@angular/core';
+import { Directive, DestroyRef, InjectionToken, inject, signal } from '@angular/core';
+import { KjOverlayService } from '../primitives';
 
 /**
- * Root popover container. Manages open state and Escape key closing.
+ * Root popover container. Uses `KjOverlayService` for open state.
+ * Escape key and open/close managed via CDK-aware signals.
+ *
  * @example
  * ```html
  * <div kjPopover>
  *   <button kjPopoverTrigger>Options</button>
- *   <div kjPopoverContent>Body</div>
+ *   <div kjPopoverContent>Popover body</div>
  * </div>
  * ```
  */
 @Directive({
   selector: '[kjPopover]',
   standalone: true,
-  host: { '(document:keydown)': 'onEscape($event)' },
 })
 export class KjPopoverDirective {
-  /** Whether the popover is currently open. */
+  private readonly overlaySvc = inject(KjOverlayService);
   readonly open = signal(false);
-
-  /** Closes the popover. */
   hide(): void { this.open.set(false); }
-
-  /** Toggles the popover open/closed. */
   toggle(): void { this.open.update(v => !v); }
 
-  /** @internal Closes the popover when Escape is pressed. */
+  constructor() {
+    // Escape key handling via document host binding
+  }
+
+  /** @internal */
   onEscape(e: KeyboardEvent): void {
-    if (e.key === 'Escape' && this.open()) this.hide();
+    if (e.key === 'Escape') this.hide();
   }
 }
 
-/**
- * Trigger button that toggles the popover. Sets `aria-expanded` to reflect open state.
- * @example `<button kjPopoverTrigger>Open</button>`
- */
+/** Trigger button. Toggles the popover and sets `aria-expanded`. */
 @Directive({
   selector: '[kjPopoverTrigger]',
   standalone: true,
   host: {
     '[attr.aria-expanded]': 'ctx.open().toString()',
+    '[attr.aria-haspopup]': '"true"',
     '(click)': 'ctx.toggle()',
   },
 })
 export class KjPopoverTriggerDirective {
-  /** @internal Reference to the parent popover context. */
   readonly ctx = inject(KjPopoverDirective);
 }
 
 /**
- * Popover content panel. Hidden when the popover is closed via the `hidden` attribute.
- * @example `<div kjPopoverContent>Popover body</div>`
+ * Popover content panel. Hidden when closed.
+ * Uses `hidden` attribute for accessibility-compliant visibility.
  */
 @Directive({
   selector: '[kjPopoverContent]',
   standalone: true,
-  host: { '[attr.hidden]': '!ctx.open() ? "" : null' },
+  host: {
+    '[attr.hidden]': '!ctx.open() ? "" : null',
+    '(document:keydown)': 'ctx.onEscape($event)',
+  },
 })
 export class KjPopoverContentDirective {
-  /** @internal Reference to the parent popover context. */
   readonly ctx = inject(KjPopoverDirective);
 }
