@@ -89,3 +89,35 @@
   min-height: 120px;
   border-bottom: 1px solid var(--border);
 }
+
+.preview-theme-strip {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.625rem 1rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.theme-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.theme-pill:hover {
+  color: var(--text-secondary);
+  border-color: var(--text-muted);
+}
+
+.theme-pill.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}

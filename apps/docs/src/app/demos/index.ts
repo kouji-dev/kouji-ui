@@ -15,12 +15,12 @@ export function provideDemos() {
     useFactory: () => {
       const registry = inject(DemoRegistryService);
       return () => {
-        registry.register('button', ButtonDemoComponent);
-        registry.register('input', InputDemoComponent);
-        registry.register('checkbox', CheckboxDemoComponent);
-        registry.register('tabs', TabsDemoComponent);
-        registry.register('badge', BadgeDemoComponent);
-        registry.register('toggle', ToggleDemoComponent);
+        registry.register('button',   { default: ButtonDemoComponent });
+        registry.register('input',    { default: InputDemoComponent });
+        registry.register('checkbox', { default: CheckboxDemoComponent });
+        registry.register('tabs',     { default: TabsDemoComponent });
+        registry.register('badge',    { default: BadgeDemoComponent });
+        registry.register('toggle',   { default: ToggleDemoComponent });
       };
     },
     multi: true,

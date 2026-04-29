@@ -2,6 +2,7 @@ import { Component, Type, computed, inject, input, signal } from '@angular/core'
 import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
 import { DemoRegistryService } from '../../demos/demo-registry';
+import { PreviewTheme, PREVIEW_THEMES } from '../../demos/preview-theme';
 
 export interface CodeExample {
   lang: 'ts' | 'html' | 'css';
@@ -28,9 +29,14 @@ export class CodePreviewComponent {
 
   private readonly registry = inject(DemoRegistryService);
 
+  protected readonly activeTheme = signal<PreviewTheme>('default');
+  protected readonly previewThemes = PREVIEW_THEMES;
+
   readonly demoComponent = computed((): Type<unknown> | null =>
-    this.slug() ? this.registry.get(this.slug()) : null
+    this.slug() ? this.registry.get(this.slug(), this.activeTheme()) : null
   );
+
+  protected readonly hasDemo = computed(() => this.slug() ? this.registry.hasDemo(this.slug()) : false);
 
   protected readonly activeIndex = signal(0);
   protected readonly copied = signal(false);
