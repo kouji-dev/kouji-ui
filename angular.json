@@ -5,6 +5,5 @@
     "packageManager": "pnpm"
   },
   "newProjectRoot": "projects",
-  "projects": {
-  }
+  "projects": {}
 }
