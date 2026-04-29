@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-04-29T21:21:52.046Z",
+  "generatedAt": "2026-04-29T21:29:16.926Z",
   "components": [
     {
       "name": "Button",
       "slug": "button",
       "categoryPath": [
         "Core",
-        "Inputs",
+        "Base",
         "Button"
       ],
       "category": "inputs",
@@ -17,7 +17,7 @@
           "selector": "[kjButton]",
           "categoryPath": [
             "Core",
-            "Inputs",
+            "Base",
             "Button"
           ],
           "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",

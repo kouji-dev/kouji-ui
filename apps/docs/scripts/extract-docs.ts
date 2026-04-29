@@ -42,7 +42,7 @@ interface ComponentDoc {
   name: string;
   slug: string;
   categoryPath: string[];
-  category: 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
+  category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
 }

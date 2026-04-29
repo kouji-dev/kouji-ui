@@ -55,7 +55,7 @@ export interface ComponentDoc {
   name: string;
   slug: string;
   categoryPath: string[];
-  category: 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
+  category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -71,7 +71,7 @@ export interface DocsManifest {
 
 const CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
   // Inputs
-  button: 'inputs', input: 'inputs', checkbox: 'inputs', radio: 'inputs',
+  button: 'base', input: 'inputs', checkbox: 'inputs', radio: 'inputs',
   toggle: 'inputs', select: 'inputs', form: 'inputs',
   // Navigation
   tabs: 'navigation', accordion: 'navigation', menu: 'navigation',
@@ -673,6 +673,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
   // Fill in categoryPath for components that had no @category tag
   const categoryFallbacks: Record<string, string[]> = {
+    base: ['Core', 'Base'],
     inputs: ['Core', 'Inputs'],
     navigation: ['Core', 'Navigation'],
     overlays: ['Core', 'Overlays'],
