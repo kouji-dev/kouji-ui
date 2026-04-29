@@ -1,5 +1,8 @@
-import { InjectionToken, Signal } from '@angular/core';
-export interface KjAccordionContext { openItems: Signal<Set<string>>; toggle: (value: string) => void; }
-export const KJ_ACCORDION = new InjectionToken<KjAccordionContext>('KjAccordion');
-export interface KjAccordionItemContext { open: Signal<boolean>; itemValue: Signal<string>; }
-export const KJ_ACCORDION_ITEM = new InjectionToken<KjAccordionItemContext>('KjAccordionItem');
+import { InjectionToken } from '@angular/core';
+import { CdkAccordion, CdkAccordionItem } from '@angular/cdk/accordion';
+
+/** Injection token for the root accordion directive. */
+export const KJ_ACCORDION = new InjectionToken<CdkAccordion>('KjAccordion');
+
+/** Injection token for an individual accordion item directive. */
+export const KJ_ACCORDION_ITEM = new InjectionToken<CdkAccordionItem>('KjAccordionItem');

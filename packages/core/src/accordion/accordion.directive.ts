@@ -1,47 +1,103 @@
-import { Directive, computed, inject, input, signal } from '@angular/core';
-import { KJ_ACCORDION, KJ_ACCORDION_ITEM, KjAccordionContext, KjAccordionItemContext } from './accordion.context';
+import { Directive, effect, inject, input } from '@angular/core';
+import { CDK_ACCORDION, CdkAccordion, CdkAccordionItem } from '@angular/cdk/accordion';
+import { KJ_ACCORDION, KJ_ACCORDION_ITEM } from './accordion.context';
 
 /**
- * Root accordion container. Manages open items.
- * @example `<div kjAccordion [kjAccordionType]="'single'">...</div>`
+ * Root accordion container. Extends CDK `CdkAccordion` for multi/single item management.
+ * Supports single or multiple expanded items.
+ *
+ * @example
+ * ```html
+ * <div kjAccordion [kjAccordionType]="'multiple'">
+ *   <div kjAccordionItem [kjItemValue]="'item-1'">...</div>
+ * </div>
+ * ```
  */
-@Directive({ selector: '[kjAccordion]', standalone: true, providers: [{ provide: KJ_ACCORDION, useExisting: KjAccordionDirective }] })
-export class KjAccordionDirective implements KjAccordionContext {
+@Directive({
+  selector: '[kjAccordion]',
+  standalone: true,
+  providers: [
+    { provide: KJ_ACCORDION, useExisting: KjAccordionDirective },
+    { provide: CDK_ACCORDION, useExisting: KjAccordionDirective },
+  ],
+})
+export class KjAccordionDirective extends CdkAccordion {
+  /** Whether multiple items can be open simultaneously. Defaults to `'single'`. */
   kjAccordionType = input<'single' | 'multiple'>('single');
-  private readonly _openItems = signal<Set<string>>(new Set());
-  readonly openItems = this._openItems.asReadonly();
-  toggle(value: string): void {
-    this._openItems.update(items => {
-      const next = new Set(items);
-      if (next.has(value)) { next.delete(value); } else { if (this.kjAccordionType() === 'single') next.clear(); next.add(value); }
-      return next;
+
+  constructor() {
+    super();
+    effect(() => {
+      this.multi = this.kjAccordionType() === 'multiple';
     });
   }
 }
 
-/** Individual accordion item. */
-@Directive({ selector: '[kjAccordionItem]', standalone: true, providers: [{ provide: KJ_ACCORDION_ITEM, useExisting: KjAccordionItemDirective }] })
-export class KjAccordionItemDirective implements KjAccordionItemContext {
-  private readonly accordion = inject(KJ_ACCORDION);
+/**
+ * Individual accordion item. Extends CDK `CdkAccordionItem`.
+ * Manages expanded state via CDK's `UniqueSelectionDispatcher` for single-mode coordination.
+ *
+ * @example
+ * ```html
+ * <div kjAccordionItem [kjItemValue]="'section-1'">
+ *   <button kjAccordionTrigger>Section 1</button>
+ *   <div kjAccordionContent>Content</div>
+ * </div>
+ * ```
+ */
+@Directive({
+  selector: '[kjAccordionItem]',
+  standalone: true,
+  providers: [{ provide: KJ_ACCORDION_ITEM, useExisting: KjAccordionItemDirective }],
+})
+export class KjAccordionItemDirective extends CdkAccordionItem {
+  /** The unique value identifying this item within the accordion. */
   kjItemValue = input.required<string>();
+
+  /** Alias for `kjItemValue` signal, for consistent context access. */
   readonly itemValue = this.kjItemValue;
-  readonly open = computed(() => this.accordion.openItems().has(this.kjItemValue()));
 }
 
 /**
- * Trigger button for accordion item.
- * @example `<button kjAccordionTrigger>Section</button>`
+ * Trigger button for an accordion item. Controls expand/collapse via CDK `toggle()`.
+ * Sets `aria-expanded` and `data-open` attributes based on the item's expanded state.
+ *
+ * @example
+ * ```html
+ * <button kjAccordionTrigger>Section title</button>
+ * ```
  */
-@Directive({ selector: '[kjAccordionTrigger]', standalone: true, host: { '[attr.aria-expanded]': 'item.open().toString()', '[attr.data-open]': 'item.open() ? "" : null', '(click)': 'toggle()' } })
+@Directive({
+  selector: '[kjAccordionTrigger]',
+  standalone: true,
+  host: {
+    '[attr.aria-expanded]': 'item.expanded.toString()',
+    '[attr.data-open]': 'item.expanded ? "" : null',
+    '(click)': 'item.toggle()',
+  },
+})
 export class KjAccordionTriggerDirective {
-  readonly item = inject(KJ_ACCORDION_ITEM);
-  private readonly accordion = inject(KJ_ACCORDION);
-  toggle(): void { this.accordion.toggle(this.item.itemValue()); }
+  /** The parent accordion item context. */
+  readonly item = inject(KJ_ACCORDION_ITEM) as KjAccordionItemDirective;
 }
 
 /**
- * Accordion content panel. Hidden when collapsed.
- * @example `<div kjAccordionContent>Content</div>`
+ * Accordion content panel. Hidden when the parent item is collapsed.
+ * Uses the `hidden` attribute for accessibility-compliant visibility.
+ *
+ * @example
+ * ```html
+ * <div kjAccordionContent>Panel content</div>
+ * ```
  */
-@Directive({ selector: '[kjAccordionContent]', standalone: true, host: { '[attr.hidden]': '!item.open() ? "" : null' } })
-export class KjAccordionContentDirective { readonly item = inject(KJ_ACCORDION_ITEM); }
+@Directive({
+  selector: '[kjAccordionContent]',
+  standalone: true,
+  host: {
+    '[attr.hidden]': '!item.expanded ? "" : null',
+  },
+})
+export class KjAccordionContentDirective {
+  /** The parent accordion item context. */
+  readonly item = inject(KJ_ACCORDION_ITEM) as KjAccordionItemDirective;
+}
