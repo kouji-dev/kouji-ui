@@ -1,6 +1,5 @@
 import { Directive, model } from '@angular/core';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 
 /**
  * Adds checkbox semantics to any element. Manages `aria-checked` state.

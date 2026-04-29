@@ -1,7 +1,6 @@
 import { Directive, computed, inject, input, model } from '@angular/core';
 import { KJ_RADIO_GROUP, KjRadioContext } from './radio.context';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 
 /**
  * Container for a group of radio buttons.

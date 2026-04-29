@@ -1,7 +1,6 @@
 import { Directive, inject, input, model, signal } from '@angular/core';
 import { CdkListbox, CdkOption } from '@angular/cdk/listbox';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 import { KJ_SELECT } from './select.context';
 
 /**

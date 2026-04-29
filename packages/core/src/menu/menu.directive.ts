@@ -1,7 +1,6 @@
 import { Directive } from '@angular/core';
 import { CdkMenu, CdkMenuTrigger, CdkMenuItem } from '@angular/cdk/menu';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 
 /**
  * Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`.

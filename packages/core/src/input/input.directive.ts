@@ -1,6 +1,5 @@
 import { Directive, input } from '@angular/core';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 
 /**
  * Enhances a native `<input>` with disabled and invalid state via ARIA and data attributes.

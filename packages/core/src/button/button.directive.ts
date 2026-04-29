@@ -1,6 +1,5 @@
 import { Directive, input } from '@angular/core';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 
 export type KjButtonVariant = 'default' | 'destructive' | 'outline' | 'ghost' | 'link';
 export type KjButtonSize = 'sm' | 'md' | 'lg' | 'icon';

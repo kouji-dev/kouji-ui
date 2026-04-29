@@ -1,6 +1,5 @@
 import { Directive, model } from '@angular/core';
-import { KjDisabledDirective } from '../primitives/disabled.directive';
-import { KjFocusRingDirective } from '../primitives/focus-ring.directive';
+import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
 
 /**
  * Adds toggle (press) behavior to a button. Manages `aria-pressed`.
