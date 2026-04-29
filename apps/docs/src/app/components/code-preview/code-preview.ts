@@ -1,8 +1,8 @@
 import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
-import { DemoRegistryService } from '../../demos/demo-registry';
-import { PreviewTheme, PREVIEW_THEMES } from '../../demos/preview-theme';
+import { DynamicComponentService } from '../../services/dynamic-component.service';
+import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
 
 export interface CodeExample {
   lang: 'ts' | 'html' | 'css';
@@ -27,39 +27,10 @@ export class CodePreviewComponent {
   /** Component name for StackBlitz project title. */
   componentName = input<string>('Example');
 
-  /** Demo slug to show in the Preview tab. */
-  slug = input<string>('');
-
-  private readonly registry = inject(DemoRegistryService);
+  private readonly dynamicSvc = inject(DynamicComponentService);
 
   protected readonly activeTheme = signal<PreviewTheme>('default');
   protected readonly previewThemes = PREVIEW_THEMES;
-
-  readonly demoComponent = computed((): Type<unknown> | null =>
-    this.slug() ? this.registry.get(this.slug(), this.activeTheme()) : null
-  );
-
-  protected readonly hasDemo = computed(() => this.slug() ? this.registry.hasDemo(this.slug()) : false);
-
-  // Per-theme computed signals
-  protected readonly demoDefault  = computed(() => this.registry.get(this.slug(), 'default'));
-  protected readonly demoRetro    = computed(() => this.registry.get(this.slug(), 'retro'));
-  protected readonly demoFinance  = computed(() => this.registry.get(this.slug(), 'finance'));
-
-  /** Signal-based view query — resolves to the ViewContainerRef when #previewHost exists in the DOM. */
-  private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', { read: ViewContainerRef });
-
-  constructor() {
-    // Runs whenever demoComponent() OR previewHost() changes (including when it first becomes available).
-    // viewChild() returns undefined until the @if(hasDemo()) block renders the ng-container.
-    effect(() => {
-      const vcr = this.previewHost();
-      const comp = this.demoComponent();
-      if (!vcr) return;
-      vcr.clear();
-      if (comp) vcr.createComponent(comp);
-    });
-  }
 
   /** Whether the code editor panel is visible. Hidden by default. */
   protected readonly showCode = signal(false);
@@ -89,6 +60,36 @@ export class CodePreviewComponent {
     const list = this.activeFiles();
     return list[this.activeIndex()] ?? null;
   });
+
+  // demoComponent: try dynamic creation from activeFiles source
+  readonly demoComponent = computed((): Type<unknown> | null => {
+    const files = this.activeFiles();
+    if (!files.length) return null;
+    // Use the first file's content to create a dynamic component
+    const source = files[0]?.content;
+    if (!source) return null;
+    return this.dynamicSvc.create(source);
+  });
+
+  protected readonly hasDemo = computed(() => {
+    const files = this.activeFiles();
+    return files.length > 0 && !!this.dynamicSvc.create(files[0]?.content ?? '');
+  });
+
+  /** Signal-based view query — resolves to the ViewContainerRef when #previewHost exists in the DOM. */
+  private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', { read: ViewContainerRef });
+
+  constructor() {
+    // Runs whenever demoComponent() OR previewHost() changes (including when it first becomes available).
+    // viewChild() returns undefined until the @if(hasDemo()) block renders the ng-container.
+    effect(() => {
+      const vcr = this.previewHost();
+      const comp = this.demoComponent();
+      if (!vcr) return;
+      vcr.clear();
+      if (comp) vcr.createComponent(comp);
+    });
+  }
 
   protected setActive(i: number): void {
     this.activeIndex.set(i);
