@@ -1,5 +1,7 @@
-import { Injectable, signal } from '@angular/core';
-import manifest from '../../assets/docs-manifest.json';
+import { Injectable, TransferState, inject, makeStateKey, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { map, of } from 'rxjs';
 
 export interface InputDef {
   name: string;
@@ -30,29 +32,63 @@ export interface DocsManifest {
   components: ComponentDoc[];
 }
 
-const MANIFEST = manifest as DocsManifest;
+const MANIFEST_KEY = makeStateKey<DocsManifest>('docs-manifest');
 
 /**
- * Provides access to the docs manifest generated at build time by ts-morph.
- * Data is imported statically — no HTTP requests, no async loading.
+ * Provides access to docs data.
+ * On the server: fetches from /api/docs/manifest and stores in TransferState.
+ * On the browser: reads from TransferState (embedded in prerendered HTML) — no HTTP request.
  */
 @Injectable({ providedIn: 'root' })
 export class DocsService {
-  /** All components from the manifest. */
-  readonly components = signal<ComponentDoc[]>(MANIFEST.components);
+  private readonly http = inject(HttpClient);
+  private readonly transferState = inject(TransferState);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  /** Get a single component by slug. Returns null if not found. */
+  private _manifest: DocsManifest | null = null;
+
+  readonly components = signal<ComponentDoc[]>([]);
+
+  constructor() {
+    // If prerendered, TransferState has the manifest embedded in the HTML
+    if (this.transferState.hasKey(MANIFEST_KEY)) {
+      this._manifest = this.transferState.get(MANIFEST_KEY, null);
+      if (this._manifest) {
+        this.components.set(this._manifest.components);
+      }
+    }
+  }
+
+  /** Load manifest. Uses TransferState on browser, fetches from API on server. */
+  loadManifest() {
+    if (this._manifest) return of(this._manifest);
+
+    return this.http.get<DocsManifest>('/api/docs/manifest').pipe(
+      map(manifest => {
+        this._manifest = manifest;
+        this.components.set(manifest.components);
+        // Store in TransferState so browser hydration doesn't re-fetch
+        if (!isPlatformBrowser(this.platformId)) {
+          this.transferState.set(MANIFEST_KEY, manifest);
+        }
+        return manifest;
+      })
+    );
+  }
+
+  /** Get a component by slug from the cached manifest. */
   getComponent(slug: string): ComponentDoc | null {
-    return MANIFEST.components.find(c => c.slug === slug) ?? null;
+    return this._manifest?.components.find(c => c.slug === slug) ?? null;
   }
 
-  /** Get all components for a given category. */
+  /** Get components by category. */
   byCategory(category: ComponentDoc['category']): ComponentDoc[] {
-    return MANIFEST.components.filter(c => c.category === category);
+    return this._manifest?.components.filter(c => c.category === category) ?? [];
   }
 
-  /** All component slugs (for route generation). */
+  /** All slugs — used by getPrerenderParams at build time. */
   static getSlugs(): string[] {
-    return (manifest as DocsManifest).components.map(c => c.slug);
+    // This is only called server-side via getDocsSlugs() now
+    return [];
   }
 }

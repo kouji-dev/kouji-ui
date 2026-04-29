@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DocsService, ComponentDoc } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
@@ -10,10 +10,15 @@ import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar
   templateUrl: './docs-index.html',
   styleUrl: './docs-index.css',
 })
-export class DocsIndexComponent {
-  private readonly docs = inject(DocsService);
-  protected readonly components = this.docs.components;
+export class DocsIndexComponent implements OnInit {
+  protected readonly docs = inject(DocsService);
   protected readonly categories = ['foundation', 'overlay', 'data', 'charts', 'a11y'] as const;
+  /** Alias for template — keeps template unchanged. */
+  protected readonly components = this.docs.components;
+
+  ngOnInit(): void {
+    this.docs.loadManifest().subscribe();
+  }
 
   protected byCategory(cat: string): ComponentDoc[] {
     return this.docs.byCategory(cat as ComponentDoc['category']);

@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs/operators';
-import { DocsService, ComponentDoc } from '../../services/docs.service';
+import { switchMap, map } from 'rxjs/operators';
+import { DocsService } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 
 @Component({
@@ -18,7 +18,11 @@ export class ComponentDocComponent {
 
   protected readonly component = toSignal(
     this.route.paramMap.pipe(
-      map(params => this.docs.getComponent(params.get('slug') ?? ''))
+      switchMap(params =>
+        this.docs.loadManifest().pipe(
+          map(() => this.docs.getComponent(params.get('slug') ?? ''))
+        )
+      )
     )
   );
 }

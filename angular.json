@@ -104,7 +104,12 @@
             },
             "ssr": {
               "entry": "apps/docs/src/server.ts"
-            }
+            },
+            "externalDependencies": [
+              "ts-morph",
+              "typescript",
+              "@ts-morph/common"
+            ]
           },
           "configurations": {
             "production": {
