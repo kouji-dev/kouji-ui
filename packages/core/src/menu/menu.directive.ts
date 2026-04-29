@@ -62,7 +62,7 @@ export class KjMenuDirective {}
   standalone: true,
   hostDirectives: [
     { directive: CdkMenuItem },
-    { directive: KjDisabledDirective, inputs: ['disabled: kjDisabled'] },
+    { directive: KjDisabledDirective, inputs: ['kjDisabled'] },
     KjFocusRingDirective,
   ],
 })

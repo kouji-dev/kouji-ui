@@ -51,7 +51,7 @@ export class KjTableDirective<TData extends RowData = unknown> {
   private readonly _sorting = signal<SortingState>([]);
 
   /** The TanStack table instance. Access rows, headers, and state here. */
-  readonly table = createAngularTable<TData>(() => ({
+  readonly table: () => Table<TData> = createAngularTable<TData>(() => ({
     data: this.kjTableData(),
     columns: this.kjTable(),
     state: { sorting: this._sorting() },
