@@ -18,6 +18,10 @@
 
 .toc-col {
   border-left: 1px solid #1a1a1a;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
   background: #080808;
 }
 

@@ -3,7 +3,7 @@
     <kj-docs-sidebar />
   </aside>
 
-  <main class="gs-main">
+  <main class="gs-main" kjPageToc #pageToc="kjPageToc">
     <header class="gs-header">
       <span class="tag">Guide</span>
       <h1>Getting Started</h1>
@@ -12,7 +12,7 @@
 
     <!-- Installation -->
     <section id="installation" class="section">
-      <h2>Installation</h2>
+      <h2 id="installation">Installation</h2>
       <p>Install the headless core for custom styling:</p>
       <pre class="code"><code><span class="prompt">$</span> pnpm add @kouji-ui/core</code></pre>
       <p>Or install the Tailwind v4 styled implementation:</p>
@@ -25,7 +25,7 @@
 
     <!-- Quick start -->
     <section id="quick-start" class="section">
-      <h2>Quick start</h2>
+      <h2 id="quick-start">Quick start</h2>
       <p>Import directive directly — no NgModules needed.</p>
       <pre class="code"><code><span class="keyword">import</span> &#123; KjButtonDirective &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core'</span>;
 
@@ -42,7 +42,7 @@
 
     <!-- Headless usage -->
     <section id="headless" class="section">
-      <h2>Headless usage</h2>
+      <h2 id="headless">Headless usage</h2>
       <p>The core package ships zero CSS. Directives add ARIA attributes and <code>data-*</code> attributes you can target in your stylesheets:</p>
       <pre class="code"><code><span class="comment">/* Style via data attributes — works with any CSS approach */</span>
 [kjButton] &#123;
@@ -62,7 +62,7 @@
 
     <!-- Tailwind v4 -->
     <section id="tailwind" class="section">
-      <h2>With Tailwind v4</h2>
+      <h2 id="tailwind">With Tailwind v4</h2>
       <p>Import <code>@kouji-ui/ui</code>'s stylesheet to get the pre-built Tailwind v4 component styles:</p>
       <pre class="code"><code><span class="comment">/* In your global styles.css */</span>
 <span class="keyword">@import</span> <span class="string">"@kouji-ui/ui/styles/kj.css"</span>;</code></pre>
@@ -74,7 +74,7 @@
 
     <!-- Angular forms -->
     <section id="forms" class="section">
-      <h2>Angular forms</h2>
+      <h2 id="forms">Angular forms</h2>
       <p>Form controls compose <code>KjFormControlDirective</code> via <code>hostDirectives</code>, so they work with reactive forms out of the box:</p>
       <pre class="code"><code><span class="keyword">import</span> &#123; KjInputDirective &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core'</span>;
 <span class="keyword">import</span> &#123; ReactiveFormsModule, FormControl &#125; <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
@@ -96,7 +96,7 @@
 
     <!-- Accessibility -->
     <section id="accessibility" class="section">
-      <h2>Accessibility</h2>
+      <h2 id="accessibility">Accessibility</h2>
       <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are handled by the CDK primitives under the hood.</p>
       <p>Use the a11y utilities to enhance your own components:</p>
       <pre class="code"><code><span class="keyword">import</span> &#123;
@@ -121,5 +121,8 @@
       </div>
     </div>
   </main>
-  <aside class="toc-col"></aside>
+
+  <aside class="toc-col">
+    <kj-page-toc [toc]="pageToc" />
+  </aside>
 </div>
