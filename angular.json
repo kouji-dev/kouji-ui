@@ -4,6 +4,6 @@
   "cli": {
     "packageManager": "pnpm"
   },
-  "newProjectRoot": "projects",
+  "newProjectRoot": "packages",
   "projects": {}
 }

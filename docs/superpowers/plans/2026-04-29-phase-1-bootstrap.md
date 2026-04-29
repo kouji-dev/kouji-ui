@@ -694,7 +694,7 @@ git commit -m "chore: set up Playwright E2E for docs app"
 ## Task 11: Add ESLint and Prettier
 
 **Files:**
-- Create: `.prettierrc.json`
+- Update: `.prettierrc`
 - Create: `.prettierignore`
 - Modify: `package.json` (root) — add lint scripts
 - Modify: `angular.json` — linting already configured by Angular CLI
@@ -713,9 +713,9 @@ Expected: ESLint config files updated/created, `angular.json` lint targets added
 pnpm add prettier eslint-config-prettier --save-dev --workspace-root
 ```
 
-- [ ] **Step 3: Create Prettier config**
+- [ ] **Step 3: Update Prettier config**
 
-Create `.prettierrc.json` at the repo root:
+Update `.prettierrc` at the repo root (already exists with correct content — verify it matches):
 
 ```json
 {
@@ -723,7 +723,15 @@ Create `.prettierrc.json` at the repo root:
   "trailingComma": "all",
   "printWidth": 100,
   "tabWidth": 2,
-  "semi": true
+  "semi": true,
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ]
 }
 ```
 
@@ -750,7 +758,7 @@ Add to `scripts` in root `package.json`:
 - [ ] **Step 6: Commit**
 
 ```bash
-git add .prettierrc.json .prettierignore package.json pnpm-lock.yaml
+git add .prettierrc .prettierignore package.json pnpm-lock.yaml
 git commit -m "chore: add ESLint and Prettier"
 ```
 
