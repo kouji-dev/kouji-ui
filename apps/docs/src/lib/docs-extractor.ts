@@ -165,31 +165,48 @@ function stripJsDocPrefixes(raw: string): string {
  * Strategy: read the source file text, find the last /** block before the node,
  * then regex-scan it for @doc-file entries.
  */
+/** Strip JSDoc `* ` line markers so regex can work on clean text. */
+function stripJsDocLineMarkers(text: string): string {
+  return text.split('\n').map(l => l.replace(/^\s*\*\s?/, '')).join('\n');
+}
+
+/** Extract the raw JSDoc block for a node (leading trivia between getFullStart and getStart). */
+function getJsDocBlock(node: ts.Node, sourceFile: ts.SourceFile): string | null {
+  const triviaStart = node.getFullStart();
+  const triviaEnd = node.getStart(sourceFile, false);
+  const trivia = sourceFile.text.substring(triviaStart, triviaEnd);
+  const jsStart = trivia.lastIndexOf('/**');
+  const jsEnd = trivia.lastIndexOf('*/');
+  if (jsStart === -1 || jsEnd < jsStart) return null;
+  return trivia.substring(jsStart, jsEnd + 2);
+}
+
 function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile): ExampleFile[] {
+  const jsDocText = getJsDocBlock(node, sourceFile);
+  if (!jsDocText) return [];
+
+  const cleanText = stripJsDocLineMarkers(jsDocText);
+
+  // If @doc-theme blocks exist, all @doc-file entries belong to themes — handled by getDocThemes
+  if (cleanText.includes('@doc-theme')) return [];
+
+  return parseDocFileEntries(cleanText);
+}
+
+/** Shared helper: extracts @doc-file entries from clean (stripped) JSDoc text. */
+function parseDocFileEntries(cleanText: string): ExampleFile[] {
   const results: ExampleFile[] = [];
   const validLangs = ['ts', 'html', 'css'] as const;
 
-  // The JSDoc comment is in the leading trivia: between getFullStart() and getStart().
-  // getFullStart() = start of leading trivia (whitespace + JSDoc)
-  // getStart(sf)   = first non-trivia character (decorator or 'export' keyword)
-  const triviaStart = node.getFullStart();
-  const triviaEnd = node.getStart(sourceFile, /*includeJsDocComment*/ false);
-  const leadingTrivia = sourceFile.text.substring(triviaStart, triviaEnd);
+  // Split on @doc-file at line start — avoids matching @doc-file inside code blocks
+  const parts = cleanText.split(/(?:\n|^)(?=\s*@doc-file\s+\S)/m);
 
-  // Find the last /** ... */ block in the leading trivia
-  const jsDocStart = leadingTrivia.lastIndexOf('/**');
-  const jsDocEnd = leadingTrivia.lastIndexOf('*/');
-  if (jsDocStart === -1 || jsDocEnd < jsDocStart) return results;
+  for (const part of parts) {
+    const header = part.match(/^\s*@doc-file\s+(\S+)/);
+    if (!header) continue;
+    const filename = header[1].trim();
+    const body = part.slice(header.index! + header[0].length);
 
-  const jsDocText = leadingTrivia.substring(jsDocStart, jsDocEnd + 2);
-
-  // Scan for @doc-file entries
-  const re = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=\s*@doc-file|\s*\*\/|$)/g;
-  for (const match of jsDocText.matchAll(re)) {
-    const filename = match[1].trim();
-    if (!filename) continue;
-
-    const body = match[2];
     const fenceMatch = body.match(DOC_FENCED_RE);
     if (!fenceMatch) continue;
 
@@ -211,8 +228,7 @@ function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile): ExampleFile[] {
   return results;
 }
 
-/** Regex to find @doc-theme sections in raw JSDoc text */
-const DOC_THEME_RE = /@doc-theme\s+(\w+)([\s\S]*?)(?=@doc-theme\s+\w|\s*\*\/|$)/g;
+// DOC_THEME_RE removed — using split-based parsing instead (regex lookahead fails inside code blocks)
 
 /**
  * Extracts @doc-theme sections from JSDoc text.
@@ -223,52 +239,24 @@ const DOC_THEME_RE = /@doc-theme\s+(\w+)([\s\S]*?)(?=@doc-theme\s+\w|\s*\*\/|$)/
  */
 function getDocThemes(node: ts.Node, sourceFile: ts.SourceFile): Record<string, ExampleFile[]> {
   const result: Record<string, ExampleFile[]> = {};
-  const validLangs = ['ts', 'html', 'css'] as const;
 
-  const triviaStart = node.getFullStart();
-  const triviaEnd = node.getStart(sourceFile, false);
-  const leadingTrivia = sourceFile.text.substring(triviaStart, triviaEnd);
+  const jsDocText = getJsDocBlock(node, sourceFile);
+  if (!jsDocText) return result;
 
-  const jsDocStart = leadingTrivia.lastIndexOf('/**');
-  const jsDocEnd = leadingTrivia.lastIndexOf('*/');
-  if (jsDocStart === -1 || jsDocEnd < jsDocStart) return result;
+  // Strip JSDoc `* ` markers so @doc-theme / @doc-file are on clean lines
+  const cleanText = stripJsDocLineMarkers(jsDocText);
 
-  const jsDocText = leadingTrivia.substring(jsDocStart, jsDocEnd + 2);
+  // Split on @doc-theme boundaries at line start — avoids false matches inside code blocks
+  // (e.g. @Component, @angular/core inside TypeScript examples).
+  const themeParts = cleanText.split(/(?:\n|^)(?=\s*@doc-theme\s+\w)/m);
 
-  DOC_THEME_RE.lastIndex = 0;
-  for (const themeMatch of jsDocText.matchAll(DOC_THEME_RE)) {
-    const themeName = themeMatch[1].trim();
-    const themeBody = themeMatch[2];
-    const files: ExampleFile[] = [];
-
-    // Parse @doc-file entries within this theme's body
-    const re = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=\s*@doc-file|\s*@doc-theme|\s*@\w|\s*\*\/|$)/g;
-    for (const fileMatch of themeBody.matchAll(re)) {
-      const filename = fileMatch[1].trim();
-      if (!filename) continue;
-
-      const body = fileMatch[2];
-      const fenceMatch = body.match(DOC_FENCED_RE);
-      if (!fenceMatch) continue;
-
-      const fenceLang = fenceMatch[1].toLowerCase();
-      const content = stripJsDocPrefixes(fenceMatch[2]);
-      if (!content) continue;
-
-      const ext = filename.split('.').pop()?.toLowerCase() ?? '';
-      const lang: ExampleFile['lang'] =
-        (validLangs as readonly string[]).includes(fenceLang as any)
-          ? (fenceLang as ExampleFile['lang'])
-          : (validLangs as readonly string[]).includes(ext as any)
-            ? (ext as ExampleFile['lang'])
-            : 'ts';
-
-      files.push({ lang, filename, content });
-    }
-
-    if (files.length) {
-      result[themeName] = files;
-    }
+  for (const part of themeParts) {
+    const headerMatch = part.match(/^\s*@doc-theme\s+(\w+)/);
+    if (!headerMatch) continue;
+    const themeName = headerMatch[1].trim();
+    const themeBody = part.slice(headerMatch.index! + headerMatch[0].length);
+    const files = parseDocFileEntries(themeBody);
+    if (files.length) result[themeName] = files;
   }
 
   return result;
