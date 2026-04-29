@@ -69,20 +69,6 @@ code {
   color: #b8f500; padding: 0.1em 0.4em; font-size: 0.85em;
 }
 
-.code {
-  background: #080808; border: 1px solid #1e1e1e;
-  padding: 1.5rem; overflow-x: auto; white-space: pre;
-  font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
-  line-height: 1.7; color: #666; margin: 1rem 0;
-}
-
-.code code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
-.prompt { color: #b8f500; }
-.keyword { color: #c792ea; }
-.string { color: #c3e88d; }
-.comment { color: #374151; }
-.decorator { color: #82aaff; }
-.bool { color: #f78c6c; }
 
 .callout {
   display: flex; gap: 1rem; align-items: flex-start;

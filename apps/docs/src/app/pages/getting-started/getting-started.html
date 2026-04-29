@@ -14,9 +14,9 @@
     <section id="installation" class="section">
       <h2 id="installation">Installation</h2>
       <p>Install the headless core for custom styling:</p>
-      <pre class="code"><code><span class="prompt">$</span> pnpm add @kouji-ui/core</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="installCore" lang="ts" />
       <p>Or install the Tailwind v4 styled implementation:</p>
-      <pre class="code"><code><span class="prompt">$</span> pnpm add @kouji-ui/ui</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="installUi" lang="ts" />
       <div class="callout">
         <span class="callout-icon">◈</span>
         <p><strong>Requires Angular 21.</strong> The library uses signal inputs, <code>afterNextRender</code>, and <code>inject()</code> — all Angular 21+ features.</p>
@@ -27,71 +27,30 @@
     <section id="quick-start" class="section">
       <h2 id="quick-start">Quick start</h2>
       <p>Import directive directly — no NgModules needed.</p>
-      <pre class="code"><code><span class="keyword">import</span> &#123; KjButtonDirective &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core'</span>;
-
-<span class="decorator">&#64;Component</span>(&#123;
-  standalone: <span class="bool">true</span>,
-  imports: [KjButtonDirective],
-  template: <span class="string">`
-    &lt;button kjButton [kjVariant]="'destructive'"&gt;
-      Delete
-    &lt;/button&gt;
-  `</span>,
-&#125;)</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="quickStartTs" lang="ts" />
     </section>
 
     <!-- Headless usage -->
     <section id="headless" class="section">
       <h2 id="headless">Headless usage</h2>
       <p>The core package ships zero CSS. Directives add ARIA attributes and <code>data-*</code> attributes you can target in your stylesheets:</p>
-      <pre class="code"><code><span class="comment">/* Style via data attributes — works with any CSS approach */</span>
-[kjButton] &#123;
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-&#125;
-
-[kjButton][data-variant="destructive"] &#123;
-  background: var(--color-danger);
-&#125;
-
-[kjButton][aria-disabled="true"] &#123;
-  opacity: 0.5;
-  cursor: not-allowed;
-&#125;</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="headlessStyles" lang="css" />
     </section>
 
     <!-- Tailwind v4 -->
     <section id="tailwind" class="section">
       <h2 id="tailwind">With Tailwind v4</h2>
       <p>Import <code>@kouji-ui/ui</code>'s stylesheet to get the pre-built Tailwind v4 component styles:</p>
-      <pre class="code"><code><span class="comment">/* In your global styles.css */</span>
-<span class="keyword">@import</span> <span class="string">"@kouji-ui/ui/styles/kj.css"</span>;</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="tailwindImport" lang="css" />
       <p>Then use styled components from <code>@kouji-ui/ui</code>:</p>
-      <pre class="code"><code><span class="keyword">import</span> &#123; KjButton &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/ui'</span>;
-
-<span class="comment">// KjButton is a pre-styled Angular component wrapping KjButtonDirective</span></code></pre>
+      <kj-code-editor [showHeader]="false" [code]="tailwindUsage" lang="ts" />
     </section>
 
     <!-- Angular forms -->
     <section id="forms" class="section">
       <h2 id="forms">Angular forms</h2>
       <p>Form controls compose <code>KjFormControlDirective</code> via <code>hostDirectives</code>, so they work with reactive forms out of the box:</p>
-      <pre class="code"><code><span class="keyword">import</span> &#123; KjInputDirective &#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core'</span>;
-<span class="keyword">import</span> &#123; ReactiveFormsModule, FormControl &#125; <span class="keyword">from</span> <span class="string">'@angular/forms'</span>;
-
-<span class="decorator">&#64;Component</span>(&#123;
-  standalone: <span class="bool">true</span>,
-  imports: [KjInputDirective, ReactiveFormsModule],
-  template: <span class="string">`
-    &lt;input kjInput [formControl]="email" type="email" /&gt;
-    &lt;span *ngIf="email.invalid &amp;&amp; email.touched"&gt;
-      Invalid email
-    &lt;/span&gt;
-  `</span>,
-&#125;)
-<span class="keyword">export class</span> MyForm &#123;
-  email = <span class="keyword">new</span> FormControl(<span class="string">''</span>);
-&#125;</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="formsTs" lang="ts" />
     </section>
 
     <!-- Accessibility -->
@@ -99,12 +58,7 @@
       <h2 id="accessibility">Accessibility</h2>
       <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are handled by the CDK primitives under the hood.</p>
       <p>Use the a11y utilities to enhance your own components:</p>
-      <pre class="code"><code><span class="keyword">import</span> &#123;
-  KjFocusTrapDirective,
-  KjLiveRegionDirective,
-  KjRovingTabindexDirective,
-  KjVisuallyHiddenDirective,
-&#125; <span class="keyword">from</span> <span class="string">'@kouji-ui/core/a11y'</span>;</code></pre>
+      <kj-code-editor [showHeader]="false" [code]="a11yImports" lang="ts" />
       <div class="callout callout-green">
         <span class="callout-icon">♿</span>
         <p>All overlay components (Dialog, Menu, Select) use Angular CDK's <code>FocusTrap</code>, <code>FocusKeyManager</code>, and <code>LiveAnnouncer</code> for full keyboard and screen reader support.</p>
