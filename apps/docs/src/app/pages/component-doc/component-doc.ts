@@ -1,8 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { switchMap } from 'rxjs/operators';
-import { DocsService } from '../../services/docs.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
+import { DocsService, ComponentDoc } from '../../services/docs.service';
 
 @Component({
   selector: 'app-component-doc',
@@ -17,7 +17,7 @@ export class ComponentDocComponent {
 
   protected readonly component = toSignal(
     this.route.paramMap.pipe(
-      switchMap(params => this.docs.getComponent(params.get('slug') ?? ''))
+      map(params => this.docs.getComponent(params.get('slug') ?? ''))
     )
   );
 }

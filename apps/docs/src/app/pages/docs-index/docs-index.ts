@@ -1,5 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DocsService, ComponentDoc } from '../../services/docs.service';
 
@@ -12,12 +11,10 @@ import { DocsService, ComponentDoc } from '../../services/docs.service';
 })
 export class DocsIndexComponent {
   private readonly docs = inject(DocsService);
-
-  protected readonly manifest = toSignal(this.docs.getManifest());
-  protected readonly components = computed(() => this.manifest()?.components ?? []);
+  protected readonly components = this.docs.components;
   protected readonly categories = ['foundation', 'overlay', 'data', 'charts', 'a11y'] as const;
 
   protected byCategory(cat: string): ComponentDoc[] {
-    return this.components().filter(c => c.category === cat);
+    return this.docs.byCategory(cat as ComponentDoc['category']);
   }
 }

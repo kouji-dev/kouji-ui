@@ -1,6 +1,5 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { Injectable, signal } from '@angular/core';
+import manifest from '../../assets/docs-manifest.json';
 
 export interface InputDef {
   name: string;
@@ -31,19 +30,29 @@ export interface DocsManifest {
   components: ComponentDoc[];
 }
 
+const MANIFEST = manifest as DocsManifest;
+
+/**
+ * Provides access to the docs manifest generated at build time by ts-morph.
+ * Data is imported statically — no HTTP requests, no async loading.
+ */
 @Injectable({ providedIn: 'root' })
 export class DocsService {
-  private readonly http = inject(HttpClient);
+  /** All components from the manifest. */
+  readonly components = signal<ComponentDoc[]>(MANIFEST.components);
 
-  /** Load the full manifest. */
-  getManifest() {
-    return this.http.get<DocsManifest>('/assets/docs-manifest.json');
+  /** Get a single component by slug. Returns null if not found. */
+  getComponent(slug: string): ComponentDoc | null {
+    return MANIFEST.components.find(c => c.slug === slug) ?? null;
   }
 
-  /** Load a single component by slug. */
-  getComponent(slug: string) {
-    return this.getManifest().pipe(
-      map(m => m.components.find(c => c.slug === slug) ?? null)
-    );
+  /** Get all components for a given category. */
+  byCategory(category: ComponentDoc['category']): ComponentDoc[] {
+    return MANIFEST.components.filter(c => c.category === category);
+  }
+
+  /** All component slugs (for route generation). */
+  static getSlugs(): string[] {
+    return (manifest as DocsManifest).components.map(c => c.slug);
   }
 }
