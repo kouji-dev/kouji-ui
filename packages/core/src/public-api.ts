@@ -1,2 +1,4 @@
 // Public API for @kouji-ui/core
-export * from './lib/kouji-core.module';
+// Component directives added in Plan 2
+
+export const KJ_CORE_VERSION = '0.0.1';
