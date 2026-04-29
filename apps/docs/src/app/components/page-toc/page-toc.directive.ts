@@ -56,14 +56,16 @@ export class PageTocDirective {
         document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
-      // Re-scan after a short delay to catch dynamically rendered content
-      // (e.g. directive sections that render after loadManifest() resolves)
-      setTimeout(() => {
-        this.observer?.disconnect();
-        this.scanHeadings();
-        this.observeHeadings();
-      }, 400);
+      // Re-scan after initial delay for dynamically rendered content
+      setTimeout(() => this.refresh(), 400);
     });
+  }
+
+  /** Re-scan headings and restart observer — call after async content renders. */
+  refresh(): void {
+    this.observer?.disconnect();
+    this.scanHeadings();
+    this.observeHeadings();
   }
 
   private scanHeadings(): void {

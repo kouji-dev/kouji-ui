@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map } from 'rxjs/operators';
@@ -34,4 +34,16 @@ export class ComponentDocComponent {
       ),
     ),
   );
+
+  private readonly pageToc = viewChild(PageTocDirective);
+
+  constructor() {
+    // Re-scan TOC whenever the component data changes (new page navigation)
+    effect(() => {
+      if (this.component()) {
+        // Let Angular finish rendering the new directive sections, then refresh TOC
+        setTimeout(() => this.pageToc()?.refresh(), 200);
+      }
+    });
+  }
 }
