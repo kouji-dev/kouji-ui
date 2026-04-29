@@ -76,7 +76,10 @@
                 "input": "apps/docs/public"
               }
             ],
-            "styles": ["apps/docs/src/styles.css"],
+            "styles": [
+              "packages/ui/styles/kj.css",
+              "apps/docs/src/styles.css"
+            ],
             "server": "apps/docs/src/main.server.ts",
             "outputMode": "server",
             "security": {
