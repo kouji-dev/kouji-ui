@@ -12,6 +12,12 @@ export interface InputDef {
   defaultValue?: string;
 }
 
+export interface ExampleFile {
+  lang: 'ts' | 'html' | 'css';
+  filename: string;
+  content: string;
+}
+
 export interface DirectiveDef {
   className: string;
   selector: string;
@@ -20,6 +26,7 @@ export interface DirectiveDef {
   description: string;
   inputs: InputDef[];
   examples: string[];
+  exampleFiles: ExampleFile[];
 }
 
 export interface TokenDef {
@@ -117,27 +124,35 @@ export class DocsService {
     return this._manifest?.components.filter(c => c.category === category) ?? [];
   }
 
-  /** Builds the sidebar navigation tree from component categoryPath values. */
+  /** Builds a 3-level nested category tree: Package > Category > Component */
   getSidebarTree(): SidebarNode[] {
     const components = this._manifest?.components ?? [];
-    const tree: Record<string, SidebarNode> = {};
+    // Tree: { 'Core': { 'Foundation': [{ label: 'Button', slug: 'button' }, ...] } }
+    const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
-      const path = comp.categoryPath.length
+      const path = comp.categoryPath.length >= 2
         ? comp.categoryPath
-        : [comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
+        : ['Core', comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
 
-      const topLevel = path[0];
-      if (!tree[topLevel]) {
-        tree[topLevel] = { label: topLevel, slug: null, children: [] };
-      }
-      tree[topLevel].children.push({
-        label: path[path.length - 1] || comp.name,
-        slug: comp.slug,
-        children: [],
-      });
+      const pkg = path[0];      // 'Core' | 'UI'
+      const cat = path[1];      // 'Foundation' | 'Overlay' etc.
+      const label = path[2] ?? comp.name;
+
+      if (!tree[pkg]) tree[pkg] = {};
+      if (!tree[pkg][cat]) tree[pkg][cat] = [];
+      tree[pkg][cat].push({ label, slug: comp.slug, children: [] });
     }
 
-    return Object.values(tree);
+    // Convert to SidebarNode[]
+    return Object.entries(tree).map(([pkg, cats]) => ({
+      label: pkg,
+      slug: null,
+      children: Object.entries(cats).map(([cat, items]) => ({
+        label: cat,
+        slug: null,
+        children: items,
+      })),
+    }));
   }
 }

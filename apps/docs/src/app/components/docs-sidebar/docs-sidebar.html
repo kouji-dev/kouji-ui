@@ -11,6 +11,7 @@
     </a>
   </div>
 
+  <!-- Static links -->
   <div class="sidebar-section">
     <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special">
       Getting Started
@@ -20,32 +21,25 @@
     </a>
   </div>
 
-  @for (node of tree(); track node.label) {
-    <div class="sidebar-section">
-      <span class="sidebar-category">{{ node.label }}</span>
-      @for (child of node.children; track child.slug) {
-        @if (child.slug) {
-          <a
-            [routerLink]="['/docs/components', child.slug]"
-            routerLinkActive="active"
-            class="sidebar-link"
-          >
-            {{ child.label }}
-          </a>
-        } @else {
-          <span class="sidebar-link sidebar-group">{{ child.label }}</span>
-          @for (leaf of child.children; track leaf.slug) {
-            @if (leaf.slug) {
+  <!-- Dynamic tree: Package > Category > Component -->
+  @for (pkg of tree(); track pkg.label) {
+    <div class="sidebar-package">
+      <span class="sidebar-package-label">{{ pkg.label }}</span>
+      @for (cat of pkg.children; track cat.label) {
+        <div class="sidebar-section">
+          <span class="sidebar-category">{{ cat.label }}</span>
+          @for (item of cat.children; track item.slug) {
+            @if (item.slug) {
               <a
-                [routerLink]="['/docs/components', leaf.slug]"
+                [routerLink]="['/docs/components', item.slug]"
                 routerLinkActive="active"
-                class="sidebar-link sidebar-link-nested"
+                class="sidebar-link"
               >
-                {{ leaf.label }}
+                {{ item.label }}
               </a>
             }
           }
-        }
+        </div>
       }
     </div>
   }
