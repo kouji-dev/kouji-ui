@@ -11,7 +11,13 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
 @Component({
   selector: 'app-component-doc',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent, CodePreviewComponent, PageTocDirective, PageTocComponent],
+  imports: [
+    RouterLink,
+    DocsSidebarComponent,
+    CodePreviewComponent,
+    PageTocDirective,
+    PageTocComponent,
+  ],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
 })
@@ -21,11 +27,9 @@ export class ComponentDocComponent {
 
   protected readonly component = toSignal(
     this.route.paramMap.pipe(
-      switchMap(params =>
-        this.docs.loadManifest().pipe(
-          map(() => this.docs.getComponent(params.get('slug') ?? ''))
-        )
-      )
-    )
+      switchMap((params) =>
+        this.docs.loadManifest().pipe(map(() => this.docs.getComponent(params.get('slug') ?? ''))),
+      ),
+    ),
   );
 }

@@ -2,7 +2,7 @@ import { Project, SourceFile } from 'ts-morph';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { join, dirname } from 'node:path';
-import { readFileSync } from 'node:fs';
+// node:fs no longer needed — @doc-file content is inline in TSDoc, not read from disk
 
 // ── Exported types ──────────────────────────────────────────────────────────
 
@@ -97,8 +97,14 @@ const TYPE_ALIAS_SELECTOR =
 /** @category tag — e.g. "@category Foundation/Button" */
 const CATEGORY_TAG_SELECTOR = 'JSDocTag[tagName.text="category"]';
 
-/** @example-file tag — points to a separate example file */
-const EXAMPLE_FILE_SELECTOR = 'JSDocTag[tagName.text="example-file"]';
+/**
+ * Regex to find @doc-file entries in raw JSDoc text.
+ * TypeScript parses @doc-file as tag "@doc" with comment "-file ...", so tsquery
+ * tag-name matching fails. We scan the raw JSDoc text directly instead.
+ *
+ * Captures: [1]=filename [2]=lang [3]=raw content (with JSDoc * prefixes)
+ */
+const DOC_FILE_RE = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=@doc-file|@\w|\*\/|$)/g;
 
 // ── JSDoc extraction using ts-query ──────────────────────────────────────────
 
@@ -116,58 +122,88 @@ function getJsDocDescription(node: ts.Node): string {
     .replace(/\s+/g, ' ');
 }
 
-/** Regex: matches ```lang\nfilename\ncontent\n``` inside a JSDoc @example block */
-const FENCED_BLOCK_RE = /```(\w+)\s*\n([^\n]+)\n([\s\S]*?)```/g;
-
 /**
- * Parse @example tags. Two formats supported:
- *
- * Sugar syntax (preferred) — fenced blocks where first line is the filename:
- * ```ts
- * button.component.ts
- * import { Component } from ...
- * ```
- *
- * Legacy — raw text snippet (kept for backward compat, returned in examples[]).
+ * Extracts plain @example tags — pure JSDoc snippets for IDE hover support.
+ * These are NOT used as doc site previews; they remain standard TSDoc.
  */
-function parseExampleTag(raw: string): { text: string; files: ExampleFile[] } {
-  const files: ExampleFile[] = [];
-  let hasFenced = false;
-
-  for (const match of raw.matchAll(FENCED_BLOCK_RE)) {
-    hasFenced = true;
-    const lang = match[1] as 'ts' | 'html' | 'css';
-    const filename = match[2].trim();
-    const content = match[3].trim();
-    const validLang: ExampleFile['lang'] = (['ts', 'html', 'css'] as string[]).includes(lang)
-      ? (lang as ExampleFile['lang'])
-      : 'ts';
-    files.push({ lang: validLang, filename, content });
-  }
-
-  // If no fenced blocks found, return as plain text
-  if (!hasFenced) {
-    const text = raw.replace(/```(?:\w+)?\n?/g, '').replace(/```/g, '').trim();
-    return { text, files: [] };
-  }
-
-  return { text: '', files };
+function getJsDocExamples(node: ts.Node): string[] {
+  const tags = tsquery<ts.JSDocTag>(node, 'JSDocTag[tagName.text="example"]');
+  return tags
+    .map(tag => {
+      const c = tag.comment;
+      const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
+      return raw.replace(/```(?:\w+)?\n?/g, '').replace(/```/g, '').trim();
+    })
+    .filter(Boolean);
 }
 
-function getJsDocExamples(node: ts.Node): { examples: string[]; exampleFiles: ExampleFile[] } {
-  const exampleTags = tsquery<ts.JSDocTag>(node, 'JSDocTag[tagName.text="example"]');
-  const examples: string[] = [];
-  const exampleFiles: ExampleFile[] = [];
+/** Regex for a fenced code block: ```lang\ncontent\n``` */
+const DOC_FENCED_RE = /```(\w+)\s*([\s\S]*?)```/;
 
-  for (const tag of exampleTags) {
-    const c = tag.comment;
-    const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
-    const { text, files } = parseExampleTag(raw);
-    if (text) examples.push(text);
-    exampleFiles.push(...files);
+/** Strip JSDoc line prefixes (` * `) and normalise indentation. */
+function stripJsDocPrefixes(raw: string): string {
+  const lines = raw.split('\n').map(l => l.replace(/^\s*\*\s?/, ''));
+  const minIndent = lines
+    .filter(l => l.trim())
+    .reduce((min, l) => Math.min(min, l.match(/^(\s*)/)?.[1].length ?? 0), Infinity);
+  return lines.map(l => l.slice(Math.min(minIndent, l.length))).join('\n').trim();
+}
+
+/**
+ * Extracts @doc-file entries from a node's leading JSDoc comment in the raw source text.
+ *
+ * WHY raw text scanning:
+ * - TypeScript parses @doc-file as tag "@doc" + comment "-file ..." (hyphen ≠ identifier)
+ * - tsquery tag-name matching fails for hyphenated names
+ * - JSDoc comment nodes are leading trivia, not children of ClassDeclaration in the AST
+ *
+ * Strategy: read the source file text, find the last /** block before the node,
+ * then regex-scan it for @doc-file entries.
+ */
+function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile): ExampleFile[] {
+  const results: ExampleFile[] = [];
+  const validLangs = ['ts', 'html', 'css'] as const;
+
+  // The JSDoc comment is in the leading trivia: between getFullStart() and getStart().
+  // getFullStart() = start of leading trivia (whitespace + JSDoc)
+  // getStart(sf)   = first non-trivia character (decorator or 'export' keyword)
+  const triviaStart = node.getFullStart();
+  const triviaEnd = node.getStart(sourceFile, /*includeJsDocComment*/ false);
+  const leadingTrivia = sourceFile.text.substring(triviaStart, triviaEnd);
+
+  // Find the last /** ... */ block in the leading trivia
+  const jsDocStart = leadingTrivia.lastIndexOf('/**');
+  const jsDocEnd = leadingTrivia.lastIndexOf('*/');
+  if (jsDocStart === -1 || jsDocEnd < jsDocStart) return results;
+
+  const jsDocText = leadingTrivia.substring(jsDocStart, jsDocEnd + 2);
+
+  // Scan for @doc-file entries
+  const re = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=\s*@doc-file|\s*\*\/|$)/g;
+  for (const match of jsDocText.matchAll(re)) {
+    const filename = match[1].trim();
+    if (!filename) continue;
+
+    const body = match[2];
+    const fenceMatch = body.match(DOC_FENCED_RE);
+    if (!fenceMatch) continue;
+
+    const fenceLang = fenceMatch[1].toLowerCase();
+    const content = stripJsDocPrefixes(fenceMatch[2]);
+    if (!content) continue;
+
+    const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+    const lang: ExampleFile['lang'] =
+      (validLangs as readonly string[]).includes(fenceLang as any)
+        ? (fenceLang as ExampleFile['lang'])
+        : (validLangs as readonly string[]).includes(ext as any)
+          ? (ext as ExampleFile['lang'])
+          : 'ts';
+
+    results.push({ lang, filename, content });
   }
 
-  return { examples, exampleFiles };
+  return results;
 }
 
 function getCategoryPath(node: ts.Node): string[] {
@@ -180,30 +216,8 @@ function getCategoryPath(node: ts.Node): string[] {
   return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
 }
 
-function getExampleFiles(node: ts.Node, sourceFilePath: string): ExampleFile[] {
-  const tags = tsquery<ts.JSDocTag>(node, EXAMPLE_FILE_SELECTOR);
-  const results: ExampleFile[] = [];
-
-  for (const tag of tags) {
-    const c = tag.comment;
-    const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
-    const relativePath = raw.trim();
-    if (!relativePath) continue;
-
-    const dir = dirname(sourceFilePath);
-    const absPath = join(dir, relativePath);
-    try {
-      const content = readFileSync(absPath, 'utf-8');
-      const ext = relativePath.split('.').pop() as 'ts' | 'html' | 'css';
-      const lang = (['ts', 'html', 'css'] as string[]).includes(ext) ? ext as 'ts' | 'html' | 'css' : 'ts';
-      results.push({ lang, filename: relativePath.split('/').pop() ?? relativePath, content });
-    } catch {
-      // file not found — skip
-    }
-  }
-
-  return results;
-}
+// getExampleFiles removed — replaced by getDocFiles() which uses @doc-file inline blocks.
+// @example-file tag is no longer used; @doc-file is the replacement.
 
 // ── Directive decorator metadata extraction ───────────────────────────────────
 
@@ -328,9 +342,8 @@ function processSourceFile(
     const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
     const className = cls.name?.text ?? '';
     const description = getJsDocDescription(cls);
-    const { examples, exampleFiles: inlineFiles } = getJsDocExamples(cls);
-    const fileTagFiles = getExampleFiles(cls, filePath);
-    const exampleFiles = [...inlineFiles, ...fileTagFiles];
+    const examples = getJsDocExamples(cls);
+    const exampleFiles = getDocFiles(cls, tsSourceFile);
     const inputs = extractInputs(cls, tsSourceFile);
     const categoryPath = getCategoryPath(cls);
 
