@@ -71,11 +71,13 @@ function readExampleFile(dirPath: string, filename: string): ExampleFile | null 
 
 /** Determine category from folder name */
 function getCategory(folder: string): ComponentDoc['category'] {
-  const inputs = ['button', 'input', 'checkbox', 'radio', 'toggle', 'select', 'form'];
+  const base = ['button'];
+  const inputs = ['input', 'checkbox', 'radio', 'toggle', 'select', 'form'];
   const navigation = ['tabs', 'accordion', 'menu'];
   const overlays = ['dialog', 'popover', 'tooltip', 'toast'];
   const data = ['table', 'chart'];
   const display = ['avatar', 'badge'];
+  if (base.includes(folder)) return 'base';
   if (inputs.includes(folder)) return 'inputs';
   if (navigation.includes(folder)) return 'navigation';
   if (overlays.includes(folder)) return 'overlays';
@@ -446,6 +448,7 @@ function folderFromPath(filePath: string): string | null {
 }
 
 const categoryFallbacks: Record<string, string[]> = {
+  base: ['Core', 'Base'],
   inputs: ['Core', 'Inputs'],
   navigation: ['Core', 'Navigation'],
   overlays: ['Core', 'Overlays'],
@@ -567,7 +570,7 @@ async function main() {
   }
 
   // Sort components: inputs first, then navigation, overlays, data, display, a11y, primitives
-  const categoryOrder: ComponentDoc['category'][] = ['inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives'];
+  const categoryOrder: ComponentDoc['category'][] = ['base', 'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives'];
   const components = [...componentMap.values()].sort((a, b) => {
     const ai = categoryOrder.indexOf(a.category);
     const bi = categoryOrder.indexOf(b.category);

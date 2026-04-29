@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T21:29:16.926Z",
+  "generatedAt": "2026-04-29T21:31:27.030Z",
   "components": [
     {
       "name": "Button",
@@ -9,7 +9,7 @@
         "Base",
         "Button"
       ],
-      "category": "inputs",
+      "category": "base",
       "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",
       "directives": [
         {
