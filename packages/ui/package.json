@@ -6,6 +6,9 @@
     "@angular/core": "^21.0.0",
     "@kouji-ui/core": "^0.0.1"
   },
+  "devDependencies": {
+    "@kouji-ui/core": "workspace:*"
+  },
   "sideEffects": ["**/*.css"],
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
