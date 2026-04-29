@@ -2,21 +2,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 1.5rem 0.75rem;
-  height: 100%;
-  overflow-y: auto;
-}
-
+/* Logo section — always visible, never scrolls */
 .sidebar-top {
-  padding: 0 0.75rem 1.5rem;
+  flex-shrink: 0;
+  padding: 1.25rem 1.5rem 1rem;
   border-bottom: 1px solid #1a1a1a;
-  margin-bottom: 1.5rem;
 }
 
 .sidebar-home {
@@ -24,17 +17,35 @@
   align-items: center;
   opacity: 0.6;
   transition: opacity 0.15s;
+  text-decoration: none;
 }
 .sidebar-home:hover { opacity: 1; }
+
+/* Scrollable nav body — only this part scrolls */
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 1rem 0.75rem 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #1e1e1e transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 2px; }
 
 .sidebar-section {
   display: flex;
   flex-direction: column;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .sidebar-package {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .sidebar-package-label {
@@ -68,10 +79,7 @@
   line-height: 1.4;
 }
 
-.sidebar-link:hover {
-  color: #f0ede6;
-  background: #141414;
-}
+.sidebar-link:hover { color: #f0ede6; background: #141414; }
 
 .sidebar-link.active {
   color: #b8f500;
@@ -83,9 +91,7 @@
   font-size: 0.78rem;
 }
 
-.sidebar-link-special.active {
-  color: #b8f500;
-}
+.sidebar-link-special.active { color: #b8f500; }
 
 .sidebar-link-nested {
   padding-left: 1.5rem;
