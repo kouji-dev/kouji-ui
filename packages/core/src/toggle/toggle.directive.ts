@@ -8,7 +8,7 @@ import { KjDisabledDirective, KjFocusRingDirective, KjFormControlDirective } fro
  * ```html
  * <button kjToggle [(kjPressed)]="isBold" aria-label="Bold">B</button>
  * ```
- * @category Foundation/Toggle
+ * @category Core/Inputs/Toggle
  */
 @Directive({
   selector: '[kjToggle]',

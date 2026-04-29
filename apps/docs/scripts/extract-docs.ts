@@ -42,7 +42,7 @@ interface ComponentDoc {
   name: string;
   slug: string;
   categoryPath: string[];
-  category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
+  category: 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
 }
@@ -71,17 +71,19 @@ function readExampleFile(dirPath: string, filename: string): ExampleFile | null 
 
 /** Determine category from folder name */
 function getCategory(folder: string): ComponentDoc['category'] {
-  const overlays = ['dialog', 'tooltip', 'popover', 'menu', 'toast'];
-  const data = ['table', 'form', 'tabs', 'accordion', 'select'];
-  const charts = ['chart'];
-  const a11y = ['a11y'];
-  const primitives = ['primitives'];
-  if (overlays.includes(folder)) return 'overlay';
+  const inputs = ['button', 'input', 'checkbox', 'radio', 'toggle', 'select', 'form'];
+  const navigation = ['tabs', 'accordion', 'menu'];
+  const overlays = ['dialog', 'popover', 'tooltip', 'toast'];
+  const data = ['table', 'chart'];
+  const display = ['avatar', 'badge'];
+  if (inputs.includes(folder)) return 'inputs';
+  if (navigation.includes(folder)) return 'navigation';
+  if (overlays.includes(folder)) return 'overlays';
   if (data.includes(folder)) return 'data';
-  if (charts.includes(folder)) return 'charts';
-  if (a11y.includes(folder)) return 'a11y';
-  if (primitives.includes(folder)) return 'primitives';
-  return 'foundation';
+  if (display.includes(folder)) return 'display';
+  if (folder === 'a11y') return 'a11y';
+  if (folder === 'primitives') return 'primitives';
+  return 'inputs'; // default
 }
 
 /** Extract the selector string from @Directive({ selector: '...' }) */
@@ -444,10 +446,11 @@ function folderFromPath(filePath: string): string | null {
 }
 
 const categoryFallbacks: Record<string, string[]> = {
-  foundation: ['Core', 'Foundation'],
-  overlay: ['Core', 'Overlay'],
+  inputs: ['Core', 'Inputs'],
+  navigation: ['Core', 'Navigation'],
+  overlays: ['Core', 'Overlays'],
   data: ['Core', 'Data'],
-  charts: ['Core', 'Charts'],
+  display: ['Core', 'Display'],
   a11y: ['Core', 'Accessibility'],
   primitives: ['Core', 'Primitives'],
 };
@@ -561,8 +564,8 @@ async function main() {
     }
   }
 
-  // Sort components: foundation first, then overlays, data, charts, a11y
-  const categoryOrder: ComponentDoc['category'][] = ['foundation', 'overlay', 'data', 'charts', 'a11y', 'primitives'];
+  // Sort components: inputs first, then navigation, overlays, data, display, a11y, primitives
+  const categoryOrder: ComponentDoc['category'][] = ['inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives'];
   const components = [...componentMap.values()].sort((a, b) => {
     const ai = categoryOrder.indexOf(a.category);
     const bi = categoryOrder.indexOf(b.category);

@@ -1,112 +1,16 @@
 {
-  "generatedAt": "2026-04-29T20:45:17.307Z",
+  "generatedAt": "2026-04-29T21:17:19.543Z",
   "components": [
-    {
-      "name": "Avatar",
-      "slug": "avatar",
-      "categoryPath": [
-        "Core",
-        "Foundation",
-        "Avatar"
-      ],
-      "category": "foundation",
-      "description": "Container for avatar. Tracks image load state.",
-      "directives": [
-        {
-          "className": "KjAvatarDirective",
-          "selector": "[kjAvatar]",
-          "categoryPath": [
-            "Core",
-            "Foundation",
-            "Avatar"
-          ],
-          "description": "Container for avatar. Tracks image load state.",
-          "inputs": [],
-          "examples": [
-            "<span kjAvatar><img kjAvatarImage src=\"...\" alt=\"...\" /><span kjAvatarFallback>JD</span></span>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjAvatarImageDirective",
-          "selector": "[kjAvatarImage]",
-          "categoryPath": [
-            "Core",
-            "Foundation",
-            "Avatar"
-          ],
-          "description": "Image element within a `[kjAvatar]` container.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjAvatarFallbackDirective",
-          "selector": "[kjAvatarFallback]",
-          "categoryPath": [
-            "Core",
-            "Foundation",
-            "Avatar"
-          ],
-          "description": "Fallback shown when image is unavailable.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Badge",
-      "slug": "badge",
-      "categoryPath": [
-        "Core",
-        "Foundation",
-        "Badge"
-      ],
-      "category": "foundation",
-      "description": "Marks an element as a badge via data attributes.",
-      "directives": [
-        {
-          "className": "KjBadgeDirective",
-          "selector": "[kjBadge]",
-          "categoryPath": [
-            "Core",
-            "Foundation",
-            "Badge"
-          ],
-          "description": "Marks an element as a badge via data attributes.",
-          "inputs": [
-            {
-              "name": "kjBadgeVariant",
-              "type": "KjBadgeVariant",
-              "required": false,
-              "description": "The visual variant of the badge. Defaults to `'default'`."
-            }
-          ],
-          "examples": [
-            "<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
     {
       "name": "Button",
       "slug": "button",
       "categoryPath": [
         "Core",
-        "Foundation",
+        "Core",
+        "Inputs",
         "Button"
       ],
-      "category": "foundation",
+      "category": "inputs",
       "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",
       "directives": [
         {
@@ -114,7 +18,8 @@
           "selector": "[kjButton]",
           "categoryPath": [
             "Core",
-            "Foundation",
+            "Core",
+            "Inputs",
             "Button"
           ],
           "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",
@@ -234,10 +139,11 @@
       "slug": "checkbox",
       "categoryPath": [
         "Core",
-        "Foundation",
+        "Core",
+        "Inputs",
         "Checkbox"
       ],
-      "category": "foundation",
+      "category": "inputs",
       "description": "Adds checkbox semantics with Angular forms integration. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
       "directives": [
         {
@@ -245,7 +151,8 @@
           "selector": "[kjCheckbox]",
           "categoryPath": [
             "Core",
-            "Foundation",
+            "Core",
+            "Inputs",
             "Checkbox"
           ],
           "description": "Adds checkbox semantics with Angular forms integration. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
@@ -280,14 +187,88 @@
       ]
     },
     {
+      "name": "Form",
+      "slug": "form",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Inputs",
+        "Form"
+      ],
+      "category": "inputs",
+      "description": "Container for a form field. Groups label, input, and error message.",
+      "directives": [
+        {
+          "className": "KjFormFieldDirective",
+          "selector": "[kjFormField]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Inputs",
+            "Form"
+          ],
+          "description": "Container for a form field. Groups label, input, and error message.",
+          "inputs": [
+            {
+              "name": "kjFieldInvalid",
+              "type": "boolean",
+              "required": false,
+              "description": "Whether the field is in an invalid state."
+            }
+          ],
+          "examples": [
+            "<div kjFormField [kjFieldInvalid]=\"ctrl.invalid && ctrl.touched\">\n  <label kjFormLabel for=\"name\">Name</label>\n  <input id=\"name\" kjInput />\n  <span kjFormError>Name is required</span>\n</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjFormLabelDirective",
+          "selector": "[kjFormLabel]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Inputs",
+            "Form"
+          ],
+          "description": "Label element within a form field.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjFormErrorDirective",
+          "selector": "[kjFormError]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Inputs",
+            "Form"
+          ],
+          "description": "Error message element. Visible only when field is invalid.",
+          "inputs": [],
+          "examples": [
+            "<span kjFormError>Email is invalid</span>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
       "name": "Input",
       "slug": "input",
       "categoryPath": [
         "Core",
-        "Foundation",
+        "Core",
+        "Inputs",
         "Input"
       ],
-      "category": "foundation",
+      "category": "inputs",
       "description": "Enhances a native `<input>` with Angular forms integration, disabled/invalid state, and focus-ring. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
       "directives": [
         {
@@ -295,7 +276,8 @@
           "selector": "[kjInput]",
           "categoryPath": [
             "Core",
-            "Foundation",
+            "Core",
+            "Inputs",
             "Input"
           ],
           "description": "Enhances a native `<input>` with Angular forms integration, disabled/invalid state, and focus-ring. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
@@ -334,10 +316,11 @@
       "slug": "radio",
       "categoryPath": [
         "Core",
-        "Foundation",
+        "Core",
+        "Inputs",
         "Radio"
       ],
-      "category": "foundation",
+      "category": "inputs",
       "description": "Container for a group of radio buttons. Manages the selected value.",
       "directives": [
         {
@@ -345,7 +328,8 @@
           "selector": "[kjRadioGroup]",
           "categoryPath": [
             "Core",
-            "Foundation",
+            "Core",
+            "Inputs",
             "Radio"
           ],
           "description": "Container for a group of radio buttons. Manages the selected value.",
@@ -369,7 +353,8 @@
           "selector": "[kjRadio]",
           "categoryPath": [
             "Core",
-            "Foundation",
+            "Core",
+            "Inputs",
             "Radio"
           ],
           "description": "Individual radio button within a `[kjRadioGroup]`. Includes CVA for forms integration.",
@@ -398,523 +383,15 @@
       ]
     },
     {
-      "name": "Toggle",
-      "slug": "toggle",
-      "categoryPath": [
-        "Core",
-        "Foundation",
-        "Toggle"
-      ],
-      "category": "foundation",
-      "description": "Adds toggle (press) behavior with Angular forms integration.",
-      "directives": [
-        {
-          "className": "KjToggleDirective",
-          "selector": "[kjToggle]",
-          "categoryPath": [
-            "Core",
-            "Foundation",
-            "Toggle"
-          ],
-          "description": "Adds toggle (press) behavior with Angular forms integration.",
-          "inputs": [
-            {
-              "name": "kjPressed",
-              "type": "unknown",
-              "required": false,
-              "description": "Whether the toggle is pressed. Supports two-way binding."
-            },
-            {
-              "name": "kjDisabled",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
-              "defaultValue": "false"
-            }
-          ],
-          "examples": [
-            "<button kjToggle [(kjPressed)]=\"isBold\" aria-label=\"Bold\">B</button>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Dialog",
-      "slug": "dialog",
-      "categoryPath": [
-        "Core",
-        "Overlay",
-        "Dialog"
-      ],
-      "category": "overlay",
-      "description": "Root dialog container. Uses Angular CDK `Dialog` service for proper overlay, focus trap, backdrop, and Escape key handling. The `kjDialogContent` directive marks the template to portal into the overlay. The trigger opens it; Escape and backdrop click close it automatically via CDK.",
-      "directives": [
-        {
-          "className": "KjDialogDirective",
-          "selector": "[kjDialog]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Dialog"
-          ],
-          "description": "Root dialog container. Uses Angular CDK `Dialog` service for proper overlay, focus trap, backdrop, and Escape key handling. The `kjDialogContent` directive marks the template to portal into the overlay. The trigger opens it; Escape and backdrop click close it automatically via CDK.",
-          "inputs": [],
-          "examples": [
-            "<div kjDialog>\n  <button kjDialogTrigger>Open</button>\n  <ng-template kjDialogContent>\n    <div role=\"dialog\" aria-label=\"Settings\" aria-modal=\"true\">\n      <h2>Settings</h2>\n      <button (click)=\"dialog.hide()\">Close</button>\n    </div>\n  </ng-template>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjDialogContentDirective",
-          "selector": "[kjDialogContent]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Dialog"
-          ],
-          "description": "Marks an `<ng-template>` as the dialog content to render in the overlay.",
-          "inputs": [],
-          "examples": [
-            "<ng-template kjDialogContent>\n  <div role=\"dialog\" aria-label=\"My dialog\" aria-modal=\"true\">...</div>\n</ng-template>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjDialogTriggerDirective",
-          "selector": "[kjDialogTrigger]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Dialog"
-          ],
-          "description": "Trigger button that opens the dialog.",
-          "inputs": [],
-          "examples": [
-            "<button kjDialogTrigger>Open dialog</button>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Menu",
-      "slug": "menu",
-      "categoryPath": [
-        "Core",
-        "Overlay",
-        "Menu"
-      ],
-      "category": "overlay",
-      "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
-      "directives": [
-        {
-          "className": "KjMenuTriggerDirective",
-          "selector": "[kjMenuTrigger]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Menu"
-          ],
-          "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
-          "inputs": [
-            {
-              "name": "kjMenuTriggerFor",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `cdkMenuTriggerFor` via `hostDirectives`.",
-              "defaultValue": "false"
-            }
-          ],
-          "examples": [
-            "<button kjMenuTrigger [kjMenuTriggerFor]=\"myMenu\">Actions</button>\n<ng-template #myMenu>\n  <div kjMenu>\n    <button kjMenuItem>Edit</button>\n  </div>\n</ng-template>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjMenuDirective",
-          "selector": "[kjMenu]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Menu"
-          ],
-          "description": "Menu panel container. Wraps CDK `CdkMenu`. Handles keyboard navigation (Arrow keys, Home, End, Escape, typeahead). Add `role=\"menu\"` for proper ARIA semantics.",
-          "inputs": [],
-          "examples": [
-            "<div kjMenu role=\"menu\">\n  <button kjMenuItem>Edit</button>\n  <button kjMenuItem>Delete</button>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjMenuItemDirective",
-          "selector": "[kjMenuItem]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Menu"
-          ],
-          "description": "Individual menu item. Wraps CDK `CdkMenuItem`. Handles keyboard activation (Enter/Space), disabled state, and submenu support.",
-          "inputs": [
-            {
-              "name": "kjDisabled",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
-              "defaultValue": "false"
-            }
-          ],
-          "examples": [
-            "<button kjMenuItem role=\"menuitem\">Delete</button>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Popover",
-      "slug": "popover",
-      "categoryPath": [
-        "Core",
-        "Overlay",
-        "Popover"
-      ],
-      "category": "overlay",
-      "description": "Root popover container. Uses `KjOverlayService` for open state. Escape key and open/close managed via CDK-aware signals.",
-      "directives": [
-        {
-          "className": "KjPopoverDirective",
-          "selector": "[kjPopover]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Popover"
-          ],
-          "description": "Root popover container. Uses `KjOverlayService` for open state. Escape key and open/close managed via CDK-aware signals.",
-          "inputs": [],
-          "examples": [
-            "<div kjPopover>\n  <button kjPopoverTrigger>Options</button>\n  <div kjPopoverContent>Popover body</div>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjPopoverTriggerDirective",
-          "selector": "[kjPopoverTrigger]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Popover"
-          ],
-          "description": "Trigger button. Toggles the popover and sets `aria-expanded`.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjPopoverContentDirective",
-          "selector": "[kjPopoverContent]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Popover"
-          ],
-          "description": "Popover content panel. Hidden when closed. Uses `hidden` attribute for accessibility-compliant visibility.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Toast",
-      "slug": "toast",
-      "categoryPath": [
-        "Core",
-        "Overlay",
-        "Toast"
-      ],
-      "category": "overlay",
-      "description": "Marks an element as a toast notification with appropriate ARIA live region attributes.",
-      "directives": [
-        {
-          "className": "KjToastDirective",
-          "selector": "[kjToast]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Toast"
-          ],
-          "description": "Marks an element as a toast notification with appropriate ARIA live region attributes.",
-          "inputs": [
-            {
-              "name": "kjToastVariant",
-              "type": "KjToastVariant",
-              "required": false,
-              "description": "The visual and semantic variant. Defaults to `'default'`."
-            }
-          ],
-          "examples": [
-            "<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Tooltip",
-      "slug": "tooltip",
-      "categoryPath": [
-        "Core",
-        "Overlay",
-        "Tooltip"
-      ],
-      "category": "overlay",
-      "description": "Root tooltip container. Uses `KjOverlayService` for open state management. The `kjTooltipContent` element is shown/hidden via the `hidden` attribute until full portal support is added in the UI implementation layer.",
-      "directives": [
-        {
-          "className": "KjTooltipDirective",
-          "selector": "[kjTooltip]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Tooltip"
-          ],
-          "description": "Root tooltip container. Uses `KjOverlayService` for open state management. The `kjTooltipContent` element is shown/hidden via the `hidden` attribute until full portal support is added in the UI implementation layer.",
-          "inputs": [],
-          "examples": [
-            "<div kjTooltip>\n  <button kjTooltipTrigger aria-describedby=\"tip-id\">Info</button>\n  <span role=\"tooltip\" id=\"tip-id\" kjTooltipContent>Helpful text</span>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjTooltipTriggerDirective",
-          "selector": "[kjTooltipTrigger]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Tooltip"
-          ],
-          "description": "Trigger element for the tooltip. Shows/hides on hover and focus.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjTooltipContentDirective",
-          "selector": "[kjTooltipContent]",
-          "categoryPath": [
-            "Core",
-            "Overlay",
-            "Tooltip"
-          ],
-          "description": "Tooltip content panel. Hidden unless triggered. Add `role=\"tooltip\"` and an `id` matching the trigger's `aria-describedby`.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Accordion",
-      "slug": "accordion",
-      "categoryPath": [
-        "Core",
-        "Data",
-        "Accordion"
-      ],
-      "category": "data",
-      "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
-      "directives": [
-        {
-          "className": "KjAccordionDirective",
-          "selector": "[kjAccordion]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Accordion"
-          ],
-          "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
-          "inputs": [
-            {
-              "name": "kjAccordionType",
-              "type": "'single' | 'multiple'",
-              "required": false,
-              "description": "Whether multiple items can be open simultaneously. Defaults to `'single'`."
-            }
-          ],
-          "examples": [
-            "<div kjAccordion [kjAccordionType]=\"'multiple'\">\n  <div kjAccordionItem [kjItemValue]=\"'item-1'\">...</div>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjAccordionItemDirective",
-          "selector": "[kjAccordionItem]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Accordion"
-          ],
-          "description": "Individual accordion item. Extends CDK `CdkAccordionItem`. Manages expanded state via CDK's `UniqueSelectionDispatcher` for single-mode coordination.",
-          "inputs": [
-            {
-              "name": "kjItemValue",
-              "type": "string",
-              "required": true,
-              "description": "The unique value identifying this item within the accordion."
-            }
-          ],
-          "examples": [
-            "<div kjAccordionItem [kjItemValue]=\"'section-1'\">\n  <button kjAccordionTrigger>Section 1</button>\n  <div kjAccordionContent>Content</div>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjAccordionTriggerDirective",
-          "selector": "[kjAccordionTrigger]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Accordion"
-          ],
-          "description": "Trigger button for an accordion item. Controls expand/collapse via CDK `toggle()`. Sets `aria-expanded` and `data-open` attributes based on the item's expanded state.",
-          "inputs": [],
-          "examples": [
-            "<button kjAccordionTrigger>Section title</button>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjAccordionContentDirective",
-          "selector": "[kjAccordionContent]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Accordion"
-          ],
-          "description": "Accordion content panel. Hidden when the parent item is collapsed. Uses the `hidden` attribute for accessibility-compliant visibility.",
-          "inputs": [],
-          "examples": [
-            "<div kjAccordionContent>Panel content</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
-      "name": "Form",
-      "slug": "form",
-      "categoryPath": [
-        "Core",
-        "Data",
-        "Form"
-      ],
-      "category": "data",
-      "description": "Container for a form field. Groups label, input, and error message.",
-      "directives": [
-        {
-          "className": "KjFormFieldDirective",
-          "selector": "[kjFormField]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Form"
-          ],
-          "description": "Container for a form field. Groups label, input, and error message.",
-          "inputs": [
-            {
-              "name": "kjFieldInvalid",
-              "type": "boolean",
-              "required": false,
-              "description": "Whether the field is in an invalid state."
-            }
-          ],
-          "examples": [
-            "<div kjFormField [kjFieldInvalid]=\"ctrl.invalid && ctrl.touched\">\n  <label kjFormLabel for=\"name\">Name</label>\n  <input id=\"name\" kjInput />\n  <span kjFormError>Name is required</span>\n</div>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjFormLabelDirective",
-          "selector": "[kjFormLabel]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Form"
-          ],
-          "description": "Label element within a form field.",
-          "inputs": [],
-          "examples": [],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
-        {
-          "className": "KjFormErrorDirective",
-          "selector": "[kjFormError]",
-          "categoryPath": [
-            "Core",
-            "Data",
-            "Form"
-          ],
-          "description": "Error message element. Visible only when field is invalid.",
-          "inputs": [],
-          "examples": [
-            "<span kjFormError>Email is invalid</span>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        }
-      ]
-    },
-    {
       "name": "Select",
       "slug": "select",
       "categoryPath": [
         "Core",
-        "Data",
+        "Core",
+        "Inputs",
         "Select"
       ],
-      "category": "data",
+      "category": "inputs",
       "description": "Root select container. Wraps CDK `CdkListbox` for full keyboard navigation and ARIA listbox semantics. Manages open/close state via `kjSelectValue` model.",
       "directives": [
         {
@@ -922,7 +399,8 @@
           "selector": "[kjSelect]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Inputs",
             "Select"
           ],
           "description": "Root select container. Wraps CDK `CdkListbox` for full keyboard navigation and ARIA listbox semantics. Manages open/close state via `kjSelectValue` model.",
@@ -946,7 +424,8 @@
           "selector": "[kjSelectTrigger]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Inputs",
             "Select"
           ],
           "description": "Trigger button that opens/closes the select listbox. Automatically binds `aria-expanded` to reflect open state.",
@@ -963,7 +442,8 @@
           "selector": "[kjSelectContent]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Inputs",
             "Select"
           ],
           "description": "Listbox container. Wraps CDK `CdkListbox` for keyboard navigation and ARIA listbox semantics. Hidden when the select is closed.",
@@ -980,7 +460,8 @@
           "selector": "[kjOption]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Inputs",
             "Select"
           ],
           "description": "Individual option inside a `kjSelectContent`. Wraps CDK `CdkOption` for proper `aria-selected` management and keyboard navigation support. Clicking the option calls `select()` on the parent context.",
@@ -1023,52 +504,228 @@
       ]
     },
     {
-      "name": "Table",
-      "slug": "table",
+      "name": "Toggle",
+      "slug": "toggle",
       "categoryPath": [
         "Core",
-        "Data",
-        "Table"
+        "Core",
+        "Inputs",
+        "Toggle"
       ],
-      "category": "data",
-      "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
+      "category": "inputs",
+      "description": "Adds toggle (press) behavior with Angular forms integration.",
       "directives": [
         {
-          "className": "KjTableDirective",
-          "selector": "[kjTable]",
+          "className": "KjToggleDirective",
+          "selector": "[kjToggle]",
           "categoryPath": [
             "Core",
-            "Data",
-            "Table"
+            "Core",
+            "Inputs",
+            "Toggle"
           ],
-          "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
+          "description": "Adds toggle (press) behavior with Angular forms integration.",
           "inputs": [
             {
-              "name": "kjTableData",
-              "type": "TData[]",
+              "name": "kjPressed",
+              "type": "unknown",
               "required": false,
-              "description": "Data rows for the table."
+              "description": "Whether the toggle is pressed. Supports two-way binding."
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
             }
           ],
           "examples": [
-            "<table [kjTable]=\"columns\" [kjTableData]=\"rows\" #tbl=\"kjTable\">\n  <thead>"
+            "<button kjToggle [(kjPressed)]=\"isBold\" aria-label=\"Bold\">B</button>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Accordion",
+      "slug": "accordion",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Navigation",
+        "Accordion"
+      ],
+      "category": "navigation",
+      "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
+      "directives": [
+        {
+          "className": "KjAccordionDirective",
+          "selector": "[kjAccordion]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Navigation",
+            "Accordion"
+          ],
+          "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
+          "inputs": [
+            {
+              "name": "kjAccordionType",
+              "type": "'single' | 'multiple'",
+              "required": false,
+              "description": "Whether multiple items can be open simultaneously. Defaults to `'single'`."
+            }
+          ],
+          "examples": [
+            "<div kjAccordion [kjAccordionType]=\"'multiple'\">\n  <div kjAccordionItem [kjItemValue]=\"'item-1'\">...</div>\n</div>"
           ],
           "exampleFiles": [],
           "themedExamples": {},
           "docExamples": []
         },
         {
-          "className": "KjTableHeaderDirective",
-          "selector": "[kjTableHeader]",
+          "className": "KjAccordionItemDirective",
+          "selector": "[kjAccordionItem]",
           "categoryPath": [
             "Core",
-            "Data",
-            "Table"
+            "Core",
+            "Navigation",
+            "Accordion"
           ],
-          "description": "Marks a `<th>` as a sortable column header. Sets `aria-sort` based on TanStack sort state. Clicking toggles sort direction via the TanStack column's toggle handler.",
+          "description": "Individual accordion item. Extends CDK `CdkAccordionItem`. Manages expanded state via CDK's `UniqueSelectionDispatcher` for single-mode coordination.",
+          "inputs": [
+            {
+              "name": "kjItemValue",
+              "type": "string",
+              "required": true,
+              "description": "The unique value identifying this item within the accordion."
+            }
+          ],
+          "examples": [
+            "<div kjAccordionItem [kjItemValue]=\"'section-1'\">\n  <button kjAccordionTrigger>Section 1</button>\n  <div kjAccordionContent>Content</div>\n</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjAccordionTriggerDirective",
+          "selector": "[kjAccordionTrigger]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Navigation",
+            "Accordion"
+          ],
+          "description": "Trigger button for an accordion item. Controls expand/collapse via CDK `toggle()`. Sets `aria-expanded` and `data-open` attributes based on the item's expanded state.",
           "inputs": [],
           "examples": [
-            "<th kjTableHeader [kjHeader]=\"header\" scope=\"col\">Name</th>"
+            "<button kjAccordionTrigger>Section title</button>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjAccordionContentDirective",
+          "selector": "[kjAccordionContent]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Navigation",
+            "Accordion"
+          ],
+          "description": "Accordion content panel. Hidden when the parent item is collapsed. Uses the `hidden` attribute for accessibility-compliant visibility.",
+          "inputs": [],
+          "examples": [
+            "<div kjAccordionContent>Panel content</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Menu",
+      "slug": "menu",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Navigation",
+        "Menu"
+      ],
+      "category": "navigation",
+      "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
+      "directives": [
+        {
+          "className": "KjMenuTriggerDirective",
+          "selector": "[kjMenuTrigger]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Navigation",
+            "Menu"
+          ],
+          "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
+          "inputs": [
+            {
+              "name": "kjMenuTriggerFor",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `cdkMenuTriggerFor` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
+          "examples": [
+            "<button kjMenuTrigger [kjMenuTriggerFor]=\"myMenu\">Actions</button>\n<ng-template #myMenu>\n  <div kjMenu>\n    <button kjMenuItem>Edit</button>\n  </div>\n</ng-template>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjMenuDirective",
+          "selector": "[kjMenu]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Navigation",
+            "Menu"
+          ],
+          "description": "Menu panel container. Wraps CDK `CdkMenu`. Handles keyboard navigation (Arrow keys, Home, End, Escape, typeahead). Add `role=\"menu\"` for proper ARIA semantics.",
+          "inputs": [],
+          "examples": [
+            "<div kjMenu role=\"menu\">\n  <button kjMenuItem>Edit</button>\n  <button kjMenuItem>Delete</button>\n</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjMenuItemDirective",
+          "selector": "[kjMenuItem]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Navigation",
+            "Menu"
+          ],
+          "description": "Individual menu item. Wraps CDK `CdkMenuItem`. Handles keyboard activation (Enter/Space), disabled state, and submenu support.",
+          "inputs": [
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
+          "examples": [
+            "<button kjMenuItem role=\"menuitem\">Delete</button>"
           ],
           "exampleFiles": [],
           "themedExamples": {},
@@ -1081,10 +738,11 @@
       "slug": "tabs",
       "categoryPath": [
         "Core",
-        "Data",
+        "Core",
+        "Navigation",
         "Tabs"
       ],
-      "category": "data",
+      "category": "navigation",
       "description": "Root tabs container. Manages active tab value.",
       "directives": [
         {
@@ -1092,7 +750,8 @@
           "selector": "[kjTabs]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Navigation",
             "Tabs"
           ],
           "description": "Root tabs container. Manages active tab value.",
@@ -1122,7 +781,8 @@
           "selector": "[kjTabList]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Navigation",
             "Tabs"
           ],
           "description": "Container for tab triggers. Sets `role=\"tablist\"`.",
@@ -1137,7 +797,8 @@
           "selector": "[kjTab]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Navigation",
             "Tabs"
           ],
           "description": "Individual tab trigger. Sets `role=\"tab\"` and manages `aria-selected`.",
@@ -1161,7 +822,8 @@
           "selector": "[kjTabPanel]",
           "categoryPath": [
             "Core",
-            "Data",
+            "Core",
+            "Navigation",
             "Tabs"
           ],
           "description": "Tab panel content. Hidden when not active.",
@@ -1183,14 +845,250 @@
       ]
     },
     {
+      "name": "Dialog",
+      "slug": "dialog",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Overlays",
+        "Dialog"
+      ],
+      "category": "overlays",
+      "description": "Root dialog container. Uses Angular CDK `Dialog` service for proper overlay, focus trap, backdrop, and Escape key handling. The `kjDialogContent` directive marks the template to portal into the overlay. The trigger opens it; Escape and backdrop click close it automatically via CDK.",
+      "directives": [
+        {
+          "className": "KjDialogDirective",
+          "selector": "[kjDialog]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Dialog"
+          ],
+          "description": "Root dialog container. Uses Angular CDK `Dialog` service for proper overlay, focus trap, backdrop, and Escape key handling. The `kjDialogContent` directive marks the template to portal into the overlay. The trigger opens it; Escape and backdrop click close it automatically via CDK.",
+          "inputs": [],
+          "examples": [
+            "<div kjDialog>\n  <button kjDialogTrigger>Open</button>\n  <ng-template kjDialogContent>\n    <div role=\"dialog\" aria-label=\"Settings\" aria-modal=\"true\">\n      <h2>Settings</h2>\n      <button (click)=\"dialog.hide()\">Close</button>\n    </div>\n  </ng-template>\n</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjDialogContentDirective",
+          "selector": "[kjDialogContent]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Dialog"
+          ],
+          "description": "Marks an `<ng-template>` as the dialog content to render in the overlay.",
+          "inputs": [],
+          "examples": [
+            "<ng-template kjDialogContent>\n  <div role=\"dialog\" aria-label=\"My dialog\" aria-modal=\"true\">...</div>\n</ng-template>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjDialogTriggerDirective",
+          "selector": "[kjDialogTrigger]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Dialog"
+          ],
+          "description": "Trigger button that opens the dialog.",
+          "inputs": [],
+          "examples": [
+            "<button kjDialogTrigger>Open dialog</button>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Popover",
+      "slug": "popover",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Overlays",
+        "Popover"
+      ],
+      "category": "overlays",
+      "description": "Root popover container. Uses `KjOverlayService` for open state. Escape key and open/close managed via CDK-aware signals.",
+      "directives": [
+        {
+          "className": "KjPopoverDirective",
+          "selector": "[kjPopover]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Popover"
+          ],
+          "description": "Root popover container. Uses `KjOverlayService` for open state. Escape key and open/close managed via CDK-aware signals.",
+          "inputs": [],
+          "examples": [
+            "<div kjPopover>\n  <button kjPopoverTrigger>Options</button>\n  <div kjPopoverContent>Popover body</div>\n</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjPopoverTriggerDirective",
+          "selector": "[kjPopoverTrigger]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Popover"
+          ],
+          "description": "Trigger button. Toggles the popover and sets `aria-expanded`.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjPopoverContentDirective",
+          "selector": "[kjPopoverContent]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Popover"
+          ],
+          "description": "Popover content panel. Hidden when closed. Uses `hidden` attribute for accessibility-compliant visibility.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Toast",
+      "slug": "toast",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Overlays",
+        "Toast"
+      ],
+      "category": "overlays",
+      "description": "Marks an element as a toast notification with appropriate ARIA live region attributes.",
+      "directives": [
+        {
+          "className": "KjToastDirective",
+          "selector": "[kjToast]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Toast"
+          ],
+          "description": "Marks an element as a toast notification with appropriate ARIA live region attributes.",
+          "inputs": [
+            {
+              "name": "kjToastVariant",
+              "type": "KjToastVariant",
+              "required": false,
+              "description": "The visual and semantic variant. Defaults to `'default'`."
+            }
+          ],
+          "examples": [
+            "<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Tooltip",
+      "slug": "tooltip",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Overlays",
+        "Tooltip"
+      ],
+      "category": "overlays",
+      "description": "Root tooltip container. Uses `KjOverlayService` for open state management. The `kjTooltipContent` element is shown/hidden via the `hidden` attribute until full portal support is added in the UI implementation layer.",
+      "directives": [
+        {
+          "className": "KjTooltipDirective",
+          "selector": "[kjTooltip]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Tooltip"
+          ],
+          "description": "Root tooltip container. Uses `KjOverlayService` for open state management. The `kjTooltipContent` element is shown/hidden via the `hidden` attribute until full portal support is added in the UI implementation layer.",
+          "inputs": [],
+          "examples": [
+            "<div kjTooltip>\n  <button kjTooltipTrigger aria-describedby=\"tip-id\">Info</button>\n  <span role=\"tooltip\" id=\"tip-id\" kjTooltipContent>Helpful text</span>\n</div>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjTooltipTriggerDirective",
+          "selector": "[kjTooltipTrigger]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Tooltip"
+          ],
+          "description": "Trigger element for the tooltip. Shows/hides on hover and focus.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjTooltipContentDirective",
+          "selector": "[kjTooltipContent]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Overlays",
+            "Tooltip"
+          ],
+          "description": "Tooltip content panel. Hidden unless triggered. Add `role=\"tooltip\"` and an `id` matching the trigger's `aria-describedby`.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
       "name": "Chart",
       "slug": "chart",
       "categoryPath": [
         "Core",
-        "Charts",
+        "Core",
+        "Data",
         "Chart"
       ],
-      "category": "charts",
+      "category": "data",
       "description": "Wraps Apache ECharts. Initializes after first render, updates reactively, disposes on destroy. Always provide `kjChartLabel` for WCAG AAA compliance.",
       "directives": [
         {
@@ -1198,7 +1096,8 @@
           "selector": "[kjChart]",
           "categoryPath": [
             "Core",
-            "Charts",
+            "Core",
+            "Data",
             "Chart"
           ],
           "description": "Wraps Apache ECharts. Initializes after first render, updates reactively, disposes on destroy. Always provide `kjChartLabel` for WCAG AAA compliance.",
@@ -1226,9 +1125,170 @@
       ]
     },
     {
+      "name": "Table",
+      "slug": "table",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Data",
+        "Table"
+      ],
+      "category": "data",
+      "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
+      "directives": [
+        {
+          "className": "KjTableDirective",
+          "selector": "[kjTable]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Data",
+            "Table"
+          ],
+          "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
+          "inputs": [
+            {
+              "name": "kjTableData",
+              "type": "TData[]",
+              "required": false,
+              "description": "Data rows for the table."
+            }
+          ],
+          "examples": [
+            "<table [kjTable]=\"columns\" [kjTableData]=\"rows\" #tbl=\"kjTable\">\n  <thead>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjTableHeaderDirective",
+          "selector": "[kjTableHeader]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Data",
+            "Table"
+          ],
+          "description": "Marks a `<th>` as a sortable column header. Sets `aria-sort` based on TanStack sort state. Clicking toggles sort direction via the TanStack column's toggle handler.",
+          "inputs": [],
+          "examples": [
+            "<th kjTableHeader [kjHeader]=\"header\" scope=\"col\">Name</th>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Avatar",
+      "slug": "avatar",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Display",
+        "Avatar"
+      ],
+      "category": "display",
+      "description": "Container for avatar. Tracks image load state.",
+      "directives": [
+        {
+          "className": "KjAvatarDirective",
+          "selector": "[kjAvatar]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Display",
+            "Avatar"
+          ],
+          "description": "Container for avatar. Tracks image load state.",
+          "inputs": [],
+          "examples": [
+            "<span kjAvatar><img kjAvatarImage src=\"...\" alt=\"...\" /><span kjAvatarFallback>JD</span></span>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjAvatarImageDirective",
+          "selector": "[kjAvatarImage]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Display",
+            "Avatar"
+          ],
+          "description": "Image element within a `[kjAvatar]` container.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjAvatarFallbackDirective",
+          "selector": "[kjAvatarFallback]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Display",
+            "Avatar"
+          ],
+          "description": "Fallback shown when image is unavailable.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
+      "name": "Badge",
+      "slug": "badge",
+      "categoryPath": [
+        "Core",
+        "Core",
+        "Display",
+        "Badge"
+      ],
+      "category": "display",
+      "description": "Marks an element as a badge via data attributes.",
+      "directives": [
+        {
+          "className": "KjBadgeDirective",
+          "selector": "[kjBadge]",
+          "categoryPath": [
+            "Core",
+            "Core",
+            "Display",
+            "Badge"
+          ],
+          "description": "Marks an element as a badge via data attributes.",
+          "inputs": [
+            {
+              "name": "kjBadgeVariant",
+              "type": "KjBadgeVariant",
+              "required": false,
+              "description": "The visual variant of the badge. Defaults to `'default'`."
+            }
+          ],
+          "examples": [
+            "<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        }
+      ]
+    },
+    {
       "name": "A11y",
       "slug": "a11y",
       "categoryPath": [
+        "Core",
         "Core",
         "Accessibility",
         "AriaDescribedBy"
@@ -1240,6 +1300,7 @@
           "className": "KjAriaDescribedByDirective",
           "selector": "[kjAriaDescribedBy]",
           "categoryPath": [
+            "Core",
             "Core",
             "Accessibility",
             "AriaDescribedBy"
@@ -1265,6 +1326,7 @@
           "selector": "[kjFocusTrap]",
           "categoryPath": [
             "Core",
+            "Core",
             "Accessibility",
             "FocusTrap"
           ],
@@ -1288,6 +1350,7 @@
           "className": "KjLiveRegionDirective",
           "selector": "[kjLiveRegion]",
           "categoryPath": [
+            "Core",
             "Core",
             "Accessibility",
             "LiveRegion"
@@ -1313,6 +1376,7 @@
           "selector": "[kjRovingTabindexItem]",
           "categoryPath": [
             "Core",
+            "Core",
             "Accessibility",
             "RovingTabindex"
           ],
@@ -1330,6 +1394,7 @@
           "selector": "[kjRovingTabindex]",
           "categoryPath": [
             "Core",
+            "Core",
             "Accessibility",
             "RovingTabindex"
           ],
@@ -1346,6 +1411,7 @@
           "className": "KjVisuallyHiddenDirective",
           "selector": "[kjVisuallyHidden]",
           "categoryPath": [
+            "Core",
             "Core",
             "Accessibility",
             "VisuallyHidden"
@@ -1366,6 +1432,7 @@
       "slug": "primitives",
       "categoryPath": [
         "Core",
+        "Core",
         "Primitives",
         "FormControl"
       ],
@@ -1376,6 +1443,7 @@
           "className": "KjFormControlDirective",
           "selector": "[kjFormControl]",
           "categoryPath": [
+            "Core",
             "Core",
             "Primitives",
             "FormControl"
@@ -1391,6 +1459,7 @@
           "className": "KjDisabledDirective",
           "selector": "[kjDisabled]",
           "categoryPath": [
+            "Core",
             "Core",
             "Primitives",
             "Disabled"
@@ -1415,6 +1484,7 @@
           "className": "KjFocusRingDirective",
           "selector": "[kjFocusRing]",
           "categoryPath": [
+            "Core",
             "Core",
             "Primitives",
             "FocusRing"

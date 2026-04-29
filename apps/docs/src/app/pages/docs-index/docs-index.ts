@@ -12,7 +12,7 @@ import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar
 })
 export class DocsIndexComponent implements OnInit {
   protected readonly docs = inject(DocsService);
-  protected readonly categories = ['foundation', 'overlay', 'data', 'charts', 'a11y'] as const;
+  protected readonly categories = ['inputs', 'navigation', 'overlays', 'data', 'display', 'a11y'] as const;
   /** Alias for template — keeps template unchanged. */
   protected readonly components = this.docs.components;
 

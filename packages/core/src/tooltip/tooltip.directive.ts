@@ -17,7 +17,7 @@ export const KJ_TOOLTIP = new InjectionToken<KjTooltipDirective>('KjTooltip');
  *   <span role="tooltip" id="tip-id" kjTooltipContent>Helpful text</span>
  * </div>
  * ```
- * @category Overlay/Tooltip
+ * @category Core/Overlays/Tooltip
  */
 @Directive({
   selector: '[kjTooltip]',
@@ -36,7 +36,7 @@ export class KjTooltipDirective {
 
 /**
  * Trigger element for the tooltip. Shows/hides on hover and focus.
- * @category Overlay/Tooltip
+ * @category Core/Overlays/Tooltip
  */
 @Directive({
   selector: '[kjTooltipTrigger]',
@@ -55,7 +55,7 @@ export class KjTooltipTriggerDirective {
 /**
  * Tooltip content panel. Hidden unless triggered.
  * Add `role="tooltip"` and an `id` matching the trigger's `aria-describedby`.
- * @category Overlay/Tooltip
+ * @category Core/Overlays/Tooltip
  */
 @Directive({
   selector: '[kjTooltipContent]',

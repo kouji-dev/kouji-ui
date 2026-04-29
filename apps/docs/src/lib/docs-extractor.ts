@@ -55,7 +55,7 @@ export interface ComponentDoc {
   name: string;
   slug: string;
   categoryPath: string[];
-  category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
+  category: 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -70,15 +70,23 @@ export interface DocsManifest {
 // ── Category mapping ─────────────────────────────────────────────────────────
 
 const CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
-  dialog: 'overlay', tooltip: 'overlay', popover: 'overlay', menu: 'overlay', toast: 'overlay',
-  table: 'data', form: 'data', tabs: 'data', accordion: 'data', select: 'data',
-  chart: 'charts',
-  a11y: 'a11y',
-  primitives: 'primitives',
+  // Inputs
+  button: 'inputs', input: 'inputs', checkbox: 'inputs', radio: 'inputs',
+  toggle: 'inputs', select: 'inputs', form: 'inputs',
+  // Navigation
+  tabs: 'navigation', accordion: 'navigation', menu: 'navigation',
+  // Overlays
+  dialog: 'overlays', popover: 'overlays', tooltip: 'overlays', toast: 'overlays',
+  // Data
+  table: 'data', chart: 'data',
+  // Display
+  avatar: 'display', badge: 'display',
+  // A11y and primitives stay the same
+  a11y: 'a11y', primitives: 'primitives',
 };
 
 function getCategory(folder: string): ComponentDoc['category'] {
-  return CATEGORY_MAP[folder] ?? 'foundation';
+  return CATEGORY_MAP[folder] ?? 'inputs';
 }
 
 // ── ts-query selectors ────────────────────────────────────────────────────────
@@ -663,10 +671,11 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
   // Fill in categoryPath for components that had no @category tag
   const categoryFallbacks: Record<string, string[]> = {
-    foundation: ['Core', 'Foundation'],
-    overlay: ['Core', 'Overlay'],
+    inputs: ['Core', 'Inputs'],
+    navigation: ['Core', 'Navigation'],
+    overlays: ['Core', 'Overlays'],
     data: ['Core', 'Data'],
-    charts: ['Core', 'Charts'],
+    display: ['Core', 'Display'],
     a11y: ['Core', 'Accessibility'],
     primitives: ['Core', 'Primitives'],
   };
@@ -674,7 +683,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
   for (const comp of componentMap.values()) {
     if (!comp.categoryPath.length) {
       comp.categoryPath = [
-        ...(categoryFallbacks[comp.category] ?? ['Core', 'Foundation']),
+        ...(categoryFallbacks[comp.category] ?? ['Core', 'Inputs']),
         comp.name,
       ];
     }
@@ -682,7 +691,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
   // Sort by category order
   const categoryOrder: ComponentDoc['category'][] = [
-    'foundation', 'overlay', 'data', 'charts', 'a11y', 'primitives',
+    'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives',
   ];
   const components = [...componentMap.values()].sort((a, b) => {
     const ai = categoryOrder.indexOf(a.category);

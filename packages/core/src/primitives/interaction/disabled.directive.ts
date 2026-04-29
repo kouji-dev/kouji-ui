@@ -8,7 +8,7 @@ import { Directive, input } from '@angular/core';
  * ```html
  * <button kjButton [kjDisabled]="isLoading()">Submit</button>
  * ```
- * @category Primitives/Disabled
+ * @category Core/Primitives/Disabled
  */
 @Directive({
   selector: '[kjDisabled]',

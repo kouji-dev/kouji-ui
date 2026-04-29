@@ -11,7 +11,7 @@ import { FocusTrapFactory, FocusTrap } from '@angular/cdk/a11y';
  *   <button>Action</button>
  * </div>
  * ```
- * @category Accessibility/FocusTrap
+ * @category Core/Accessibility/FocusTrap
  */
 @Directive({
   selector: '[kjFocusTrap]',

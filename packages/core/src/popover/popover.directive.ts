@@ -12,7 +12,7 @@ import { KjOverlayService } from '../primitives';
  *   <div kjPopoverContent>Popover body</div>
  * </div>
  * ```
- * @category Overlay/Popover
+ * @category Core/Overlays/Popover
  */
 @Directive({
   selector: '[kjPopover]',
@@ -36,7 +36,7 @@ export class KjPopoverDirective {
 
 /**
  * Trigger button. Toggles the popover and sets `aria-expanded`.
- * @category Overlay/Popover
+ * @category Core/Overlays/Popover
  */
 @Directive({
   selector: '[kjPopoverTrigger]',
@@ -54,7 +54,7 @@ export class KjPopoverTriggerDirective {
 /**
  * Popover content panel. Hidden when closed.
  * Uses `hidden` attribute for accessibility-compliant visibility.
- * @category Overlay/Popover
+ * @category Core/Overlays/Popover
  */
 @Directive({
   selector: '[kjPopoverContent]',

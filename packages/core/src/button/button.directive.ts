@@ -22,7 +22,7 @@ export type KjButtonSize = 'sm' | 'md' | 'lg' | 'icon';
  *      @doc-file button.finance.example.ts
  *  @doc-example Sizes
  *    @doc-file button.sizes.example.ts
- * @category Foundation/Button
+ * @category Core/Inputs/Button
  */
 @Directive({
   selector: '[kjButton]',

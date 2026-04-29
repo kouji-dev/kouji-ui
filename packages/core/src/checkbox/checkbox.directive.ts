@@ -44,7 +44,7 @@ import { KjDisabledDirective, KjFocusRingDirective, KjFormControlDirective } fro
  *         newsletter = signal(true);
  *       }
  *    ```
- * @category Foundation/Checkbox
+ * @category Core/Inputs/Checkbox
  */
 @Directive({
   selector: '[kjCheckbox]',

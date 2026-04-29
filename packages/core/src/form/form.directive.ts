@@ -11,7 +11,7 @@ import { KJ_FORM_FIELD, KjFormFieldContext } from './form.context';
  *   <span kjFormError>Name is required</span>
  * </div>
  * ```
- * @category Data/Form
+ * @category Core/Inputs/Form
  */
 @Directive({
   selector: '[kjFormField]', standalone: true,
@@ -26,7 +26,7 @@ export class KjFormFieldDirective implements KjFormFieldContext {
 
 /**
  * Label element within a form field.
- * @category Data/Form
+ * @category Core/Inputs/Form
  */
 @Directive({
   selector: '[kjFormLabel]', standalone: true,
@@ -37,7 +37,7 @@ export class KjFormLabelDirective { readonly ctx = inject(KJ_FORM_FIELD); }
 /**
  * Error message element. Visible only when field is invalid.
  * @example `<span kjFormError>Email is invalid</span>`
- * @category Data/Form
+ * @category Core/Inputs/Form
  */
 @Directive({
   selector: '[kjFormError]', standalone: true,

@@ -44,7 +44,7 @@ import { KJ_TABS, KjTabsContext } from './tabs.context';
  *         activeTab = signal('tab1');
  *       }
  *    ```
- * @category Data/Tabs
+ * @category Core/Navigation/Tabs
  */
 @Directive({
   selector: '[kjTabs]',
@@ -66,7 +66,7 @@ export class KjTabsDirective implements KjTabsContext {
 
 /**
  * Container for tab triggers. Sets `role="tablist"`.
- * @category Data/Tabs
+ * @category Core/Navigation/Tabs
  */
 @Directive({
   selector: '[kjTabList]',
@@ -78,7 +78,7 @@ export class KjTabListDirective {}
 /**
  * Individual tab trigger. Sets `role="tab"` and manages `aria-selected`.
  * @example `<button kjTab [kjTabValue]="'profile'">Profile</button>`
- * @category Data/Tabs
+ * @category Core/Navigation/Tabs
  */
 @Directive({
   selector: '[kjTab]',
@@ -109,7 +109,7 @@ export class KjTabDirective {
 /**
  * Tab panel content. Hidden when not active.
  * @example `<div kjTabPanel [kjPanelFor]="'profile'">Profile content</div>`
- * @category Data/Tabs
+ * @category Core/Navigation/Tabs
  */
 @Directive({
   selector: '[kjTabPanel]',

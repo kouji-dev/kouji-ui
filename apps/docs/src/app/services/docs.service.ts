@@ -52,7 +52,7 @@ export interface ComponentDoc {
   name: string;
   slug: string;
   categoryPath: string[];
-  category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
+  category: 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];

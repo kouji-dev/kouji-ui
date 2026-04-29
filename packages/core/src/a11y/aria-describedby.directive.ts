@@ -10,7 +10,7 @@ import { Directive, computed, input } from '@angular/core';
  * <input kjAriaDescribedBy [kjDescribedBy]="['hint-id', errorId()]" />
  * <span id="hint-id">Format: DD/MM/YYYY</span>
  * ```
- * @category Accessibility/AriaDescribedBy
+ * @category Core/Accessibility/AriaDescribedBy
  */
 @Directive({
   selector: '[kjAriaDescribedBy]',

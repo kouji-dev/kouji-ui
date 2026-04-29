@@ -12,7 +12,7 @@ import { KJ_ACCORDION, KJ_ACCORDION_ITEM } from './accordion.context';
  *   <div kjAccordionItem [kjItemValue]="'item-1'">...</div>
  * </div>
  * ```
- * @category Data/Accordion
+ * @category Core/Navigation/Accordion
  */
 @Directive({
   selector: '[kjAccordion]',
@@ -45,7 +45,7 @@ export class KjAccordionDirective extends CdkAccordion {
  *   <div kjAccordionContent>Content</div>
  * </div>
  * ```
- * @category Data/Accordion
+ * @category Core/Navigation/Accordion
  */
 @Directive({
   selector: '[kjAccordionItem]',
@@ -68,7 +68,7 @@ export class KjAccordionItemDirective extends CdkAccordionItem {
  * ```html
  * <button kjAccordionTrigger>Section title</button>
  * ```
- * @category Data/Accordion
+ * @category Core/Navigation/Accordion
  */
 @Directive({
   selector: '[kjAccordionTrigger]',
@@ -92,7 +92,7 @@ export class KjAccordionTriggerDirective {
  * ```html
  * <div kjAccordionContent>Panel content</div>
  * ```
- * @category Data/Accordion
+ * @category Core/Navigation/Accordion
  */
 @Directive({
   selector: '[kjAccordionContent]',

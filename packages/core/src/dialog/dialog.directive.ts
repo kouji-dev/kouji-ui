@@ -21,7 +21,7 @@ import { KJ_DIALOG, KjDialogContext } from './dialog.context';
  *   </ng-template>
  * </div>
  * ```
- * @category Overlay/Dialog
+ * @category Core/Overlays/Dialog
  */
 @Directive({
   selector: '[kjDialog]',
@@ -77,7 +77,7 @@ export class KjDialogDirective implements KjDialogContext {
  *   <div role="dialog" aria-label="My dialog" aria-modal="true">...</div>
  * </ng-template>
  * ```
- * @category Overlay/Dialog
+ * @category Core/Overlays/Dialog
  */
 @Directive({
   selector: '[kjDialogContent]',
@@ -102,7 +102,7 @@ export class KjDialogContentDirective {
  * ```html
  * <button kjDialogTrigger>Open dialog</button>
  * ```
- * @category Overlay/Dialog
+ * @category Core/Overlays/Dialog
  */
 @Directive({
   selector: '[kjDialogTrigger]',
