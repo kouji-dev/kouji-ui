@@ -14,6 +14,10 @@ export class PageTocComponent {
 
   protected scroll(e: Event, id: string): void {
     e.preventDefault();
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Update the URL hash without triggering a page navigation
+    history.pushState(null, '', `#${id}`);
   }
 }

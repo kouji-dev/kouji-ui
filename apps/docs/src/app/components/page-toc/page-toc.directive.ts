@@ -49,6 +49,13 @@ export class PageTocDirective {
       this.scanHeadings();
       this.observeHeadings();
 
+      // If the URL has a hash on load, set it as the active entry and scroll to it
+      const hashId = location.hash.slice(1);
+      if (hashId) {
+        this.activeId.set(hashId);
+        document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
       // Re-scan after a short delay to catch dynamically rendered content
       // (e.g. directive sections that render after loadManifest() resolves)
       setTimeout(() => {
@@ -92,7 +99,10 @@ export class PageTocDirective {
       entries => {
         const visible = entries.filter(e => e.isIntersecting);
         if (visible.length) {
-          this.activeId.set(visible[0].target.id);
+          const id = visible[0].target.id;
+          this.activeId.set(id);
+          // Keep URL in sync as the user scrolls (replaceState avoids polluting history)
+          history.replaceState(null, '', `#${id}`);
         }
       },
       { rootMargin: '-10% 0px -80% 0px', threshold: 0 }
