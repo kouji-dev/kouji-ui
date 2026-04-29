@@ -109,6 +109,42 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
         }
       }
     }
+
+    // Parse @doc-file inline blocks from raw JSDoc text.
+    // ts-morph's tag parser breaks on @ signs inside code (e.g. @Component, @angular/core),
+    // so we parse the raw JSDoc text directly.
+    // Strategy: find each "@doc-file <filename>" occurrence, then locate the next fenced
+    // code block (``` ... ```) that follows it. This avoids any block-termination regex
+    // that would incorrectly fire on @ signs inside embedded code.
+    const rawDocText: string = doc.getText() ?? '';
+    const docFileTagRe = /\*\s+@doc-file\s+(\S+)\s*\n/g;
+    let dfTagMatch: RegExpExecArray | null;
+    while ((dfTagMatch = docFileTagRe.exec(rawDocText)) !== null) {
+      const filename = dfTagMatch[1].trim();
+      const afterTag = rawDocText.substring(dfTagMatch.index + dfTagMatch[0].length);
+      // Strip leading "* " JSDoc prefixes from what follows, then find first fenced block
+      const stripped = afterTag
+        .split('\n')
+        .map((line: string) => line.replace(/^\s*\*\s?/, ''))
+        .join('\n');
+      const fenceMatch = stripped.match(/```(\w*)\s*\n([\s\S]*?)```/);
+      if (fenceMatch) {
+        const langRaw = (fenceMatch[1] ?? 'ts').trim() || 'ts';
+        const lang: 'ts' | 'html' | 'css' = (['ts', 'html', 'css'] as string[]).includes(langRaw)
+          ? langRaw as 'ts' | 'html' | 'css'
+          : 'ts';
+        // Strip common leading indentation from the embedded code block
+        const innerLines = fenceMatch[2].split('\n');
+        const nonEmpty = innerLines.filter((l: string) => l.trim().length > 0);
+        const minIndent = nonEmpty.length
+          ? Math.min(...nonEmpty.map((l: string) => (l.match(/^(\s*)/) as RegExpMatchArray)[1].length))
+          : 0;
+        const content = innerLines.map((l: string) => l.substring(minIndent)).join('\n').trim();
+        if (content) {
+          exampleFiles.push({ lang, filename, content });
+        }
+      }
+    }
   }
 
   return { description, examples, categoryPath, exampleFiles };
