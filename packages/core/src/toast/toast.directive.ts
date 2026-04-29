@@ -5,6 +5,7 @@ export type KjToastVariant = 'default' | 'destructive' | 'success' | 'warning';
 /**
  * Marks an element as a toast notification with appropriate ARIA live region attributes.
  * @example `<div kjToast [kjToastVariant]="'destructive'">Failed to save.</div>`
+ * @category Overlay/Toast
  */
 @Directive({
   selector: '[kjToast]',

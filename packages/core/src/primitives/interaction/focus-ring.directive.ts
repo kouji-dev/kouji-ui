@@ -11,6 +11,7 @@ import { FocusMonitor } from '@angular/cdk/a11y';
  * ```html
  * <button kjFocusRing>Focusable button</button>
  * ```
+ * @category Primitives/FocusRing
  */
 @Directive({
   selector: '[kjFocusRing]',

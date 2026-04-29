@@ -16,6 +16,7 @@ import { KJ_SELECT } from './select.context';
  *   </div>
  * </div>
  * ```
+ * @category Data/Select
  */
 @Directive({
   selector: '[kjSelect]',
@@ -62,6 +63,7 @@ export class KjSelectDirective {
  * ```html
  * <button kjSelectTrigger aria-haspopup="listbox">Choose fruit</button>
  * ```
+ * @category Data/Select
  */
 @Directive({
   selector: '[kjSelectTrigger]',
@@ -87,6 +89,7 @@ export class KjSelectTriggerDirective {
  *   <div kjOption [kjOptionValue]="'apple'">Apple</div>
  * </div>
  * ```
+ * @category Data/Select
  */
 @Directive({
   selector: '[kjSelectContent]',
@@ -110,6 +113,7 @@ export class KjSelectContentDirective {
  * ```html
  * <div kjOption [kjOptionValue]="'apple'">Apple</div>
  * ```
+ * @category Data/Select
  */
 @Directive({
   selector: '[kjOption]',

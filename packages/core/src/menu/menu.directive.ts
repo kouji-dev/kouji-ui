@@ -17,6 +17,7 @@ import { KjDisabledDirective, KjFocusRingDirective } from '../primitives';
  *   </div>
  * </ng-template>
  * ```
+ * @category Overlay/Menu
  */
 @Directive({
   selector: '[kjMenuTrigger]',
@@ -40,6 +41,7 @@ export class KjMenuTriggerDirective {}
  *   <button kjMenuItem>Delete</button>
  * </div>
  * ```
+ * @category Overlay/Menu
  */
 @Directive({
   selector: '[kjMenu]',
@@ -56,6 +58,7 @@ export class KjMenuDirective {}
  * ```html
  * <button kjMenuItem role="menuitem">Delete</button>
  * ```
+ * @category Overlay/Menu
  */
 @Directive({
   selector: '[kjMenuItem]',

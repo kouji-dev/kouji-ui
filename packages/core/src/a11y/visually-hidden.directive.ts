@@ -11,6 +11,7 @@ import { Directive } from '@angular/core';
  *   <span kjVisuallyHidden>Close dialog</span>
  * </button>
  * ```
+ * @category Accessibility/VisuallyHidden
  */
 @Directive({
   selector: '[kjVisuallyHidden]',

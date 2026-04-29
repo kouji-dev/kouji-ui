@@ -10,6 +10,7 @@ export type KjButtonSize = 'sm' | 'md' | 'lg' | 'icon';
  * ```html
  * <button kjButton [kjVariant]="'destructive'" [kjDisabled]="isLoading()">Delete</button>
  * ```
+ * @category Foundation/Button
  */
 @Directive({
   selector: '[kjButton]',

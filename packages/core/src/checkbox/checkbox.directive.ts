@@ -9,6 +9,7 @@ import { KjDisabledDirective, KjFocusRingDirective, KjFormControlDirective } fro
  * ```html
  * <div kjCheckbox tabindex="0" [(kjChecked)]="accepted" aria-label="Accept terms">Accept</div>
  * ```
+ * @category Foundation/Checkbox
  */
 @Directive({
   selector: '[kjCheckbox]',
