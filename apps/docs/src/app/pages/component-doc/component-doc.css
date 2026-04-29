@@ -161,6 +161,7 @@ h1 {
 
 /* ── Examples ── */
 .examples-block { margin-top: 2rem; }
+.example-section { margin-bottom: 2rem; }
 .code-example {
   background: var(--bg-elevated);
   border: 1px solid var(--border);

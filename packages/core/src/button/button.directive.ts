@@ -13,12 +13,15 @@ export type KjButtonSize = 'sm' | 'md' | 'lg' | 'icon';
  * <button kjButton [kjVariant]="'destructive'" [kjDisabled]="isLoading()">Delete</button>
  * ```
  * @doc
- *  @doc-theme default
- *    @doc-file button.example.ts
- *  @doc-theme retro
- *    @doc-file button.retro.example.ts
- *  @doc-theme finance
- *    @doc-file button.finance.example.ts
+ *  @doc-example Variants
+ *    @doc-theme default
+ *      @doc-file button.example.ts
+ *    @doc-theme retro
+ *      @doc-file button.retro.example.ts
+ *    @doc-theme finance
+ *      @doc-file button.finance.example.ts
+ *  @doc-example Sizes
+ *    @doc-file button.sizes.example.ts
  * @category Foundation/Button
  */
 @Directive({

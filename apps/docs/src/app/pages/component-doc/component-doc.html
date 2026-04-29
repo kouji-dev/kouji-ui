@@ -55,10 +55,27 @@
             </div>
           }
 
-          @if (directive.examples.length || directive.exampleFiles?.length) {
+          @if (directive.docExamples.length) {
+            <div class="examples-block">
+              <h3 class="block-title">Examples</h3>
+              @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
+                <div
+                  class="example-section"
+                  [id]="directive.className + '-ex-' + i"
+                  [attr.data-toc-entry]="'○ ' + docEx.label"
+                  data-toc-level="3"
+                >
+                  <kj-code-preview
+                    [docExamples]="[docEx]"
+                    [componentName]="comp.name"
+                  />
+                </div>
+              }
+            </div>
+          } @else if (directive.examples.length || directive.exampleFiles.length) {
             <div class="examples-block">
               <h3 class="block-title">Example</h3>
-              @if (directive.exampleFiles?.length) {
+              @if (directive.exampleFiles.length) {
                 <!-- Prefer @example-file over inline @example -->
                 <kj-code-preview
                   [examples]="directive.exampleFiles"

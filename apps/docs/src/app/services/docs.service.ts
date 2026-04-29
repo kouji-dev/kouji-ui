@@ -19,6 +19,11 @@ export interface ExampleFile {
   exportName?: string;
 }
 
+export interface DocExample {
+  label: string;
+  themedFiles: Record<string, ExampleFile[]>;
+}
+
 export interface DirectiveDef {
   className: string;
   selector: string;
@@ -29,6 +34,7 @@ export interface DirectiveDef {
   examples: string[];
   exampleFiles: ExampleFile[];
   themedExamples: Record<string, ExampleFile[]>;
+  docExamples: DocExample[];
 }
 
 export interface TokenDef {

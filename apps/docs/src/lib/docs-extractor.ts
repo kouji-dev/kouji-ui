@@ -33,6 +33,11 @@ export interface ExampleFile {
   exportName?: string;  // exported class name, used for component lookup
 }
 
+export interface DocExample {
+  label: string;
+  themedFiles: Record<string, ExampleFile[]>;
+}
+
 export interface DirectiveDef {
   className: string;
   selector: string;
@@ -43,6 +48,7 @@ export interface DirectiveDef {
   examples: string[];
   exampleFiles: ExampleFile[];        // default theme files (backward compat)
   themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
+  docExamples: DocExample[];          // named example groups (new)
 }
 
 export interface ComponentDoc {
@@ -289,6 +295,54 @@ function getDocThemes(node: ts.Node, sourceFile: ts.SourceFile, sourceDir?: stri
   return result;
 }
 
+/**
+ * Extracts @doc-example named example groups from JSDoc text.
+ * Each group has a label and themed files. If no @doc-theme blocks are present
+ * inside a group, all @doc-file entries are placed under the 'default' theme.
+ */
+function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceDir?: string): DocExample[] {
+  const results: DocExample[] = [];
+
+  const jsDocText = getJsDocBlock(node, sourceFile);
+  if (!jsDocText) return results;
+  const cleanText = stripJsDocLineMarkers(jsDocText);
+
+  // Split on @doc-example at line start
+  const exampleParts = cleanText.split(/(?:\n|^)(?=\s*@doc-example\s)/m);
+
+  for (const part of exampleParts) {
+    const headerMatch = part.match(/^\s*@doc-example\s+(.+)/);
+    if (!headerMatch) continue;
+    const label = headerMatch[1].trim();
+    const body = part.slice(headerMatch.index! + headerMatch[0].length);
+
+    const themedFiles: Record<string, ExampleFile[]> = {};
+
+    if (body.includes('@doc-theme')) {
+      // Split on @doc-theme boundaries
+      const themeParts = body.split(/(?:\n|^)(?=\s*@doc-theme\s+\w)/m);
+      for (const tp of themeParts) {
+        const themeHeader = tp.match(/^\s*@doc-theme\s+(\w+)/);
+        if (!themeHeader) continue;
+        const themeName = themeHeader[1].trim();
+        const themeBody = tp.slice(themeHeader.index! + themeHeader[0].length);
+        const files = parseDocFileEntries(themeBody, sourceDir);
+        if (files.length) themedFiles[themeName] = files;
+      }
+    } else {
+      // No themes — all @doc-file entries go to 'default'
+      const files = parseDocFileEntries(body, sourceDir);
+      if (files.length) themedFiles['default'] = files;
+    }
+
+    if (Object.keys(themedFiles).length) {
+      results.push({ label, themedFiles });
+    }
+  }
+
+  return results;
+}
+
 function getCategoryPath(node: ts.Node): string[] {
   const tags = tsquery<ts.JSDocTag>(node, CATEGORY_TAG_SELECTOR);
   if (!tags.length) return [];
@@ -497,6 +551,7 @@ function processSourceFile(
     const examples = getJsDocExamples(cls);
     const exampleFiles = getDocFiles(cls, tsSourceFile, sourceDir);
     const themedExamples = getDocThemes(cls, tsSourceFile, sourceDir);
+    const docExamples = getDocExamples(cls, tsSourceFile, sourceDir);
     const ownInputs = extractInputs(cls, tsSourceFile);
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const inputs = [...ownInputs, ...hdInputs];
@@ -539,6 +594,7 @@ function processSourceFile(
       examples,
       exampleFiles: resolvedExampleFiles,
       themedExamples,
+      docExamples,
     };
     comp.directives.push(directiveWithPkg);
   }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T20:41:09.138Z",
+  "generatedAt": "2026-04-29T20:45:17.307Z",
   "components": [
     {
       "name": "Avatar",
@@ -26,7 +26,8 @@
             "<span kjAvatar><img kjAvatarImage src=\"...\" alt=\"...\" /><span kjAvatarFallback>JD</span></span>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjAvatarImageDirective",
@@ -40,7 +41,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjAvatarFallbackDirective",
@@ -54,7 +56,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -90,7 +93,8 @@
             "<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -169,9 +173,59 @@
                 "filename": "button.finance.example.ts",
                 "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-finance',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 1.75rem 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; }\n    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1rem; font-family: system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: background 0.12s; line-height: 1.5; }\n    [data-variant=\"default\"] { background: #3b82f6; color: #fff; border-color: #3b82f6; }\n    [data-variant=\"default\"]:hover { background: #2563eb; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: #fff; }\n    [data-variant=\"destructive\"]:hover { background: #dc2626; }\n    [data-variant=\"outline\"] { background: #fff; color: #374151; border-color: #d1d5db; }\n    [data-variant=\"outline\"]:hover { background: #f9fafb; }\n    [data-variant=\"ghost\"] { background: transparent; color: #6b7280; }\n    [data-variant=\"ghost\"]:hover { background: #f3f4f6; }\n    [aria-disabled=\"true\"] { opacity: 0.45; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Primary</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Delete</button>\n      <button kjButton [kjVariant]=\"'outline'\">Secondary</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonFinanceExample {}\n",
                 "exportName": "ButtonFinanceExample"
+              },
+              {
+                "lang": "ts",
+                "filename": "button.sizes.example.ts",
+                "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-sizes',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; }\n    .col { display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start; }\n    button[kjButton] { background: #b8f500; color: #0c0c0c; border: none; cursor: pointer; font-family: inherit; }\n    [data-size=\"sm\"] { padding: 0.3rem 0.75rem; font-size: 0.75rem; }\n    [data-size=\"md\"] { padding: 0.5rem 1.25rem; font-size: 0.875rem; }\n    [data-size=\"lg\"] { padding: 0.75rem 1.75rem; font-size: 1rem; }\n  `],\n  template: `\n    <div class=\"col\">\n      <button kjButton [kjSize]=\"'sm'\">Small</button>\n      <button kjButton [kjSize]=\"'md'\">Medium (default)</button>\n      <button kjButton [kjSize]=\"'lg'\">Large</button>\n    </div>\n  `,\n})\nexport class ButtonSizesExample {}\n",
+                "exportName": "ButtonSizesExample"
               }
             ]
-          }
+          },
+          "docExamples": [
+            {
+              "label": "Variants",
+              "themedFiles": {
+                "default": [
+                  {
+                    "lang": "ts",
+                    "filename": "button.example.ts",
+                    "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; }\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1.25rem; font-family: inherit; font-size: 0.875rem; border: none; cursor: pointer; transition: opacity 0.15s; }\n    [data-variant=\"default\"] { background: #b8f500; color: #0c0c0c; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: #fff; }\n    [data-variant=\"outline\"] { background: transparent; color: #f0ede6; border: 1px solid #333; }\n    [data-variant=\"ghost\"] { background: transparent; color: #888; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Default</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Destructive</button>\n      <button kjButton [kjVariant]=\"'outline'\">Outline</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonExample {}\n",
+                    "exportName": "ButtonExample"
+                  }
+                ],
+                "retro": [
+                  {
+                    "lang": "ts",
+                    "filename": "button.retro.example.ts",
+                    "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-retro',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #fef9c3; font-family: 'Courier New', monospace; }\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1.125rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border: 2px solid #000; border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s; }\n    button[kjButton]:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }\n    [data-variant=\"default\"] { background: #16a34a; color: #fff; }\n    [data-variant=\"destructive\"] { background: #dc2626; color: #fff; }\n    [data-variant=\"outline\"] { background: #fff; color: #1d4ed8; border-color: #1d4ed8; box-shadow: 3px 3px 0 #1d4ed8; }\n    [data-variant=\"ghost\"] { background: transparent; color: #000; box-shadow: none; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; transform: none !important; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Confirm</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Delete</button>\n      <button kjButton [kjVariant]=\"'outline'\">Learn More</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Cancel</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonRetroExample {}\n",
+                    "exportName": "ButtonRetroExample"
+                  }
+                ],
+                "finance": [
+                  {
+                    "lang": "ts",
+                    "filename": "button.finance.example.ts",
+                    "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-finance',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 1.75rem 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; }\n    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1rem; font-family: system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: background 0.12s; line-height: 1.5; }\n    [data-variant=\"default\"] { background: #3b82f6; color: #fff; border-color: #3b82f6; }\n    [data-variant=\"default\"]:hover { background: #2563eb; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: #fff; }\n    [data-variant=\"destructive\"]:hover { background: #dc2626; }\n    [data-variant=\"outline\"] { background: #fff; color: #374151; border-color: #d1d5db; }\n    [data-variant=\"outline\"]:hover { background: #f9fafb; }\n    [data-variant=\"ghost\"] { background: transparent; color: #6b7280; }\n    [data-variant=\"ghost\"]:hover { background: #f3f4f6; }\n    [aria-disabled=\"true\"] { opacity: 0.45; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Primary</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Delete</button>\n      <button kjButton [kjVariant]=\"'outline'\">Secondary</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonFinanceExample {}\n",
+                    "exportName": "ButtonFinanceExample"
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Sizes",
+              "themedFiles": {
+                "default": [
+                  {
+                    "lang": "ts",
+                    "filename": "button.sizes.example.ts",
+                    "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-sizes',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; }\n    .col { display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start; }\n    button[kjButton] { background: #b8f500; color: #0c0c0c; border: none; cursor: pointer; font-family: inherit; }\n    [data-size=\"sm\"] { padding: 0.3rem 0.75rem; font-size: 0.75rem; }\n    [data-size=\"md\"] { padding: 0.5rem 1.25rem; font-size: 0.875rem; }\n    [data-size=\"lg\"] { padding: 0.75rem 1.75rem; font-size: 1rem; }\n  `],\n  template: `\n    <div class=\"col\">\n      <button kjButton [kjSize]=\"'sm'\">Small</button>\n      <button kjButton [kjSize]=\"'md'\">Medium (default)</button>\n      <button kjButton [kjSize]=\"'lg'\">Large</button>\n    </div>\n  `,\n})\nexport class ButtonSizesExample {}\n",
+                    "exportName": "ButtonSizesExample"
+                  }
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -220,7 +274,8 @@
               "content": "import { Component, signal } from '@angular/core';\nimport { KjCheckboxDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjCheckboxDirective],\n  styles: [`\n    .row { display: flex; flex-direction: column; gap: 1rem; padding: 2rem; background: #0c0c0c; }\n    .item { display: flex; align-items: center; gap: 0.75rem; }\n    [kjCheckbox] { width: 18px; height: 18px; border: 2px solid #333; background: #111; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }\n    [data-checked] { background: #b8f500; border-color: #b8f500; }\n    [data-checked]::after { content: '✓'; color: #0c0c0c; font-size: 0.75rem; font-weight: bold; }\n    span { color: #888; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }\n  `],\n  template: `\n    <div class=\"row\">\n      <div class=\"item\">\n        <div kjCheckbox tabindex=\"0\" [(kjChecked)]=\"terms\" aria-label=\"Accept terms\"></div>\n        <span>Accept terms — {{ terms() ? 'checked' : 'unchecked' }}</span>\n      </div>\n      <div class=\"item\">\n        <div kjCheckbox tabindex=\"0\" [(kjChecked)]=\"newsletter\" aria-label=\"Newsletter\"></div>\n        <span>Subscribe to newsletter</span>\n      </div>\n    </div>\n  `,\n})\nexport class CheckboxExampleComponent {\n  terms = signal(false);\n  newsletter = signal(true);\n}"
             }
           ],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -269,7 +324,8 @@
               "content": "import { Component } from '@angular/core';\nimport { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';\nimport { KjInputDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjInputDirective, ReactiveFormsModule],\n  styles: [`\n    .form { padding: 2rem; background: #0c0c0c; display: flex; flex-direction: column; gap: 1rem; max-width: 400px; }\n    [kjInput] { padding: 0.625rem 0.875rem; background: #111; border: 1px solid #222; color: #f0ede6; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; width: 100%; }\n    [kjInput]:focus { outline: none; border-color: #b8f500; }\n    [aria-invalid=\"true\"] { border-color: #ef4444; }\n    .error { color: #ef4444; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }\n    label { color: #888; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }\n  `],\n  template: `\n    <div class=\"form\">\n      <label for=\"email\">Email</label>\n      <input id=\"email\" kjInput type=\"email\" [formControl]=\"emailCtrl\"\n        [kjInvalid]=\"emailCtrl.invalid && emailCtrl.touched\"\n        placeholder=\"you@example.com\" />\n      @if (emailCtrl.invalid && emailCtrl.touched) {\n        <span class=\"error\">Please enter a valid email.</span>\n      }\n      <label for=\"disabled\">Disabled input</label>\n      <input id=\"disabled\" kjInput type=\"text\" [kjDisabled]=\"true\" value=\"Not editable\" />\n    </div>\n  `,\n})\nexport class InputExampleComponent {\n  emailCtrl = new FormControl('', [Validators.email, Validators.required]);\n}"
             }
           ],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -305,7 +361,8 @@
             "<div kjRadioGroup [(kjValue)]=\"size\" aria-label=\"Size\">\n  <div kjRadio [kjRadioValue]=\"'s'\" tabindex=\"0\">Small</div>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjRadioDirective",
@@ -335,7 +392,8 @@
             "<div kjRadio [kjRadioValue]=\"'a'\" tabindex=\"0\">Option A</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -378,7 +436,8 @@
             "<button kjToggle [(kjPressed)]=\"isBold\" aria-label=\"Bold\">B</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -407,7 +466,8 @@
             "<div kjDialog>\n  <button kjDialogTrigger>Open</button>\n  <ng-template kjDialogContent>\n    <div role=\"dialog\" aria-label=\"Settings\" aria-modal=\"true\">\n      <h2>Settings</h2>\n      <button (click)=\"dialog.hide()\">Close</button>\n    </div>\n  </ng-template>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjDialogContentDirective",
@@ -423,7 +483,8 @@
             "<ng-template kjDialogContent>\n  <div role=\"dialog\" aria-label=\"My dialog\" aria-modal=\"true\">...</div>\n</ng-template>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjDialogTriggerDirective",
@@ -439,7 +500,8 @@
             "<button kjDialogTrigger>Open dialog</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -476,7 +538,8 @@
             "<button kjMenuTrigger [kjMenuTriggerFor]=\"myMenu\">Actions</button>\n<ng-template #myMenu>\n  <div kjMenu>\n    <button kjMenuItem>Edit</button>\n  </div>\n</ng-template>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjMenuDirective",
@@ -492,7 +555,8 @@
             "<div kjMenu role=\"menu\">\n  <button kjMenuItem>Edit</button>\n  <button kjMenuItem>Delete</button>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjMenuItemDirective",
@@ -516,7 +580,8 @@
             "<button kjMenuItem role=\"menuitem\">Delete</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -545,7 +610,8 @@
             "<div kjPopover>\n  <button kjPopoverTrigger>Options</button>\n  <div kjPopoverContent>Popover body</div>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjPopoverTriggerDirective",
@@ -559,7 +625,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjPopoverContentDirective",
@@ -573,7 +640,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -609,7 +677,8 @@
             "<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -638,7 +707,8 @@
             "<div kjTooltip>\n  <button kjTooltipTrigger aria-describedby=\"tip-id\">Info</button>\n  <span role=\"tooltip\" id=\"tip-id\" kjTooltipContent>Helpful text</span>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjTooltipTriggerDirective",
@@ -652,7 +722,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjTooltipContentDirective",
@@ -666,7 +737,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -702,7 +774,8 @@
             "<div kjAccordion [kjAccordionType]=\"'multiple'\">\n  <div kjAccordionItem [kjItemValue]=\"'item-1'\">...</div>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjAccordionItemDirective",
@@ -725,7 +798,8 @@
             "<div kjAccordionItem [kjItemValue]=\"'section-1'\">\n  <button kjAccordionTrigger>Section 1</button>\n  <div kjAccordionContent>Content</div>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjAccordionTriggerDirective",
@@ -741,7 +815,8 @@
             "<button kjAccordionTrigger>Section title</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjAccordionContentDirective",
@@ -757,7 +832,8 @@
             "<div kjAccordionContent>Panel content</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -793,7 +869,8 @@
             "<div kjFormField [kjFieldInvalid]=\"ctrl.invalid && ctrl.touched\">\n  <label kjFormLabel for=\"name\">Name</label>\n  <input id=\"name\" kjInput />\n  <span kjFormError>Name is required</span>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjFormLabelDirective",
@@ -807,7 +884,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjFormErrorDirective",
@@ -823,7 +901,8 @@
             "<span kjFormError>Email is invalid</span>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -859,7 +938,8 @@
             "<div kjSelect [(kjSelectValue)]=\"selected\">\n  <button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>\n  <div kjSelectContent role=\"listbox\">\n    <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n  </div>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjSelectTriggerDirective",
@@ -875,7 +955,8 @@
             "<button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjSelectContentDirective",
@@ -891,7 +972,8 @@
             "<div kjSelectContent role=\"listbox\">\n  <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjOptionDirective",
@@ -935,7 +1017,8 @@
             "<div kjOption [kjOptionValue]=\"'apple'\">Apple</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -971,7 +1054,8 @@
             "<table [kjTable]=\"columns\" [kjTableData]=\"rows\" #tbl=\"kjTable\">\n  <thead>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjTableHeaderDirective",
@@ -987,7 +1071,8 @@
             "<th kjTableHeader [kjHeader]=\"header\" scope=\"col\">Name</th>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -1029,7 +1114,8 @@
               "content": "import { Component, signal } from '@angular/core';\nimport { KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective],\n  styles: [`\n    .tabs { background: #0c0c0c; padding: 2rem; }\n    [kjTabList] { display: flex; border-bottom: 1px solid #1e1e1e; margin-bottom: 1.5rem; }\n    [kjTab] { background: none; border: none; border-bottom: 2px solid transparent; color: #555; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; padding: 0.625rem 1.25rem; cursor: pointer; transition: color 0.15s, border-color 0.15s; margin-bottom: -1px; }\n    [kjTab][aria-selected=\"true\"] { color: #f0ede6; border-bottom-color: #b8f500; }\n    [kjTab]:hover { color: #f0ede6; }\n    [kjTabPanel] { color: #666; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; line-height: 1.6; }\n    [hidden] { display: none; }\n  `],\n  template: `\n    <div class=\"tabs\">\n      <div kjTabs [(kjTabsValue)]=\"activeTab\" aria-label=\"Example tabs\">\n        <div kjTabList>\n          <button kjTab [kjTabValue]=\"'tab1'\">Overview</button>\n          <button kjTab [kjTabValue]=\"'tab2'\">API</button>\n          <button kjTab [kjTabValue]=\"'tab3'\">Examples</button>\n        </div>\n        <div kjTabPanel [kjPanelFor]=\"'tab1'\">The overview tab content goes here.</div>\n        <div kjTabPanel [kjPanelFor]=\"'tab2'\">API reference content goes here.</div>\n        <div kjTabPanel [kjPanelFor]=\"'tab3'\">Code examples go here.</div>\n      </div>\n    </div>\n  `,\n})\nexport class TabsExampleComponent {\n  activeTab = signal('tab1');\n}"
             }
           ],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjTabListDirective",
@@ -1043,7 +1129,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjTabDirective",
@@ -1066,7 +1153,8 @@
             "<button kjTab [kjTabValue]=\"'profile'\">Profile</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjTabPanelDirective",
@@ -1089,7 +1177,8 @@
             "<div kjTabPanel [kjPanelFor]=\"'profile'\">Profile content</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -1131,7 +1220,8 @@
             "<div kjChart [kjChartOption]=\"chartOption()\" kjChartLabel=\"Monthly revenue\" style=\"height:300px\"></div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -1167,7 +1257,8 @@
             "<input kjAriaDescribedBy [kjDescribedBy]=\"['hint-id', errorId()]\" />\n<span id=\"hint-id\">Format: DD/MM/YYYY</span>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjFocusTrapDirective",
@@ -1190,7 +1281,8 @@
             "<div role=\"dialog\" kjFocusTrap [kjFocusTrapEnabled]=\"isOpen()\">\n  <button>Action</button>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjLiveRegionDirective",
@@ -1213,7 +1305,8 @@
             "<div kjLiveRegion [kjPoliteness]=\"'polite'\" #region=\"kjLiveRegion\"></div>\n<button (click)=\"region.announce('Item saved')\">Save</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjRovingTabindexItemDirective",
@@ -1229,7 +1322,8 @@
             "<button kjRovingTabindexItem>Item</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjRovingTabindexDirective",
@@ -1245,7 +1339,8 @@
             "<div kjRovingTabindex role=\"toolbar\" aria-label=\"Formatting\">\n  <button kjRovingTabindexItem>Bold</button>\n  <button kjRovingTabindexItem>Italic</button>\n</div>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjVisuallyHiddenDirective",
@@ -1261,7 +1356,8 @@
             "<button>\n  <kj-icon name=\"close\" />\n  <span kjVisuallyHidden>Close dialog</span>\n</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     },
@@ -1288,7 +1384,8 @@
           "inputs": [],
           "examples": [],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjDisabledDirective",
@@ -1311,7 +1408,8 @@
             "<button kjButton [kjDisabled]=\"isLoading()\">Submit</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         },
         {
           "className": "KjFocusRingDirective",
@@ -1327,7 +1425,8 @@
             "<button kjFocusRing>Focusable button</button>"
           ],
           "exampleFiles": [],
-          "themedExamples": {}
+          "themedExamples": {},
+          "docExamples": []
         }
       ]
     }

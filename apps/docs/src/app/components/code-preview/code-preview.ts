@@ -3,6 +3,7 @@ import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
 import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
+import { DocExample } from '../../services/docs.service';
 
 export interface CodeExample {
   lang: 'ts' | 'html' | 'css';
@@ -25,6 +26,9 @@ export class CodePreviewComponent {
   /** Per-theme example files — keyed by theme name. Overrides `examples` when available. */
   themedExamples = input<Record<string, CodeExample[]>>({});
 
+  /** Named example groups with optional per-theme files. When provided, overrides themedExamples/examples. */
+  docExamples = input<DocExample[]>([]);
+
   /** Component name for StackBlitz project title. */
   componentName = input<string>('Example');
 
@@ -32,6 +36,8 @@ export class CodePreviewComponent {
 
   protected readonly activeTheme = signal<PreviewTheme>('default');
   protected readonly previewThemes = PREVIEW_THEMES;
+  protected readonly activeExampleIdx = signal(0);
+  protected readonly activeDocExample = computed(() => this.docExamples()[this.activeExampleIdx()] ?? null);
 
   /** Whether the code editor panel is visible. Hidden by default. */
   protected readonly showCode = signal(false);
@@ -42,13 +48,21 @@ export class CodePreviewComponent {
   /**
    * Active example files for the current theme.
    *
+   * When docExamples is provided, uses the active example's themedFiles.
+   * Otherwise falls back to legacy themedExamples / examples.
+   *
    * Rules:
-   * - DEFAULT theme: shows `themedExamples.default` if defined, else falls back to `examples`
-   *   (which holds the plain `@doc-file` entries — they belong to the default theme).
+   * - DEFAULT theme: shows `themedExamples.default` if defined, else falls back to `examples`.
    * - Any other theme: shows only `themedExamples[theme]` — no cross-theme fallback.
    *   Returns [] if that theme has no files (triggers the "no code" message).
    */
   protected readonly activeFiles = computed((): CodeExample[] => {
+    const docEx = this.activeDocExample();
+    if (docEx) {
+      const theme = this.activeTheme();
+      return (docEx.themedFiles[theme] ?? docEx.themedFiles['default'] ?? []) as CodeExample[];
+    }
+    // Fallback to legacy themedExamples/examples
     const themed = this.themedExamples();
     const theme = this.activeTheme();
     if (theme === 'default') {

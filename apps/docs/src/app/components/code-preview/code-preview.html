@@ -1,5 +1,20 @@
 <div class="preview-wrap">
 
+  @if (docExamples().length > 1) {
+    <div class="example-tabs">
+      @for (ex of docExamples(); track ex.label; let i = $index) {
+        <button
+          class="example-tab"
+          [class.active]="i === activeExampleIdx()"
+          (click)="activeExampleIdx.set(i); activeTheme.set('default'); activeIndex.set(0)"
+          type="button"
+        >
+          {{ ex.label }}
+        </button>
+      }
+    </div>
+  }
+
   @if (hasDemo()) {
     <div class="preview-theme-strip">
       @for (t of previewThemes; track t.value) {

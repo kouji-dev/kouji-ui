@@ -21,6 +21,11 @@ interface ExampleFile {
   exportName?: string;  // exported class name, used for component lookup
 }
 
+interface DocExample {
+  label: string;
+  themedFiles: Record<string, ExampleFile[]>;
+}
+
 interface DirectiveDef {
   className: string;
   selector: string;
@@ -30,6 +35,7 @@ interface DirectiveDef {
   examples: string[];
   exampleFiles: ExampleFile[];        // default theme files (backward compat)
   themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
+  docExamples: DocExample[];          // named example groups
 }
 
 interface ComponentDoc {
@@ -289,6 +295,102 @@ function parseDocThemes(fullText: string, sourceFilePath?: string): Record<strin
   return result;
 }
 
+/**
+ * Parses @doc-example named example groups from raw JSDoc full text.
+ * Each group has a label and themed files. If no @doc-theme inside a group,
+ * all @doc-file entries are placed under the 'default' theme.
+ */
+function parseDocExamples(fullText: string, sourceFilePath?: string): DocExample[] {
+  const results: DocExample[] = [];
+  const validLangs = ['ts', 'html', 'css'] as const;
+
+  // Locate the JSDoc block that contains @doc-example
+  const docExampleIdx = fullText.indexOf('@doc-example');
+  if (docExampleIdx === -1) return results;
+
+  const jsDocStart = fullText.lastIndexOf('/**', docExampleIdx);
+  const jsDocEnd = fullText.indexOf('*/', docExampleIdx);
+  if (jsDocStart === -1 || jsDocEnd === -1 || jsDocEnd < jsDocStart) return results;
+
+  const jsDocText = fullText.substring(jsDocStart, jsDocEnd + 2);
+
+  // Strip JSDoc `* ` line markers
+  const cleanText = jsDocText.split('\n').map((l: string) => l.replace(/^\s*\*\s?/, '')).join('\n');
+
+  // Split on @doc-example at line start
+  const exampleParts = cleanText.split(/(?:\n|^)(?=\s*@doc-example\s)/m);
+
+  for (const part of exampleParts) {
+    const headerMatch = part.match(/^\s*@doc-example\s+(.+)/);
+    if (!headerMatch) continue;
+    const label = headerMatch[1].trim();
+    const body = part.slice(headerMatch.index! + headerMatch[0].length);
+
+    const themedFiles: Record<string, ExampleFile[]> = {};
+
+    if (body.includes('@doc-theme')) {
+      // Split on @doc-theme boundaries
+      const themeParts = body.split(/(?:\n|^)(?=\s*@doc-theme\s+\w)/m);
+      for (const tp of themeParts) {
+        const themeHeader = tp.match(/^\s*@doc-theme\s+(\w+)/);
+        if (!themeHeader) continue;
+        const themeName = themeHeader[1].trim();
+        const themeBody = tp.slice(themeHeader.index! + themeHeader[0].length);
+        const files = parseDocFileEntriesClean(themeBody, sourceFilePath, validLangs);
+        if (files.length) themedFiles[themeName] = files;
+      }
+    } else {
+      // No themes — all @doc-file entries go to 'default'
+      const files = parseDocFileEntriesClean(body, sourceFilePath, validLangs);
+      if (files.length) themedFiles['default'] = files;
+    }
+
+    if (Object.keys(themedFiles).length) {
+      results.push({ label, themedFiles });
+    }
+  }
+
+  return results;
+}
+
+/** Shared helper: parse @doc-file entries from already-clean (stripped) JSDoc text. */
+function parseDocFileEntriesClean(
+  cleanText: string,
+  sourceFilePath?: string,
+  validLangs: readonly string[] = ['ts', 'html', 'css'],
+): ExampleFile[] {
+  const results: ExampleFile[] = [];
+
+  const parts = cleanText.split(/(?:\n|^)(?=\s*@doc-file\s+\S)/m);
+  for (const part of parts) {
+    const header = part.match(/^\s*@doc-file\s+(\S+)/);
+    if (!header) continue;
+    const filename = header[1].trim();
+    const body = part.slice(header.index! + header[0].length);
+
+    const fenceMatch = body.match(/```(\w*)\s*\n([\s\S]*?)```/);
+    if (fenceMatch) {
+      const langRaw = (fenceMatch[1] ?? 'ts').trim() || 'ts';
+      const lang: ExampleFile['lang'] = (validLangs as readonly string[]).includes(langRaw)
+        ? langRaw as ExampleFile['lang']
+        : 'ts';
+      const innerLines = fenceMatch[2].split('\n');
+      const nonEmpty = innerLines.filter((l: string) => l.trim().length > 0);
+      const minIndent = nonEmpty.length
+        ? Math.min(...nonEmpty.map((l: string) => (l.match(/^(\s*)/) as RegExpMatchArray)[1].length))
+        : 0;
+      const content = innerLines.map((l: string) => l.substring(minIndent)).join('\n').trim();
+      if (content) results.push({ lang, filename, content });
+    } else if (sourceFilePath) {
+      const dir = dirname(sourceFilePath);
+      const file = readExampleFile(dir, filename);
+      if (file) results.push(file);
+    }
+  }
+
+  return results;
+}
+
 /** Extract signal input definitions from a class */
 function extractInputs(cls: any): InputDef[] {
   const inputs: InputDef[] = [];
@@ -391,6 +493,7 @@ async function main() {
 
         const { description, examples, categoryPath, exampleFiles } = extractJsDocText(cls, filePath);
         const themedExamples = parseDocThemes(cls.getFullText(), filePath);
+        const docExamples = parseDocExamples(cls.getFullText(), filePath);
         const ownInputs = extractInputs(cls);
         const hdInputs = extractHostDirectiveInputs(decoratorArgs);
         const inputs = [...ownInputs, ...hdInputs];
@@ -413,6 +516,7 @@ async function main() {
           examples,
           exampleFiles: resolvedExampleFiles,
           themedExamples,
+          docExamples,
         };
 
         // Group into component
