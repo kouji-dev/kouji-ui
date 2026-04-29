@@ -17,7 +17,8 @@ export class PageTocComponent {
     const target = document.getElementById(id);
     if (!target) return;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Update the URL hash without triggering a page navigation
+    // Update URL and active highlight immediately on click
     history.pushState(null, '', `#${id}`);
+    this.toc().activeId.set(id);
   }
 }
