@@ -4,7 +4,7 @@
   "peerDependencies": {
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0",
-    "@kouji-ui/core": "^0.0.1"
+    "@kouji-ui/core": ">=0.0.1"
   },
   "devDependencies": {
     "@kouji-ui/core": "workspace:*"

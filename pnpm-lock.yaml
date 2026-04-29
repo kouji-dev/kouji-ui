@@ -51,6 +51,9 @@ importers:
         specifier: ^2.3.0
         version: 2.8.1
     devDependencies:
+      '@analogjs/vite-plugin-angular':
+        specifier: ^2.5.0
+        version: 2.5.0(@angular/build@21.2.8(508b39129da74f5576b0a682e6aacf13))(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(vite@7.3.2(@types/node@20.19.39)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass@1.97.3))
       '@analogjs/vitest-angular':
         specifier: ^2.5.0
         version: 2.5.0(@analogjs/vite-plugin-angular@2.5.0(@angular/build@21.2.8(508b39129da74f5576b0a682e6aacf13))(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(vite@7.3.2(@types/node@20.19.39)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(sass@1.97.3)))(@angular-devkit/architect@0.2102.8(chokidar@5.0.0))(@angular-devkit/schematics@21.2.8(chokidar@5.0.0))(vitest@4.1.5)

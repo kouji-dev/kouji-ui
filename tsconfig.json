@@ -8,8 +8,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "baseUrl": ".",
     "paths": {
-      "kj-core": ["./dist/kj-core"],
-      "kj-ui": ["./dist/kj-ui"],
       "@kouji-ui/core": ["packages/core/src/public-api.ts"],
       "@kouji-ui/core/*": ["packages/core/src/*"],
       "@kouji-ui/ui": ["packages/ui/src/public-api.ts"],
