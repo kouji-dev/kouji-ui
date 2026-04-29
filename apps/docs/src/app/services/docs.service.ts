@@ -16,6 +16,7 @@ export interface ExampleFile {
   lang: 'ts' | 'html' | 'css';
   filename: string;
   content: string;
+  exportName?: string;
 }
 
 export interface DirectiveDef {

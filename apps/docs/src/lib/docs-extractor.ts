@@ -2,7 +2,7 @@ import { Project, SourceFile } from 'ts-morph';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { join, dirname } from 'node:path';
-// node:fs no longer needed — @doc-file content is inline in TSDoc, not read from disk
+import { readFileSync } from 'node:fs';
 
 // ── Exported types ──────────────────────────────────────────────────────────
 
@@ -30,6 +30,7 @@ export interface ExampleFile {
   lang: 'ts' | 'html' | 'css';
   filename: string;
   content: string;
+  exportName?: string;  // exported class name, used for component lookup
 }
 
 export interface DirectiveDef {
@@ -181,7 +182,7 @@ function getJsDocBlock(node: ts.Node, sourceFile: ts.SourceFile): string | null 
   return trivia.substring(jsStart, jsEnd + 2);
 }
 
-function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile): ExampleFile[] {
+function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile, sourceDir?: string): ExampleFile[] {
   const jsDocText = getJsDocBlock(node, sourceFile);
   if (!jsDocText) return [];
 
@@ -190,11 +191,33 @@ function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile): ExampleFile[] {
   // If @doc-theme blocks exist, all @doc-file entries belong to themes — handled by getDocThemes
   if (cleanText.includes('@doc-theme')) return [];
 
-  return parseDocFileEntries(cleanText);
+  return parseDocFileEntries(cleanText, sourceDir);
+}
+
+/** Extracts the first exported class name from a TypeScript file's source text. */
+function extractExportName(content: string): string | undefined {
+  const match = content.match(/export\s+(?:default\s+)?class\s+(\w+)/);
+  return match?.[1];
+}
+
+/** Reads a co-located example file from disk and returns an ExampleFile, or null on error. */
+function readExampleFile(dirPath: string, filename: string): ExampleFile | null {
+  const fullPath = join(dirPath, filename);
+  try {
+    const content = readFileSync(fullPath, 'utf-8');
+    const ext = filename.split('.').pop()?.toLowerCase() ?? 'ts';
+    const lang: ExampleFile['lang'] = (['ts', 'html', 'css'] as string[]).includes(ext)
+      ? (ext as ExampleFile['lang'])
+      : 'ts';
+    const exportName = extractExportName(content);
+    return { lang, filename, content, exportName };
+  } catch {
+    return null;
+  }
 }
 
 /** Shared helper: extracts @doc-file entries from clean (stripped) JSDoc text. */
-function parseDocFileEntries(cleanText: string): ExampleFile[] {
+function parseDocFileEntries(cleanText: string, sourceDir?: string): ExampleFile[] {
   const results: ExampleFile[] = [];
   const validLangs = ['ts', 'html', 'css'] as const;
 
@@ -208,21 +231,25 @@ function parseDocFileEntries(cleanText: string): ExampleFile[] {
     const body = part.slice(header.index! + header[0].length);
 
     const fenceMatch = body.match(DOC_FENCED_RE);
-    if (!fenceMatch) continue;
+    if (fenceMatch) {
+      const fenceLang = fenceMatch[1].toLowerCase();
+      const content = stripJsDocPrefixes(fenceMatch[2]);
+      if (!content) continue;
 
-    const fenceLang = fenceMatch[1].toLowerCase();
-    const content = stripJsDocPrefixes(fenceMatch[2]);
-    if (!content) continue;
+      const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+      const lang: ExampleFile['lang'] =
+        (validLangs as readonly string[]).includes(fenceLang as any)
+          ? (fenceLang as ExampleFile['lang'])
+          : (validLangs as readonly string[]).includes(ext as any)
+            ? (ext as ExampleFile['lang'])
+            : 'ts';
 
-    const ext = filename.split('.').pop()?.toLowerCase() ?? '';
-    const lang: ExampleFile['lang'] =
-      (validLangs as readonly string[]).includes(fenceLang as any)
-        ? (fenceLang as ExampleFile['lang'])
-        : (validLangs as readonly string[]).includes(ext as any)
-          ? (ext as ExampleFile['lang'])
-          : 'ts';
-
-    results.push({ lang, filename, content });
+      results.push({ lang, filename, content });
+    } else if (sourceDir) {
+      // File-path only — read the actual file from the source directory
+      const file = readExampleFile(sourceDir, filename);
+      if (file) results.push(file);
+    }
   }
 
   return results;
@@ -237,7 +264,7 @@ function parseDocFileEntries(cleanText: string): ExampleFile[] {
  * TypeScript parses @doc-theme as tag "@doc" + comment "-theme name ...",
  * so we scan the raw JSDoc text directly.
  */
-function getDocThemes(node: ts.Node, sourceFile: ts.SourceFile): Record<string, ExampleFile[]> {
+function getDocThemes(node: ts.Node, sourceFile: ts.SourceFile, sourceDir?: string): Record<string, ExampleFile[]> {
   const result: Record<string, ExampleFile[]> = {};
 
   const jsDocText = getJsDocBlock(node, sourceFile);
@@ -255,7 +282,7 @@ function getDocThemes(node: ts.Node, sourceFile: ts.SourceFile): Record<string, 
     if (!headerMatch) continue;
     const themeName = headerMatch[1].trim();
     const themeBody = part.slice(headerMatch.index! + headerMatch[0].length);
-    const files = parseDocFileEntries(themeBody);
+    const files = parseDocFileEntries(themeBody, sourceDir);
     if (files.length) result[themeName] = files;
   }
 
@@ -437,10 +464,11 @@ function processSourceFile(
 
     const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
     const className = cls.name?.text ?? '';
+    const sourceDir = dirname(morphFile.getFilePath());
     const description = getJsDocDescription(cls);
     const examples = getJsDocExamples(cls);
-    const exampleFiles = getDocFiles(cls, tsSourceFile);
-    const themedExamples = getDocThemes(cls, tsSourceFile);
+    const exampleFiles = getDocFiles(cls, tsSourceFile, sourceDir);
+    const themedExamples = getDocThemes(cls, tsSourceFile, sourceDir);
     const ownInputs = extractInputs(cls, tsSourceFile);
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const inputs = [...ownInputs, ...hdInputs];

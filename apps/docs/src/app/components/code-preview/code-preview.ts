@@ -1,13 +1,14 @@
 import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
-import { DynamicComponentService } from '../../services/dynamic-component.service';
+import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
 
 export interface CodeExample {
   lang: 'ts' | 'html' | 'css';
   filename: string;
   content: string;
+  exportName?: string;
 }
 
 @Component({
@@ -27,7 +28,7 @@ export class CodePreviewComponent {
   /** Component name for StackBlitz project title. */
   componentName = input<string>('Example');
 
-  private readonly dynamicSvc = inject(DynamicComponentService);
+  private readonly registrySvc = inject(ExampleRegistryService);
 
   protected readonly activeTheme = signal<PreviewTheme>('default');
   protected readonly previewThemes = PREVIEW_THEMES;
@@ -61,20 +62,15 @@ export class CodePreviewComponent {
     return list[this.activeIndex()] ?? null;
   });
 
-  // demoComponent: try dynamic creation from activeFiles source
   readonly demoComponent = computed((): Type<unknown> | null => {
     const files = this.activeFiles();
     if (!files.length) return null;
-    // Use the first file's content to create a dynamic component
-    const source = files[0]?.content;
-    if (!source) return null;
-    return this.dynamicSvc.create(source);
+    const exportName = files[0]?.exportName;
+    if (!exportName) return null;
+    return this.registrySvc.get(exportName);
   });
 
-  protected readonly hasDemo = computed(() => {
-    const files = this.activeFiles();
-    return files.length > 0 && !!this.dynamicSvc.create(files[0]?.content ?? '');
-  });
+  protected readonly hasDemo = computed(() => !!this.demoComponent());
 
   /** Signal-based view query — resolves to the ViewContainerRef when #previewHost exists in the DOM. */
   private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', { read: ViewContainerRef });

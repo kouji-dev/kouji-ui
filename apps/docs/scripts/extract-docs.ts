@@ -18,6 +18,7 @@ interface ExampleFile {
   lang: 'ts' | 'html' | 'css';
   filename: string;
   content: string;
+  exportName?: string;  // exported class name, used for component lookup
 }
 
 interface DirectiveDef {
@@ -38,6 +39,28 @@ interface ComponentDoc {
   category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
+}
+
+/** Extracts the first exported class name from a TypeScript file's source text. */
+function extractExportName(content: string): string | undefined {
+  const match = content.match(/export\s+(?:default\s+)?class\s+(\w+)/);
+  return match?.[1];
+}
+
+/** Reads a co-located example file from disk, returning an ExampleFile or null on error. */
+function readExampleFile(dirPath: string, filename: string): ExampleFile | null {
+  const fullPath = join(dirPath, filename);
+  try {
+    const content = readFileSync(fullPath, 'utf-8');
+    const ext = filename.split('.').pop()?.toLowerCase() ?? 'ts';
+    const lang: ExampleFile['lang'] = (['ts', 'html', 'css'] as string[]).includes(ext)
+      ? (ext as ExampleFile['lang'])
+      : 'ts';
+    const exportName = extractExportName(content);
+    return { lang, filename, content, exportName };
+  } catch {
+    return null;
+  }
 }
 
 /** Determine category from folder name */
@@ -144,6 +167,11 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
         if (content) {
           exampleFiles.push({ lang, filename, content });
         }
+      } else {
+        // File-path only — read the actual file from the source directory
+        const dir = dirname(sourceFilePath);
+        const file = readExampleFile(dir, filename);
+        if (file) exampleFiles.push(file);
       }
     }
   }
@@ -158,13 +186,20 @@ const DOC_THEME_RE = /@doc-theme\s+(\w+)([\s\S]*?)(?=@doc-theme\s+\w|\s*\*\/|$)/
  * Parses @doc-theme sections from raw JSDoc full text (via ts-morph getText()).
  * Each theme contains @doc-file entries in the same inline format as getDocFiles.
  */
-function parseDocThemes(fullText: string): Record<string, ExampleFile[]> {
+function parseDocThemes(fullText: string, sourceFilePath?: string): Record<string, ExampleFile[]> {
   const result: Record<string, ExampleFile[]> = {};
   const validLangs = ['ts', 'html', 'css'] as const;
 
-  const jsDocStart = fullText.lastIndexOf('/**');
-  const jsDocEnd = fullText.lastIndexOf('*/');
-  if (jsDocStart === -1 || jsDocEnd < jsDocStart) return result;
+  // Find the JSDoc block that contains @doc-theme rather than the last /** block
+  // (getFullText() includes the class body, so lastIndexOf finds property JSDoc, not the class JSDoc)
+  const docThemeIdx = fullText.indexOf('@doc-theme');
+  if (docThemeIdx === -1) return result;
+
+  // Walk back from @doc-theme to find the opening /**
+  const jsDocStart = fullText.lastIndexOf('/**', docThemeIdx);
+  // Walk forward from @doc-theme to find the closing */
+  const jsDocEnd = fullText.indexOf('*/', docThemeIdx);
+  if (jsDocStart === -1 || jsDocEnd === -1 || jsDocEnd < jsDocStart) return result;
 
   const jsDocText = fullText.substring(jsDocStart, jsDocEnd + 2);
 
@@ -199,6 +234,11 @@ function parseDocThemes(fullText: string): Record<string, ExampleFile[]> {
         if (content) {
           files.push({ lang, filename, content });
         }
+      } else if (sourceFilePath) {
+        // File-path only — read the actual file from the source directory
+        const dir = dirname(sourceFilePath);
+        const file = readExampleFile(dir, filename);
+        if (file) files.push(file);
       }
     }
 
@@ -310,7 +350,7 @@ async function main() {
         if (!selector) continue;
 
         const { description, examples, categoryPath, exampleFiles } = extractJsDocText(cls, filePath);
-        const themedExamples = parseDocThemes(cls.getFullText());
+        const themedExamples = parseDocThemes(cls.getFullText(), filePath);
         const inputs = extractInputs(cls);
         const className = cls.getName() ?? '';
 

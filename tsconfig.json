@@ -9,6 +9,7 @@
     "baseUrl": ".",
     "paths": {
       "@kouji-ui/core": ["packages/core/src/public-api.ts"],
+      "@kouji-ui/core/examples": ["packages/core/src/example-components.ts"],
       "@kouji-ui/core/*": ["packages/core/src/*"],
       "@kouji-ui/ui": ["packages/ui/src/public-api.ts"],
       "@kouji-ui/ui/*": ["packages/ui/src/*"]

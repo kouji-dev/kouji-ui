@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T18:32:13.582Z",
+  "generatedAt": "2026-04-29T20:24:02.091Z",
   "components": [
     {
       "name": "Avatar",
@@ -96,7 +96,7 @@
         "Button"
       ],
       "category": "foundation",
-      "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior.",
+      "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",
       "directives": [
         {
           "className": "KjButtonDirective",
@@ -106,7 +106,7 @@
             "Foundation",
             "Button"
           ],
-          "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior.",
+          "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",
           "inputs": [],
           "examples": [
             "<button kjButton [kjVariant]=\"'destructive'\" [kjDisabled]=\"isLoading()\">Delete</button>"
@@ -115,10 +115,36 @@
             {
               "lang": "ts",
               "filename": "button.example.ts",
-              "content": "import { Component, signal } from '@angular/core';\nimport { KjButtonDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; padding: 2rem; background: #0c0c0c; }\n    [kjButton] { padding: 0.5rem 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; border: none; cursor: pointer; transition: opacity 0.15s; }\n    [data-variant=\"default\"] { background: #b8f500; color: #0c0c0c; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: white; }\n    [data-variant=\"outline\"] { background: transparent; color: #f0ede6; border: 1px solid #333; }\n    [data-variant=\"ghost\"] { background: transparent; color: #888; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Default</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Destructive</button>\n      <button kjButton [kjVariant]=\"'outline'\">Outline</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonExampleComponent {}"
+              "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; }\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1.25rem; font-family: inherit; font-size: 0.875rem; border: none; cursor: pointer; transition: opacity 0.15s; }\n    [data-variant=\"default\"] { background: #b8f500; color: #0c0c0c; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: #fff; }\n    [data-variant=\"outline\"] { background: transparent; color: #f0ede6; border: 1px solid #333; }\n    [data-variant=\"ghost\"] { background: transparent; color: #888; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Default</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Destructive</button>\n      <button kjButton [kjVariant]=\"'outline'\">Outline</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonExample {}\n",
+              "exportName": "ButtonExample"
             }
           ],
-          "themedExamples": {}
+          "themedExamples": {
+            "default": [
+              {
+                "lang": "ts",
+                "filename": "button.example.ts",
+                "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; }\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1.25rem; font-family: inherit; font-size: 0.875rem; border: none; cursor: pointer; transition: opacity 0.15s; }\n    [data-variant=\"default\"] { background: #b8f500; color: #0c0c0c; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: #fff; }\n    [data-variant=\"outline\"] { background: transparent; color: #f0ede6; border: 1px solid #333; }\n    [data-variant=\"ghost\"] { background: transparent; color: #888; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Default</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Destructive</button>\n      <button kjButton [kjVariant]=\"'outline'\">Outline</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonExample {}\n",
+                "exportName": "ButtonExample"
+              }
+            ],
+            "retro": [
+              {
+                "lang": "ts",
+                "filename": "button.retro.example.ts",
+                "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-retro',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 2rem; background: #fef9c3; font-family: 'Courier New', monospace; }\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1.125rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border: 2px solid #000; border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s; }\n    button[kjButton]:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }\n    [data-variant=\"default\"] { background: #16a34a; color: #fff; }\n    [data-variant=\"destructive\"] { background: #dc2626; color: #fff; }\n    [data-variant=\"outline\"] { background: #fff; color: #1d4ed8; border-color: #1d4ed8; box-shadow: 3px 3px 0 #1d4ed8; }\n    [data-variant=\"ghost\"] { background: transparent; color: #000; box-shadow: none; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; transform: none !important; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Confirm</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Delete</button>\n      <button kjButton [kjVariant]=\"'outline'\">Learn More</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Cancel</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonRetroExample {}\n",
+                "exportName": "ButtonRetroExample"
+              }
+            ],
+            "finance": [
+              {
+                "lang": "ts",
+                "filename": "button.finance.example.ts",
+                "content": "import { Component } from '@angular/core';\nimport { KjButtonDirective } from './button.directive';\n\n@Component({\n  selector: 'kj-example-button-finance',\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    :host { display: block; padding: 1.75rem 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; }\n    .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }\n    button[kjButton] { padding: 0.5rem 1rem; font-family: system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: background 0.12s; line-height: 1.5; }\n    [data-variant=\"default\"] { background: #3b82f6; color: #fff; border-color: #3b82f6; }\n    [data-variant=\"default\"]:hover { background: #2563eb; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: #fff; }\n    [data-variant=\"destructive\"]:hover { background: #dc2626; }\n    [data-variant=\"outline\"] { background: #fff; color: #374151; border-color: #d1d5db; }\n    [data-variant=\"outline\"]:hover { background: #f9fafb; }\n    [data-variant=\"ghost\"] { background: transparent; color: #6b7280; }\n    [data-variant=\"ghost\"]:hover { background: #f3f4f6; }\n    [aria-disabled=\"true\"] { opacity: 0.45; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Primary</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Delete</button>\n      <button kjButton [kjVariant]=\"'outline'\">Secondary</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonFinanceExample {}\n",
+                "exportName": "ButtonFinanceExample"
+              }
+            ]
+          }
         }
       ]
     },
