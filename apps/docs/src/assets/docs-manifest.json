@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T20:24:02.091Z",
+  "generatedAt": "2026-04-29T20:41:09.138Z",
   "components": [
     {
       "name": "Avatar",
@@ -78,7 +78,14 @@
             "Badge"
           ],
           "description": "Marks an element as a badge via data attributes.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjBadgeVariant",
+              "type": "KjBadgeVariant",
+              "required": false,
+              "description": "The visual variant of the badge. Defaults to `'default'`."
+            }
+          ],
           "examples": [
             "<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>"
           ],
@@ -107,7 +114,27 @@
             "Button"
           ],
           "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabledDirective` and `KjFocusRingDirective` via `hostDirectives`.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjVariant",
+              "type": "KjButtonVariant",
+              "required": false,
+              "description": "The visual variant of the button. Defaults to `'default'`."
+            },
+            {
+              "name": "kjSize",
+              "type": "KjButtonSize",
+              "required": false,
+              "description": "The size of the button. Defaults to `'md'`."
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<button kjButton [kjVariant]=\"'destructive'\" [kjDisabled]=\"isLoading()\">Delete</button>"
           ],
@@ -168,7 +195,21 @@
             "Checkbox"
           ],
           "description": "Adds checkbox semantics with Angular forms integration. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjChecked",
+              "type": "unknown",
+              "required": false,
+              "description": "Whether the checkbox is checked. Supports two-way binding."
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<div kjCheckbox tabindex=\"0\" [(kjChecked)]=\"accepted\" aria-label=\"Accept terms\">Accept</div>"
           ],
@@ -203,7 +244,21 @@
             "Input"
           ],
           "description": "Enhances a native `<input>` with Angular forms integration, disabled/invalid state, and focus-ring. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjInvalid",
+              "type": "boolean",
+              "required": false,
+              "description": "Whether the input is in an invalid state. Combined with `touched` for ARIA."
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<input kjInput type=\"email\" [formControl]=\"emailCtrl\" [kjInvalid]=\"emailCtrl.invalid\" />"
           ],
@@ -238,7 +293,14 @@
             "Radio"
           ],
           "description": "Container for a group of radio buttons. Manages the selected value.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjValue",
+              "type": "unknown",
+              "required": false,
+              "description": ""
+            }
+          ],
           "examples": [
             "<div kjRadioGroup [(kjValue)]=\"size\" aria-label=\"Size\">\n  <div kjRadio [kjRadioValue]=\"'s'\" tabindex=\"0\">Small</div>\n</div>"
           ],
@@ -254,7 +316,21 @@
             "Radio"
           ],
           "description": "Individual radio button within a `[kjRadioGroup]`. Includes CVA for forms integration.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjRadioValue",
+              "type": "unknown",
+              "required": true,
+              "description": ""
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<div kjRadio [kjRadioValue]=\"'a'\" tabindex=\"0\">Option A</div>"
           ],
@@ -283,7 +359,21 @@
             "Toggle"
           ],
           "description": "Adds toggle (press) behavior with Angular forms integration.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjPressed",
+              "type": "unknown",
+              "required": false,
+              "description": "Whether the toggle is pressed. Supports two-way binding."
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<button kjToggle [(kjPressed)]=\"isBold\" aria-label=\"Bold\">B</button>"
           ],
@@ -373,7 +463,15 @@
             "Menu"
           ],
           "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjMenuTriggerFor",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `cdkMenuTriggerFor` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<button kjMenuTrigger [kjMenuTriggerFor]=\"myMenu\">Actions</button>\n<ng-template #myMenu>\n  <div kjMenu>\n    <button kjMenuItem>Edit</button>\n  </div>\n</ng-template>"
           ],
@@ -405,7 +503,15 @@
             "Menu"
           ],
           "description": "Individual menu item. Wraps CDK `CdkMenuItem`. Handles keyboard activation (Enter/Space), disabled state, and submenu support.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<button kjMenuItem role=\"menuitem\">Delete</button>"
           ],
@@ -491,7 +597,14 @@
             "Toast"
           ],
           "description": "Marks an element as a toast notification with appropriate ARIA live region attributes.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjToastVariant",
+              "type": "KjToastVariant",
+              "required": false,
+              "description": "The visual and semantic variant. Defaults to `'default'`."
+            }
+          ],
           "examples": [
             "<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>"
           ],
@@ -577,7 +690,14 @@
             "Accordion"
           ],
           "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjAccordionType",
+              "type": "'single' | 'multiple'",
+              "required": false,
+              "description": "Whether multiple items can be open simultaneously. Defaults to `'single'`."
+            }
+          ],
           "examples": [
             "<div kjAccordion [kjAccordionType]=\"'multiple'\">\n  <div kjAccordionItem [kjItemValue]=\"'item-1'\">...</div>\n</div>"
           ],
@@ -593,7 +713,14 @@
             "Accordion"
           ],
           "description": "Individual accordion item. Extends CDK `CdkAccordionItem`. Manages expanded state via CDK's `UniqueSelectionDispatcher` for single-mode coordination.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjItemValue",
+              "type": "string",
+              "required": true,
+              "description": "The unique value identifying this item within the accordion."
+            }
+          ],
           "examples": [
             "<div kjAccordionItem [kjItemValue]=\"'section-1'\">\n  <button kjAccordionTrigger>Section 1</button>\n  <div kjAccordionContent>Content</div>\n</div>"
           ],
@@ -654,7 +781,14 @@
             "Form"
           ],
           "description": "Container for a form field. Groups label, input, and error message.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjFieldInvalid",
+              "type": "boolean",
+              "required": false,
+              "description": "Whether the field is in an invalid state."
+            }
+          ],
           "examples": [
             "<div kjFormField [kjFieldInvalid]=\"ctrl.invalid && ctrl.touched\">\n  <label kjFormLabel for=\"name\">Name</label>\n  <input id=\"name\" kjInput />\n  <span kjFormError>Name is required</span>\n</div>"
           ],
@@ -713,7 +847,14 @@
             "Select"
           ],
           "description": "Root select container. Wraps CDK `CdkListbox` for full keyboard navigation and ARIA listbox semantics. Manages open/close state via `kjSelectValue` model.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjSelectValue",
+              "type": "unknown",
+              "required": false,
+              "description": "The currently selected value. Supports two-way binding."
+            }
+          ],
           "examples": [
             "<div kjSelect [(kjSelectValue)]=\"selected\">\n  <button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>\n  <div kjSelectContent role=\"listbox\">\n    <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n  </div>\n</div>"
           ],
@@ -761,7 +902,35 @@
             "Select"
           ],
           "description": "Individual option inside a `kjSelectContent`. Wraps CDK `CdkOption` for proper `aria-selected` management and keyboard navigation support. Clicking the option calls `select()` on the parent context.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjOptionValue",
+              "type": "unknown",
+              "required": true,
+              "description": "The value this option represents."
+            },
+            {
+              "name": "kjOptionValue",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `cdkOption` via `hostDirectives`.",
+              "defaultValue": "false"
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `cdkOptionDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            },
+            {
+              "name": "kjDisabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
+              "defaultValue": "false"
+            }
+          ],
           "examples": [
             "<div kjOption [kjOptionValue]=\"'apple'\">Apple</div>"
           ],
@@ -790,7 +959,14 @@
             "Table"
           ],
           "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjTableData",
+              "type": "TData[]",
+              "required": false,
+              "description": "Data rows for the table."
+            }
+          ],
           "examples": [
             "<table [kjTable]=\"columns\" [kjTableData]=\"rows\" #tbl=\"kjTable\">\n  <thead>"
           ],
@@ -835,7 +1011,14 @@
             "Tabs"
           ],
           "description": "Root tabs container. Manages active tab value.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjTabsValue",
+              "type": "unknown",
+              "required": false,
+              "description": "Two-way bound active tab value."
+            }
+          ],
           "examples": [
             "<div kjTabs [(kjTabsValue)]=\"activeTab\"><div kjTabList>...</div></div>"
           ],
@@ -871,7 +1054,14 @@
             "Tabs"
           ],
           "description": "Individual tab trigger. Sets `role=\"tab\"` and manages `aria-selected`.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjTabValue",
+              "type": "string",
+              "required": true,
+              "description": "The value this tab represents."
+            }
+          ],
           "examples": [
             "<button kjTab [kjTabValue]=\"'profile'\">Profile</button>"
           ],
@@ -887,7 +1077,14 @@
             "Tabs"
           ],
           "description": "Tab panel content. Hidden when not active.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjPanelFor",
+              "type": "string",
+              "required": true,
+              "description": "The tab value this panel corresponds to."
+            }
+          ],
           "examples": [
             "<div kjTabPanel [kjPanelFor]=\"'profile'\">Profile content</div>"
           ],
@@ -916,7 +1113,20 @@
             "Chart"
           ],
           "description": "Wraps Apache ECharts. Initializes after first render, updates reactively, disposes on destroy. Always provide `kjChartLabel` for WCAG AAA compliance.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjChartOption",
+              "type": "EChartsOption",
+              "required": true,
+              "description": "ECharts option object defining the chart."
+            },
+            {
+              "name": "kjChartLabel",
+              "type": "string",
+              "required": false,
+              "description": "Accessible label for the chart. Required for WCAG AAA compliance."
+            }
+          ],
           "examples": [
             "<div kjChart [kjChartOption]=\"chartOption()\" kjChartLabel=\"Monthly revenue\" style=\"height:300px\"></div>"
           ],
@@ -945,7 +1155,14 @@
             "AriaDescribedBy"
           ],
           "description": "Wires `aria-describedby` to one or more element IDs. Accepts a single ID string or an array of ID strings. Removes the attribute automatically when the value is empty.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjDescribedBy",
+              "type": "string | string[]",
+              "required": false,
+              "description": "One or more element IDs to reference via `aria-describedby`."
+            }
+          ],
           "examples": [
             "<input kjAriaDescribedBy [kjDescribedBy]=\"['hint-id', errorId()]\" />\n<span id=\"hint-id\">Format: DD/MM/YYYY</span>"
           ],
@@ -961,7 +1178,14 @@
             "FocusTrap"
           ],
           "description": "Traps keyboard focus within the host element using Angular CDK FocusTrap. Designed for modal dialogs, drawers, and other overlay patterns.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjFocusTrapEnabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Whether the focus trap is active. Set to true when the overlay is open."
+            }
+          ],
           "examples": [
             "<div role=\"dialog\" kjFocusTrap [kjFocusTrapEnabled]=\"isOpen()\">\n  <button>Action</button>\n</div>"
           ],
@@ -977,7 +1201,14 @@
             "LiveRegion"
           ],
           "description": "Marks an element as an ARIA live region and exposes an `announce` method for programmatically pushing announcements to screen readers via CDK LiveAnnouncer.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "kjPoliteness",
+              "type": "KjLivePoliteness",
+              "required": false,
+              "description": "The ARIA live politeness setting. Defaults to `'polite'`."
+            }
+          ],
           "examples": [
             "<div kjLiveRegion [kjPoliteness]=\"'polite'\" #region=\"kjLiveRegion\"></div>\n<button (click)=\"region.announce('Item saved')\">Save</button>"
           ],
@@ -1068,7 +1299,14 @@
             "Disabled"
           ],
           "description": "Applies disabled state to any element via ARIA and data attributes. Compose via `hostDirectives` on other directives to add disabled behavior.",
-          "inputs": [],
+          "inputs": [
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "required": false,
+              "description": "Whether the element is disabled. Reflects via `aria-disabled` and `data-disabled`."
+            }
+          ],
           "examples": [
             "<button kjButton [kjDisabled]=\"isLoading()\">Submit</button>"
           ],

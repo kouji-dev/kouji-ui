@@ -321,35 +321,63 @@ function extractDecoratorProp(decoratorArg: string, prop: string): string | unde
  * e.g. `hostDirectives: [{ directive: KjDisabledDirective, inputs: ['disabled: kjDisabled'] }]`
  * emits an InputDef with name='kjDisabled', type='boolean', description='(from KjDisabledDirective)'
  */
+/** Extracts bracket-enclosed content with proper depth tracking (handles nested `[]`). */
+function extractBracketContent(text: string, startIdx: number): string {
+  let depth = 0;
+  for (let i = startIdx; i < text.length; i++) {
+    if (text[i] === '[') depth++;
+    else if (text[i] === ']') { depth--; if (depth === 0) return text.slice(startIdx + 1, i); }
+  }
+  return '';
+}
+
+/**
+ * Extracts inputs exposed via hostDirectives with their public kj-prefixed aliases.
+ * Uses depth-tracking bracket extraction to handle nested arrays like `inputs: ['x']`
+ * inside `hostDirectives: [{ directive: X, inputs: [...] }]`.
+ */
 function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
   const results: InputDef[] = [];
-  // Find hostDirectives array content
-  const hdMatch = decoratorArg.match(/hostDirectives\s*:\s*\[([\s\S]*?)\]/);
-  if (!hdMatch) return results;
 
-  const hdContent = hdMatch[1];
-  // Find all inputs: ['...'] arrays inside hostDirectives entries
-  const inputsRe = /inputs\s*:\s*\[([^\]]*)\]/g;
-  for (const inputsMatch of hdContent.matchAll(inputsRe)) {
-    const inputsList = inputsMatch[1];
-    // Each entry: 'originalName: aliasName' or just 'name'
+  // Find `hostDirectives:` then extract its array with depth tracking
+  const hdKeyIdx = decoratorArg.indexOf('hostDirectives');
+  if (hdKeyIdx === -1) return results;
+
+  const bracketStart = decoratorArg.indexOf('[', hdKeyIdx);
+  if (bracketStart === -1) return results;
+
+  const hdContent = extractBracketContent(decoratorArg, bracketStart);
+
+  // Find each `inputs: [...]` array inside the hostDirectives entries
+  let searchPos = 0;
+  while (searchPos < hdContent.length) {
+    const inputsIdx = hdContent.indexOf('inputs:', searchPos);
+    if (inputsIdx === -1) break;
+
+    const arrStart = hdContent.indexOf('[', inputsIdx);
+    if (arrStart === -1) break;
+
+    const inputsList = extractBracketContent(hdContent, arrStart);
+    searchPos = arrStart + inputsList.length + 2; // advance past this array
+
+    // Parse each quoted entry: 'originalName: aliasName' or 'name'
     const entryRe = /['"`]([^'"`]+)['"`]/g;
     for (const entry of inputsList.matchAll(entryRe)) {
       const raw = entry[1].trim();
       const parts = raw.split(':').map(s => s.trim());
-      const alias = parts[1] ?? parts[0]; // public alias (what users write in templates)
+      const alias = parts[1] ?? parts[0];
       const original = parts[0];
 
-      // Only expose inputs aliased with the kj prefix — CDK inputs without kj alias are internals
+      // Only expose inputs aliased with the kj prefix
       if (!alias || !alias.startsWith('kj')) continue;
 
       results.push({
         name: alias,
-        type: 'unknown',  // full type resolution requires compilation; shown as 'unknown' in docs
+        type: 'boolean',
         required: false,
         isModel: false,
-        description: `Forwarded from host directive (original: \`${original}\`).`,
-        defaultValue: undefined,
+        description: `Forwarded from \`${original}\` via \`hostDirectives\`.`,
+        defaultValue: 'false',
       });
     }
   }

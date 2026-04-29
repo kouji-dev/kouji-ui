@@ -84,6 +84,45 @@ function extractSelector(decoratorArgs: string): string {
   return match?.[1] ?? '';
 }
 
+/** Extracts bracket content with depth tracking — handles nested `[]`. */
+function extractBracketContent(text: string, startIdx: number): string {
+  let depth = 0;
+  for (let i = startIdx; i < text.length; i++) {
+    if (text[i] === '[') depth++;
+    else if (text[i] === ']') { depth--; if (depth === 0) return text.slice(startIdx + 1, i); }
+  }
+  return '';
+}
+
+/** Extracts kj-prefixed inputs forwarded via hostDirectives. */
+function extractHostDirectiveInputs(decoratorArgs: string): InputDef[] {
+  const results: InputDef[] = [];
+  const hdKeyIdx = decoratorArgs.indexOf('hostDirectives');
+  if (hdKeyIdx === -1) return results;
+  const bracketStart = decoratorArgs.indexOf('[', hdKeyIdx);
+  if (bracketStart === -1) return results;
+  const hdContent = extractBracketContent(decoratorArgs, bracketStart);
+  let searchPos = 0;
+  while (searchPos < hdContent.length) {
+    const inputsIdx = hdContent.indexOf('inputs:', searchPos);
+    if (inputsIdx === -1) break;
+    const arrStart = hdContent.indexOf('[', inputsIdx);
+    if (arrStart === -1) break;
+    const inputsList = extractBracketContent(hdContent, arrStart);
+    searchPos = arrStart + inputsList.length + 2;
+    const entryRe = /['"`]([^'"`]+)['"`]/g;
+    for (const entry of inputsList.matchAll(entryRe)) {
+      const raw = entry[1].trim();
+      const parts = raw.split(':').map((s: string) => s.trim());
+      const alias = parts[1] ?? parts[0];
+      const original = parts[0];
+      if (!alias || !alias.startsWith('kj')) continue;
+      results.push({ name: alias, type: 'boolean', required: false, description: `Forwarded from \`${original}\` via \`hostDirectives\`.`, defaultValue: 'false' });
+    }
+  }
+  return results;
+}
+
 /** Extract clean text from a JSDoc comment node */
 function extractJsDocText(node: Node, sourceFilePath: string): {
   description: string;
@@ -259,7 +298,8 @@ function extractInputs(cls: any): InputDef[] {
     if (!initializer) continue;
 
     const text = initializer.getText();
-    const isInput = text.startsWith('input(') || text.startsWith('input.required(') || text.startsWith('model(');
+    // Match input(), input<T>(), input.required(), input.required<T>(), model(), model<T>()
+    const isInput = /^input(?:<[^>]+>)?\(/.test(text) || /^input\.required(?:<[^>]+>)?\(/.test(text) || /^model(?:<[^>]+>)?\(/.test(text);
     if (!isInput) continue;
 
     const { description } = extractJsDocText(prop);
@@ -351,7 +391,9 @@ async function main() {
 
         const { description, examples, categoryPath, exampleFiles } = extractJsDocText(cls, filePath);
         const themedExamples = parseDocThemes(cls.getFullText(), filePath);
-        const inputs = extractInputs(cls);
+        const ownInputs = extractInputs(cls);
+        const hdInputs = extractHostDirectiveInputs(decoratorArgs);
+        const inputs = [...ownInputs, ...hdInputs];
         const className = cls.getName() ?? '';
 
         // If themedExamples has a 'default' key, use it as exampleFiles fallback
