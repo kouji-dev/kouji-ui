@@ -69,16 +69,20 @@ export class CodePreviewComponent {
 
   /**
    * Active example files for the current theme.
-   * - Multi-theme mode (themedExamples has keys): only shows files for the exact active theme.
-   *   Returns [] if no files defined for that theme (code section hides).
-   * - Single-theme mode (no themedExamples): falls back to exampleFiles.
+   *
+   * Rules:
+   * - DEFAULT theme: shows `themedExamples.default` if defined, else falls back to `examples`
+   *   (which holds the plain `@doc-file` entries — they belong to the default theme).
+   * - Any other theme: shows only `themedExamples[theme]` — no cross-theme fallback.
+   *   Returns [] if that theme has no files (triggers the "no code" message).
    */
   protected readonly activeFiles = computed((): CodeExample[] => {
     const themed = this.themedExamples();
     const theme = this.activeTheme();
-    const hasAnyThemed = Object.keys(themed).length > 0;
-    if (hasAnyThemed) return themed[theme] ?? [];
-    return this.examples();
+    if (theme === 'default') {
+      return themed['default']?.length ? themed['default'] : this.examples();
+    }
+    return themed[theme] ?? [];
   });
 
   protected readonly activeExample = computed(() => {
