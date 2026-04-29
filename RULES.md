@@ -14,6 +14,144 @@
 - `@kouji-ui/core` — zero CSS, zero components, directives only
 - `@kouji-ui/ui` — styled implementation using Tailwind v4, wraps core directives in Angular components
 
+## Form Controls: Shared KjFormControlDirective
+
+All form input directives (`KjInputDirective`, `KjCheckboxDirective`, `KjRadioDirective`, `KjSelectDirective`, `KjToggleDirective`, and any future textarea/switch/etc.) **must** compose `KjFormControlDirective` via `hostDirectives`.
+
+**Location:** `packages/core/src/primitives/form-control.directive.ts`
+
+`KjFormControlDirective` is the single place that implements Angular's `ControlValueAccessor` and wires into reactive forms / template-driven forms. It:
+- Registers as `NG_VALUE_ACCESSOR` so `formControl`, `formControlName`, and `ngModel` all work
+- Injects `NgControl` (optional) to read validity/touched/dirty state
+- Exposes signals for consumers: `value`, `disabled`, `touched`, `dirty`, `valid`, `invalid`
+- Provides `notifyChange(val)` and `notifyTouched()` methods that form controls call on user interaction
+
+```ts
+@Directive({
+  selector: '[kjFormControl]',
+  standalone: true,
+  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: KjFormControlDirective, multi: true }],
+})
+export class KjFormControlDirective implements ControlValueAccessor {
+  readonly value    = signal<unknown>(undefined);
+  readonly disabled = signal<boolean>(false);
+  readonly touched  = signal<boolean>(false);
+
+  private _onChange?: (val: unknown) => void;
+  private _onTouched?: () => void;
+
+  writeValue(val: unknown): void       { this.value.set(val); }
+  registerOnChange(fn: (v: unknown) => void): void { this._onChange = fn; }
+  registerOnTouched(fn: () => void): void          { this._onTouched = fn; }
+  setDisabledState(isDisabled: boolean): void      { this.disabled.set(isDisabled); }
+
+  notifyChange(val: unknown): void { this.value.set(val); this._onChange?.(val); }
+  notifyTouched(): void            { this.touched.set(true); this._onTouched?.(); }
+}
+```
+
+Form controls then compose it:
+```ts
+@Directive({
+  selector: '[kjInput]',
+  hostDirectives: [
+    KjFocusRingDirective,
+    { directive: KjDisabledDirective, inputs: ['disabled: kjDisabled'] },
+    KjFormControlDirective, // ← Angular forms wired here
+  ],
+  host: {
+    '(input)': 'formCtrl.notifyChange($event.target.value)',
+    '(blur)':  'formCtrl.notifyTouched()',
+    '[attr.aria-invalid]': 'formCtrl.touched() && !formCtrl.valid() ? "true" : null',
+  },
+})
+export class KjInputDirective {
+  readonly formCtrl = inject(KjFormControlDirective);
+}
+```
+
+The `KjFormFieldDirective` in `packages/core/src/form/` reads validity from the injected `NgControl` (not a manual `kjFieldInvalid` input) when used alongside Angular forms.
+
+## Table: TanStack Table Integration
+
+`KjTableDirective` wraps `@tanstack/angular-table` (NOT `@tanstack/table-core` directly). It must:
+
+- Accept `data = input.required<T[]>()` and `columns = input.required<ColumnDef<T>[]>()`
+- Internally call `createAngularTable(...)` to create the table instance
+- Expose the table state as signals: `rows`, `headerGroups`, `pageIndex`, `pageSize`, etc.
+- Provide the table via an `InjectionToken` context so child directives (`KjTableHeaderDirective`, `KjTableRowDirective`) can inject it and render
+- `KjTableHeaderDirective` on `<th>` injects context, binds sort state, and calls `header.column.getToggleSortingHandler()`
+- No marker directives that only add `data-*` attributes — `<tr>` and `<td>` do not need directives unless they manage behavior
+
+**Install:** `pnpm add @tanstack/angular-table --workspace-root` (in addition to `@tanstack/table-core` already installed)
+
+## What NOT to Build
+
+Do not create directives that only add `data-*` attributes with no behavior. A directive must do at least one of:
+- Manage state (signals, context)
+- Implement keyboard interaction
+- Apply ARIA semantics
+- Wrap a CDK service
+- Compose behaviors via `hostDirectives`
+
+**Examples of useless directives (do NOT create):**
+- `KjTableRowDirective` that only sets `[attr.data-row]="''"` — pointless; use CSS selectors on `tr` instead
+- `KjTableCellDirective` that only sets `[attr.data-cell]="''"` — same
+
+## CDK Wrapping Rule — Don't Reimplement What CDK Already Provides
+
+If Angular CDK has a primitive for a component, **wrap or extend it** — never reimplement the logic from scratch.
+
+| Component | CDK Primitive to Wrap |
+|---|---|
+| Accordion | `CdkAccordion`, `CdkAccordionItem` (`@angular/cdk/accordion`) |
+| Menu / Dropdown | `CdkMenu`, `CdkMenuItem`, `CdkMenuTrigger`, `CdkMenuBar` (`@angular/cdk/menu`) |
+| Select / Listbox | `CdkListbox`, `CdkOption` (`@angular/cdk/listbox`) |
+| Dialog / Modal | `Dialog` service + `CdkDialogContainer` (`@angular/cdk/dialog`) |
+| Overlay positioning | `Overlay`, `OverlayRef`, `ConnectedPositionStrategy` (`@angular/cdk/overlay`) |
+| Tabs | `FocusKeyManager` (`@angular/cdk/a11y`) — CDK has no tab primitive, implement our own |
+| Stepper | `CdkStepper`, `CdkStep` (`@angular/cdk/stepper`) |
+
+**Wrapping pattern:**
+```ts
+// Extend CDK directive and add kj-specific behavior on top
+@Directive({
+  selector: '[kjAccordionItem]',
+  standalone: true,
+  providers: [{ provide: KJ_ACCORDION_ITEM, useExisting: KjAccordionItemDirective }],
+})
+export class KjAccordionItemDirective extends CdkAccordionItem {
+  // add signal-based open state, TSDoc, kj-specific inputs
+}
+```
+
+Or compose via `hostDirectives` when extending isn't clean:
+```ts
+@Directive({
+  selector: '[kjOption]',
+  standalone: true,
+  hostDirectives: [{ directive: CdkOption, inputs: ['cdkOptionValue: kjOptionValue'] }],
+})
+export class KjOptionDirective { ... }
+```
+
+**Why:** CDK primitives handle ARIA patterns, keyboard interactions, and edge cases that are hard to get right. Wrapping them gives us all that for free and keeps us aligned with the Angular ecosystem.
+
+## Overlay Primitive (Shared by All Overlay Components)
+
+All overlay-based components (`KjDialogDirective`, `KjTooltipDirective`, `KjPopoverDirective`, `KjMenuDirective`, `KjSelectDirective`) **must** use the shared `KjOverlayRef` primitive from `packages/core/src/primitives/overlay.ts`.
+
+**Never reimplement overlay logic per component.** The overlay primitive wraps Angular CDK `Overlay` + `PositionStrategy` and is the single place overlay lifecycle is managed.
+
+**Location:** `packages/core/src/primitives/overlay.ts`
+
+**What it provides:**
+- `createOverlay(config: KjOverlayConfig): KjOverlayRef` — creates and returns a managed overlay ref
+- `KjOverlayRef` — wraps `OverlayRef`, exposes `open()`, `close()`, `isOpen: Signal<boolean>`, `afterClose$`
+- Position strategies: `connected` (for tooltips/popovers/menus/select) and `global-center` (for dialogs/modals)
+- Handles `Escape` key globally and backdrop click dismissal
+- Lifecycle cleanup via `DestroyRef`
+
 ## Naming Prefix
 
 All directive selectors, class names, and injection tokens use the `kj` prefix:
