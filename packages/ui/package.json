@@ -12,6 +12,7 @@
   "sideEffects": ["**/*.css"],
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "ng lint kj-ui"
   }
 }

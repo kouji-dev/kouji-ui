@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "ng build docs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lint": "ng lint docs"
   }
 }
