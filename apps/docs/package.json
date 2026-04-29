@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "ng serve docs",
-    "build": "ng build docs",
+    "build": "npm run extract-docs && ng build docs",
+    "extract-docs": "tsx scripts/extract-docs.ts",
     "test:e2e": "playwright test",
     "lint": "ng lint docs"
   }

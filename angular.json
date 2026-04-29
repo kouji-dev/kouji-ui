@@ -86,6 +86,11 @@
               {
                 "glob": "**/*",
                 "input": "apps/docs/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "apps/docs/src/assets",
+                "output": "assets"
               }
             ],
             "styles": [
