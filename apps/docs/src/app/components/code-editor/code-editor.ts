@@ -37,13 +37,24 @@ export class CodeEditorComponent implements OnDestroy {
       this.initialized = true;
     });
 
-    // Re-initialize when theme changes (after initial render)
+    // Re-initialize when docs theme (light/dark) changes
     effect(async () => {
-      this.themeService.theme(); // subscribe
+      this.themeService.theme();
       if (this.initialized) {
         this.view?.destroy();
         this.view = null;
         await this.initEditor();
+      }
+    });
+
+    // Update editor content when the `code` input changes (e.g. switching preview theme)
+    effect(() => {
+      const newCode = this.code();
+      if (this.initialized && this.view) {
+        const currentLen = this.view.state.doc.length;
+        this.view.dispatch({
+          changes: { from: 0, to: currentLen, insert: newCode },
+        });
       }
     });
   }
