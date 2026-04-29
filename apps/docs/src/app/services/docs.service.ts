@@ -7,6 +7,7 @@ export interface InputDef {
   name: string;
   type: string;
   required: boolean;
+  isModel: boolean;
   description: string;
   defaultValue?: string;
 }
@@ -14,9 +15,21 @@ export interface InputDef {
 export interface DirectiveDef {
   className: string;
   selector: string;
+  exportAs?: string;
   description: string;
   inputs: InputDef[];
   examples: string[];
+}
+
+export interface TokenDef {
+  name: string;
+  description: string;
+}
+
+export interface TypeAliasDef {
+  name: string;
+  type: string;
+  description: string;
 }
 
 export interface ComponentDoc {
@@ -25,6 +38,8 @@ export interface ComponentDoc {
   category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
+  tokens: TokenDef[];
+  typeAliases: TypeAliasDef[];
 }
 
 export interface DocsManifest {

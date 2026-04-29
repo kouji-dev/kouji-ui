@@ -29,11 +29,15 @@
     "@angular/platform-server": "^21.2.0",
     "@angular/router": "^21.2.0",
     "@angular/ssr": "^21.2.8",
+    "@phenomnomnominal/tsquery": "^6.2.0",
+    "@tanstack/angular-table": "^8.21.4",
     "@tanstack/table-core": "^8.21.3",
     "echarts": "^6.0.0",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "ts-morph": "^28.0.0",
+    "tslib": "^2.3.0",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.5.0",

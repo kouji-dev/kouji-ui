@@ -1,17 +1,34 @@
-import { Project, Node } from 'ts-morph';
+import { Project } from 'ts-morph';
+import { tsquery } from '@phenomnomnominal/tsquery';
+import ts from 'typescript';
 import { join } from 'node:path';
+
+// ── Exported types ──────────────────────────────────────────────────────────
 
 export interface InputDef {
   name: string;
   type: string;
   required: boolean;
+  isModel: boolean;
   description: string;
   defaultValue?: string;
+}
+
+export interface TokenDef {
+  name: string;
+  description: string;
+}
+
+export interface TypeAliasDef {
+  name: string;
+  type: string;
+  description: string;
 }
 
 export interface DirectiveDef {
   className: string;
   selector: string;
+  exportAs?: string;
   description: string;
   inputs: InputDef[];
   examples: string[];
@@ -23,6 +40,8 @@ export interface ComponentDoc {
   category: 'foundation' | 'overlay' | 'data' | 'charts' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
+  tokens: TokenDef[];
+  typeAliases: TypeAliasDef[];
 }
 
 export interface DocsManifest {
@@ -30,102 +49,218 @@ export interface DocsManifest {
   components: ComponentDoc[];
 }
 
+// ── Category mapping ─────────────────────────────────────────────────────────
+
+const CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
+  dialog: 'overlay', tooltip: 'overlay', popover: 'overlay', menu: 'overlay', toast: 'overlay',
+  table: 'data', form: 'data', tabs: 'data', accordion: 'data', select: 'data',
+  chart: 'charts',
+  a11y: 'a11y',
+  primitives: 'primitives',
+};
+
 function getCategory(folder: string): ComponentDoc['category'] {
-  if (['dialog', 'tooltip', 'popover', 'menu', 'toast'].includes(folder)) return 'overlay';
-  if (['table', 'form', 'tabs', 'accordion', 'select'].includes(folder)) return 'data';
-  if (folder === 'chart') return 'charts';
-  if (folder === 'a11y') return 'a11y';
-  if (folder === 'primitives') return 'primitives';
-  return 'foundation';
+  return CATEGORY_MAP[folder] ?? 'foundation';
 }
 
-function extractSelector(decoratorArgs: string): string {
-  return decoratorArgs.match(/selector:\s*['"`]([^'"`]+)['"`]/)?.[1] ?? '';
+// ── ts-query selectors ────────────────────────────────────────────────────────
+
+/** All exported classes decorated with @Directive */
+const DIRECTIVE_CLASS_SELECTOR =
+  'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"]))';
+
+/** Properties initialized with input(), input.required(), or model() signals */
+const SIGNAL_INPUT_SELECTOR = [
+  'PropertyDeclaration:has(CallExpression > Identifier[text="input"])',
+  'PropertyDeclaration:has(CallExpression > PropertyAccessExpression:has(Identifier[text="required"]))',
+  'PropertyDeclaration:has(CallExpression > Identifier[text="model"])',
+].join(', ');
+
+/** Exported InjectionToken const declarations */
+const INJECTION_TOKEN_SELECTOR =
+  'VariableStatement:has(ExportKeyword):has(NewExpression > Identifier[text="InjectionToken"])';
+
+/** Exported type aliases (e.g. KjButtonVariant = 'default' | 'destructive') */
+const TYPE_ALIAS_SELECTOR =
+  'TypeAliasDeclaration:has(ExportKeyword)';
+
+// ── JSDoc extraction using ts-query ──────────────────────────────────────────
+
+function getJsDocDescription(node: ts.Node): string {
+  const tags = tsquery<ts.JSDoc>(node, 'JSDoc');
+  if (!tags.length) return '';
+  const comment = tags[0].comment;
+  if (!comment) return '';
+  if (typeof comment === 'string') return comment.trim().replace(/\s+/g, ' ');
+  // NodeArray<JSDocComment>
+  return comment
+    .map(c => ('text' in c ? (c as ts.JSDocText).text : ''))
+    .join('')
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
-function extractJsDoc(node: Node): { description: string; examples: string[] } {
-  const jsDocs = (node as any).getJsDocs?.() ?? [];
-  let description = '';
-  const examples: string[] = [];
-  for (const doc of jsDocs) {
-    const comment = doc.getComment() ?? '';
-    if (typeof comment === 'string' && !description) {
-      description = comment.trim().replace(/\s+/g, ' ');
+function getJsDocExamples(node: ts.Node): string[] {
+  const exampleTags = tsquery<ts.JSDocTag>(node, 'JSDocTag[tagName.text="example"]');
+  return exampleTags
+    .map(tag => {
+      const c = tag.comment;
+      const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
+      return raw.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').trim();
+    })
+    .filter(Boolean);
+}
+
+// ── Directive decorator metadata extraction ───────────────────────────────────
+
+function getDecoratorArg(cls: ts.ClassDeclaration): string {
+  const callExpr = tsquery<ts.CallExpression>(
+    cls,
+    'Decorator > CallExpression:has(Identifier[text="Directive"])'
+  );
+  return callExpr[0]?.arguments[0]?.getText() ?? '';
+}
+
+function extractDecoratorProp(decoratorArg: string, prop: string): string | undefined {
+  return decoratorArg.match(new RegExp(`${prop}:\\s*['"\`]([^'"\`]+)['"\`]`))?.[1];
+}
+
+// ── Signal input extraction using ts-query ────────────────────────────────────
+
+function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): InputDef[] {
+  const props = tsquery<ts.PropertyDeclaration>(cls, SIGNAL_INPUT_SELECTOR);
+  const results: InputDef[] = [];
+
+  for (const prop of props) {
+    const name = (prop.name as ts.Identifier).text;
+    if (name.startsWith('_')) continue;
+
+    const description = getJsDocDescription(prop);
+    if (description.startsWith('@internal')) continue;
+
+    const initText = prop.initializer?.getText(sourceFile) ?? '';
+    const isModel = initText.startsWith('model(');
+    const required =
+      initText.startsWith('input.required(') ||
+      tsquery(prop, 'CallExpression > PropertyAccessExpression:has(Identifier[text="required"])').length > 0;
+
+    // Type: prefer explicit type annotation, fall back to generic argument
+    let type = prop.type?.getText(sourceFile) ?? '';
+    if (!type) {
+      type =
+        initText.match(/(?:input(?:\.required)?|model)<([^>]+)>/)?.[1] ?? 'unknown';
     }
-    for (const tag of doc.getTags?.() ?? []) {
-      if (tag.getTagName() === 'example') {
-        const text = tag.getComment() ?? '';
-        const cleaned = typeof text === 'string'
-          ? text.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').trim()
-          : '';
-        if (cleaned) examples.push(cleaned);
-      }
-    }
+
+    // Default value from input(defaultValue)
+    const defaultMatch = !required ? initText.match(/(?:input|model)\(([^)]+)\)/) : null;
+    const defaultValue = defaultMatch?.[1]?.trim();
+
+    results.push({ name, type, required, isModel, description, defaultValue });
   }
-  return { description, examples };
+
+  return results;
 }
 
-function extractInputs(cls: any): InputDef[] {
-  const inputs: InputDef[] = [];
-  for (const prop of cls.getProperties()) {
-    const init = prop.getInitializer();
-    if (!init) continue;
-    const text = init.getText();
-    if (!text.startsWith('input(') && !text.startsWith('input.required(') && !text.startsWith('model(')) continue;
-    const { description } = extractJsDoc(prop);
-    const name = prop.getName();
-    if (description.startsWith('@internal') || name.startsWith('_')) continue;
-    const required = text.startsWith('input.required');
-    const typeNode = prop.getTypeNode();
-    let type = typeNode?.getText() ?? 'unknown';
-    if (type === 'unknown') {
-      type = text.match(/input(?:\.required)?<([^>]+)>/)?.[1] ?? 'unknown';
-    }
-    const defaultValue = !required ? text.match(/input\(([^)]+)\)/)?.[1]?.trim() : undefined;
-    inputs.push({ name, type, required, description, defaultValue });
-  }
-  return inputs;
+// ── InjectionToken extraction ─────────────────────────────────────────────────
+
+function extractTokens(sourceFile: ts.SourceFile): TokenDef[] {
+  const stmts = tsquery<ts.VariableStatement>(sourceFile, INJECTION_TOKEN_SELECTOR);
+  return stmts.map(stmt => {
+    const decl = stmt.declarationList.declarations[0];
+    const name = (decl?.name as ts.Identifier)?.text ?? '';
+    const description = getJsDocDescription(stmt);
+    return { name, description };
+  }).filter(t => t.name);
 }
+
+// ── Type alias extraction ─────────────────────────────────────────────────────
+
+function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
+  const aliases = tsquery<ts.TypeAliasDeclaration>(sourceFile, TYPE_ALIAS_SELECTOR);
+  return aliases.map(alias => {
+    const name = alias.name.text;
+    const type = alias.type.getText(sourceFile);
+    const description = getJsDocDescription(alias);
+    return { name, type, description };
+  });
+}
+
+// ── Main extraction ───────────────────────────────────────────────────────────
 
 let _cached: DocsManifest | null = null;
 
 /**
- * Extracts docs manifest from @kouji-ui/core source files using ts-morph.
+ * Extracts the full docs manifest from `@kouji-ui/core` source files.
+ * Uses ts-morph for project/tsconfig resolution and ts-query for AST querying.
  * Result is cached in memory after the first call.
+ *
+ * @param rootDir - Monorepo root directory. Defaults to `process.cwd()`.
  */
 export function extractDocsManifest(rootDir?: string): DocsManifest {
   if (_cached) return _cached;
 
   const root = rootDir ?? process.env['KOUJI_ROOT'] ?? process.cwd();
 
+  // ts-morph handles tsconfig resolution and file loading
   const project = new Project({
     tsConfigFilePath: join(root, 'packages/core/tsconfig.lib.json'),
     skipAddingFilesFromTsConfig: false,
   });
-
   project.addSourceFilesAtPaths([join(root, 'packages/core/src/**/*.ts')]);
 
   const componentMap = new Map<string, ComponentDoc>();
 
-  for (const sourceFile of project.getSourceFiles()) {
-    const filePath = sourceFile.getFilePath();
-    if (filePath.includes('.spec.') || filePath.endsWith('index.ts') || filePath.endsWith('public-api.ts')) continue;
-    if (!filePath.includes('/packages/core/src/')) continue;
+  for (const morphFile of project.getSourceFiles()) {
+    const filePath = morphFile.getFilePath();
 
+    // Skip non-source files
+    if (
+      filePath.includes('.spec.') ||
+      filePath.endsWith('index.ts') ||
+      filePath.endsWith('public-api.ts') ||
+      filePath.endsWith('test-setup.ts') ||
+      !filePath.includes('/packages/core/src/')
+    ) continue;
+
+    // Determine component folder from path
     const parts = filePath.split('/packages/core/src/')[1]?.split('/') ?? [];
     const folder = parts[0] ?? 'unknown';
+    if (folder === 'unknown') continue;
 
-    for (const cls of sourceFile.getClasses()) {
-      if (!cls.isExported()) continue;
-      const dec = cls.getDecorator('Directive');
-      if (!dec) continue;
-      const args = dec.getArguments()[0]?.getText() ?? '';
-      const selector = extractSelector(args);
+    // Reparse source text with workspace TypeScript so tsquery's TS version matches.
+    // ts-morph bundles its own TS version which conflicts with tsquery's TS dependency.
+    const tsSourceFile = tsquery.ast(
+      morphFile.getFullText(),
+      morphFile.getFilePath(),
+      ts.ScriptKind.TS,
+    );
+
+    // ── Extract directives via ts-query ────────────────────────────────────
+    const directiveClasses = tsquery<ts.ClassDeclaration>(tsSourceFile, DIRECTIVE_CLASS_SELECTOR);
+
+    for (const cls of directiveClasses) {
+      // Only exported classes
+      const isExported = cls.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
+      if (!isExported) continue;
+
+      const decoratorArg = getDecoratorArg(cls);
+      const selector = extractDecoratorProp(decoratorArg, 'selector');
       if (!selector) continue;
 
-      const { description, examples } = extractJsDoc(cls);
-      const inputs = extractInputs(cls);
-      const className = cls.getName() ?? '';
+      const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
+      const className = cls.name?.text ?? '';
+      const description = getJsDocDescription(cls);
+      const examples = getJsDocExamples(cls);
+      const inputs = extractInputs(cls, tsSourceFile);
+
+      const directive: DirectiveDef = {
+        className,
+        selector,
+        ...(exportAs ? { exportAs } : {}),
+        description,
+        inputs,
+        examples,
+      };
 
       if (!componentMap.has(folder)) {
         componentMap.set(folder, {
@@ -134,18 +269,31 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
           category: getCategory(folder),
           description: '',
           directives: [],
+          tokens: [],
+          typeAliases: [],
         });
       }
+
       const comp = componentMap.get(folder)!;
       if (!comp.description && description) comp.description = description;
-      comp.directives.push({ className, selector, description, inputs, examples });
+      comp.directives.push(directive);
+    }
+
+    // ── Extract InjectionTokens and type aliases ────────────────────────────
+    if (componentMap.has(folder)) {
+      const comp = componentMap.get(folder)!;
+      comp.tokens.push(...extractTokens(tsSourceFile));
+      comp.typeAliases.push(...extractTypeAliases(tsSourceFile));
     }
   }
 
-  const categoryOrder = ['foundation', 'overlay', 'data', 'charts', 'a11y', 'primitives'] as const;
+  // Sort by category order
+  const categoryOrder: ComponentDoc['category'][] = [
+    'foundation', 'overlay', 'data', 'charts', 'a11y', 'primitives',
+  ];
   const components = [...componentMap.values()].sort((a, b) => {
-    const ai = categoryOrder.indexOf(a.category as any);
-    const bi = categoryOrder.indexOf(b.category as any);
+    const ai = categoryOrder.indexOf(a.category);
+    const bi = categoryOrder.indexOf(b.category);
     return ai !== bi ? ai - bi : a.name.localeCompare(b.name);
   });
 
