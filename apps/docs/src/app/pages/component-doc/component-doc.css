@@ -162,6 +162,20 @@ h1 {
 /* ── Examples ── */
 .examples-block { margin-top: 2rem; }
 .example-section { margin-bottom: 2rem; }
+
+.example-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.example-label::before { content: '○'; color: var(--accent); font-size: 0.65rem; }
 .code-example {
   background: var(--bg-elevated);
   border: 1px solid var(--border);

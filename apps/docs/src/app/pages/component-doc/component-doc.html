@@ -65,6 +65,7 @@
                   [attr.data-toc-entry]="'○ ' + docEx.label"
                   data-toc-level="3"
                 >
+                  <div class="example-label">{{ docEx.label }}</div>
                   <kj-code-preview
                     [docExamples]="[docEx]"
                     [componentName]="comp.name"
