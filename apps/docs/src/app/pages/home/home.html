@@ -3,7 +3,10 @@
 
   <!-- Nav -->
   <nav>
-    <a class="nav-logo" routerLink="/">kouji</a>
+    <a class="nav-logo-link" routerLink="/" aria-label="kouji home">
+      <kj-logo [size]="32" />
+      <span class="nav-logo-text">kouji</span>
+    </a>
     <ul class="nav-links">
       <li><a routerLink="/docs">Docs</a></li>
       <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
