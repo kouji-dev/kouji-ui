@@ -6,6 +6,9 @@
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
+    "paths": {
+      "kj-core": ["./dist/kj-core"]
+    },
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
@@ -21,5 +24,13 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/core/tsconfig.lib.json"
+    },
+    {
+      "path": "./packages/core/tsconfig.spec.json"
+    }
+  ]
 }

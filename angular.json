@@ -5,5 +5,32 @@
     "packageManager": "pnpm"
   },
   "newProjectRoot": "packages",
-  "projects": {}
+  "projects": {
+    "kj-core": {
+      "projectType": "library",
+      "root": "packages/core",
+      "sourceRoot": "packages/core/src",
+      "prefix": "kj",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "packages/core/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "packages/core/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "packages/core/tsconfig.spec.json"
+          }
+        }
+      }
+    }
+  }
 }

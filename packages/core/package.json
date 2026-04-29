@@ -1,0 +1,14 @@
+{
+  "name": "@kouji-ui/core",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/cdk": "^21.0.0"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "test": "vitest run"
+  }
+}
