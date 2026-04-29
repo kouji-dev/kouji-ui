@@ -1,1 +1,1 @@
-export { KjTableDirective, KjTableHeaderDirective, KjTableRowDirective, KjTableCellDirective, type KjSortDirection } from './table.directive';
+export { KjTableDirective, KjTableHeaderDirective, KJ_TABLE, type KjSortDirection } from './table.directive';
