@@ -116,15 +116,58 @@ function getJsDocDescription(node: ts.Node): string {
     .replace(/\s+/g, ' ');
 }
 
-function getJsDocExamples(node: ts.Node): string[] {
+/** Regex: matches ```lang\nfilename\ncontent\n``` inside a JSDoc @example block */
+const FENCED_BLOCK_RE = /```(\w+)\s*\n([^\n]+)\n([\s\S]*?)```/g;
+
+/**
+ * Parse @example tags. Two formats supported:
+ *
+ * Sugar syntax (preferred) — fenced blocks where first line is the filename:
+ * ```ts
+ * button.component.ts
+ * import { Component } from ...
+ * ```
+ *
+ * Legacy — raw text snippet (kept for backward compat, returned in examples[]).
+ */
+function parseExampleTag(raw: string): { text: string; files: ExampleFile[] } {
+  const files: ExampleFile[] = [];
+  let hasFenced = false;
+
+  for (const match of raw.matchAll(FENCED_BLOCK_RE)) {
+    hasFenced = true;
+    const lang = match[1] as 'ts' | 'html' | 'css';
+    const filename = match[2].trim();
+    const content = match[3].trim();
+    const validLang: ExampleFile['lang'] = (['ts', 'html', 'css'] as string[]).includes(lang)
+      ? (lang as ExampleFile['lang'])
+      : 'ts';
+    files.push({ lang: validLang, filename, content });
+  }
+
+  // If no fenced blocks found, return as plain text
+  if (!hasFenced) {
+    const text = raw.replace(/```(?:\w+)?\n?/g, '').replace(/```/g, '').trim();
+    return { text, files: [] };
+  }
+
+  return { text: '', files };
+}
+
+function getJsDocExamples(node: ts.Node): { examples: string[]; exampleFiles: ExampleFile[] } {
   const exampleTags = tsquery<ts.JSDocTag>(node, 'JSDocTag[tagName.text="example"]');
-  return exampleTags
-    .map(tag => {
-      const c = tag.comment;
-      const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
-      return raw.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').trim();
-    })
-    .filter(Boolean);
+  const examples: string[] = [];
+  const exampleFiles: ExampleFile[] = [];
+
+  for (const tag of exampleTags) {
+    const c = tag.comment;
+    const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
+    const { text, files } = parseExampleTag(raw);
+    if (text) examples.push(text);
+    exampleFiles.push(...files);
+  }
+
+  return { examples, exampleFiles };
 }
 
 function getCategoryPath(node: ts.Node): string[] {
@@ -285,8 +328,9 @@ function processSourceFile(
     const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
     const className = cls.name?.text ?? '';
     const description = getJsDocDescription(cls);
-    const examples = getJsDocExamples(cls);
-    const exampleFiles = getExampleFiles(cls, filePath);
+    const { examples, exampleFiles: inlineFiles } = getJsDocExamples(cls);
+    const fileTagFiles = getExampleFiles(cls, filePath);
+    const exampleFiles = [...inlineFiles, ...fileTagFiles];
     const inputs = extractInputs(cls, tsSourceFile);
     const categoryPath = getCategoryPath(cls);
 
