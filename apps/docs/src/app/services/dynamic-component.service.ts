@@ -1,4 +1,4 @@
-import { Component, Injectable, Type, computed, effect, inject, input, model, signal } from '@angular/core';
+import { Component, Injectable, Type, ViewEncapsulation, computed, effect, inject, input, model, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 
 // Import all @kouji-ui/core directives that can appear in @doc-file examples
@@ -76,6 +76,10 @@ export class DynamicComponentService {
         imports,
         template: parsed.template,
         styles: parsed.styles,
+        // ViewEncapsulation.None: styles apply as-is without attribute scoping.
+        // Required for dynamic JIT components where the generated encapsulation ID
+        // would not match attribute selectors like [data-variant="default"].
+        encapsulation: ViewEncapsulation.None,
       })(ClassDef);
 
       this.cache.set(source, DynComponent);
@@ -91,12 +95,22 @@ export class DynamicComponentService {
     const template = this.extractBacktickValue(source, 'template');
 
     // Styles: extract each backtick string from `styles: [...]`
+    // Uses manual depth-tracking to handle `]` inside backtick strings (e.g. CSS selectors).
     const styles: string[] = [];
-    const stylesBlockMatch = source.match(/styles:\s*\[([^\]]*(?:`[\s\S]*?`[^\]]*)*)\]/);
-    if (stylesBlockMatch) {
-      const re = /`([\s\S]*?)`/g;
-      for (const m of stylesBlockMatch[1].matchAll(re)) {
-        styles.push(m[1]);
+    const stylesKeyIdx = source.indexOf('styles:');
+    if (stylesKeyIdx !== -1) {
+      const afterStyles = source.slice(stylesKeyIdx + 'styles:'.length).trimStart();
+      if (afterStyles.startsWith('[')) {
+        const content = this.extractArrayContent(afterStyles);
+        // Extract each backtick-quoted string from the array content
+        let i = 0;
+        while (i < content.length) {
+          if (content[i] === '`') {
+            const end = content.indexOf('`', i + 1);
+            if (end !== -1) { styles.push(content.slice(i + 1, end)); i = end + 1; }
+            else { i++; }
+          } else { i++; }
+        }
       }
     }
 
@@ -112,6 +126,23 @@ export class DynamicComponentService {
     const classBody = classMatch?.[1]?.trim() ?? '';
 
     return { template, styles, importNames, classBody };
+  }
+
+  /**
+   * Extract the content inside `[...]` tracking backtick depth so `]` inside backtick
+   * strings (e.g. CSS attribute selectors like `[data-variant="default"]`) are ignored.
+   */
+  private extractArrayContent(source: string): string {
+    if (!source.startsWith('[')) return '';
+    let depth = 0; let inBT = false;
+    for (let i = 0; i < source.length; i++) {
+      const ch = source[i];
+      if (ch === '`') { inBT = !inBT; continue; }
+      if (inBT) continue;
+      if (ch === '[') depth++;
+      else if (ch === ']') { depth--; if (depth === 0) return source.slice(1, i); }
+    }
+    return '';
   }
 
   /**
