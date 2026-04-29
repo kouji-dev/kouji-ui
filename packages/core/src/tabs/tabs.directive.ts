@@ -7,6 +7,7 @@ import { KJ_TABS, KjTabsContext } from './tabs.context';
  * ```html
  * <div kjTabs [(kjTabsValue)]="activeTab"><div kjTabList>...</div></div>
  * ```
+ * @example-file ./tabs.example.ts
  * @category Data/Tabs
  */
 @Directive({

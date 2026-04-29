@@ -9,6 +9,7 @@ import { KjDisabledDirective, KjFocusRingDirective, KjFormControlDirective } fro
  * ```html
  * <input kjInput type="email" [formControl]="emailCtrl" [kjInvalid]="emailCtrl.invalid" />
  * ```
+ * @example-file ./input.example.ts
  * @category Foundation/Input
  */
 @Directive({
