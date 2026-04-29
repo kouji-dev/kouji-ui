@@ -1,7 +1,7 @@
-import { Component, effect, inject, viewChild } from '@angular/core';
+import { ApplicationRef, Component, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map } from 'rxjs/operators';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { switchMap, map, filter, take } from 'rxjs/operators';
 import { DocsService } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
@@ -26,6 +26,7 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
 export class ComponentDocComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly docs = inject(DocsService);
+  private readonly appRef = inject(ApplicationRef);
 
   protected readonly component = toSignal(
     this.route.paramMap.pipe(
@@ -38,12 +39,11 @@ export class ComponentDocComponent {
   private readonly pageToc = viewChild(PageTocDirective);
 
   constructor() {
-    // Re-scan TOC whenever the component data changes (new page navigation)
-    effect(() => {
-      if (this.component()) {
-        // Let Angular finish rendering the new directive sections, then refresh TOC
-        setTimeout(() => this.pageToc()?.refresh(), 200);
-      }
-    });
+    // After each route change, wait for the app to fully stabilize
+    // (manifest loaded + all async rendering done), then refresh the TOC.
+    toObservable(this.component).pipe(
+      filter(Boolean),
+      switchMap(() => this.appRef.isStable.pipe(filter(Boolean), take(1))),
+    ).subscribe(() => this.pageToc()?.refresh());
   }
 }

@@ -45,23 +45,16 @@ export class PageTocDirective {
 
   constructor() {
     afterNextRender(() => {
-      // Initial scan — catches SSR-prerendered content
-      this.scanHeadings();
-      this.observeHeadings();
-
-      // If the URL has a hash on load, set it as the active entry and scroll to it
+      this.refresh();
       const hashId = location.hash.slice(1);
       if (hashId) {
         this.activeId.set(hashId);
         document.getElementById(hashId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-
-      // Re-scan after initial delay for dynamically rendered content
-      setTimeout(() => this.refresh(), 400);
     });
   }
 
-  /** Re-scan headings and restart observer — call after async content renders. */
+  /** Re-scan headings and restart observer — called when route content has fully rendered. */
   refresh(): void {
     this.observer?.disconnect();
     this.scanHeadings();
@@ -80,7 +73,6 @@ export class PageTocDirective {
       if (!id) continue;
       const label = el.getAttribute('data-toc-entry') ?? el.textContent?.trim() ?? '';
       const tagLevel = el.tagName.match(/^H(\d)$/)?.[1];
-      // data-toc-entry elements get level from data-toc-level attr (default 2)
       const level = tagLevel
         ? parseInt(tagLevel, 10)
         : parseInt(el.getAttribute('data-toc-level') ?? '2', 10);
@@ -103,7 +95,6 @@ export class PageTocDirective {
         if (visible.length) {
           const id = visible[0].target.id;
           this.activeId.set(id);
-          // Keep URL in sync as the user scrolls (replaceState avoids polluting history)
           history.replaceState(null, '', `#${id}`);
         }
       },
