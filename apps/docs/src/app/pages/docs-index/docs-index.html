@@ -1,0 +1,46 @@
+<div class="docs-layout">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <a routerLink="/" class="sidebar-back">← Home</a>
+      <div class="sidebar-section">
+        <a routerLink="/docs/getting-started" class="sidebar-link">Getting Started</a>
+      </div>
+      @for (cat of categories; track cat) {
+        @if (byCategory(cat).length) {
+          <div class="sidebar-section">
+            <span class="sidebar-category">{{ cat }}</span>
+            @for (comp of byCategory(cat); track comp.slug) {
+              <a [routerLink]="['/docs/components', comp.slug]" class="sidebar-link">
+                {{ comp.name }}
+              </a>
+            }
+          </div>
+        }
+      }
+    </nav>
+  </aside>
+  <main class="docs-main">
+    <div class="docs-hero">
+      <span class="tag">Documentation</span>
+      <h1>Components</h1>
+      <p>{{ components().length }} components across {{ categories.length }} categories. All headless, all WCAG AAA.</p>
+    </div>
+    @for (cat of categories; track cat) {
+      @if (byCategory(cat).length) {
+        <section class="category-section">
+          <h2 class="category-title">{{ cat }}</h2>
+          <div class="component-grid">
+            @for (comp of byCategory(cat); track comp.slug) {
+              <a [routerLink]="['/docs/components', comp.slug]" class="component-card">
+                <span class="card-name">{{ comp.name }}</span>
+                <span class="card-count">{{ comp.directives.length }} directive{{ comp.directives.length !== 1 ? 's' : '' }}</span>
+                <p class="card-desc">{{ comp.description || comp.directives[0]?.description }}</p>
+                <span class="card-arrow">→</span>
+              </a>
+            }
+          </div>
+        </section>
+      }
+    }
+  </main>
+</div>

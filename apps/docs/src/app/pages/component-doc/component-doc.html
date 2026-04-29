@@ -1,0 +1,72 @@
+<div class="docs-layout">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <a routerLink="/docs" class="sidebar-back">← All components</a>
+    </nav>
+  </aside>
+
+  <main class="doc-main">
+    @if (component(); as comp) {
+      <header class="doc-header">
+        <span class="tag">{{ comp.category }}</span>
+        <h1>{{ comp.name }}</h1>
+        @if (comp.description) {
+          <p class="doc-desc">{{ comp.description }}</p>
+        }
+      </header>
+
+      @for (directive of comp.directives; track directive.className) {
+        <section class="directive-section">
+          <div class="directive-header">
+            <code class="directive-selector">{{ directive.selector }}</code>
+            <span class="directive-class">{{ directive.className }}</span>
+          </div>
+
+          @if (directive.description) {
+            <p class="directive-desc">{{ directive.description }}</p>
+          }
+
+          @if (directive.inputs.length) {
+            <div class="inputs-block">
+              <h3 class="block-title">Inputs</h3>
+              <div class="inputs-table">
+                <div class="inputs-header">
+                  <span>Name</span>
+                  <span>Type</span>
+                  <span>Default</span>
+                  <span>Description</span>
+                </div>
+                @for (inp of directive.inputs; track inp.name) {
+                  <div class="input-row">
+                    <code class="inp-name">
+                      {{ inp.name }}
+                      @if (inp.required) { <span class="required">*</span> }
+                    </code>
+                    <code class="inp-type">{{ inp.type }}</code>
+                    <code class="inp-default">{{ inp.defaultValue ?? '—' }}</code>
+                    <span class="inp-desc">{{ inp.description || '—' }}</span>
+                  </div>
+                }
+              </div>
+              <p class="required-note">* required</p>
+            </div>
+          }
+
+          @if (directive.examples.length) {
+            <div class="examples-block">
+              <h3 class="block-title">Example</h3>
+              @for (ex of directive.examples; track $index) {
+                <pre class="code-example"><code>{{ ex }}</code></pre>
+              }
+            </div>
+          }
+        </section>
+      }
+    } @else {
+      <div class="not-found">
+        <p>Component not found.</p>
+        <a routerLink="/docs">← Back to docs</a>
+      </div>
+    }
+  </main>
+</div>
