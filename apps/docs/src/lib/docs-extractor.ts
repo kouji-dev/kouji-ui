@@ -40,7 +40,8 @@ export interface DirectiveDef {
   description: string;
   inputs: InputDef[];
   examples: string[];
-  exampleFiles: ExampleFile[];
+  exampleFiles: ExampleFile[];        // default theme files (backward compat)
+  themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
 }
 
 export interface ComponentDoc {
@@ -208,6 +209,69 @@ function getDocFiles(node: ts.Node, sourceFile: ts.SourceFile): ExampleFile[] {
   }
 
   return results;
+}
+
+/** Regex to find @doc-theme sections in raw JSDoc text */
+const DOC_THEME_RE = /@doc-theme\s+(\w+)([\s\S]*?)(?=@doc-theme\s+\w|\s*\*\/|$)/g;
+
+/**
+ * Extracts @doc-theme sections from JSDoc text.
+ * Each theme contains @doc-file entries (same format as getDocFiles).
+ *
+ * TypeScript parses @doc-theme as tag "@doc" + comment "-theme name ...",
+ * so we scan the raw JSDoc text directly.
+ */
+function getDocThemes(node: ts.Node, sourceFile: ts.SourceFile): Record<string, ExampleFile[]> {
+  const result: Record<string, ExampleFile[]> = {};
+  const validLangs = ['ts', 'html', 'css'] as const;
+
+  const triviaStart = node.getFullStart();
+  const triviaEnd = node.getStart(sourceFile, false);
+  const leadingTrivia = sourceFile.text.substring(triviaStart, triviaEnd);
+
+  const jsDocStart = leadingTrivia.lastIndexOf('/**');
+  const jsDocEnd = leadingTrivia.lastIndexOf('*/');
+  if (jsDocStart === -1 || jsDocEnd < jsDocStart) return result;
+
+  const jsDocText = leadingTrivia.substring(jsDocStart, jsDocEnd + 2);
+
+  DOC_THEME_RE.lastIndex = 0;
+  for (const themeMatch of jsDocText.matchAll(DOC_THEME_RE)) {
+    const themeName = themeMatch[1].trim();
+    const themeBody = themeMatch[2];
+    const files: ExampleFile[] = [];
+
+    // Parse @doc-file entries within this theme's body
+    const re = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=\s*@doc-file|\s*@doc-theme|\s*@\w|\s*\*\/|$)/g;
+    for (const fileMatch of themeBody.matchAll(re)) {
+      const filename = fileMatch[1].trim();
+      if (!filename) continue;
+
+      const body = fileMatch[2];
+      const fenceMatch = body.match(DOC_FENCED_RE);
+      if (!fenceMatch) continue;
+
+      const fenceLang = fenceMatch[1].toLowerCase();
+      const content = stripJsDocPrefixes(fenceMatch[2]);
+      if (!content) continue;
+
+      const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+      const lang: ExampleFile['lang'] =
+        (validLangs as readonly string[]).includes(fenceLang as any)
+          ? (fenceLang as ExampleFile['lang'])
+          : (validLangs as readonly string[]).includes(ext as any)
+            ? (ext as ExampleFile['lang'])
+            : 'ts';
+
+      files.push({ lang, filename, content });
+    }
+
+    if (files.length) {
+      result[themeName] = files;
+    }
+  }
+
+  return result;
 }
 
 function getCategoryPath(node: ts.Node): string[] {
@@ -388,10 +452,16 @@ function processSourceFile(
     const description = getJsDocDescription(cls);
     const examples = getJsDocExamples(cls);
     const exampleFiles = getDocFiles(cls, tsSourceFile);
+    const themedExamples = getDocThemes(cls, tsSourceFile);
     const ownInputs = extractInputs(cls, tsSourceFile);
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const inputs = [...ownInputs, ...hdInputs];
     const categoryPath = getCategoryPath(cls);
+
+    // If themedExamples has a 'default' key, use it as exampleFiles fallback
+    const resolvedExampleFiles = themedExamples['default']?.length
+      ? themedExamples['default']
+      : exampleFiles;
 
     if (!componentMap.has(folder)) {
       componentMap.set(folder, {
@@ -423,7 +493,8 @@ function processSourceFile(
       description,
       inputs,
       examples,
-      exampleFiles,
+      exampleFiles: resolvedExampleFiles,
+      themedExamples,
     };
     comp.directives.push(directiveWithPkg);
   }

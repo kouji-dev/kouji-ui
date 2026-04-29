@@ -27,6 +27,7 @@ export interface DirectiveDef {
   inputs: InputDef[];
   examples: string[];
   exampleFiles: ExampleFile[];
+  themedExamples: Record<string, ExampleFile[]>;
 }
 
 export interface TokenDef {

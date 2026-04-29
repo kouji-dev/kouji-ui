@@ -27,7 +27,8 @@ interface DirectiveDef {
   description: string;
   inputs: InputDef[];
   examples: string[];
-  exampleFiles: ExampleFile[];
+  exampleFiles: ExampleFile[];        // default theme files (backward compat)
+  themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
 }
 
 interface ComponentDoc {
@@ -150,6 +151,65 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
   return { description, examples, categoryPath, exampleFiles };
 }
 
+/** Regex to find @doc-theme sections in raw JSDoc text */
+const DOC_THEME_RE = /@doc-theme\s+(\w+)([\s\S]*?)(?=@doc-theme\s+\w|\s*\*\/|$)/g;
+
+/**
+ * Parses @doc-theme sections from raw JSDoc full text (via ts-morph getText()).
+ * Each theme contains @doc-file entries in the same inline format as getDocFiles.
+ */
+function parseDocThemes(fullText: string): Record<string, ExampleFile[]> {
+  const result: Record<string, ExampleFile[]> = {};
+  const validLangs = ['ts', 'html', 'css'] as const;
+
+  const jsDocStart = fullText.lastIndexOf('/**');
+  const jsDocEnd = fullText.lastIndexOf('*/');
+  if (jsDocStart === -1 || jsDocEnd < jsDocStart) return result;
+
+  const jsDocText = fullText.substring(jsDocStart, jsDocEnd + 2);
+
+  DOC_THEME_RE.lastIndex = 0;
+  for (const themeMatch of jsDocText.matchAll(DOC_THEME_RE)) {
+    const themeName = themeMatch[1].trim();
+    const themeBody = themeMatch[2];
+    const files: ExampleFile[] = [];
+
+    // Find each @doc-file tag in this theme's body using the same approach as extractJsDocText
+    const docFileTagRe = /\*\s+@doc-file\s+(\S+)\s*\n/g;
+    let dfTagMatch: RegExpExecArray | null;
+    while ((dfTagMatch = docFileTagRe.exec(themeBody)) !== null) {
+      const filename = dfTagMatch[1].trim();
+      const afterTag = themeBody.substring(dfTagMatch.index + dfTagMatch[0].length);
+      const stripped = afterTag
+        .split('\n')
+        .map((line: string) => line.replace(/^\s*\*\s?/, ''))
+        .join('\n');
+      const fenceMatch = stripped.match(/```(\w*)\s*\n([\s\S]*?)```/);
+      if (fenceMatch) {
+        const langRaw = (fenceMatch[1] ?? 'ts').trim() || 'ts';
+        const lang: ExampleFile['lang'] = (validLangs as readonly string[]).includes(langRaw)
+          ? langRaw as ExampleFile['lang']
+          : 'ts';
+        const innerLines = fenceMatch[2].split('\n');
+        const nonEmpty = innerLines.filter((l: string) => l.trim().length > 0);
+        const minIndent = nonEmpty.length
+          ? Math.min(...nonEmpty.map((l: string) => (l.match(/^(\s*)/) as RegExpMatchArray)[1].length))
+          : 0;
+        const content = innerLines.map((l: string) => l.substring(minIndent)).join('\n').trim();
+        if (content) {
+          files.push({ lang, filename, content });
+        }
+      }
+    }
+
+    if (files.length) {
+      result[themeName] = files;
+    }
+  }
+
+  return result;
+}
+
 /** Extract signal input definitions from a class */
 function extractInputs(cls: any): InputDef[] {
   const inputs: InputDef[] = [];
@@ -250,8 +310,14 @@ async function main() {
         if (!selector) continue;
 
         const { description, examples, categoryPath, exampleFiles } = extractJsDocText(cls, filePath);
+        const themedExamples = parseDocThemes(cls.getFullText());
         const inputs = extractInputs(cls);
         const className = cls.getName() ?? '';
+
+        // If themedExamples has a 'default' key, use it as exampleFiles fallback
+        const resolvedExampleFiles = themedExamples['default']?.length
+          ? themedExamples['default']
+          : exampleFiles;
 
         // Prepend package name to categoryPath
         const fullPath = categoryPath.length ? [pkgName, ...categoryPath] : [];
@@ -263,7 +329,8 @@ async function main() {
           description,
           inputs,
           examples,
-          exampleFiles,
+          exampleFiles: resolvedExampleFiles,
+          themedExamples,
         };
 
         // Group into component

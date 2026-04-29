@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T18:02:38.884Z",
+  "generatedAt": "2026-04-29T18:32:13.582Z",
   "components": [
     {
       "name": "Avatar",
@@ -25,7 +25,8 @@
           "examples": [
             "<span kjAvatar><img kjAvatarImage src=\"...\" alt=\"...\" /><span kjAvatarFallback>JD</span></span>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjAvatarImageDirective",
@@ -38,7 +39,8 @@
           "description": "Image element within a `[kjAvatar]` container.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjAvatarFallbackDirective",
@@ -51,7 +53,8 @@
           "description": "Fallback shown when image is unavailable.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -79,7 +82,8 @@
           "examples": [
             "<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -113,7 +117,8 @@
               "filename": "button.example.ts",
               "content": "import { Component, signal } from '@angular/core';\nimport { KjButtonDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjButtonDirective],\n  styles: [`\n    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; padding: 2rem; background: #0c0c0c; }\n    [kjButton] { padding: 0.5rem 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; border: none; cursor: pointer; transition: opacity 0.15s; }\n    [data-variant=\"default\"] { background: #b8f500; color: #0c0c0c; }\n    [data-variant=\"destructive\"] { background: #ef4444; color: white; }\n    [data-variant=\"outline\"] { background: transparent; color: #f0ede6; border: 1px solid #333; }\n    [data-variant=\"ghost\"] { background: transparent; color: #888; }\n    [aria-disabled=\"true\"] { opacity: 0.4; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"row\">\n      <button kjButton [kjVariant]=\"'default'\">Default</button>\n      <button kjButton [kjVariant]=\"'destructive'\">Destructive</button>\n      <button kjButton [kjVariant]=\"'outline'\">Outline</button>\n      <button kjButton [kjVariant]=\"'ghost'\">Ghost</button>\n      <button kjButton [kjDisabled]=\"true\">Disabled</button>\n    </div>\n  `,\n})\nexport class ButtonExampleComponent {}"
             }
-          ]
+          ],
+          "themedExamples": {}
         }
       ]
     },
@@ -147,7 +152,8 @@
               "filename": "checkbox.example.ts",
               "content": "import { Component, signal } from '@angular/core';\nimport { KjCheckboxDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjCheckboxDirective],\n  styles: [`\n    .row { display: flex; flex-direction: column; gap: 1rem; padding: 2rem; background: #0c0c0c; }\n    .item { display: flex; align-items: center; gap: 0.75rem; }\n    [kjCheckbox] { width: 18px; height: 18px; border: 2px solid #333; background: #111; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }\n    [data-checked] { background: #b8f500; border-color: #b8f500; }\n    [data-checked]::after { content: '✓'; color: #0c0c0c; font-size: 0.75rem; font-weight: bold; }\n    span { color: #888; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }\n  `],\n  template: `\n    <div class=\"row\">\n      <div class=\"item\">\n        <div kjCheckbox tabindex=\"0\" [(kjChecked)]=\"terms\" aria-label=\"Accept terms\"></div>\n        <span>Accept terms — {{ terms() ? 'checked' : 'unchecked' }}</span>\n      </div>\n      <div class=\"item\">\n        <div kjCheckbox tabindex=\"0\" [(kjChecked)]=\"newsletter\" aria-label=\"Newsletter\"></div>\n        <span>Subscribe to newsletter</span>\n      </div>\n    </div>\n  `,\n})\nexport class CheckboxExampleComponent {\n  terms = signal(false);\n  newsletter = signal(true);\n}"
             }
-          ]
+          ],
+          "themedExamples": {}
         }
       ]
     },
@@ -181,7 +187,8 @@
               "filename": "input.example.ts",
               "content": "import { Component } from '@angular/core';\nimport { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';\nimport { KjInputDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjInputDirective, ReactiveFormsModule],\n  styles: [`\n    .form { padding: 2rem; background: #0c0c0c; display: flex; flex-direction: column; gap: 1rem; max-width: 400px; }\n    [kjInput] { padding: 0.625rem 0.875rem; background: #111; border: 1px solid #222; color: #f0ede6; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; width: 100%; }\n    [kjInput]:focus { outline: none; border-color: #b8f500; }\n    [aria-invalid=\"true\"] { border-color: #ef4444; }\n    .error { color: #ef4444; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }\n    label { color: #888; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }\n  `],\n  template: `\n    <div class=\"form\">\n      <label for=\"email\">Email</label>\n      <input id=\"email\" kjInput type=\"email\" [formControl]=\"emailCtrl\"\n        [kjInvalid]=\"emailCtrl.invalid && emailCtrl.touched\"\n        placeholder=\"you@example.com\" />\n      @if (emailCtrl.invalid && emailCtrl.touched) {\n        <span class=\"error\">Please enter a valid email.</span>\n      }\n      <label for=\"disabled\">Disabled input</label>\n      <input id=\"disabled\" kjInput type=\"text\" [kjDisabled]=\"true\" value=\"Not editable\" />\n    </div>\n  `,\n})\nexport class InputExampleComponent {\n  emailCtrl = new FormControl('', [Validators.email, Validators.required]);\n}"
             }
-          ]
+          ],
+          "themedExamples": {}
         }
       ]
     },
@@ -209,7 +216,8 @@
           "examples": [
             "<div kjRadioGroup [(kjValue)]=\"size\" aria-label=\"Size\">\n  <div kjRadio [kjRadioValue]=\"'s'\" tabindex=\"0\">Small</div>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjRadioDirective",
@@ -224,7 +232,8 @@
           "examples": [
             "<div kjRadio [kjRadioValue]=\"'a'\" tabindex=\"0\">Option A</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -252,7 +261,8 @@
           "examples": [
             "<button kjToggle [(kjPressed)]=\"isBold\" aria-label=\"Bold\">B</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -280,7 +290,8 @@
           "examples": [
             "<div kjDialog>\n  <button kjDialogTrigger>Open</button>\n  <ng-template kjDialogContent>\n    <div role=\"dialog\" aria-label=\"Settings\" aria-modal=\"true\">\n      <h2>Settings</h2>\n      <button (click)=\"dialog.hide()\">Close</button>\n    </div>\n  </ng-template>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjDialogContentDirective",
@@ -295,7 +306,8 @@
           "examples": [
             "<ng-template kjDialogContent>\n  <div role=\"dialog\" aria-label=\"My dialog\" aria-modal=\"true\">...</div>\n</ng-template>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjDialogTriggerDirective",
@@ -310,7 +322,8 @@
           "examples": [
             "<button kjDialogTrigger>Open dialog</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -338,7 +351,8 @@
           "examples": [
             "<button kjMenuTrigger [kjMenuTriggerFor]=\"myMenu\">Actions</button>\n<ng-template #myMenu>\n  <div kjMenu>\n    <button kjMenuItem>Edit</button>\n  </div>\n</ng-template>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjMenuDirective",
@@ -353,7 +367,8 @@
           "examples": [
             "<div kjMenu role=\"menu\">\n  <button kjMenuItem>Edit</button>\n  <button kjMenuItem>Delete</button>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjMenuItemDirective",
@@ -368,7 +383,8 @@
           "examples": [
             "<button kjMenuItem role=\"menuitem\">Delete</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -396,7 +412,8 @@
           "examples": [
             "<div kjPopover>\n  <button kjPopoverTrigger>Options</button>\n  <div kjPopoverContent>Popover body</div>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjPopoverTriggerDirective",
@@ -409,7 +426,8 @@
           "description": "Trigger button. Toggles the popover and sets `aria-expanded`.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjPopoverContentDirective",
@@ -422,7 +440,8 @@
           "description": "Popover content panel. Hidden when closed. Uses `hidden` attribute for accessibility-compliant visibility.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -450,7 +469,8 @@
           "examples": [
             "<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -478,7 +498,8 @@
           "examples": [
             "<div kjTooltip>\n  <button kjTooltipTrigger aria-describedby=\"tip-id\">Info</button>\n  <span role=\"tooltip\" id=\"tip-id\" kjTooltipContent>Helpful text</span>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjTooltipTriggerDirective",
@@ -491,7 +512,8 @@
           "description": "Trigger element for the tooltip. Shows/hides on hover and focus.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjTooltipContentDirective",
@@ -504,7 +526,8 @@
           "description": "Tooltip content panel. Hidden unless triggered. Add `role=\"tooltip\"` and an `id` matching the trigger's `aria-describedby`.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -532,7 +555,8 @@
           "examples": [
             "<div kjAccordion [kjAccordionType]=\"'multiple'\">\n  <div kjAccordionItem [kjItemValue]=\"'item-1'\">...</div>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjAccordionItemDirective",
@@ -547,7 +571,8 @@
           "examples": [
             "<div kjAccordionItem [kjItemValue]=\"'section-1'\">\n  <button kjAccordionTrigger>Section 1</button>\n  <div kjAccordionContent>Content</div>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjAccordionTriggerDirective",
@@ -562,7 +587,8 @@
           "examples": [
             "<button kjAccordionTrigger>Section title</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjAccordionContentDirective",
@@ -577,7 +603,8 @@
           "examples": [
             "<div kjAccordionContent>Panel content</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -605,7 +632,8 @@
           "examples": [
             "<div kjFormField [kjFieldInvalid]=\"ctrl.invalid && ctrl.touched\">\n  <label kjFormLabel for=\"name\">Name</label>\n  <input id=\"name\" kjInput />\n  <span kjFormError>Name is required</span>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjFormLabelDirective",
@@ -618,7 +646,8 @@
           "description": "Label element within a form field.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjFormErrorDirective",
@@ -633,7 +662,8 @@
           "examples": [
             "<span kjFormError>Email is invalid</span>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -661,7 +691,8 @@
           "examples": [
             "<div kjSelect [(kjSelectValue)]=\"selected\">\n  <button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>\n  <div kjSelectContent role=\"listbox\">\n    <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n  </div>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjSelectTriggerDirective",
@@ -676,7 +707,8 @@
           "examples": [
             "<button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjSelectContentDirective",
@@ -691,7 +723,8 @@
           "examples": [
             "<div kjSelectContent role=\"listbox\">\n  <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjOptionDirective",
@@ -706,7 +739,8 @@
           "examples": [
             "<div kjOption [kjOptionValue]=\"'apple'\">Apple</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -734,7 +768,8 @@
           "examples": [
             "<table [kjTable]=\"columns\" [kjTableData]=\"rows\" #tbl=\"kjTable\">\n  <thead>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjTableHeaderDirective",
@@ -749,7 +784,8 @@
           "examples": [
             "<th kjTableHeader [kjHeader]=\"header\" scope=\"col\">Name</th>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -783,7 +819,8 @@
               "filename": "tabs.example.ts",
               "content": "import { Component, signal } from '@angular/core';\nimport { KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective } from '@kouji-ui/core';\n\n@Component({\n  standalone: true,\n  imports: [KjTabsDirective, KjTabListDirective, KjTabDirective, KjTabPanelDirective],\n  styles: [`\n    .tabs { background: #0c0c0c; padding: 2rem; }\n    [kjTabList] { display: flex; border-bottom: 1px solid #1e1e1e; margin-bottom: 1.5rem; }\n    [kjTab] { background: none; border: none; border-bottom: 2px solid transparent; color: #555; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; padding: 0.625rem 1.25rem; cursor: pointer; transition: color 0.15s, border-color 0.15s; margin-bottom: -1px; }\n    [kjTab][aria-selected=\"true\"] { color: #f0ede6; border-bottom-color: #b8f500; }\n    [kjTab]:hover { color: #f0ede6; }\n    [kjTabPanel] { color: #666; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; line-height: 1.6; }\n    [hidden] { display: none; }\n  `],\n  template: `\n    <div class=\"tabs\">\n      <div kjTabs [(kjTabsValue)]=\"activeTab\" aria-label=\"Example tabs\">\n        <div kjTabList>\n          <button kjTab [kjTabValue]=\"'tab1'\">Overview</button>\n          <button kjTab [kjTabValue]=\"'tab2'\">API</button>\n          <button kjTab [kjTabValue]=\"'tab3'\">Examples</button>\n        </div>\n        <div kjTabPanel [kjPanelFor]=\"'tab1'\">The overview tab content goes here.</div>\n        <div kjTabPanel [kjPanelFor]=\"'tab2'\">API reference content goes here.</div>\n        <div kjTabPanel [kjPanelFor]=\"'tab3'\">Code examples go here.</div>\n      </div>\n    </div>\n  `,\n})\nexport class TabsExampleComponent {\n  activeTab = signal('tab1');\n}"
             }
-          ]
+          ],
+          "themedExamples": {}
         },
         {
           "className": "KjTabListDirective",
@@ -796,7 +833,8 @@
           "description": "Container for tab triggers. Sets `role=\"tablist\"`.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjTabDirective",
@@ -811,7 +849,8 @@
           "examples": [
             "<button kjTab [kjTabValue]=\"'profile'\">Profile</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjTabPanelDirective",
@@ -826,7 +865,8 @@
           "examples": [
             "<div kjTabPanel [kjPanelFor]=\"'profile'\">Profile content</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -854,7 +894,8 @@
           "examples": [
             "<div kjChart [kjChartOption]=\"chartOption()\" kjChartLabel=\"Monthly revenue\" style=\"height:300px\"></div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -882,7 +923,8 @@
           "examples": [
             "<input kjAriaDescribedBy [kjDescribedBy]=\"['hint-id', errorId()]\" />\n<span id=\"hint-id\">Format: DD/MM/YYYY</span>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjFocusTrapDirective",
@@ -897,7 +939,8 @@
           "examples": [
             "<div role=\"dialog\" kjFocusTrap [kjFocusTrapEnabled]=\"isOpen()\">\n  <button>Action</button>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjLiveRegionDirective",
@@ -912,7 +955,8 @@
           "examples": [
             "<div kjLiveRegion [kjPoliteness]=\"'polite'\" #region=\"kjLiveRegion\"></div>\n<button (click)=\"region.announce('Item saved')\">Save</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjRovingTabindexItemDirective",
@@ -927,7 +971,8 @@
           "examples": [
             "<button kjRovingTabindexItem>Item</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjRovingTabindexDirective",
@@ -942,7 +987,8 @@
           "examples": [
             "<div kjRovingTabindex role=\"toolbar\" aria-label=\"Formatting\">\n  <button kjRovingTabindexItem>Bold</button>\n  <button kjRovingTabindexItem>Italic</button>\n</div>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjVisuallyHiddenDirective",
@@ -957,7 +1003,8 @@
           "examples": [
             "<button>\n  <kj-icon name=\"close\" />\n  <span kjVisuallyHidden>Close dialog</span>\n</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     },
@@ -983,7 +1030,8 @@
           "description": "Shared ControlValueAccessor primitive. Compose via `hostDirectives` on any form input directive (KjInputDirective, KjCheckboxDirective, etc.) to wire Angular reactive forms and template-driven forms automatically. The host directive calls `notifyChange(value)` on user input and `notifyTouched()` on blur. The directive handles all CVA plumbing.",
           "inputs": [],
           "examples": [],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjDisabledDirective",
@@ -998,7 +1046,8 @@
           "examples": [
             "<button kjButton [kjDisabled]=\"isLoading()\">Submit</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         },
         {
           "className": "KjFocusRingDirective",
@@ -1013,7 +1062,8 @@
           "examples": [
             "<button kjFocusRing>Focusable button</button>"
           ],
-          "exampleFiles": []
+          "exampleFiles": [],
+          "themedExamples": {}
         }
       ]
     }
