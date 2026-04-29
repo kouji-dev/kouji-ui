@@ -1,0 +1,63 @@
+:host { display: block; }
+
+.preview-wrap {
+  border: 1px solid #1a1a1a;
+  overflow: hidden;
+}
+
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0a0a0a;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0 1rem;
+}
+
+.file-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.file-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #444;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.6rem 0.875rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.file-tab:hover { color: #888; }
+
+.file-tab.active {
+  color: #f0ede6;
+  border-bottom-color: #b8f500;
+}
+
+.stackblitz-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: #444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.stackblitz-btn:hover { color: #b8f500; }
+
+.no-examples {
+  padding: 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #333;
+}

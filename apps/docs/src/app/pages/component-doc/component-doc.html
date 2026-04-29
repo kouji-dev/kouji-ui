@@ -50,11 +50,20 @@
             </div>
           }
 
-          @if (directive.examples.length) {
+          @if (directive.examples.length || directive.exampleFiles?.length) {
             <div class="examples-block">
               <h3 class="block-title">Example</h3>
-              @for (ex of directive.examples; track $index) {
-                <pre class="code-example"><code>{{ ex }}</code></pre>
+              @if (directive.exampleFiles?.length) {
+                <!-- Prefer @example-file over inline @example -->
+                <kj-code-preview
+                  [examples]="directive.exampleFiles"
+                  [componentName]="comp.name"
+                />
+              } @else {
+                <!-- Fallback: inline @example blocks in pre tags -->
+                @for (ex of directive.examples; track $index) {
+                  <pre class="code-example"><code>{{ ex }}</code></pre>
+                }
               }
             </div>
           }

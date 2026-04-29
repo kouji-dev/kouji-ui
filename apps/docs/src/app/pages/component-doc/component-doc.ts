@@ -4,11 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map } from 'rxjs/operators';
 import { DocsService } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
+import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 
 @Component({
   selector: 'app-component-doc',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent],
+  imports: [RouterLink, DocsSidebarComponent, CodePreviewComponent],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
 })
