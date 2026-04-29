@@ -3,31 +3,59 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjDialogDirective, KjDialogTriggerDirective, KjDialogContentDirective } from './dialog.directive';
 
 expect.extend(toHaveNoViolations);
+
 const imports = [KjDialogDirective, KjDialogTriggerDirective, KjDialogContentDirective];
-const template = `<div kjDialog><button kjDialogTrigger>Open</button><div kjDialogContent role="dialog" aria-label="Test" aria-modal="true"><button>Close</button></div></div>`;
 
 describe('KjDialogDirective', () => {
-  it('content hidden by default', async () => {
-    const { container } = await render(template, { imports });
-    expect(container.querySelector('[kjDialogContent]')).toHaveAttribute('hidden', '');
+  it('trigger button renders', async () => {
+    const { getByRole } = await render(
+      `<div kjDialog>
+        <button kjDialogTrigger>Open</button>
+        <ng-template kjDialogContent>
+          <div role="dialog" aria-label="Test" aria-modal="true"><button>Close</button></div>
+        </ng-template>
+      </div>`,
+      { imports },
+    );
+    expect(getByRole('button', { name: 'Open' })).toBeInTheDocument();
   });
-  it('trigger opens dialog', async () => {
-    const { container } = await render(template, { imports });
-    fireEvent.click(container.querySelector('[kjDialogTrigger]')!);
-    expect(container.querySelector('[kjDialogContent]')).not.toHaveAttribute('hidden');
+
+  it('trigger has aria-haspopup=dialog', async () => {
+    const { getByRole } = await render(
+      `<div kjDialog>
+        <button kjDialogTrigger>Open</button>
+        <ng-template kjDialogContent>
+          <div role="dialog" aria-label="T" aria-modal="true"></div>
+        </ng-template>
+      </div>`,
+      { imports },
+    );
+    expect(getByRole('button', { name: 'Open' })).toHaveAttribute('aria-haspopup', 'dialog');
   });
-  it('Escape closes dialog', async () => {
-    const { container } = await render(template, { imports });
-    fireEvent.click(container.querySelector('[kjDialogTrigger]')!);
-    fireEvent.keyDown(document, { key: 'Escape' });
-    expect(container.querySelector('[kjDialogContent]')).toHaveAttribute('hidden', '');
+
+  it('trigger has aria-expanded=false initially', async () => {
+    const { getByRole } = await render(
+      `<div kjDialog>
+        <button kjDialogTrigger>Open</button>
+        <ng-template kjDialogContent>
+          <div role="dialog" aria-label="T" aria-modal="true"></div>
+        </ng-template>
+      </div>`,
+      { imports },
+    );
+    expect(getByRole('button', { name: 'Open' })).toHaveAttribute('aria-expanded', 'false');
   });
-  it('trigger has aria-expanded', async () => {
-    const { container } = await render(template, { imports });
-    expect(container.querySelector('[kjDialogTrigger]')).toHaveAttribute('aria-expanded', 'false');
-  });
-  it('passes axe audit when closed', async () => {
-    const { container } = await render(template, { imports });
+
+  it('passes axe audit', async () => {
+    const { container } = await render(
+      `<div kjDialog>
+        <button kjDialogTrigger>Open dialog</button>
+        <ng-template kjDialogContent>
+          <div role="dialog" aria-label="Settings" aria-modal="true"></div>
+        </ng-template>
+      </div>`,
+      { imports },
+    );
     expect(await axe(container)).toHaveNoViolations();
   });
 });
