@@ -28,8 +28,6 @@ export class CodePreviewComponent {
 
   private readonly registry = inject(DemoRegistryService);
 
-  readonly activeTab = signal<'code' | 'preview'>('code');
-
   readonly demoComponent = computed((): Type<unknown> | null =>
     this.slug() ? this.registry.get(this.slug()) : null
   );
