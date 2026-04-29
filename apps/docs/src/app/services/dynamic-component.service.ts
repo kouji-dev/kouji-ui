@@ -71,15 +71,15 @@ export class DynamicComponentService {
 
       const ClassDef = this.buildClass(parsed.classBody);
 
+      // ShadowDom encapsulation: each dynamic component gets its own shadow root.
+      // This fully isolates styles between themes (no global style accumulation),
+      // and :host selectors work correctly.
       const DynComponent = Component({
         standalone: true,
         imports,
         template: parsed.template,
         styles: parsed.styles,
-        // ViewEncapsulation.None: styles apply as-is without attribute scoping.
-        // Required for dynamic JIT components where the generated encapsulation ID
-        // would not match attribute selectors like [data-variant="default"].
-        encapsulation: ViewEncapsulation.None,
+        encapsulation: ViewEncapsulation.ShadowDom,
       })(ClassDef);
 
       this.cache.set(source, DynComponent);
