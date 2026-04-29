@@ -76,6 +76,15 @@ export class CodePreviewComponent {
     return list[this.activeIndex()] ?? null;
   });
 
+  /** True only when the active docExample (or themedExamples) defines more than just 'default'. */
+  protected readonly hasMultipleThemes = computed((): boolean => {
+    const docEx = this.activeDocExample();
+    if (docEx) {
+      return Object.keys(docEx.themedFiles).filter(k => k !== 'default').length > 0;
+    }
+    return Object.keys(this.themedExamples()).filter(k => k !== 'default').length > 0;
+  });
+
   readonly demoComponent = computed((): Type<unknown> | null => {
     const files = this.activeFiles();
     if (!files.length) return null;

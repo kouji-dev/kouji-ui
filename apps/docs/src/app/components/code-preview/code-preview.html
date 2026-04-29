@@ -15,7 +15,7 @@
     </div>
   }
 
-  @if (hasDemo()) {
+  @if (hasDemo() && hasMultipleThemes()) {
     <div class="preview-theme-strip">
       @for (t of previewThemes; track t.value) {
         <button
