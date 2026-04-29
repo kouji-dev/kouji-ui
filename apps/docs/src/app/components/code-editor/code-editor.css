@@ -29,7 +29,7 @@
 }
 
 .editor-host {
-  min-height: 80px;
+  /* No min-height — CodeMirror sizes to its content naturally */
   max-height: 500px;
   overflow-y: auto;
 }

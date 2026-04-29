@@ -132,7 +132,11 @@ function getJsDocExamples(node: ts.Node): string[] {
     .map(tag => {
       const c = tag.comment;
       const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
-      return raw.replace(/```(?:\w+)?\n?/g, '').replace(/```/g, '').trim();
+      // Strip fenced code blocks (```lang...```) and single backtick wrapping (`...`)
+      return raw
+        .replace(/```(?:\w+)?\n?/g, '').replace(/```/g, '')
+        .replace(/^`([\s\S]*)`$/, '$1')  // strip single-backtick wrapping
+        .trim();
     })
     .filter(Boolean);
 }

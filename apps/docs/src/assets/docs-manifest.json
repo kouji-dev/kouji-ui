@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T17:14:56.423Z",
+  "generatedAt": "2026-04-29T18:02:38.884Z",
   "components": [
     {
       "name": "Avatar",
@@ -23,7 +23,7 @@
           "description": "Container for avatar. Tracks image load state.",
           "inputs": [],
           "examples": [
-            "`<span kjAvatar><img kjAvatarImage src=\"...\" alt=\"...\" /><span kjAvatarFallback>JD</span></span>`"
+            "<span kjAvatar><img kjAvatarImage src=\"...\" alt=\"...\" /><span kjAvatarFallback>JD</span></span>"
           ],
           "exampleFiles": []
         },
@@ -77,7 +77,7 @@
           "description": "Marks an element as a badge via data attributes.",
           "inputs": [],
           "examples": [
-            "`<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>`"
+            "<span kjBadge [kjBadgeVariant]=\"'destructive'\">Critical</span>"
           ],
           "exampleFiles": []
         }
@@ -222,7 +222,7 @@
           "description": "Individual radio button within a `[kjRadioGroup]`. Includes CVA for forms integration.",
           "inputs": [],
           "examples": [
-            "`<div kjRadio [kjRadioValue]=\"'a'\" tabindex=\"0\">Option A</div>`"
+            "<div kjRadio [kjRadioValue]=\"'a'\" tabindex=\"0\">Option A</div>"
           ],
           "exampleFiles": []
         }
@@ -448,7 +448,7 @@
           "description": "Marks an element as a toast notification with appropriate ARIA live region attributes.",
           "inputs": [],
           "examples": [
-            "`<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>`"
+            "<div kjToast [kjToastVariant]=\"'destructive'\">Failed to save.</div>"
           ],
           "exampleFiles": []
         }
@@ -631,7 +631,7 @@
           "description": "Error message element. Visible only when field is invalid.",
           "inputs": [],
           "examples": [
-            "`<span kjFormError>Email is invalid</span>`"
+            "<span kjFormError>Email is invalid</span>"
           ],
           "exampleFiles": []
         }
@@ -809,7 +809,7 @@
           "description": "Individual tab trigger. Sets `role=\"tab\"` and manages `aria-selected`.",
           "inputs": [],
           "examples": [
-            "`<button kjTab [kjTabValue]=\"'profile'\">Profile</button>`"
+            "<button kjTab [kjTabValue]=\"'profile'\">Profile</button>"
           ],
           "exampleFiles": []
         },
@@ -824,7 +824,7 @@
           "description": "Tab panel content. Hidden when not active.",
           "inputs": [],
           "examples": [
-            "`<div kjTabPanel [kjPanelFor]=\"'profile'\">Profile content</div>`"
+            "<div kjTabPanel [kjPanelFor]=\"'profile'\">Profile content</div>"
           ],
           "exampleFiles": []
         }

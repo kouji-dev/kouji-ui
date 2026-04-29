@@ -83,7 +83,7 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
       if (tagName === 'example') {
         const text = tag.getComment() ?? '';
         const cleaned = typeof text === 'string'
-          ? text.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').trim()
+          ? text.replace(/```(?:html|ts)?\n?/g, '').replace(/```/g, '').replace(/^`([\s\S]*)`$/, '$1').trim()
           : '';
         if (cleaned) examples.push(cleaned);
       } else if (tagName === 'category') {
