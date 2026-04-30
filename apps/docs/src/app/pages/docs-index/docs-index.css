@@ -127,12 +127,6 @@ h1 {
   .toc-col { display: none; }
 }
 
-@media (max-width: 768px) {
-  .docs-layout { grid-template-columns: 1fr; }
-  .sidebar { height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-subtle); }
-  .docs-main { padding: 2rem 1.5rem 4rem; }
-}
-
 /* ── Mobile top bar ── */
 .mobile-topbar {
   display: none;

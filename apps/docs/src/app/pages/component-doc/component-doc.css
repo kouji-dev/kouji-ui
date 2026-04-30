@@ -305,4 +305,8 @@ h1 {
   .inputs-header, .input-row {
     grid-template-columns: 130px 120px 90px 1fr;
   }
+
+  .directive-section {
+    scroll-margin-top: calc(56px + 1rem);
+  }
 }

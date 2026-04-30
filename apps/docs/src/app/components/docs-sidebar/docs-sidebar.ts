@@ -1,4 +1,4 @@
-import { Component, computed, effect, HostListener, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, HostListener, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DocsService, SidebarNode } from '../../services/docs.service';
@@ -24,9 +24,15 @@ export class DocsSidebarComponent implements OnInit {
   readonly open = signal(false);
 
   constructor() {
+    const destroyRef = inject(DestroyRef);
     effect(() => {
       if (isPlatformBrowser(this.platformId)) {
         this.document.body.style.overflow = this.open() ? 'hidden' : '';
+      }
+    });
+    destroyRef.onDestroy(() => {
+      if (isPlatformBrowser(this.platformId)) {
+        this.document.body.style.overflow = '';
       }
     });
   }
