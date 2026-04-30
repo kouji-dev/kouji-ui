@@ -1,5 +1,5 @@
-import { Component, computed, effect, HostListener, inject, OnInit, signal } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Component, computed, effect, HostListener, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DocsService, SidebarNode } from '../../services/docs.service';
 import { SearchService } from '../search/search.service';
@@ -17,6 +17,7 @@ export class DocsSidebarComponent implements OnInit {
   private readonly search = inject(SearchService);
   private readonly themeService = inject(ThemeService);
   private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
 
   protected readonly tree = signal<SidebarNode[]>([]);
   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
@@ -24,7 +25,9 @@ export class DocsSidebarComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      this.document.body.style.overflow = this.open() ? 'hidden' : '';
+      if (isPlatformBrowser(this.platformId)) {
+        this.document.body.style.overflow = this.open() ? 'hidden' : '';
+      }
     });
   }
 
