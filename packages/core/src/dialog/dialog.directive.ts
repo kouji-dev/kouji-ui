@@ -1,5 +1,5 @@
 import {
-  Directive, DestroyRef, TemplateRef, ViewContainerRef,
+  Directive, DestroyRef, HostListener, TemplateRef, ViewContainerRef,
   computed, inject, input, output, signal,
 } from '@angular/core';
 import { Dialog, DialogRef } from '@angular/cdk/dialog';
@@ -78,7 +78,7 @@ export class KjDialogTriggerDirective implements KjDialogContext {
     if (this._open()) return;
     this.dialogRef = this.cdkDialog.open(this.kjDialogTrigger(), {
       viewContainerRef: this.vcr,
-      disableClose: !this.kjDialogCloseOnEscape(),
+      disableClose: true,  // we manage both Escape and backdrop ourselves
       backdropClass: 'kj-dialog-backdrop',
       panelClass: 'kj-dialog-panel',
       autoFocus: 'first-tabbable',
@@ -92,7 +92,15 @@ export class KjDialogTriggerDirective implements KjDialogContext {
   }
 
   close(result?: unknown): void {
+    this._open.set(false);
     this.dialogRef?.close(result);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this._open() && this.closeOnEscape()) {
+      this.close();
+    }
   }
 }
 
