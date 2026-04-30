@@ -18,6 +18,31 @@
   justify-content: space-between;
 }
 
+.sidebar-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+.sidebar-close-btn:hover { color: var(--text); }
+
+@media (max-width: 768px) {
+  .sidebar-close-btn {
+    display: flex;
+  }
+}
+
 .theme-toggle {
   background: none;
   border: none;
