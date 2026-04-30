@@ -1,6 +1,6 @@
 <div class="sidebar-top">
   <div class="sidebar-top-row">
-    <a routerLink="/" class="sidebar-home" aria-label="kouji home">
+    <a routerLink="/" class="sidebar-home" aria-label="kouji home" (click)="close()">
       <svg width="24" height="24" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <line x1="10" y1="10" x2="10" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
         <line x1="10" y1="32" x2="34" y2="10" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
@@ -9,28 +9,32 @@
         <circle cx="50" cy="14" r="4" fill="#f0ede6"/>
       </svg>
     </a>
-    <button class="theme-toggle" (click)="toggleTheme()" [title]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'" type="button">
-      @if (isDark()) {
-        <!-- Sun icon (switch to light) -->
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    <div class="sidebar-top-actions">
+      <button class="theme-toggle" (click)="toggleTheme()" [title]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'" type="button">
+        @if (isDark()) {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        } @else {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        }
+      </button>
+      <button class="sidebar-close-btn" (click)="close()" aria-label="Close navigation" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
-      } @else {
-        <!-- Moon icon (switch to dark) -->
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      }
-    </button>
+      </button>
+    </div>
   </div>
 </div>
 
 <nav class="sidebar-nav" aria-label="Documentation navigation">
-  <!-- Search trigger -->
   <button class="sidebar-search-btn" (click)="openSearch()">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -39,17 +43,15 @@
     <kbd>⌘K</kbd>
   </button>
 
-  <!-- Static links -->
   <div class="sidebar-section">
-    <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special">
+    <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
       Getting Started
     </a>
-    <a routerLink="/docs" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" class="sidebar-link sidebar-link-special">
+    <a routerLink="/docs" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
       All Components
     </a>
   </div>
 
-  <!-- Dynamic tree: Package > Category > Component -->
   @for (pkg of tree(); track pkg.label) {
     <div class="sidebar-package">
       <span class="sidebar-package-label">{{ pkg.label }}</span>
@@ -62,6 +64,7 @@
                 [routerLink]="['/docs/components', item.slug]"
                 routerLinkActive="active"
                 class="sidebar-link"
+                (click)="close()"
               >
                 {{ item.label }}
               </a>
