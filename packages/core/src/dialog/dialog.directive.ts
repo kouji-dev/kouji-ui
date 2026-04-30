@@ -70,6 +70,10 @@ export class KjDialogTriggerDirective implements KjDialogContext {
 
   private dialogRef?: DialogRef<unknown>;
 
+  constructor() {
+    this.destroyRef.onDestroy(() => this.dialogRef?.close());
+  }
+
   openDialog(): void {
     if (this._open()) return;
     this.dialogRef = this.cdkDialog.open(this.kjDialogTrigger(), {
@@ -85,12 +89,10 @@ export class KjDialogTriggerDirective implements KjDialogContext {
       this._open.set(false);
       this.kjDialogClosed.emit(result);
     });
-    this.destroyRef.onDestroy(() => this.dialogRef?.close());
   }
 
   close(result?: unknown): void {
     this.dialogRef?.close(result);
-    this._open.set(false);
   }
 }
 
