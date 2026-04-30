@@ -36,11 +36,10 @@ export class ComponentDocComponent {
     ),
   );
 
+  protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
   private readonly pageToc = viewChild(PageTocDirective);
 
   constructor() {
-    // After each route change, wait for the app to fully stabilize
-    // (manifest loaded + all async rendering done), then refresh the TOC.
     toObservable(this.component).pipe(
       filter(Boolean),
       switchMap(() => this.appRef.isStable.pipe(filter(Boolean), take(1))),
