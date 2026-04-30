@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import {
   KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-  KjDialogTitleDirective, KjDialogCloseDirective,
+  KjDialogTitleDirective,
 } from './dialog.directive';
 import { KjButtonDirective } from '../button/button.directive';
 
@@ -10,7 +10,7 @@ import { KjButtonDirective } from '../button/button.directive';
   standalone: true,
   imports: [
     KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-    KjDialogTitleDirective, KjDialogCloseDirective,
+    KjDialogTitleDirective,
     KjButtonDirective,
   ],
   styles: [`
