@@ -83,6 +83,7 @@ export class PageTocDirective {
   }
 
   private observeHeadings(): void {
+    if (typeof IntersectionObserver === 'undefined') return;
     const container = this.el.nativeElement as HTMLElement;
     const headings = Array.from(
       container.querySelectorAll('h2[id], h3[id], [data-toc-entry]')
@@ -95,7 +96,7 @@ export class PageTocDirective {
         if (visible.length) {
           const id = visible[0].target.id;
           this.activeId.set(id);
-          history.replaceState(null, '', `#${id}`);
+          history.replaceState(null, '', `${location.pathname}#${id}`);
         }
       },
       { rootMargin: '-10% 0px -80% 0px', threshold: 0 }
