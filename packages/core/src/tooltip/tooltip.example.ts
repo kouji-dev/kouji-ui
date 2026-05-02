@@ -27,15 +27,15 @@ import { KjButton } from '../button/button';
     <div class="row">
       <div class="tip-wrap">
         <button kjButton [kjTooltipTrigger]="tip1">Hover me</button>
-        <span #tip1="kjTooltipContent" kjTooltipContent>Copy to clipboard</span>
+        <span #tip1 kjTooltipContent>Copy to clipboard</span>
       </div>
       <div class="tip-wrap">
         <button kjButton [kjTooltipTrigger]="tip2">Bottom</button>
-        <span #tip2="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'bottom'">Opens below</span>
+        <span #tip2 kjTooltipContent [kjTooltipSide]="'bottom'">Opens below</span>
       </div>
       <div class="tip-wrap">
         <button kjButton [kjTooltipTrigger]="tip3">Right</button>
-        <span #tip3="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'right'">Opens right</span>
+        <span #tip3 kjTooltipContent [kjTooltipSide]="'right'">Opens right</span>
       </div>
     </div>
   `,

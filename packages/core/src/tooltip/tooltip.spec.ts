@@ -13,7 +13,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('content hidden by default', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Hover</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
       { imports },
     );
     expect(container.querySelector('[kjTooltipContent]')).toHaveAttribute('hidden', '');
@@ -22,7 +22,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('content has role=tooltip by default', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Hover</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0">Tip</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0">Tip</span>`,
       { imports },
     );
     expect(container.querySelector('[kjTooltipContent]')).toHaveAttribute('role', 'tooltip');
@@ -31,7 +31,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('shows on mouseenter (no delay)', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Hover</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
       { imports },
     );
     fireEvent.mouseEnter(container.querySelector('button')!);
@@ -41,7 +41,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('hides on mouseleave (no delay)', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Hover</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
       { imports },
     );
     fireEvent.mouseEnter(container.querySelector('button')!);
@@ -52,7 +52,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('hides on Escape key', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Hover</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0">Tip</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0">Tip</span>`,
       { imports },
     );
     fireEvent.mouseEnter(container.querySelector('button')!);
@@ -63,7 +63,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('hides on blur', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Hover</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0" [kjTooltipHideDelay]="0">Tip</span>`,
       { imports },
     );
     fireEvent.focus(container.querySelector('button')!);
@@ -74,7 +74,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('trigger has aria-describedby wired to content id always', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Info</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0">Info text</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0">Info text</span>`,
       { imports },
     );
     const trigger = container.querySelector('button')!;
@@ -86,7 +86,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('role can be customised', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">X</button>
-       <span #t="kjTooltipContent" kjTooltipContent kjTooltipRole="note" [kjTooltipDelay]="0">Note</span>`,
+       <span #t kjTooltipContent kjTooltipRole="note" [kjTooltipDelay]="0">Note</span>`,
       { imports },
     );
     expect(container.querySelector('[kjTooltipContent]')).toHaveAttribute('role', 'note');
@@ -95,7 +95,7 @@ describe('KjTooltipContent + KjTooltipTrigger', () => {
   it('passes axe audit when shown', async () => {
     const { container } = await render(
       `<button [kjTooltipTrigger]="t">Info</button>
-       <span #t="kjTooltipContent" kjTooltipContent [kjTooltipDelay]="0">Info text</span>`,
+       <span #t kjTooltipContent [kjTooltipDelay]="0">Info text</span>`,
       { imports },
     );
     fireEvent.mouseEnter(container.querySelector('button')!);

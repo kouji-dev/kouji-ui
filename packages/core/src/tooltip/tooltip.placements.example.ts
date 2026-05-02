@@ -32,24 +32,24 @@ import { KjTooltipTrigger, KjTooltipContent } from './tooltip';
       <div class="empty"></div>
       <div class="tip-wrap">
         <button [kjTooltipTrigger]="tipTop">Top</button>
-        <span #tipTop="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'top'">Top tooltip</span>
+        <span #tipTop kjTooltipContent [kjTooltipSide]="'top'">Top tooltip</span>
       </div>
       <div class="empty"></div>
 
       <div class="tip-wrap">
         <button [kjTooltipTrigger]="tipLeft">Left</button>
-        <span #tipLeft="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'left'">Left tooltip</span>
+        <span #tipLeft kjTooltipContent [kjTooltipSide]="'left'">Left tooltip</span>
       </div>
       <div class="empty"></div>
       <div class="tip-wrap">
         <button [kjTooltipTrigger]="tipRight">Right</button>
-        <span #tipRight="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'right'">Right tooltip</span>
+        <span #tipRight kjTooltipContent [kjTooltipSide]="'right'">Right tooltip</span>
       </div>
 
       <div class="empty"></div>
       <div class="tip-wrap">
         <button [kjTooltipTrigger]="tipBottom">Bottom</button>
-        <span #tipBottom="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'bottom'">Bottom tooltip</span>
+        <span #tipBottom kjTooltipContent [kjTooltipSide]="'bottom'">Bottom tooltip</span>
       </div>
       <div class="empty"></div>
     </div>
