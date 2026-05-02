@@ -76,39 +76,20 @@ ngAfterViewInit() { ... }
 ngOnDestroy() { ... }
 ```
 
-## TSDoc — Required on Everything Public
+## TSDoc & Comments
 
-Every exported directive, class, interface, type, method, input, and output **must** have a TSDoc comment. The docs app uses `ts-morph` to extract these and generate documentation pages automatically. Missing TSDoc = missing docs.
+See [`rules/tsdoc.md`](./tsdoc.md) for the full TSDoc and inline comment rules, including the custom `@doc`, `@doc-example`, `@doc-theme`, `@doc-file`, and `@category` tags used by the docs extractor. Use `packages/core/src/button/button.ts` as the canonical reference.
 
-Required:
-- `/** Description */` on every export
-- `@param` for method parameters
-- `@returns` for non-void methods
-- `@example` for directives and complex APIs
-
-```ts
-/**
- * Marks a button as disabled, setting `aria-disabled` and blocking interaction.
- *
- * @example
- * ```html
- * <button kjButton [kjDisabled]="isLoading()">Submit</button>
- * ```
- */
-@Directive({ selector: '[kjDisabled]' })
-export class KjDisabled {
-  /** Whether the element is disabled. */
-  kjDisabled = input<boolean>(false);
-}
-```
-
-Internal helpers and private members do not need TSDoc.
+Key rules:
+- Every exported directive, input, output, and method needs TSDoc
+- Single-line `/** */` for inputs/outputs
+- No inline comments unless the WHY is non-obvious
+- No multi-line `/* */` blocks in source — only `/** */` for TSDoc and `//` for rare inline notes
 
 ## General Code Style
 
 - `standalone: true` always — no NgModules
 - Prefer `const` over `let`; never `var`
-- No comments unless the WHY is non-obvious (not what, not who called it, not the issue number)
 - No barrel re-exports beyond `index.ts` per package/feature
 
 ## What NOT to Build

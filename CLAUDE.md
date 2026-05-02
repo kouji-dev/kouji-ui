@@ -5,6 +5,7 @@ See [RULES.md](./RULES.md) for an index of all rules. Detailed rules live in [`r
 - [`rules/code_style.md`](./rules/code_style.md) — design process, naming, signals, lifecycle, TSDoc
 - [`rules/architecture.md`](./rules/architecture.md) — packages, directive patterns, file conventions
 - [`rules/accessibility.md`](./rules/accessibility.md) — WCAG 2.1 AAA, keyboard contracts, ARIA
+- [`rules/tsdoc.md`](./rules/tsdoc.md) — TSDoc format, `@doc*` tags, inline comment policy
 - [`rules/agent_orchestration.md`](./rules/agent_orchestration.md) — agent strategy
 
 ## Accessibility Verification After Every Directive/Component Change
