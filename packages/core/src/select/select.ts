@@ -1,17 +1,25 @@
-﻿import { Directive, inject, input, model, signal } from '@angular/core';
-import { CdkListbox, CdkOption } from '@angular/cdk/listbox';
+import {
+  afterNextRender,
+  computed,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import { KjDisabled, KjFocusRing } from '../primitives';
 import { KJ_SELECT } from './select.context';
 
 /**
- * Root select container. Wraps CDK `CdkListbox` for full keyboard navigation
- * and ARIA listbox semantics. Manages open/close state via `kjSelectValue` model.
+ * Root select container. Manages open/close state via `kjSelectValue` model.
  *
  * @example
  * ```html
  * <div kjSelect [(kjSelectValue)]="selected">
  *   <button kjSelectTrigger aria-haspopup="listbox">Choose fruit</button>
- *   <div kjSelectContent role="listbox">
+ *   <div kjSelectContent>
  *     <div kjOption [kjOptionValue]="'apple'">Apple</div>
  *   </div>
  * </div>
@@ -71,7 +79,7 @@ export class KjSelect {
   hostDirectives: [KjFocusRing],
   host: {
     '[attr.aria-expanded]': 'ctx.open().toString()',
-    '(click)': 'ctx.toggle()',
+    '(click)': '$event.stopPropagation(); ctx.toggle()',
   },
 })
 export class KjSelectTrigger {
@@ -80,12 +88,12 @@ export class KjSelectTrigger {
 }
 
 /**
- * Listbox container. Wraps CDK `CdkListbox` for keyboard navigation and
- * ARIA listbox semantics. Hidden when the select is closed.
+ * Listbox container. Provides keyboard navigation (Arrow keys, Home, End,
+ * Enter, Space, type-ahead) and ARIA listbox semantics. Hidden when closed.
  *
  * @example
  * ```html
- * <div kjSelectContent role="listbox">
+ * <div kjSelectContent>
  *   <div kjOption [kjOptionValue]="'apple'">Apple</div>
  * </div>
  * ```
@@ -94,20 +102,101 @@ export class KjSelectTrigger {
 @Directive({
   selector: '[kjSelectContent]',
   standalone: true,
-  hostDirectives: [CdkListbox],
   host: {
+    'role': 'listbox',
     '[attr.hidden]': '!ctx.open() ? "" : null',
+    '[attr.aria-activedescendant]': 'activeId()',
+    '(keydown)': 'onKeydown($event)',
+    '(document:keydown.escape)': 'ctx.hide()',
+    '(document:click)': 'onDocClick($event)',
+    '(click)': '$event.stopPropagation()',
   },
 })
 export class KjSelectContent {
+  private readonly el = inject(ElementRef<HTMLElement>);
   /** @internal */
   readonly ctx = inject(KJ_SELECT);
+
+  private readonly _activeIndex = signal(-1);
+
+  /** @internal */
+  readonly activeId = computed(() => {
+    const items = this.getOptions();
+    const idx = this._activeIndex();
+    return items[idx]?.id ?? null;
+  });
+
+  /** @internal */
+  onDocClick(): void {
+    if (this.ctx.open()) this.ctx.hide();
+  }
+
+  /** @internal */
+  onKeydown(e: KeyboardEvent): void {
+    const items = this.getOptions();
+    if (!items.length) return;
+    let idx = this._activeIndex();
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        idx = Math.min(idx + 1, items.length - 1);
+        this._activeIndex.set(idx);
+        items[idx]?.el.focus();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        idx = Math.max(idx - 1, 0);
+        this._activeIndex.set(idx);
+        items[idx]?.el.focus();
+        break;
+      case 'Home':
+        e.preventDefault();
+        this._activeIndex.set(0);
+        items[0]?.el.focus();
+        break;
+      case 'End':
+        e.preventDefault();
+        this._activeIndex.set(items.length - 1);
+        items[items.length - 1]?.el.focus();
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (idx >= 0) {
+          const val = items[idx]?.value;
+          if (val !== undefined) this.ctx.select(val);
+        }
+        break;
+      default: {
+        const char = e.key.length === 1 ? e.key.toLowerCase() : null;
+        if (char) {
+          const match = items.findIndex(item =>
+            item.el.textContent?.trim().toLowerCase().startsWith(char)
+          );
+          if (match >= 0) {
+            this._activeIndex.set(match);
+            items[match].el.focus();
+          }
+        }
+      }
+    }
+  }
+
+  private getOptions(): Array<{ el: HTMLElement; value: unknown; id: string }> {
+    return Array.from(
+      this.el.nativeElement.querySelectorAll<HTMLElement>('[kjOption]')
+    ).map((el, i) => ({
+      el,
+      value: (el as any).__kjOptionValue,
+      id: el.id || `kj-option-${i}`,
+    }));
+  }
 }
 
 /**
- * Individual option inside a `kjSelectContent`. Wraps CDK `CdkOption` for
- * proper `aria-selected` management and keyboard navigation support.
- * Clicking the option calls `select()` on the parent context.
+ * Individual option inside a `kjSelectContent`. Clicking or pressing Enter/Space
+ * calls `select()` on the parent context.
  *
  * @example
  * ```html
@@ -119,28 +208,43 @@ export class KjSelectContent {
   selector: '[kjOption]',
   standalone: true,
   hostDirectives: [
-    {
-      directive: CdkOption,
-      inputs: ['cdkOption: kjOptionValue', 'cdkOptionDisabled: kjDisabled'],
-    },
-    {
-      directive: KjDisabled,
-      inputs: ['kjDisabled: kjDisabled'],
-    },
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
   ],
   host: {
-    '(click)': '_handleClick()',
+    'role': 'option',
+    '[attr.tabindex]': '"0"',
+    '[attr.aria-selected]': 'selected().toString()',
+    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '(click)': 'handleClick()',
+    '(keydown.enter)': '$event.preventDefault(); handleClick()',
+    '(keydown.space)': '$event.preventDefault(); handleClick()',
   },
 })
 export class KjOption {
+  private readonly ctx = inject(KJ_SELECT);
+  private readonly el = inject(ElementRef<HTMLElement>);
   /** @internal */
-  readonly ctx = inject(KJ_SELECT);
+  readonly disabled = inject(KjDisabled).disabled;
 
   /** The value this option represents. */
   readonly kjOptionValue = input.required<unknown>();
 
   /** @internal */
-  _handleClick(): void {
-    this.ctx.select(this.kjOptionValue());
+  readonly selected = computed(() => this.ctx.value() === this.kjOptionValue());
+
+  constructor() {
+    effect(() => {
+      (this.el.nativeElement as any).__kjOptionValue = this.kjOptionValue();
+    });
+    afterNextRender(() => {
+      if (!this.el.nativeElement.id) {
+        this.el.nativeElement.id = `kj-option-${Math.random().toString(36).slice(2, 7)}`;
+      }
+    });
+  }
+
+  /** @internal */
+  handleClick(): void {
+    if (!this.disabled()) this.ctx.select(this.kjOptionValue());
   }
 }
