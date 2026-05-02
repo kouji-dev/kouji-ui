@@ -15,7 +15,7 @@ import {
     :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #fef9c3; font-family: 'Courier New', monospace; min-height: 160px; color: #000; }
     button {
       padding: 0.4rem 1rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700;
-      letter-spacing: 0.06em; text-transform: uppercase; background: #000; color: #fef9c3;
+      letter-spacing: 0.06em; text-transform: uppercase; background: #fff; color: #000;
       border: 2px solid #000; cursor: pointer;
       box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s;
     }
