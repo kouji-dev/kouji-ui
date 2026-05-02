@@ -16,13 +16,6 @@ const _tooltipRegistry = new WeakMap<Element, KjTooltipContent>();
  * Automatically sets `role="tooltip"` (customisable via `kjTooltipRole`).
  * Note: `role="tooltip"` prohibits `aria-label` and `aria-labelledby` per WAI-ARIA spec.
  *
- * @example
- * ```html
- * <button [kjTooltipTrigger]="myTip">Save</button>
- * <span #myTip kjTooltipContent [kjTooltipSide]="'top'">
- *   Saves your changes permanently
- * </span>
- * ```
  * @doc
  *  @doc-example Basic
  *    @doc-theme default
@@ -34,6 +27,7 @@ const _tooltipRegistry = new WeakMap<Element, KjTooltipContent>();
  *  @doc-example Placements
  *    @doc-file tooltip.placements.example.ts
  * @category Core/Overlays
+ * @required
  */
 @Directive({
   selector: '[kjTooltipContent]',
@@ -110,12 +104,8 @@ export class KjTooltipContent {
  * Automatically wires `aria-describedby` to the content's id.
  * Shows on hover/focus, hides on leave/blur/Escape.
  *
- * @example
- * ```html
- * <button [kjTooltipTrigger]="myTip">Save</button>
- * <span #myTip kjTooltipContent [kjTooltipSide]="'top'">Saves your changes</span>
- * ```
  * @category Core/Overlays
+ * @required
  */
 @Directive({
   selector: '[kjTooltipTrigger]',

@@ -49,6 +49,7 @@ export interface DirectiveDef {
   exampleFiles: ExampleFile[];        // default theme files (backward compat)
   themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
   docExamples: DocExample[];          // named example groups (new)
+  required: boolean;           // from @required TSDoc tag
 }
 
 export interface ComponentDoc {
@@ -379,6 +380,11 @@ function getCategoryPath(node: ts.Node): string[] {
   return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
 }
 
+function getRequired(node: ts.Node): boolean {
+  const tags = tsquery<ts.JSDocTag>(node, 'JSDocTag[tagName.text="required"]');
+  return tags.length > 0;
+}
+
 // getExampleFiles removed — replaced by getDocFiles() which uses @doc-file inline blocks.
 // @example-file tag is no longer used; @doc-file is the replacement.
 
@@ -582,6 +588,7 @@ function processSourceFile(
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const inputs = [...ownInputs, ...hdInputs];
     const categoryPath = getCategoryPath(cls);
+    const required = getRequired(cls);
 
     // If themedExamples has a 'default' key, use it as exampleFiles fallback
     const resolvedExampleFiles = themedExamples['default']?.length
@@ -623,6 +630,7 @@ function processSourceFile(
       exampleFiles: resolvedExampleFiles,
       themedExamples,
       docExamples,
+      required,
     };
     comp.directives.push(directiveWithPkg);
   }

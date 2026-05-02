@@ -36,6 +36,7 @@ interface DirectiveDef {
   exampleFiles: ExampleFile[];        // default theme files (backward compat)
   themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
   docExamples: DocExample[];          // named example groups
+  required: boolean;           // from @required TSDoc tag
 }
 
 interface ComponentDoc {
@@ -154,12 +155,14 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
   examples: string[];
   categoryPath: string[];
   exampleFiles: ExampleFile[];
+  required: boolean;
 } {
   const jsDocs = (node as any).getJsDocs?.() ?? [];
   let description = '';
   const examples: string[] = [];
   let categoryPath: string[] = [];
   const exampleFiles: ExampleFile[] = [];
+  let required = false;
 
   for (const doc of jsDocs) {
     const comment = doc.getComment() ?? '';
@@ -178,6 +181,8 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
         const text = tag.getComment() ?? '';
         const raw = typeof text === 'string' ? text : '';
         categoryPath = raw.trim().split('/').map((s: string) => s.trim()).filter(Boolean);
+      } else if (tagName === 'required') {
+        required = true;
       } else if (tagName === 'example-file') {
         const text = tag.getComment() ?? '';
         const relativePath = (typeof text === 'string' ? text : '').trim();
@@ -240,7 +245,7 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
     }
   }
 
-  return { description, examples, categoryPath, exampleFiles };
+  return { description, examples, categoryPath, exampleFiles, required };
 }
 
 /** Regex to find @doc-theme sections in raw JSDoc text */
@@ -516,7 +521,7 @@ async function main() {
         const selector = extractSelector(decoratorArgs);
         if (!selector) continue;
 
-        const { description, examples, categoryPath, exampleFiles } = extractJsDocText(cls, filePath);
+        const { description, examples, categoryPath, exampleFiles, required } = extractJsDocText(cls, filePath);
         const themedExamples = parseDocThemes(cls.getFullText(), filePath);
         const docExamples = parseDocExamples(cls.getFullText(), filePath);
         const ownInputs = extractInputs(cls);
@@ -544,6 +549,7 @@ async function main() {
           exampleFiles: resolvedExampleFiles,
           themedExamples,
           docExamples,
+          required,
         };
 
         // Group into component

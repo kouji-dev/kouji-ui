@@ -179,6 +179,8 @@ h1 {
   margin-top: 1.5rem;
 }
 
+.required-badge { color: var(--accent); margin-left: 4px; font-size: 0.9em; }
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
   .docs-layout { grid-template-columns: 220px 1fr; }

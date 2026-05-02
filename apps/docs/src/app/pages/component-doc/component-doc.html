@@ -55,7 +55,7 @@
                data-toc-level="2">
         <h2 class="section-title">Definitions</h2>
 
-        @for (directive of comp.directives; track directive.className) {
+        @for (directive of sortedDirectives(); track directive.className) {
           <section
             class="directive-section"
             [id]="directive.className"
@@ -64,7 +64,7 @@
           >
             <div class="directive-header">
               <code class="directive-selector">{{ directive.selector }}</code>
-              <span class="directive-class">{{ directive.className }}</span>
+              <span class="directive-class">{{ directive.className }}@if (directive.required) {<span class="required-badge" title="Required">*</span>}</span>
             </div>
 
             @if (directive.description) {
@@ -102,7 +102,7 @@
                  data-toc-level="2">
           <h2 class="section-title">Examples</h2>
 
-          @for (directive of comp.directives; track directive.className) {
+          @for (directive of sortedDirectives(); track directive.className) {
             @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
               <div
                 class="example-section"
@@ -122,7 +122,7 @@
       }
 
       @if (!hasDocExamples()) {
-        @for (directive of comp.directives; track directive.className) {
+        @for (directive of sortedDirectives(); track directive.className) {
           @if (directive.exampleFiles.length || directive.themedExamples['default']?.length) {
             <section class="examples-section"
                      id="examples"

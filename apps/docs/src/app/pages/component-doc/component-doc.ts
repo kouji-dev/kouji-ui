@@ -45,6 +45,11 @@ export class ComponentDocComponent {
     (this.component()?.directives ?? []).some(d => d.docExamples.length > 0)
   );
 
+  protected readonly sortedDirectives = computed(() => {
+    const dirs = this.component()?.directives ?? [];
+    return [...dirs].sort((a, b) => (b.required ? 1 : 0) - (a.required ? 1 : 0));
+  });
+
   protected readonly inputColumns: DocsTableColumn[] = [
     { key: 'name',         header: 'Name'        },
     { key: 'type',         header: 'Type'        },

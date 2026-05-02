@@ -35,6 +35,7 @@ export interface DirectiveDef {
   exampleFiles: ExampleFile[];
   themedExamples: Record<string, ExampleFile[]>;
   docExamples: DocExample[];
+  required?: boolean;
 }
 
 export interface TokenDef {
