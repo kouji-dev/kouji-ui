@@ -133,10 +133,9 @@ export class DocsService {
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
-      const fallback = ['Core', comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
-      const path = comp.categoryPath.length >= 3 ? comp.categoryPath : fallback;
-      const pkg   = path[path.length - 3] ?? path[0];
-      const cat   = path[path.length - 2] ?? path[1];
+      const path  = comp.categoryPath.length >= 3 ? comp.categoryPath : null;
+      const pkg   = path ? path[path.length - 3] : 'Others';
+      const cat   = path ? path[path.length - 2] : 'Others';
       const label = comp.name;
 
       if (!tree[pkg]) tree[pkg] = {};
