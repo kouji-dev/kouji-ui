@@ -123,6 +123,11 @@ export class DocsService {
     );
   }
 
+  /** Returns all component slugs — used in `getPrerenderParams()` for route generation. */
+  getSlugs(): string[] {
+    return this._manifest?.components.map(c => c.slug) ?? [];
+  }
+
   /** Get a component by slug. */
   getComponent(slug: string): ComponentDoc | null {
     return this._manifest?.components.find(c => c.slug === slug) ?? null;
