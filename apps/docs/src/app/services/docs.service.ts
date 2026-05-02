@@ -137,7 +137,7 @@ export class DocsService {
       const path = comp.categoryPath.length >= 3 ? comp.categoryPath : fallback;
       const pkg   = path[path.length - 3] ?? path[0];
       const cat   = path[path.length - 2] ?? path[1];
-      const label = path[path.length - 1] ?? comp.name;
+      const label = comp.name;
 
       if (!tree[pkg]) tree[pkg] = {};
       if (!tree[pkg][cat]) tree[pkg][cat] = [];
