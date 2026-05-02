@@ -1,10 +1,9 @@
-﻿import { Directive, effect, inject, input } from '@angular/core';
-import { CDK_ACCORDION, CdkAccordion, CdkAccordionItem } from '@angular/cdk/accordion';
+import { Directive, computed, inject, input, signal } from '@angular/core';
 import { KJ_ACCORDION, KJ_ACCORDION_ITEM } from './accordion.context';
 
 /**
- * Root accordion container. Extends CDK `CdkAccordion` for multi/single item management.
- * Supports single or multiple expanded items.
+ * Root accordion container. Manages open/close state for accordion items.
+ * Supports `'single'` (only one item open) or `'multiple'` (any number open).
  *
  * @example
  * ```html
@@ -17,26 +16,38 @@ import { KJ_ACCORDION, KJ_ACCORDION_ITEM } from './accordion.context';
 @Directive({
   selector: '[kjAccordion]',
   standalone: true,
-  providers: [
-    { provide: KJ_ACCORDION, useExisting: KjAccordion },
-    { provide: CDK_ACCORDION, useExisting: KjAccordion },
-  ],
+  providers: [{ provide: KJ_ACCORDION, useExisting: KjAccordion }],
 })
-export class KjAccordion extends CdkAccordion {
+export class KjAccordion {
   /** Whether multiple items can be open simultaneously. Defaults to `'single'`. */
-  kjAccordionType = input<'single' | 'multiple'>('single');
+  readonly kjAccordionType = input<'single' | 'multiple'>('single');
 
-  constructor() {
-    super();
-    effect(() => {
-      this.multi = this.kjAccordionType() === 'multiple';
+  private readonly _openIds = signal<ReadonlySet<string>>(new Set());
+  /** Set of currently open item values. */
+  readonly openIds = this._openIds.asReadonly();
+
+  /** Toggles an item open or closed. In single mode, closes all others first. */
+  toggle(id: string): void {
+    this._openIds.update(ids => {
+      const next = new Set(ids);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        if (this.kjAccordionType() === 'single') next.clear();
+        next.add(id);
+      }
+      return next;
     });
+  }
+
+  /** Returns whether the given item value is currently open. */
+  isOpen(id: string): boolean {
+    return this._openIds().has(id);
   }
 }
 
 /**
- * Individual accordion item. Extends CDK `CdkAccordionItem`.
- * Manages expanded state via CDK's `UniqueSelectionDispatcher` for single-mode coordination.
+ * Individual accordion item. Manages its own expanded state via the parent accordion context.
  *
  * @example
  * ```html
@@ -52,16 +63,27 @@ export class KjAccordion extends CdkAccordion {
   standalone: true,
   providers: [{ provide: KJ_ACCORDION_ITEM, useExisting: KjAccordionItem }],
 })
-export class KjAccordionItem extends CdkAccordionItem {
-  /** The unique value identifying this item within the accordion. */
-  kjItemValue = input.required<string>();
+export class KjAccordionItem {
+  private readonly accordion = inject(KJ_ACCORDION) as KjAccordion;
 
-  /** Alias for `kjItemValue` signal, for consistent context access. */
-  readonly itemValue = this.kjItemValue;
+  /** The unique value identifying this item within the accordion. */
+  readonly kjItemValue = input.required<string>();
+
+  /** Whether this item is currently expanded. */
+  readonly expanded = computed(() => this.accordion.isOpen(this.kjItemValue()));
+
+  /** Toggles this item's expanded state. */
+  toggle(): void { this.accordion.toggle(this.kjItemValue()); }
+
+  /** Opens this item. */
+  open(): void { if (!this.expanded()) this.toggle(); }
+
+  /** Closes this item. */
+  close(): void { if (this.expanded()) this.toggle(); }
 }
 
 /**
- * Trigger button for an accordion item. Controls expand/collapse via CDK `toggle()`.
+ * Trigger button for an accordion item. Controls expand/collapse.
  * Sets `aria-expanded` and `data-open` attributes based on the item's expanded state.
  *
  * @example
@@ -74,14 +96,14 @@ export class KjAccordionItem extends CdkAccordionItem {
   selector: '[kjAccordionTrigger]',
   standalone: true,
   host: {
-    '[attr.aria-expanded]': 'item.expanded.toString()',
-    '[attr.data-open]': 'item.expanded ? "" : null',
+    '[attr.aria-expanded]': 'item.expanded().toString()',
+    '[attr.data-open]': 'item.expanded() ? "" : null',
     '(click)': 'item.toggle()',
   },
 })
 export class KjAccordionTrigger {
   /** The parent accordion item context. */
-  readonly item = inject(KJ_ACCORDION_ITEM) as KjAccordionItem;
+  readonly item = inject(KJ_ACCORDION_ITEM);
 }
 
 /**
@@ -98,10 +120,10 @@ export class KjAccordionTrigger {
   selector: '[kjAccordionContent]',
   standalone: true,
   host: {
-    '[attr.hidden]': '!item.expanded ? "" : null',
+    '[attr.hidden]': '!item.expanded() ? "" : null',
   },
 })
 export class KjAccordionContent {
   /** The parent accordion item context. */
-  readonly item = inject(KJ_ACCORDION_ITEM) as KjAccordionItem;
+  readonly item = inject(KJ_ACCORDION_ITEM);
 }
