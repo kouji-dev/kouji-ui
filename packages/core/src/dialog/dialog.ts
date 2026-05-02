@@ -1,8 +1,10 @@
-﻿import {
-  Directive, DestroyRef, HostListener, TemplateRef, ViewContainerRef,
+import {
+  ApplicationRef, Directive, DestroyRef, EmbeddedViewRef,
+  HostListener, Injector, TemplateRef,
   computed, inject, input, output, signal,
+  PLATFORM_ID,
 } from '@angular/core';
-import { Dialog, DialogRef } from '@angular/cdk/dialog';
+import { isPlatformBrowser } from '@angular/common';
 import { KJ_DIALOG, KjDialogContext } from './dialog.context';
 
 let _dialogIdCounter = 0;
@@ -52,9 +54,10 @@ let _dialogIdCounter = 0;
   },
 })
 export class KjDialogTrigger implements KjDialogContext {
-  private readonly cdkDialog = inject(Dialog);
-  private readonly vcr = inject(ViewContainerRef);
+  private readonly appRef = inject(ApplicationRef);
+  private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly kjDialogTrigger = input.required<TemplateRef<unknown>>();
   readonly kjDialogCloseOnEscape = input<boolean>(true);
@@ -68,39 +71,49 @@ export class KjDialogTrigger implements KjDialogContext {
   readonly closeOnEscape = computed(() => this.kjDialogCloseOnEscape());
   readonly closeOnBackdrop = computed(() => this.kjDialogCloseOnBackdrop());
 
-  private dialogRef?: DialogRef<unknown>;
+  private viewRef?: EmbeddedViewRef<unknown>;
+  private containerEl?: HTMLElement;
 
   constructor() {
-    this.destroyRef.onDestroy(() => this.dialogRef?.close());
+    this.destroyRef.onDestroy(() => this.close());
   }
 
   openDialog(): void {
-    if (this._open()) return;
-    this.dialogRef = this.cdkDialog.open(this.kjDialogTrigger(), {
-      viewContainerRef: this.vcr,
-      disableClose: true,  // we manage both Escape and backdrop ourselves
-      backdropClass: 'kj-dialog-backdrop',
-      panelClass: 'kj-dialog-panel',
-      autoFocus: 'first-tabbable',
-      restoreFocus: true,
-    });
+    if (this._open() || !isPlatformBrowser(this.platformId)) return;
+
+    // Use TemplateRef.createEmbeddedView directly (not vcr.createEmbeddedView) so
+    // the view is NOT pre-attached to any ViewContainer — ApplicationRef can own it.
+    // Pass the trigger's injector so KJ_DIALOG is resolvable within the template.
+    this.viewRef = this.kjDialogTrigger().createEmbeddedView(undefined as never, this.injector);
+    this.appRef.attachView(this.viewRef);
+
+    // Mount in a fixed container appended to body
+    this.containerEl = document.createElement('div');
+    this.containerEl.setAttribute('data-kj-dialog-container', '');
+    this.viewRef.rootNodes.forEach(node => this.containerEl!.appendChild(node));
+    document.body.appendChild(this.containerEl);
+
     this._open.set(true);
-    this.dialogRef.closed.subscribe(result => {
-      this._open.set(false);
-      this.kjDialogClosed.emit(result);
-    });
   }
 
   close(result?: unknown): void {
+    if (!this._open()) return;
     this._open.set(false);
-    this.dialogRef?.close(result);
+
+    if (this.viewRef) {
+      this.appRef.detachView(this.viewRef);
+      this.viewRef.destroy();
+      this.viewRef = undefined;
+    }
+    this.containerEl?.remove();
+    this.containerEl = undefined;
+
+    this.kjDialogClosed.emit(result);
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (this._open() && this.closeOnEscape()) {
-      this.close();
-    }
+    if (this._open() && this.closeOnEscape()) this.close();
   }
 }
 

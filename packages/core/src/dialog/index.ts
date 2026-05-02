@@ -6,4 +6,4 @@
   KjDialogTitle,
 } from './dialog';
 export { KJ_DIALOG, type KjDialogContext } from './dialog.context';
-export { KjDialogService, DIALOG_DATA, type KjDialogOpenConfig } from './dialog.service';
+export { KjDialogService, KjDialogRef, DIALOG_DATA, type KjDialogOpenConfig } from './dialog.service';

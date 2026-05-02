@@ -1,25 +1,18 @@
-﻿import { Injectable, inject, signal } from '@angular/core';
-import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
-import { TemplatePortal } from '@angular/cdk/portal';
+import {
+  Injectable, inject, signal,
+  EmbeddedViewRef, ApplicationRef, TemplateRef, ViewContainerRef,
+} from '@angular/core';
 
 /**
- * Managed wrapper around a CDK `OverlayRef`.
- * Exposes `isOpen` as a readonly signal and provides `open()`, `close()`, `toggle()`,
- * `attach()`, and `dispose()` methods.
+ * Managed wrapper around a DOM overlay container.
+ * Provides `isOpen` as a signal and lifecycle methods.
  *
  * Create instances via {@link KjOverlayService} — do not construct directly.
  *
  * @example
  * ```ts
- * export class KjDialog {
- *   private readonly overlaySvc = inject(KjOverlayService);
- *   private overlayRef?: KjOverlayRef;
- *
- *   open(): void {
- *     this.overlayRef ??= this.overlaySvc.createGlobalOverlay({ hasBackdrop: true });
- *     this.overlayRef.open();
- *   }
- * }
+ * const ref = inject(KjOverlayService).createFromTemplate(tpl, vcr);
+ * ref.open();
  * ```
  */
 export class KjOverlayRef {
@@ -28,125 +21,82 @@ export class KjOverlayRef {
   /** Whether the overlay is currently open. */
   readonly isOpen = this._isOpen.asReadonly();
 
-  constructor(private readonly overlayRef: OverlayRef) {}
+  constructor(
+    private readonly container: HTMLElement,
+    private readonly viewRef: EmbeddedViewRef<unknown>,
+    private readonly appRef: ApplicationRef,
+  ) {}
 
-  /** Opens the overlay. Attach a portal via `attach()` if content is required. */
+  /** Shows the overlay container. */
   open(): void {
     this._isOpen.set(true);
+    this.container.removeAttribute('hidden');
   }
 
-  /** Closes and detaches the overlay content. */
+  /** Hides the overlay container. */
   close(): void {
     this._isOpen.set(false);
-    if (this.overlayRef.hasAttached()) {
-      this.overlayRef.detach();
-    }
+    this.container.setAttribute('hidden', '');
   }
 
   /** Toggles the overlay between open and closed states. */
   toggle(): void {
-    if (this._isOpen()) {
-      this.close();
-    } else {
-      this.open();
-    }
+    this.isOpen() ? this.close() : this.open();
   }
 
   /**
-   * Attaches a template portal to the overlay and opens it.
-   * @param portal - The `TemplatePortal` to render inside the overlay.
-   */
-  attach(portal: TemplatePortal): void {
-    if (!this.overlayRef.hasAttached()) {
-      this.overlayRef.attach(portal);
-    }
-    this.open();
-  }
-
-  /**
-   * Permanently disposes the overlay and releases CDK resources.
+   * Permanently removes the overlay from the DOM and destroys the view.
    * Call inside `DestroyRef.onDestroy()` to prevent memory leaks.
    */
   dispose(): void {
-    this.overlayRef.dispose();
+    this.appRef.detachView(this.viewRef);
+    this.viewRef.destroy();
+    this.container.remove();
   }
 
-  /** The underlying CDK `OverlayRef` for advanced usage such as scroll strategies or backdrop events. */
-  get cdkRef(): OverlayRef {
-    return this.overlayRef;
+  /** The underlying container `HTMLElement` for advanced usage. */
+  get el(): HTMLElement {
+    return this.container;
   }
 }
 
 /**
- * Factory service for creating managed overlay references.
- *
- * Inject this in any directive that needs overlay positioning.
- * Two strategies are supported: global-centered (dialogs/modals) and
- * flexibly-connected (tooltips, popovers, menus, select dropdowns).
+ * Factory service for creating managed overlay containers.
+ * Creates a container appended to `document.body`.
  *
  * @example
  * ```ts
- * // Dialog — centered, with backdrop
- * const ref = inject(KjOverlayService).createGlobalOverlay({ hasBackdrop: true });
+ * // Dialog — full-screen backdrop overlay
+ * const ref = inject(KjOverlayService).createFromTemplate(tpl, vcr);
+ * ref.open();
  *
- * // Popover — anchored to trigger element
- * const ref = inject(KjOverlayService).createConnectedOverlay(triggerEl);
+ * // Clean up when done
+ * ref.dispose();
  * ```
  */
 @Injectable({ providedIn: 'root' })
 export class KjOverlayService {
-  private readonly overlay = inject(Overlay);
+  private readonly appRef = inject(ApplicationRef);
 
   /**
-   * Creates a centered global overlay suitable for dialogs and modals.
-   * Defaults to `hasBackdrop: true` with the `kj-overlay-backdrop` class.
+   * Creates an overlay from an Angular template ref.
+   * The container is appended to `document.body` and starts hidden.
    *
-   * @param config - Optional CDK `OverlayConfig` overrides.
-   * @returns A {@link KjOverlayRef} wrapping the created CDK overlay.
+   * @param tpl - The `TemplateRef` to render inside the overlay.
+   * @param vcr - The `ViewContainerRef` used to create the embedded view.
+   * @returns A {@link KjOverlayRef} managing the created overlay.
    */
-  createGlobalOverlay(config?: Partial<OverlayConfig>): KjOverlayRef {
-    const positionStrategy = this.overlay
-      .position()
-      .global()
-      .centerHorizontally()
-      .centerVertically();
+  createFromTemplate(tpl: TemplateRef<unknown>, vcr: ViewContainerRef): KjOverlayRef {
+    // Use TemplateRef.createEmbeddedView directly so the view is not pre-attached
+    // to the VCR's container — ApplicationRef can own the view lifecycle.
+    const viewRef = tpl.createEmbeddedView(null as never, vcr.injector);
+    this.appRef.attachView(viewRef);
 
-    const ref = this.overlay.create({
-      positionStrategy,
-      hasBackdrop: true,
-      backdropClass: 'kj-overlay-backdrop',
-      panelClass: 'kj-overlay-panel',
-      ...config,
-    });
+    const container = document.createElement('div');
+    container.setAttribute('data-kj-overlay', '');
+    viewRef.rootNodes.forEach(node => container.appendChild(node));
+    document.body.appendChild(container);
 
-    return new KjOverlayRef(ref);
-  }
-
-  /**
-   * Creates a connected overlay anchored to a trigger element.
-   * Suitable for tooltips, popovers, menus, and select dropdowns.
-   * Automatically flips from below to above the trigger if space is limited.
-   *
-   * @param trigger - The `HTMLElement` to anchor the overlay to.
-   * @param config - Optional CDK `OverlayConfig` overrides.
-   * @returns A {@link KjOverlayRef} wrapping the created CDK overlay.
-   */
-  createConnectedOverlay(trigger: HTMLElement, config?: Partial<OverlayConfig>): KjOverlayRef {
-    const positionStrategy = this.overlay
-      .position()
-      .flexibleConnectedTo(trigger)
-      .withPositions([
-        { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top' },
-        { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom' },
-      ]);
-
-    const ref = this.overlay.create({
-      positionStrategy,
-      hasBackdrop: false,
-      panelClass: 'kj-overlay-panel',
-      ...config,
-    });
-
-    return new KjOverlayRef(ref);
+    return new KjOverlayRef(container, viewRef, this.appRef);
   }
 }
