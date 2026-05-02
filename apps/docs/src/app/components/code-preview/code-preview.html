@@ -46,7 +46,10 @@
   }
 
   @if (hasDemo()) {
-    <div class="preview-frame" [attr.data-preview-theme]="activeTheme()">
+    <div class="preview-frame"
+         [attr.data-preview-theme]="activeTheme()"
+         [class.kj-theme-retro]="activeTheme() === 'retro'"
+         [class.kj-theme-finance]="activeTheme() === 'finance'">
       <ng-container #previewHost />
     </div>
   }

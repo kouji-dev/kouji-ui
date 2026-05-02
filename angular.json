@@ -101,6 +101,7 @@
             ],
             "styles": [
               "packages/ui/styles/kj.css",
+              "packages/core/src/styles/docs-themes.css",
               "apps/docs/src/styles.css"
             ],
             "server": "apps/docs/src/main.server.ts",
