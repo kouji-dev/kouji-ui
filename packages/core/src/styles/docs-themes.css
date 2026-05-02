@@ -1,0 +1,76 @@
+/* ─────────────────────────────────────────────────────────────
+   kouji-ui docs example themes
+   Three theme layers: kj.tokens (defaults) + kj.theme (overrides)
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.tokens, kj.theme;
+
+/* ── Default (dark) tokens — applied to :root and .kj-theme-default ── */
+@layer kj.tokens {
+  :root,
+  .kj-theme-default {
+    --kj-bg: #0c0c0c;
+    --kj-surface: #1a1a1a;
+    --kj-text: #f0ede6;
+    --kj-text-muted: #888;
+    --kj-border: #333;
+    --kj-accent: #b8f500;
+    --kj-accent-on: #0c0c0c;
+    --kj-destructive: #ef4444;
+    --kj-radius-sm: 0px;
+    --kj-radius-md: 0px;
+    --kj-radius-lg: 0px;
+    --kj-shadow-sm: none;
+    --kj-shadow-md: none;
+    --kj-shadow-hard: none;
+    --kj-font: 'JetBrains Mono', monospace;
+    --kj-btn-border: none;
+    --kj-backdrop: rgba(0, 0, 0, 0.75);
+    --kj-transition: opacity 0.15s;
+  }
+}
+
+/* ── Theme overrides ── */
+@layer kj.theme {
+  .kj-theme-retro {
+    --kj-bg: #fef9c3;
+    --kj-surface: #fef9c3;
+    --kj-text: #000;
+    --kj-text-muted: #444;
+    --kj-border: #000;
+    --kj-accent: #16a34a;
+    --kj-accent-on: #fff;
+    --kj-destructive: #dc2626;
+    --kj-radius-sm: 0px;
+    --kj-radius-md: 0px;
+    --kj-radius-lg: 0px;
+    --kj-shadow-sm: 2px 2px 0 #000;
+    --kj-shadow-md: 4px 4px 0 #000;
+    --kj-shadow-hard: 6px 6px 0 #000;
+    --kj-font: 'Courier New', monospace;
+    --kj-btn-border: 2px solid #000;
+    --kj-backdrop: rgba(0, 0, 0, 0.6);
+    --kj-transition: transform 0.08s, box-shadow 0.08s;
+  }
+
+  .kj-theme-finance {
+    --kj-bg: #f9fafb;
+    --kj-surface: #fff;
+    --kj-text: #111827;
+    --kj-text-muted: #6b7280;
+    --kj-border: #e5e7eb;
+    --kj-accent: #3b82f6;
+    --kj-accent-on: #fff;
+    --kj-destructive: #ef4444;
+    --kj-radius-sm: 4px;
+    --kj-radius-md: 6px;
+    --kj-radius-lg: 12px;
+    --kj-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --kj-shadow-md: 0 8px 30px rgba(0, 0, 0, 0.1);
+    --kj-shadow-hard: 0 20px 60px rgba(0, 0, 0, 0.12);
+    --kj-font: system-ui, -apple-system, sans-serif;
+    --kj-btn-border: 1px solid transparent;
+    --kj-backdrop: rgba(0, 0, 0, 0.4);
+    --kj-transition: background 0.12s;
+  }
+}
