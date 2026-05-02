@@ -9,18 +9,9 @@ let _tooltipIdCounter = 0;
 const _tooltipRegistry = new WeakMap<Element, KjTooltipContent>();
 
 /**
- * **Tooltip content panel.** Owns all configuration and visibility state.
- *
- * Pass the element reference to `[kjTooltipTrigger]` using `#myTip` *(no `exportAs` needed)*:
- *
- * ```html
- * <button [kjTooltipTrigger]="myTip">Hover me</button>
- * <span #myTip kjTooltipContent [kjTooltipSide]="'top'">Saves permanently</span>
- * ```
- *
- * - Automatically sets `role="tooltip"` — customisable via `kjTooltipRole`
- * - **WAI-ARIA**: `role="tooltip"` prohibits `aria-label` and `aria-labelledby`
- * - Stays visible when the cursor moves from trigger onto the tooltip
+ * Tooltip content panel. Owns all configuration and visibility state.
+ * Pair with `[kjTooltipTrigger]` — pass the native element reference using `#myTip` (no `exportAs` needed).
+ * Automatically sets `role="tooltip"` (customisable via `kjTooltipRole`).
  *
  * @doc
  *  @doc-example Basic
@@ -50,16 +41,16 @@ const _tooltipRegistry = new WeakMap<Element, KjTooltipContent>();
 export class KjTooltipContent {
   private readonly el = inject(ElementRef<HTMLElement>);
 
-  /** Preferred placement relative to the trigger: `'top'` | `'bottom'` | `'left'` | `'right'`. Defaults to `'top'`. */
+  /** Preferred placement relative to the trigger. One of `'top'`, `'bottom'`, `'left'`, `'right'`. Defaults to `'top'`. */
   readonly kjTooltipSide = input<KjTooltipSide>('top');
 
-  /** ARIA role for the tooltip element. Defaults to `'tooltip'`. **Note:** `role="tooltip"` prohibits `aria-label` and `aria-labelledby`. */
+  /** ARIA role for the tooltip element. Defaults to `'tooltip'`. Note: `role="tooltip"` prohibits `aria-label` and `aria-labelledby`. */
   readonly kjTooltipRole = input<string>('tooltip');
 
-  /** Delay in **ms** before the tooltip appears on hover. Defaults to `600`. Set to `0` for instant. */
+  /** Delay in ms before the tooltip appears on hover. Defaults to `600`. Set to `0` for instant. */
   readonly kjTooltipDelay = input<number>(600);
 
-  /** Delay in **ms** before the tooltip disappears after hover ends. Defaults to `200`. */
+  /** Delay in ms before the tooltip disappears after hover ends. Defaults to `200`. */
   readonly kjTooltipHideDelay = input<number>(200);
 
   /** Auto-generated `id` wired to the trigger's `aria-describedby`. Always present — set before first display per WAI-ARIA spec. */
@@ -101,17 +92,9 @@ export class KjTooltipContent {
 }
 
 /**
- * **Trigger element for the tooltip.**
- *
- * Pass the tooltip content's native element via `[kjTooltipTrigger]`:
- *
- * ```html
- * <button [kjTooltipTrigger]="myTip">Hover me</button>
- * <span #myTip kjTooltipContent>Tooltip text</span>
- * ```
- *
- * - Automatically wires `aria-describedby` to the content's `id` *(always set, per WAI-ARIA spec)*
- * - Shows on **hover** and **focus**, hides on **leave / blur / Escape**
+ * Trigger element for the tooltip. Pass the `[kjTooltipContent]` native element reference via `[kjTooltipTrigger]`.
+ * Automatically wires `aria-describedby` to the content's `id` — always set before first display per WAI-ARIA spec.
+ * Shows on hover and focus, hides on leave, blur, or Escape.
  *
  * @category Core/Overlays
  * @required
