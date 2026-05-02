@@ -67,4 +67,35 @@ describe('KjTableDirective', () => {
     const { container } = await render(TableTestComponent);
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it('non-sortable column header has no cursor:pointer', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjTableDirective, KjTableHeaderDirective],
+      template: `
+        <table [kjTable]="columns" [kjTableData]="data" #tbl="kjTable">
+          <thead>
+            @for (hg of tbl.table().getHeaderGroups(); track hg.id) {
+              <tr>
+                @for (h of hg.headers; track h.id) {
+                  <th kjTableHeader [kjHeader]="h" scope="col">{{ h.id }}</th>
+                }
+              </tr>
+            }
+          </thead>
+          <tbody></tbody>
+        </table>`,
+    })
+    class NoSortTableComponent {
+      columns: ColumnDef<User>[] = [
+        { accessorKey: 'name', header: 'Name', enableSorting: false },
+      ];
+      data: User[] = [{ name: 'Alice', age: 30 }];
+    }
+
+    const { container } = await render(NoSortTableComponent);
+    const th = container.querySelector('th')!;
+    expect(th.style.cursor).not.toBe('pointer');
+    expect(th.hasAttribute('data-sort')).toBe(false);
+  });
 });

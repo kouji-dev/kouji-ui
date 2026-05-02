@@ -69,11 +69,12 @@ export class KjTableDirective<TData extends RowData = unknown> {
 }
 
 /** Sort direction for table columns. */
-export type KjSortDirection = 'asc' | 'desc' | 'none';
+export type KjSortDirection = 'asc' | 'desc';
 
 /**
  * Marks a `<th>` as a sortable column header. Sets `aria-sort` based on TanStack sort state.
- * Clicking toggles sort direction via the TanStack column's toggle handler.
+ * Clicking toggles sort direction only when the column has sorting enabled.
+ * If `enableSorting: false` is set on the column def, the header renders as plain text.
  *
  * @example
  * ```html
@@ -85,24 +86,27 @@ export type KjSortDirection = 'asc' | 'desc' | 'none';
   selector: '[kjTableHeader]',
   standalone: true,
   host: {
-    '[attr.aria-sort]': 'ariaSort()',
-    '[attr.data-sort]': 'sortDir()',
-    '[style.cursor]': '"pointer"',
-    '(click)': 'toggleSort()',
+    '[style.cursor]': 'canSort() ? "pointer" : null',
+    '[attr.aria-sort]': 'canSort() ? ariaSort() : null',
+    '[attr.data-sort]': 'canSort() ? sortDir() : null',
+    '(click)': 'onHeaderClick()',
   },
 })
 export class KjTableHeaderDirective<TData extends RowData = unknown> {
   /** The TanStack header object for this column. Pass from the table's getHeaderGroups(). */
   kjHeader = input<ReturnType<Table<TData>['getHeaderGroups']>[0]['headers'][0] | undefined>(undefined);
 
-  /** Current sort direction derived from the TanStack header state. */
-  readonly sortDir = computed((): KjSortDirection => {
+  /** Whether this column supports sorting, derived from TanStack column state. */
+  readonly canSort = computed(() => this.kjHeader()?.column.getCanSort() ?? false);
+
+  /** Current sort direction, or null when unsorted. */
+  readonly sortDir = computed((): KjSortDirection | null => {
     const h = this.kjHeader();
-    if (!h) return 'none';
+    if (!h) return null;
     const sorted = h.column.getIsSorted();
     if (sorted === 'asc') return 'asc';
     if (sorted === 'desc') return 'desc';
-    return 'none';
+    return null;
   });
 
   /** ARIA sort attribute value derived from sort direction. */
@@ -113,9 +117,7 @@ export class KjTableHeaderDirective<TData extends RowData = unknown> {
     return null;
   });
 
-  /** Toggles the sort direction on the column via TanStack's built-in handler. */
-  toggleSort(): void {
-    const h = this.kjHeader();
-    h?.column.toggleSorting();
+  onHeaderClick(): void {
+    if (this.canSort()) this.kjHeader()?.column.toggleSorting();
   }
 }
