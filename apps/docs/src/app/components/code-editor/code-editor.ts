@@ -122,7 +122,10 @@ export class CodeEditorComponent implements OnDestroy {
     });
 
     const langExtension = await this.getLangExtension();
-    const extensions = [colorTheme, baseTheme, langExtension, EditorView.lineWrapping, keymap.of(defaultKeymap)];
+    // Skip colorTheme for markdown descriptions — transparent bg, no dark theme chrome
+    const extensions = isMd
+      ? [baseTheme, langExtension, EditorView.lineWrapping, keymap.of(defaultKeymap)]
+      : [colorTheme, baseTheme, langExtension, EditorView.lineWrapping, keymap.of(defaultKeymap)];
 
     if (this.readonly()) {
       extensions.push(EditorState.readOnly.of(true));
@@ -181,13 +184,14 @@ export class CodeEditorComponent implements OnDestroy {
         '.cm-line.cm-codeText, .cm-codeBlock': {
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: '0.78rem',
-          background: isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.04)',
+          background: 'transparent',
           display: 'block',
-          padding: '0 1rem',
-          borderLeft: `2px solid ${isDark ? '#333' : '#e5e7eb'}`,
+          padding: '0 0.5rem',
+          borderLeft: `2px solid ${isDark ? '#444' : '#d1d5db'}`,
+          marginLeft: '0.25rem',
         },
-        '.cm-line.cm-codeText:first-of-type': { paddingTop: '0.6rem' },
-        '.cm-line.cm-codeText:last-of-type':  { paddingBottom: '0.6rem' },
+        '.cm-line.cm-codeText:first-of-type': { paddingTop: '0.35rem' },
+        '.cm-line.cm-codeText:last-of-type':  { paddingBottom: '0.35rem' },
       });
 
       return [
