@@ -125,17 +125,16 @@ export class CodeEditorComponent {
       automaticLayout:      true,
     });
 
-    // Auto-size height to content for md
-    if (isMd) this.fitHeightToContent();
-  }
-
-  private fitHeightToContent(): void {
-    if (!this.editor) return;
-    const lineCount     = this.editor.getModel()?.getLineCount() ?? 1;
-    const lineHeight    = this.editor.getOption(this.monaco.editor.EditorOption.lineHeight);
-    const contentHeight = lineCount * lineHeight;
-    this.editorHost.nativeElement.style.height = `${contentHeight}px`;
-    this.editor.layout();
+    // Auto-size height to content for md using Monaco's content-change event
+    if (isMd) {
+      const updateHeight = () => {
+        const contentHeight = this.editor.getContentHeight();
+        this.editorHost.nativeElement.style.height = `${contentHeight}px`;
+        this.editor.layout({ width: this.editorHost.nativeElement.offsetWidth, height: contentHeight });
+      };
+      this.editor.onDidContentSizeChange(updateHeight);
+      updateHeight();
+    }
   }
 
   private toMonacoLang(lang: string): string {
