@@ -26,6 +26,24 @@
   border: 1px solid var(--accent-border);
 }
 
+.header-spacer { flex: 1; }
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  transition: color 0.15s;
+}
+.copy-btn:hover { color: var(--text); }
+
 .editor-host {
   max-height: 500px;
   overflow-y: auto;

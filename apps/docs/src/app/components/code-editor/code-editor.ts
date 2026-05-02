@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { DestroyRef } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
+import { ClipboardService } from '../../services/clipboard.service';
 
 @Component({
   selector: 'kj-code-editor',
@@ -28,8 +29,17 @@ export class CodeEditorComponent implements OnDestroy {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly themeService = inject(ThemeService);
+  private readonly clipboard = inject(ClipboardService);
   private view: any;
   private initialized = false;
+
+  readonly copied = signal(false);
+
+  async copy(): Promise<void> {
+    await this.clipboard.copy(this.code());
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 1500);
+  }
 
   constructor() {
     afterNextRender(async () => {
