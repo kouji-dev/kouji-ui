@@ -296,19 +296,19 @@ h1 {
 }
 
 /* ── Markdown description editor — transparent, no chrome ── */
-.desc-editor,
-.desc-editor .cm-editor,
-.desc-editor .cm-focused,
-.desc-editor .cm-scroller,
-.desc-editor .cm-gutters { background: transparent !important; border: none !important; }
+/* ::ng-deep required — CodeMirror injects elements dynamically, bypassing Angular's attribute scoping */
+.desc-editor ::ng-deep .cm-editor,
+.desc-editor ::ng-deep .cm-focused,
+.desc-editor ::ng-deep .cm-scroller,
+.desc-editor ::ng-deep .cm-gutters { background: transparent !important; border: none !important; }
 
-.desc-editor .cm-scroller  { overflow: hidden !important; }
-.desc-editor .cm-cursor    { display: none !important; }
-.desc-editor .cm-selectionBackground { display: none !important; }
-.desc-editor .cm-content   { padding: 0 !important; caret-color: transparent; }
+.desc-editor ::ng-deep .cm-scroller           { overflow: hidden !important; }
+.desc-editor ::ng-deep .cm-cursor             { display: none !important; }
+.desc-editor ::ng-deep .cm-selectionBackground { display: none !important; }
+.desc-editor ::ng-deep .cm-content            { padding: 0 !important; caret-color: transparent; }
 
 /* Line break spacing for readable paragraph cuts */
-.desc-editor .cm-line {
+.desc-editor ::ng-deep .cm-line {
   padding: 0 !important;
   line-height: 1.7;
   min-height: 1.4em;
