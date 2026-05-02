@@ -1,4 +1,4 @@
-import { Injectable, TransferState, inject, makeStateKey, signal } from '@angular/core';
+import { Injectable, TransferState, inject, isDevMode, makeStateKey, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, of } from 'rxjs';
 import { DOCS_MANIFEST_TOKEN } from '../docs.tokens';
@@ -111,7 +111,8 @@ export class DocsService {
    * Falls back to HTTP only in browser-only scenarios (dev without prerender).
    */
   loadManifest() {
-    if (this._manifest) return of(this._manifest);
+    // In dev mode always re-fetch so hot-reload picks up manifest changes
+    if (this._manifest && !isDevMode()) return of(this._manifest);
 
     return this.http.get<DocsManifest>('/api/docs/manifest').pipe(
       map(manifest => {

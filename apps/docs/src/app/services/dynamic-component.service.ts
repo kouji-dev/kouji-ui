@@ -1,4 +1,4 @@
-﻿import { Component, Injectable, Type, ViewEncapsulation, computed, effect, inject, input, model, signal } from '@angular/core';
+﻿import { Component, Injectable, Type, ViewEncapsulation, computed, effect, inject, input, isDevMode, model, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 
 // Import all @kouji-ui/core directives that can appear in @doc-file examples
@@ -61,7 +61,7 @@ export class DynamicComponentService {
    * Returns null if parsing fails (e.g. unsupported syntax).
    */
   create(source: string): Type<unknown> | null {
-    if (this.cache.has(source)) return this.cache.get(source)!;
+    if (!isDevMode() && this.cache.has(source)) return this.cache.get(source)!;
 
     try {
       const parsed = this.parse(source);
@@ -84,7 +84,7 @@ export class DynamicComponentService {
         encapsulation: ViewEncapsulation.ShadowDom,
       })(ClassDef);
 
-      this.cache.set(source, DynComponent);
+      if (!isDevMode()) this.cache.set(source, DynComponent);
       return DynComponent;
     } catch {
       return null;

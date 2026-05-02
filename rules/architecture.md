@@ -84,6 +84,24 @@ All overlay-based components (dialog, tooltip, popover, menu, select dropdown) s
 
 Never reimplement overlay positioning per component.
 
+## One Directive Per File
+
+Each directive lives in its own file named after the directive (following the naming rule in `code_style.md`). Do not group multiple directives in one file.
+
+**Why:** Co-located directives in one large file make it hard to find, navigate, and independently test individual directives. Each file should have one clear responsibility.
+
+```
+accordion/
+  accordion.ts          ← KjAccordion only
+  accordion-item.ts     ← KjAccordionItem only
+  accordion-trigger.ts  ← KjAccordionTrigger only
+  accordion-content.ts  ← KjAccordionContent only
+  accordion.context.ts  ← shared context interface + token
+  index.ts
+```
+
+**Exception:** A root directive and a tightly-coupled child directive that is never used independently may share a file only if both are short (< 30 lines each). When in doubt, split.
+
 ## File & Folder Conventions
 
 ```
