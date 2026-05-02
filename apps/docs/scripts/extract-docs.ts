@@ -1,7 +1,7 @@
 import { Project, Node } from 'ts-morph';
 import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '../../..');
@@ -53,8 +53,13 @@ function extractExportName(content: string): string | undefined {
   return match?.[1];
 }
 
-/** Reads a co-located example file from disk, returning an ExampleFile or null on error. */
-function readExampleFile(dirPath: string, filename: string): ExampleFile | null {
+const DOCS_THEMES_CSS_PATH = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../packages/core/src/styles/docs-themes.css'
+);
+
+/** Reads a co-located example file from disk. If the file references docs-themes.css via styleUrls, appends it as an extra tab. */
+function readExampleFiles(dirPath: string, filename: string): ExampleFile[] {
   const fullPath = join(dirPath, filename);
   try {
     const content = readFileSync(fullPath, 'utf-8');
@@ -63,9 +68,19 @@ function readExampleFile(dirPath: string, filename: string): ExampleFile | null 
       ? (ext as ExampleFile['lang'])
       : 'ts';
     const exportName = extractExportName(content);
-    return { lang, filename, content, exportName };
+    const files: ExampleFile[] = [{ lang, filename, content, exportName }];
+
+    // If the example references docs-themes.css, append it as a CSS file tab
+    if (content.includes('docs-themes.css')) {
+      try {
+        const cssContent = readFileSync(DOCS_THEMES_CSS_PATH, 'utf-8');
+        files.push({ lang: 'css', filename: 'docs-themes.css', content: cssContent });
+      } catch { /* CSS file not yet created — skip silently */ }
+    }
+
+    return files;
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -219,8 +234,8 @@ function extractJsDocText(node: Node, sourceFilePath: string): {
       } else {
         // File-path only — read the actual file from the source directory
         const dir = dirname(sourceFilePath);
-        const file = readExampleFile(dir, filename);
-        if (file) exampleFiles.push(file);
+        const files = readExampleFiles(dir, filename);
+        exampleFiles.push(...files);
       }
     }
   }
@@ -286,8 +301,8 @@ function parseDocThemes(fullText: string, sourceFilePath?: string): Record<strin
       } else if (sourceFilePath) {
         // File-path only — read the actual file from the source directory
         const dir = dirname(sourceFilePath);
-        const file = readExampleFile(dir, filename);
-        if (file) files.push(file);
+        const newFiles = readExampleFiles(dir, filename);
+        files.push(...newFiles);
       }
     }
 
@@ -391,8 +406,8 @@ function parseDocFileEntriesClean(
       if (content) results.push({ lang, filename, content });
     } else if (sourceFilePath) {
       const dir = dirname(sourceFilePath);
-      const file = readExampleFile(dir, filename);
-      if (file) results.push(file);
+      const newFiles = readExampleFiles(dir, filename);
+      results.push(...newFiles);
     }
   }
 
