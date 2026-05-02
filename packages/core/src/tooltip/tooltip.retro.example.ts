@@ -1,46 +1,43 @@
 import { Component } from '@angular/core';
-import { KjTooltip, KjTooltipTrigger, KjTooltipContent } from './tooltip';
+import { KjTooltipTrigger, KjTooltipContent } from './tooltip';
 
 @Component({
   selector: 'kj-example-tooltip-retro',
   standalone: true,
-  imports: [KjTooltip, KjTooltipTrigger, KjTooltipContent],
+  imports: [KjTooltipTrigger, KjTooltipContent],
   styleUrls: ['../styles/docs-themes.css'],
-  host: { class: 'kj-theme-retro' },
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; padding: 5rem 3rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 180px; color: var(--kj-text); }
-    .row { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: center; }
     .tip-wrap { position: relative; display: inline-block; }
     button {
-      padding: 0.4rem 1rem; font-family: var(--kj-font); font-size: 0.8rem; font-weight: 700;
-      letter-spacing: 0.06em; text-transform: uppercase; background: var(--kj-surface); color: var(--kj-text);
-      border: var(--kj-btn-border); border-radius: 0; cursor: pointer;
-      box-shadow: var(--kj-shadow-sm); transition: var(--kj-transition);
+      padding: 0.35rem 0.875rem; font-family: var(--kj-font); font-size: 0.75rem;
+      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      background: var(--kj-bg); color: var(--kj-text); border: var(--kj-btn-border);
+      cursor: pointer; box-shadow: var(--kj-shadow-sm); transition: var(--kj-transition);
     }
     button:hover { transform: translate(-1px, -1px); box-shadow: var(--kj-shadow-md); }
     [kjTooltipContent] {
-      position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
-      background: var(--kj-text); color: var(--kj-bg); padding: 0.25rem 0.625rem; font-family: var(--kj-font);
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+      background: var(--kj-text); color: var(--kj-bg);
+      padding: 0.2rem 0.5rem; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
       white-space: nowrap; pointer-events: none; border: 1px solid var(--kj-border);
+      box-shadow: var(--kj-shadow-sm);
     }
     [kjTooltipContent][hidden] { display: none; }
-    [kjTooltipContent][data-side="bottom"] { top: calc(100% + 10px); bottom: auto; }
-    [kjTooltipContent][data-side="right"]  { left: calc(100% + 10px); bottom: auto; top: 50%; transform: translateY(-50%); }
+    [data-side="bottom"] { top: calc(100% + 8px); bottom: auto; }
+    [data-side="right"] { left: calc(100% + 8px); bottom: auto; top: 50%; transform: translateY(-50%); }
   `],
+  host: { class: 'kj-theme-retro' },
   template: `
     <div class="row">
-      <div class="tip-wrap" kjTooltip>
-        <button kjTooltipTrigger>Copy</button>
-        <span kjTooltipContent role="tooltip">Copy to clipboard</span>
+      <div class="tip-wrap">
+        <button [kjTooltipTrigger]="tip1">Hover me</button>
+        <span #tip1="kjTooltipContent" kjTooltipContent>Copy to clipboard</span>
       </div>
-      <div class="tip-wrap" kjTooltip [kjTooltipSide]="'bottom'">
-        <button kjTooltipTrigger>Info</button>
-        <span kjTooltipContent role="tooltip">More information</span>
-      </div>
-      <div class="tip-wrap" kjTooltip [kjTooltipSide]="'right'">
-        <button kjTooltipTrigger>Help</button>
-        <span kjTooltipContent role="tooltip">View docs</span>
+      <div class="tip-wrap">
+        <button [kjTooltipTrigger]="tip2">Bottom</button>
+        <span #tip2="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'bottom'">Opens below</span>
       </div>
     </div>
   `,

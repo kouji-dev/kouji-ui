@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { KjTooltip, KjTooltipTrigger, KjTooltipContent } from './tooltip';
+import { KjTooltipTrigger, KjTooltipContent } from './tooltip';
 
 @Component({
   selector: 'kj-example-tooltip-placements',
   standalone: true,
-  imports: [KjTooltip, KjTooltipTrigger, KjTooltipContent],
+  imports: [KjTooltipTrigger, KjTooltipContent],
   styleUrls: ['../styles/docs-themes.css'],
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; padding: 5rem 4rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 220px; }
@@ -30,26 +30,26 @@ import { KjTooltip, KjTooltipTrigger, KjTooltipContent } from './tooltip';
   template: `
     <div class="grid">
       <div class="empty"></div>
-      <div class="tip-wrap" kjTooltip [kjTooltipSide]="'top'">
-        <button kjTooltipTrigger>Top</button>
-        <span kjTooltipContent role="tooltip">Top tooltip</span>
+      <div class="tip-wrap">
+        <button [kjTooltipTrigger]="tipTop">Top</button>
+        <span #tipTop="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'top'">Top tooltip</span>
       </div>
       <div class="empty"></div>
 
-      <div class="tip-wrap" kjTooltip [kjTooltipSide]="'left'">
-        <button kjTooltipTrigger>Left</button>
-        <span kjTooltipContent role="tooltip">Left tooltip</span>
+      <div class="tip-wrap">
+        <button [kjTooltipTrigger]="tipLeft">Left</button>
+        <span #tipLeft="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'left'">Left tooltip</span>
       </div>
       <div class="empty"></div>
-      <div class="tip-wrap" kjTooltip [kjTooltipSide]="'right'">
-        <button kjTooltipTrigger>Right</button>
-        <span kjTooltipContent role="tooltip">Right tooltip</span>
+      <div class="tip-wrap">
+        <button [kjTooltipTrigger]="tipRight">Right</button>
+        <span #tipRight="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'right'">Right tooltip</span>
       </div>
 
       <div class="empty"></div>
-      <div class="tip-wrap" kjTooltip [kjTooltipSide]="'bottom'">
-        <button kjTooltipTrigger>Bottom</button>
-        <span kjTooltipContent role="tooltip">Bottom tooltip</span>
+      <div class="tip-wrap">
+        <button [kjTooltipTrigger]="tipBottom">Bottom</button>
+        <span #tipBottom="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'bottom'">Bottom tooltip</span>
       </div>
       <div class="empty"></div>
     </div>

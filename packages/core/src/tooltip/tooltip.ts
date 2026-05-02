@@ -1,29 +1,23 @@
-﻿import {
-  Directive, DestroyRef, ElementRef, InjectionToken, afterNextRender, inject, input, signal,
-} from '@angular/core';
+import { Directive, input, signal } from '@angular/core';
 
 /** Preferred side for the tooltip relative to its trigger. */
 export type KjTooltipSide = 'top' | 'bottom' | 'left' | 'right';
 
-export const KJ_TOOLTIP = new InjectionToken<KjTooltip>('KjTooltip');
-
 let _tooltipIdCounter = 0;
 
 /**
- * Root tooltip container. Manages show/hide state with hover/focus delays.
- * Pairs with `[kjTooltipTrigger]` and `[kjTooltipContent]`.
+ * Tooltip content panel. Owns all configuration and visibility state.
+ * Exported as `kjTooltipContent` so the trigger can reference it directly.
  *
- * The trigger automatically receives `aria-describedby` pointing to the tooltip id.
- * Add `role="tooltip"` and the matching `id` to the content element.
+ * Automatically sets `role="tooltip"` (customisable via `kjTooltipRole`).
+ * Note: `role="tooltip"` prohibits `aria-label` and `aria-labelledby` per WAI-ARIA spec.
  *
  * @example
  * ```html
- * <div kjTooltip>
- *   <button kjTooltipTrigger>Save</button>
- *   <span kjTooltipContent role="tooltip" id="save-tip">
- *     Saves your changes permanently
- *   </span>
- * </div>
+ * <button [kjTooltipTrigger]="myTip">Save</button>
+ * <span #myTip="kjTooltipContent" kjTooltipContent [kjTooltipSide]="'top'">
+ *   Saves your changes permanently
+ * </span>
  * ```
  * @doc
  *  @doc-example Basic
@@ -38,27 +32,44 @@ let _tooltipIdCounter = 0;
  * @category Core/Overlays
  */
 @Directive({
-  selector: '[kjTooltip]',
+  selector: '[kjTooltipContent]',
   standalone: true,
-  providers: [{ provide: KJ_TOOLTIP, useExisting: KjTooltip }],
-  exportAs: 'kjTooltip',
+  exportAs: 'kjTooltipContent',
+  host: {
+    '[attr.id]':       'tooltipId',
+    '[attr.role]':     'kjTooltipRole()',
+    '[attr.data-side]':'kjTooltipSide()',
+    '[attr.hidden]':   '!visible() ? "" : null',
+    // Keep tooltip alive when cursor moves from trigger onto tooltip content
+    '(mouseenter)': 'cancelHide()',
+    '(mouseleave)': 'startHide()',
+  },
 })
-export class KjTooltip {
-  /** Preferred tooltip side. Used as `data-side` for CSS positioning. Defaults to `'top'`. */
-  kjTooltipSide = input<KjTooltipSide>('top');
-  /** Delay in ms before showing the tooltip on hover. Defaults to `600`. */
-  kjTooltipDelay = input<number>(600);
-  /** Delay in ms before hiding the tooltip after hover ends. Defaults to `200`. */
-  kjTooltipHideDelay = input<number>(200);
+export class KjTooltipContent {
+  /** Preferred side relative to trigger. Defaults to `'top'`. */
+  readonly kjTooltipSide = input<KjTooltipSide>('top');
+
+  /**
+   * ARIA role for the tooltip element. Defaults to `'tooltip'`.
+   * Note: `role="tooltip"` prohibits `aria-label` and `aria-labelledby`.
+   */
+  readonly kjTooltipRole = input<string>('tooltip');
+
+  /** Delay in ms before showing the tooltip. Defaults to `600`. */
+  readonly kjTooltipDelay = input<number>(600);
+
+  /** Delay in ms before hiding after hover ends. Defaults to `200`. */
+  readonly kjTooltipHideDelay = input<number>(200);
+
+  /** Auto-generated id wired to the trigger's `aria-describedby`. Always present. */
+  readonly tooltipId = `kj-tooltip-${++_tooltipIdCounter}`;
 
   readonly visible = signal(false);
-
-  /** Auto-generated id used for `aria-describedby` wiring. */
-  readonly tooltipId = `kj-tooltip-${++_tooltipIdCounter}`;
 
   private showTimer?: ReturnType<typeof setTimeout>;
   private hideTimer?: ReturnType<typeof setTimeout>;
 
+  /** Shows the tooltip after `kjTooltipDelay` ms. */
   show(): void {
     clearTimeout(this.hideTimer);
     const delay = this.kjTooltipDelay();
@@ -66,14 +77,20 @@ export class KjTooltip {
     this.showTimer = setTimeout(() => this.visible.set(true), delay);
   }
 
-  hide(): void {
+  /** Starts the hide countdown after `kjTooltipHideDelay` ms. */
+  startHide(): void {
     clearTimeout(this.showTimer);
     const delay = this.kjTooltipHideDelay();
     if (delay <= 0) { this.visible.set(false); return; }
     this.hideTimer = setTimeout(() => this.visible.set(false), delay);
   }
 
-  /** Cancels pending timers and immediately hides. Called on Escape. */
+  /** Cancels any pending hide timer. Called when cursor moves onto the tooltip. */
+  cancelHide(): void {
+    clearTimeout(this.hideTimer);
+  }
+
+  /** Immediately hides and cancels all pending timers. Called on Escape or blur. */
   forceHide(): void {
     clearTimeout(this.showTimer);
     clearTimeout(this.hideTimer);
@@ -82,53 +99,32 @@ export class KjTooltip {
 }
 
 /**
- * Trigger element for the tooltip. Shows on hover/focus, hides on leave/blur/Escape.
- * Automatically receives `aria-describedby` pointing to the tooltip panel.
+ * Trigger element for the tooltip. Pass a `KjTooltipContent` reference via `[kjTooltipTrigger]`.
  *
+ * Automatically wires `aria-describedby` to the content's id.
+ * Shows on hover/focus, hides on leave/blur/Escape.
+ *
+ * @example
+ * ```html
+ * <button [kjTooltipTrigger]="myTip">Save</button>
+ * <span #myTip="kjTooltipContent" kjTooltipContent>Saves your changes</span>
+ * ```
  * @category Core/Overlays
  */
 @Directive({
   selector: '[kjTooltipTrigger]',
   standalone: true,
   host: {
-    '[attr.aria-describedby]': 'ctx.tooltipId',
-    '(mouseenter)': 'ctx.show()',
-    '(mouseleave)': 'ctx.hide()',
-    '(focus)': 'ctx.show()',
-    '(blur)': 'ctx.hide()',
-    '(keydown.escape)': 'ctx.forceHide()',
+    // aria-describedby is set always (before display) per WAI-ARIA spec
+    '[attr.aria-describedby]': 'kjTooltipTrigger().tooltipId',
+    '(mouseenter)':       'kjTooltipTrigger().show()',
+    '(mouseleave)':       'kjTooltipTrigger().startHide()',
+    '(focus)':            'kjTooltipTrigger().show()',
+    '(blur)':             'kjTooltipTrigger().forceHide()',
+    '(keydown.escape)':   'kjTooltipTrigger().forceHide()',
   },
 })
 export class KjTooltipTrigger {
-  readonly ctx = inject(KJ_TOOLTIP);
-}
-
-/**
- * Tooltip content panel. Hidden unless the trigger is hovered or focused.
- * Add `role="tooltip"` and set the `id` to match the trigger's `aria-describedby`.
- *
- * The `data-side` attribute reflects `kjTooltipSide` and can be used for CSS positioning.
- *
- * @example
- * ```html
- * <span kjTooltipContent role="tooltip" [id]="ctx.tooltipId">
- *   Tooltip text here
- * </span>
- * ```
- * @category Core/Overlays
- */
-@Directive({
-  selector: '[kjTooltipContent]',
-  standalone: true,
-  host: {
-    '[attr.hidden]': '!ctx.visible() ? "" : null',
-    '[attr.data-side]': 'ctx.kjTooltipSide()',
-    '[attr.id]': 'ctx.tooltipId',
-    // Keep tooltip visible when user hovers over it (prevents flash on mouse movement)
-    '(mouseenter)': 'ctx.show()',
-    '(mouseleave)': 'ctx.hide()',
-  },
-})
-export class KjTooltipContent {
-  readonly ctx = inject(KJ_TOOLTIP);
+  /** Reference to the associated `KjTooltipContent` directive instance. */
+  readonly kjTooltipTrigger = input.required<KjTooltipContent>();
 }

@@ -1,7 +1,5 @@
-﻿export {
-  KjTooltip,
-  KjTooltipTrigger,
+export {
   KjTooltipContent,
-  KJ_TOOLTIP,
+  KjTooltipTrigger,
   type KjTooltipSide,
 } from './tooltip';
