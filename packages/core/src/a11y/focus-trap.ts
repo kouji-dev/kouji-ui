@@ -1,8 +1,15 @@
-﻿import { Directive, DestroyRef, ElementRef, inject, input, effect, afterNextRender } from '@angular/core';
-import { FocusTrapFactory, FocusTrap } from '@angular/cdk/a11y';
+import { Directive, DestroyRef, ElementRef, afterNextRender, inject, input } from '@angular/core';
+import { PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+
+const FOCUSABLE = [
+  'a[href]', 'button:not([disabled])', 'input:not([disabled])',
+  'select:not([disabled])', 'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])', '[contenteditable="true"]',
+].join(',');
 
 /**
- * Traps keyboard focus within the host element using Angular CDK FocusTrap.
+ * Traps keyboard focus within the host element using a native Tab-key interceptor.
  * Designed for modal dialogs, drawers, and other overlay patterns.
  *
  * @example
@@ -18,40 +25,46 @@ import { FocusTrapFactory, FocusTrap } from '@angular/cdk/a11y';
   standalone: true,
 })
 export class KjFocusTrap {
-  private readonly el = inject(ElementRef);
-  private readonly focusTrapFactory = inject(FocusTrapFactory);
+  private readonly el = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   /** Whether the focus trap is active. Set to true when the overlay is open. */
   kjFocusTrapEnabled = input<boolean>(false);
 
-  private trap?: FocusTrap;
-  private trapReady = false;
-
   constructor() {
-    // effect() runs in the injection context of the constructor — safe here.
-    effect(() => {
-      const enabled = this.kjFocusTrapEnabled();
-      if (!this.trapReady) return;
-      if (enabled) {
-        this.trap!.enabled = true;
-        this.trap?.focusFirstTabbableElementWhenReady();
-      } else {
-        this.trap!.enabled = false;
-      }
-    });
-
     afterNextRender(() => {
-      this.trap = this.focusTrapFactory.create(this.el.nativeElement, false);
-      this.trapReady = true;
-      // Apply initial state after trap is created.
-      if (this.kjFocusTrapEnabled()) {
-        this.trap.enabled = true;
-        this.trap.focusFirstTabbableElementWhenReady();
-      } else {
-        this.trap.enabled = false;
-      }
-      this.destroyRef.onDestroy(() => this.trap?.destroy());
+      if (!isPlatformBrowser(this.platformId)) return;
+
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (!this.kjFocusTrapEnabled() || e.key !== 'Tab') return;
+        const focusable = Array.from(
+          this.el.nativeElement.querySelectorAll<HTMLElement>(FOCUSABLE)
+        ).filter(el => !el.closest('[hidden]') && getComputedStyle(el).display !== 'none');
+
+        if (!focusable.length) { e.preventDefault(); return; }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first || !this.el.nativeElement.contains(document.activeElement)) {
+            e.preventDefault(); last.focus();
+          }
+        } else {
+          if (document.activeElement === last || !this.el.nativeElement.contains(document.activeElement)) {
+            e.preventDefault(); first.focus();
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeydown);
+      this.destroyRef.onDestroy(() => document.removeEventListener('keydown', handleKeydown));
     });
+  }
+
+  /** Focuses the first tabbable element inside the trap. */
+  focusFirst(): void {
+    const el = this.el.nativeElement.querySelector<HTMLElement>(FOCUSABLE);
+    el?.focus();
   }
 }

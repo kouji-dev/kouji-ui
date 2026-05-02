@@ -1,18 +1,31 @@
-﻿import { render, fireEvent } from '@testing-library/angular';
+import { render, fireEvent } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjFocusRing } from './focus-ring';
 
 expect.extend(toHaveNoViolations);
 
 describe('KjFocusRing', () => {
-  it('adds data-focus-visible on focus', async () => {
+  it('adds data-focus-visible on focus when last interaction was keyboard', async () => {
     const { container } = await render(
       `<button kjFocusRing>Click me</button>`,
       { imports: [KjFocusRing] },
     );
     const btn = container.querySelector('button')!;
+    // No prior pointerdown — _lastWasPointer is false, so focus should be visible.
     fireEvent.focus(btn);
     expect(btn).toHaveAttribute('data-focus-visible', '');
+  });
+
+  it('does not add data-focus-visible on focus after pointer interaction', async () => {
+    const { container } = await render(
+      `<button kjFocusRing>Click me</button>`,
+      { imports: [KjFocusRing] },
+    );
+    const btn = container.querySelector('button')!;
+    // Simulate pointer interaction, then focus.
+    fireEvent.pointerDown(document);
+    fireEvent.focus(btn);
+    expect(btn).not.toHaveAttribute('data-focus-visible');
   });
 
   it('removes data-focus-visible on blur', async () => {
@@ -24,6 +37,19 @@ describe('KjFocusRing', () => {
     fireEvent.focus(btn);
     fireEvent.blur(btn);
     expect(btn).not.toHaveAttribute('data-focus-visible');
+  });
+
+  it('restores data-focus-visible after keydown followed by focus', async () => {
+    const { container } = await render(
+      `<button kjFocusRing>Click me</button>`,
+      { imports: [KjFocusRing] },
+    );
+    const btn = container.querySelector('button')!;
+    // First simulate pointer (marks _lastWasPointer = true), then keyboard (resets it).
+    fireEvent.pointerDown(document);
+    fireEvent.keyDown(document);
+    fireEvent.focus(btn);
+    expect(btn).toHaveAttribute('data-focus-visible', '');
   });
 
   it('passes axe accessibility audit', async () => {

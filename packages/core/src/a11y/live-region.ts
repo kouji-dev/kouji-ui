@@ -1,12 +1,11 @@
-﻿import { Directive, inject, input } from '@angular/core';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { Directive, ElementRef, inject, input } from '@angular/core';
 
 /** Politeness setting for ARIA live regions. */
 export type KjLivePoliteness = 'off' | 'polite' | 'assertive';
 
 /**
  * Marks an element as an ARIA live region and exposes an `announce` method
- * for programmatically pushing announcements to screen readers via CDK LiveAnnouncer.
+ * for programmatically pushing announcements to screen readers via DOM text content.
  *
  * @example
  * ```html
@@ -25,18 +24,25 @@ export type KjLivePoliteness = 'off' | 'polite' | 'assertive';
   },
 })
 export class KjLiveRegion {
-  private readonly liveAnnouncer = inject(LiveAnnouncer);
+  private readonly el = inject(ElementRef<HTMLElement>);
 
   /** The ARIA live politeness setting. Defaults to `'polite'`. */
   kjPoliteness = input<KjLivePoliteness>('polite');
 
   /**
-   * Announces a message to screen readers.
+   * Announces a message to screen readers by briefly clearing and re-setting text.
    * @param message - The message to announce.
    * @param durationMs - Optional duration in ms before clearing the announcement.
-   * @returns A promise that resolves when the announcement is complete.
    */
-  announce(message: string, durationMs?: number): Promise<void> {
-    return this.liveAnnouncer.announce(message, this.kjPoliteness(), durationMs);
+  announce(message: string, durationMs?: number): void {
+    const el = this.el.nativeElement;
+    el.textContent = '';
+    // Brief timeout lets screen readers detect the content change.
+    setTimeout(() => {
+      el.textContent = message;
+      if (durationMs != null) {
+        setTimeout(() => { el.textContent = ''; }, durationMs);
+      }
+    }, 50);
   }
 }
