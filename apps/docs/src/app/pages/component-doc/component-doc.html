@@ -70,7 +70,7 @@
             </div>
 
             @if (directive.description) {
-              @defer (on viewport) {
+              @defer (on idle) {
                 <kj-code-editor class="desc-editor" [code]="directive.description" lang="md" [showHeader]="false" [readonly]="true" />
               }
             }
@@ -87,7 +87,7 @@
               <div class="inline-examples-block">
                 <h3 class="block-title">Usage</h3>
                 @for (ex of directive.examples; track $index) {
-                  @defer (on viewport) {
+                  @defer (on idle) {
                     <kj-code-editor
                       [code]="ex"
                       [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
