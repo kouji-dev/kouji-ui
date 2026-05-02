@@ -133,23 +133,30 @@ export class DocsService {
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
-      const path  = comp.categoryPath.length >= 3 ? comp.categoryPath : null;
-      const pkg   = path ? path[path.length - 3] : 'Others';
-      const cat   = path ? path[path.length - 2] : 'Others';
+      const path = comp.categoryPath;
+      // Derive the category label shown in the sidebar:
+      // - 'Core/Navigation/Accordion' → 'Navigation' (drop package prefix + redundant comp name)
+      // - 'Core/Base'                 → 'Base'        (drop package prefix)
+      // - 'Core'                      → 'Core'        (single segment — show as-is)
+      // - (empty)                     → 'Others'
+      let cat: string;
+      if (path.length >= 3) {
+        cat = path[path.length - 2];
+      } else if (path.length === 2) {
+        cat = path[1];
+      } else {
+        cat = path[0] ?? 'Others';
+      }
 
-      if (!tree[pkg]) tree[pkg] = {};
-      if (!tree[pkg][cat]) tree[pkg][cat] = [];
-      tree[pkg][cat].push({ label: comp.name, slug: comp.slug, children: [] });
+      if (!tree['root']) tree['root'] = {};
+      if (!tree['root'][cat]) tree['root'][cat] = [];
+      tree['root'][cat].push({ label: comp.name, slug: comp.slug, children: [] });
     }
 
-    return Object.entries(tree).map(([pkg, cats]) => ({
-      label: pkg,
+    return Object.entries(tree['root'] ?? {}).map(([cat, items]) => ({
+      label: cat,
       slug: null,
-      children: Object.entries(cats).map(([cat, items]) => ({
-        label: cat,
-        slug: null,
-        children: items,
-      })),
+      children: items,
     }));
   }
 }
