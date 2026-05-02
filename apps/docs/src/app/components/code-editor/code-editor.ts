@@ -167,15 +167,33 @@ export class CodeEditorComponent implements OnDestroy {
         LanguageDescription.of({ name: 'css',         alias: ['css'],              load: async () => css() }),
       ];
 
-      // Only hide syntax markers — let the default theme handle all other styling
+      const { EditorView: EV } = await import('@codemirror/view');
+
+      // Hide markdown syntax markers
       const markerStyle = HighlightStyle.define([
         { tag: t.processingInstruction, fontSize: '0', letterSpacing: '-0.6em', opacity: '0' },
         { tag: t.contentSeparator,      fontSize: '0', letterSpacing: '-0.6em', opacity: '0' },
       ]);
 
+      // Style fenced code blocks the same as standalone code editor
+      const isDark = this.themeService.theme() === 'dark';
+      const codeBlockTheme = EV.theme({
+        '.cm-line.cm-codeText, .cm-codeBlock': {
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: '0.8rem',
+          background: isDark ? '#080808' : 'var(--bg-elevated)',
+          display: 'block',
+          padding: '0 1rem',
+        },
+        // First and last line of a code block get top/bottom padding
+        '.cm-line.cm-codeText:first-of-type': { paddingTop: '0.75rem' },
+        '.cm-line.cm-codeText:last-of-type':  { paddingBottom: '0.75rem' },
+      });
+
       return [
         markdown({ base: markdownLanguage, codeLanguages }),
         syntaxHighlighting(markerStyle),
+        codeBlockTheme,
       ];
     }
     const { javascript } = await import('@codemirror/lang-javascript');

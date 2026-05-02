@@ -296,6 +296,8 @@ h1 {
 }
 
 /* ── Markdown description editor — transparent, no chrome ── */
+.desc-editor { margin-bottom: 1.25rem; }
+
 /* ::ng-deep required — CodeMirror injects elements dynamically, bypassing Angular's attribute scoping */
 .desc-editor ::ng-deep .cm-editor,
 .desc-editor ::ng-deep .cm-focused,
