@@ -1,6 +1,11 @@
 # kouji-ui
 
-See [RULES.md](./RULES.md) for all coding style, conventions, and architectural rules.
+See [RULES.md](./RULES.md) for an index of all rules. Detailed rules live in [`rules/`](./rules/):
+- [`rules/stack.md`](./rules/stack.md) — tech stack, no-CDK policy
+- [`rules/code_style.md`](./rules/code_style.md) — design process, naming, signals, lifecycle, TSDoc
+- [`rules/architecture.md`](./rules/architecture.md) — packages, directive patterns, file conventions
+- [`rules/accessibility.md`](./rules/accessibility.md) — WCAG 2.1 AAA, keyboard contracts, ARIA
+- [`rules/agent_orchestration.md`](./rules/agent_orchestration.md) — agent strategy
 
 ## Accessibility Verification After Every Directive/Component Change
 
@@ -24,7 +29,7 @@ After the change, output a brief **Accessibility Review** section listing:
 - The specific fix needed (e.g. "add `aria-expanded` binding", "wire `aria-labelledby` to heading id")
 - If everything looks correct, confirm with: "✓ Accessibility: no issues found."
 
-Target: **WCAG 2.1 AAA** for all components (per RULES.md).
+Target: **WCAG 2.1 AAA** for all components (see [`rules/accessibility.md`](./rules/accessibility.md)).
 
 ## Class Naming Rule
 
