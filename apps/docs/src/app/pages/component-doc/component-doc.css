@@ -130,7 +130,7 @@ h1 {
 
 .inputs-header, .input-row {
   display: grid;
-  grid-template-columns: 180px 160px 120px 1fr;
+  grid-template-columns: max-content max-content max-content 1fr;
   gap: 0;
 }
 
@@ -303,7 +303,7 @@ h1 {
   }
 
   .inputs-header, .input-row {
-    grid-template-columns: 130px 120px 90px 1fr;
+    grid-template-columns: max-content max-content max-content 1fr;
   }
 
   .directive-section {
