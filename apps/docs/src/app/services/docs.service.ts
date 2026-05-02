@@ -1,7 +1,7 @@
-import { Injectable, TransferState, inject, isDevMode, makeStateKey, signal } from '@angular/core';
+import { Injectable, inject, isDevMode, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, of } from 'rxjs';
-import { DOCS_MANIFEST_TOKEN } from '../docs.tokens';
+import { DocsManifestProvider } from './docs-manifest.provider';
 
 export interface InputDef {
   name: string;
@@ -70,48 +70,37 @@ export interface DocsManifest {
   components: ComponentDoc[];
 }
 
-const MANIFEST_KEY = makeStateKey<DocsManifest>('docs-manifest');
-
 /**
- * Provides access to docs data extracted from @kouji-ui/core at build time.
+ * Provides access to docs metadata.
  *
  * Data flow:
- * - Server/prerender: reads from DOCS_MANIFEST_TOKEN (injected via app.config.server.ts
- *   using fs.readFileSync — server bundle only, never shipped to the browser).
- *   Stores result in TransferState.
- * - Browser hydration: reads TransferState embedded in the prerendered HTML — no HTTP.
- * - Runtime fallback: HttpClient fetch to /api/docs/manifest (dev without SSR only).
+ * - Server/prerender: `DocsManifestProvider` → `ServerDocsManifestProvider` → `getManifest()` (ts-morph)
+ *   → result stored in TransferState for browser hydration.
+ * - Browser (prerendered): `DocsManifestProvider` → `BrowserDocsManifestProvider` → reads TransferState.
+ * - Browser fallback (dev / non-prerendered): HTTP `GET /api/docs/manifest`.
  */
 @Injectable({ providedIn: 'root' })
 export class DocsService {
   private readonly http = inject(HttpClient);
-  private readonly transferState = inject(TransferState);
-  private readonly serverManifest = inject(DOCS_MANIFEST_TOKEN, { optional: true });
+  private readonly provider = inject(DocsManifestProvider);
 
   private _manifest: DocsManifest | null = null;
   readonly components = signal<ComponentDoc[]>([]);
 
   constructor() {
-    if (this.serverManifest) {
-      // Server/prerender: manifest provided via DI from app.config.server.ts
-      this._manifest = this.serverManifest;
-      this.components.set(this.serverManifest.components);
-      this.transferState.set(MANIFEST_KEY, this.serverManifest);
-    } else if (this.transferState.hasKey(MANIFEST_KEY)) {
-      // Browser hydration: manifest embedded in prerendered HTML via TransferState
-      this._manifest = this.transferState.get(MANIFEST_KEY, null);
-      if (this._manifest) {
-        this.components.set(this._manifest.components);
-      }
+    const manifest = this.provider.getManifest();
+    if (manifest) {
+      this._manifest = manifest;
+      this.components.set(manifest.components);
     }
   }
 
   /**
-   * Ensures the manifest is loaded. Returns immediately if already available.
-   * Falls back to HTTP only in browser-only scenarios (dev without prerender).
+   * Ensures the manifest is loaded.
+   * In dev mode always re-fetches so hot-reload picks up changes.
+   * In production returns immediately from cache (prerendered via TransferState).
    */
   loadManifest() {
-    // In dev mode always re-fetch so hot-reload picks up manifest changes
     if (this._manifest && !isDevMode()) return of(this._manifest);
 
     return this.http.get<DocsManifest>('/api/docs/manifest').pipe(
@@ -123,9 +112,9 @@ export class DocsService {
     );
   }
 
-  /** Returns all component slugs — used in `getPrerenderParams()` for route generation. */
+  /** Returns all component slugs — used in `getPrerenderParams()`. */
   getSlugs(): string[] {
-    return this._manifest?.components.map(c => c.slug) ?? [];
+    return this._manifest?.components.map(c => c.slug) ?? this.provider.getSlugs();
   }
 
   /** Get a component by slug. */
@@ -141,24 +130,20 @@ export class DocsService {
   /** Builds a 3-level nested category tree: Package > Category > Component */
   getSidebarTree(): SidebarNode[] {
     const components = this._manifest?.components ?? [];
-    // Tree: { 'Core': { 'Foundation': [{ label: 'Button', slug: 'button' }, ...] } }
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
       const fallback = ['Core', comp.category.charAt(0).toUpperCase() + comp.category.slice(1), comp.name];
       const path = comp.categoryPath.length >= 3 ? comp.categoryPath : fallback;
-
-      // path = ['Core', 'Inputs', 'Button'] — always use last 3 segments
-      const pkg = path[path.length - 3] ?? path[0];   // 'Core' | 'UI'
-      const cat = path[path.length - 2] ?? path[1];   // 'Inputs' | 'Navigation' etc.
-      const label = path[path.length - 1] ?? comp.name; // 'Button' | 'Checkbox' etc.
+      const pkg   = path[path.length - 3] ?? path[0];
+      const cat   = path[path.length - 2] ?? path[1];
+      const label = path[path.length - 1] ?? comp.name;
 
       if (!tree[pkg]) tree[pkg] = {};
       if (!tree[pkg][cat]) tree[pkg][cat] = [];
       tree[pkg][cat].push({ label, slug: comp.slug, children: [] });
     }
 
-    // Convert to SidebarNode[]
     return Object.entries(tree).map(([pkg, cats]) => ({
       label: pkg,
       slug: null,
