@@ -8,6 +8,7 @@ import { CodePreviewComponent } from '../../components/code-preview/code-preview
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
+import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-table/docs-table';
 
 @Component({
   selector: 'app-component-doc',
@@ -19,6 +20,7 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
     CodeEditorComponent,
     PageTocDirective,
     PageTocComponent,
+    DocsTableComponent,
   ],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
@@ -38,6 +40,13 @@ export class ComponentDocComponent {
 
   protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
   private readonly pageToc = viewChild(PageTocDirective);
+
+  protected readonly inputColumns: DocsTableColumn[] = [
+    { key: 'name',         header: 'Name'        },
+    { key: 'type',         header: 'Type'        },
+    { key: 'defaultValue', header: 'Default'     },
+    { key: 'description',  header: 'Description' },
+  ];
 
   constructor() {
     toObservable(this.component).pipe(

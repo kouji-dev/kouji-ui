@@ -121,42 +121,6 @@ h1 {
 
 .inputs-block { margin-bottom: 2rem; }
 
-.inputs-table {
-  border: 1px solid var(--border);
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
-  overflow-x: auto;
-}
-
-.inputs-header, .input-row {
-  display: grid;
-  grid-template-columns: max-content max-content max-content 1fr;
-  gap: 0;
-}
-
-.inputs-header {
-  background: var(--bg-subtle);
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.inputs-header span, .input-row > * {
-  padding: 0.75rem 1rem;
-  border-right: 1px solid var(--border);
-}
-.inputs-header span:last-child, .input-row > *:last-child { border-right: none; }
-
-.input-row { border-bottom: 1px solid var(--border-subtle); }
-.input-row:last-child { border-bottom: none; }
-
-.inp-name { color: var(--text); }
-.required { color: var(--accent); }
-.inp-type { color: #888; }
-.inp-default { color: var(--text-secondary); }
-.inp-desc { color: var(--text-secondary); line-height: 1.5; }
 .required-note { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.25rem; }
 
 /* ── Examples ── */
@@ -300,10 +264,6 @@ h1 {
 
   h1 {
     font-size: 2.25rem;
-  }
-
-  .inputs-header, .input-row {
-    grid-template-columns: max-content max-content max-content 1fr;
   }
 
   .directive-section {

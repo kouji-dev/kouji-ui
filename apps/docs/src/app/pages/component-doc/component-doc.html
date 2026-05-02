@@ -67,25 +67,7 @@
           @if (directive.inputs.length) {
             <div class="inputs-block">
               <h3 class="block-title">Inputs</h3>
-              <div class="inputs-table">
-                <div class="inputs-header">
-                  <span>Name</span>
-                  <span>Type</span>
-                  <span>Default</span>
-                  <span>Description</span>
-                </div>
-                @for (inp of directive.inputs; track inp.name) {
-                  <div class="input-row">
-                    <code class="inp-name">
-                      {{ inp.name }}
-                      @if (inp.required) {<span class="required">*</span>}
-                    </code>
-                    <code class="inp-type">{{ inp.type }}</code>
-                    <code class="inp-default">{{ inp.defaultValue ?? '—' }}</code>
-                    <span class="inp-desc">{{ inp.description || '—' }}</span>
-                  </div>
-                }
-              </div>
+              <docs-table [columns]="inputColumns" [rows]="directive.inputs" />
               <p class="required-note">* required</p>
             </div>
           }
