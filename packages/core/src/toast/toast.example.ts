@@ -1,4 +1,4 @@
-﻿import { Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { KjToastViewport, KjToast, KjToastClose } from './toast';
 import { KjToastService } from './toast.service';
 import { KjButton } from '../button/button';
@@ -7,8 +7,9 @@ import { KjButton } from '../button/button';
   selector: 'kj-example-toast-basic',
   standalone: true,
   imports: [KjToastViewport, KjToast, KjToastClose, KjButton],
+  styleUrls: ['../styles/docs-themes.css'],
   styles: [`
-    :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; min-height: 260px; position: relative; }
+    :host { display: block; padding: 2rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 260px; position: relative; }
     .row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
     button[kjButton] { padding: 0.4rem 1rem; border: none; cursor: pointer; font-family: inherit; font-size: 0.8125rem; }
     [data-variant="success"] { background: #4ade80; color: #0c0c0c; }

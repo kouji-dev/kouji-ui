@@ -1,4 +1,4 @@
-﻿import { Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { KjToastViewport, KjToast, KjToastClose } from './toast';
 import { KjToastService } from './toast.service';
 
@@ -6,12 +6,14 @@ import { KjToastService } from './toast.service';
   selector: 'kj-example-toast-finance',
   standalone: true,
   imports: [KjToastViewport, KjToast, KjToastClose],
+  styleUrls: ['../styles/docs-themes.css'],
+  host: { class: 'kj-theme-finance' },
   styles: [`
-    :host { display: block; padding: 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; min-height: 260px; position: relative; }
+    :host { display: block; padding: 2rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 260px; position: relative; }
     .row { display: flex; gap: 0.625rem; flex-wrap: wrap; }
     button {
       padding: 0.4rem 1rem; font-family: inherit; font-size: 0.8125rem; font-weight: 500;
-      border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: background 0.12s; line-height: 1.5;
+      border-radius: var(--kj-radius-md); border: var(--kj-btn-border); cursor: pointer; transition: var(--kj-transition); line-height: 1.5;
     }
     .btn-success { background: #22c55e; color: #fff; border-color: #22c55e; }
     .btn-success:hover { background: #16a34a; }
@@ -19,7 +21,7 @@ import { KjToastService } from './toast.service';
     .btn-error:hover { background: #dc2626; }
     .btn-warning { background: #f59e0b; color: #fff; border-color: #f59e0b; }
     .btn-warning:hover { background: #d97706; }
-    .btn-info    { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .btn-info    { background: var(--kj-accent); color: var(--kj-accent-on); border-color: var(--kj-accent); }
     .btn-info:hover { background: #2563eb; }
     [kjToastViewport] {
       position: absolute; bottom: 1rem; right: 1rem;
@@ -27,8 +29,8 @@ import { KjToastService } from './toast.service';
     }
     [kjToast] {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1rem; font-size: 0.8125rem; border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1); animation: slideIn 0.2s ease;
+      padding: 0.75rem 1rem; font-size: 0.8125rem; border-radius: var(--kj-radius-lg);
+      box-shadow: var(--kj-shadow-sm); animation: slideIn 0.2s ease;
     }
     @keyframes slideIn { from { opacity: 0; transform: translateX(1rem); } to { opacity: 1; transform: translateX(0); } }
     [data-variant="success"]     { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
