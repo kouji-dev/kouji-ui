@@ -115,16 +115,23 @@ export class KjTooltipContent {
   selector: '[kjTooltipTrigger]',
   standalone: true,
   host: {
-    // aria-describedby is set always (before display) per WAI-ARIA spec
-    '[attr.aria-describedby]': 'kjTooltipTrigger().tooltipId',
-    '(mouseenter)':       'kjTooltipTrigger().show()',
-    '(mouseleave)':       'kjTooltipTrigger().startHide()',
-    '(focus)':            'kjTooltipTrigger().show()',
-    '(blur)':             'kjTooltipTrigger().forceHide()',
-    '(keydown.escape)':   'kjTooltipTrigger().forceHide()',
+    // aria-describedby is always set per WAI-ARIA spec (before/at display time)
+    '[attr.aria-describedby]': '_content?.tooltipId',
+    '(mouseenter)':     '_show()',
+    '(mouseleave)':     '_startHide()',
+    '(focus)':          '_show()',
+    '(blur)':           '_forceHide()',
+    '(keydown.escape)': '_forceHide()',
   },
 })
 export class KjTooltipTrigger {
   /** Reference to the associated `KjTooltipContent` directive instance. */
   readonly kjTooltipTrigger = input.required<KjTooltipContent>();
+
+  /** @internal resolved content instance — avoids calling signal methods directly in host expressions */
+  protected get _content(): KjTooltipContent { return this.kjTooltipTrigger(); }
+
+  protected _show():       void { this._content?.show(); }
+  protected _startHide():  void { this._content?.startHide(); }
+  protected _forceHide():  void { this._content?.forceHide(); }
 }

@@ -18,7 +18,7 @@ export class PageTocComponent {
     if (!target) return;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // Update URL and active highlight immediately on click
-    history.pushState(null, '', `#${id}`);
+    history.pushState(null, '', `${location.pathname}#${id}`);
     this.toc().activeId.set(id);
   }
 }
