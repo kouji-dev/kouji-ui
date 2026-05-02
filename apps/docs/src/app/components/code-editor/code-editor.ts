@@ -110,15 +110,15 @@ export class CodeEditorComponent implements OnDestroy {
     const isMd = this.lang() === 'md';
     const baseTheme = EditorView.theme({
       '&': {
-        fontSize: '0.8rem',
-        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: isMd ? '0.875rem' : '0.8rem',
+        fontFamily: isMd ? "system-ui, -apple-system, sans-serif" : "'JetBrains Mono', monospace",
         borderRadius: '0',
         ...(isDark && !isMd ? { backgroundColor: '#080808' } : {}),
-        ...(isMd ? { backgroundColor: 'transparent' } : {}),
+        ...(isMd ? { backgroundColor: 'transparent', color: isDark ? '#a0a8b8' : '#374151' } : {}),
       },
       '.cm-content': { padding: isMd ? '0' : '1rem 1.25rem' },
       '.cm-focused': { outline: 'none' },
-      ...(isMd ? { '.cm-line': { lineHeight: '1.7' } } : {}),
+      ...(isMd ? { '.cm-line': { lineHeight: '1.8' } } : {}),
     });
 
     const langExtension = await this.getLangExtension();
@@ -171,23 +171,22 @@ export class CodeEditorComponent implements OnDestroy {
 
       // Hide markdown syntax markers
       const markerStyle = HighlightStyle.define([
-        { tag: t.processingInstruction, fontSize: '0', letterSpacing: '-0.6em', opacity: '0' },
-        { tag: t.contentSeparator,      fontSize: '0', letterSpacing: '-0.6em', opacity: '0' },
+        { tag: t.processingInstruction, fontSize: '1px', color: 'transparent' },
+        { tag: t.contentSeparator,      fontSize: '1px', color: 'transparent' },
       ]);
 
-      // Style fenced code blocks the same as standalone code editor
-      const isDark = this.themeService.theme() === 'dark';
+      // Style fenced code blocks — same background as standalone code editor
       const codeBlockTheme = EV.theme({
         '.cm-line.cm-codeText, .cm-codeBlock': {
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: '0.8rem',
-          background: isDark ? '#080808' : 'var(--bg-elevated)',
+          fontSize: '0.78rem',
+          background: isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.04)',
           display: 'block',
           padding: '0 1rem',
+          borderLeft: `2px solid ${isDark ? '#333' : '#e5e7eb'}`,
         },
-        // First and last line of a code block get top/bottom padding
-        '.cm-line.cm-codeText:first-of-type': { paddingTop: '0.75rem' },
-        '.cm-line.cm-codeText:last-of-type':  { paddingBottom: '0.75rem' },
+        '.cm-line.cm-codeText:first-of-type': { paddingTop: '0.6rem' },
+        '.cm-line.cm-codeText:last-of-type':  { paddingBottom: '0.6rem' },
       });
 
       return [
