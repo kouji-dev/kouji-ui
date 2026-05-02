@@ -370,7 +370,11 @@ function parseDocFileEntriesClean(
     const header = part.match(/^\s*@doc-file\s+(\S+)/);
     if (!header) continue;
     const filename = header[1].trim();
-    const body = part.slice(header.index! + header[0].length);
+    const rawBody = part.slice(header.index! + header[0].length);
+    // Truncate at the next @ tag boundary so we don't accidentally pick up a fenced
+    // code block that belongs to @example, @doc-example, etc.
+    const atBoundary = rawBody.search(/\n\s*@(?!doc-file)/);
+    const body = atBoundary !== -1 ? rawBody.slice(0, atBoundary) : rawBody;
 
     const fenceMatch = body.match(/```(\w*)\s*\n([\s\S]*?)```/);
     if (fenceMatch) {

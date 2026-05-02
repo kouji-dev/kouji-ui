@@ -1,9 +1,9 @@
-export { KjAriaDescribedByDirective } from './aria-describedby.directive';
-export { KjFocusTrapDirective } from './focus-trap.directive';
-export { KjLiveRegionDirective, type KjLivePoliteness } from './live-region.directive';
+﻿export { KjAriaDescribedBy } from './aria-describedby';
+export { KjFocusTrap } from './focus-trap';
+export { KjLiveRegion, type KjLivePoliteness } from './live-region';
 export {
-  KjRovingTabindexDirective,
+  KjRovingTabindex,
   KjRovingTabindexItemDirective,
   KJ_ROVING_TABINDEX,
-} from './roving-tabindex.directive';
-export { KjVisuallyHiddenDirective } from './visually-hidden.directive';
+} from './roving-tabindex';
+export { KjVisuallyHidden } from './visually-hidden';

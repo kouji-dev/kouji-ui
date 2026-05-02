@@ -1,17 +1,17 @@
-import { Component, signal } from '@angular/core';
+﻿import { Component, signal } from '@angular/core';
 import {
-  KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-  KjDialogTitleDirective,
-} from './dialog.directive';
-import { KjButtonDirective } from '../button/button.directive';
+  KjDialogTrigger, KjDialog, KjDialogOverlay,
+  KjDialogTitle,
+} from './dialog';
+import { KjButton } from '../button/button';
 
 @Component({
   selector: 'kj-example-dialog-confirm',
   standalone: true,
   imports: [
-    KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-    KjDialogTitleDirective,
-    KjButtonDirective,
+    KjDialogTrigger, KjDialog, KjDialogOverlay,
+    KjDialogTitle,
+    KjButton,
   ],
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 3rem 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; min-height: 160px; flex-direction: column; }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
@@ -17,11 +17,11 @@ export class GettingStartedComponent {
   readonly installUi = `pnpm add @kouji-ui/ui`;
 
   readonly quickStartTs = `import { Component } from '@angular/core';
-import { KjButtonDirective } from '@kouji-ui/core';
+import { KjButton } from '@kouji-ui/core';
 
 @Component({
   standalone: true,
-  imports: [KjButtonDirective],
+  imports: [KjButton],
   template: \`
     <button kjButton [kjVariant]="'destructive'" [kjDisabled]="isLoading()">
       Delete
@@ -50,15 +50,15 @@ export class MyComponent {}`;
 
   readonly tailwindUsage = `import { KjButton } from '@kouji-ui/ui';
 
-// KjButton is a pre-styled Angular component wrapping KjButtonDirective`;
+// KjButton is a pre-styled Angular component wrapping KjButton`;
 
   readonly formsTs = `import { Component } from '@angular/core';
-import { KjInputDirective } from '@kouji-ui/core';
+import { KjInput } from '@kouji-ui/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 @Component({
   standalone: true,
-  imports: [KjInputDirective, ReactiveFormsModule],
+  imports: [KjInput, ReactiveFormsModule],
   template: \`
     <input kjInput [formControl]="email" type="email" />
     @if (email.invalid && email.touched) {
@@ -71,9 +71,9 @@ export class MyForm {
 }`;
 
   readonly a11yImports = `import {
-  KjFocusTrapDirective,
-  KjLiveRegionDirective,
-  KjRovingTabindexDirective,
-  KjVisuallyHiddenDirective,
+  KjFocusTrap,
+  KjLiveRegion,
+  KjRovingTabindex,
+  KjVisuallyHidden,
 } from '@kouji-ui/core';`;
 }

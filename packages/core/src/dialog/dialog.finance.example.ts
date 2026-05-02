@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import {
-  KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-  KjDialogTitleDirective, KjDialogCloseDirective,
-} from './dialog.directive';
+  KjDialogTrigger, KjDialog, KjDialogOverlay,
+  KjDialogTitle, KjDialogClose,
+} from './dialog';
 
 @Component({
   selector: 'kj-example-dialog-finance',
   standalone: true,
   imports: [
-    KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-    KjDialogTitleDirective, KjDialogCloseDirective,
+    KjDialogTrigger, KjDialog, KjDialogOverlay,
+    KjDialogTitle, KjDialogClose,
   ],
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; min-height: 160px; }

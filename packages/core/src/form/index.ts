@@ -1,2 +1,2 @@
-export { KjFormFieldDirective, KjFormLabelDirective, KjFormErrorDirective } from './form.directive';
+﻿export { KjFormField, KjFormLabel, KjFormError } from './form';
 export { KJ_FORM_FIELD, type KjFormFieldContext } from './form.context';

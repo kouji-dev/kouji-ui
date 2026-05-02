@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { KjButtonDirective } from './button.directive';
+﻿import { Component } from '@angular/core';
+import { KjButton } from './button';
 
 @Component({
   selector: 'kj-example-button-finance',
   standalone: true,
-  imports: [KjButtonDirective],
+  imports: [KjButton],
   styles: [`
     :host { display: block; padding: 1.75rem 2rem; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif; }
     .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }

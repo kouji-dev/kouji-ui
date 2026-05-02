@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { KjButtonDirective } from './button.directive';
+﻿import { Component } from '@angular/core';
+import { KjButton } from './button';
 
 @Component({
   selector: 'kj-example-button-sizes',
   standalone: true,
-  imports: [KjButtonDirective],
+  imports: [KjButton],
   styles: [`
     :host { display: block; padding: 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; }
     .col { display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start; }

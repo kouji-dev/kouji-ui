@@ -1,0 +1,61 @@
+﻿import { Component, inject } from '@angular/core';
+import { KjToastViewport, KjToast, KjToastClose } from './toast';
+import { KjToastService } from './toast.service';
+
+@Component({
+  selector: 'kj-example-toast-retro',
+  standalone: true,
+  imports: [KjToastViewport, KjToast, KjToastClose],
+  styles: [`
+    :host { display: block; padding: 2rem; background: #fef9c3; font-family: 'Courier New', monospace; min-height: 260px; position: relative; color: #000; }
+    .row { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+    button {
+      padding: 0.35rem 0.875rem; font-family: 'Courier New', monospace; font-size: 0.75rem;
+      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      border: 2px solid #000; border-radius: 0; cursor: pointer;
+      box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s;
+    }
+    button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
+    .btn-ok   { background: #16a34a; color: #fff; }
+    .btn-err  { background: #dc2626; color: #fff; }
+    .btn-warn { background: #d97706; color: #fff; }
+    .btn-info { background: #1d4ed8; color: #fff; border-color: #1d4ed8; box-shadow: 3px 3px 0 #1d4ed8; }
+    .btn-info:hover { box-shadow: 4px 4px 0 #1d4ed8; }
+    [kjToastViewport] {
+      position: absolute; bottom: 1rem; right: 1rem;
+      display: flex; flex-direction: column; gap: 0.5rem; width: 18rem;
+    }
+    [kjToast] {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.625rem 0.875rem; font-family: 'Courier New', monospace; font-size: 0.75rem;
+      border: 2px solid #000; background: #fef9c3; color: #000; box-shadow: 4px 4px 0 #000;
+      animation: slideIn 0.15s ease;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(1rem); } to { opacity: 1; transform: translateX(0); } }
+    [data-variant="success"]     { border-color: #16a34a; }
+    [data-variant="destructive"] { border-color: #dc2626; }
+    [data-variant="warning"]     { border-color: #d97706; }
+    [data-variant="default"]     { border-color: #1d4ed8; }
+    .close { background: none; border: none; box-shadow: none; cursor: pointer; font-size: 1rem; padding: 0 0 0 0.5rem; transition: none; font-family: inherit; }
+    .close:hover { transform: none; }
+  `],
+  template: `
+    <div class="row">
+      <button class="btn-ok"   (click)="toast.success('File saved!')">OK</button>
+      <button class="btn-err"  (click)="toast.error('Access denied!')">ERR</button>
+      <button class="btn-warn" (click)="toast.warning('Low disk space.')">WARN</button>
+      <button class="btn-info" (click)="toast.info('Update available.')">INFO</button>
+    </div>
+    <div kjToastViewport #vp="kjToastViewport">
+      @for (t of vp.toasts(); track t.id) {
+        <div kjToast [kjToastVariant]="t.variant">
+          <span>{{ t.message }}</span>
+          <button class="close" [kjToastClose]="t.id" [attr.aria-label]="'Dismiss'">×</button>
+        </div>
+      }
+    </div>
+  `,
+})
+export class ToastRetroExample {
+  readonly toast = inject(KjToastService);
+}

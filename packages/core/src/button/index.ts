@@ -1,1 +1,1 @@
-export { KjButtonDirective, type KjButtonVariant, type KjButtonSize } from './button.directive';
+﻿export { KjButton, type KjButtonVariant, type KjButtonSize } from './button';

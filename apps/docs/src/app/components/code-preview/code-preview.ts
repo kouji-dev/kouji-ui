@@ -1,5 +1,4 @@
 import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild } from '@angular/core';
-import { NgComponentOutlet } from '@angular/common';
 import { CodeEditorComponent } from '../code-editor/code-editor';
 import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
@@ -15,7 +14,7 @@ export interface CodeExample {
 @Component({
   selector: 'kj-code-preview',
   standalone: true,
-  imports: [CodeEditorComponent, NgComponentOutlet],
+  imports: [CodeEditorComponent],
   templateUrl: './code-preview.html',
   styleUrl: './code-preview.css',
 })

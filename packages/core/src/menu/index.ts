@@ -1,1 +1,1 @@
-export { KjMenuDirective, KjMenuTriggerDirective, KjMenuItemDirective } from './menu.directive';
+﻿export { KjMenu, KjMenuTrigger, KjMenuItem } from './menu';

@@ -1,1 +1,2 @@
-export { KjToastDirective, type KjToastVariant } from './toast.directive';
+﻿export { KjToast, KjToastViewport, KjToastClose, type KjToastVariant } from './toast';
+export { KjToastService, type KjToastConfig, type KjToast } from './toast.service';

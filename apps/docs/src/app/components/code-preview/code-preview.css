@@ -2,7 +2,8 @@
 
 .preview-wrap {
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow: visible;
+  /* overflow: hidden would clip absolutely-positioned overlay content (tooltips, popovers) */
 }
 
 .preview-toolbar {
@@ -87,7 +88,8 @@
 .preview-frame {
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  /* Height matches content — no fixed min-height */
+  position: relative;
+  overflow: visible;
 }
 
 .strip-spacer { flex: 1; }
@@ -112,9 +114,11 @@
 .preview-theme-strip {
   display: flex;
   gap: 0.35rem;
-  padding: 0.625rem 1rem;
+  padding: 0.5rem 1rem;
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border);
+  min-height: 2.25rem;
+  align-items: center;
 }
 
 .theme-pill {

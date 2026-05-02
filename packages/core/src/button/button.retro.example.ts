@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { KjButtonDirective } from './button.directive';
+﻿import { Component } from '@angular/core';
+import { KjButton } from './button';
 
 @Component({
   selector: 'kj-example-button-retro',
   standalone: true,
-  imports: [KjButtonDirective],
+  imports: [KjButton],
   styles: [`
     :host { display: block; padding: 2rem; background: #fef9c3; font-family: 'Courier New', monospace; }
     .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }

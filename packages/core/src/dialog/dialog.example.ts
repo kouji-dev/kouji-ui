@@ -1,17 +1,17 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import {
-  KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-  KjDialogTitleDirective, KjDialogCloseDirective,
-} from './dialog.directive';
-import { KjButtonDirective } from '../button/button.directive';
+  KjDialogTrigger, KjDialog, KjDialogOverlay,
+  KjDialogTitle, KjDialogClose,
+} from './dialog';
+import { KjButton } from '../button/button';
 
 @Component({
   selector: 'kj-example-dialog-basic',
   standalone: true,
   imports: [
-    KjDialogTriggerDirective, KjDialogDirective, KjDialogOverlayDirective,
-    KjDialogTitleDirective, KjDialogCloseDirective,
-    KjButtonDirective,
+    KjDialogTrigger, KjDialog, KjDialogOverlay,
+    KjDialogTitle, KjDialogClose,
+    KjButton,
   ],
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; min-height: 160px; }

@@ -1,1 +1,1 @@
-export { KjToggleDirective } from './toggle.directive';
+﻿export { KjToggle } from './toggle';

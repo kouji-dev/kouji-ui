@@ -1,1 +1,1 @@
-export { KjBadgeDirective, type KjBadgeVariant } from './badge.directive';
+﻿export { KjBadge, type KjBadgeVariant } from './badge';

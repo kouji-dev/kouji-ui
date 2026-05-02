@@ -1,1 +1,1 @@
-export { KjAvatarDirective, KjAvatarImageDirective, KjAvatarFallbackDirective, KJ_AVATAR } from './avatar.directive';
+﻿export { KjAvatar, KjAvatarImage, KjAvatarFallback, KJ_AVATAR } from './avatar';

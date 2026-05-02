@@ -1,1 +1,1 @@
-export { KjFormControlDirective } from './form-control.directive';
+﻿export { KjFormControl } from './form-control';

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+﻿import { Injectable, inject, signal } from '@angular/core';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
 
@@ -11,7 +11,7 @@ import { TemplatePortal } from '@angular/cdk/portal';
  *
  * @example
  * ```ts
- * export class KjDialogDirective {
+ * export class KjDialog {
  *   private readonly overlaySvc = inject(KjOverlayService);
  *   private overlayRef?: KjOverlayRef;
  *

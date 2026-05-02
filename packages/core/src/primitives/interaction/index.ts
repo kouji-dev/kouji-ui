@@ -1,2 +1,2 @@
-export { KjDisabledDirective } from './disabled.directive';
-export { KjFocusRingDirective } from './focus-ring.directive';
+﻿export { KjDisabled } from './disabled';
+export { KjFocusRing } from './focus-ring';

@@ -1,1 +1,7 @@
-export { KjTooltipDirective, KjTooltipTriggerDirective, KjTooltipContentDirective, KJ_TOOLTIP } from './tooltip.directive';
+﻿export {
+  KjTooltip,
+  KjTooltipTrigger,
+  KjTooltipContent,
+  KJ_TOOLTIP,
+  type KjTooltipSide,
+} from './tooltip';

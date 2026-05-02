@@ -5,21 +5,42 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { extractDocsManifest } from './lib/docs-extractor';
+import type { DocsManifest } from './app/services/docs.service';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+/** Reads the pre-built manifest JSON; falls back to live ts-morph extraction. */
+function loadManifest(): DocsManifest {
+  const candidates = [
+    // Production dist path
+    resolve(import.meta.dirname, '../browser/assets/docs-manifest.json'),
+    // Dev server path (ng serve runs from monorepo root)
+    resolve(process.cwd(), 'apps/docs/src/assets/docs-manifest.json'),
+    // Dev server path (ng serve runs from apps/docs)
+    resolve(process.cwd(), 'src/assets/docs-manifest.json'),
+  ];
+  for (const p of candidates) {
+    try {
+      return JSON.parse(readFileSync(p, 'utf-8')) as DocsManifest;
+    } catch {
+      // try next
+    }
+  }
+  // Last resort: live extraction (dev only — requires monorepo context)
+  return extractDocsManifest();
+}
+
 /**
- * Docs API — serves extracted manifest data with in-memory caching.
- * Extraction runs on first request; subsequent requests use the cache.
+ * Docs API — serves manifest data. Reads pre-built JSON first; live extraction as fallback.
  */
 app.get('/api/docs/manifest', (_req, res) => {
   try {
-    const manifest = extractDocsManifest();
-    res.json(manifest);
+    res.json(loadManifest());
   } catch (e) {
     res.status(500).json({ error: 'Extraction failed', detail: String(e) });
   }
@@ -27,7 +48,7 @@ app.get('/api/docs/manifest', (_req, res) => {
 
 app.get('/api/docs/components/:slug', (req, res) => {
   try {
-    const manifest = extractDocsManifest();
+    const manifest = loadManifest();
     const component = manifest.components.find(c => c.slug === req.params['slug']);
     if (!component) {
       res.status(404).json({ error: `Component '${req.params['slug']}' not found` });

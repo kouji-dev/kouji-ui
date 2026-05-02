@@ -1,2 +1,2 @@
-export { KjSelectDirective, KjSelectTriggerDirective, KjSelectContentDirective, KjOptionDirective } from './select.directive';
+﻿export { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from './select';
 export { KJ_SELECT, type KjSelectContext } from './select.context';

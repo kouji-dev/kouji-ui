@@ -1,1 +1,1 @@
-export { KjInputDirective } from './input.directive';
+﻿export { KjInput } from './input';

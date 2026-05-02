@@ -1,1 +1,1 @@
-export { KjCheckboxDirective } from './checkbox.directive';
+﻿export { KjCheckbox } from './checkbox';

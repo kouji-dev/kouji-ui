@@ -15,18 +15,20 @@
     </div>
   }
 
-  @if (hasDemo() && hasMultipleThemes()) {
+  @if (hasDemo()) {
     <div class="preview-theme-strip">
-      @for (t of previewThemes; track t.value) {
-        <button
-          class="theme-pill"
-          [class.active]="activeTheme() === t.value"
-          (click)="activeTheme.set(t.value); activeIndex.set(0)"
-          type="button"
-          [title]="t.description"
-        >
-          {{ t.label }}
-        </button>
+      @if (hasMultipleThemes()) {
+        @for (t of previewThemes; track t.value) {
+          <button
+            class="theme-pill"
+            [class.active]="activeTheme() === t.value"
+            (click)="activeTheme.set(t.value); activeIndex.set(0)"
+            type="button"
+            [title]="t.description"
+          >
+            {{ t.label }}
+          </button>
+        }
       }
       <div class="strip-spacer"></div>
       @if (activeFiles().length) {

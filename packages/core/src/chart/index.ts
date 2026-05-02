@@ -1,1 +1,1 @@
-export { KjChartDirective } from './chart.directive';
+﻿export { KjChart } from './chart';
