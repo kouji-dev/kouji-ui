@@ -1,5 +1,6 @@
+import { inject } from '@angular/core';
 import { RenderMode, PrerenderFallback, ServerRoute } from '@angular/ssr';
-import { getManifest } from '../lib/manifest';
+import { DocsApiService } from './services/docs-api.service';
 
 export const serverRoutes: ServerRoute[] = [
   {
@@ -7,7 +8,8 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender,
     fallback: PrerenderFallback.Client,
     async getPrerenderParams() {
-      return getManifest().components.map(c => ({ slug: c.slug }));
+      const api = inject(DocsApiService);
+      return api.getSlugs().map(slug => ({ slug }));
     },
   },
   {
