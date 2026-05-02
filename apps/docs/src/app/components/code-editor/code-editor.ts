@@ -154,23 +154,11 @@ export class CodeEditorComponent implements OnDestroy {
         { tag: t.link,           color: 'var(--accent)', textDecoration: 'underline' },
         { tag: t.url,            color: 'var(--accent)' },
         { tag: t.strikethrough,  textDecoration: 'line-through', color: 'var(--text-muted)' },
-        { tag: t.processingInstruction, color: 'var(--text-muted)', fontSize: '0.85em' },
-        { tag: t.contentSeparator, color: 'var(--border)' },
+        // Hide all markdown syntax markers (**, *, #, `, etc.)
+        { tag: t.processingInstruction, fontSize: '0', letterSpacing: '-0.6em', opacity: '0' },
+        { tag: t.contentSeparator,      fontSize: '0', letterSpacing: '-0.6em', opacity: '0' },
       ]);
-      const { EditorView: EV } = await import('@codemirror/view');
-      const hideMarkers = EV.theme({
-        // Hide markdown syntax markers — ** * _ __ ` # - for clean read-only display
-        '.cm-formatting': { opacity: '0', fontSize: '0', letterSpacing: '-0.5em', userSelect: 'none' },
-        '.cm-formatting-strong':      { display: 'none' },
-        '.cm-formatting-em':          { display: 'none' },
-        '.cm-formatting-code':        { display: 'none' },
-        '.cm-formatting-code-block':  { display: 'none' },
-        '.cm-formatting-heading':     { display: 'none' },
-        '.cm-formatting-list':        { display: 'none' },
-        '.cm-formatting-link':        { display: 'none' },
-        '.cm-formatting-link-string': { display: 'none' },
-      });
-      return [markdown(), syntaxHighlighting(mdStyle), hideMarkers];
+      return [markdown(), syntaxHighlighting(mdStyle)];
     }
     const { javascript } = await import('@codemirror/lang-javascript');
     return javascript({ typescript: true });
