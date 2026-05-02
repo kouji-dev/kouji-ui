@@ -8,7 +8,7 @@
  * ```html
  * <button kjButton [kjDisabled]="isLoading()">Submit</button>
  * ```
- * @category Core/Primitives/Disabled
+ * @category Core/Primitives
  */
 @Directive({
   selector: '[kjDisabled]',

@@ -1,4 +1,4 @@
-import {
+﻿import {
   ApplicationRef, ComponentRef, EmbeddedViewRef,
   Injectable, InjectionToken, Injector,
   TemplateRef, Type, ViewContainerRef,
@@ -99,7 +99,7 @@ export class KjDialogRef<R = unknown> {
  * confirm() { this.ref.close(true); }
  * cancel() { this.ref.close(false); }
  * ```
- * @category Core/Overlays/Dialog
+ * @category Core/Overlays
  */
 @Injectable({ providedIn: 'root' })
 export class KjDialogService {

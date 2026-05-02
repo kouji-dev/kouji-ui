@@ -11,7 +11,7 @@
  *   <span kjVisuallyHidden>Close dialog</span>
  * </button>
  * ```
- * @category Core/Accessibility/VisuallyHidden
+ * @category Core/Accessibility
  */
 @Directive({
   selector: '[kjVisuallyHidden]',

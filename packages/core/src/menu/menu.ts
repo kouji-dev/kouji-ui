@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, signal } from '@angular/core';
+﻿import { Directive, ElementRef, inject, signal } from '@angular/core';
 import { KJ_MENU, KjMenuContext } from './menu.context';
 
 /**
@@ -22,7 +22,7 @@ import { KJ_MENU, KjMenuContext } from './menu.context';
  *  @doc-example Basic
  *    @doc-theme default
  *      @doc-file menu.example.ts
- * @category Core/Navigation/Menu
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjMenu]',
@@ -42,7 +42,7 @@ export class KjMenu implements KjMenuContext {
  * Trigger element that toggles the parent menu.
  * Automatically sets `aria-haspopup` and `aria-expanded` on the host element.
  *
- * @category Core/Navigation/Menu
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjMenuTrigger]',
@@ -63,7 +63,7 @@ export class KjMenuTrigger {
  * Provides keyboard navigation: Arrow keys, Home/End, Escape, and typeahead.
  * Click-outside dismissal is handled via a document-level click listener.
  *
- * @category Core/Navigation/Menu
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjMenuContent]',
@@ -137,7 +137,7 @@ export class KjMenuContent {
  * ```html
  * <button kjMenuItem>Delete</button>
  * ```
- * @category Core/Navigation/Menu
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjMenuItem]',
@@ -162,7 +162,7 @@ export class KjMenuItem {
  * ```html
  * <button kjMenuClose>Cancel</button>
  * ```
- * @category Core/Navigation/Menu
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjMenuClose]',

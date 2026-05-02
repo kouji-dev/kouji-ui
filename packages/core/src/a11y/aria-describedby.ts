@@ -10,7 +10,7 @@
  * <input kjAriaDescribedBy [kjDescribedBy]="['hint-id', errorId()]" />
  * <span id="hint-id">Format: DD/MM/YYYY</span>
  * ```
- * @category Core/Accessibility/AriaDescribedBy
+ * @category Core/Accessibility
  */
 @Directive({
   selector: '[kjAriaDescribedBy]',

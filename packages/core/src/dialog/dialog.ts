@@ -1,4 +1,4 @@
-import {
+﻿import {
   ApplicationRef, Directive, DestroyRef, EmbeddedViewRef,
   HostListener, Injector, TemplateRef,
   computed, inject, input, output, signal,
@@ -41,7 +41,7 @@ let _dialogIdCounter = 0;
  *      @doc-file dialog.finance.example.ts
  *  @doc-example Confirmation
  *    @doc-file dialog.confirm.example.ts
- * @category Core/Overlays/Dialog
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjDialogTrigger]',
@@ -122,7 +122,7 @@ export class KjDialogTrigger implements KjDialogContext {
  * Auto-sets `role="dialog"`, `aria-modal`, and `aria-labelledby` (requires `[kjDialogTitle]` inside).
  * Export as `#dlg="kjDialog"` to call `dlg.close(result?)` from event handlers.
  *
- * @category Core/Overlays/Dialog
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjDialog]',
@@ -147,7 +147,7 @@ export class KjDialog {
  * Backdrop/overlay element. Place inside the template wrapping `[kjDialog]`.
  * Closes the dialog on click when `[kjDialogOverlayCloseOnClick]` is true (default).
  *
- * @category Core/Overlays/Dialog
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjDialogOverlay]',
@@ -170,7 +170,7 @@ export class KjDialogOverlay {
 /**
  * Marks the dialog title. Sets `id` for `aria-labelledby` wiring on `[kjDialog]`.
  *
- * @category Core/Overlays/Dialog
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjDialogTitle]',
@@ -187,7 +187,7 @@ export class KjDialogTitle {
  * Closes the dialog on click without a result value.
  * For closing with a result, use `#dlg="kjDialog"` then `(click)="dlg.close(value)"`.
  *
- * @category Core/Overlays/Dialog
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjDialogClose]',

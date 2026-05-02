@@ -1,4 +1,4 @@
-import {
+﻿import {
   afterNextRender,
   computed,
   Directive,
@@ -24,7 +24,7 @@ import { KJ_SELECT } from './select.context';
  *   </div>
  * </div>
  * ```
- * @category Core/Inputs/Select
+ * @category Core/Inputs
  */
 @Directive({
   selector: '[kjSelect]',
@@ -71,7 +71,7 @@ export class KjSelect {
  * ```html
  * <button kjSelectTrigger aria-haspopup="listbox">Choose fruit</button>
  * ```
- * @category Core/Inputs/Select
+ * @category Core/Inputs
  */
 @Directive({
   selector: '[kjSelectTrigger]',
@@ -97,7 +97,7 @@ export class KjSelectTrigger {
  *   <div kjOption [kjOptionValue]="'apple'">Apple</div>
  * </div>
  * ```
- * @category Core/Inputs/Select
+ * @category Core/Inputs
  */
 @Directive({
   selector: '[kjSelectContent]',
@@ -202,7 +202,7 @@ export class KjSelectContent {
  * ```html
  * <div kjOption [kjOptionValue]="'apple'">Apple</div>
  * ```
- * @category Core/Inputs/Select
+ * @category Core/Inputs
  */
 @Directive({
   selector: '[kjOption]',

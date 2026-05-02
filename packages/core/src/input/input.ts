@@ -45,7 +45,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *         emailCtrl = new FormControl('', [Validators.email, Validators.required]);
  *       }
  *    ```
- * @category Core/Inputs/Input
+ * @category Core/Inputs
  */
 @Directive({
   selector: '[kjInput]',

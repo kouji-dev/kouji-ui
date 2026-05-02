@@ -23,7 +23,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
  *   readonly formCtrl = inject(KjFormControl);
  * }
  * ```
- * @category Core/Primitives/FormControl
+ * @category Core/Primitives
  */
 @Directive({
   selector: '[kjFormControl]',

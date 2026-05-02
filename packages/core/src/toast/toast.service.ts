@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+﻿import { Injectable, signal } from '@angular/core';
 
 export type KjToastVariant = 'default' | 'success' | 'destructive' | 'warning';
 
@@ -35,7 +35,7 @@ export interface KjToastItem extends Required<Pick<KjToastConfig, 'id' | 'messag
  *   this.toast.success('Changes saved!');
  * }
  * ```
- * @category Core/Overlays/Toast
+ * @category Core/Overlays
  */
 @Injectable({ providedIn: 'root' })
 export class KjToastService {

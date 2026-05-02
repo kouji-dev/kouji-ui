@@ -1,4 +1,4 @@
-import { Directive, computed, inject, input, signal } from '@angular/core';
+﻿import { Directive, computed, inject, input, signal } from '@angular/core';
 import { KJ_ACCORDION, KJ_ACCORDION_ITEM } from './accordion.context';
 
 /**
@@ -11,7 +11,7 @@ import { KJ_ACCORDION, KJ_ACCORDION_ITEM } from './accordion.context';
  *   <div kjAccordionItem [kjItemValue]="'item-1'">...</div>
  * </div>
  * ```
- * @category Core/Navigation/Accordion
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjAccordion]',
@@ -56,7 +56,7 @@ export class KjAccordion {
  *   <div kjAccordionContent>Content</div>
  * </div>
  * ```
- * @category Core/Navigation/Accordion
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjAccordionItem]',
@@ -90,7 +90,7 @@ export class KjAccordionItem {
  * ```html
  * <button kjAccordionTrigger>Section title</button>
  * ```
- * @category Core/Navigation/Accordion
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjAccordionTrigger]',
@@ -114,7 +114,7 @@ export class KjAccordionTrigger {
  * ```html
  * <div kjAccordionContent>Panel content</div>
  * ```
- * @category Core/Navigation/Accordion
+ * @category Core/Navigation
  */
 @Directive({
   selector: '[kjAccordionContent]',

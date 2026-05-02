@@ -35,7 +35,7 @@ let _tooltipIdCounter = 0;
  *      @doc-file tooltip.finance.example.ts
  *  @doc-example Placements
  *    @doc-file tooltip.placements.example.ts
- * @category Core/Overlays/Tooltip
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjTooltip]',
@@ -85,7 +85,7 @@ export class KjTooltip {
  * Trigger element for the tooltip. Shows on hover/focus, hides on leave/blur/Escape.
  * Automatically receives `aria-describedby` pointing to the tooltip panel.
  *
- * @category Core/Overlays/Tooltip
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjTooltipTrigger]',
@@ -115,7 +115,7 @@ export class KjTooltipTrigger {
  *   Tooltip text here
  * </span>
  * ```
- * @category Core/Overlays/Tooltip
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjTooltipContent]',

@@ -27,7 +27,7 @@ export type { KjToastVariant } from './toast.service';
  *   }
  * </div>
  * ```
- * @category Core/Overlays/Toast
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjToast]',
@@ -59,7 +59,7 @@ export class KjToast {
  *   }
  * </ol>
  * ```
- * @category Core/Overlays/Toast
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjToastViewport]',
@@ -85,7 +85,7 @@ export class KjToastViewport {
  * ```html
  * <button [kjToastClose]="toast.id" aria-label="Dismiss">×</button>
  * ```
- * @category Core/Overlays/Toast
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjToastClose]',

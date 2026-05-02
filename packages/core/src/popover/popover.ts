@@ -28,7 +28,7 @@ let _popoverIdCounter = 0;
  *      @doc-file popover.retro.example.ts
  *    @doc-theme finance
  *      @doc-file popover.finance.example.ts
- * @category Core/Overlays/Popover
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjPopover]',
@@ -58,7 +58,7 @@ export class KjPopover implements KjPopoverContext {
  * Trigger button that toggles the popover. Automatically sets `aria-expanded`
  * and `aria-controls` on the host element.
  *
- * @category Core/Overlays/Popover
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjPopoverTrigger]',
@@ -81,7 +81,7 @@ export class KjPopoverTrigger {
  *
  * Clicks inside the panel are stopped so they don't bubble to the document listener.
  *
- * @category Core/Overlays/Popover
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjPopoverContent]',
@@ -110,7 +110,7 @@ export class KjPopoverContent {
  * ```html
  * <button kjPopoverClose>Done</button>
  * ```
- * @category Core/Overlays/Popover
+ * @category Core/Overlays
  */
 @Directive({
   selector: '[kjPopoverClose]',
