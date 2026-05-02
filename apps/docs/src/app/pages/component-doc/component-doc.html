@@ -48,68 +48,97 @@
         }
       </header>
 
-      @for (directive of comp.directives; track directive.className) {
-        <section
-          class="directive-section"
-          [id]="directive.className"
-          [attr.data-toc-entry]="directive.selector"
-          data-toc-level="2"
-        >
-          <div class="directive-header">
-            <code class="directive-selector">{{ directive.selector }}</code>
-            <span class="directive-class">{{ directive.className }}</span>
-          </div>
+      <!-- Definitions section -->
+      <section class="definitions-section"
+               id="definitions"
+               data-toc-entry="Definitions"
+               data-toc-level="2">
+        <h2 class="section-title">Definitions</h2>
 
-          @if (directive.description) {
-            <p class="directive-desc">{{ directive.description }}</p>
-          }
-
-          @if (directive.inputs.length) {
-            <div class="inputs-block">
-              <h3 class="block-title">Inputs</h3>
-              <docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
-              <p class="required-note">* required</p>
+        @for (directive of comp.directives; track directive.className) {
+          <section
+            class="directive-section"
+            [id]="directive.className"
+            [attr.data-toc-entry]="directive.className"
+            data-toc-level="3"
+          >
+            <div class="directive-header">
+              <code class="directive-selector">{{ directive.selector }}</code>
+              <span class="directive-class">{{ directive.className }}</span>
             </div>
-          }
 
-          @if (directive.docExamples.length) {
-            <div class="examples-block">
-              <h3 class="block-title">Examples</h3>
-              @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
-                <div
-                  class="example-section"
-                  [id]="directive.className + '-ex-' + i"
-                  [attr.data-toc-entry]="'○ ' + docEx.label"
-                  data-toc-level="3"
-                >
-                  <div class="example-label">{{ docEx.label }}</div>
-                  <kj-code-preview
-                    [docExamples]="[docEx]"
-                    [componentName]="comp.name"
-                  />
-                </div>
-              }
-            </div>
-          } @else if (directive.examples.length || directive.exampleFiles.length) {
-            <div class="examples-block">
-              <h3 class="block-title">Example</h3>
-              @if (directive.exampleFiles.length) {
-                <kj-code-preview
-                  [examples]="directive.exampleFiles"
-                  [themedExamples]="directive.themedExamples"
-                  [componentName]="comp.name"
-                />
-              } @else if (directive.examples.length) {
+            @if (directive.description) {
+              <p class="directive-desc">{{ directive.description }}</p>
+            }
+
+            @if (directive.inputs.length) {
+              <div class="inputs-block">
+                <h3 class="block-title">Inputs</h3>
+                <docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
+                <p class="required-note">* required</p>
+              </div>
+            }
+
+            @if (directive.examples.length) {
+              <div class="inline-examples-block">
+                <h3 class="block-title">Usage</h3>
                 @for (ex of directive.examples; track $index) {
                   <kj-code-editor
                     [code]="ex"
                     [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
                   />
                 }
-              }
-            </div>
+              </div>
+            }
+          </section>
+        }
+      </section>
+
+      <!-- Examples section — only when docExamples exist -->
+      @if (hasDocExamples()) {
+        <section class="examples-section"
+                 id="examples"
+                 data-toc-entry="Examples"
+                 data-toc-level="2">
+          <h2 class="section-title">Examples</h2>
+
+          @for (directive of comp.directives; track directive.className) {
+            @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
+              <div
+                class="example-section"
+                [id]="directive.className + '-ex-' + i"
+                [attr.data-toc-entry]="docEx.label"
+                data-toc-level="3"
+              >
+                <div class="example-label">{{ docEx.label }}</div>
+                <kj-code-preview
+                  [docExamples]="[docEx]"
+                  [componentName]="comp.name"
+                />
+              </div>
+            }
           }
         </section>
+      }
+
+      @if (!hasDocExamples()) {
+        @for (directive of comp.directives; track directive.className) {
+          @if (directive.exampleFiles.length || directive.themedExamples['default']?.length) {
+            <section class="examples-section"
+                     id="examples"
+                     data-toc-entry="Examples"
+                     data-toc-level="2">
+              <h2 class="section-title">Examples</h2>
+              @if (directive.exampleFiles.length) {
+                <kj-code-preview
+                  [examples]="directive.exampleFiles"
+                  [themedExamples]="directive.themedExamples"
+                  [componentName]="comp.name"
+                />
+              }
+            </section>
+          }
+        }
       }
     } @else {
       <div class="not-found">

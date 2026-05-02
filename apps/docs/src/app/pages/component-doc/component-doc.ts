@@ -1,4 +1,4 @@
-import { ApplicationRef, Component, inject, viewChild } from '@angular/core';
+import { ApplicationRef, Component, computed, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, filter, take } from 'rxjs/operators';
@@ -40,6 +40,10 @@ export class ComponentDocComponent {
 
   protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
   private readonly pageToc = viewChild(PageTocDirective);
+
+  protected readonly hasDocExamples = computed(() =>
+    (this.component()?.directives ?? []).some(d => d.docExamples.length > 0)
+  );
 
   protected readonly inputColumns: DocsTableColumn[] = [
     { key: 'name',         header: 'Name'        },
