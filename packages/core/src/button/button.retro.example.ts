@@ -1,27 +1,32 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { KjButton } from './button';
 
 @Component({
   selector: 'kj-example-button-retro',
   standalone: true,
   imports: [KjButton],
+  styleUrls: ['../styles/docs-themes.css'],
   styles: [`
-    :host { display: block; padding: 2rem; background: #fef9c3; font-family: 'Courier New', monospace; }
-    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
-    button[kjButton] { padding: 0.5rem 1.125rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border: 2px solid #000; border-radius: 0; cursor: pointer; box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s; }
-    button[kjButton]:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
-    [data-variant="default"] { background: #16a34a; color: #fff; }
-    [data-variant="destructive"] { background: #dc2626; color: #fff; }
-    [data-variant="outline"] { background: #fff; color: #1d4ed8; border-color: #1d4ed8; box-shadow: 3px 3px 0 #1d4ed8; }
-    [data-variant="ghost"] { background: transparent; color: #000; box-shadow: none; }
-    [aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+    :host { display: block; padding: 2rem; background: var(--kj-bg); font-family: var(--kj-font); color: var(--kj-text); }
+    .row { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+    button[kjButton] {
+      padding: 0.35rem 0.875rem; font-family: var(--kj-font); font-size: 0.75rem;
+      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      border: var(--kj-btn-border); border-radius: var(--kj-radius-md); cursor: pointer;
+      box-shadow: var(--kj-shadow-sm); transition: var(--kj-transition);
+    }
+    button[kjButton]:hover { transform: translate(-1px, -1px); box-shadow: var(--kj-shadow-md); }
+    [data-variant="default"] { background: var(--kj-text); color: var(--kj-bg); }
+    [data-variant="destructive"] { background: var(--kj-destructive); color: #fff; }
+    [data-variant="outline"] { background: var(--kj-bg); color: var(--kj-text); }
+    [aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
   `],
+  host: { class: 'kj-theme-retro' },
   template: `
     <div class="row">
-      <button kjButton [kjVariant]="'default'">Confirm</button>
-      <button kjButton [kjVariant]="'destructive'">Delete</button>
-      <button kjButton [kjVariant]="'outline'">Learn More</button>
-      <button kjButton [kjVariant]="'ghost'">Cancel</button>
+      <button kjButton [kjVariant]="'default'">Default</button>
+      <button kjButton [kjVariant]="'destructive'">Destructive</button>
+      <button kjButton [kjVariant]="'outline'">Outline</button>
       <button kjButton [kjDisabled]="true">Disabled</button>
     </div>
   `,
