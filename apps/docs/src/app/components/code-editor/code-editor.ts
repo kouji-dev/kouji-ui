@@ -145,83 +145,87 @@ export class CodeEditorComponent {
   }
 
   private defineThemes(monaco: any): void {
+    // Dark theme — uses our --bg: #0c0c0c, --text: #f0ede6, --accent: #b8f500
     monaco.editor.defineTheme('kj-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: '',               foreground: 'c9d1d9' },
-        { token: 'comment',        foreground: '6e7681', fontStyle: 'italic' },
-        { token: 'keyword',        foreground: 'ff7b72' },
-        { token: 'string',         foreground: 'a5d6ff' },
-        { token: 'number',         foreground: '79c0ff' },
-        { token: 'type',           foreground: 'ffa657' },
-        { token: 'delimiter',      foreground: '8b949e' },
-        { token: 'tag',            foreground: '7ee787' },
-        { token: 'attribute.name', foreground: '79c0ff' },
-        { token: 'attribute.value',foreground: 'a5d6ff' },
-        // Markdown — hide markers, style content
-        { token: 'keyword.md',           foreground: 'c9d1d9', fontStyle: 'bold' },
-        { token: 'strong.md',            foreground: 'ffffff', fontStyle: 'bold' },
-        { token: 'emphasis.md',          foreground: 'c9d1d9', fontStyle: 'italic' },
-        { token: 'string.md',            foreground: '8b949e' },
-        { token: 'comment.md',           foreground: '6e7681' },
-        { token: 'string.link.md',       foreground: '58a6ff' },
-        { token: 'keyword.control.md',   foreground: '8b949e' },
+        { token: '',                foreground: 'f0ede6' },          // --text
+        { token: 'comment',         foreground: '333333', fontStyle: 'italic' }, // --text-muted
+        { token: 'keyword',         foreground: 'b8f500' },          // --accent
+        { token: 'string',          foreground: '88c0a0' },          // soft green
+        { token: 'number',          foreground: '79b8ff' },          // soft blue
+        { token: 'type',            foreground: 'ffab70' },          // soft orange
+        { token: 'delimiter',       foreground: '666666' },          // --text-secondary
+        { token: 'tag',             foreground: 'b8f500' },          // --accent for HTML tags
+        { token: 'attribute.name',  foreground: '79b8ff' },
+        { token: 'attribute.value', foreground: '88c0a0' },
+        // Markdown tokens
+        { token: 'keyword.md',          foreground: 'f0ede6', fontStyle: 'bold' },
+        { token: 'strong.md',           foreground: 'f0ede6', fontStyle: 'bold' },
+        { token: 'emphasis.md',         foreground: 'f0ede6', fontStyle: 'italic' },
+        { token: 'string.md',           foreground: '666666' },
+        { token: 'comment.md',          foreground: '333333' },
+        { token: 'string.link.md',      foreground: 'b8f500' },
+        { token: 'keyword.control.md',  foreground: '333333' },
       ],
       colors: {
-        'editor.background':            '#0d1117',
-        'editor.foreground':            '#c9d1d9',
-        'editor.lineHighlightBackground': '#161b22',
-        'editorLineNumber.foreground':  '#484f58',
-        'editorLineNumber.activeForeground': '#c9d1d9',
-        'editor.selectionBackground':   '#264f78',
-        'editor.inactiveSelectionBackground': '#264f7840',
-        'editorCursor.foreground':      '#c9d1d9',
-        'editorWidget.background':      '#161b22',
-        'editorWidget.border':          '#30363d',
-        'editor.lineHighlightBorder':   '#00000000',
-        'scrollbarSlider.background':   '#484f5844',
-        'scrollbarSlider.hoverBackground': '#484f5866',
-        'editorGutter.background':      '#0d1117',
+        'editor.background':               '#080808', // --bg-surface
+        'editor.foreground':               '#f0ede6', // --text
+        'editor.lineHighlightBackground':  '#0e0e0e', // --bg-elevated
+        'editorLineNumber.foreground':     '#333333', // --text-muted
+        'editorLineNumber.activeForeground': '#666666',
+        'editor.selectionBackground':      'rgba(184,245,0,0.15)', // accent-dim
+        'editor.inactiveSelectionBackground': 'rgba(184,245,0,0.08)',
+        'editorCursor.foreground':         '#b8f500', // --accent
+        'editorWidget.background':         '#0e0e0e',
+        'editorWidget.border':             '#1a1a1a', // --border
+        'editor.lineHighlightBorder':      '#00000000',
+        'scrollbarSlider.background':      '#1a1a1a',
+        'scrollbarSlider.hoverBackground': '#333333',
+        'editorGutter.background':         '#080808',
       },
     });
 
+    // Light theme — uses our --bg: #f7f7f5, --text: #111111, --accent: #4d7500
     monaco.editor.defineTheme('kj-light', {
       base: 'vs',
       inherit: true,
       rules: [
-        { token: '',               foreground: '24292f' },
-        { token: 'comment',        foreground: '6e7781', fontStyle: 'italic' },
-        { token: 'keyword',        foreground: 'cf222e' },
-        { token: 'string',         foreground: '0a3069' },
-        { token: 'number',         foreground: '0550ae' },
-        { token: 'type',           foreground: '953800' },
-        { token: 'delimiter',      foreground: '57606a' },
-        { token: 'tag',            foreground: '116329' },
-        { token: 'attribute.name', foreground: '0550ae' },
-        { token: 'attribute.value',foreground: '0a3069' },
-        // Markdown
-        { token: 'keyword.md',           foreground: '24292f', fontStyle: 'bold' },
-        { token: 'strong.md',            foreground: '24292f', fontStyle: 'bold' },
-        { token: 'emphasis.md',          foreground: '24292f', fontStyle: 'italic' },
-        { token: 'string.md',            foreground: '57606a' },
-        { token: 'comment.md',           foreground: '57606a' },
-        { token: 'string.link.md',       foreground: '0969da' },
-        { token: 'keyword.control.md',   foreground: '57606a' },
+        { token: '',                foreground: '111111' },          // --text
+        { token: 'comment',         foreground: '999999', fontStyle: 'italic' }, // --text-muted
+        { token: 'keyword',         foreground: '4d7500' },          // --accent (dark)
+        { token: 'string',          foreground: '0550ae' },          // blue
+        { token: 'number',          foreground: '953800' },          // brown
+        { token: 'type',            foreground: '953800' },
+        { token: 'delimiter',       foreground: '555555' },          // --text-secondary
+        { token: 'tag',             foreground: '4d7500' },
+        { token: 'attribute.name',  foreground: '0550ae' },
+        { token: 'attribute.value', foreground: '0a3069' },
+        // Markdown tokens
+        { token: 'keyword.md',          foreground: '111111', fontStyle: 'bold' },
+        { token: 'strong.md',           foreground: '111111', fontStyle: 'bold' },
+        { token: 'emphasis.md',         foreground: '111111', fontStyle: 'italic' },
+        { token: 'string.md',           foreground: '555555' },
+        { token: 'comment.md',          foreground: '999999' },
+        { token: 'string.link.md',      foreground: '4d7500' },
+        { token: 'keyword.control.md',  foreground: '999999' },
       ],
       colors: {
-        'editor.background':            '#ffffff',
-        'editor.foreground':            '#24292f',
-        'editor.lineHighlightBackground': '#f6f8fa',
-        'editorLineNumber.foreground':  '#6e7781',
-        'editorLineNumber.activeForeground': '#24292f',
-        'editor.selectionBackground':   '#0969da33',
-        'editorCursor.foreground':      '#24292f',
-        'editorWidget.background':      '#f6f8fa',
-        'editorWidget.border':          '#d0d7de',
-        'editor.lineHighlightBorder':   '#00000000',
-        'scrollbarSlider.background':   '#8c959f33',
-        'editorGutter.background':      '#ffffff',
+        'editor.background':               '#f0f0ee', // --bg-surface
+        'editor.foreground':               '#111111', // --text
+        'editor.lineHighlightBackground':  '#ffffff', // --bg-elevated
+        'editorLineNumber.foreground':     '#999999', // --text-muted
+        'editorLineNumber.activeForeground': '#555555',
+        'editor.selectionBackground':      'rgba(77,117,0,0.15)',
+        'editor.inactiveSelectionBackground': 'rgba(77,117,0,0.08)',
+        'editorCursor.foreground':         '#4d7500', // --accent
+        'editorWidget.background':         '#f0f0ee',
+        'editorWidget.border':             '#dededc', // --border
+        'editor.lineHighlightBorder':      '#00000000',
+        'scrollbarSlider.background':      '#dededc',
+        'scrollbarSlider.hoverBackground': '#999999',
+        'editorGutter.background':         '#f0f0ee',
       },
     });
   }
