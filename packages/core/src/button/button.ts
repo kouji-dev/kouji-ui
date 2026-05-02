@@ -5,7 +5,7 @@ export type KjButtonVariant = 'default' | 'destructive' | 'outline' | 'ghost' | 
 export type KjButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 /**
- * Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior.
+ * Enhances a native ```<button>``` with variant, size, disabled state, and focus-ring behavior.
  * Composes `KjDisabled` and `KjFocusRing` via `hostDirectives`.
  *
  * @example

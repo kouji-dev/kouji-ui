@@ -5,14 +5,16 @@
   background: var(--bg-surface);
 }
 
-.editor-wrap { display: flex; flex-direction: column; }
+.editor-wrap { display: flex; flex-direction: column; height: 100%; }
 
+/* ── Header ── */
 .editor-header {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1.25rem;
+  padding: 0.5rem 1rem;
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .lang-badge {
@@ -23,7 +25,7 @@
   color: var(--accent);
   background: var(--accent-dim);
   padding: 0.15rem 0.5rem;
-  border: 1px solid var(--accent-border);
+  border: 1px solid var(--accent-border, var(--border));
 }
 
 .header-spacer { flex: 1; }
@@ -44,11 +46,9 @@
 }
 .copy-btn:hover { color: var(--text); }
 
+/* ── Monaco container ── */
 .editor-host {
-  max-height: 500px;
-  overflow-y: auto;
+  flex: 1;
+  min-height: 60px;
+  overflow: hidden;
 }
-
-.editor-host ::-webkit-scrollbar { width: 6px; height: 6px; }
-.editor-host ::-webkit-scrollbar-track { background: transparent; }
-.editor-host ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

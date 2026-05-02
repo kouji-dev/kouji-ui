@@ -1,17 +1,17 @@
 import {
-  Component,
-  ElementRef,
-  OnDestroy,
-  ViewChild,
-  afterNextRender,
-  effect,
-  inject,
-  input,
-  signal,
+  Component, DestroyRef, ElementRef, ViewChild,
+  afterNextRender, effect, inject, input, signal,
 } from '@angular/core';
-import { DestroyRef } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
 import { ClipboardService } from '../../services/clipboard.service';
+
+let _monacoPromise: Promise<any> | null = null;
+function getMonaco(): Promise<any> {
+  if (!_monacoPromise) {
+    _monacoPromise = import('@monaco-editor/loader').then(m => m.default.init());
+  }
+  return _monacoPromise;
+}
 
 @Component({
   selector: 'kj-code-editor',
@@ -19,27 +19,23 @@ import { ClipboardService } from '../../services/clipboard.service';
   templateUrl: './code-editor.html',
   styleUrl: './code-editor.css',
 })
-export class CodeEditorComponent implements OnDestroy {
+export class CodeEditorComponent {
   @ViewChild('editorHost', { static: false }) editorHost!: ElementRef<HTMLDivElement>;
 
-  code = input<string>('');
-  lang = input<'ts' | 'html' | 'css' | 'json' | 'md'>('ts');
-  readonly = input<boolean>(true);
+  code       = input<string>('');
+  lang       = input<'ts' | 'html' | 'css' | 'json' | 'md'>('ts');
+  readonly   = input<boolean>(true);
   showHeader = input<boolean>(true);
 
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly themeService = inject(ThemeService);
-  private readonly clipboard = inject(ClipboardService);
-  private view: any;
-  private initialized = false;
+  private readonly themeService  = inject(ThemeService);
+  private readonly clipboard     = inject(ClipboardService);
+  private readonly destroyRef    = inject(DestroyRef);
 
   readonly copied = signal(false);
 
-  async copy(): Promise<void> {
-    await this.clipboard.copy(this.code());
-    this.copied.set(true);
-    setTimeout(() => this.copied.set(false), 1500);
-  }
+  private editor: any;
+  private monaco: any;
+  private initialized = false;
 
   constructor() {
     afterNextRender(async () => {
@@ -47,162 +43,192 @@ export class CodeEditorComponent implements OnDestroy {
       this.initialized = true;
     });
 
-    // Re-initialize when docs theme (light/dark) changes
+    // Rebuild on theme change
     effect(async () => {
       this.themeService.theme();
       if (this.initialized) {
-        this.view?.destroy();
-        this.view = null;
+        this.editor?.dispose();
+        this.editor = null;
         await this.initEditor();
       }
     });
 
-    // Update editor content when the `code` input changes (e.g. switching preview theme)
+    // Update content on code change
     effect(() => {
       const newCode = this.code();
-      if (this.initialized && this.view) {
-        const currentLen = this.view.state.doc.length;
-        this.view.dispatch({
-          changes: { from: 0, to: currentLen, insert: newCode },
-        });
+      if (this.initialized && this.editor) {
+        const model = this.editor.getModel();
+        if (model && model.getValue() !== newCode) {
+          model.setValue(newCode);
+        }
       }
     });
+
+    this.destroyRef.onDestroy(() => this.editor?.dispose());
   }
 
   private async initEditor(): Promise<void> {
     if (!this.editorHost?.nativeElement) return;
+    const host = this.editorHost.nativeElement;
+    if (!host.offsetParent && host.offsetHeight === 0) return;
 
-    const [
-      { EditorView, keymap },
-      { EditorState },
-      { defaultKeymap },
-    ] = await Promise.all([
-      import('@codemirror/view'),
-      import('@codemirror/state'),
-      import('@codemirror/commands'),
-    ]);
+    this.monaco = await getMonaco();
+    this.defineThemes(this.monaco);
 
-    const isDark = this.themeService.theme() === 'dark';
-    const colorTheme = isDark
-      ? (await import('@codemirror/theme-one-dark')).oneDark
-      : EditorView.theme({
-          '&': { backgroundColor: 'var(--bg-surface)', color: '#24292e' },
-          '.cm-content': { caretColor: 'var(--accent)' },
-          '.cm-cursor': { borderLeftColor: 'var(--accent)' },
-          '.cm-gutters': { backgroundColor: 'var(--bg-subtle)', borderRight: '1px solid var(--border)', color: 'var(--text-muted)' },
-          '.cm-activeLineGutter': { backgroundColor: 'var(--bg-hover)' },
-          '.cm-activeLine': { backgroundColor: 'var(--bg-hover)' },
-          '.cm-selectionBackground': { backgroundColor: 'var(--accent-dim) !important' },
-          '.cm-focused': { outline: 'none' },
-          // Light syntax colors (GitHub-inspired)
-          '.cm-keyword': { color: '#d73a49' },
-          '.cm-string': { color: '#032f62' },
-          '.cm-comment': { color: '#6a737d', fontStyle: 'italic' },
-          '.cm-variableName': { color: '#24292e' },
-          '.cm-typeName': { color: '#6f42c1' },
-          '.cm-tagName': { color: '#22863a' },
-          '.cm-attributeName': { color: '#6f42c1' },
-          '.cm-number': { color: '#005cc5' },
-          '.cm-operator': { color: '#d73a49' },
-          '.cm-punctuation': { color: '#24292e' },
-        });
+    const isDark  = this.themeService.theme() === 'dark';
+    const isMd    = this.lang() === 'md';
+    const monacoLang = this.toMonacoLang(this.lang());
 
-    const isMd = this.lang() === 'md';
-    const baseTheme = EditorView.theme({
-      '&': {
-        fontSize: isMd ? '0.875rem' : '0.8rem',
-        fontFamily: isMd ? "system-ui, -apple-system, sans-serif" : "'JetBrains Mono', monospace",
-        borderRadius: '0',
-        ...(isDark && !isMd ? { backgroundColor: '#080808' } : {}),
-        ...(isMd ? { backgroundColor: 'transparent', color: isDark ? '#a0a8b8' : '#374151' } : {}),
+    this.editor = this.monaco.editor.create(host, {
+      value:    this.code(),
+      language: monacoLang,
+      theme:    isDark ? 'kj-dark' : 'kj-light',
+      readOnly: this.readonly(),
+
+      // Layout
+      minimap:            { enabled: false },
+      scrollBeyondLastLine: false,
+      wordWrap:           isMd ? 'on' : 'off',
+      lineNumbers:        isMd ? 'off' : 'on',
+      lineDecorationsWidth: isMd ? 0 : 16,
+      glyphMargin:        false,
+      folding:            false,
+      renderLineHighlight: 'none',
+      overviewRulerBorder: false,
+      overviewRulerLanes:  0,
+
+      // Typography
+      fontSize:    isMd ? 14 : 13,
+      fontFamily:  isMd ? "system-ui, -apple-system, sans-serif" : "'JetBrains Mono', monospace",
+      lineHeight:  isMd ? 24 : 20,
+
+      // Scrollbar
+      scrollbar: {
+        vertical:   'auto',
+        horizontal: 'auto',
+        verticalScrollbarSize:   6,
+        horizontalScrollbarSize: 6,
       },
-      '.cm-content': { padding: isMd ? '0' : '1rem 1.25rem' },
-      '.cm-focused': { outline: 'none' },
-      ...(isMd ? { '.cm-line': { lineHeight: '1.8' } } : {}),
+
+      // Padding
+      padding: { top: isMd ? 0 : 16, bottom: isMd ? 0 : 16 },
+
+      // Remove decorations
+      contextmenu:          false,
+      links:                false,
+      occurrencesHighlight: 'off',
+      selectionHighlight:   false,
+      renderIndentGuides:   false,
+      stickyScroll:         { enabled: false },
+      cursorStyle:          'line',
+      cursorBlinking:       'blink',
+      automaticLayout:      true,
     });
 
-    const langExtension = await this.getLangExtension();
-    // Skip colorTheme for markdown descriptions — transparent bg, no dark theme chrome
-    const extensions = isMd
-      ? [baseTheme, langExtension, EditorView.lineWrapping, keymap.of(defaultKeymap)]
-      : [colorTheme, baseTheme, langExtension, EditorView.lineWrapping, keymap.of(defaultKeymap)];
+    // Auto-size height to content for md
+    if (isMd) this.fitHeightToContent();
+  }
 
-    if (this.readonly()) {
-      extensions.push(EditorState.readOnly.of(true));
-    }
+  private fitHeightToContent(): void {
+    if (!this.editor) return;
+    const lineCount     = this.editor.getModel()?.getLineCount() ?? 1;
+    const lineHeight    = this.editor.getOption(this.monaco.editor.EditorOption.lineHeight);
+    const contentHeight = lineCount * lineHeight;
+    this.editorHost.nativeElement.style.height = `${contentHeight}px`;
+    this.editor.layout();
+  }
 
-    this.view = new EditorView({
-      state: EditorState.create({ doc: this.code(), extensions }),
-      parent: this.editorHost.nativeElement,
+  private toMonacoLang(lang: string): string {
+    if (lang === 'ts')  return 'typescript';
+    if (lang === 'md')  return 'markdown';
+    return lang;
+  }
+
+  private defineThemes(monaco: any): void {
+    monaco.editor.defineTheme('kj-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: '',               foreground: 'c9d1d9' },
+        { token: 'comment',        foreground: '6e7681', fontStyle: 'italic' },
+        { token: 'keyword',        foreground: 'ff7b72' },
+        { token: 'string',         foreground: 'a5d6ff' },
+        { token: 'number',         foreground: '79c0ff' },
+        { token: 'type',           foreground: 'ffa657' },
+        { token: 'delimiter',      foreground: '8b949e' },
+        { token: 'tag',            foreground: '7ee787' },
+        { token: 'attribute.name', foreground: '79c0ff' },
+        { token: 'attribute.value',foreground: 'a5d6ff' },
+        // Markdown — hide markers, style content
+        { token: 'keyword.md',           foreground: 'c9d1d9', fontStyle: 'bold' },
+        { token: 'strong.md',            foreground: 'ffffff', fontStyle: 'bold' },
+        { token: 'emphasis.md',          foreground: 'c9d1d9', fontStyle: 'italic' },
+        { token: 'string.md',            foreground: '8b949e' },
+        { token: 'comment.md',           foreground: '6e7681' },
+        { token: 'string.link.md',       foreground: '58a6ff' },
+        { token: 'keyword.control.md',   foreground: '8b949e' },
+      ],
+      colors: {
+        'editor.background':            '#0d1117',
+        'editor.foreground':            '#c9d1d9',
+        'editor.lineHighlightBackground': '#161b22',
+        'editorLineNumber.foreground':  '#484f58',
+        'editorLineNumber.activeForeground': '#c9d1d9',
+        'editor.selectionBackground':   '#264f78',
+        'editor.inactiveSelectionBackground': '#264f7840',
+        'editorCursor.foreground':      '#c9d1d9',
+        'editorWidget.background':      '#161b22',
+        'editorWidget.border':          '#30363d',
+        'editor.lineHighlightBorder':   '#00000000',
+        'scrollbarSlider.background':   '#484f5844',
+        'scrollbarSlider.hoverBackground': '#484f5866',
+        'editorGutter.background':      '#0d1117',
+      },
     });
 
-    this.destroyRef.onDestroy(() => this.view?.destroy());
+    monaco.editor.defineTheme('kj-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: '',               foreground: '24292f' },
+        { token: 'comment',        foreground: '6e7781', fontStyle: 'italic' },
+        { token: 'keyword',        foreground: 'cf222e' },
+        { token: 'string',         foreground: '0a3069' },
+        { token: 'number',         foreground: '0550ae' },
+        { token: 'type',           foreground: '953800' },
+        { token: 'delimiter',      foreground: '57606a' },
+        { token: 'tag',            foreground: '116329' },
+        { token: 'attribute.name', foreground: '0550ae' },
+        { token: 'attribute.value',foreground: '0a3069' },
+        // Markdown
+        { token: 'keyword.md',           foreground: '24292f', fontStyle: 'bold' },
+        { token: 'strong.md',            foreground: '24292f', fontStyle: 'bold' },
+        { token: 'emphasis.md',          foreground: '24292f', fontStyle: 'italic' },
+        { token: 'string.md',            foreground: '57606a' },
+        { token: 'comment.md',           foreground: '57606a' },
+        { token: 'string.link.md',       foreground: '0969da' },
+        { token: 'keyword.control.md',   foreground: '57606a' },
+      ],
+      colors: {
+        'editor.background':            '#ffffff',
+        'editor.foreground':            '#24292f',
+        'editor.lineHighlightBackground': '#f6f8fa',
+        'editorLineNumber.foreground':  '#6e7781',
+        'editorLineNumber.activeForeground': '#24292f',
+        'editor.selectionBackground':   '#0969da33',
+        'editorCursor.foreground':      '#24292f',
+        'editorWidget.background':      '#f6f8fa',
+        'editorWidget.border':          '#d0d7de',
+        'editor.lineHighlightBorder':   '#00000000',
+        'scrollbarSlider.background':   '#8c959f33',
+        'editorGutter.background':      '#ffffff',
+      },
+    });
   }
 
-  private async getLangExtension(): Promise<any> {
-    const lang = this.lang();
-    if (lang === 'html') { const { html } = await import('@codemirror/lang-html'); return html(); }
-    if (lang === 'css') { const { css } = await import('@codemirror/lang-css'); return css(); }
-    if (lang === 'json') { const { json } = await import('@codemirror/lang-json'); return json(); }
-    if (lang === 'md') {
-      const [
-        { markdown, markdownLanguage },
-        { LanguageDescription },
-        { html },
-        { javascript },
-        { css },
-        { HighlightStyle, syntaxHighlighting },
-        { tags: t },
-      ] = await Promise.all([
-        import('@codemirror/lang-markdown'),
-        import('@codemirror/language'),
-        import('@codemirror/lang-html'),
-        import('@codemirror/lang-javascript'),
-        import('@codemirror/lang-css'),
-        import('@codemirror/language'),
-        import('@lezer/highlight'),
-      ]);
-
-      const codeLanguages = [
-        LanguageDescription.of({ name: 'html',       alias: ['html'],             load: async () => html() }),
-        LanguageDescription.of({ name: 'javascript',  alias: ['js', 'javascript'], load: async () => javascript() }),
-        LanguageDescription.of({ name: 'typescript',  alias: ['ts', 'typescript'], load: async () => javascript({ typescript: true }) }),
-        LanguageDescription.of({ name: 'css',         alias: ['css'],              load: async () => css() }),
-      ];
-
-      const { EditorView: EV } = await import('@codemirror/view');
-
-      // Hide markdown syntax markers
-      const markerStyle = HighlightStyle.define([
-        { tag: t.processingInstruction, fontSize: '1px', color: 'transparent' },
-        { tag: t.contentSeparator,      fontSize: '1px', color: 'transparent' },
-      ]);
-
-      // Style fenced code blocks — same background as standalone code editor
-      const isDark = this.themeService.theme() === 'dark';
-      const codeBlockTheme = EV.theme({
-        '.cm-line.cm-codeText, .cm-codeBlock': {
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: '0.78rem',
-          background: 'transparent',
-          display: 'block',
-          padding: '0 0.5rem',
-          borderLeft: `2px solid ${isDark ? '#444' : '#d1d5db'}`,
-          marginLeft: '0.25rem',
-        },
-        '.cm-line.cm-codeText:first-of-type': { paddingTop: '0.35rem' },
-        '.cm-line.cm-codeText:last-of-type':  { paddingBottom: '0.35rem' },
-      });
-
-      return [
-        markdown({ base: markdownLanguage, codeLanguages }),
-        syntaxHighlighting(markerStyle),
-        codeBlockTheme,
-      ];
-    }
-    const { javascript } = await import('@codemirror/lang-javascript');
-    return javascript({ typescript: true });
+  async copy(): Promise<void> {
+    await this.clipboard.copy(this.code());
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 1500);
   }
-
-  ngOnDestroy(): void { this.view?.destroy(); }
 }

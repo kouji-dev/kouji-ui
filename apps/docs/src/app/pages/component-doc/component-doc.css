@@ -296,22 +296,13 @@ h1 {
 }
 
 /* ── Markdown description editor — transparent, no chrome ── */
-.desc-editor { margin-bottom: 1.25rem; }
-
-/* ::ng-deep required — CodeMirror injects elements dynamically, bypassing Angular's attribute scoping */
-.desc-editor ::ng-deep .cm-editor,
-.desc-editor ::ng-deep .cm-focused,
-.desc-editor ::ng-deep .cm-scroller,
-.desc-editor ::ng-deep .cm-gutters { background: transparent !important; border: none !important; }
-
-.desc-editor ::ng-deep .cm-scroller           { overflow: hidden !important; }
-.desc-editor ::ng-deep .cm-cursor             { display: none !important; }
-.desc-editor ::ng-deep .cm-selectionBackground { display: none !important; }
-.desc-editor ::ng-deep .cm-content            { padding: 0 !important; caret-color: transparent; }
-
-/* Line break spacing for readable paragraph cuts */
-.desc-editor ::ng-deep .cm-line {
-  padding: 0 !important;
-  line-height: 1.7;
-  min-height: 1.4em;
+.desc-editor {
+  margin-bottom: 1.25rem;
+  border: none !important;
+  background: transparent !important;
 }
+/* Monaco injects dynamically — needs ::ng-deep to pierce Angular's scope */
+.desc-editor ::ng-deep .monaco-editor,
+.desc-editor ::ng-deep .monaco-editor-background,
+.desc-editor ::ng-deep .monaco-editor .margin { background: transparent !important; }
+.desc-editor ::ng-deep .cursors-layer { display: none !important; }
