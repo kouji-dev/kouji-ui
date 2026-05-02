@@ -36,3 +36,13 @@ Omit the Angular type suffix (`Directive`, `Component`, `Service`, `Pipe`) from 
 - ✅ `KjDialogService` — kept because `KjDialog` already names the directive
 
 **When a collision exists**, keep the suffix on the less-primary class (usually the service or a secondary directive), and drop it from the primary one. If it's unclear which is primary, discuss before deciding.
+
+The same rule applies to **file names**: name files after what they contain or do, omitting the Angular type suffix (`.directive`, `.component`, `.service`, `.pipe`) unless two files in the same folder would otherwise share the same base name.
+
+- ✅ `table.ts` — not `table.directive.ts`
+- ✅ `button.ts` — not `button.directive.ts`
+- ✅ `toast.service.ts` — kept because `toast.ts` already names the directive file
+- ✅ `dialog.service.ts` — kept because `dialog.ts` already names the directive file
+- ✅ `dialog.example.ts`, `dialog.retro.example.ts` — multi-part suffixes that describe purpose are fine
+
+Spec and test files follow the same base name as the file they test: `table.spec.ts` not `table.directive.spec.ts`.
