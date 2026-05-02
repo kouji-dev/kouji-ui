@@ -3,6 +3,7 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { join, dirname, resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 // ── Exported types ──────────────────────────────────────────────────────────
 
@@ -214,8 +215,13 @@ function extractExportName(content: string): string | undefined {
   return match?.[1];
 }
 
-/** Reads a co-located example file from disk and returns an ExampleFile, or null on error. */
-function readExampleFile(dirPath: string, filename: string): ExampleFile | null {
+const DOCS_THEMES_CSS_PATH = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../../packages/core/src/styles/docs-themes.css'
+);
+
+/** Reads a co-located example file. If it references docs-themes.css, appends it as an extra tab. */
+function readExampleFiles(dirPath: string, filename: string): ExampleFile[] {
   const fullPath = join(dirPath, filename);
   try {
     const content = readFileSync(fullPath, 'utf-8');
@@ -224,9 +230,18 @@ function readExampleFile(dirPath: string, filename: string): ExampleFile | null 
       ? (ext as ExampleFile['lang'])
       : 'ts';
     const exportName = extractExportName(content);
-    return { lang, filename, content, exportName };
+    const files: ExampleFile[] = [{ lang, filename, content, exportName }];
+
+    if (content.includes('docs-themes.css')) {
+      try {
+        const cssContent = readFileSync(DOCS_THEMES_CSS_PATH, 'utf-8');
+        files.push({ lang: 'css', filename: 'docs-themes.css', content: cssContent });
+      } catch { /* skip silently */ }
+    }
+
+    return files;
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -265,8 +280,8 @@ function parseDocFileEntries(cleanText: string, sourceDir?: string): ExampleFile
       results.push({ lang, filename, content });
     } else if (sourceDir) {
       // File-path only — read the actual file from the source directory
-      const file = readExampleFile(sourceDir, filename);
-      if (file) results.push(file);
+      const files = readExampleFiles(sourceDir, filename);
+      results.push(...files);
     }
   }
 
