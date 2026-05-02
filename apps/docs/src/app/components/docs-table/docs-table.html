@@ -1,5 +1,6 @@
 <div class="table-wrap">
-  <table [kjTable]="columnDefs()" [kjTableData]="rows()" #tbl="kjTable">
+  <table [kjTable]="columnDefs()" [kjTableData]="rows()" #tbl="kjTable"
+         [attr.aria-label]="label() || null">
     <thead>
       @for (hg of tbl.table().getHeaderGroups(); track hg.id) {
         <tr>
@@ -17,7 +18,7 @@
           @for (cell of row.getVisibleCells(); track cell.id) {
             <td [attr.data-col]="cell.column.id">
               @if (cell.column.id === 'name' && row.original['required']) {
-                {{ cell.getValue() }}<span class="required-mark" aria-label="required">*</span>
+                {{ cell.getValue() }}<span class="required-mark" aria-hidden="true">*</span><span kjVisuallyHidden>(required)</span>
               } @else {
                 {{ cell.getValue() ?? '—' }}
               }

@@ -86,10 +86,13 @@ export type KjSortDirection = 'asc' | 'desc';
   selector: '[kjTableHeader]',
   standalone: true,
   host: {
-    '[style.cursor]': 'canSort() ? "pointer" : null',
+    '[style.cursor]':   'canSort() ? "pointer" : null',
+    '[attr.tabindex]':  'canSort() ? "0" : null',
     '[attr.aria-sort]': 'canSort() ? ariaSort() : null',
     '[attr.data-sort]': 'canSort() ? sortDir() : null',
-    '(click)': 'onHeaderClick()',
+    '(click)':          'onHeaderClick()',
+    '(keydown.enter)':  'onHeaderClick()',
+    '(keydown.space)':  '$event.preventDefault(); onHeaderClick()',
   },
 })
 export class KjTableHeaderDirective<TData extends RowData = unknown> {
@@ -112,9 +115,9 @@ export class KjTableHeaderDirective<TData extends RowData = unknown> {
   /** ARIA sort attribute value derived from sort direction. */
   readonly ariaSort = computed(() => {
     const d = this.sortDir();
-    if (d === 'asc') return 'ascending';
+    if (d === 'asc')  return 'ascending';
     if (d === 'desc') return 'descending';
-    return null;
+    return 'none';
   });
 
   onHeaderClick(): void {

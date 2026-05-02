@@ -68,6 +68,18 @@ describe('KjTableDirective', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it('sortable header has tabindex=0', async () => {
+    const { container } = await render(TableTestComponent);
+    const ths = container.querySelectorAll('th');
+    ths.forEach(th => expect(th).toHaveAttribute('tabindex', '0'));
+  });
+
+  it('sortable header has aria-sort="none" initially', async () => {
+    const { container } = await render(TableTestComponent);
+    const ths = container.querySelectorAll('th');
+    ths.forEach(th => expect(th).toHaveAttribute('aria-sort', 'none'));
+  });
+
   it('non-sortable column header has no cursor:pointer', async () => {
     @Component({
       standalone: true,

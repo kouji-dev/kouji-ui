@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { createColumnHelper, type ColumnDef } from '@tanstack/angular-table';
-import { KjTableDirective, KjTableHeaderDirective } from '@kouji-ui/core';
+import { KjTableDirective, KjTableHeaderDirective, KjVisuallyHiddenDirective } from '@kouji-ui/core';
 
 export interface DocsTableColumn {
   key: string;
@@ -10,13 +10,14 @@ export interface DocsTableColumn {
 @Component({
   selector: 'docs-table',
   standalone: true,
-  imports: [KjTableDirective, KjTableHeaderDirective],
+  imports: [KjTableDirective, KjTableHeaderDirective, KjVisuallyHiddenDirective],
   templateUrl: './docs-table.html',
   styleUrl: './docs-table.css',
 })
 export class DocsTableComponent {
   readonly columns = input.required<DocsTableColumn[]>();
   readonly rows    = input.required<Record<string, unknown>[]>();
+  readonly label   = input<string>('');
 
   private readonly ch = createColumnHelper<Record<string, unknown>>();
 
