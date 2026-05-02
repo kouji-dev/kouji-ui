@@ -23,6 +23,21 @@ export class DocsSidebarComponent implements OnInit {
   protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
   readonly open = signal(false);
 
+  /** Set of category labels that are currently collapsed. All expanded by default. */
+  protected readonly collapsed = signal<Set<string>>(new Set());
+
+  protected isCategoryCollapsed(label: string): boolean {
+    return this.collapsed().has(label);
+  }
+
+  protected toggleCategory(label: string): void {
+    this.collapsed.update(set => {
+      const next = new Set(set);
+      next.has(label) ? next.delete(label) : next.add(label);
+      return next;
+    });
+  }
+
   constructor() {
     const destroyRef = inject(DestroyRef);
     effect(() => {

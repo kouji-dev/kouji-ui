@@ -54,18 +54,37 @@
 
   @for (cat of tree(); track cat.label) {
     <div class="sidebar-section">
-      <span class="sidebar-category">{{ cat.label }}</span>
-      @for (item of cat.children; track item.slug) {
-        @if (item.slug) {
-          <a
-            [routerLink]="['/docs/components', item.slug]"
-            routerLinkActive="active"
-            class="sidebar-link"
-            (click)="close()"
-          >
-            {{ item.label }}
-          </a>
-        }
+      <button
+        class="sidebar-category"
+        type="button"
+        [attr.aria-expanded]="!isCategoryCollapsed(cat.label)"
+        (click)="toggleCategory(cat.label)"
+      >
+        <span>{{ cat.label }}</span>
+        <svg
+          class="sidebar-chevron"
+          [class.collapsed]="isCategoryCollapsed(cat.label)"
+          width="10" height="10" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      @if (!isCategoryCollapsed(cat.label)) {
+        <div class="sidebar-section-items">
+          @for (item of cat.children; track item.slug) {
+            @if (item.slug) {
+              <a
+                [routerLink]="['/docs/components', item.slug]"
+                routerLinkActive="active"
+                class="sidebar-link"
+                (click)="close()"
+              >
+                {{ item.label }}
+              </a>
+            }
+          }
+        </div>
       }
     </div>
   }
