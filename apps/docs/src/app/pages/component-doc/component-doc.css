@@ -301,3 +301,7 @@ h1 {
   background: transparent !important;
   margin-bottom: 1rem;
 }
+.desc-editor .cm-editor { background: transparent !important; }
+.desc-editor .cm-scroller { overflow: hidden !important; }
+.desc-editor .cm-cursor { display: none !important; }
+.desc-editor .cm-content { padding: 0 !important; caret-color: transparent; }

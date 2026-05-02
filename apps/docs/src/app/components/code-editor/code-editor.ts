@@ -138,7 +138,27 @@ export class CodeEditorComponent implements OnDestroy {
     if (lang === 'html') { const { html } = await import('@codemirror/lang-html'); return html(); }
     if (lang === 'css') { const { css } = await import('@codemirror/lang-css'); return css(); }
     if (lang === 'json') { const { json } = await import('@codemirror/lang-json'); return json(); }
-    if (lang === 'md') { const { markdown } = await import('@codemirror/lang-markdown'); return markdown(); }
+    if (lang === 'md') {
+      const [{ markdown }, { HighlightStyle, syntaxHighlighting }, { tags: t }] = await Promise.all([
+        import('@codemirror/lang-markdown'),
+        import('@codemirror/language'),
+        import('@lezer/highlight'),
+      ]);
+      const mdStyle = HighlightStyle.define([
+        { tag: t.heading1,       fontSize: '1.6em', fontWeight: 'bold',   color: 'var(--text)' },
+        { tag: t.heading2,       fontSize: '1.35em', fontWeight: 'bold',  color: 'var(--text)' },
+        { tag: t.heading3,       fontSize: '1.15em', fontWeight: 'bold',  color: 'var(--text)' },
+        { tag: t.strong,         fontWeight: 'bold',  color: 'var(--text)' },
+        { tag: t.emphasis,       fontStyle: 'italic', color: 'var(--text-secondary)' },
+        { tag: t.monospace,      fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85em', color: 'var(--accent)', background: 'var(--bg-subtle)', padding: '0.1em 0.25em' },
+        { tag: t.link,           color: 'var(--accent)', textDecoration: 'underline' },
+        { tag: t.url,            color: 'var(--accent)' },
+        { tag: t.strikethrough,  textDecoration: 'line-through', color: 'var(--text-muted)' },
+        { tag: t.processingInstruction, color: 'var(--text-muted)', fontSize: '0.85em' },
+        { tag: t.contentSeparator, color: 'var(--border)' },
+      ]);
+      return [markdown(), syntaxHighlighting(mdStyle)];
+    }
     const { javascript } = await import('@codemirror/lang-javascript');
     return javascript({ typescript: true });
   }
