@@ -176,6 +176,7 @@ export class CodeEditorComponent implements OnDestroy {
       ]);
 
       // Style fenced code blocks — same background as standalone code editor
+      const isDark = this.themeService.theme() === 'dark';
       const codeBlockTheme = EV.theme({
         '.cm-line.cm-codeText, .cm-codeBlock': {
           fontFamily: "'JetBrains Mono', monospace",
