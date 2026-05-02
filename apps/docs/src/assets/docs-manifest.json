@@ -1,13 +1,12 @@
 {
-  "generatedAt": "2026-05-02T09:45:59.889Z",
+  "generatedAt": "2026-05-02T12:00:07.038Z",
   "components": [
     {
       "name": "Button",
       "slug": "button",
       "categoryPath": [
         "Core",
-        "Base",
-        "Button"
+        "Base"
       ],
       "category": "base",
       "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabled` and `KjFocusRing` via `hostDirectives`.",
@@ -17,8 +16,7 @@
           "selector": "[kjButton]",
           "categoryPath": [
             "Core",
-            "Base",
-            "Button"
+            "Base"
           ],
           "description": "Enhances a native `<button>` with variant, size, disabled state, and focus-ring behavior. Composes `KjDisabled` and `KjFocusRing` via `hostDirectives`.",
           "inputs": [
@@ -137,8 +135,7 @@
       "slug": "checkbox",
       "categoryPath": [
         "Core",
-        "Inputs",
-        "Checkbox"
+        "Inputs"
       ],
       "category": "inputs",
       "description": "Adds checkbox semantics with Angular forms integration. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
@@ -148,8 +145,7 @@
           "selector": "[kjCheckbox]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Checkbox"
+            "Inputs"
           ],
           "description": "Adds checkbox semantics with Angular forms integration. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
           "inputs": [
@@ -187,8 +183,7 @@
       "slug": "form",
       "categoryPath": [
         "Core",
-        "Inputs",
-        "Form"
+        "Inputs"
       ],
       "category": "inputs",
       "description": "Container for a form field. Groups label, input, and error message.",
@@ -198,8 +193,7 @@
           "selector": "[kjFormField]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Form"
+            "Inputs"
           ],
           "description": "Container for a form field. Groups label, input, and error message.",
           "inputs": [
@@ -222,8 +216,7 @@
           "selector": "[kjFormLabel]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Form"
+            "Inputs"
           ],
           "description": "Label element within a form field.",
           "inputs": [],
@@ -237,8 +230,7 @@
           "selector": "[kjFormError]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Form"
+            "Inputs"
           ],
           "description": "Error message element. Visible only when field is invalid.",
           "inputs": [],
@@ -256,8 +248,7 @@
       "slug": "input",
       "categoryPath": [
         "Core",
-        "Inputs",
-        "Input"
+        "Inputs"
       ],
       "category": "inputs",
       "description": "Enhances a native `<input>` with Angular forms integration, disabled/invalid state, and focus-ring. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
@@ -267,8 +258,7 @@
           "selector": "[kjInput]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Input"
+            "Inputs"
           ],
           "description": "Enhances a native `<input>` with Angular forms integration, disabled/invalid state, and focus-ring. Supports `formControl`, `formControlName`, and `ngModel` bindings.",
           "inputs": [
@@ -306,8 +296,7 @@
       "slug": "radio",
       "categoryPath": [
         "Core",
-        "Inputs",
-        "Radio"
+        "Inputs"
       ],
       "category": "inputs",
       "description": "Container for a group of radio buttons. Manages the selected value.",
@@ -317,8 +306,7 @@
           "selector": "[kjRadioGroup]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Radio"
+            "Inputs"
           ],
           "description": "Container for a group of radio buttons. Manages the selected value.",
           "inputs": [
@@ -341,8 +329,7 @@
           "selector": "[kjRadio]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Radio"
+            "Inputs"
           ],
           "description": "Individual radio button within a `[kjRadioGroup]`. Includes CVA for forms integration.",
           "inputs": [
@@ -374,21 +361,19 @@
       "slug": "select",
       "categoryPath": [
         "Core",
-        "Inputs",
-        "Select"
+        "Inputs"
       ],
       "category": "inputs",
-      "description": "Root select container. Wraps CDK `CdkListbox` for full keyboard navigation and ARIA listbox semantics. Manages open/close state via `kjSelectValue` model.",
+      "description": "Root select container. Manages open/close state via `kjSelectValue` model.",
       "directives": [
         {
           "className": "KjSelect",
           "selector": "[kjSelect]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Select"
+            "Inputs"
           ],
-          "description": "Root select container. Wraps CDK `CdkListbox` for full keyboard navigation and ARIA listbox semantics. Manages open/close state via `kjSelectValue` model.",
+          "description": "Root select container. Manages open/close state via `kjSelectValue` model.",
           "inputs": [
             {
               "name": "kjSelectValue",
@@ -398,7 +383,7 @@
             }
           ],
           "examples": [
-            "<div kjSelect [(kjSelectValue)]=\"selected\">\n  <button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>\n  <div kjSelectContent role=\"listbox\">\n    <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n  </div>\n</div>"
+            "<div kjSelect [(kjSelectValue)]=\"selected\">\n  <button kjSelectTrigger aria-haspopup=\"listbox\">Choose fruit</button>\n  <div kjSelectContent>\n    <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n  </div>\n</div>"
           ],
           "exampleFiles": [],
           "themedExamples": {},
@@ -409,8 +394,7 @@
           "selector": "[kjSelectTrigger]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Select"
+            "Inputs"
           ],
           "description": "Trigger button that opens/closes the select listbox. Automatically binds `aria-expanded` to reflect open state.",
           "inputs": [],
@@ -426,13 +410,12 @@
           "selector": "[kjSelectContent]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Select"
+            "Inputs"
           ],
-          "description": "Listbox container. Wraps CDK `CdkListbox` for keyboard navigation and ARIA listbox semantics. Hidden when the select is closed.",
+          "description": "Listbox container. Provides keyboard navigation (Arrow keys, Home, End, Enter, Space, type-ahead) and ARIA listbox semantics. Hidden when closed.",
           "inputs": [],
           "examples": [
-            "<div kjSelectContent role=\"listbox\">\n  <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n</div>"
+            "<div kjSelectContent>\n  <div kjOption [kjOptionValue]=\"'apple'\">Apple</div>\n</div>"
           ],
           "exampleFiles": [],
           "themedExamples": {},
@@ -443,30 +426,15 @@
           "selector": "[kjOption]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Select"
+            "Inputs"
           ],
-          "description": "Individual option inside a `kjSelectContent`. Wraps CDK `CdkOption` for proper `aria-selected` management and keyboard navigation support. Clicking the option calls `select()` on the parent context.",
+          "description": "Individual option inside a `kjSelectContent`. Clicking or pressing Enter/Space calls `select()` on the parent context.",
           "inputs": [
             {
               "name": "kjOptionValue",
               "type": "unknown",
               "required": true,
               "description": "The value this option represents."
-            },
-            {
-              "name": "kjOptionValue",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `cdkOption` via `hostDirectives`.",
-              "defaultValue": "false"
-            },
-            {
-              "name": "kjDisabled",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `cdkOptionDisabled` via `hostDirectives`.",
-              "defaultValue": "false"
             },
             {
               "name": "kjDisabled",
@@ -490,8 +458,7 @@
       "slug": "toggle",
       "categoryPath": [
         "Core",
-        "Inputs",
-        "Toggle"
+        "Inputs"
       ],
       "category": "inputs",
       "description": "Adds toggle (press) behavior with Angular forms integration.",
@@ -501,8 +468,7 @@
           "selector": "[kjToggle]",
           "categoryPath": [
             "Core",
-            "Inputs",
-            "Toggle"
+            "Inputs"
           ],
           "description": "Adds toggle (press) behavior with Angular forms integration.",
           "inputs": [
@@ -534,21 +500,19 @@
       "slug": "accordion",
       "categoryPath": [
         "Core",
-        "Navigation",
-        "Accordion"
+        "Navigation"
       ],
       "category": "navigation",
-      "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
+      "description": "Root accordion container. Manages open/close state for accordion items. Supports `'single'` (only one item open) or `'multiple'` (any number open).",
       "directives": [
         {
           "className": "KjAccordion",
           "selector": "[kjAccordion]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Accordion"
+            "Navigation"
           ],
-          "description": "Root accordion container. Extends CDK `CdkAccordion` for multi/single item management. Supports single or multiple expanded items.",
+          "description": "Root accordion container. Manages open/close state for accordion items. Supports `'single'` (only one item open) or `'multiple'` (any number open).",
           "inputs": [
             {
               "name": "kjAccordionType",
@@ -569,10 +533,9 @@
           "selector": "[kjAccordionItem]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Accordion"
+            "Navigation"
           ],
-          "description": "Individual accordion item. Extends CDK `CdkAccordionItem`. Manages expanded state via CDK's `UniqueSelectionDispatcher` for single-mode coordination.",
+          "description": "Individual accordion item. Manages its own expanded state via the parent accordion context.",
           "inputs": [
             {
               "name": "kjItemValue",
@@ -593,10 +556,9 @@
           "selector": "[kjAccordionTrigger]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Accordion"
+            "Navigation"
           ],
-          "description": "Trigger button for an accordion item. Controls expand/collapse via CDK `toggle()`. Sets `aria-expanded` and `data-open` attributes based on the item's expanded state.",
+          "description": "Trigger button for an accordion item. Controls expand/collapse. Sets `aria-expanded` and `data-open` attributes based on the item's expanded state.",
           "inputs": [],
           "examples": [
             "<button kjAccordionTrigger>Section title</button>"
@@ -610,8 +572,7 @@
           "selector": "[kjAccordionContent]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Accordion"
+            "Navigation"
           ],
           "description": "Accordion content panel. Hidden when the parent item is collapsed. Uses the `hidden` attribute for accessibility-compliant visibility.",
           "inputs": [],
@@ -629,50 +590,81 @@
       "slug": "menu",
       "categoryPath": [
         "Core",
-        "Navigation",
-        "Menu"
+        "Navigation"
       ],
       "category": "navigation",
-      "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
+      "description": "Root menu container. Manages open/close state and provides context to child directives. Pairs with `[kjMenuTrigger]`, `[kjMenuContent]`, and `[kjMenuItem]`. Click outside or Escape closes the menu. Clicking the trigger toggles it. Arrow-key navigation, Home/End, and typeahead are handled by `[kjMenuContent]`.",
       "directives": [
-        {
-          "className": "KjMenuTrigger",
-          "selector": "[kjMenuTrigger]",
-          "categoryPath": [
-            "Core",
-            "Navigation",
-            "Menu"
-          ],
-          "description": "Dropdown menu trigger. Wraps CDK `CdkMenuTrigger`. Handles aria-expanded, keyboard opening (Enter/Space/ArrowDown), and menu positioning. Apply to a `<button>` and link to a `[kjMenu]` template via `[cdkMenuTriggerFor]`.",
-          "inputs": [
-            {
-              "name": "kjMenuTriggerFor",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `cdkMenuTriggerFor` via `hostDirectives`.",
-              "defaultValue": "false"
-            }
-          ],
-          "examples": [
-            "<button kjMenuTrigger [kjMenuTriggerFor]=\"myMenu\">Actions</button>\n<ng-template #myMenu>\n  <div kjMenu>\n    <button kjMenuItem>Edit</button>\n  </div>\n</ng-template>"
-          ],
-          "exampleFiles": [],
-          "themedExamples": {},
-          "docExamples": []
-        },
         {
           "className": "KjMenu",
           "selector": "[kjMenu]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Menu"
+            "Navigation"
           ],
-          "description": "Menu panel container. Wraps CDK `CdkMenu`. Handles keyboard navigation (Arrow keys, Home, End, Escape, typeahead). Add `role=\"menu\"` for proper ARIA semantics.",
+          "description": "Root menu container. Manages open/close state and provides context to child directives. Pairs with `[kjMenuTrigger]`, `[kjMenuContent]`, and `[kjMenuItem]`. Click outside or Escape closes the menu. Clicking the trigger toggles it. Arrow-key navigation, Home/End, and typeahead are handled by `[kjMenuContent]`.",
           "inputs": [],
           "examples": [
-            "<div kjMenu role=\"menu\">\n  <button kjMenuItem>Edit</button>\n  <button kjMenuItem>Delete</button>\n</div>"
+            "<div kjMenu>\n  <button kjMenuTrigger>Actions</button>\n  <div kjMenuContent>\n    <button kjMenuItem>Edit</button>\n    <button kjMenuItem>Delete</button>\n  </div>\n</div>"
           ],
+          "exampleFiles": [
+            {
+              "lang": "ts",
+              "filename": "menu.example.ts",
+              "content": "import { Component } from '@angular/core';\nimport { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from './menu';\nimport { KjButton } from '../button/button';\n\n@Component({\n  selector: 'kj-example-menu-basic',\n  standalone: true,\n  imports: [KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem, KjButton],\n  styles: [`\n    :host { display: flex; align-items: flex-start; justify-content: center; padding: 3rem 2rem 10rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; min-height: 220px; }\n    .anchor { position: relative; display: inline-block; }\n    button[kjButton] { padding: 0.5rem 1.25rem; border: 1px solid #444; background: transparent; color: #f0ede6; cursor: pointer; font-family: inherit; font-size: 0.875rem; }\n    button[kjButton]:hover { border-color: #b8f500; color: #b8f500; }\n    [kjMenuContent] {\n      position: absolute; top: calc(100% + 4px); left: 0; z-index: 20;\n      background: #1a1a1a; border: 1px solid #333; padding: 0.25rem 0; min-width: 10rem;\n      display: flex; flex-direction: column;\n    }\n    [kjMenuContent][hidden] { display: none; }\n    [kjMenuItem] {\n      background: transparent; border: none; color: #f0ede6; font-family: inherit;\n      font-size: 0.875rem; padding: 0.5rem 1rem; text-align: left; cursor: pointer; width: 100%;\n    }\n    [kjMenuItem]:hover, [kjMenuItem]:focus { background: #252525; color: #b8f500; outline: none; }\n    [kjMenuItem][disabled] { color: #555; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"anchor\" kjMenu>\n      <button kjButton kjMenuTrigger>Actions</button>\n      <div kjMenuContent>\n        <button kjMenuItem>Edit</button>\n        <button kjMenuItem>Duplicate</button>\n        <button kjMenuItem>Archive</button>\n        <button kjMenuItem disabled>Delete</button>\n      </div>\n    </div>\n  `,\n})\nexport class MenuBasicExample {}\n",
+              "exportName": "MenuBasicExample"
+            }
+          ],
+          "themedExamples": {
+            "default": [
+              {
+                "lang": "ts",
+                "filename": "menu.example.ts",
+                "content": "import { Component } from '@angular/core';\nimport { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from './menu';\nimport { KjButton } from '../button/button';\n\n@Component({\n  selector: 'kj-example-menu-basic',\n  standalone: true,\n  imports: [KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem, KjButton],\n  styles: [`\n    :host { display: flex; align-items: flex-start; justify-content: center; padding: 3rem 2rem 10rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; min-height: 220px; }\n    .anchor { position: relative; display: inline-block; }\n    button[kjButton] { padding: 0.5rem 1.25rem; border: 1px solid #444; background: transparent; color: #f0ede6; cursor: pointer; font-family: inherit; font-size: 0.875rem; }\n    button[kjButton]:hover { border-color: #b8f500; color: #b8f500; }\n    [kjMenuContent] {\n      position: absolute; top: calc(100% + 4px); left: 0; z-index: 20;\n      background: #1a1a1a; border: 1px solid #333; padding: 0.25rem 0; min-width: 10rem;\n      display: flex; flex-direction: column;\n    }\n    [kjMenuContent][hidden] { display: none; }\n    [kjMenuItem] {\n      background: transparent; border: none; color: #f0ede6; font-family: inherit;\n      font-size: 0.875rem; padding: 0.5rem 1rem; text-align: left; cursor: pointer; width: 100%;\n    }\n    [kjMenuItem]:hover, [kjMenuItem]:focus { background: #252525; color: #b8f500; outline: none; }\n    [kjMenuItem][disabled] { color: #555; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"anchor\" kjMenu>\n      <button kjButton kjMenuTrigger>Actions</button>\n      <div kjMenuContent>\n        <button kjMenuItem>Edit</button>\n        <button kjMenuItem>Duplicate</button>\n        <button kjMenuItem>Archive</button>\n        <button kjMenuItem disabled>Delete</button>\n      </div>\n    </div>\n  `,\n})\nexport class MenuBasicExample {}\n",
+                "exportName": "MenuBasicExample"
+              }
+            ]
+          },
+          "docExamples": [
+            {
+              "label": "Basic",
+              "themedFiles": {
+                "default": [
+                  {
+                    "lang": "ts",
+                    "filename": "menu.example.ts",
+                    "content": "import { Component } from '@angular/core';\nimport { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from './menu';\nimport { KjButton } from '../button/button';\n\n@Component({\n  selector: 'kj-example-menu-basic',\n  standalone: true,\n  imports: [KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem, KjButton],\n  styles: [`\n    :host { display: flex; align-items: flex-start; justify-content: center; padding: 3rem 2rem 10rem; background: #0c0c0c; font-family: 'JetBrains Mono', monospace; min-height: 220px; }\n    .anchor { position: relative; display: inline-block; }\n    button[kjButton] { padding: 0.5rem 1.25rem; border: 1px solid #444; background: transparent; color: #f0ede6; cursor: pointer; font-family: inherit; font-size: 0.875rem; }\n    button[kjButton]:hover { border-color: #b8f500; color: #b8f500; }\n    [kjMenuContent] {\n      position: absolute; top: calc(100% + 4px); left: 0; z-index: 20;\n      background: #1a1a1a; border: 1px solid #333; padding: 0.25rem 0; min-width: 10rem;\n      display: flex; flex-direction: column;\n    }\n    [kjMenuContent][hidden] { display: none; }\n    [kjMenuItem] {\n      background: transparent; border: none; color: #f0ede6; font-family: inherit;\n      font-size: 0.875rem; padding: 0.5rem 1rem; text-align: left; cursor: pointer; width: 100%;\n    }\n    [kjMenuItem]:hover, [kjMenuItem]:focus { background: #252525; color: #b8f500; outline: none; }\n    [kjMenuItem][disabled] { color: #555; cursor: not-allowed; }\n  `],\n  template: `\n    <div class=\"anchor\" kjMenu>\n      <button kjButton kjMenuTrigger>Actions</button>\n      <div kjMenuContent>\n        <button kjMenuItem>Edit</button>\n        <button kjMenuItem>Duplicate</button>\n        <button kjMenuItem>Archive</button>\n        <button kjMenuItem disabled>Delete</button>\n      </div>\n    </div>\n  `,\n})\nexport class MenuBasicExample {}\n",
+                    "exportName": "MenuBasicExample"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "className": "KjMenuTrigger",
+          "selector": "[kjMenuTrigger]",
+          "categoryPath": [
+            "Core",
+            "Navigation"
+          ],
+          "description": "Trigger element that toggles the parent menu. Automatically sets `aria-haspopup` and `aria-expanded` on the host element.",
+          "inputs": [],
+          "examples": [],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjMenuContent",
+          "selector": "[kjMenuContent]",
+          "categoryPath": [
+            "Core",
+            "Navigation"
+          ],
+          "description": "Menu content panel. Hidden when closed via the `hidden` attribute. Provides keyboard navigation: Arrow keys, Home/End, Escape, and typeahead. Click-outside dismissal is handled via a document-level click listener.",
+          "inputs": [],
+          "examples": [],
           "exampleFiles": [],
           "themedExamples": {},
           "docExamples": []
@@ -682,21 +674,28 @@
           "selector": "[kjMenuItem]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Menu"
+            "Navigation"
           ],
-          "description": "Individual menu item. Wraps CDK `CdkMenuItem`. Handles keyboard activation (Enter/Space), disabled state, and submenu support.",
-          "inputs": [
-            {
-              "name": "kjDisabled",
-              "type": "boolean",
-              "required": false,
-              "description": "Forwarded from `kjDisabled` via `hostDirectives`.",
-              "defaultValue": "false"
-            }
-          ],
+          "description": "Individual menu item. Closes the menu on click or keyboard activation (Enter/Space).",
+          "inputs": [],
           "examples": [
-            "<button kjMenuItem role=\"menuitem\">Delete</button>"
+            "<button kjMenuItem>Delete</button>"
+          ],
+          "exampleFiles": [],
+          "themedExamples": {},
+          "docExamples": []
+        },
+        {
+          "className": "KjMenuClose",
+          "selector": "[kjMenuClose]",
+          "categoryPath": [
+            "Core",
+            "Navigation"
+          ],
+          "description": "Closes the parent menu when clicked. Convenience directive for non-item close buttons. Place anywhere inside `[kjMenu]`.",
+          "inputs": [],
+          "examples": [
+            "<button kjMenuClose>Cancel</button>"
           ],
           "exampleFiles": [],
           "themedExamples": {},
@@ -709,8 +708,7 @@
       "slug": "tabs",
       "categoryPath": [
         "Core",
-        "Navigation",
-        "Tabs"
+        "Navigation"
       ],
       "category": "navigation",
       "description": "Root tabs container. Manages active tab value.",
@@ -720,8 +718,7 @@
           "selector": "[kjTabs]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Tabs"
+            "Navigation"
           ],
           "description": "Root tabs container. Manages active tab value.",
           "inputs": [
@@ -750,8 +747,7 @@
           "selector": "[kjTabList]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Tabs"
+            "Navigation"
           ],
           "description": "Container for tab triggers. Sets `role=\"tablist\"`.",
           "inputs": [],
@@ -765,8 +761,7 @@
           "selector": "[kjTab]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Tabs"
+            "Navigation"
           ],
           "description": "Individual tab trigger. Sets `role=\"tab\"` and manages `aria-selected`.",
           "inputs": [
@@ -789,8 +784,7 @@
           "selector": "[kjTabPanel]",
           "categoryPath": [
             "Core",
-            "Navigation",
-            "Tabs"
+            "Navigation"
           ],
           "description": "Tab panel content. Hidden when not active.",
           "inputs": [
@@ -815,8 +809,7 @@
       "slug": "dialog",
       "categoryPath": [
         "Core",
-        "Overlays",
-        "Dialog"
+        "Overlays"
       ],
       "category": "overlays",
       "description": "Trigger that opens the dialog. Place on any button or interactive element. Takes a `TemplateRef` input that defines the full overlay structure. The template should contain `[kjDialogOverlay]` (backdrop) wrapping `[kjDialog]` (panel). Inside the panel use `[kjDialogTitle]` and `[kjDialogClose]`. Export `kjDialog` as a template ref (`#dlg=\"kjDialog\"`) to call `dlg.close(result?)`.",
@@ -826,8 +819,7 @@
           "selector": "[kjDialogTrigger]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Dialog"
+            "Overlays"
           ],
           "description": "Trigger that opens the dialog. Place on any button or interactive element. Takes a `TemplateRef` input that defines the full overlay structure. The template should contain `[kjDialogOverlay]` (backdrop) wrapping `[kjDialog]` (panel). Inside the panel use `[kjDialogTitle]` and `[kjDialogClose]`. Export `kjDialog` as a template ref (`#dlg=\"kjDialog\"`) to call `dlg.close(result?)`.",
           "inputs": [
@@ -868,7 +860,7 @@
               {
                 "lang": "ts",
                 "filename": "dialog.retro.example.ts",
-                "content": "﻿import { Component } from '@angular/core';\nimport {\n  KjDialogTrigger, KjDialog, KjDialogOverlay,\n  KjDialogTitle, KjDialogClose,\n} from './dialog';\n\n@Component({\n  selector: 'kj-example-dialog-retro',\n  standalone: true,\n  imports: [\n    KjDialogTrigger, KjDialog, KjDialogOverlay,\n    KjDialogTitle, KjDialogClose,\n  ],\n  styles: [`\n    :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #fef9c3; font-family: 'Courier New', monospace; min-height: 160px; color: #000; }\n    button {\n      padding: 0.4rem 1rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700;\n      letter-spacing: 0.06em; text-transform: uppercase; background: #000; color: #fef9c3;\n      border: 2px solid #000; cursor: pointer;\n      box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s;\n    }\n    button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }\n    ::ng-deep .kj-dialog-backdrop { background: rgba(0,0,0,0.6); }\n    ::ng-deep .kj-dialog-panel { background: transparent; box-shadow: none; }\n    ::ng-deep [kjDialogOverlay] { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; }\n    ::ng-deep [kjDialog] { background: #fef9c3; border: 2px solid #000; padding: 1.5rem; min-width: 20rem; box-shadow: 6px 6px 0 #000; font-family: 'Courier New', monospace; color: #000; }\n    ::ng-deep [kjDialogTitle] { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 2px solid #000; padding-bottom: 0.5rem; color: #000; }\n    ::ng-deep .dialog-body { margin: 0.75rem 0 1.5rem; font-size: 0.8rem; color: #444; line-height: 1.6; }\n    ::ng-deep .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }\n    ::ng-deep [kjDialogOverlay] button { font-size: 0.75rem; padding: 0.3rem 0.875rem; box-shadow: 2px 2px 0 #000; }\n    ::ng-deep [kjDialogOverlay] button:hover { box-shadow: 3px 3px 0 #000; }\n    ::ng-deep .btn-primary { background: #16a34a; color: #fff; }\n  `],\n  template: `\n    <button [kjDialogTrigger]=\"myDialog\">Open Dialog</button>\n\n    <ng-template #myDialog>\n      <div kjDialogOverlay>\n        <div kjDialog>\n          <h2 kjDialogTitle>Edit Profile</h2>\n          <p class=\"dialog-body\">Make changes to your profile settings here.</p>\n          <div class=\"dialog-actions\">\n            <button kjDialogClose>Cancel</button>\n            <button class=\"btn-primary\" kjDialogClose>Save Changes</button>\n          </div>\n        </div>\n      </div>\n    </ng-template>\n  `,\n})\nexport class DialogRetroExample {}\n",
+                "content": "﻿import { Component } from '@angular/core';\nimport {\n  KjDialogTrigger, KjDialog, KjDialogOverlay,\n  KjDialogTitle, KjDialogClose,\n} from './dialog';\n\n@Component({\n  selector: 'kj-example-dialog-retro',\n  standalone: true,\n  imports: [\n    KjDialogTrigger, KjDialog, KjDialogOverlay,\n    KjDialogTitle, KjDialogClose,\n  ],\n  styles: [`\n    :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #fef9c3; font-family: 'Courier New', monospace; min-height: 160px; color: #000; }\n    button {\n      padding: 0.4rem 1rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700;\n      letter-spacing: 0.06em; text-transform: uppercase; background: #fff; color: #000;\n      border: 2px solid #000; cursor: pointer;\n      box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s;\n    }\n    button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }\n    ::ng-deep .kj-dialog-backdrop { background: rgba(0,0,0,0.6); }\n    ::ng-deep .kj-dialog-panel { background: transparent; box-shadow: none; }\n    ::ng-deep [kjDialogOverlay] { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; }\n    ::ng-deep [kjDialog] { background: #fef9c3; border: 2px solid #000; padding: 1.5rem; min-width: 20rem; box-shadow: 6px 6px 0 #000; font-family: 'Courier New', monospace; color: #000; }\n    ::ng-deep [kjDialogTitle] { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 2px solid #000; padding-bottom: 0.5rem; color: #000; }\n    ::ng-deep .dialog-body { margin: 0.75rem 0 1.5rem; font-size: 0.8rem; color: #444; line-height: 1.6; }\n    ::ng-deep .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }\n    ::ng-deep [kjDialogOverlay] button { font-size: 0.75rem; padding: 0.3rem 0.875rem; box-shadow: 2px 2px 0 #000; }\n    ::ng-deep [kjDialogOverlay] button:hover { box-shadow: 3px 3px 0 #000; }\n    ::ng-deep .btn-primary { background: #16a34a; color: #fff; }\n  `],\n  template: `\n    <button [kjDialogTrigger]=\"myDialog\">Open Dialog</button>\n\n    <ng-template #myDialog>\n      <div kjDialogOverlay>\n        <div kjDialog>\n          <h2 kjDialogTitle>Edit Profile</h2>\n          <p class=\"dialog-body\">Make changes to your profile settings here.</p>\n          <div class=\"dialog-actions\">\n            <button kjDialogClose>Cancel</button>\n            <button class=\"btn-primary\" kjDialogClose>Save Changes</button>\n          </div>\n        </div>\n      </div>\n    </ng-template>\n  `,\n})\nexport class DialogRetroExample {}\n",
                 "exportName": "DialogRetroExample"
               }
             ],
@@ -903,7 +895,7 @@
                   {
                     "lang": "ts",
                     "filename": "dialog.retro.example.ts",
-                    "content": "﻿import { Component } from '@angular/core';\nimport {\n  KjDialogTrigger, KjDialog, KjDialogOverlay,\n  KjDialogTitle, KjDialogClose,\n} from './dialog';\n\n@Component({\n  selector: 'kj-example-dialog-retro',\n  standalone: true,\n  imports: [\n    KjDialogTrigger, KjDialog, KjDialogOverlay,\n    KjDialogTitle, KjDialogClose,\n  ],\n  styles: [`\n    :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #fef9c3; font-family: 'Courier New', monospace; min-height: 160px; color: #000; }\n    button {\n      padding: 0.4rem 1rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700;\n      letter-spacing: 0.06em; text-transform: uppercase; background: #000; color: #fef9c3;\n      border: 2px solid #000; cursor: pointer;\n      box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s;\n    }\n    button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }\n    ::ng-deep .kj-dialog-backdrop { background: rgba(0,0,0,0.6); }\n    ::ng-deep .kj-dialog-panel { background: transparent; box-shadow: none; }\n    ::ng-deep [kjDialogOverlay] { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; }\n    ::ng-deep [kjDialog] { background: #fef9c3; border: 2px solid #000; padding: 1.5rem; min-width: 20rem; box-shadow: 6px 6px 0 #000; font-family: 'Courier New', monospace; color: #000; }\n    ::ng-deep [kjDialogTitle] { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 2px solid #000; padding-bottom: 0.5rem; color: #000; }\n    ::ng-deep .dialog-body { margin: 0.75rem 0 1.5rem; font-size: 0.8rem; color: #444; line-height: 1.6; }\n    ::ng-deep .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }\n    ::ng-deep [kjDialogOverlay] button { font-size: 0.75rem; padding: 0.3rem 0.875rem; box-shadow: 2px 2px 0 #000; }\n    ::ng-deep [kjDialogOverlay] button:hover { box-shadow: 3px 3px 0 #000; }\n    ::ng-deep .btn-primary { background: #16a34a; color: #fff; }\n  `],\n  template: `\n    <button [kjDialogTrigger]=\"myDialog\">Open Dialog</button>\n\n    <ng-template #myDialog>\n      <div kjDialogOverlay>\n        <div kjDialog>\n          <h2 kjDialogTitle>Edit Profile</h2>\n          <p class=\"dialog-body\">Make changes to your profile settings here.</p>\n          <div class=\"dialog-actions\">\n            <button kjDialogClose>Cancel</button>\n            <button class=\"btn-primary\" kjDialogClose>Save Changes</button>\n          </div>\n        </div>\n      </div>\n    </ng-template>\n  `,\n})\nexport class DialogRetroExample {}\n",
+                    "content": "﻿import { Component } from '@angular/core';\nimport {\n  KjDialogTrigger, KjDialog, KjDialogOverlay,\n  KjDialogTitle, KjDialogClose,\n} from './dialog';\n\n@Component({\n  selector: 'kj-example-dialog-retro',\n  standalone: true,\n  imports: [\n    KjDialogTrigger, KjDialog, KjDialogOverlay,\n    KjDialogTitle, KjDialogClose,\n  ],\n  styles: [`\n    :host { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; background: #fef9c3; font-family: 'Courier New', monospace; min-height: 160px; color: #000; }\n    button {\n      padding: 0.4rem 1rem; font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700;\n      letter-spacing: 0.06em; text-transform: uppercase; background: #fff; color: #000;\n      border: 2px solid #000; cursor: pointer;\n      box-shadow: 3px 3px 0 #000; transition: transform 0.08s, box-shadow 0.08s;\n    }\n    button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }\n    ::ng-deep .kj-dialog-backdrop { background: rgba(0,0,0,0.6); }\n    ::ng-deep .kj-dialog-panel { background: transparent; box-shadow: none; }\n    ::ng-deep [kjDialogOverlay] { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; }\n    ::ng-deep [kjDialog] { background: #fef9c3; border: 2px solid #000; padding: 1.5rem; min-width: 20rem; box-shadow: 6px 6px 0 #000; font-family: 'Courier New', monospace; color: #000; }\n    ::ng-deep [kjDialogTitle] { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 2px solid #000; padding-bottom: 0.5rem; color: #000; }\n    ::ng-deep .dialog-body { margin: 0.75rem 0 1.5rem; font-size: 0.8rem; color: #444; line-height: 1.6; }\n    ::ng-deep .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }\n    ::ng-deep [kjDialogOverlay] button { font-size: 0.75rem; padding: 0.3rem 0.875rem; box-shadow: 2px 2px 0 #000; }\n    ::ng-deep [kjDialogOverlay] button:hover { box-shadow: 3px 3px 0 #000; }\n    ::ng-deep .btn-primary { background: #16a34a; color: #fff; }\n  `],\n  template: `\n    <button [kjDialogTrigger]=\"myDialog\">Open Dialog</button>\n\n    <ng-template #myDialog>\n      <div kjDialogOverlay>\n        <div kjDialog>\n          <h2 kjDialogTitle>Edit Profile</h2>\n          <p class=\"dialog-body\">Make changes to your profile settings here.</p>\n          <div class=\"dialog-actions\">\n            <button kjDialogClose>Cancel</button>\n            <button class=\"btn-primary\" kjDialogClose>Save Changes</button>\n          </div>\n        </div>\n      </div>\n    </ng-template>\n  `,\n})\nexport class DialogRetroExample {}\n",
                     "exportName": "DialogRetroExample"
                   }
                 ],
@@ -937,8 +929,7 @@
           "selector": "[kjDialog]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Dialog"
+            "Overlays"
           ],
           "description": "Panel container for the dialog. Place inside the template provided to `[kjDialogTrigger]`. Auto-sets `role=\"dialog\"`, `aria-modal`, and `aria-labelledby` (requires `[kjDialogTitle]` inside). Export as `#dlg=\"kjDialog\"` to call `dlg.close(result?)` from event handlers.",
           "inputs": [],
@@ -952,8 +943,7 @@
           "selector": "[kjDialogOverlay]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Dialog"
+            "Overlays"
           ],
           "description": "Backdrop/overlay element. Place inside the template wrapping `[kjDialog]`. Closes the dialog on click when `[kjDialogOverlayCloseOnClick]` is true (default).",
           "inputs": [
@@ -974,8 +964,7 @@
           "selector": "[kjDialogTitle]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Dialog"
+            "Overlays"
           ],
           "description": "Marks the dialog title. Sets `id` for `aria-labelledby` wiring on `[kjDialog]`.",
           "inputs": [],
@@ -989,8 +978,7 @@
           "selector": "[kjDialogClose]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Dialog"
+            "Overlays"
           ],
           "description": "Closes the dialog on click without a result value. For closing with a result, use `#dlg=\"kjDialog\"` then `(click)=\"dlg.close(value)\"`.",
           "inputs": [],
@@ -1006,8 +994,7 @@
       "slug": "popover",
       "categoryPath": [
         "Core",
-        "Overlays",
-        "Popover"
+        "Overlays"
       ],
       "category": "overlays",
       "description": "Root popover container. Manages open state, ARIA wiring, and click-outside dismissal. Pairs with `[kjPopoverTrigger]` and `[kjPopoverContent]`. Click outside or Escape closes the popover. Clicking the trigger toggles it. `aria-expanded` and `aria-controls` are automatically set on the trigger.",
@@ -1017,8 +1004,7 @@
           "selector": "[kjPopover]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Popover"
+            "Overlays"
           ],
           "description": "Root popover container. Manages open state, ARIA wiring, and click-outside dismissal. Pairs with `[kjPopoverTrigger]` and `[kjPopoverContent]`. Click outside or Escape closes the popover. Clicking the trigger toggles it. `aria-expanded` and `aria-controls` are automatically set on the trigger.",
           "inputs": [
@@ -1109,8 +1095,7 @@
           "selector": "[kjPopoverTrigger]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Popover"
+            "Overlays"
           ],
           "description": "Trigger button that toggles the popover. Automatically sets `aria-expanded` and `aria-controls` on the host element.",
           "inputs": [],
@@ -1124,8 +1109,7 @@
           "selector": "[kjPopoverContent]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Popover"
+            "Overlays"
           ],
           "description": "Popover content panel. Hidden when closed. Uses `hidden` attribute for accessibility-compliant visibility. Click-outside and Escape both dismiss it. Clicks inside the panel are stopped so they don't bubble to the document listener.",
           "inputs": [],
@@ -1139,8 +1123,7 @@
           "selector": "[kjPopoverClose]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Popover"
+            "Overlays"
           ],
           "description": "Closes the parent popover when clicked. Place inside `[kjPopoverContent]`.",
           "inputs": [],
@@ -1158,8 +1141,7 @@
       "slug": "toast",
       "categoryPath": [
         "Core",
-        "Overlays",
-        "Toast"
+        "Overlays"
       ],
       "category": "overlays",
       "description": "Marks an element as a toast notification item with ARIA role and variant data attribute. Use inside a `[kjToastViewport]` template with `@for`.",
@@ -1169,8 +1151,7 @@
           "selector": "[kjToast]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Toast"
+            "Overlays"
           ],
           "description": "Marks an element as a toast notification item with ARIA role and variant data attribute. Use inside a `[kjToastViewport]` template with `@for`.",
           "inputs": [
@@ -1254,8 +1235,7 @@
           "selector": "[kjToastViewport]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Toast"
+            "Overlays"
           ],
           "description": "Container directive for the toast region. Exposes the active `toasts` signal from `KjToastService` so the template can iterate and render them.",
           "inputs": [],
@@ -1271,8 +1251,7 @@
           "selector": "[kjToastClose]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Toast"
+            "Overlays"
           ],
           "description": "Dismiss button for a toast. Call with the toast `id` to remove it from the queue.",
           "inputs": [
@@ -1297,8 +1276,7 @@
       "slug": "tooltip",
       "categoryPath": [
         "Core",
-        "Overlays",
-        "Tooltip"
+        "Overlays"
       ],
       "category": "overlays",
       "description": "Root tooltip container. Manages show/hide state with hover/focus delays. Pairs with `[kjTooltipTrigger]` and `[kjTooltipContent]`. The trigger automatically receives `aria-describedby` pointing to the tooltip id. Add `role=\"tooltip\"` and the matching `id` to the content element.",
@@ -1308,8 +1286,7 @@
           "selector": "[kjTooltip]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Tooltip"
+            "Overlays"
           ],
           "description": "Root tooltip container. Manages show/hide state with hover/focus delays. Pairs with `[kjTooltipTrigger]` and `[kjTooltipContent]`. The trigger automatically receives `aria-describedby` pointing to the tooltip id. Add `role=\"tooltip\"` and the matching `id` to the content element.",
           "inputs": [
@@ -1425,8 +1402,7 @@
           "selector": "[kjTooltipTrigger]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Tooltip"
+            "Overlays"
           ],
           "description": "Trigger element for the tooltip. Shows on hover/focus, hides on leave/blur/Escape. Automatically receives `aria-describedby` pointing to the tooltip panel.",
           "inputs": [],
@@ -1440,8 +1416,7 @@
           "selector": "[kjTooltipContent]",
           "categoryPath": [
             "Core",
-            "Overlays",
-            "Tooltip"
+            "Overlays"
           ],
           "description": "Tooltip content panel. Hidden unless the trigger is hovered or focused. Add `role=\"tooltip\"` and set the `id` to match the trigger's `aria-describedby`. The `data-side` attribute reflects `kjTooltipSide` and can be used for CSS positioning.",
           "inputs": [],
@@ -1459,8 +1434,7 @@
       "slug": "chart",
       "categoryPath": [
         "Core",
-        "Data",
-        "Chart"
+        "Data"
       ],
       "category": "data",
       "description": "Wraps Apache ECharts. Initializes after first render, updates reactively, disposes on destroy. Always provide `kjChartLabel` for WCAG AAA compliance.",
@@ -1470,8 +1444,7 @@
           "selector": "[kjChart]",
           "categoryPath": [
             "Core",
-            "Data",
-            "Chart"
+            "Data"
           ],
           "description": "Wraps Apache ECharts. Initializes after first render, updates reactively, disposes on destroy. Always provide `kjChartLabel` for WCAG AAA compliance.",
           "inputs": [
@@ -1502,8 +1475,7 @@
       "slug": "table",
       "categoryPath": [
         "Core",
-        "Data",
-        "Table"
+        "Data"
       ],
       "category": "data",
       "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
@@ -1513,8 +1485,7 @@
           "selector": "[kjTable]",
           "categoryPath": [
             "Core",
-            "Data",
-            "Table"
+            "Data"
           ],
           "description": "Wraps TanStack Angular Table. Accepts `kjTable` (columns) and `kjTableData` signal inputs and exposes the table instance (rows, headers, sorting) via the `KJ_TABLE` context token. Use `table` to access the full TanStack `Table<T>` instance in templates via `exportAs: 'kjTable'`.",
           "inputs": [
@@ -1537,8 +1508,7 @@
           "selector": "[kjTableHeader]",
           "categoryPath": [
             "Core",
-            "Data",
-            "Table"
+            "Data"
           ],
           "description": "Marks a `<th>` as a sortable column header. Sets `aria-sort` based on TanStack sort state. Clicking toggles sort direction only when the column has sorting enabled. If `enableSorting: false` is set on the column def, the header renders as plain text.",
           "inputs": [],
@@ -1556,8 +1526,7 @@
       "slug": "avatar",
       "categoryPath": [
         "Core",
-        "Display",
-        "Avatar"
+        "Display"
       ],
       "category": "display",
       "description": "Container for avatar. Tracks image load state.",
@@ -1567,8 +1536,7 @@
           "selector": "[kjAvatar]",
           "categoryPath": [
             "Core",
-            "Display",
-            "Avatar"
+            "Display"
           ],
           "description": "Container for avatar. Tracks image load state.",
           "inputs": [],
@@ -1584,8 +1552,7 @@
           "selector": "[kjAvatarImage]",
           "categoryPath": [
             "Core",
-            "Display",
-            "Avatar"
+            "Display"
           ],
           "description": "Image element within a `[kjAvatar]` container.",
           "inputs": [],
@@ -1599,8 +1566,7 @@
           "selector": "[kjAvatarFallback]",
           "categoryPath": [
             "Core",
-            "Display",
-            "Avatar"
+            "Display"
           ],
           "description": "Fallback shown when image is unavailable.",
           "inputs": [],
@@ -1616,8 +1582,7 @@
       "slug": "badge",
       "categoryPath": [
         "Core",
-        "Display",
-        "Badge"
+        "Display"
       ],
       "category": "display",
       "description": "Marks an element as a badge via data attributes.",
@@ -1627,8 +1592,7 @@
           "selector": "[kjBadge]",
           "categoryPath": [
             "Core",
-            "Display",
-            "Badge"
+            "Display"
           ],
           "description": "Marks an element as a badge via data attributes.",
           "inputs": [
@@ -1653,8 +1617,7 @@
       "slug": "a11y",
       "categoryPath": [
         "Core",
-        "Accessibility",
-        "AriaDescribedBy"
+        "Accessibility"
       ],
       "category": "a11y",
       "description": "Wires `aria-describedby` to one or more element IDs. Accepts a single ID string or an array of ID strings. Removes the attribute automatically when the value is empty.",
@@ -1664,8 +1627,7 @@
           "selector": "[kjAriaDescribedBy]",
           "categoryPath": [
             "Core",
-            "Accessibility",
-            "AriaDescribedBy"
+            "Accessibility"
           ],
           "description": "Wires `aria-describedby` to one or more element IDs. Accepts a single ID string or an array of ID strings. Removes the attribute automatically when the value is empty.",
           "inputs": [
@@ -1688,10 +1650,9 @@
           "selector": "[kjFocusTrap]",
           "categoryPath": [
             "Core",
-            "Accessibility",
-            "FocusTrap"
+            "Accessibility"
           ],
-          "description": "Traps keyboard focus within the host element using Angular CDK FocusTrap. Designed for modal dialogs, drawers, and other overlay patterns.",
+          "description": "Traps keyboard focus within the host element using a native Tab-key interceptor. Designed for modal dialogs, drawers, and other overlay patterns.",
           "inputs": [
             {
               "name": "kjFocusTrapEnabled",
@@ -1712,10 +1673,9 @@
           "selector": "[kjLiveRegion]",
           "categoryPath": [
             "Core",
-            "Accessibility",
-            "LiveRegion"
+            "Accessibility"
           ],
-          "description": "Marks an element as an ARIA live region and exposes an `announce` method for programmatically pushing announcements to screen readers via CDK LiveAnnouncer.",
+          "description": "Marks an element as an ARIA live region and exposes an `announce` method for programmatically pushing announcements to screen readers via DOM text content.",
           "inputs": [
             {
               "name": "kjPoliteness",
@@ -1736,8 +1696,7 @@
           "selector": "[kjVisuallyHidden]",
           "categoryPath": [
             "Core",
-            "Accessibility",
-            "VisuallyHidden"
+            "Accessibility"
           ],
           "description": "Visually hides an element while keeping it accessible to screen readers. Uses the standard visually-hidden CSS technique via inline styles.",
           "inputs": [],
@@ -1755,8 +1714,7 @@
       "slug": "primitives",
       "categoryPath": [
         "Core",
-        "Primitives",
-        "FormControl"
+        "Primitives"
       ],
       "category": "primitives",
       "description": "Shared ControlValueAccessor primitive. Compose via `hostDirectives` on any form input directive (KjInput, KjCheckbox, etc.) to wire Angular reactive forms and template-driven forms automatically. The host directive calls `notifyChange(value)` on user input and `notifyTouched()` on blur. The directive handles all CVA plumbing.",
@@ -1766,8 +1724,7 @@
           "selector": "[kjFormControl]",
           "categoryPath": [
             "Core",
-            "Primitives",
-            "FormControl"
+            "Primitives"
           ],
           "description": "Shared ControlValueAccessor primitive. Compose via `hostDirectives` on any form input directive (KjInput, KjCheckbox, etc.) to wire Angular reactive forms and template-driven forms automatically. The host directive calls `notifyChange(value)` on user input and `notifyTouched()` on blur. The directive handles all CVA plumbing.",
           "inputs": [],
@@ -1781,8 +1738,7 @@
           "selector": "[kjDisabled]",
           "categoryPath": [
             "Core",
-            "Primitives",
-            "Disabled"
+            "Primitives"
           ],
           "description": "Applies disabled state to any element via ARIA and data attributes. Compose via `hostDirectives` on other directives to add disabled behavior.",
           "inputs": [
@@ -1805,10 +1761,9 @@
           "selector": "[kjFocusRing]",
           "categoryPath": [
             "Core",
-            "Primitives",
-            "FocusRing"
+            "Primitives"
           ],
-          "description": "Tracks focus-visible state using the CDK FocusMonitor with a fallback to direct event listeners for test environments (jsdom). Sets `data-focus-visible` when the element receives focus. Compose via `hostDirectives` to add focus-ring behavior to interactive elements.",
+          "description": "Tracks focus-visible state using native PointerEvents and keyboard interaction. Sets `data-focus-visible` only when the element receives focus via keyboard. Compose via `hostDirectives` to add focus-ring behavior to interactive elements.",
           "inputs": [],
           "examples": [
             "<button kjFocusRing>Focusable button</button>"

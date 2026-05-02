@@ -294,3 +294,10 @@ h1 {
     scroll-margin-top: calc(56px + 1rem);
   }
 }
+
+/* ── Markdown description editor ── */
+.desc-editor {
+  border: none !important;
+  background: transparent !important;
+  margin-bottom: 1rem;
+}

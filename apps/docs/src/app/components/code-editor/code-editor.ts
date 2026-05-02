@@ -23,7 +23,7 @@ export class CodeEditorComponent implements OnDestroy {
   @ViewChild('editorHost', { static: false }) editorHost!: ElementRef<HTMLDivElement>;
 
   code = input<string>('');
-  lang = input<'ts' | 'html' | 'css' | 'json'>('ts');
+  lang = input<'ts' | 'html' | 'css' | 'json' | 'md'>('ts');
   readonly = input<boolean>(true);
   showHeader = input<boolean>(true);
 
@@ -138,6 +138,7 @@ export class CodeEditorComponent implements OnDestroy {
     if (lang === 'html') { const { html } = await import('@codemirror/lang-html'); return html(); }
     if (lang === 'css') { const { css } = await import('@codemirror/lang-css'); return css(); }
     if (lang === 'json') { const { json } = await import('@codemirror/lang-json'); return json(); }
+    if (lang === 'md') { const { markdown } = await import('@codemirror/lang-markdown'); return markdown(); }
     const { javascript } = await import('@codemirror/lang-javascript');
     return javascript({ typescript: true });
   }
