@@ -3,7 +3,6 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { join, dirname, resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 // ── Exported types ──────────────────────────────────────────────────────────
 
@@ -216,8 +215,8 @@ function extractExportName(content: string): string | undefined {
 }
 
 const DOCS_THEMES_CSS_PATH = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../../packages/core/src/styles/docs-themes.css'
+  process.cwd(),
+  'packages/core/src/styles/docs-themes.css'
 );
 
 /** Reads a co-located example file. If it references docs-themes.css, appends it as an extra tab. */

@@ -54,8 +54,8 @@ function extractExportName(content: string): string | undefined {
 }
 
 const DOCS_THEMES_CSS_PATH = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../packages/core/src/styles/docs-themes.css'
+  process.cwd(),
+  'packages/core/src/styles/docs-themes.css'
 );
 
 /** Reads a co-located example file from disk. If the file references docs-themes.css via styleUrls, appends it as an extra tab. */
