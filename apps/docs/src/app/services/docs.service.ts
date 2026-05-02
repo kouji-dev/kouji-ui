@@ -133,24 +133,22 @@ export class DocsService {
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
-      const path  = comp.categoryPath.length >= 3 ? comp.categoryPath : null;
-      const pkg   = path ? path[path.length - 3] : 'Others';
-      const cat   = path ? path[path.length - 2] : 'Others';
-      const label = comp.name;
+      // Use the second-to-last segment as category (e.g. "Navigation" from "Core/Navigation/Accordion")
+      // or the first segment if path has exactly 2 segments ("Navigation" from "Navigation/Accordion")
+      // Falls back to "Others" for anything without a valid path.
+      const path = comp.categoryPath;
+      const cat  = path.length >= 2 ? path[path.length - 2] : 'Others';
 
-      if (!tree[pkg]) tree[pkg] = {};
-      if (!tree[pkg][cat]) tree[pkg][cat] = [];
-      tree[pkg][cat].push({ label, slug: comp.slug, children: [] });
+      if (!tree['root']) tree['root'] = {};
+      if (!tree['root'][cat]) tree['root'][cat] = [];
+      tree['root'][cat].push({ label: comp.name, slug: comp.slug, children: [] });
     }
 
-    return Object.entries(tree).map(([pkg, cats]) => ({
-      label: pkg,
+    // Return flat 2-level: Category > Component (no top-level package grouping)
+    return Object.entries(tree['root'] ?? {}).map(([cat, items]) => ({
+      label: cat,
       slug: null,
-      children: Object.entries(cats).map(([cat, items]) => ({
-        label: cat,
-        slug: null,
-        children: items,
-      })),
+      children: items,
     }));
   }
 }
