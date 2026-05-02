@@ -107,15 +107,18 @@ export class CodeEditorComponent implements OnDestroy {
           '.cm-punctuation': { color: '#24292e' },
         });
 
+    const isMd = this.lang() === 'md';
     const baseTheme = EditorView.theme({
       '&': {
         fontSize: '0.8rem',
         fontFamily: "'JetBrains Mono', monospace",
         borderRadius: '0',
-        ...(isDark ? { backgroundColor: '#080808' } : {}),
+        ...(isDark && !isMd ? { backgroundColor: '#080808' } : {}),
+        ...(isMd ? { backgroundColor: 'transparent' } : {}),
       },
-      '.cm-content': { padding: '1rem 1.25rem' },
+      '.cm-content': { padding: isMd ? '0' : '1rem 1.25rem' },
       '.cm-focused': { outline: 'none' },
+      ...(isMd ? { '.cm-line': { lineHeight: '1.7' } } : {}),
     });
 
     const langExtension = await this.getLangExtension();

@@ -295,13 +295,21 @@ h1 {
   }
 }
 
-/* ── Markdown description editor ── */
-.desc-editor {
-  border: none !important;
-  background: transparent !important;
-  margin-bottom: 1rem;
+/* ── Markdown description editor — transparent, no chrome ── */
+.desc-editor,
+.desc-editor .cm-editor,
+.desc-editor .cm-focused,
+.desc-editor .cm-scroller,
+.desc-editor .cm-gutters { background: transparent !important; border: none !important; }
+
+.desc-editor .cm-scroller  { overflow: hidden !important; }
+.desc-editor .cm-cursor    { display: none !important; }
+.desc-editor .cm-selectionBackground { display: none !important; }
+.desc-editor .cm-content   { padding: 0 !important; caret-color: transparent; }
+
+/* Line break spacing for readable paragraph cuts */
+.desc-editor .cm-line {
+  padding: 0 !important;
+  line-height: 1.7;
+  min-height: 1.4em;
 }
-.desc-editor .cm-editor { background: transparent !important; }
-.desc-editor .cm-scroller { overflow: hidden !important; }
-.desc-editor .cm-cursor { display: none !important; }
-.desc-editor .cm-content { padding: 0 !important; caret-color: transparent; }
