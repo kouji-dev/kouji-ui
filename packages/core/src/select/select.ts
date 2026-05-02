@@ -108,7 +108,7 @@ export class KjSelectTrigger {
     '[attr.aria-activedescendant]': 'activeId()',
     '(keydown)': 'onKeydown($event)',
     '(document:keydown.escape)': 'ctx.hide()',
-    '(document:click)': 'onDocClick($event)',
+    '(document:click)': 'onDocClick()',
     '(click)': '$event.stopPropagation()',
   },
 })
@@ -184,9 +184,9 @@ export class KjSelectContent {
   }
 
   private getOptions(): Array<{ el: HTMLElement; value: unknown; id: string }> {
-    return Array.from(
-      this.el.nativeElement.querySelectorAll<HTMLElement>('[kjOption]')
-    ).map((el, i) => ({
+    return (Array.from(
+      this.el.nativeElement.querySelectorAll('[kjOption]')
+    ) as HTMLElement[]).map((el, i) => ({
       el,
       value: (el as any).__kjOptionValue,
       id: el.id || `kj-option-${i}`,

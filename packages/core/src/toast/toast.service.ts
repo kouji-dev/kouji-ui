@@ -19,7 +19,7 @@ export interface KjToastConfig {
   duration?: number;
 }
 
-export interface KjToast extends Required<Pick<KjToastConfig, 'id' | 'message' | 'variant' | 'duration'>> {
+export interface KjToastItem extends Required<Pick<KjToastConfig, 'id' | 'message' | 'variant' | 'duration'>> {
   title?: string;
 }
 
@@ -39,7 +39,7 @@ export interface KjToast extends Required<Pick<KjToastConfig, 'id' | 'message' |
  */
 @Injectable({ providedIn: 'root' })
 export class KjToastService {
-  private readonly _toasts = signal<KjToast[]>([]);
+  private readonly _toasts = signal<KjToastItem[]>([]);
   /** Live list of active toasts. Read from `[kjToastViewport]` via its `toasts` signal. */
   readonly toasts = this._toasts.asReadonly();
 
@@ -51,7 +51,7 @@ export class KjToastService {
    */
   show(config: KjToastConfig): string {
     const id = config.id ?? crypto.randomUUID();
-    const toast: KjToast = {
+    const toast: KjToastItem = {
       id,
       message: config.message,
       title: config.title,

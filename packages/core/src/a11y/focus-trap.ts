@@ -38,9 +38,9 @@ export class KjFocusTrap {
 
       const handleKeydown = (e: KeyboardEvent) => {
         if (!this.kjFocusTrapEnabled() || e.key !== 'Tab') return;
-        const focusable = Array.from(
-          this.el.nativeElement.querySelectorAll<HTMLElement>(FOCUSABLE)
-        ).filter(el => !el.closest('[hidden]') && getComputedStyle(el).display !== 'none');
+        const focusable = (Array.from(
+          this.el.nativeElement.querySelectorAll(FOCUSABLE)
+        ) as HTMLElement[]).filter(el => !el.closest('[hidden]') && getComputedStyle(el).display !== 'none');
 
         if (!focusable.length) { e.preventDefault(); return; }
         const first = focusable[0];
@@ -64,7 +64,7 @@ export class KjFocusTrap {
 
   /** Focuses the first tabbable element inside the trap. */
   focusFirst(): void {
-    const el = this.el.nativeElement.querySelector<HTMLElement>(FOCUSABLE);
+    const el = this.el.nativeElement.querySelector(FOCUSABLE) as HTMLElement | null;
     el?.focus();
   }
 }

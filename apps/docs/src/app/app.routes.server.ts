@@ -1,5 +1,5 @@
 import { RenderMode, PrerenderFallback, ServerRoute } from '@angular/ssr';
-import { getDocsSlugs } from '../lib/docs-extractor';
+import { getManifest } from '../lib/manifest';
 
 export const serverRoutes: ServerRoute[] = [
   {
@@ -7,8 +7,7 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender,
     fallback: PrerenderFallback.Client,
     async getPrerenderParams() {
-      const slugs = getDocsSlugs();
-      return slugs.map((slug: string) => ({ slug }));
+      return getManifest().components.map(c => ({ slug: c.slug }));
     },
   },
   {
