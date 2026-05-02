@@ -44,9 +44,7 @@
         <span class="tag">{{ comp.category }}</span>
         <h1>{{ comp.name }}</h1>
         @if (comp.description) {
-          @defer (on idle) {
-            <kj-code-editor class="desc-editor" [code]="comp.description" lang="md" [showHeader]="false" [readonly]="true" />
-          }
+          <kj-code-editor class="desc-editor" [code]="comp.description" lang="md" [showHeader]="false" [readonly]="true" />
         }
       </header>
 
@@ -70,9 +68,7 @@
             </div>
 
             @if (directive.description) {
-              @defer (on idle) {
-                <kj-code-editor class="desc-editor" [code]="directive.description" lang="md" [showHeader]="false" [readonly]="true" />
-              }
+              <kj-code-editor class="desc-editor" [code]="directive.description" lang="md" [showHeader]="false" [readonly]="true" />
             }
 
             @if (directive.inputs.length) {
@@ -87,12 +83,10 @@
               <div class="inline-examples-block">
                 <h3 class="block-title">Usage</h3>
                 @for (ex of directive.examples; track $index) {
-                  @defer (on idle) {
-                    <kj-code-editor
-                      [code]="ex"
-                      [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
-                    />
-                  }
+                  <kj-code-editor
+                    [code]="ex"
+                    [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
+                  />
                 }
               </div>
             }
