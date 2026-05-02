@@ -12,8 +12,8 @@ import { KjButton } from './button';
     button[kjButton] { padding: 0.5rem 1.25rem; font-family: var(--kj-font); font-size: 0.875rem; border: var(--kj-btn-border); cursor: pointer; transition: var(--kj-transition); }
     [data-variant="default"] { background: var(--kj-accent); color: var(--kj-accent-on); }
     [data-variant="destructive"] { background: var(--kj-destructive); color: #fff; }
-    [data-variant="outline"] { background: transparent; color: var(--kj-text); border: 1px solid var(--kj-border); }
-    [data-variant="ghost"] { background: transparent; color: var(--kj-text-muted); }
+    [data-variant="outline"] { background: transparent; color: var(--kj-text); border: var(--kj-btn-outline-border); }
+    [data-variant="ghost"] { background: transparent; color: var(--kj-btn-ghost-color); }
     [aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
   `],
   template: `

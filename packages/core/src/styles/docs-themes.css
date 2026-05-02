@@ -25,6 +25,8 @@
     --kj-shadow-hard: none;
     --kj-font: 'JetBrains Mono', monospace;
     --kj-btn-border: none;
+    --kj-btn-outline-border: 1px solid rgba(240, 237, 230, 0.35);
+    --kj-btn-ghost-color: rgba(240, 237, 230, 0.45);
     --kj-backdrop: rgba(0, 0, 0, 0.75);
     --kj-transition: opacity 0.15s;
   }
@@ -49,6 +51,8 @@
     --kj-shadow-hard: 6px 6px 0 #000;
     --kj-font: 'Courier New', monospace;
     --kj-btn-border: 2px solid #000;
+    --kj-btn-outline-border: 2px solid #000;
+    --kj-btn-ghost-color: #555;
     --kj-backdrop: rgba(0, 0, 0, 0.6);
     --kj-transition: transform 0.08s, box-shadow 0.08s;
   }
@@ -70,6 +74,8 @@
     --kj-shadow-hard: 0 20px 60px rgba(0, 0, 0, 0.12);
     --kj-font: system-ui, -apple-system, sans-serif;
     --kj-btn-border: 1px solid transparent;
+    --kj-btn-outline-border: 1px solid #9ca3af;
+    --kj-btn-ghost-color: #374151;
     --kj-backdrop: rgba(0, 0, 0, 0.4);
     --kj-transition: background 0.12s;
   }

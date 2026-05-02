@@ -19,6 +19,8 @@ import { KjButton } from './button';
     [data-variant="default"] { background: var(--kj-text); color: var(--kj-bg); }
     [data-variant="destructive"] { background: var(--kj-destructive); color: #fff; }
     [data-variant="outline"] { background: var(--kj-bg); color: var(--kj-text); }
+    [data-variant="ghost"] { background: transparent; color: var(--kj-btn-ghost-color); border-color: transparent; box-shadow: none; }
+    [data-variant="ghost"]:hover { box-shadow: none; transform: none; }
     [aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
   `],
   host: { class: 'kj-theme-retro' },
@@ -27,6 +29,7 @@ import { KjButton } from './button';
       <button kjButton [kjVariant]="'default'">Default</button>
       <button kjButton [kjVariant]="'destructive'">Destructive</button>
       <button kjButton [kjVariant]="'outline'">Outline</button>
+      <button kjButton [kjVariant]="'ghost'">Ghost</button>
       <button kjButton [kjDisabled]="true">Disabled</button>
     </div>
   `,

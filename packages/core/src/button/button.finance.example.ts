@@ -17,9 +17,9 @@ import { KjButton } from './button';
     [data-variant="default"] { background: var(--kj-accent); color: var(--kj-accent-on); border-color: var(--kj-accent); }
     [data-variant="default"]:hover { background: #2563eb; }
     [data-variant="destructive"] { background: var(--kj-destructive); color: #fff; border-color: var(--kj-destructive); }
-    [data-variant="outline"] { background: transparent; color: var(--kj-text); border: 1px solid var(--kj-border); }
+    [data-variant="outline"] { background: transparent; color: var(--kj-text); border: var(--kj-btn-outline-border); }
     [data-variant="outline"]:hover { background: var(--kj-bg); }
-    [data-variant="ghost"] { background: transparent; color: var(--kj-text-muted); border-color: transparent; }
+    [data-variant="ghost"] { background: transparent; color: var(--kj-btn-ghost-color); border-color: transparent; }
     [aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
   `],
   host: { class: 'kj-theme-finance' },
