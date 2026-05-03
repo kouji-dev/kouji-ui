@@ -41,41 +41,6 @@
         }
       }
     },
-    "kj-ui": {
-      "projectType": "library",
-      "root": "packages/ui",
-      "sourceRoot": "packages/ui/src",
-      "prefix": "kj",
-      "architect": {
-        "build": {
-          "builder": "@angular/build:ng-packagr",
-          "configurations": {
-            "production": {
-              "tsConfig": "packages/ui/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "packages/ui/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular/build:unit-test",
-          "options": {
-            "tsConfig": "packages/ui/tsconfig.spec.json"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "packages/ui/**/*.ts",
-              "packages/ui/**/*.html"
-            ]
-          }
-        }
-      }
-    },
     "docs": {
       "projectType": "application",
       "schematics": {},
@@ -100,7 +65,6 @@
               }
             ],
             "styles": [
-              "packages/ui/styles/kj.css",
               "packages/core/src/styles/docs-themes.css",
               "apps/docs/src/styles.css"
             ],

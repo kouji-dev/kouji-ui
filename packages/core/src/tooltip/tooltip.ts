@@ -11,6 +11,7 @@ const _tooltipRegistry = new WeakMap<Element, KjTooltipContent>();
 /**
  * Tooltip content panel. Owns all configuration and visibility state.
  * Pair with `[kjTooltipTrigger]` — pass the native element reference using `#myTip` (no `exportAs` needed).
+ *
  * Automatically sets `role="tooltip"` (customisable via `kjTooltipRole`).
  * Note: `role="tooltip"` prohibits `aria-label` and `aria-labelledby` per WAI-ARIA.
  *
@@ -94,8 +95,9 @@ export class KjTooltipContent {
 
 /**
  * Trigger element for the tooltip. Pass the `[kjTooltipContent]` native element reference via `[kjTooltipTrigger]`.
- * Automatically wires `aria-describedby` to the content's `id` — always set before first display per WAI-ARIA spec.
- * Shows on hover and focus, hides on leave, blur, or Escape.
+ *
+ * - Automatically wires `aria-describedby` to the content's `id` — always set before first display per WAI-ARIA spec
+ * - Shows on hover and focus, hides on leave, blur, or Escape
  *
  * @category Core/Overlays
  * @required

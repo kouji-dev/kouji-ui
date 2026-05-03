@@ -187,19 +187,6 @@ importers:
         specifier: ^21.0.0
         version: 21.2.10(@angular/compiler@21.2.10)(rxjs@7.8.2)(zone.js@0.16.1)
 
-  packages/ui:
-    dependencies:
-      '@angular/common':
-        specifier: ^21.0.0
-        version: 21.2.10(@angular/core@21.2.10(@angular/compiler@21.2.10)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)
-      '@angular/core':
-        specifier: ^21.0.0
-        version: 21.2.10(@angular/compiler@21.2.10)(rxjs@7.8.2)(zone.js@0.16.1)
-    devDependencies:
-      '@kouji-ui/core':
-        specifier: workspace:*
-        version: link:../core
-
 packages:
 
   '@acemir/cssom@0.9.31':

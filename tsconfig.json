@@ -10,9 +10,7 @@
     "paths": {
       "@kouji-ui/core": ["packages/core/src/public-api.ts"],
       "@kouji-ui/core/examples": ["packages/core/src/example-components.ts"],
-      "@kouji-ui/core/*": ["packages/core/src/*"],
-      "@kouji-ui/ui": ["packages/ui/src/public-api.ts"],
-      "@kouji-ui/ui/*": ["packages/ui/src/*"]
+      "@kouji-ui/core/*": ["packages/core/src/*"]
     },
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -36,12 +34,6 @@
     },
     {
       "path": "./packages/core/tsconfig.spec.json"
-    },
-    {
-      "path": "./packages/ui/tsconfig.lib.json"
-    },
-    {
-      "path": "./packages/ui/tsconfig.spec.json"
     },
     {
       "path": "./apps/docs/tsconfig.app.json"

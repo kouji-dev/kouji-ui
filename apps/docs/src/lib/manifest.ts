@@ -8,10 +8,23 @@
  * In dev the file watcher invalidates the cache when any source file
  * in packages/core/src changes; the next request re-extracts.
  */
-import { watch } from 'node:fs';
-import { resolve } from 'node:path';
+import { watch, existsSync } from 'node:fs';
+import { resolve, join, dirname } from 'node:path';
 import { extractDocsManifest } from './docs-extractor';
 import type { DocsManifest } from '../app/services/docs.service';
+
+function findWorkspaceRoot(start: string): string {
+  let dir = resolve(start);
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, 'pnpm-workspace.yaml')) && existsSync(join(dir, 'packages', 'core'))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return start;
+}
 
 let _manifest: DocsManifest | null = null;
 let _watcherStarted = false;
@@ -33,7 +46,7 @@ function startWatcher(): void {
   if (_watcherStarted) return;
   _watcherStarted = true;
 
-  const coreSrc = resolve(process.cwd(), 'packages/core/src');
+  const coreSrc = resolve(findWorkspaceRoot(process.cwd()), 'packages/core/src');
   let debounce: ReturnType<typeof setTimeout>;
 
   try {

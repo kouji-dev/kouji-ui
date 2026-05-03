@@ -44,7 +44,7 @@
         <span class="tag">{{ comp.category }}</span>
         <h1>{{ comp.name }}</h1>
         @if (comp.description) {
-          <kj-code-editor class="desc-editor" [code]="comp.description" lang="md" [showHeader]="false" [readonly]="true" />
+          <p class="desc">{{ comp.description }}</p>
         }
       </header>
 
@@ -68,7 +68,7 @@
             </div>
 
             @if (directive.description) {
-              <kj-code-editor class="desc-editor" [code]="directive.description" lang="md" [showHeader]="false" [readonly]="true" />
+              <p class="desc">{{ directive.description }}</p>
             }
 
             @if (directive.inputs.length) {

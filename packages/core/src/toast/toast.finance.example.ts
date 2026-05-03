@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { KjToastViewport, KjToast, KjToastClose } from './toast';
+import { NgTemplateOutlet } from '@angular/common';
+import { KjToastViewport, KjToast } from './toast';
 import { KjToastService } from './toast.service';
 
 @Component({
   selector: 'kj-example-toast-finance',
   standalone: true,
-  imports: [KjToastViewport, KjToast, KjToastClose],
+  imports: [KjToastViewport, KjToast, NgTemplateOutlet],
   styleUrls: ['../styles/docs-themes.css'],
   host: { class: 'kj-theme-finance' },
   styles: [`
@@ -26,6 +27,7 @@ import { KjToastService } from './toast.service';
     [kjToastViewport] {
       position: absolute; bottom: 1rem; right: 1rem;
       display: flex; flex-direction: column; gap: 0.5rem; width: 18rem;
+      list-style: none; padding: 0; margin: 0;
     }
     [kjToast] {
       display: flex; align-items: center; justify-content: space-between;
@@ -47,14 +49,18 @@ import { KjToastService } from './toast.service';
       <button class="btn-warning" (click)="toast.warning('Session expiring soon.')">Warning</button>
       <button class="btn-info"    (click)="toast.info('Statement ready to download.')">Info</button>
     </div>
-    <div kjToastViewport #vp="kjToastViewport">
-      @for (t of vp.toasts(); track t.id) {
-        <div kjToast [kjToastVariant]="t.variant">
-          <span>{{ t.message }}</span>
-          <button class="close" [kjToastClose]="t.id" [attr.aria-label]="'Dismiss'">×</button>
-        </div>
+    <ol kjToastViewport [kjToastDefaultTemplate]="defaultTpl" #vp="kjToastViewport" aria-label="Notifications">
+      @for (r of vp.renderable(); track r.id) {
+        <li><ng-container *ngTemplateOutlet="r.template; context: r.context" /></li>
       }
-    </div>
+    </ol>
+
+    <ng-template #defaultTpl let-ctx>
+      <div kjToast [kjToastVariant]="ctx.variant" [kjToastId]="ctx.id">
+        <span>{{ ctx.message }}</span>
+        <button class="close" (click)="ctx.dismiss()" aria-label="Dismiss">×</button>
+      </div>
+    </ng-template>
   `,
 })
 export class ToastFinanceExample {

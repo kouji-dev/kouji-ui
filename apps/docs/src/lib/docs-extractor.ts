@@ -2,7 +2,21 @@
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { join, dirname, resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+
+/** Walks up from `start` until a directory contains pnpm-workspace.yaml AND packages/core. */
+function findWorkspaceRoot(start: string): string {
+  let dir = resolve(start);
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, 'pnpm-workspace.yaml')) && existsSync(join(dir, 'packages', 'core', 'tsconfig.lib.json'))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error(`Could not find workspace root from ${start} — expected pnpm-workspace.yaml + packages/core/tsconfig.lib.json`);
+}
 
 // ── Exported types ──────────────────────────────────────────────────────────
 
@@ -130,13 +144,14 @@ function getJsDocDescription(node: ts.Node): string {
   if (!tags.length) return '';
   const comment = tags[0].comment;
   if (!comment) return '';
-  if (typeof comment === 'string') return comment.trim().replace(/\s+/g, ' ');
+  // Preserve newlines so markdown (paragraphs, fenced code blocks) renders correctly.
+  if (typeof comment === 'string') return comment.replace(/[ \t]+\n/g, '\n').trim();
   // NodeArray<JSDocComment>
   return comment
     .map(c => ('text' in c ? (c as ts.JSDocText).text : ''))
     .join('')
-    .trim()
-    .replace(/\s+/g, ' ');
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
 }
 
 /**
@@ -216,7 +231,7 @@ function extractExportName(content: string): string | undefined {
 }
 
 const DOCS_THEMES_CSS_PATH = join(
-  process.cwd(),
+  findWorkspaceRoot(process.cwd()),
   'packages/core/src/styles/docs-themes.css'
 );
 
@@ -532,16 +547,13 @@ function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
 
 // ── Shared per-file processing ────────────────────────────────────────────────
 
-function pkgNameForPath(filePath: string): string {
-  if (filePath.includes('/packages/ui/src/')) return 'UI';
+function pkgNameForPath(_filePath: string): string {
   return 'Core';
 }
 
 function folderFromPath(filePath: string): string | null {
   const coreMatch = filePath.split('/packages/core/src/')[1];
   if (coreMatch) return coreMatch.split('/')[0] ?? null;
-  const uiMatch = filePath.split('/packages/ui/src/')[1];
-  if (uiMatch) return uiMatch.split('/')[0] ?? null;
   return null;
 }
 
@@ -648,7 +660,7 @@ function processSourceFile(
 let _cached: DocsManifest | null = null;
 
 /**
- * Extracts the full docs manifest from `@kouji-ui/core` and `@kouji-ui/ui` source files.
+ * Extracts the full docs manifest from `@kouji-ui/core` source files.
  * Uses ts-morph for project/tsconfig resolution and ts-query for AST querying.
  * Result is cached in memory after the first call.
  *
@@ -657,7 +669,7 @@ let _cached: DocsManifest | null = null;
 export function extractDocsManifest(rootDir?: string): DocsManifest {
   if (_cached) return _cached;
 
-  const root = rootDir ?? process.env['KOUJI_ROOT'] ?? process.cwd();
+  const root = rootDir ?? process.env['KOUJI_ROOT'] ?? findWorkspaceRoot(process.cwd());
 
   // ts-morph handles tsconfig resolution and file loading
   const project = new Project({
@@ -677,21 +689,6 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       filePath.endsWith('public-api.ts') ||
       filePath.endsWith('test-setup.ts') ||
       !filePath.includes('/packages/core/src/')
-    ) continue;
-
-    processSourceFile(morphFile, componentMap);
-  }
-
-  // ── Pass 2: packages/ui ───────────────────────────────────────────────────
-  project.addSourceFilesAtPaths([join(root, 'packages/ui/src/**/*.ts')]);
-
-  for (const morphFile of project.getSourceFiles()) {
-    const filePath = morphFile.getFilePath();
-    if (
-      !filePath.includes('/packages/ui/src/') ||
-      filePath.includes('.spec.') ||
-      filePath.endsWith('index.ts') ||
-      filePath.endsWith('public-api.ts')
     ) continue;
 
     processSourceFile(morphFile, componentMap);

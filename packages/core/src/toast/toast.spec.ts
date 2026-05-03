@@ -1,6 +1,6 @@
 ﻿import { render, fireEvent } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { KjToast, KjToastViewport, KjToastClose } from './toast';
+import { KjToast, KjToastViewport } from './toast';
 import { KjToastService } from './toast.service';
 import { Component, inject } from '@angular/core';
 
@@ -47,17 +47,17 @@ describe('KjToastViewport', () => {
 });
 
 describe('KjToastService', () => {
-  it('show() adds a toast', async () => {
+  it('show(message) adds a toast', async () => {
     const svc = new KjToastService();
     expect(svc.toasts().length).toBe(0);
-    svc.show({ message: 'Hello', duration: 0 });
+    svc.show('Hello', { duration: 0 });
     expect(svc.toasts().length).toBe(1);
     expect(svc.toasts()[0].message).toBe('Hello');
   });
 
   it('dismiss() removes a toast', async () => {
     const svc = new KjToastService();
-    const id = svc.show({ message: 'Test', duration: 0 });
+    const id = svc.show('Test', { duration: 0 });
     svc.dismiss(id);
     expect(svc.toasts().length).toBe(0);
   });
@@ -76,9 +76,19 @@ describe('KjToastService', () => {
 
   it('dismissAll() clears all toasts', async () => {
     const svc = new KjToastService();
-    svc.show({ message: 'A', duration: 0 });
-    svc.show({ message: 'B', duration: 0 });
+    svc.show('A', { duration: 0 });
+    svc.show('B', { duration: 0 });
     svc.dismissAll();
+    expect(svc.toasts().length).toBe(0);
+  });
+
+  it('contextFor() exposes a bound dismiss callback', async () => {
+    const svc = new KjToastService();
+    const id = svc.show('Hello', { duration: 0 });
+    const ctx = svc.contextFor(svc.toasts()[0]);
+    expect(ctx.id).toBe(id);
+    expect(ctx.message).toBe('Hello');
+    ctx.dismiss();
     expect(svc.toasts().length).toBe(0);
   });
 });

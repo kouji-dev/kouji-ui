@@ -52,6 +52,18 @@ Declares a named example section. Maps to a tab in the docs preview. Each direct
 ### `@doc-theme <name>`
 Declares a theme variant for the preceding `@doc-example`. Valid names: `default`, `retro`, `finance`. Each theme renders a separate live preview tab.
 
+#### Themed Example Design References
+
+When authoring a `*.<theme>.example.ts` file, mirror the visual language of the theme's reference library — same component proportions, weights, shadow language, hover behaviour. The examples are showcases of how kouji-ui composes inside an existing design system, not free-form design exercises.
+
+| Theme | Reference | Visual cues |
+|---|---|---|
+| `default` | [shadcn/ui](https://ui.shadcn.com) | Neutral palette, subtle borders, soft radii, restrained hovers |
+| `retro` | [retroui.dev](https://retroui.dev) (e.g. [Button](https://retroui.dev/docs/components/button#link)) | Brutalist boxes, hard shadows, thick borders, uppercase labels, transform-on-hover |
+| `finance` | [Ant Design](https://ant.design) (e.g. [Button](https://ant.design/components/button)) | Tight type (14px / weight 400), blue accents (`#1668dc`), 6px radius, low chrome — note: ghost uses a visible 1px border in text color, link uses transparent border for layout consistency |
+
+When adding a new component example, open the matching reference page and match the **same component** (e.g. retro Button → retroui.dev Button) before writing CSS.
+
 ### `@doc-file <filename>`
 Points to the example component file relative to the directive's folder. The file must export a standalone Angular component.
 

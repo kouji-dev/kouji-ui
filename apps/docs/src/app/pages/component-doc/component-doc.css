@@ -43,9 +43,7 @@
 
 /* ── Page header ── */
 .doc-header {
-  padding-bottom: 3rem;
-  margin-bottom: 3rem;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: 2rem;
 }
 
 .tag {
@@ -295,14 +293,11 @@ h1 {
   }
 }
 
-/* ── Markdown description editor — transparent, no chrome ── */
-.desc-editor {
-  margin-bottom: 1.25rem;
-  border: none !important;
-  background: transparent !important;
+/* ── Description (plain text, preserves newlines) ── */
+.desc {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin: 0 0 1.25rem;
 }
-/* Monaco injects dynamically — needs ::ng-deep to pierce Angular's scope */
-.desc-editor ::ng-deep .monaco-editor,
-.desc-editor ::ng-deep .monaco-editor-background,
-.desc-editor ::ng-deep .monaco-editor .margin { background: transparent !important; }
-.desc-editor ::ng-deep .cursors-layer { display: none !important; }

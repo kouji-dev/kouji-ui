@@ -14,7 +14,6 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
 })
 export class GettingStartedComponent {
   readonly installCore = `pnpm add @kouji-ui/core`;
-  readonly installUi = `pnpm add @kouji-ui/ui`;
 
   readonly quickStartTs = `import { Component } from '@angular/core';
 import { KjButton } from '@kouji-ui/core';
@@ -44,13 +43,6 @@ export class MyComponent {}`;
   opacity: 0.5;
   cursor: not-allowed;
 }`;
-
-  readonly tailwindImport = `/* In your global styles.css */
-@import "@kouji-ui/ui/styles/kj.css";`;
-
-  readonly tailwindUsage = `import { KjButton } from '@kouji-ui/ui';
-
-// KjButton is a pre-styled Angular component wrapping KjButton`;
 
   readonly formsTs = `import { Component } from '@angular/core';
 import { KjInput } from '@kouji-ui/core';

@@ -47,8 +47,34 @@
 .copy-btn:hover { color: var(--text); }
 
 /* ── Monaco container ── */
+/* Height is set inline by code-editor.ts (auto-size to content) */
 .editor-host {
   flex: 1;
-  min-height: 60px;
   overflow: hidden;
+}
+
+/* ── Surface override for Monaco's bundled vs/vs-dark themes ──
+   Monaco renders into elements we don't control — pierce encapsulation
+   to apply kj design tokens for backgrounds, gutter, and scrollbar.
+   Token (syntax) colors stay untouched so coloring matches the playground. */
+.editor-host ::ng-deep .monaco-editor,
+.editor-host ::ng-deep .monaco-editor-background,
+.editor-host ::ng-deep .monaco-editor .margin {
+  background-color: var(--bg-surface) !important;
+}
+.editor-host ::ng-deep .monaco-editor .line-numbers {
+  color: var(--text-muted) !important;
+}
+.editor-host ::ng-deep .monaco-editor .current-line ~ .line-numbers {
+  color: var(--text-secondary) !important;
+}
+.editor-host ::ng-deep .monaco-editor .scrollbar .slider {
+  background: var(--border) !important;
+}
+.editor-host ::ng-deep .monaco-editor .scrollbar .slider:hover {
+  background: var(--text-muted) !important;
+}
+.editor-host ::ng-deep .monaco-editor .cursor {
+  background: var(--accent) !important;
+  color: var(--accent) !important;
 }

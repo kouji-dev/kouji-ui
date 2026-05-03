@@ -4,14 +4,7 @@ import {
 } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
 import { ClipboardService } from '../../services/clipboard.service';
-
-let _monacoPromise: Promise<any> | null = null;
-function getMonaco(): Promise<any> {
-  if (!_monacoPromise) {
-    _monacoPromise = import('@monaco-editor/loader').then(m => m.default.init());
-  }
-  return _monacoPromise;
-}
+import { MonacoService } from '../../services/monaco.service';
 
 @Component({
   selector: 'kj-code-editor',
@@ -27,9 +20,10 @@ export class CodeEditorComponent {
   readonly   = input<boolean>(true);
   showHeader = input<boolean>(true);
 
-  private readonly themeService  = inject(ThemeService);
-  private readonly clipboard     = inject(ClipboardService);
-  private readonly destroyRef    = inject(DestroyRef);
+  private readonly themeService = inject(ThemeService);
+  private readonly clipboard    = inject(ClipboardService);
+  private readonly monacoSvc    = inject(MonacoService);
+  private readonly destroyRef   = inject(DestroyRef);
 
   readonly copied = signal(false);
 
@@ -64,6 +58,19 @@ export class CodeEditorComponent {
       }
     });
 
+    // Update model language when `lang` input changes (e.g. switching tabs in code-preview).
+    // Without this the tokenizer stays in the original language and everything falls to default.
+    effect(() => {
+      const newLang = this.lang();
+      if (this.initialized && this.editor && this.monaco) {
+        const model = this.editor.getModel();
+        const target = this.toMonacoLang(newLang);
+        if (model && model.getLanguageId() !== target) {
+          this.monaco.editor.setModelLanguage(model, target);
+        }
+      }
+    });
+
     this.destroyRef.onDestroy(() => this.editor?.dispose());
   }
 
@@ -72,8 +79,7 @@ export class CodeEditorComponent {
     const host = this.editorHost.nativeElement;
     if (!host.offsetParent && host.offsetHeight === 0) return;
 
-    this.monaco = await getMonaco();
-    this.defineThemes(this.monaco);
+    this.monaco = await this.monacoSvc.getMonaco();
 
     const isDark  = this.themeService.theme() === 'dark';
     const isMd    = this.lang() === 'md';
@@ -82,7 +88,7 @@ export class CodeEditorComponent {
     this.editor = this.monaco.editor.create(host, {
       value:    this.code(),
       language: monacoLang,
-      theme:    isDark ? 'kj-dark' : 'kj-light',
+      theme:    isDark ? 'vs-dark' : 'vs',
       readOnly: this.readonly(),
 
       // Layout
@@ -125,114 +131,21 @@ export class CodeEditorComponent {
       automaticLayout:      true,
     });
 
-    // Auto-size height to content for md using Monaco's content-change event
-    if (isMd) {
-      const updateHeight = () => {
-        const contentHeight = this.editor.getContentHeight();
-        this.editorHost.nativeElement.style.height = `${contentHeight}px`;
-        this.editor.layout({ width: this.editorHost.nativeElement.offsetWidth, height: contentHeight });
-      };
-      this.editor.onDidContentSizeChange(updateHeight);
-      updateHeight();
-    }
+    // Auto-size to content. md is uncapped; code mode caps at ~30 lines and scrolls past.
+    const maxHeight = isMd ? Number.POSITIVE_INFINITY : 620;
+    const updateHeight = () => {
+      const contentHeight = Math.min(maxHeight, this.editor.getContentHeight());
+      this.editorHost.nativeElement.style.height = `${contentHeight}px`;
+      this.editor.layout({ width: this.editorHost.nativeElement.offsetWidth, height: contentHeight });
+    };
+    this.editor.onDidContentSizeChange(updateHeight);
+    updateHeight();
   }
 
   private toMonacoLang(lang: string): string {
     if (lang === 'ts')  return 'typescript';
     if (lang === 'md')  return 'markdown';
     return lang;
-  }
-
-  /** Reads a CSS custom property value from :root and strips the leading # if hex. */
-  private css(varName: string): string {
-    const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-    return raw.startsWith('#') ? raw.slice(1) : raw;
-  }
-
-  private defineThemes(monaco: any): void {
-    // Reads live CSS token values — stays in sync with design system
-    // Dark theme — uses our --bg: #0c0c0c, --text: #f0ede6, --accent: #b8f500
-    const t = this.css.bind(this); // shorthand
-
-    monaco.editor.defineTheme('kj-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: '',               foreground: t('--text') },
-        { token: 'comment',        foreground: t('--text-muted'), fontStyle: 'italic' },
-        { token: 'keyword',        foreground: t('--accent') },
-        { token: 'string',         foreground: '88c0a0' },
-        { token: 'number',         foreground: '79b8ff' },
-        { token: 'type',           foreground: 'ffab70' },
-        { token: 'delimiter',      foreground: t('--text-secondary') },
-        { token: 'tag',            foreground: t('--accent') },
-        { token: 'attribute.name', foreground: '79b8ff' },
-        { token: 'attribute.value',foreground: '88c0a0' },
-        { token: 'keyword.md',         foreground: t('--text'), fontStyle: 'bold' },
-        { token: 'strong.md',          foreground: t('--text'), fontStyle: 'bold' },
-        { token: 'emphasis.md',        foreground: t('--text'), fontStyle: 'italic' },
-        { token: 'string.md',          foreground: t('--text-secondary') },
-        { token: 'comment.md',         foreground: t('--text-muted') },
-        { token: 'string.link.md',     foreground: t('--accent') },
-        { token: 'keyword.control.md', foreground: t('--text-muted') },
-      ],
-      colors: {
-        'editor.background':              `#${t('--bg-surface')}`,
-        'editor.foreground':              `#${t('--text')}`,
-        'editor.lineHighlightBackground': `#${t('--bg-elevated')}`,
-        'editorLineNumber.foreground':    `#${t('--text-muted')}`,
-        'editorLineNumber.activeForeground': `#${t('--text-secondary')}`,
-        'editor.selectionBackground':     `#${t('--accent')}33`,
-        'editor.inactiveSelectionBackground': `#${t('--accent')}18`,
-        'editorCursor.foreground':        `#${t('--accent')}`,
-        'editorWidget.background':        `#${t('--bg-elevated')}`,
-        'editorWidget.border':            `#${t('--border')}`,
-        'editor.lineHighlightBorder':     '#00000000',
-        'scrollbarSlider.background':     `#${t('--border')}`,
-        'scrollbarSlider.hoverBackground':`#${t('--text-muted')}`,
-        'editorGutter.background':        `#${t('--bg-surface')}`,
-      },
-    });
-
-    monaco.editor.defineTheme('kj-light', {
-      base: 'vs',
-      inherit: true,
-      rules: [
-        { token: '',               foreground: t('--text') },
-        { token: 'comment',        foreground: t('--text-muted'), fontStyle: 'italic' },
-        { token: 'keyword',        foreground: t('--accent') },
-        { token: 'string',         foreground: '0550ae' },
-        { token: 'number',         foreground: '953800' },
-        { token: 'type',           foreground: '953800' },
-        { token: 'delimiter',      foreground: t('--text-secondary') },
-        { token: 'tag',            foreground: t('--accent') },
-        { token: 'attribute.name', foreground: '0550ae' },
-        { token: 'attribute.value',foreground: '0a3069' },
-        { token: 'keyword.md',         foreground: t('--text'), fontStyle: 'bold' },
-        { token: 'strong.md',          foreground: t('--text'), fontStyle: 'bold' },
-        { token: 'emphasis.md',        foreground: t('--text'), fontStyle: 'italic' },
-        { token: 'string.md',          foreground: t('--text-secondary') },
-        { token: 'comment.md',         foreground: t('--text-muted') },
-        { token: 'string.link.md',     foreground: t('--accent') },
-        { token: 'keyword.control.md', foreground: t('--text-muted') },
-      ],
-      colors: {
-        'editor.background':              `#${t('--bg-surface')}`,
-        'editor.foreground':              `#${t('--text')}`,
-        'editor.lineHighlightBackground': `#${t('--bg-elevated')}`,
-        'editorLineNumber.foreground':    `#${t('--text-muted')}`,
-        'editorLineNumber.activeForeground': `#${t('--text-secondary')}`,
-        'editor.selectionBackground':     `#${t('--accent')}33`,
-        'editor.inactiveSelectionBackground': `#${t('--accent')}18`,
-        'editorCursor.foreground':        `#${t('--accent')}`,
-        'editorWidget.background':        `#${t('--bg-surface')}`,
-        'editorWidget.border':            `#${t('--border')}`,
-        'editor.lineHighlightBorder':     '#00000000',
-        'scrollbarSlider.background':     `#${t('--border')}`,
-        'scrollbarSlider.hoverBackground':`#${t('--text-muted')}`,
-        'editorGutter.background':        `#${t('--bg-surface')}`,
-      },
-    });
   }
 
   async copy(): Promise<void> {

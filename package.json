@@ -10,7 +10,6 @@
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",
     "build:core": "turbo run build --filter=@kouji-ui/core",
-    "build:ui": "turbo run build --filter=@kouji-ui/ui",
     "build:docs": "turbo run build --filter=docs",
     "format": "prettier --write \"**/*.{ts,html,css,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,html,css,json,md}\"",
