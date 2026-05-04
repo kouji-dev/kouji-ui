@@ -1,5 +1,12 @@
 #!/usr/bin/env sh
 
+# Skip in CI — automated pushes (Changesets action, dependabot, etc.) shouldn't
+# re-run local quality gates the workflow already enforces.
+if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
+  echo "→ skipping pre-push (CI environment detected)"
+  exit 0
+fi
+
 set -e
 
 echo "→ lint"
