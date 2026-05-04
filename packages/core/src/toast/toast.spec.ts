@@ -1,5 +1,6 @@
-﻿import { render } from '@testing-library/angular';
-import { toHaveNoViolations } from 'jest-axe';
+﻿import { TestBed } from '@angular/core/testing';
+import { render } from '@testing-library/angular';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjToast, KjToastViewport } from './toast';
 import { KjToastService } from './toast.service';
 
@@ -46,43 +47,44 @@ describe('KjToastViewport', () => {
 });
 
 describe('KjToastService', () => {
-  it('show(message) adds a toast', async () => {
-    const svc = new KjToastService();
+  let svc: KjToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    svc = TestBed.inject(KjToastService);
+  });
+
+  it('show(message) adds a toast', () => {
     expect(svc.toasts().length).toBe(0);
     svc.show('Hello', { duration: 0 });
     expect(svc.toasts().length).toBe(1);
     expect(svc.toasts()[0].message).toBe('Hello');
   });
 
-  it('dismiss() removes a toast', async () => {
-    const svc = new KjToastService();
+  it('dismiss() removes a toast', () => {
     const id = svc.show('Test', { duration: 0 });
     svc.dismiss(id);
     expect(svc.toasts().length).toBe(0);
   });
 
-  it('success() sets variant=success', async () => {
-    const svc = new KjToastService();
+  it('success() sets variant=success', () => {
     svc.success('Done', { duration: 0 });
     expect(svc.toasts()[0].variant).toBe('success');
   });
 
-  it('error() sets variant=destructive', async () => {
-    const svc = new KjToastService();
+  it('error() sets variant=destructive', () => {
     svc.error('Fail', { duration: 0 });
     expect(svc.toasts()[0].variant).toBe('destructive');
   });
 
-  it('dismissAll() clears all toasts', async () => {
-    const svc = new KjToastService();
+  it('dismissAll() clears all toasts', () => {
     svc.show('A', { duration: 0 });
     svc.show('B', { duration: 0 });
     svc.dismissAll();
     expect(svc.toasts().length).toBe(0);
   });
 
-  it('contextFor() exposes a bound dismiss callback', async () => {
-    const svc = new KjToastService();
+  it('contextFor() exposes a bound dismiss callback', () => {
     const id = svc.show('Hello', { duration: 0 });
     const ctx = svc.contextFor(svc.toasts()[0]);
     expect(ctx.id).toBe(id);

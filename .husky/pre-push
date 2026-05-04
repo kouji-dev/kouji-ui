@@ -5,6 +5,9 @@ set -e
 echo "→ lint"
 pnpm lint
 
+echo "→ test"
+pnpm test
+
 echo "→ build"
 pnpm build
 
