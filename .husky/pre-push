@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+set -e
+
+echo "→ lint"
+pnpm lint
+
+echo "→ build"
+pnpm build
+
+echo "→ changeset status (publishable changes need a changeset)"
+pnpm exec changeset status --since=origin/main || {
+  echo ""
+  echo "  No changeset found for publishable changes."
+  echo "  Run: pnpm changeset"
+  echo "  (or: skip if your change touches only apps/docs, .github/, rules/, or root config)"
+  exit 1
+}

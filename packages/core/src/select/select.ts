@@ -188,7 +188,7 @@ export class KjSelectContent {
       this.el.nativeElement.querySelectorAll('[kjOption]')
     ) as HTMLElement[]).map((el, i) => ({
       el,
-      value: (el as any).__kjOptionValue,
+      value: (el as HTMLElement & { __kjOptionValue?: unknown }).__kjOptionValue,
       id: el.id || `kj-option-${i}`,
     }));
   }
@@ -234,7 +234,7 @@ export class KjOption {
 
   constructor() {
     effect(() => {
-      (this.el.nativeElement as any).__kjOptionValue = this.kjOptionValue();
+      (this.el.nativeElement as HTMLElement & { __kjOptionValue?: unknown }).__kjOptionValue = this.kjOptionValue();
     });
     afterNextRender(() => {
       if (!this.el.nativeElement.id) {

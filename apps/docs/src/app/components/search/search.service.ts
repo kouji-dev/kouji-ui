@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { DocsService, ComponentDoc, DirectiveDef } from '../../services/docs.service';
+import { DocsService } from '../../services/docs.service';
 
 export interface SearchResult {
   slug: string;
@@ -24,7 +24,13 @@ export class SearchService {
   open(): void { this.isOpen.set(true); this.query.set(''); this.results.set([]); }
   close(): void { this.isOpen.set(false); this.query.set(''); this.activeIndex.set(0); }
 
-  toggle(): void { this.isOpen() ? this.close() : this.open(); }
+  toggle(): void {
+    if (this.isOpen()) {
+      this.close();
+    } else {
+      this.open();
+    }
+  }
 
   search(q: string): void {
     this.query.set(q);

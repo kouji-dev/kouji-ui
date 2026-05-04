@@ -1,6 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { ColumnDef } from '@tanstack/angular-table';
-import { render, fireEvent } from '@testing-library/angular';
+import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjTable, KjTableHeader } from './table';
 

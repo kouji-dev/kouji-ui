@@ -74,7 +74,7 @@
             @if (directive.inputs.length) {
               <div class="inputs-block">
                 <h3 class="block-title">Inputs</h3>
-                <docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
+                <app-docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
                 <p class="required-note">* required</p>
               </div>
             }

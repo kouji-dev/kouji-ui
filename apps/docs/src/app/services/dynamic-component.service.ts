@@ -198,7 +198,7 @@ export class DynamicComponentService {
 
     try {
       const { signal: s, computed: c, effect: e, inject: inj, input: inp, model: m, FormControl: FC, Validators: V } = DYNAMIC_APIS;
-      // eslint-disable-next-line no-new-func
+       
       const factory = new Function('signal', 'computed', 'effect', 'inject', 'input', 'model', 'FormControl', 'Validators',
         `return class { constructor() { ${constructorBody} } }`
       );

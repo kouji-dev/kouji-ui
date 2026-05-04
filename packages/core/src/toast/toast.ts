@@ -2,7 +2,7 @@ import {
   DestroyRef, Directive, ElementRef, TemplateRef,
   afterNextRender, computed, inject, input, signal,
 } from '@angular/core';
-import { KjToastContext, KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
+import { KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
 import { KjToastPositionX, KjToastPositionY } from './toast.types';
 

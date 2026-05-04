@@ -41,7 +41,11 @@ export class KjOverlayRef {
 
   /** Toggles the overlay between open and closed states. */
   toggle(): void {
-    this.isOpen() ? this.close() : this.open();
+    if (this.isOpen()) {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 
   /**

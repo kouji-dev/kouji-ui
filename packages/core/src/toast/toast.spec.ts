@@ -1,8 +1,7 @@
-﻿import { render, fireEvent } from '@testing-library/angular';
-import { axe, toHaveNoViolations } from 'jest-axe';
+﻿import { render } from '@testing-library/angular';
+import { toHaveNoViolations } from 'jest-axe';
 import { KjToast, KjToastViewport } from './toast';
 import { KjToastService } from './toast.service';
-import { Component, inject } from '@angular/core';
 
 expect.extend(toHaveNoViolations);
 

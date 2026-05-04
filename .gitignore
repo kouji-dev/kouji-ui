@@ -52,3 +52,6 @@ apps/*/dist/
 .env
 .env.local
 .env.*.local
+
+# Claude Code transient state
+.claude/scheduled_tasks.lock

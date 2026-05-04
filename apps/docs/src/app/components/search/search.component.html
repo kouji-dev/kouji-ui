@@ -1,5 +1,12 @@
 @if (svc.isOpen()) {
-  <div class="search-backdrop" (click)="onBackdropClick()"></div>
+  <div
+    class="search-backdrop"
+    role="button"
+    tabindex="-1"
+    aria-label="Close search"
+    (click)="onBackdropClick()"
+    (keydown.escape)="onBackdropClick()"
+  ></div>
 
   <div class="search-dialog" role="dialog" aria-label="Search documentation" aria-modal="true">
     <div class="search-input-wrap">
@@ -26,8 +33,10 @@
             class="search-result"
             [class.active]="i === svc.activeIndex()"
             role="option"
+            tabindex="0"
             [attr.aria-selected]="i === svc.activeIndex()"
             (click)="onResultClick(i)"
+            (keydown.enter)="onResultClick(i)"
           >
             <div class="result-main">
               <span class="result-label">{{ result.matchLabel }}</span>

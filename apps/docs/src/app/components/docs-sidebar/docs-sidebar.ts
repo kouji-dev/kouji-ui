@@ -33,7 +33,11 @@ export class DocsSidebarComponent implements OnInit {
   protected toggleCategory(label: string): void {
     this.collapsed.update(set => {
       const next = new Set(set);
-      next.has(label) ? next.delete(label) : next.add(label);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
       return next;
     });
   }

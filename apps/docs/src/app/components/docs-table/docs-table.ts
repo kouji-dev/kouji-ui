@@ -8,7 +8,7 @@ export interface DocsTableColumn {
 }
 
 @Component({
-  selector: 'docs-table',
+  selector: 'app-docs-table',
   standalone: true,
   imports: [KjTable, KjTableHeader, KjVisuallyHidden],
   templateUrl: './docs-table.html',

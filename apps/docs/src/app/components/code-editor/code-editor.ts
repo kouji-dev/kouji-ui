@@ -27,8 +27,8 @@ export class CodeEditorComponent {
 
   readonly copied = signal(false);
 
-  private editor: any;
-  private monaco: any;
+  private editor: import('monaco-editor').editor.IStandaloneCodeEditor | null = null;
+  private monaco: typeof import('monaco-editor') | null = null;
   private initialized = false;
 
   constructor() {
@@ -124,7 +124,6 @@ export class CodeEditorComponent {
       links:                false,
       occurrencesHighlight: 'off',
       selectionHighlight:   false,
-      renderIndentGuides:   false,
       stickyScroll:         { enabled: false },
       cursorStyle:          'line',
       cursorBlinking:       'blink',
@@ -132,13 +131,14 @@ export class CodeEditorComponent {
     });
 
     // Auto-size to content. md is uncapped; code mode caps at ~30 lines and scrolls past.
+    const editor = this.editor;
     const maxHeight = isMd ? Number.POSITIVE_INFINITY : 620;
     const updateHeight = () => {
-      const contentHeight = Math.min(maxHeight, this.editor.getContentHeight());
+      const contentHeight = Math.min(maxHeight, editor.getContentHeight());
       this.editorHost.nativeElement.style.height = `${contentHeight}px`;
-      this.editor.layout({ width: this.editorHost.nativeElement.offsetWidth, height: contentHeight });
+      editor.layout({ width: this.editorHost.nativeElement.offsetWidth, height: contentHeight });
     };
-    this.editor.onDidContentSizeChange(updateHeight);
+    editor.onDidContentSizeChange(updateHeight);
     updateHeight();
   }
 

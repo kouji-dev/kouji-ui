@@ -1,4 +1,4 @@
-import { Component, TemplateRef, ViewChild, ViewContainerRef, inject } from '@angular/core';
+import { Component, TemplateRef, ViewChild, ViewContainerRef, inject, OnInit } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { KjOverlayService, KjOverlayRef } from './overlay';
 
@@ -17,7 +17,7 @@ describe('KjOverlayService', () => {
       standalone: true,
       template: '<ng-template #tpl><div>overlay content</div></ng-template>',
     })
-    class TestComponent {
+    class TestComponent implements OnInit {
       @ViewChild('tpl', { static: true }) tpl!: TemplateRef<unknown>;
       readonly svc = inject(KjOverlayService);
       readonly vcr = inject(ViewContainerRef);
@@ -34,7 +34,7 @@ describe('KjOverlayService', () => {
       standalone: true,
       template: '<ng-template #tpl><div>overlay</div></ng-template>',
     })
-    class TestComponent {
+    class TestComponent implements OnInit {
       @ViewChild('tpl', { static: true }) tpl!: TemplateRef<unknown>;
       readonly svc = inject(KjOverlayService);
       readonly vcr = inject(ViewContainerRef);
@@ -53,7 +53,7 @@ describe('KjOverlayService', () => {
       standalone: true,
       template: '<ng-template #tpl><div>overlay</div></ng-template>',
     })
-    class TestComponent {
+    class TestComponent implements OnInit {
       @ViewChild('tpl', { static: true }) tpl!: TemplateRef<unknown>;
       readonly svc = inject(KjOverlayService);
       readonly vcr = inject(ViewContainerRef);
@@ -73,7 +73,7 @@ describe('KjOverlayService', () => {
       standalone: true,
       template: '<ng-template #tpl><div>overlay</div></ng-template>',
     })
-    class TestComponent {
+    class TestComponent implements OnInit {
       @ViewChild('tpl', { static: true }) tpl!: TemplateRef<unknown>;
       readonly svc = inject(KjOverlayService);
       readonly vcr = inject(ViewContainerRef);

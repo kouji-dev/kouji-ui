@@ -135,7 +135,7 @@ const CATEGORY_TAG_SELECTOR = 'JSDocTag[tagName.text="category"]';
  *
  * Captures: [1]=filename [2]=lang [3]=raw content (with JSDoc * prefixes)
  */
-const DOC_FILE_RE = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=@doc-file|@\w|\*\/|$)/g;
+const _DOC_FILE_RE = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=@doc-file|@\w|\*\/|$)/g;
 
 // ── JSDoc extraction using ts-query ──────────────────────────────────────────
 
@@ -163,7 +163,7 @@ function getJsDocExamples(node: ts.Node): string[] {
   return tags
     .map(tag => {
       const c = tag.comment;
-      const raw = typeof c === 'string' ? c : (c ?? []).map((x: any) => x.text ?? '').join('');
+      const raw = typeof c === 'string' ? c : (c ?? []).map((x: { text?: string }) => x.text ?? '').join('');
       // Strip fenced code blocks (```lang...```) and single backtick wrapping (`...`)
       return raw
         .replace(/```(?:\w+)?\n?/g, '').replace(/```/g, '')
@@ -286,9 +286,9 @@ function parseDocFileEntries(cleanText: string, sourceDir?: string): ExampleFile
 
       const ext = filename.split('.').pop()?.toLowerCase() ?? '';
       const lang: ExampleFile['lang'] =
-        (validLangs as readonly string[]).includes(fenceLang as any)
+        (validLangs as readonly string[]).includes(fenceLang)
           ? (fenceLang as ExampleFile['lang'])
-          : (validLangs as readonly string[]).includes(ext as any)
+          : (validLangs as readonly string[]).includes(ext)
             ? (ext as ExampleFile['lang'])
             : 'ts';
 
@@ -391,7 +391,7 @@ function getCategoryPath(node: ts.Node): string[] {
   const comment = tags[0].comment;
   const raw = typeof comment === 'string'
     ? comment
-    : (comment ?? []).map((x: any) => x.text ?? '').join('');
+    : (comment ?? []).map((x: { text?: string }) => x.text ?? '').join('');
   return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
 }
 

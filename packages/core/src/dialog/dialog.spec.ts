@@ -75,7 +75,7 @@ describe('KjDialogTrigger', () => {
   });
 
   it('closes dialog on overlay click (close on backdrop enabled by default)', async () => {
-    const { getByRole, getByText } = await render(
+    const { getByRole } = await render(
       `<button [kjDialogTrigger]="dlg">Open</button>
        <ng-template #dlg>
          <div kjDialogOverlay>

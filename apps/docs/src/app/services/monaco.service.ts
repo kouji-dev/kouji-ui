@@ -1,21 +1,23 @@
 import { Injectable, inject } from '@angular/core';
 import { ThemeService } from './theme.service';
 
-let _promise: Promise<any> | null = null;
+type Monaco = typeof import('monaco-editor');
+
+let _promise: Promise<Monaco> | null = null;
 
 @Injectable({ providedIn: 'root' })
 export class MonacoService {
   private readonly themeService = inject(ThemeService);
 
   /** Loads Monaco from CDN lazily on first call; reuses the same instance after. */
-  getMonaco(): Promise<any> {
+  getMonaco(): Promise<Monaco> {
     if (!_promise) {
-      _promise = import('@monaco-editor/loader').then(m => m.default.init()).then((monaco) => {
+      _promise = import('@monaco-editor/loader').then(m => m.default.init() as Promise<Monaco>).then((monaco) => {
         // DEV: expose monaco for DevTools introspection.
         // Examples to paste in the console:
         //   monaco.editor.tokenize(':root { --kj-bg: #fff; }', 'css')
         //   monaco.editor.setTheme('vs-dark'); monaco.editor.setTheme('vs')   // toggle
-        (window as any).monaco = monaco;
+        (window as Window & { monaco?: Monaco }).monaco = monaco;
         return monaco;
       });
     }

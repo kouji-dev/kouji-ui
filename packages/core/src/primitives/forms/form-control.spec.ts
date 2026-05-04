@@ -1,7 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { render, fireEvent } from '@testing-library/angular';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import { render } from '@testing-library/angular';
+import { toHaveNoViolations } from 'jest-axe';
 import { KjFormControl } from './form-control';
 
 expect.extend(toHaveNoViolations);
@@ -14,7 +14,7 @@ expect.extend(toHaveNoViolations);
 class TestHostComponent {
   ctrl = new FormControl('');
   formCtrl!: KjFormControl;
-  onInput(e: Event): void {
+  onInput(_e: Event): void {
     // will be wired by the directive consumer pattern
   }
   onBlur(): void {}

@@ -1,4 +1,4 @@
-﻿import { render, fireEvent } from '@testing-library/angular';
+﻿import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjButton } from './button';
 
