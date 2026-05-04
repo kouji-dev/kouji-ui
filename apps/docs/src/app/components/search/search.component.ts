@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, afterNextRender, inject } from '@angular/core';
+import { Component, ElementRef, afterNextRender, inject, viewChild } from '@angular/core';
 import { SearchService } from './search.service';
 
 @Component({
@@ -10,7 +10,7 @@ import { SearchService } from './search.service';
 })
 export class SearchComponent {
   protected readonly svc = inject(SearchService);
-  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+  protected readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   constructor() {
     afterNextRender(() => {
@@ -19,7 +19,7 @@ export class SearchComponent {
           e.preventDefault();
           this.svc.toggle();
           if (this.svc.isOpen()) {
-            setTimeout(() => this.searchInput?.nativeElement.focus(), 50);
+            setTimeout(() => this.searchInput()?.nativeElement.focus(), 50);
           }
         }
         if (e.key === 'Escape' && this.svc.isOpen()) {

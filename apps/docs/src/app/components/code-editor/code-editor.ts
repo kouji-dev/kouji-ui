@@ -1,6 +1,6 @@
 import {
-  Component, DestroyRef, ElementRef, ViewChild,
-  afterNextRender, effect, inject, input, signal,
+  Component, DestroyRef, ElementRef,
+  afterNextRender, effect, inject, input, signal, viewChild,
 } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
 import { ClipboardService } from '../../services/clipboard.service';
@@ -13,7 +13,7 @@ import { MonacoService } from '../../services/monaco.service';
   styleUrl: './code-editor.css',
 })
 export class CodeEditorComponent {
-  @ViewChild('editorHost', { static: false }) editorHost!: ElementRef<HTMLDivElement>;
+  readonly editorHost = viewChild.required<ElementRef<HTMLDivElement>>('editorHost');
 
   code       = input<string>('');
   lang       = input<'ts' | 'html' | 'css' | 'json' | 'md'>('ts');
@@ -75,8 +75,9 @@ export class CodeEditorComponent {
   }
 
   private async initEditor(): Promise<void> {
-    if (!this.editorHost?.nativeElement) return;
-    const host = this.editorHost.nativeElement;
+    const hostEl = this.editorHost();
+    if (!hostEl?.nativeElement) return;
+    const host = hostEl.nativeElement;
     if (!host.offsetParent && host.offsetHeight === 0) return;
 
     this.monaco = await this.monacoSvc.getMonaco();
@@ -135,8 +136,8 @@ export class CodeEditorComponent {
     const maxHeight = isMd ? Number.POSITIVE_INFINITY : 620;
     const updateHeight = () => {
       const contentHeight = Math.min(maxHeight, editor.getContentHeight());
-      this.editorHost.nativeElement.style.height = `${contentHeight}px`;
-      editor.layout({ width: this.editorHost.nativeElement.offsetWidth, height: contentHeight });
+      host.style.height = `${contentHeight}px`;
+      editor.layout({ width: host.offsetWidth, height: contentHeight });
     };
     editor.onDidContentSizeChange(updateHeight);
     updateHeight();
