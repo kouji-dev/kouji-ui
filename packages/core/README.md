@@ -1,64 +1,96 @@
-# KjCore
+# @kouji-ui/core
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.
 
-## Code scaffolding
+You write the markup. You write the styles. The library wires up keyboard navigation, ARIA, focus management, and state.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+[Documentation](https://kouji-ui.onrender.com) · [GitHub](https://github.com/kouji-dev/kouji-ui)
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Install
 
 ```bash
-ng generate --help
+pnpm add @kouji-ui/core @angular/cdk
 ```
 
-## Building
+Peer dependencies: `@angular/common` `@angular/core` `@angular/cdk` — all `^21.0.0`.
 
-To build the library, run:
+## Quick start
 
-```bash
-ng build kj-core
+Every primitive is a standalone directive. Import it where you use it.
+
+```ts
+import { Component } from '@angular/core';
+import { KjButton } from '@kouji-ui/core';
+
+@Component({
+  selector: 'app-example',
+  imports: [KjButton],
+  template: `<button kjButton (click)="save()">Save</button>`,
+})
+export class ExampleComponent {
+  save() { /* ... */ }
+}
 ```
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+The directive owns the keyboard contract, ARIA roles, and focus ring — not the look. Style the host element however you want.
 
-### Publishing the Library
+### A more involved example: dialog
 
-Once the project is built, you can publish your library by following these steps:
+```ts
+import { Component } from '@angular/core';
+import {
+  KjDialog,
+  KjDialogTrigger,
+  KjDialogOverlay,
+  KjDialogTitle,
+  KjDialogClose,
+} from '@kouji-ui/core';
 
-1. Navigate to the `dist` directory:
+@Component({
+  selector: 'app-confirm',
+  imports: [KjDialog, KjDialogTrigger, KjDialogOverlay, KjDialogTitle, KjDialogClose],
+  template: `
+    <button [kjDialogTrigger]="confirm">Delete</button>
 
-   ```bash
-   cd dist/kj-core
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+    <ng-template #confirm>
+      <div kjDialog>
+        <div kjDialogOverlay></div>
+        <h2 kjDialogTitle>Delete this item?</h2>
+        <p>This action cannot be undone.</p>
+        <button kjDialogClose>Cancel</button>
+        <button kjDialogClose (click)="delete()">Delete</button>
+      </div>
+    </ng-template>
+  `,
+})
+export class ConfirmComponent {
+  delete() { /* ... */ }
+}
 ```
 
-## Running end-to-end tests
+Focus trap, Escape-to-close, scroll lock, ARIA wiring — all handled.
 
-For end-to-end (e2e) testing, run:
+## What's included
 
-```bash
-ng e2e
-```
+| Domain          | Primitives                                                  |
+| --------------- | ----------------------------------------------------------- |
+| Buttons & inputs | `KjButton`, `KjInput`, `KjCheckbox`, `KjRadio`, `KjToggle`, `KjSelect` |
+| Form composition | `KjFormField`, `KjFormLabel`, `KjFormError`                 |
+| Overlays         | `KjDialog`, `KjPopover`, `KjTooltip`, `KjToast`, `KjMenu`   |
+| Navigation       | `KjTabs`, `KjAccordion`                                     |
+| Data display     | `KjTable`, `KjBadge`, `KjAvatar`, `KjChart`                 |
+| A11y primitives  | `KjFocusTrap`, `KjFocusRing`, `KjLiveRegion`, `KjRovingTabindex`, `KjVisuallyHidden`, `KjAriaDescribedBy` |
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Every primitive ships with examples and an inputs reference at [kouji-ui.onrender.com](https://kouji-ui.onrender.com).
 
-## Additional Resources
+## Design principles
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Headless** — directives, not components. You own the DOM and CSS.
+- **WCAG 2.1 AAA target** — keyboard contracts, focus management, ARIA, and contrast all designed for AAA.
+- **CDK-aligned** — wraps `@angular/cdk` primitives where it makes sense (overlay, focus-trap), never reimplements from scratch.
+- **Signals-first** — public APIs use `input()` / `signal()` / `effect()`.
+- **Zero runtime CSS** — no shipped stylesheet. Bring your own design system.
+
+## License
+
+MIT © [kouji-dev](https://github.com/kouji-dev)
