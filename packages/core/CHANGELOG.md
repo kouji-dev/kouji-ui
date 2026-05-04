@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.0.3
+
+### Patch Changes
+
+- c177d1e: Rewrite README with real install/usage docs, primitive index, and design principles. Replaces the Angular CLI scaffold placeholder.
+
 ## 0.0.2
 
 ### Patch Changes
