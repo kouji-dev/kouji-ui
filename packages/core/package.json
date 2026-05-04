@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.",
   "license": "MIT",
   "repository": {
@@ -12,7 +12,15 @@
   "bugs": {
     "url": "https://github.com/kouji-dev/kouji-ui/issues"
   },
-  "keywords": ["angular", "ui", "headless", "directives", "cdk", "a11y", "wcag"],
+  "keywords": [
+    "angular",
+    "ui",
+    "headless",
+    "directives",
+    "cdk",
+    "a11y",
+    "wcag"
+  ],
   "publishConfig": {
     "access": "public",
     "provenance": true
