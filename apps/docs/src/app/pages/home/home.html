@@ -37,11 +37,11 @@
   <!-- Stats -->
   <div class="stats">
     <div class="stat">
-      <div class="stat-num">21</div>
+      <div class="stat-num">{{ angularMajor }}</div>
       <div class="stat-label">Angular version</div>
     </div>
     <div class="stat">
-      <div class="stat-num">18+</div>
+      <div class="stat-num">{{ componentCount() }}</div>
       <div class="stat-label">Components</div>
     </div>
     <div class="stat">
@@ -95,7 +95,7 @@
   <section class="install">
     <div>
       <h2 class="install-title">Start in<br/>seconds.</h2>
-      <p class="install-sub">Install the headless core and style it yourself,<br/>or grab the Tailwind v4 implementation package.</p>
+      <p class="install-sub">Install the headless core and style it however<br/>you want — Tailwind, CSS, modules, anything.</p>
     </div>
     <div class="code-block">
       <div class="code-block-header">
@@ -105,16 +105,7 @@
         <div class="code-line">
           <span class="prompt">$</span>
           <span>pnpm add </span>
-          <span class="pkg">&#64;kouji-ui/core</span>
-        </div>
-        <div class="code-line">
-          <span class="prompt">#</span>
-          <span style="color:#333"> or with styled components</span>
-        </div>
-        <div class="code-line">
-          <span class="prompt">$</span>
-          <span>pnpm add </span>
-          <span class="pkg">&#64;kouji-ui/ui</span>
+          <span class="pkg">&#64;kouji-ui/core &#64;angular/cdk</span>
         </div>
       </div>
     </div>
