@@ -1,0 +1,72 @@
+/* ─────────────────────────────────────────────────────────────
+   retro theme — shared layer
+   Warm cream surfaces, terracotta accents, vintage paper feel.
+   Inspired by sun-faded mid-century print design.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="retro"] {
+    /* ── color slots ── */
+    --kj-color-base-100:     #ede5d0;
+    --kj-color-base-200:     #e4d8b4;
+    --kj-color-base-300:     #d6c89a;
+    --kj-color-base-content: #282425;
+
+    --kj-color-primary:         #ef9995;
+    --kj-color-primary-content: #282425;
+
+    --kj-color-secondary:         #fab57a;
+    --kj-color-secondary-content: #282425;
+
+    --kj-color-accent:         #7a9eb1;
+    --kj-color-accent-content: #282425;
+
+    --kj-color-neutral:         #5d4037;
+    --kj-color-neutral-content: #ede5d0;
+
+    --kj-color-info:         #7a9eb1;
+    --kj-color-info-content: #282425;
+
+    --kj-color-success:         #91b859;
+    --kj-color-success-content: #282425;
+
+    --kj-color-warning:         #e9b872;
+    --kj-color-warning-content: #282425;
+
+    --kj-color-destructive:         #c4625d;
+    --kj-color-destructive-content: #ede5d0;
+
+    /* ── shape — soft rounded, vintage cards ── */
+    --kj-radius-box:      var(--kj-base-radius-2);
+    --kj-radius-field:    var(--kj-base-radius-2);
+    --kj-radius-selector: var(--kj-base-radius-2);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+
+    /* ── type ── */
+    --kj-font-sans:    var(--kj-base-font-sans);
+    --kj-font-mono:    var(--kj-base-font-mono);
+    --kj-font-display: var(--kj-base-font-display);
+    --kj-text-xs:   var(--kj-base-text-xs);
+    --kj-text-sm:   var(--kj-base-text-sm);
+    --kj-text-base: var(--kj-base-text-base);
+    --kj-text-lg:   var(--kj-base-text-lg);
+    --kj-text-xl:   var(--kj-base-text-xl);
+    --kj-text-2xl:  var(--kj-base-text-2xl);
+
+    /* ── spacing (semantic) ── */
+    --kj-space-xs:  var(--kj-base-space-xs);
+    --kj-space-sm:  var(--kj-base-space-sm);
+    --kj-space-md:  var(--kj-base-space-md);
+    --kj-space-lg:  var(--kj-base-space-lg);
+    --kj-space-xl:  var(--kj-base-space-xl);
+    --kj-space-2xl: var(--kj-base-space-2xl);
+    --kj-space-3xl: var(--kj-base-space-3xl);
+    --kj-space-4xl: var(--kj-base-space-4xl);
+    --kj-space-5xl: var(--kj-base-space-5xl);
+    --kj-space-6xl: var(--kj-base-space-6xl);
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-base);
+  }
+}

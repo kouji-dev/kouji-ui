@@ -2,11 +2,12 @@ import { Injectable, afterNextRender, computed, signal } from '@angular/core';
 
 /**
  * Theme name. Add new theme names here as @kouji-ui/themes ships more themes.
- * Wave 1: 'dark' | 'light' | 'kouji'. Future waves: + 'retro' | 'finance'.
  */
-export type Theme = 'dark' | 'light' | 'kouji';
+export type Theme = 'dark' | 'light' | 'kouji' | 'retro' | 'cyberpunk' | 'corporate';
 
-export const AVAILABLE_THEMES: readonly Theme[] = ['kouji', 'dark', 'light'] as const;
+export const AVAILABLE_THEMES: readonly Theme[] = [
+  'kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate',
+] as const;
 
 /**
  * Color scheme of each theme. Consumed by integrations that need to know
@@ -15,9 +16,12 @@ export const AVAILABLE_THEMES: readonly Theme[] = ['kouji', 'dark', 'light'] as 
  * When a new theme is added in @kouji-ui/themes, add it here too.
  */
 export const THEME_SCHEME: Record<Theme, 'light' | 'dark'> = {
-  kouji: 'dark',
-  dark:  'dark',
-  light: 'light',
+  kouji:     'dark',
+  dark:      'dark',
+  light:     'light',
+  retro:     'light',
+  cyberpunk: 'light',
+  corporate: 'light',
 };
 
 @Injectable({ providedIn: 'root' })

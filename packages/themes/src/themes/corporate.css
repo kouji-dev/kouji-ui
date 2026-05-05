@@ -1,0 +1,72 @@
+/* ─────────────────────────────────────────────────────────────
+   corporate theme — shared layer
+   Clean white surfaces, blue primary, subtle rounding.
+   Calm, accessible, business-ready.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="corporate"] {
+    /* ── color slots ── */
+    --kj-color-base-100:     #ffffff;
+    --kj-color-base-200:     #f8f9fa;
+    --kj-color-base-300:     #e9ecef;
+    --kj-color-base-content: #181a2a;
+
+    --kj-color-primary:         #4b6bfb;
+    --kj-color-primary-content: #ffffff;
+
+    --kj-color-secondary:         #7b92b2;
+    --kj-color-secondary-content: #ffffff;
+
+    --kj-color-accent:         #67cba0;
+    --kj-color-accent-content: #181a2a;
+
+    --kj-color-neutral:         #181a2a;
+    --kj-color-neutral-content: #ffffff;
+
+    --kj-color-info:         #3abff8;
+    --kj-color-info-content: #ffffff;
+
+    --kj-color-success:         #36d399;
+    --kj-color-success-content: #ffffff;
+
+    --kj-color-warning:         #fbbd23;
+    --kj-color-warning-content: #181a2a;
+
+    --kj-color-destructive:         #f87272;
+    --kj-color-destructive-content: #ffffff;
+
+    /* ── shape — subtle rounding ── */
+    --kj-radius-box:      var(--kj-base-radius-1);
+    --kj-radius-field:    var(--kj-base-radius-1);
+    --kj-radius-selector: var(--kj-base-radius-1);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+
+    /* ── type ── */
+    --kj-font-sans:    var(--kj-base-font-sans);
+    --kj-font-mono:    var(--kj-base-font-mono);
+    --kj-font-display: var(--kj-base-font-sans);
+    --kj-text-xs:   var(--kj-base-text-xs);
+    --kj-text-sm:   var(--kj-base-text-sm);
+    --kj-text-base: var(--kj-base-text-base);
+    --kj-text-lg:   var(--kj-base-text-lg);
+    --kj-text-xl:   var(--kj-base-text-xl);
+    --kj-text-2xl:  var(--kj-base-text-2xl);
+
+    /* ── spacing (semantic) ── */
+    --kj-space-xs:  var(--kj-base-space-xs);
+    --kj-space-sm:  var(--kj-base-space-sm);
+    --kj-space-md:  var(--kj-base-space-md);
+    --kj-space-lg:  var(--kj-base-space-lg);
+    --kj-space-xl:  var(--kj-base-space-xl);
+    --kj-space-2xl: var(--kj-base-space-2xl);
+    --kj-space-3xl: var(--kj-base-space-3xl);
+    --kj-space-4xl: var(--kj-base-space-4xl);
+    --kj-space-5xl: var(--kj-base-space-5xl);
+    --kj-space-6xl: var(--kj-base-space-6xl);
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-fast);
+  }
+}
