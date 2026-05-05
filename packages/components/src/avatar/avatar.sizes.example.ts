@@ -7,11 +7,11 @@ import { KjAvatarComponent } from './avatar';
   imports: [KjAvatarComponent],
   styles: [`:host { display: flex; gap: 0.75rem; align-items: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <kj-avatar size="xs" fallback="XS" />
-    <kj-avatar size="sm" fallback="SM" />
-    <kj-avatar size="md" fallback="MD" />
-    <kj-avatar size="lg" fallback="LG" />
-    <kj-avatar size="xl" fallback="XL" />
+    <kj-avatar size="xs" content="XS" />
+    <kj-avatar size="sm" content="SM" />
+    <kj-avatar size="md" content="MD" />
+    <kj-avatar size="lg" content="LG" />
+    <kj-avatar size="xl" content="XL" />
   `,
 })
 export class KjAvatarSizesExample {}

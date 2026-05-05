@@ -7,8 +7,8 @@ import { KjAvatarComponent } from './avatar';
   imports: [KjAvatarComponent],
   styles: [`:host { display: flex; gap: 0.75rem; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <kj-avatar shape="circle" fallback="C" />
-    <kj-avatar shape="rounded" fallback="R" />
+    <kj-avatar shape="circle" content="C" />
+    <kj-avatar shape="rounded" content="R" />
   `,
 })
 export class KjAvatarShapesExample {}

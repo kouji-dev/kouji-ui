@@ -3,8 +3,9 @@ import { NgTemplateOutlet } from '@angular/common';
 import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
 
 /**
- * Avatar component. Accepts `src`, `alt`, and a `fallback` input (string OR TemplateRef).
- * Renders the image and fallback internally.
+ * Avatar component. Renders an image when `src` is provided; otherwise (or when
+ * the image fails to load) shows the `content` input. `content` accepts a plain
+ * string or a `TemplateRef` for richer markup (icon, sub-badge, etc.).
  *
  * @doc-example Default
  *   @doc-file avatar.default.example.ts
@@ -28,10 +29,10 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
       <img kjAvatarImage class="kj-avatar-image" [src]="srcVal" [alt]="alt() ?? ''" />
     }
     <span kjAvatarFallback class="kj-avatar-fallback">
-      @if (isTemplate(fallback())) {
-        <ng-container *ngTemplateOutlet="$any(fallback())"></ng-container>
+      @if (isTemplate(content())) {
+        <ng-container *ngTemplateOutlet="$any(content())"></ng-container>
       } @else {
-        {{ fallback() }}
+        {{ content() }}
       }
     </span>
   `,
@@ -50,7 +51,8 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
 export class KjAvatarComponent {
   readonly src = input<string | undefined>(undefined);
   readonly alt = input<string | undefined>(undefined);
-  readonly fallback = input<string | TemplateRef<unknown>>('');
+  /** Content shown when there is no `src`, or as a fallback if the image fails. */
+  readonly content = input<string | TemplateRef<unknown>>('');
   readonly size = input<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly shape = input<'circle' | 'rounded'>('circle');
 
