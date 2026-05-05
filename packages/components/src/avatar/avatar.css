@@ -1,7 +1,7 @@
 @layer kj.component {
   .kj-avatar {
     --kj-avatar-size:   2.5rem;
-    --kj-avatar-bg:     var(--kj-color-base-200);
+    --kj-avatar-bg:     var(--kj-color-base-300);
     --kj-avatar-fg:     var(--kj-color-base-content);
     --kj-avatar-radius: 9999px;
 

@@ -1,8 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, TemplateRef } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
 
 /**
- * Avatar root container. Use `<kj-avatar-image>` and `<kj-avatar-fallback>` inside.
+ * Avatar component. Accepts `src`, `alt`, and a `fallback` input (string OR TemplateRef).
+ * Renders the image and fallback internally.
  *
  * @doc-example Default
  *   @doc-file avatar.default.example.ts
@@ -20,7 +22,19 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
   selector: 'kj-avatar',
   standalone: true,
   hostDirectives: [KjAvatar],
-  template: `<ng-content />`,
+  imports: [KjAvatarImage, KjAvatarFallback, NgTemplateOutlet],
+  template: `
+    @if (src(); as srcVal) {
+      <img kjAvatarImage class="kj-avatar-image" [src]="srcVal" [alt]="alt() ?? ''" />
+    }
+    <span kjAvatarFallback class="kj-avatar-fallback">
+      @if (isTemplate(fallback())) {
+        <ng-container *ngTemplateOutlet="$any(fallback())"></ng-container>
+      } @else {
+        {{ fallback() }}
+      }
+    </span>
+  `,
   styleUrl: './avatar.css',
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -31,33 +45,13 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAvatarComponent {
+  readonly src = input<string | undefined>(undefined);
+  readonly alt = input<string | undefined>(undefined);
+  readonly fallback = input<string | TemplateRef<unknown>>('');
   readonly size = input<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly shape = input<'circle' | 'rounded'>('circle');
-}
 
-/** Image element inside `<kj-avatar>`. Sets `data-loaded` once the image loads. */
-@Component({
-  selector: 'kj-avatar-image',
-  standalone: true,
-  imports: [KjAvatarImage],
-  template: `<img kjAvatarImage class="kj-avatar-image" [src]="src()" [alt]="alt()" />`,
-  encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class KjAvatarImageComponent {
-  readonly src = input.required<string>();
-  readonly alt = input.required<string>();
+  protected isTemplate(v: unknown): v is TemplateRef<unknown> {
+    return v instanceof TemplateRef;
+  }
 }
-
-/** Fallback shown when the image is missing or has not loaded. */
-@Component({
-  selector: 'kj-avatar-fallback',
-  standalone: true,
-  imports: [KjAvatarFallback],
-  template: `<span kjAvatarFallback class="kj-avatar-fallback"><ng-content /></span>`,
-  encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class KjAvatarFallbackComponent {}
