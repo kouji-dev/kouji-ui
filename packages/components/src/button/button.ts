@@ -30,6 +30,7 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
   imports: [KjButton],
   template: `
     <button
+      [type]="type()"
       kjButton
       class="kj-button"
       [kjVariant]="variant()"
@@ -48,4 +49,5 @@ export class KjButtonComponent {
   readonly variant = input<KjButtonVariant>('default');
   readonly size = input<KjButtonSize>('md');
   readonly disabled = input(false);
+  readonly type = input<'button' | 'submit' | 'reset'>('button');
 }

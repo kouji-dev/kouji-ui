@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
 import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } from '@kouji-ui/core';
 
 /**
@@ -47,12 +47,14 @@ export class KjAccordionItemComponent {}
   selector: 'kj-accordion-trigger',
   standalone: true,
   imports: [KjAccordionTrigger],
-  template: `<button type="button" kjAccordionTrigger class="kj-accordion-trigger"><ng-content /></button>`,
+  template: `<button type="button" kjAccordionTrigger class="kj-accordion-trigger" [disabled]="disabled()" [attr.aria-disabled]="disabled() ? 'true' : null"><ng-content /></button>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjAccordionTriggerComponent {}
+export class KjAccordionTriggerComponent {
+  readonly disabled = input(false);
+}
 
 /** Body shown when the parent item is expanded. */
 @Component({

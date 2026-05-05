@@ -1,26 +1,38 @@
 import { Component, signal } from '@angular/core';
-import { KjDialogTrigger, KjDialog, KjDialogOverlay, KjDialogTitle, KjDialogClose } from '@kouji-ui/core';
+import { KjDialogTrigger } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
+import {
+  KjDialogComponent, KjDialogOverlayComponent,
+  KjDialogHeaderComponent, KjDialogTitleComponent,
+  KjDialogBodyComponent, KjDialogFooterComponent,
+} from './dialog';
 
 @Component({
   selector: 'kj-dialog-confirmation-example',
   standalone: true,
-  imports: [KjDialogTrigger, KjDialog, KjDialogOverlay, KjDialogTitle, KjDialogClose, KjButtonComponent],
+  imports: [
+    KjDialogTrigger, KjButtonComponent,
+    KjDialogComponent, KjDialogOverlayComponent,
+    KjDialogHeaderComponent, KjDialogTitleComponent,
+    KjDialogBodyComponent, KjDialogFooterComponent,
+  ],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-button [kjDialogTrigger]="dlg" (kjDialogClosed)="onResult($event)">Delete item</kj-button>
     <p style="margin-top:1rem;">Last result: {{ result() ?? '—' }}</p>
     <ng-template #dlg>
-      <div kjDialogOverlay class="kj-dialog-overlay">
-        <div kjDialog #d="kjDialog" class="kj-dialog">
-          <h2 kjDialogTitle class="kj-dialog-title">Delete this item?</h2>
-          <p>This action cannot be undone.</p>
-          <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
-            <button type="button" kjDialogClose class="kj-dialog-close">Cancel</button>
+      <kj-dialog-overlay>
+        <kj-dialog #d="kjDialog">
+          <kj-dialog-header>
+            <kj-dialog-title>Delete this item?</kj-dialog-title>
+          </kj-dialog-header>
+          <kj-dialog-body>This action cannot be undone.</kj-dialog-body>
+          <kj-dialog-footer>
+            <kj-button variant="ghost" (click)="d.close()">Cancel</kj-button>
             <kj-button variant="destructive" (click)="d.close('confirmed')">Delete</kj-button>
-          </div>
-        </div>
-      </div>
+          </kj-dialog-footer>
+        </kj-dialog>
+      </kj-dialog-overlay>
     </ng-template>
   `,
 })

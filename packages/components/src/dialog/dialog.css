@@ -9,28 +9,47 @@
     z-index: 1000;
   }
   .kj-dialog {
+    display: flex;
+    flex-direction: column;
     background: var(--kj-color-base-100);
     color: var(--kj-color-base-content);
     border-radius: var(--kj-radius-box);
     box-shadow: 0 24px 48px rgb(0 0 0 / 0.25);
-    padding: var(--kj-space-xl);
     min-width: 24rem;
     max-width: min(40rem, calc(100vw - 2rem));
     max-height: calc(100vh - 4rem);
-    overflow: auto;
+    overflow: hidden;
   }
+  .kj-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--kj-space-lg) var(--kj-space-xl);
+    border-bottom: var(--kj-border) solid var(--kj-color-base-200);
+  }
+  .kj-dialog-header[data-align="center"] { justify-content: center; }
   .kj-dialog-title {
-    margin: 0 0 var(--kj-space-md);
+    display: block;
+    margin: 0;
     font: 600 1.125rem / 1.3 var(--kj-font-sans);
-  }
-  .kj-dialog-close {
-    background: var(--kj-color-base-200);
     color: var(--kj-color-base-content);
-    border: 0;
-    border-radius: var(--kj-radius-field);
-    padding: var(--kj-space-sm) var(--kj-space-md);
-    font: 0.875rem var(--kj-font-sans);
-    cursor: pointer;
   }
-  .kj-dialog-close:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-dialog-body {
+    flex: 1;
+    color: var(--kj-color-base-content);
+    font: 0.9375rem / 1.5 var(--kj-font-sans);
+  }
+  .kj-dialog-body[data-padded] { padding: var(--kj-space-lg) var(--kj-space-xl); }
+  .kj-dialog-body[data-scroll] { overflow-y: auto; }
+  .kj-dialog-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    padding: var(--kj-space-lg) var(--kj-space-xl);
+    border-top: var(--kj-border) solid var(--kj-color-base-200);
+  }
+  .kj-dialog-footer[data-align="start"]   { justify-content: flex-start; }
+  .kj-dialog-footer[data-align="center"]  { justify-content: center; }
+  .kj-dialog-footer[data-align="end"]     { justify-content: flex-end; }
+  .kj-dialog-footer[data-align="between"] { justify-content: space-between; }
 }
