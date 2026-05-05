@@ -1,0 +1,105 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-button — component-layer tokens + structural CSS
+   Tokens default to shared-layer values from @kouji-ui/themes.
+   Variants/sizes/states retarget the component tokens; the
+   structural rules below are the only place raw var(--kj-button-*)
+   is read.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-button {
+    /* component knobs — themes/users can override any of these */
+    --kj-button-bg:               var(--kj-color-primary);
+    --kj-button-fg:               var(--kj-color-primary-content);
+    --kj-button-border-color:     transparent;
+    --kj-button-border-style:     solid;
+    --kj-button-border-width:     var(--kj-border);
+    --kj-button-radius:           var(--kj-radius-field);
+    --kj-button-padding-x:        var(--kj-space-3);
+    --kj-button-padding-y:        var(--kj-space-2);
+    --kj-button-font:             var(--kj-font-sans);
+    --kj-button-font-size:        var(--kj-text-sm);
+    --kj-button-shadow:           none;
+    --kj-button-shadow-active:    none;
+    --kj-button-translate-active: none;
+
+    /* the only place raw var(--kj-button-*) is read */
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-space-2);
+    background: var(--kj-button-bg);
+    color: var(--kj-button-fg);
+    border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
+    border-radius: var(--kj-button-radius);
+    padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
+    font: var(--kj-button-font-size) / 1.2 var(--kj-button-font);
+    box-shadow: var(--kj-button-shadow);
+    transition: var(--kj-transition);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  /* variants — flip component tokens, not component CSS */
+  .kj-button[data-variant="destructive"] {
+    --kj-button-bg: var(--kj-color-destructive);
+    --kj-button-fg: var(--kj-color-destructive-content);
+  }
+
+  .kj-button[data-variant="ghost"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-color-base-content);
+    --kj-button-border-color: transparent;
+  }
+  .kj-button[data-variant="ghost"]:hover {
+    --kj-button-bg: var(--kj-color-base-200);
+  }
+
+  .kj-button[data-variant="outline"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-color-base-content);
+    --kj-button-border-color: var(--kj-color-neutral);
+  }
+
+  .kj-button[data-variant="link"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-color-primary);
+    --kj-button-padding-x: 0;
+    --kj-button-padding-y: 0;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* sizes */
+  .kj-button[data-size="sm"] {
+    --kj-button-padding-x: var(--kj-space-2);
+    --kj-button-padding-y: 0.25rem;
+    --kj-button-font-size: 0.8125rem;
+  }
+  .kj-button[data-size="lg"] {
+    --kj-button-padding-x: var(--kj-space-4);
+    --kj-button-padding-y: 0.625rem;
+    --kj-button-font-size: 1rem;
+  }
+  .kj-button[data-size="icon"] {
+    --kj-button-padding-x: var(--kj-space-2);
+    --kj-button-padding-y: var(--kj-space-2);
+  }
+
+  /* states */
+  .kj-button:hover {
+    --kj-button-bg: color-mix(in oklab, var(--kj-button-bg) 88%, black);
+  }
+  .kj-button:active {
+    transform: var(--kj-button-translate-active);
+    box-shadow: var(--kj-button-shadow-active);
+  }
+  .kj-button:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+  .kj-button[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}

@@ -36,6 +36,7 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
       <ng-content />
     </button>
   `,
+  styleUrl: './button.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
