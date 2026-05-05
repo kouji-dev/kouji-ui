@@ -47,14 +47,14 @@
 
     <div class="track-grid">
       @for (track of tracks(); track track.id) {
-        <a [routerLink]="['/docs', track.id]" class="track-card">
-          <span class="track-card-count">{{ itemCount(track) }} item{{ itemCount(track) !== 1 ? 's' : '' }}</span>
-          <h2 class="track-card-name">{{ track.packageName }}</h2>
-          <p class="track-card-pkg"><code>&#64;kouji-ui/{{ track.packageName }}</code></p>
-          <span class="track-card-cta">
-            Browse <span aria-hidden="true">→</span>
-          </span>
-        </a>
+        <kj-docs-track-card
+          [eyebrow]="'@kouji-ui/' + track.packageName"
+          [title]="track.title"
+          [description]="track.tagline"
+          [count]="itemCount(track)"
+          cta="Browse all"
+          [link]="['/docs', track.id]"
+        />
       }
     </div>
   </main>

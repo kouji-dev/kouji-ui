@@ -1,8 +1,7 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { DocsService, DocsTrack } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
-import { KjCardComponent } from '@kouji-ui/components';
+import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 
 /**
  * /docs landing — ecosystem overview.
@@ -14,7 +13,7 @@ import { KjCardComponent } from '@kouji-ui/components';
 @Component({
   selector: 'app-docs-index',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent, KjCardComponent],
+  imports: [DocsSidebarComponent, DocsTrackCardComponent],
   templateUrl: './docs-index.html',
   styleUrl: './docs-index.css',
 })

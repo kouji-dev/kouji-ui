@@ -1,0 +1,122 @@
+/* ─────────────────────────────────────────────────────────────
+   .track-card — modern editorial card.
+   Click target = whole anchor. Header row, body, footer.
+   ──────────────────────────────────────────────────────────── */
+
+.track-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  padding: var(--kj-space-xl);
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s, background 0.15s;
+  overflow: hidden;
+}
+.track-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--kj-color-primary);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.2s ease;
+}
+.track-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--kj-color-primary) 35%, var(--kj-color-base-300));
+}
+.track-card:hover::before { transform: scaleY(1); }
+.track-card:focus-visible {
+  outline: 2px solid var(--kj-color-primary);
+  outline-offset: 2px;
+}
+
+.track-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kj-space-md);
+  margin-bottom: var(--kj-space-xl);
+}
+
+.track-card-pkg {
+  font-family: var(--kj-font-mono);
+  font-size: 0.75rem;
+  color: var(--kj-color-neutral);
+  background: transparent;
+  padding: 0;
+}
+
+.track-card-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 var(--kj-space-sm);
+  background: var(--kj-color-base-100);
+  color: var(--kj-color-primary);
+  font-family: var(--kj-font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid color-mix(in oklab, var(--kj-color-primary) 25%, var(--kj-color-base-300));
+  border-radius: var(--kj-radius-selector);
+}
+
+.track-card-title {
+  font-family: var(--kj-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--kj-color-base-content);
+  margin: 0 0 var(--kj-space-sm);
+}
+
+.track-card-tagline {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--kj-color-neutral);
+  margin: 0;
+  max-width: 38ch;
+}
+
+.track-card-footer {
+  margin-top: auto;
+  padding-top: var(--kj-space-xl);
+}
+
+.track-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kj-color-base-content);
+  transition: color 0.15s, gap 0.15s;
+}
+.track-card-cta svg {
+  transition: transform 0.18s ease;
+}
+.track-card:hover .track-card-cta {
+  color: var(--kj-color-primary);
+  gap: var(--kj-space-md);
+}
+.track-card:hover .track-card-cta svg {
+  transform: translateX(2px);
+}
+
+/* Layout helper used on index pages: responsive grid that fills the viewport.
+   minmax(290px, 1fr) lets ~3-4 cards fit on a typical desktop main column. */
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
+  gap: var(--kj-space-lg);
+}

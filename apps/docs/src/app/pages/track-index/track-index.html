@@ -50,15 +50,15 @@
         @if (cat.children.length) {
           <section class="category-section">
             <h2 class="category-title">{{ cat.label }}</h2>
-            <div class="component-grid">
+            <div class="track-grid">
               @for (item of cat.children; track item.slug) {
                 @if (item.slug) {
-                  <a [routerLink]="['/docs', track()!.id, item.slug]" class="component-card-link">
-                    <kj-card variant="default">
-                      <span class="card-name">{{ item.label }}</span>
-                      <span class="card-arrow">→</span>
-                    </kj-card>
-                  </a>
+                  <kj-docs-track-card
+                    [eyebrow]="cat.label"
+                    [title]="item.label"
+                    cta="View"
+                    [link]="['/docs', track()!.id, item.slug]"
+                  />
                 }
               }
             </div>

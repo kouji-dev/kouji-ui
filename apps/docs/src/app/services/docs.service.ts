@@ -75,6 +75,10 @@ export interface SidebarNode {
 export interface DocsTrack {
   id: string;
   packageName: string;
+  /** Editorial title shown on track cards. */
+  title: string;
+  /** One-sentence tagline shown under the title. */
+  tagline: string;
   tree: SidebarNode[];
 }
 
@@ -216,8 +220,20 @@ export class DocsService {
    */
   getTracks(): DocsTrack[] {
     return [
-      { id: 'headless',   packageName: 'core',       tree: this.getSidebarTree() },
-      { id: 'components', packageName: 'components', tree: this.getStyledComponentsTree() },
+      {
+        id: 'headless',
+        packageName: 'core',
+        title: 'Headless primitives',
+        tagline: 'Behavior-only directives. Bring your own CSS. Zero opinions, full a11y.',
+        tree: this.getSidebarTree(),
+      },
+      {
+        id: 'components',
+        packageName: 'components',
+        title: 'Styled components',
+        tagline: 'Opinionated, themable element wrappers built on the headless directives.',
+        tree: this.getStyledComponentsTree(),
+      },
     ];
   }
 }

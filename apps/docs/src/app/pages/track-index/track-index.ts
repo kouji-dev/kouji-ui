@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { DocsService, DocsTrack, SidebarNode } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
-import { KjCardComponent } from '@kouji-ui/components';
+import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 
 /**
  * /docs/<trackId> landing — lists every item in a single track, grouped by
@@ -17,7 +17,7 @@ import { KjCardComponent } from '@kouji-ui/components';
 @Component({
   selector: 'app-track-index',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent, KjCardComponent],
+  imports: [RouterLink, DocsSidebarComponent, DocsTrackCardComponent],
   templateUrl: './track-index.html',
   styleUrl: '../docs-index/docs-index.css',
 })
