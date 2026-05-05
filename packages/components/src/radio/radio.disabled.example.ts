@@ -5,15 +5,12 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-disabled-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    label { display: inline-flex; align-items: center; gap: var(--kj-space-sm); }
-  `],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-radio-group [(value)]="choice" ariaLabel="Choice">
-      <label><kj-radio [value]="'a'"></kj-radio> Option A</label>
-      <label><kj-radio [value]="'b'" [disabled]="true"></kj-radio> Option B (disabled)</label>
-      <label><kj-radio [value]="'c'"></kj-radio> Option C</label>
+      <kj-radio [value]="'a'">Option A</kj-radio>
+      <kj-radio [value]="'b'" [disabled]="true">Option B (disabled)</kj-radio>
+      <kj-radio [value]="'c'">Option C</kj-radio>
     </kj-radio-group>
   `,
 })

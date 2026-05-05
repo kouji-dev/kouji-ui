@@ -5,15 +5,12 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-default-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    label { display: inline-flex; align-items: center; gap: var(--kj-space-sm); }
-  `],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-radio-group [(value)]="size" ariaLabel="Size">
-      <label><kj-radio [value]="'s'"></kj-radio> Small</label>
-      <label><kj-radio [value]="'m'"></kj-radio> Medium</label>
-      <label><kj-radio [value]="'l'"></kj-radio> Large</label>
+      <kj-radio [value]="'s'">Small</kj-radio>
+      <kj-radio [value]="'m'">Medium</kj-radio>
+      <kj-radio [value]="'l'">Large</kj-radio>
     </kj-radio-group>
   `,
 })

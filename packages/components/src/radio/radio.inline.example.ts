@@ -5,15 +5,12 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-inline-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    label { display: inline-flex; align-items: center; gap: var(--kj-space-sm); }
-  `],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-radio-group [(value)]="vote" orientation="horizontal" ariaLabel="Vote">
-      <label><kj-radio [value]="'yes'"></kj-radio> Yes</label>
-      <label><kj-radio [value]="'no'"></kj-radio> No</label>
-      <label><kj-radio [value]="'abstain'"></kj-radio> Abstain</label>
+      <kj-radio [value]="'yes'">Yes</kj-radio>
+      <kj-radio [value]="'no'">No</kj-radio>
+      <kj-radio [value]="'abstain'">Abstain</kj-radio>
     </kj-radio-group>
   `,
 })
