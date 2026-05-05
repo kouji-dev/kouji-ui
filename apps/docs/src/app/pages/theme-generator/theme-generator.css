@@ -26,14 +26,33 @@
   border-bottom: 1px solid var(--kj-color-base-300);
   background: var(--kj-color-base-100);
 }
+.generator-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 0 0 280px;
+}
 .generator-name {
-  flex: 0 0 240px;
   background: var(--kj-color-base-200);
   border: 1px solid var(--kj-color-base-300);
   border-radius: var(--kj-radius-field);
   color: var(--kj-color-base-content);
   padding: var(--kj-space-xs) var(--kj-space-sm);
   font: var(--kj-text-sm) var(--kj-font-mono);
+}
+.generator-name[aria-invalid="true"] {
+  border-color: var(--kj-color-destructive);
+}
+.generator-name-helper {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-color-neutral);
+}
+.generator-name-helper.error {
+  color: var(--kj-color-destructive);
+}
+.generator-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .generator-actions {
   margin-left: auto;

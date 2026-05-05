@@ -1,10 +1,11 @@
-import { Component, ChangeDetectionStrategy, DestroyRef, effect, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { converter, formatHex } from 'culori';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { KjInputComponent } from '@kouji-ui/components';
 import { ThemeGeneratorPreviewComponent } from './preview/theme-generator-preview';
 import { ThemeDraftService } from '../../services/theme-draft.service';
+import { BUILT_IN_NAMES } from '../../lib/theme/built-in-themes';
 import { ClipboardService } from '../../services/clipboard.service';
 import { FontLoaderService } from '../../services/font-loader.service';
 import { serializeToScopedBlock } from '../../lib/theme/serialize-theme';
@@ -50,6 +51,19 @@ export class ThemeGeneratorComponent {
   protected readonly colorSlots = COLOR_SLOTS;
   protected readonly fonts: readonly CuratedFont[] = CURATED_FONTS;
   protected readonly toast = signal<string | null>(null);
+
+  /** Validation message for the theme-name input (null = valid). */
+  protected readonly nameError = computed<string | null>(() => {
+    const n = this.draft().name;
+    if (!n) return null;
+    if ((BUILT_IN_NAMES as readonly string[]).includes(n)) return 'Reserved built-in name';
+    if (n.length > 32) return 'Max 32 characters';
+    if (!/^[a-z0-9-]+$/.test(n)) return 'Use lowercase letters, digits, and hyphens';
+    return null;
+  });
+
+  /** True when Save should be disabled (no name or invalid name). */
+  protected readonly saveDisabled = computed(() => !this.draft().name || this.nameError() !== null);
 
   // Inject/update the scoped draft style block — created in injection context (constructor field).
   // Runs in the browser only; jsdom tests skip via the typeof check.

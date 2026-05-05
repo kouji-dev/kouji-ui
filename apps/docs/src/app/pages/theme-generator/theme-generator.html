@@ -5,17 +5,25 @@
 
   <main class="generator-main">
     <header class="generator-bar">
-      <input
-        class="generator-name"
-        type="text"
-        placeholder="theme-name"
-        [value]="draft().name"
-        (input)="onNameChange($event)"
-        aria-label="Theme name"
-      />
+      <div class="generator-name-wrap">
+        <input
+          class="generator-name"
+          type="text"
+          placeholder="theme-name"
+          [value]="draft().name"
+          [attr.aria-invalid]="nameError() !== null"
+          aria-describedby="name-helper"
+          (input)="onNameChange($event)"
+          aria-label="Theme name"
+        />
+        <span id="name-helper" class="generator-name-helper" [class.error]="nameError() !== null">
+          {{ nameError() ?? 'kebab-case, max 32 chars' }}
+        </span>
+      </div>
       <div class="generator-actions">
         <button type="button" class="generator-btn" (click)="reset()">Reset</button>
-        <button type="button" class="generator-btn primary" (click)="save()">Save</button>
+        <button type="button" class="generator-btn primary"
+                [disabled]="saveDisabled()" (click)="save()">Save</button>
         <button type="button" class="generator-btn" (click)="copyCss()">Copy CSS</button>
         <button type="button" class="generator-btn" (click)="downloadCss()">Download .css</button>
         <button type="button" class="generator-btn" (click)="exportJson()">Export JSON</button>
