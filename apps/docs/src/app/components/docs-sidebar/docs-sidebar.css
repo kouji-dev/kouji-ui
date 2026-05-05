@@ -133,20 +133,57 @@
   margin-bottom: var(--kj-space-xl);
 }
 
-/* Track label — separates the HEADLESS / COMPONENTS top-level groupings.
-   Small uppercase, lime accent, with a hairline separator below. */
-.sidebar-track-label {
-  font-family: var(--kj-font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--kj-color-primary);
-  padding: var(--kj-space-md) var(--kj-space-md) var(--kj-space-sm);
-  margin-top: var(--kj-space-md);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  margin-bottom: var(--kj-space-sm);
+/* Track selector — segmented control at the top of the sidebar nav.
+   Clicking a tab swaps the items below between Headless and Library. */
+.sidebar-track-selector {
+  display: flex;
+  gap: 1px;
+  margin-bottom: var(--kj-space-lg);
+  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-color-base-300);
+  border-radius: var(--kj-radius-field);
+  overflow: hidden;
 }
-.sidebar-track-label:first-of-type { margin-top: 0; }
+.sidebar-track-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kj-space-sm);
+  padding: var(--kj-space-sm) var(--kj-space-md);
+  background: var(--kj-color-base-100);
+  color: var(--kj-color-neutral);
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+}
+.sidebar-track-tab:hover { color: var(--kj-color-base-content); }
+.sidebar-track-tab.active {
+  background: var(--kj-color-base-200);
+  color: var(--kj-color-primary);
+}
+.sidebar-track-tab:focus-visible {
+  outline: 2px solid var(--kj-color-primary);
+  outline-offset: -2px;
+}
+.sidebar-track-count {
+  display: inline-flex;
+  align-items: center;
+  min-width: 1.5em;
+  height: 1.2em;
+  padding: 0 0.35em;
+  background: color-mix(in oklab, var(--kj-color-base-content) 10%, transparent);
+  color: inherit;
+  font-size: 0.65rem;
+  border-radius: var(--kj-radius-selector);
+}
+.sidebar-track-tab.active .sidebar-track-count {
+  background: color-mix(in oklab, var(--kj-color-primary) 18%, transparent);
+}
 
 .sidebar-package {
   margin-bottom: var(--kj-space-xs);
