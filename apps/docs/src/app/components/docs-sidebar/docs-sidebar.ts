@@ -19,7 +19,10 @@ export class DocsSidebarComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
 
-  protected readonly tree = signal<SidebarNode[]>([]);
+  /** Headless directives — populated from the core manifest after load. */
+  protected readonly headlessTree = signal<SidebarNode[]>([]);
+  /** Styled components — hardcoded list from DocsService. */
+  protected readonly componentsTree = signal<SidebarNode[]>([]);
   protected readonly isDark = computed(() => this.themeService.isDark());
   readonly open = signal(false);
 
@@ -67,7 +70,8 @@ export class DocsSidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.docs.loadManifest().subscribe(() => {
-      this.tree.set(this.docs.getSidebarTree());
+      this.headlessTree.set(this.docs.getSidebarTree());
+      this.componentsTree.set(this.docs.getStyledComponentsTree());
     });
   }
 

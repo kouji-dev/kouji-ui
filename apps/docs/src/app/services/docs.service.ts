@@ -160,4 +160,39 @@ export class DocsService {
       children: items,
     }));
   }
+
+  /**
+   * Catalog of styled components shipped from `@kouji-ui/components`.
+   * Hardcoded for now; once the manifest extractor scans the components
+   * package too, this becomes an extracted list. Wave 1 ships 5 components.
+   */
+  getStyledComponentsTree(): SidebarNode[] {
+    return [
+      {
+        label: 'Base',
+        slug: null,
+        children: [
+          { label: 'Button', slug: 'button', children: [] },
+          { label: 'Card',   slug: 'card',   children: [] },
+          { label: 'Link',   slug: 'link',   children: [] },
+          { label: 'Kbd',    slug: 'kbd',    children: [] },
+        ],
+      },
+      {
+        label: 'Inputs',
+        slug: null,
+        children: [
+          { label: 'Input', slug: 'input', children: [] },
+        ],
+      },
+    ];
+  }
+
+  /** Slug list for the styled components track — used by the route prerenderer. */
+  getStyledComponentSlugs(): string[] {
+    return this.getStyledComponentsTree()
+      .flatMap(cat => cat.children)
+      .map(item => item.slug)
+      .filter((s): s is string => !!s);
+  }
 }

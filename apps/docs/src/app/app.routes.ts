@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/getting-started/getting-started').then(m => m.GettingStartedComponent),
   },
   {
+    path: 'docs/headless/:slug',
+    loadComponent: () => import('./pages/component-doc/component-doc').then(m => m.ComponentDocComponent),
+  },
+  {
     path: 'docs/components/:slug',
     loadComponent: () => import('./pages/component-doc/component-doc').then(m => m.ComponentDocComponent),
   },

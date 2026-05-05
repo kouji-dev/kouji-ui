@@ -133,6 +133,21 @@
   margin-bottom: var(--kj-space-xl);
 }
 
+/* Track label — separates the HEADLESS / COMPONENTS top-level groupings.
+   Small uppercase, lime accent, with a hairline separator below. */
+.sidebar-track-label {
+  font-family: var(--kj-font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kj-color-primary);
+  padding: var(--kj-space-md) var(--kj-space-md) var(--kj-space-sm);
+  margin-top: var(--kj-space-md);
+  border-bottom: 1px solid var(--kj-color-base-300);
+  margin-bottom: var(--kj-space-sm);
+}
+.sidebar-track-label:first-of-type { margin-top: 0; }
+
 .sidebar-package {
   margin-bottom: var(--kj-space-xs);
 }
