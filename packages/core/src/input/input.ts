@@ -72,9 +72,15 @@ export class KjInput {
 
   constructor() {
     // Reflect the CVA value signal back to the native input element.
+    // Skip when the form control's value is null/undefined so external [value]
+    // bindings (template attribute, parent component) are preserved when no
+    // ngModel/formControl is wired. When a form is wired, callers clear via
+    // setValue('') rather than setValue(null), preserving the clear-on-empty
+    // behavior.
     effect(() => {
       const val = this.formCtrl.value();
-      this.el.nativeElement.value = val == null ? '' : String(val);
+      if (val == null) return;
+      this.el.nativeElement.value = String(val);
     });
   }
 }

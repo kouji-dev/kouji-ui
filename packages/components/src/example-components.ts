@@ -43,8 +43,9 @@ export { KjDialogWithFormExample }     from './dialog/dialog.with-form.example';
 export { KjDialogScrollableExample }   from './dialog/dialog.scrollable.example';
 export { KjDialogConfirmationExample } from './dialog/dialog.confirmation.example';
 
-// Input (existing)
-export { KjInputExample } from './input/input.example';
+// Input
+export { KjInputExample }      from './input/input.example';
+export { KjInputColorExample } from './input/input.color.example';
 
 // Kbd (existing)
 export { KjKbdExample } from './kbd/kbd.example';

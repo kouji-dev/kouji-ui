@@ -1,0 +1,57 @@
+:host {
+  display: block;
+  padding: var(--kj-space-2xl);
+  color: var(--kj-color-base-content);
+  background: var(--kj-color-base-100);
+  font: var(--kj-text-base) var(--kj-font-sans);
+}
+:host * { pointer-events: none; }
+:host kj-input { pointer-events: auto; }   /* allow color picker to open */
+
+.sample-hero h1 { font: var(--kj-text-2xl) var(--kj-font-display); margin: 0 0 var(--kj-space-sm); }
+.sample-hero code { font: var(--kj-text-sm) var(--kj-font-mono); color: var(--kj-color-neutral); }
+.sample-h2 { font: var(--kj-text-xl) var(--kj-font-display); margin: var(--kj-space-2xl) 0 var(--kj-space-md); }
+
+.buttons-grid {
+  display: flex; flex-wrap: wrap; gap: var(--kj-space-sm);
+  margin-bottom: var(--kj-space-md);
+}
+
+.form-card {
+  display: grid; gap: var(--kj-space-md);
+  background: var(--kj-color-base-200);
+  border: var(--kj-border) solid var(--kj-color-base-300);
+  border-radius: var(--kj-radius-box);
+  padding: var(--kj-space-lg);
+  max-width: 480px;
+}
+.form-card label { display: grid; gap: var(--kj-space-xs); font: var(--kj-text-sm) var(--kj-font-mono); }
+.form-actions { display: flex; gap: var(--kj-space-sm); }
+
+.callout {
+  padding: var(--kj-space-md) var(--kj-space-lg);
+  border-radius: var(--kj-radius-box);
+  border-left: 4px solid;
+  margin-bottom: var(--kj-space-sm);
+  background: var(--kj-color-base-200);
+}
+.callout.info        { border-color: var(--kj-color-info); }
+.callout.success     { border-color: var(--kj-color-success); }
+.callout.warning     { border-color: var(--kj-color-warning); }
+.callout.destructive { border-color: var(--kj-color-destructive); }
+
+a { color: var(--kj-color-primary); }
+.muted { color: var(--kj-color-neutral); }
+
+.surface {
+  padding: var(--kj-space-md);
+  border: 1px solid var(--kj-color-base-300);
+  border-radius: var(--kj-radius-box);
+  margin-bottom: var(--kj-space-sm);
+}
+.s-100 { background: var(--kj-color-base-100); }
+.s-200 { background: var(--kj-color-base-200); }
+.s-300 { background: var(--kj-color-base-300); }
+
+/* Forced hover — duplicates :hover styles for the demo row */
+.kj-button.is-force-hover { filter: brightness(1.05); transform: translateY(-1px); }
