@@ -39,10 +39,24 @@
     text-decoration: none;
   }
 
-  /* variants — flip component tokens, not component CSS */
+  /* Variants flip component tokens. Each variant owns its hover so the
+     hover surface is designed per intent, not derived heuristically.
+
+     Filled variants (default, destructive) prefer a designed
+     `--kj-color-*-hover` token from the theme, falling back to a
+     base-content-mix that automatically darkens in light themes and
+     lightens in dark themes. Themes are encouraged to define the
+     `*-hover` tokens for a brand-correct shade. */
+
   .kj-button[data-variant="destructive"] {
     --kj-button-bg: var(--kj-color-destructive);
     --kj-button-fg: var(--kj-color-destructive-content);
+  }
+  .kj-button[data-variant="destructive"]:hover {
+    --kj-button-bg: var(
+      --kj-color-destructive-hover,
+      color-mix(in oklab, var(--kj-color-destructive) 85%, var(--kj-color-base-content))
+    );
   }
 
   .kj-button[data-variant="ghost"] {
@@ -51,7 +65,7 @@
     --kj-button-border-color: transparent;
   }
   .kj-button[data-variant="ghost"]:hover {
-    --kj-button-bg: var(--kj-color-base-300);
+    --kj-button-bg: var(--kj-color-base-200);
   }
 
   .kj-button[data-variant="outline"] {
@@ -73,7 +87,10 @@
   }
   .kj-button[data-variant="link"]:hover {
     --kj-button-bg: transparent;
-    --kj-button-fg: color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content));
+    --kj-button-fg: var(
+      --kj-color-primary-hover,
+      color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content))
+    );
   }
 
   /* sizes */
@@ -92,13 +109,14 @@
     --kj-button-padding-y: var(--kj-space-sm);
   }
 
-  /* states.
-     Hover darkens in light themes and lightens in dark themes by mixing
-     toward `--kj-color-base-content` (which inverts with the theme).
-     The variant-specific :hover rules above (ghost / outline / link) win
-     by specificity and replace this fallback when needed. */
+  /* Default-variant hover (catches the unset-or-`default` case). Specificity
+     here is lower than the variant-specific rules above, so destructive /
+     ghost / outline / link override correctly. */
   .kj-button:hover {
-    --kj-button-bg: color-mix(in oklab, var(--kj-button-bg) 85%, var(--kj-color-base-content));
+    --kj-button-bg: var(
+      --kj-color-primary-hover,
+      color-mix(in oklab, var(--kj-color-primary) 85%, var(--kj-color-base-content))
+    );
   }
   .kj-button:active {
     transform: var(--kj-button-translate-active);
