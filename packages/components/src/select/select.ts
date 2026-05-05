@@ -1,8 +1,11 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, model } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, inject, computed } from '@angular/core';
 import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/core';
 
 /**
  * Select root. Two-way bind via `[(value)]`.
+ *
+ * Users only need `<kj-select>` and `<kj-option>`. The trigger button and
+ * listbox panel are rendered internally.
  *
  * @doc-example Default
  *   @doc-file select.default.example.ts
@@ -17,8 +20,19 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
 @Component({
   selector: 'kj-select',
   standalone: true,
-  hostDirectives: [{ directive: KjSelect, inputs: ['kjSelectValue: value'], outputs: ['kjSelectValueChange: valueChange'] }],
-  template: `<ng-content />`,
+  hostDirectives: [
+    { directive: KjSelect, inputs: ['kjSelectValue: value'], outputs: ['kjSelectValueChange: valueChange'] },
+  ],
+  imports: [KjSelectTrigger, KjSelectContent],
+  template: `
+    <button type="button" kjSelectTrigger class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null">
+      <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
+      <span class="kj-select-trigger-caret" aria-hidden="true">▾</span>
+    </button>
+    <div kjSelectContent class="kj-select-content">
+      <ng-content />
+    </div>
+  `,
   styleUrl: './select.css',
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -28,37 +42,16 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSelectComponent {
+  readonly placeholder = input<string>('Select…');
   readonly disabled = input(false);
+
+  private readonly select = inject(KjSelect);
+  readonly displayLabel = computed(() => {
+    const v = this.select.value();
+    if (v === undefined || v === null || v === '') return this.placeholder();
+    return String(v);
+  });
 }
-
-/** Visible button that toggles the listbox. */
-@Component({
-  selector: 'kj-select-trigger',
-  standalone: true,
-  imports: [KjSelectTrigger],
-  template: `
-    <button type="button" kjSelectTrigger class="kj-select-trigger" aria-haspopup="listbox">
-      <span class="kj-select-trigger-label"><ng-content /></span>
-      <span class="kj-select-trigger-caret" aria-hidden="true">▾</span>
-    </button>
-  `,
-  encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class KjSelectTriggerComponent {}
-
-/** Listbox panel containing options. */
-@Component({
-  selector: 'kj-select-content',
-  standalone: true,
-  imports: [KjSelectContent],
-  template: `<div kjSelectContent class="kj-select-content"><ng-content /></div>`,
-  encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class KjSelectContentComponent {}
 
 /** Single option row. */
 @Component({
