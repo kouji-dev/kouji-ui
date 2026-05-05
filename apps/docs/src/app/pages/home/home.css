@@ -15,8 +15,8 @@
 
 .page {
   min-height: 100dvh;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--kj-color-base-100);
+  color: var(--kj-color-base-content);
   font-family: 'JetBrains Mono', monospace;
   overflow-x: hidden;
 }
@@ -27,7 +27,7 @@ nav {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 3rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
   position: sticky;
   top: 0;
   background: rgba(12, 12, 12, 0.9);
@@ -47,7 +47,7 @@ nav {
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: -0.02em;
-  color: var(--accent);
+  color: var(--kj-color-primary);
 }
 
 .nav-links {
@@ -59,7 +59,7 @@ nav {
 }
 
 .nav-links a {
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   text-decoration: none;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -68,13 +68,13 @@ nav {
 }
 
 .nav-links a:hover {
-  color: var(--text);
+  color: var(--kj-color-base-content);
 }
 
 /* ── Hero ── */
 .hero {
   padding: 8rem 3rem 6rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
   position: relative;
 }
 
@@ -83,8 +83,8 @@ nav {
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid var(--accent);
+  color: var(--kj-color-primary);
+  border: 1px solid var(--kj-color-primary);
   padding: 0.25rem 0.75rem;
   margin-bottom: 2.5rem;
   font-family: 'JetBrains Mono', monospace;
@@ -97,13 +97,13 @@ nav {
   line-height: 0.9;
   letter-spacing: -0.04em;
   margin: 0 0 3rem;
-  color: var(--text);
+  color: var(--kj-color-base-content);
   max-width: 14ch;
 }
 
 .hero-title em {
   font-style: normal;
-  color: var(--accent);
+  color: var(--kj-color-primary);
   -webkit-text-stroke: 0px;
 }
 
@@ -136,13 +136,13 @@ nav {
 /* ── Stats bar ── */
 .stats {
   display: flex;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 .stat {
   flex: 1;
   padding: 2rem 3rem;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--kj-color-base-300);
 }
 
 .stat:last-child {
@@ -154,7 +154,7 @@ nav {
   font-family: 'Syne', sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--kj-color-primary);
   line-height: 1;
   margin-bottom: 0.5rem;
 }
@@ -163,20 +163,20 @@ nav {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
 }
 
 /* ── Features ── */
 .features {
   padding: 6rem 3rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 .section-label {
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   margin-bottom: 3rem;
   display: flex;
   align-items: center;
@@ -187,7 +187,7 @@ nav {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: var(--kj-color-base-300);
   max-width: 200px;
 }
 
@@ -199,8 +199,8 @@ nav {
 
 .feature {
   padding: 2.5rem;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 .feature:nth-child(3n) {
@@ -223,20 +223,20 @@ nav {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
-  color: var(--text);
+  color: var(--kj-color-base-content);
   letter-spacing: -0.01em;
 }
 
 .feature-desc {
   font-size: 0.8rem;
   line-height: 1.7;
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
 }
 
 /* ── Install ── */
 .install {
   padding: 6rem 3rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6rem;
@@ -249,19 +249,19 @@ nav {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: var(--text);
+  color: var(--kj-color-base-content);
   margin: 0 0 1rem;
 }
 
 .install-sub {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   line-height: 1.6;
 }
 
 .code-block {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
   padding: 2rem;
 }
 
@@ -271,14 +271,14 @@ nav {
   justify-content: space-between;
   margin-bottom: 1.25rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 .code-block-title {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
 }
 
 .code-lines {
@@ -294,17 +294,17 @@ nav {
 }
 
 .code-line .prompt {
-  color: var(--accent);
+  color: var(--kj-color-primary);
   margin-right: 0.75rem;
   user-select: none;
 }
 
 .code-line .pkg {
-  color: var(--text);
+  color: var(--kj-color-base-content);
 }
 
 .code-line .flag {
-  color: var(--accent);
+  color: var(--kj-color-primary);
   opacity: 0.7;
 }
 
@@ -320,13 +320,13 @@ footer {
   font-family: 'Syne', sans-serif;
   font-weight: 800;
   font-size: 1rem;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   letter-spacing: -0.02em;
 }
 
 .footer-copy {
   font-size: 0.7rem;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   letter-spacing: 0.05em;
 }
 
@@ -336,7 +336,7 @@ footer {
   .hero { padding: 4rem 1.5rem 3rem; }
   .hero-sub { grid-template-columns: 1fr; gap: 2rem; }
   .stats { flex-direction: column; }
-  .stat { border-right: none; border-bottom: 1px solid var(--border); }
+  .stat { border-right: none; border-bottom: 1px solid var(--kj-color-base-300); }
   .features-grid { grid-template-columns: 1fr; }
   .feature { border-right: none !important; }
   .install { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }

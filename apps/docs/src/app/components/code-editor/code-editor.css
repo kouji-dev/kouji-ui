@@ -1,8 +1,8 @@
 :host {
   display: block;
-  border: 1px solid var(--border);
+  border: 1px solid var(--kj-color-base-300);
   overflow: hidden;
-  background: var(--bg-surface);
+  background: var(--kj-color-base-200);
 }
 
 .editor-wrap { display: flex; flex-direction: column; height: 100%; }
@@ -12,8 +12,8 @@
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border);
+  background: var(--kj-color-base-100);
+  border-bottom: 1px solid var(--kj-color-base-300);
   flex-shrink: 0;
 }
 
@@ -22,10 +22,10 @@
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
-  background: var(--accent-dim);
+  color: var(--kj-color-primary);
+  background: color-mix(in oklab, var(--kj-color-primary) 8%, transparent);
   padding: 0.15rem 0.5rem;
-  border: 1px solid var(--accent-border, var(--border));
+  border: 1px solid color-mix(in oklab, var(--kj-color-primary) 22%, transparent);
 }
 
 .header-spacer { flex: 1; }
@@ -36,7 +36,7 @@
   gap: 0.3rem;
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
   letter-spacing: 0.06em;
@@ -44,7 +44,7 @@
   padding: 0.2rem 0.5rem;
   transition: color 0.15s;
 }
-.copy-btn:hover { color: var(--text); }
+.copy-btn:hover { color: var(--kj-color-base-content); }
 
 /* ── Monaco container ── */
 /* Height is set inline by code-editor.ts (auto-size to content) */
@@ -60,21 +60,21 @@
 .editor-host ::ng-deep .monaco-editor,
 .editor-host ::ng-deep .monaco-editor-background,
 .editor-host ::ng-deep .monaco-editor .margin {
-  background-color: var(--bg-surface) !important;
+  background-color: var(--kj-color-base-200) !important;
 }
 .editor-host ::ng-deep .monaco-editor .line-numbers {
-  color: var(--text-muted) !important;
+  color: var(--kj-color-neutral) !important;
 }
 .editor-host ::ng-deep .monaco-editor .current-line ~ .line-numbers {
-  color: var(--text-secondary) !important;
+  color: var(--kj-color-neutral) !important;
 }
 .editor-host ::ng-deep .monaco-editor .scrollbar .slider {
-  background: var(--border) !important;
+  background: var(--kj-color-base-300) !important;
 }
 .editor-host ::ng-deep .monaco-editor .scrollbar .slider:hover {
-  background: var(--text-muted) !important;
+  background: var(--kj-color-neutral) !important;
 }
 .editor-host ::ng-deep .monaco-editor .cursor {
-  background: var(--accent) !important;
-  color: var(--accent) !important;
+  background: var(--kj-color-primary) !important;
+  color: var(--kj-color-primary) !important;
 }

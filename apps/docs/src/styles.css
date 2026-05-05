@@ -1,9 +1,8 @@
 /* ─────────────────────────────────────────────────────────────
    apps/docs — global styles
-   Loads @kouji-ui/themes (base + dark + light) so [data-theme]
-   switching restyles both the docs UI and any kj components.
-   Custom docs tokens (--bg, --text, --accent, …) bridge to kj
-   theme tokens — change a theme token, the docs follows.
+   Loads @kouji-ui/themes (base + dark + light). Docs CSS reads
+   var(--kj-color-*) / var(--kj-font-*) directly — no docs-specific
+   token aliases. Theme switching happens via [data-theme] on <html>.
    ──────────────────────────────────────────────────────────── */
 
 @import '@kouji-ui/themes';
@@ -11,38 +10,15 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
-/* Bridge docs' custom tokens to kj theme tokens.
-   Theme switches happen at the kj layer; docs picks up automatically. */
-:root {
-  --bg:               var(--kj-color-base-100);
-  --bg-surface:       var(--kj-color-base-200);
-  --bg-elevated:      var(--kj-color-base-100);
-  --bg-subtle:        var(--kj-color-base-200);
-  --bg-hover:         var(--kj-color-base-300);
-  --border:           var(--kj-color-base-300);
-  --border-subtle:    var(--kj-color-base-200);
-  --text:             var(--kj-color-base-content);
-  --text-secondary:   var(--kj-color-neutral);
-  --text-muted:       var(--kj-color-neutral);
-  --text-placeholder: var(--kj-color-neutral);
-  --accent:           var(--kj-color-primary);
-  --accent-fg:        var(--kj-color-primary-content);
-  --accent-dim:       color-mix(in oklab, var(--kj-color-primary) 8%, transparent);
-  --accent-border:    color-mix(in oklab, var(--kj-color-primary) 22%, transparent);
-  --cm-bg:            var(--kj-color-base-100);
-  --cm-gutter-bg:     var(--kj-color-base-200);
-  --cm-active-line:   var(--kj-color-base-300);
-}
-
 /* ── Global scrollbar ── */
-* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--kj-color-base-300) transparent; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--kj-color-base-100);
+  color: var(--kj-color-base-content);
   font-family: var(--kj-font-mono);
 }

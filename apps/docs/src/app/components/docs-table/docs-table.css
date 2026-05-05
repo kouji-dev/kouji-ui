@@ -1,5 +1,5 @@
 .table-wrap {
-  border: 1px solid var(--border);
+  border: 1px solid var(--kj-color-base-300);
   font-size: 0.8rem;
   margin-bottom: 0.5rem;
   overflow-x: auto;
@@ -12,8 +12,8 @@ table {
 }
 
 thead {
-  background: var(--bg-subtle);
-  border-bottom: 1px solid var(--border);
+  background: var(--kj-color-base-200);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 th {
@@ -22,18 +22,18 @@ th {
   font-size: 0.65rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   font-weight: 400;
   white-space: nowrap;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--kj-color-base-300);
 }
 th:last-child { border-right: none; }
 
 td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border);
-  color: var(--text-secondary);
+  border-bottom: 1px solid var(--kj-color-base-200);
+  border-right: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-neutral);
   vertical-align: top;
   line-height: 1.5;
 }
@@ -43,25 +43,25 @@ tr:last-child td { border-bottom: none; }
 td[data-col="name"],
 td[data-col="type"],
 td[data-col="defaultValue"] {
-  color: var(--text);
+  color: var(--kj-color-base-content);
   white-space: nowrap;
 }
 
 td[data-col="description"] {
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   white-space: normal;
   max-width: 36ch;
 }
 
 .required-mark {
-  color: var(--accent);
+  color: var(--kj-color-primary);
   margin-left: 1px;
   font-size: 0.875em;
 }
 
 .empty-state {
   padding: 1rem;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', monospace;
 }

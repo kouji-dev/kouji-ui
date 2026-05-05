@@ -9,7 +9,7 @@
 .sidebar-top {
   flex-shrink: 0;
   padding: 1.25rem 1.5rem 1rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 .sidebar-top-row {
@@ -28,14 +28,14 @@
   display: none;
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   cursor: pointer;
   padding: 0.25rem;
   align-items: center;
   justify-content: center;
   transition: color 0.15s;
 }
-.sidebar-close-btn:hover { color: var(--text); }
+.sidebar-close-btn:hover { color: var(--kj-color-base-content); }
 
 @media (max-width: 768px) {
   .sidebar-close-btn {
@@ -52,8 +52,8 @@
   align-items: center;
   gap: 0.5rem;
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-neutral);
   padding: 0.375rem 0.625rem;
   font: 0.75rem var(--kj-font-mono, 'JetBrains Mono', monospace);
   border-radius: 4px;
@@ -61,8 +61,8 @@
   text-transform: capitalize;
 }
 .theme-picker-trigger:hover {
-  color: var(--text);
-  border-color: var(--accent-border);
+  color: var(--kj-color-base-content);
+  border-color: color-mix(in oklab, var(--kj-color-primary) 22%, transparent);
 }
 
 .theme-picker-current {
@@ -74,8 +74,8 @@
   top: calc(100% + 4px);
   right: 0;
   list-style: none;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: var(--kj-color-base-100);
+  border: 1px solid var(--kj-color-base-300);
   border-radius: 6px;
   padding: 0.25rem;
   min-width: 8rem;
@@ -86,19 +86,19 @@
 .theme-picker-option {
   padding: 0.5rem 0.75rem;
   font: 0.8125rem var(--kj-font-mono, 'JetBrains Mono', monospace);
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   cursor: pointer;
   border-radius: 4px;
   text-transform: capitalize;
   transition: background 120ms;
 }
 .theme-picker-option:hover {
-  background: var(--bg-hover);
-  color: var(--text);
+  background: var(--kj-color-base-300);
+  color: var(--kj-color-base-content);
 }
 .theme-picker-option.active {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: color-mix(in oklab, var(--kj-color-primary) 8%, transparent);
+  color: var(--kj-color-primary);
 }
 
 .sidebar-home {
@@ -120,12 +120,12 @@
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--kj-color-base-300) transparent;
 }
 
 .sidebar-nav::-webkit-scrollbar { width: 4px; }
 .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: 2px; }
 
 .sidebar-section {
   display: flex;
@@ -142,7 +142,7 @@
   font-size: 0.58rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--kj-color-primary);
   opacity: 0.7;
   padding: 0.75rem 0.75rem 0.25rem;
   font-family: 'JetBrains Mono', monospace;
@@ -156,7 +156,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   padding: 0.5rem 0.75rem 0.4rem;
   font-family: 'JetBrains Mono', monospace;
   background: none;
@@ -165,7 +165,7 @@
   text-align: left;
   transition: color 0.15s;
 }
-.sidebar-category:hover { color: var(--text-secondary); }
+.sidebar-category:hover { color: var(--kj-color-neutral); }
 
 .sidebar-chevron {
   opacity: 0.5;
@@ -182,7 +182,7 @@
 }
 
 .sidebar-link {
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   text-decoration: none;
   font-size: 0.8rem;
   padding: 0.4rem 0.75rem 0.4rem 1.5rem;
@@ -190,40 +190,40 @@
   transition: color 0.15s, background 0.15s;
   border-radius: 2px;
   line-height: 1.4;
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--kj-color-base-300);
 }
 
-.sidebar-link:hover { color: var(--text); background: var(--bg-hover); }
+.sidebar-link:hover { color: var(--kj-color-base-content); background: var(--kj-color-base-300); }
 
 .sidebar-link.active {
-  color: var(--accent);
-  background: var(--accent-dim);
+  color: var(--kj-color-primary);
+  background: color-mix(in oklab, var(--kj-color-primary) 8%, transparent);
 }
 
 .sidebar-link-special {
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   font-size: 0.78rem;
 }
 
-.sidebar-link-special.active { color: var(--accent); }
+.sidebar-link-special.active { color: var(--kj-color-primary); }
 
 .sidebar-link-nested {
   padding-left: 1.5rem;
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
 }
-.sidebar-link-nested:hover { color: var(--text); background: var(--bg-hover); }
-.sidebar-link-nested.active { color: var(--accent); background: var(--accent-dim); }
-.sidebar-group { color: var(--text-muted); cursor: default; }
+.sidebar-link-nested:hover { color: var(--kj-color-base-content); background: var(--kj-color-base-300); }
+.sidebar-link-nested.active { color: var(--kj-color-primary); background: color-mix(in oklab, var(--kj-color-primary) 8%, transparent); }
+.sidebar-group { color: var(--kj-color-neutral); cursor: default; }
 
 .sidebar-search-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-neutral);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
   padding: 0.5rem 0.75rem;
@@ -232,10 +232,10 @@
   transition: border-color 0.15s, color 0.15s;
   text-align: left;
 }
-.sidebar-search-btn:hover { border-color: var(--text-muted); color: #888; }
+.sidebar-search-btn:hover { border-color: var(--kj-color-neutral); color: #888; }
 .sidebar-search-btn kbd {
   margin-left: auto;
   font-size: 0.6rem;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   font-family: 'JetBrains Mono', monospace;
 }
