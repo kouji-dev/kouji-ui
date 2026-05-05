@@ -41,6 +41,9 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
     'class': 'kj-avatar',
     '[attr.data-size]': 'size()',
     '[attr.data-shape]': 'shape()',
+    // Mirror `alt` to `title` so hovering the avatar shows a native tooltip.
+    // `alt` alone only surfaces to screen readers / fallback rendering.
+    '[attr.title]': 'alt()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
