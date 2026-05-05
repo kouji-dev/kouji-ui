@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import { describe, expect, test, beforeEach } from 'vitest';
 import { ThemeGeneratorComponent } from './theme-generator';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { DocsManifestProvider } from '../../services/docs-manifest.provider';

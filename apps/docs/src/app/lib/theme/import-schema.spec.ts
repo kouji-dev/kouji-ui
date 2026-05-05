@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'vitest';
 import { DraftThemeSchema } from './import-schema';
 import { BUILT_IN_THEMES } from './built-in-themes';
 

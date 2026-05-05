@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'vitest';
 import postcss from 'postcss';
 import { serializeToScopedBlock } from './serialize-theme';
 import { deriveTokens } from './derive-tokens';

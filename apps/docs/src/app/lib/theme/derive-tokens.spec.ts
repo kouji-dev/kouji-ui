@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'vitest';
 import { deriveContent, deriveBaseShades, deriveTokens } from './derive-tokens';
 import type { DraftTheme } from './types';
 

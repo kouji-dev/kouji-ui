@@ -1,4 +1,3 @@
-import { describe, expect, test } from 'vitest';
 import { BUILT_IN_THEMES, BUILT_IN_NAMES } from './built-in-themes';
 
 describe('BUILT_IN_THEMES', () => {
