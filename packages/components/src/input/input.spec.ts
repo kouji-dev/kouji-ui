@@ -6,10 +6,11 @@ import { KjInputComponent } from './input';
 @Component({
   standalone: true,
   imports: [KjInputComponent],
-  template: `<kj-input [type]="type" [placeholder]="placeholder" [invalid]="invalid" [disabled]="disabled" />`,
+  template: `<kj-input [type]="type" [value]="value" [placeholder]="placeholder" [invalid]="invalid" [disabled]="disabled" />`,
 })
 class HostComponent {
   type: 'text' | 'email' | 'password' | 'number' | 'search' | 'tel' | 'url' | 'color' = 'text';
+  value = '';
   placeholder = '';
   invalid = false;
   disabled = false;
@@ -43,6 +44,15 @@ describe('KjInputComponent', () => {
     fixture.componentInstance.type = 'color';
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('kj-input').getAttribute('data-type')).toBe('color');
+  });
+
+  test('forwards value to the inner element (no form control wired)', () => {
+    // Use type=text — jsdom's <input type="color"> .value reverts to '#000000'.
+    // The binding mechanism is identical for any type.
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.value = 'hello';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('kj-input input').value).toBe('hello');
   });
 
   test('forwards placeholder', () => {

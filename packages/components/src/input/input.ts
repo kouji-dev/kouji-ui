@@ -13,12 +13,9 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
  * @example
  * ```html
  * <kj-input type="email" placeholder="you@example.com" [invalid]="emailCtrl.invalid" />
- * <kj-input type="color" [(ngModel)]="hex" />
+ * <kj-input type="color" [value]="hex()" (input)="hex.set($any($event.target).value)" />
+ * <kj-input type="text" [(ngModel)]="name" />
  * ```
- *
- * Note: value is managed via Angular forms (ngModel / formControl) — there is no
- * standalone `value` input because the headless `kjInput` directive owns the
- * native input's .value via ControlValueAccessor.
  * @doc
  *   @doc-file input.example.ts
  *   @doc-file input.color.example.ts
@@ -33,6 +30,7 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
       kjInput
       class="kj-input"
       [type]="type()"
+      [value]="value()"
       [placeholder]="placeholder()"
       [kjInvalid]="invalid()"
       [kjDisabled]="disabled()"
@@ -48,6 +46,7 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
 })
 export class KjInputComponent {
   readonly type = input<KjInputType>('text');
+  readonly value = input<string>('');
   readonly placeholder = input<string>('');
   readonly invalid = input(false);
   readonly disabled = input(false);
