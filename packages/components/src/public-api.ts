@@ -13,4 +13,5 @@ export * from './link/index';
 export * from './menu/index';
 export * from './radio/index';
 export * from './select/index';
+export * from './tabs/index';
 export * from './toggle/index';
