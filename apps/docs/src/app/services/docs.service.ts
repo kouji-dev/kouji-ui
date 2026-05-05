@@ -52,6 +52,8 @@ export interface TypeAliasDef {
 export interface ComponentDoc {
   name: string;
   slug: string;
+  /** Source package — 'core' for headless directives, 'components' for styled wrappers. */
+  pkg: 'core' | 'components';
   categoryPath: string[];
   category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
@@ -129,14 +131,23 @@ export class DocsService {
     );
   }
 
-  /** Returns all component slugs — used in `getPrerenderParams()`. */
+  /** Returns all CORE component slugs — used in `getPrerenderParams()` for /docs/headless/:slug. */
   getSlugs(): string[] {
-    return this._manifest?.components.map(c => c.slug) ?? this.provider.getSlugs();
+    return (this._manifest?.components ?? [])
+      .filter(c => c.pkg === 'core')
+      .map(c => c.slug);
   }
 
-  /** Get a component by slug. */
-  getComponent(slug: string): ComponentDoc | null {
-    return this._manifest?.components.find(c => c.slug === slug) ?? null;
+  /**
+   * Get a component by slug — optionally scoped to a package so the same
+   * slug (e.g. 'button') in both packages doesn't collide.
+   */
+  getComponent(slug: string, pkg?: 'core' | 'components'): ComponentDoc | null {
+    const components = this._manifest?.components ?? [];
+    const matches = components.filter(c => c.slug === slug);
+    if (!matches.length) return null;
+    if (pkg) return matches.find(c => c.pkg === pkg) ?? null;
+    return matches[0] ?? null;
   }
 
   /** Get components filtered by category. */
@@ -146,7 +157,16 @@ export class DocsService {
 
   /** Builds a 3-level nested category tree: Package > Category > Component */
   getSidebarTree(): SidebarNode[] {
-    const components = this._manifest?.components ?? [];
+    return this.buildTreeForPackage('core');
+  }
+
+  /** Builds the styled-components tree from the manifest (filtered to pkg='components'). */
+  getStyledComponentsTree(): SidebarNode[] {
+    return this.buildTreeForPackage('components');
+  }
+
+  private buildTreeForPackage(pkg: 'core' | 'components'): SidebarNode[] {
+    const components = (this._manifest?.components ?? []).filter(c => c.pkg === pkg);
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
@@ -177,39 +197,11 @@ export class DocsService {
     }));
   }
 
-  /**
-   * Catalog of styled components shipped from `@kouji-ui/components`.
-   * Hardcoded for now; once the manifest extractor scans the components
-   * package too, this becomes an extracted list. Wave 1 ships 5 components.
-   */
-  getStyledComponentsTree(): SidebarNode[] {
-    return [
-      {
-        label: 'Base',
-        slug: null,
-        children: [
-          { label: 'Button', slug: 'button', children: [] },
-          { label: 'Card',   slug: 'card',   children: [] },
-          { label: 'Link',   slug: 'link',   children: [] },
-          { label: 'Kbd',    slug: 'kbd',    children: [] },
-        ],
-      },
-      {
-        label: 'Inputs',
-        slug: null,
-        children: [
-          { label: 'Input', slug: 'input', children: [] },
-        ],
-      },
-    ];
-  }
-
   /** Slug list for the styled components track — used by the route prerenderer. */
   getStyledComponentSlugs(): string[] {
-    return this.getStyledComponentsTree()
-      .flatMap(cat => cat.children)
-      .map(item => item.slug)
-      .filter((s): s is string => !!s);
+    return (this._manifest?.components ?? [])
+      .filter(c => c.pkg === 'components')
+      .map(c => c.slug);
   }
 
   /**

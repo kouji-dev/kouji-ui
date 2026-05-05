@@ -1,11 +1,11 @@
 <a [routerLink]="link()" class="track-card">
-  @if (eyebrow() || count() != null) {
+  @if (eyebrow() || count() !== null) {
     <header class="track-card-header">
       @if (eyebrow()) {
         <code class="track-card-pkg">{{ eyebrow() }}</code>
       } @else { <span></span> }
 
-      @if (count() != null) {
+      @if (count() !== null) {
         <span class="track-card-count">{{ count() }}</span>
       }
     </header>

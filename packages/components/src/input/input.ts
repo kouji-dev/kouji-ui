@@ -12,6 +12,9 @@ import { KjInput } from '@kouji-ui/core';
  * <kj-input type="email" placeholder="you@example.com" [invalid]="emailCtrl.invalid" />
  * <kj-input type="text" [disabled]="true" />
  * ```
+ * @doc
+ *   @doc-file input.example.ts
+ * @category Library/Base
  */
 @Component({
   selector: 'kj-input',

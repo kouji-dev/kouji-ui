@@ -411,9 +411,10 @@ function getRequired(node: ts.Node): boolean {
 // ── Directive decorator metadata extraction ───────────────────────────────────
 
 function getDecoratorArg(cls: ts.ClassDeclaration): string {
+  // Match @Directive(...) OR @Component(...).
   const callExpr = tsquery<ts.CallExpression>(
     cls,
-    'Decorator > CallExpression:has(Identifier[text="Directive"])'
+    'Decorator > CallExpression:has(Identifier[text="Directive"]), Decorator > CallExpression:has(Identifier[text="Component"])'
   );
   return callExpr[0]?.arguments[0]?.getText() ?? '';
 }
@@ -553,15 +554,17 @@ function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
 // ── Shared per-file processing ────────────────────────────────────────────────
 
 function pkgNameForPath(filePath: string): string {
-  if (filePath.includes('/packages/core/src/')) return 'Core';
-  if (filePath.includes('/packages/components/src/')) return 'Library';
+  const p = filePath.replace(/\\/g, '/');
+  if (p.includes('/packages/core/src/')) return 'Core';
+  if (p.includes('/packages/components/src/')) return 'Library';
   return 'Core';
 }
 
 function folderFromPath(filePath: string): string | null {
-  const coreMatch = filePath.split('/packages/core/src/')[1];
+  const p = filePath.replace(/\\/g, '/');
+  const coreMatch = p.split('/packages/core/src/')[1];
   if (coreMatch) return coreMatch.split('/')[0] ?? null;
-  const componentsMatch = filePath.split('/packages/components/src/')[1];
+  const componentsMatch = p.split('/packages/components/src/')[1];
   if (componentsMatch) return componentsMatch.split('/')[0] ?? null;
   return null;
 }
@@ -577,6 +580,9 @@ function processSourceFile(
   if (!folder || folder === 'unknown') return;
 
   const pkgName = pkgNameForPath(filePath);
+  // Composite key so the same folder name (e.g. 'button') in two packages
+  // results in two separate entries in the manifest.
+  const mapKey = `${pkg}:${folder}`;
 
   // Reparse source text with workspace TypeScript so tsquery's TS version matches.
   // ts-morph bundles its own TS version which conflicts with tsquery's TS dependency.
@@ -617,8 +623,8 @@ function processSourceFile(
       ? themedExamples['default']
       : exampleFiles;
 
-    if (!componentMap.has(folder)) {
-      componentMap.set(folder, {
+    if (!componentMap.has(mapKey)) {
+      componentMap.set(mapKey, {
         name: folder.charAt(0).toUpperCase() + folder.slice(1),
         slug: folder,
         pkg,
@@ -631,7 +637,7 @@ function processSourceFile(
       });
     }
 
-    const comp = componentMap.get(folder)!;
+    const comp = componentMap.get(mapKey)!;
     if (!comp.description && description) comp.description = description;
 
     // Prepend package name to directive categoryPath (skip if already present to avoid duplication)
@@ -659,8 +665,8 @@ function processSourceFile(
   }
 
   // ── Extract InjectionTokens and type aliases ──────────────────────────────
-  if (componentMap.has(folder)) {
-    const comp = componentMap.get(folder)!;
+  if (componentMap.has(mapKey)) {
+    const comp = componentMap.get(mapKey)!;
     comp.tokens.push(...extractTokens(tsSourceFile));
     comp.typeAliases.push(...extractTypeAliases(tsSourceFile));
   }
@@ -705,22 +711,60 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
     processSourceFile(morphFile, componentMap, 'core');
   }
 
+  // ── Pass 2: packages/components ───────────────────────────────────────────
+  // Separate ts-morph project so its tsconfig (paths, types) is honored.
+  const componentsProject = new Project({
+    tsConfigFilePath: join(root, 'packages/components/tsconfig.lib.json'),
+    skipAddingFilesFromTsConfig: false,
+  });
+  componentsProject.addSourceFilesAtPaths([
+    join(root, 'packages/components/src/**/*.ts'),
+  ]);
+  let componentsScanned = 0;
+  for (const morphFile of componentsProject.getSourceFiles()) {
+    const filePath = morphFile.getFilePath().replace(/\\/g, '/');
+    if (
+      filePath.includes('.spec.') ||
+      filePath.endsWith('index.ts') ||
+      filePath.endsWith('public-api.ts') ||
+      filePath.endsWith('test-setup.ts') ||
+      filePath.endsWith('.example.ts') ||
+      !filePath.includes('/packages/components/src/')
+    ) continue;
+
+    processSourceFile(morphFile, componentMap, 'components');
+    componentsScanned++;
+  }
+  void componentsScanned;
+
   // Fill in categoryPath for components that had no @category tag
-  const categoryFallbacks: Record<string, string[]> = {
-    base: ['Core', 'Base'],
-    inputs: ['Core', 'Inputs'],
-    navigation: ['Core', 'Navigation'],
-    overlays: ['Core', 'Overlays'],
-    data: ['Core', 'Data'],
-    display: ['Core', 'Display'],
-    a11y: ['Core', 'Accessibility'],
-    primitives: ['Core', 'Primitives'],
+  const categoryFallbacks: Record<SourcePkg, Record<string, string[]>> = {
+    core: {
+      base:       ['Core', 'Base'],
+      inputs:     ['Core', 'Inputs'],
+      navigation: ['Core', 'Navigation'],
+      overlays:   ['Core', 'Overlays'],
+      data:       ['Core', 'Data'],
+      display:    ['Core', 'Display'],
+      a11y:       ['Core', 'Accessibility'],
+      primitives: ['Core', 'Primitives'],
+    },
+    components: {
+      base:       ['Library', 'Base'],
+      inputs:     ['Library', 'Inputs'],
+      navigation: ['Library', 'Navigation'],
+      overlays:   ['Library', 'Overlays'],
+      data:       ['Library', 'Data'],
+      display:    ['Library', 'Display'],
+      a11y:       ['Library', 'Accessibility'],
+      primitives: ['Library', 'Primitives'],
+    },
   };
 
   for (const comp of componentMap.values()) {
     if (!comp.categoryPath.length) {
       comp.categoryPath = [
-        ...(categoryFallbacks[comp.category] ?? ['Core', 'Inputs']),
+        ...(categoryFallbacks[comp.pkg][comp.category] ?? [comp.pkg === 'core' ? 'Core' : 'Library', 'Other']),
         comp.name,
       ];
     }

@@ -14,6 +14,9 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * <kj-card>Default card</kj-card>
  * <kj-card variant="outline">Outlined</kj-card>
  * ```
+ * @doc
+ *   @doc-file card.example.ts
+ * @category Library/Base
  */
 @Component({
   selector: 'kj-card',

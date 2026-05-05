@@ -9,6 +9,9 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/
  * <kj-kbd>⌘K</kj-kbd>
  * <kj-kbd>Ctrl</kj-kbd>+<kj-kbd>S</kj-kbd>
  * ```
+ * @doc
+ *   @doc-file kbd.example.ts
+ * @category Library/Base
  */
 @Component({
   selector: 'kj-kbd',

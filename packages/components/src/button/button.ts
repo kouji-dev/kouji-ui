@@ -20,6 +20,9 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
  *   Delete
  * </kj-button>
  * ```
+ * @doc
+ *   @doc-file button.example.ts
+ * @category Library/Base
  */
 @Component({
   selector: 'kj-button',

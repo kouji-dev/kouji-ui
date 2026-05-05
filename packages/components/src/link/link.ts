@@ -17,6 +17,9 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * <kj-link href="https://github.com" external>GitHub</kj-link>
  * <kj-link href="/docs/components/button" variant="nav">Button</kj-link>
  * ```
+ * @doc
+ *   @doc-file link.example.ts
+ * @category Library/Base
  */
 @Component({
   selector: 'kj-link',
