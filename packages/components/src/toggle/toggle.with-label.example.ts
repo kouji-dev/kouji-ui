@@ -7,13 +7,13 @@ import { KjToggleComponent } from './toggle';
   imports: [KjToggleComponent],
   styles: [`
     :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    label { display: inline-flex; align-items: center; gap: var(--kj-space-sm); cursor: pointer; }
+    .row { display: inline-flex; align-items: center; gap: var(--kj-space-sm); }
   `],
   template: `
-    <label>
+    <div class="row">
       <kj-toggle [(pressed)]="dark" ariaLabel="Dark mode"></kj-toggle>
-      Dark mode
-    </label>
+      <span>Dark mode</span>
+    </div>
   `,
 })
 export class KjToggleWithLabelExample { readonly dark = signal(false); }

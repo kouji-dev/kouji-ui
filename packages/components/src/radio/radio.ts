@@ -49,7 +49,11 @@ let radioIdCounter = 0;
   standalone: true,
   imports: [KjRadio],
   template: `
-    <label class="kj-radio-inner" (click)="onLabelClick($event)">
+    <!-- Click-region wrapper. The focusable element is the inner kjRadio span
+         (role="radio", tabindex, Space/Enter handlers); this div only proxies
+         pointer events from the label area, so the lint rules below don't apply. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="kj-radio-inner" (click)="onLabelClick($event)">
       <span
         #dot
         kjRadio
@@ -60,7 +64,7 @@ let radioIdCounter = 0;
         [attr.aria-labelledby]="labelId"
       ></span>
       <span class="kj-radio-label" [id]="labelId"><ng-content /></span>
-    </label>
+    </div>
   `,
   encapsulation: ViewEncapsulation.None,
   host: {

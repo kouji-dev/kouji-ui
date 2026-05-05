@@ -28,10 +28,10 @@ import {
           </kj-dialog-header>
           <kj-dialog-body>
             <form (submit)="$event.preventDefault(); d.close('saved')" style="display:flex;flex-direction:column;gap:1rem;">
-              <label style="display:flex;flex-direction:column;gap:0.25rem;">
-                <span>Project name</span>
+              <div style="display:flex;flex-direction:column;gap:0.25rem;">
+                <span id="dlg-form-project-name">Project name</span>
                 <kj-input type="text" placeholder="My project" />
-              </label>
+              </div>
             </form>
           </kj-dialog-body>
           <kj-dialog-footer>

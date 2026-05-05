@@ -26,7 +26,11 @@ let checkboxIdCounter = 0;
   standalone: true,
   imports: [KjCheckbox],
   template: `
-    <label class="kj-checkbox-inner" (click)="onLabelClick($event)">
+    <!-- Click-region wrapper. The focusable element is the inner kjCheckbox span
+         (role="checkbox", tabindex, Space handler); this div only proxies pointer
+         events from the label area, so the lint rules below don't apply. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="kj-checkbox-inner" (click)="onLabelClick($event)">
       <span
         #box
         kjCheckbox
@@ -39,7 +43,7 @@ let checkboxIdCounter = 0;
         [attr.aria-labelledby]="labelId"
       ></span>
       <span class="kj-checkbox-label" [id]="labelId"><ng-content /></span>
-    </label>
+    </div>
   `,
   styleUrl: './checkbox.css',
   encapsulation: ViewEncapsulation.None,
