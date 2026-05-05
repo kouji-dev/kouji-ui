@@ -62,76 +62,73 @@
     <kbd>⌘K</kbd>
   </button>
 
-  <div class="sidebar-section">
-    <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
-      Getting Started
-    </a>
-    <a routerLink="/docs" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
-      All Components
-    </a>
-  </div>
-
-  <!-- Track selector — switches the items below between Headless and Components -->
-  <div class="sidebar-track-selector" role="tablist" aria-label="Documentation track">
-    <button
-      type="button"
-      role="tab"
-      class="sidebar-track-tab"
-      [class.active]="activeTrack() === 'headless'"
-      [attr.aria-selected]="activeTrack() === 'headless'"
-      (click)="setTrack('headless')"
-    >
-      Headless
-      <span class="sidebar-track-count">{{ headlessTree().length ? totalItems(headlessTree()) : 0 }}</span>
-    </button>
-    <button
-      type="button"
-      role="tab"
-      class="sidebar-track-tab"
-      [class.active]="activeTrack() === 'components'"
-      [attr.aria-selected]="activeTrack() === 'components'"
-      (click)="setTrack('components')"
-    >
-      Library
-      <span class="sidebar-track-count">{{ componentsTree().length ? totalItems(componentsTree()) : 0 }}</span>
-    </button>
-  </div>
-
-  <!-- Active tree — Headless or Components depending on the selector -->
-  @for (cat of activeTree(); track cat.label) {
+  @if (!isDrilled()) {
+    <!-- TOP-LEVEL MENU: cross-track shortcuts + one drill row per track -->
     <div class="sidebar-section">
-      <button
-        class="sidebar-category"
-        type="button"
-        [attr.aria-expanded]="!isCategoryCollapsed(activeTrack() + '-' + cat.label)"
-        (click)="toggleCategory(activeTrack() + '-' + cat.label)"
-      >
-        <span>{{ cat.label }}</span>
-        <svg
-          class="sidebar-chevron"
-          [class.collapsed]="isCategoryCollapsed(activeTrack() + '-' + cat.label)"
-          width="10" height="10" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-        >
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
-      @if (!isCategoryCollapsed(activeTrack() + '-' + cat.label)) {
-        <div class="sidebar-section-items">
-          @for (item of cat.children; track item.slug) {
-            @if (item.slug) {
-              <a
-                [routerLink]="['/docs', activeTrack(), item.slug]"
-                routerLinkActive="active"
-                class="sidebar-link"
-                (click)="close()"
-              >
-                {{ item.label }}
-              </a>
-            }
-          }
-        </div>
+      <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
+        Getting Started
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      @for (track of tracks(); track track.id) {
+        <button type="button" class="sidebar-drill" (click)="setView(track.id)">
+          <span class="sidebar-drill-label">
+            <span class="sidebar-drill-name">{{ track.packageName }}</span>
+          </span>
+          <span class="sidebar-drill-count">{{ totalItems(track.tree) }}</span>
+          <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="9 6 15 12 9 18"/>
+          </svg>
+        </button>
       }
     </div>
+  } @else {
+    <!-- DRILLED VIEW: back row + active track's category tree -->
+    <button type="button" class="sidebar-back" (click)="setView('menu')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      <span>{{ activeTrack()?.packageName }}</span>
+    </button>
+
+    @for (cat of activeTrack()?.tree ?? []; track cat.label) {
+      <div class="sidebar-section">
+        <button
+          class="sidebar-category"
+          type="button"
+          [attr.aria-expanded]="!isCategoryCollapsed(view() + '-' + cat.label)"
+          (click)="toggleCategory(view() + '-' + cat.label)"
+        >
+          <span>{{ cat.label }}</span>
+          <svg
+            class="sidebar-chevron"
+            [class.collapsed]="isCategoryCollapsed(view() + '-' + cat.label)"
+            width="10" height="10" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        @if (!isCategoryCollapsed(view() + '-' + cat.label)) {
+          <div class="sidebar-section-items">
+            @for (item of cat.children; track item.slug) {
+              @if (item.slug) {
+                <a
+                  [routerLink]="['/docs', view(), item.slug]"
+                  routerLinkActive="active"
+                  class="sidebar-link"
+                  (click)="close()"
+                >
+                  {{ item.label }}
+                </a>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
   }
 </nav>

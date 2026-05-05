@@ -2,11 +2,12 @@ import { Component, afterNextRender, computed, DestroyRef, effect, HostListener,
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { DocsService, SidebarNode } from '../../services/docs.service';
+import { DocsService, DocsTrack as DocsTrackInfo, SidebarNode } from '../../services/docs.service';
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
 
-export type DocsTrack = 'headless' | 'components';
+/** Sidebar UI state — top-level menu, or the id of a drilled-into track. */
+export type SidebarView = 'menu' | string;
 const TRACK_STORAGE_KEY = 'kj-track';
 
 @Component({
@@ -25,17 +26,17 @@ export class DocsSidebarComponent implements OnInit {
 
   private readonly router = inject(Router);
 
-  /** Headless directives — populated from the core manifest after load. */
-  protected readonly headlessTree = signal<SidebarNode[]>([]);
-  /** Styled components — hardcoded list from DocsService. */
-  protected readonly componentsTree = signal<SidebarNode[]>([]);
+  /** All available tracks — populated from DocsService after manifest load. */
+  protected readonly tracks = signal<DocsTrackInfo[]>([]);
   protected readonly isDark = computed(() => this.themeService.isDark());
 
-  /** Active sidebar track. Drives which tree is shown under the selector. */
-  protected readonly activeTrack = signal<DocsTrack>('headless');
-  /** Active tree derived from the selected track. */
-  protected readonly activeTree = computed(() =>
-    this.activeTrack() === 'headless' ? this.headlessTree() : this.componentsTree(),
+  /** Sidebar UI state: 'menu' (top level) or a track id (drilled in). */
+  protected readonly view = signal<SidebarView>('menu');
+  /** True when drilled into a track's items panel. */
+  protected readonly isDrilled = computed(() => this.view() !== 'menu');
+  /** Active track when drilled in; null otherwise. */
+  protected readonly activeTrack = computed(() =>
+    this.tracks().find(t => t.id === this.view()) ?? null,
   );
   readonly open = signal(false);
 
@@ -80,52 +81,55 @@ export class DocsSidebarComponent implements OnInit {
       }
     });
 
-    // Init the active track from URL → localStorage → default. Always runs in
-    // the browser; afterNextRender ensures we read window safely under SSR.
+    // Init view from URL → localStorage → 'menu'. Runs in the browser only.
     afterNextRender(() => {
       const fromUrl = this.trackFromUrl(this.router.url);
       if (fromUrl) {
-        this.activeTrack.set(fromUrl);
+        this.view.set(fromUrl);
       } else {
-        const stored = localStorage.getItem(TRACK_STORAGE_KEY) as DocsTrack | null;
-        if (stored === 'headless' || stored === 'components') {
-          this.activeTrack.set(stored);
+        const stored = localStorage.getItem(TRACK_STORAGE_KEY) as SidebarView | null;
+        if (stored === 'headless' || stored === 'components' || stored === 'menu') {
+          this.view.set(stored);
         }
       }
 
-      // Keep the selector in sync with the URL when the user navigates.
+      // Auto-drill into the matching track when the URL changes.
       this.router.events
         .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
         .subscribe(e => {
           const t = this.trackFromUrl(e.urlAfterRedirects);
-          if (t && t !== this.activeTrack()) this.activeTrack.set(t);
+          if (t && t !== this.view()) this.view.set(t);
         });
     });
 
-    // Persist the active track whenever it changes.
+    // Persist the view whenever it changes.
     effect(() => {
-      const t = this.activeTrack();
+      const v = this.view();
       if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem(TRACK_STORAGE_KEY, t);
+        localStorage.setItem(TRACK_STORAGE_KEY, v);
       }
     });
   }
 
   ngOnInit(): void {
     this.docs.loadManifest().subscribe(() => {
-      this.headlessTree.set(this.docs.getSidebarTree());
-      this.componentsTree.set(this.docs.getStyledComponentsTree());
+      this.tracks.set(this.docs.getTracks());
     });
   }
 
-  protected setTrack(t: DocsTrack): void { this.activeTrack.set(t); }
+  protected setView(v: SidebarView): void { this.view.set(v); }
 
-  /** Total items across all categories of a tree — shown in the selector tab. */
+  /** Total items across all categories of a tree — shown in the drill-row count chip. */
   protected totalItems(tree: SidebarNode[]): number {
     return tree.reduce((acc, cat) => acc + cat.children.length, 0);
   }
 
-  private trackFromUrl(url: string): DocsTrack | null {
+  /** Return the track id whose URL prefix matches, if any. */
+  private trackFromUrl(url: string): string | null {
+    for (const t of this.tracks()) {
+      if (url.startsWith('/docs/' + t.id)) return t.id;
+    }
+    // Manifest may not have loaded yet — fall back to the known route segments.
     if (url.startsWith('/docs/headless')) return 'headless';
     if (url.startsWith('/docs/components')) return 'components';
     return null;

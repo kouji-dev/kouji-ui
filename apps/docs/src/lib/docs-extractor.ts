@@ -66,9 +66,14 @@ export interface DirectiveDef {
   required: boolean;           // from @required TSDoc tag
 }
 
+/** Source package each component / directive comes from. */
+export type SourcePkg = 'core' | 'components';
+
 export interface ComponentDoc {
   name: string;
   slug: string;
+  /** Top-level taxonomy: which workspace package the entry was extracted from. */
+  pkg: SourcePkg;
   categoryPath: string[];
   category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
@@ -106,9 +111,9 @@ function getCategory(folder: string): ComponentDoc['category'] {
 
 // ── ts-query selectors ────────────────────────────────────────────────────────
 
-/** All exported classes decorated with @Directive */
+/** All exported classes decorated with @Directive OR @Component (Angular declarables). */
 const DIRECTIVE_CLASS_SELECTOR =
-  'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"]))';
+  'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"])), ClassDeclaration:has(Decorator:has(Identifier[text="Component"]))';
 
 /** Properties initialized with input(), input.required(), or model() signals */
 const SIGNAL_INPUT_SELECTOR = [
@@ -547,19 +552,24 @@ function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
 
 // ── Shared per-file processing ────────────────────────────────────────────────
 
-function pkgNameForPath(_filePath: string): string {
+function pkgNameForPath(filePath: string): string {
+  if (filePath.includes('/packages/core/src/')) return 'Core';
+  if (filePath.includes('/packages/components/src/')) return 'Library';
   return 'Core';
 }
 
 function folderFromPath(filePath: string): string | null {
   const coreMatch = filePath.split('/packages/core/src/')[1];
   if (coreMatch) return coreMatch.split('/')[0] ?? null;
+  const componentsMatch = filePath.split('/packages/components/src/')[1];
+  if (componentsMatch) return componentsMatch.split('/')[0] ?? null;
   return null;
 }
 
 function processSourceFile(
   morphFile: SourceFile,
   componentMap: Map<string, ComponentDoc>,
+  pkg: SourcePkg,
 ): void {
   const filePath = morphFile.getFilePath();
 
@@ -611,6 +621,7 @@ function processSourceFile(
       componentMap.set(folder, {
         name: folder.charAt(0).toUpperCase() + folder.slice(1),
         slug: folder,
+        pkg,
         categoryPath: [],
         category: getCategory(folder),
         description: '',
@@ -691,7 +702,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       !filePath.includes('/packages/core/src/')
     ) continue;
 
-    processSourceFile(morphFile, componentMap);
+    processSourceFile(morphFile, componentMap, 'core');
   }
 
   // Fill in categoryPath for components that had no @category tag

@@ -66,6 +66,18 @@ export interface SidebarNode {
   children: SidebarNode[];
 }
 
+/**
+ * A docs track — a top-level grouping in the sidebar that drills into a tree.
+ * `id` is the URL segment (matches `/docs/<id>/<slug>` routes); `packageName`
+ * is the display label, sourced from the underlying package's package.json
+ * `name` field (or an override later, when extracted metadata is available).
+ */
+export interface DocsTrack {
+  id: string;
+  packageName: string;
+  tree: SidebarNode[];
+}
+
 export interface DocsManifest {
   generatedAt: string;
   components: ComponentDoc[];
@@ -194,5 +206,18 @@ export class DocsService {
       .flatMap(cat => cat.children)
       .map(item => item.slug)
       .filter((s): s is string => !!s);
+  }
+
+  /**
+   * The list of docs tracks the sidebar drills into.
+   * `id` is the URL segment; `packageName` is the display label sourced from
+   * each package's package.json (will be replaceable by an extracted override
+   * once the metadata extractor reads the components package too).
+   */
+  getTracks(): DocsTrack[] {
+    return [
+      { id: 'headless',   packageName: 'core',       tree: this.getSidebarTree() },
+      { id: 'components', packageName: 'components', tree: this.getStyledComponentsTree() },
+    ];
   }
 }
