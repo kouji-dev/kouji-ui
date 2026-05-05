@@ -16,7 +16,7 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * ```
  * @doc
  *   @doc-file card.example.ts
- * @category Library/Base
+ * @category Library/Data display
  */
 @Component({
   selector: 'kj-card',

@@ -14,7 +14,7 @@ import { KjInput } from '@kouji-ui/core';
  * ```
  * @doc
  *   @doc-file input.example.ts
- * @category Library/Base
+ * @category Library/Data input
  */
 @Component({
   selector: 'kj-input',

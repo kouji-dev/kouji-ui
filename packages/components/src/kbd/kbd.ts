@@ -11,7 +11,7 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/
  * ```
  * @doc
  *   @doc-file kbd.example.ts
- * @category Library/Base
+ * @category Library/Data display
  */
 @Component({
   selector: 'kj-kbd',

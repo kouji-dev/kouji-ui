@@ -19,7 +19,7 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * ```
  * @doc
  *   @doc-file link.example.ts
- * @category Library/Base
+ * @category Library/Navigation
  */
 @Component({
   selector: 'kj-link',

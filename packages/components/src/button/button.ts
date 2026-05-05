@@ -22,7 +22,7 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
  * ```
  * @doc
  *   @doc-file button.example.ts
- * @category Library/Base
+ * @category Library/Actions
  */
 @Component({
   selector: 'kj-button',
