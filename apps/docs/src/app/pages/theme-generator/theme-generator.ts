@@ -3,6 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { converter, formatHex } from 'culori';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { KjInputComponent } from '@kouji-ui/components';
+import { ThemeGeneratorPreviewComponent } from './preview/theme-generator-preview';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { ClipboardService } from '../../services/clipboard.service';
 import { FontLoaderService } from '../../services/font-loader.service';
@@ -33,7 +34,7 @@ function oklchToHex(css: string): string {
 @Component({
   selector: 'kj-theme-generator',
   standalone: true,
-  imports: [DocsSidebarComponent, KjInputComponent],
+  imports: [DocsSidebarComponent, KjInputComponent, ThemeGeneratorPreviewComponent],
   templateUrl: './theme-generator.html',
   styleUrl: './theme-generator.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
