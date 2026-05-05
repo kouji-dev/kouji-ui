@@ -1,21 +1,30 @@
 /* ─────────────────────────────────────────────────────────────
    apps/docs — global styles
-   Loads @kouji-ui/themes (base + dark + light). Docs CSS reads
-   var(--kj-color-*) / var(--kj-font-*) directly — no docs-specific
-   token aliases. Theme switching happens via [data-theme] on <html>.
+   @kouji-ui/themes (base + dark + light + kouji) is loaded by the
+   angular.json `styles` array — keeps tokens available to the global
+   stylesheet on EVERY route, including the landing page (a CSS
+   `@import` from a workspace package didn't reliably resolve via
+   esbuild's bare-specifier handling, so we register the entry file
+   in angular.json instead).
+   Docs CSS reads var(--kj-color-*) / var(--kj-font-*) directly — no
+   docs-specific token aliases. Theme switching happens via
+   [data-theme] on <html>.
    ──────────────────────────────────────────────────────────── */
 
-@import '@kouji-ui/themes';
+/* The universal reset goes in @layer kj.reset (lower than kj.component
+   in the cascade — declared in @kouji-ui/themes/base.css), so component
+   defaults like .kj-card's padding aren't wiped out by `* { padding: 0 }`. */
+@layer kj.reset {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-
-/* ── Global scrollbar ── */
-* { scrollbar-width: thin; scrollbar-color: var(--kj-color-base-300) transparent; }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: var(--kj-radius-selector); }
-::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
+  /* ── Global scrollbar ── */
+  * { scrollbar-width: thin; scrollbar-color: var(--kj-color-base-300) transparent; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: var(--kj-radius-selector); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
+}
 
 body {
   background: var(--kj-color-base-100);

@@ -100,7 +100,7 @@
               }
             ],
             "styles": [
-              "packages/core/src/styles/docs-themes.css",
+              "packages/themes/src/index.css",
               "apps/docs/src/styles.css"
             ],
             "server": "apps/docs/src/main.server.ts",

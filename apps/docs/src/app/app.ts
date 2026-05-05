@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { LoadingScreenComponent } from './components/loading-screen/loading-screen';
 import { LoadingService } from './services/loading.service';
 import { SearchComponent } from './components/search/search.component';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -23,6 +24,11 @@ import { SearchComponent } from './components/search/search.component';
 })
 export class App implements OnInit {
   protected readonly loading = inject(LoadingService);
+  // Inject the ThemeService here so it bootstraps on app start (not just when
+  // a child component happens to inject it). Without this the landing page
+  // never sets data-theme on <html>, leaving every --kj-color-* unresolved
+  // until the user visits a route that mounts the sidebar.
+  private readonly themeService = inject(ThemeService);
 
   ngOnInit(): void {
     // Hide loading screen after a short delay to let the animation play
