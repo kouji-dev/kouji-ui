@@ -1,0 +1,63 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/themes — base layer
+   Raw primitives. Themes pull values from here.
+   Components MUST NOT read base tokens directly.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.base, kj.shared, kj.component;
+
+@layer kj.base {
+  :root {
+    /* ── color palette ── */
+    --kj-base-gray-50:  oklch(98% 0    0);
+    --kj-base-gray-100: oklch(95% 0    0);
+    --kj-base-gray-200: oklch(90% 0    0);
+    --kj-base-gray-300: oklch(82% 0    0);
+    --kj-base-gray-500: oklch(60% 0    0);
+    --kj-base-gray-700: oklch(35% 0    0);
+    --kj-base-gray-800: oklch(22% 0    0);
+    --kj-base-gray-900: oklch(15% 0    0);
+    --kj-base-gray-950: oklch(8%  0    0);
+
+    --kj-base-blue-400: oklch(70% 0.16 250);
+    --kj-base-blue-500: oklch(62% 0.19 250);
+    --kj-base-blue-600: oklch(55% 0.20 250);
+
+    --kj-base-red-500:    oklch(63% 0.22  20);
+    --kj-base-green-500:  oklch(70% 0.18 145);
+    --kj-base-yellow-500: oklch(83% 0.16  90);
+
+    /* ── radii ── */
+    --kj-base-radius-0:    0px;
+    --kj-base-radius-1:    0.25rem;
+    --kj-base-radius-2:    0.5rem;
+    --kj-base-radius-3:    1rem;
+    --kj-base-radius-full: 9999px;
+
+    /* ── spacing — 8-step scale ── */
+    --kj-base-space-0: 0;
+    --kj-base-space-1: 0.25rem;
+    --kj-base-space-2: 0.5rem;
+    --kj-base-space-3: 0.75rem;
+    --kj-base-space-4: 1rem;
+    --kj-base-space-5: 1.5rem;
+    --kj-base-space-6: 2rem;
+    --kj-base-space-8: 4rem;
+
+    /* ── type ── */
+    --kj-base-font-sans: system-ui, -apple-system, sans-serif;
+    --kj-base-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --kj-base-text-xs:   0.75rem;
+    --kj-base-text-sm:   0.875rem;
+    --kj-base-text-base: 1rem;
+    --kj-base-text-lg:   1.125rem;
+    --kj-base-text-xl:   1.25rem;
+    --kj-base-text-2xl:  1.5rem;
+
+    /* ── borders & motion ── */
+    --kj-base-border-1: 1px;
+    --kj-base-border-2: 2px;
+    --kj-base-transition-fast: 0.12s ease;
+    --kj-base-transition-base: 0.2s ease;
+  }
+}
