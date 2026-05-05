@@ -15,4 +15,5 @@ export * from './menu/index';
 export * from './radio/index';
 export * from './select/index';
 export * from './tabs/index';
+export * from './toast/index';
 export * from './toggle/index';

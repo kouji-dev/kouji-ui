@@ -72,6 +72,12 @@ export { KjTabsPillsExample }    from './tabs/tabs.pills.example';
 export { KjTabsDisabledExample } from './tabs/tabs.disabled.example';
 export { KjTabsVerticalExample } from './tabs/tabs.vertical.example';
 
+// Toast
+export { KjToastDefaultExample }     from './toast/toast.default.example';
+export { KjToastVariantsExample }    from './toast/toast.variants.example';
+export { KjToastWithActionExample }  from './toast/toast.with-action.example';
+export { KjToastDismissibleExample } from './toast/toast.dismissible.example';
+
 // Toggle
 export { KjToggleDefaultExample }   from './toggle/toggle.default.example';
 export { KjToggleCheckedExample }   from './toggle/toggle.checked.example';
