@@ -20,8 +20,11 @@ export { KjBadgeVariantsExample } from './badge/badge.variants.example';
 export { KjBadgeSizesExample }    from './badge/badge.sizes.example';
 export { KjBadgeWithIconExample } from './badge/badge.with-icon.example';
 
-// Button (existing)
-export { KjButtonExample } from './button/button.example';
+// Button
+export { KjButtonExample }          from './button/button.example';
+export { KjButtonVariantsExample }  from './button/button.variants.example';
+export { KjButtonSizesExample }     from './button/button.sizes.example';
+export { KjButtonDisabledExample }  from './button/button.disabled.example';
 
 // Card
 export { KjCardExample }      from './card/card.example';

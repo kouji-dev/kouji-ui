@@ -20,8 +20,14 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
  *   Delete
  * </kj-button>
  * ```
- * @doc
+ * @doc-example Default
  *   @doc-file button.example.ts
+ * @doc-example Variants
+ *   @doc-file button.variants.example.ts
+ * @doc-example Sizes
+ *   @doc-file button.sizes.example.ts
+ * @doc-example Disabled
+ *   @doc-file button.disabled.example.ts
  * @category Library/Actions
  */
 @Component({
@@ -36,6 +42,7 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
       [kjVariant]="variant()"
       [kjSize]="size()"
       [kjDisabled]="disabled()"
+      [attr.aria-label]="ariaLabel()"
     >
       <ng-content />
     </button>
@@ -50,4 +57,5 @@ export class KjButtonComponent {
   readonly size = input<KjButtonSize>('md');
   readonly disabled = input(false);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
+  readonly ariaLabel = input<string | undefined>(undefined);
 }
