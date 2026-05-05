@@ -18,9 +18,12 @@
     "@angular/cdk": "^21.0.0",
     "@kouji-ui/core": "*"
   },
+  "devDependencies": {
+    "@kouji-ui/core": "workspace:*"
+  },
   "sideEffects": false,
   "scripts": {
-    "build": "ng-packagr -p ng-package.json",
+    "build": "ng build kj-components",
     "test": "vitest run",
     "lint": "ng lint kj-components"
   }

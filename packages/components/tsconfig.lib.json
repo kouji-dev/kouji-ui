@@ -6,7 +6,11 @@
     "outDir": "../../out-tsc/lib",
     "declaration": true,
     "declarationMap": true,
-    "types": []
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@kouji-ui/core": ["../../dist/kj-core/types/kouji-ui-core"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
