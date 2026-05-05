@@ -28,14 +28,13 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
 @Component({
   selector: 'kj-card',
   standalone: true,
-  template: `
-    <div class="kj-card" [attr.data-variant]="variant()">
-      <ng-content />
-    </div>
-  `,
+  template: `<ng-content />`,
   styleUrl: './card.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-card',
+    '[attr.data-variant]': 'variant()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCardComponent {
