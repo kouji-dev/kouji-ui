@@ -66,11 +66,18 @@ export interface DirectiveDef {
   required: boolean;           // from @required TSDoc tag
 }
 
+/** Source package each component / directive comes from. */
+export type SourcePkg = 'core' | 'components';
+
 export interface ComponentDoc {
   name: string;
   slug: string;
+  /** Top-level taxonomy: which workspace package the entry was extracted from. */
+  pkg: SourcePkg;
   categoryPath: string[];
-  category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
+  category:
+    | 'actions' | 'data-input' | 'data-display' | 'navigation' | 'feedback'
+    | 'base' | 'inputs' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -84,31 +91,60 @@ export interface DocsManifest {
 
 // ── Category mapping ─────────────────────────────────────────────────────────
 
-const CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
-  // Inputs
-  button: 'base', input: 'inputs', checkbox: 'inputs', radio: 'inputs',
-  toggle: 'inputs', select: 'inputs', form: 'inputs',
-  // Navigation
-  tabs: 'navigation', accordion: 'navigation', menu: 'navigation',
-  // Overlays
-  dialog: 'overlays', popover: 'overlays', tooltip: 'overlays', toast: 'overlays',
-  // Data
-  table: 'data', chart: 'data',
-  // Display
-  avatar: 'display', badge: 'display',
-  // A11y and primitives stay the same
-  a11y: 'a11y', primitives: 'primitives',
+/** Folder-name → category fallback for the core track. Used when a class has no @category tag. */
+const CORE_CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
+  button:     'base',
+  input:      'inputs',
+  checkbox:   'inputs',
+  radio:      'inputs',
+  toggle:     'inputs',
+  select:     'inputs',
+  form:       'inputs',
+  tabs:       'navigation',
+  accordion:  'navigation',
+  menu:       'navigation',
+  dialog:     'overlays',
+  popover:    'overlays',
+  tooltip:    'overlays',
+  toast:      'overlays',
+  table:      'data',
+  chart:      'data',
+  avatar:     'display',
+  badge:      'display',
+  a11y:       'a11y',
+  primitives: 'primitives',
 };
 
-function getCategory(folder: string): ComponentDoc['category'] {
-  return CATEGORY_MAP[folder] ?? 'inputs';
+/** Folder-name → category fallback for the components track (daisyUI-style groups). */
+const COMPONENTS_CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
+  button:     'actions',
+  dialog:     'actions',
+  checkbox:   'data-input',
+  radio:      'data-input',
+  select:     'data-input',
+  toggle:     'data-input',
+  input:      'data-input',
+  accordion:  'data-display',
+  avatar:     'data-display',
+  badge:      'data-display',
+  card:       'data-display',
+  kbd:        'data-display',
+  menu:       'navigation',
+  tabs:       'navigation',
+  link:       'navigation',
+  toast:      'feedback',
+};
+
+function getCategory(folder: string, pkg: SourcePkg): ComponentDoc['category'] {
+  const map = pkg === 'components' ? COMPONENTS_CATEGORY_MAP : CORE_CATEGORY_MAP;
+  return map[folder] ?? 'inputs';
 }
 
 // ── ts-query selectors ────────────────────────────────────────────────────────
 
-/** All exported classes decorated with @Directive */
+/** All exported classes decorated with @Directive OR @Component (Angular declarables). */
 const DIRECTIVE_CLASS_SELECTOR =
-  'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"]))';
+  'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"])), ClassDeclaration:has(Decorator:has(Identifier[text="Component"]))';
 
 /** Properties initialized with input(), input.required(), or model() signals */
 const SIGNAL_INPUT_SELECTOR = [
@@ -406,9 +442,10 @@ function getRequired(node: ts.Node): boolean {
 // ── Directive decorator metadata extraction ───────────────────────────────────
 
 function getDecoratorArg(cls: ts.ClassDeclaration): string {
+  // Match @Directive(...) OR @Component(...).
   const callExpr = tsquery<ts.CallExpression>(
     cls,
-    'Decorator > CallExpression:has(Identifier[text="Directive"])'
+    'Decorator > CallExpression:has(Identifier[text="Directive"]), Decorator > CallExpression:has(Identifier[text="Component"])'
   );
   return callExpr[0]?.arguments[0]?.getText() ?? '';
 }
@@ -547,19 +584,26 @@ function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
 
 // ── Shared per-file processing ────────────────────────────────────────────────
 
-function pkgNameForPath(_filePath: string): string {
+function pkgNameForPath(filePath: string): string {
+  const p = filePath.replace(/\\/g, '/');
+  if (p.includes('/packages/core/src/')) return 'Core';
+  if (p.includes('/packages/components/src/')) return 'Library';
   return 'Core';
 }
 
 function folderFromPath(filePath: string): string | null {
-  const coreMatch = filePath.split('/packages/core/src/')[1];
+  const p = filePath.replace(/\\/g, '/');
+  const coreMatch = p.split('/packages/core/src/')[1];
   if (coreMatch) return coreMatch.split('/')[0] ?? null;
+  const componentsMatch = p.split('/packages/components/src/')[1];
+  if (componentsMatch) return componentsMatch.split('/')[0] ?? null;
   return null;
 }
 
 function processSourceFile(
   morphFile: SourceFile,
   componentMap: Map<string, ComponentDoc>,
+  pkg: SourcePkg,
 ): void {
   const filePath = morphFile.getFilePath();
 
@@ -567,6 +611,9 @@ function processSourceFile(
   if (!folder || folder === 'unknown') return;
 
   const pkgName = pkgNameForPath(filePath);
+  // Composite key so the same folder name (e.g. 'button') in two packages
+  // results in two separate entries in the manifest.
+  const mapKey = `${pkg}:${folder}`;
 
   // Reparse source text with workspace TypeScript so tsquery's TS version matches.
   // ts-morph bundles its own TS version which conflicts with tsquery's TS dependency.
@@ -607,12 +654,13 @@ function processSourceFile(
       ? themedExamples['default']
       : exampleFiles;
 
-    if (!componentMap.has(folder)) {
-      componentMap.set(folder, {
+    if (!componentMap.has(mapKey)) {
+      componentMap.set(mapKey, {
         name: folder.charAt(0).toUpperCase() + folder.slice(1),
         slug: folder,
+        pkg,
         categoryPath: [],
-        category: getCategory(folder),
+        category: getCategory(folder, pkg),
         description: '',
         directives: [],
         tokens: [],
@@ -620,7 +668,7 @@ function processSourceFile(
       });
     }
 
-    const comp = componentMap.get(folder)!;
+    const comp = componentMap.get(mapKey)!;
     if (!comp.description && description) comp.description = description;
 
     // Prepend package name to directive categoryPath (skip if already present to avoid duplication)
@@ -648,8 +696,8 @@ function processSourceFile(
   }
 
   // ── Extract InjectionTokens and type aliases ──────────────────────────────
-  if (componentMap.has(folder)) {
-    const comp = componentMap.get(folder)!;
+  if (componentMap.has(mapKey)) {
+    const comp = componentMap.get(mapKey)!;
     comp.tokens.push(...extractTokens(tsSourceFile));
     comp.typeAliases.push(...extractTypeAliases(tsSourceFile));
   }
@@ -691,37 +739,89 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       !filePath.includes('/packages/core/src/')
     ) continue;
 
-    processSourceFile(morphFile, componentMap);
+    processSourceFile(morphFile, componentMap, 'core');
   }
 
+  // ── Pass 2: packages/components ───────────────────────────────────────────
+  // Separate ts-morph project so its tsconfig (paths, types) is honored.
+  const componentsProject = new Project({
+    tsConfigFilePath: join(root, 'packages/components/tsconfig.lib.json'),
+    skipAddingFilesFromTsConfig: false,
+  });
+  componentsProject.addSourceFilesAtPaths([
+    join(root, 'packages/components/src/**/*.ts'),
+  ]);
+  let componentsScanned = 0;
+  for (const morphFile of componentsProject.getSourceFiles()) {
+    const filePath = morphFile.getFilePath().replace(/\\/g, '/');
+    if (
+      filePath.includes('.spec.') ||
+      filePath.endsWith('index.ts') ||
+      filePath.endsWith('public-api.ts') ||
+      filePath.endsWith('test-setup.ts') ||
+      filePath.endsWith('.example.ts') ||
+      !filePath.includes('/packages/components/src/')
+    ) continue;
+
+    processSourceFile(morphFile, componentMap, 'components');
+    componentsScanned++;
+  }
+  void componentsScanned;
+
   // Fill in categoryPath for components that had no @category tag
-  const categoryFallbacks: Record<string, string[]> = {
-    base: ['Core', 'Base'],
-    inputs: ['Core', 'Inputs'],
-    navigation: ['Core', 'Navigation'],
-    overlays: ['Core', 'Overlays'],
-    data: ['Core', 'Data'],
-    display: ['Core', 'Display'],
-    a11y: ['Core', 'Accessibility'],
-    primitives: ['Core', 'Primitives'],
+  const categoryFallbacks: Record<SourcePkg, Partial<Record<ComponentDoc['category'], string[]>>> = {
+    core: {
+      base:       ['Core', 'Base'],
+      inputs:     ['Core', 'Inputs'],
+      navigation: ['Core', 'Navigation'],
+      overlays:   ['Core', 'Overlays'],
+      data:       ['Core', 'Data'],
+      display:    ['Core', 'Display'],
+      a11y:       ['Core', 'Accessibility'],
+      primitives: ['Core', 'Primitives'],
+    },
+    components: {
+      'actions':      ['Library', 'Actions'],
+      'data-input':   ['Library', 'Data input'],
+      'data-display': ['Library', 'Data display'],
+      'navigation':   ['Library', 'Navigation'],
+      'feedback':     ['Library', 'Feedback'],
+      // safety net for components that fall back to legacy keys
+      base:       ['Library', 'Base'],
+      inputs:     ['Library', 'Data input'],
+      overlays:   ['Library', 'Actions'],
+      data:       ['Library', 'Data display'],
+      display:    ['Library', 'Data display'],
+      a11y:       ['Library', 'Accessibility'],
+      primitives: ['Library', 'Primitives'],
+    },
   };
 
   for (const comp of componentMap.values()) {
     if (!comp.categoryPath.length) {
+      const pkgLabel = comp.pkg === 'components' ? 'Library' : 'Core';
       comp.categoryPath = [
-        ...(categoryFallbacks[comp.category] ?? ['Core', 'Inputs']),
+        ...(categoryFallbacks[comp.pkg][comp.category] ?? [pkgLabel, 'Other']),
         comp.name,
       ];
     }
   }
 
   // Sort by category order
-  const categoryOrder: ComponentDoc['category'][] = [
-    'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives',
+  const coreCategoryOrder: ComponentDoc['category'][] = [
+    'base', 'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives',
   ];
+  const componentsCategoryOrder: ComponentDoc['category'][] = [
+    'actions', 'data-input', 'data-display', 'navigation', 'feedback',
+  ];
+  const orderFor = (pkg: SourcePkg) =>
+    pkg === 'components' ? componentsCategoryOrder : coreCategoryOrder;
+
   const components = [...componentMap.values()].sort((a, b) => {
-    const ai = categoryOrder.indexOf(a.category);
-    const bi = categoryOrder.indexOf(b.category);
+    if (a.pkg !== b.pkg) return a.pkg.localeCompare(b.pkg);
+    const order = orderFor(a.pkg);
+    const ai = order.indexOf(a.category);
+    const bi = order.indexOf(b.category);
     return ai !== bi ? ai - bi : a.name.localeCompare(b.name);
   });
 

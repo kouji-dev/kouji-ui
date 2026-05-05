@@ -1,0 +1,45 @@
+@layer kj.component {
+  .kj-avatar {
+    --kj-avatar-size:   2.5rem;
+    --kj-avatar-bg:     var(--kj-color-base-300);
+    --kj-avatar-fg:     var(--kj-color-base-content);
+    --kj-avatar-radius: 9999px;
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--kj-avatar-size);
+    height: var(--kj-avatar-size);
+    background: var(--kj-avatar-bg);
+    color: var(--kj-avatar-fg);
+    border-radius: var(--kj-avatar-radius);
+    overflow: hidden;
+    font: 0.875rem / 1 var(--kj-font-sans);
+    font-weight: 600;
+  }
+
+  .kj-avatar[data-shape="rounded"] { --kj-avatar-radius: var(--kj-radius-box); }
+
+  .kj-avatar[data-size="xs"] { --kj-avatar-size: 1.5rem; font-size: 0.6875rem; }
+  .kj-avatar[data-size="sm"] { --kj-avatar-size: 2rem;   font-size: 0.75rem; }
+  .kj-avatar[data-size="lg"] { --kj-avatar-size: 3rem;   font-size: 1rem; }
+  .kj-avatar[data-size="xl"] { --kj-avatar-size: 4rem;   font-size: 1.25rem; }
+
+  .kj-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .kj-avatar-image:not([data-loaded]) { opacity: 0; }
+
+  .kj-avatar-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .kj-avatar-fallback:not([data-visible]) { opacity: 0; pointer-events: none; }
+}

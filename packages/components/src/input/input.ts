@@ -1,0 +1,53 @@
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { KjInput } from '@kouji-ui/core';
+
+export type KjInputType = 'text' | 'email' | 'password' | 'number'
+                        | 'search' | 'tel' | 'url' | 'color';
+
+/**
+ * Styled wrapper around the headless KjInput directive.
+ *
+ * Element-wrapper pattern: <kj-input> is structural shell; inner <input>
+ * carries native input semantics (focus, form integration, validation).
+ *
+ * @example
+ * ```html
+ * <kj-input type="email" placeholder="you@example.com" [invalid]="emailCtrl.invalid" />
+ * <kj-input type="color" [value]="hex()" (input)="hex.set($any($event.target).value)" />
+ * <kj-input type="text" [(ngModel)]="name" />
+ * ```
+ * @doc
+ *   @doc-file input.example.ts
+ *   @doc-file input.color.example.ts
+ * @category Library/Data input
+ */
+@Component({
+  selector: 'kj-input',
+  standalone: true,
+  imports: [KjInput],
+  template: `
+    <input
+      kjInput
+      class="kj-input"
+      [type]="type()"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      [kjInvalid]="invalid()"
+      [kjDisabled]="disabled()"
+    />
+  `,
+  styleUrl: './input.css',
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    'style': 'display: contents;',
+    '[attr.data-type]': 'type()',
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjInputComponent {
+  readonly type = input<KjInputType>('text');
+  readonly value = input<string>('');
+  readonly placeholder = input<string>('');
+  readonly invalid = input(false);
+  readonly disabled = input(false);
+}

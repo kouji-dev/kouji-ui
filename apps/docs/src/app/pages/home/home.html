@@ -3,12 +3,13 @@
 
   <!-- Nav -->
   <nav>
-    <a class="nav-logo-link" routerLink="/" aria-label="kouji home">
+    <a class="nav-logo-link" routerLink="/" aria-label="kouji home (beta)">
       <kj-logo [size]="32" />
+      <span class="nav-beta-badge" aria-hidden="true">BETA</span>
     </a>
     <ul class="nav-links">
       <li><a routerLink="/docs">Docs</a></li>
-      <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
+      <li><kj-link href="https://github.com" [external]="true" variant="subtle">GitHub</kj-link></li>
     </ul>
   </nav>
 
@@ -22,13 +23,11 @@
         Zero CSS in the core. Full accessibility. Your styles, your rules.
       </p>
       <div class="hero-actions">
-        <a class="btn-primary" routerLink="/docs">
-          Get started
-          <span>→</span>
+        <a routerLink="/docs" class="hero-cta">
+          <kj-button variant="default" size="lg">Get started <span>→</span></kj-button>
         </a>
-        <a class="btn-secondary" href="https://github.com" target="_blank" rel="noopener">
-          View on GitHub
-          <span>↗</span>
+        <a href="https://github.com" target="_blank" rel="noopener" class="btn-secondary">
+          View on GitHub <span>↗</span>
         </a>
       </div>
     </div>

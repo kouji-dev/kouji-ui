@@ -46,19 +46,25 @@ function startWatcher(): void {
   if (_watcherStarted) return;
   _watcherStarted = true;
 
-  const coreSrc = resolve(findWorkspaceRoot(process.cwd()), 'packages/core/src');
+  const root = findWorkspaceRoot(process.cwd());
+  const paths = [
+    resolve(root, 'packages/core/src'),
+    resolve(root, 'packages/components/src'),
+  ];
   let debounce: ReturnType<typeof setTimeout>;
 
-  try {
-    watch(coreSrc, { recursive: true }, (_, filename) => {
-      if (!filename?.endsWith('.ts') || filename.includes('.spec.')) return;
-      clearTimeout(debounce);
-      debounce = setTimeout(() => {
-        console.log(`[docs] ${filename} changed — invalidating manifest`);
-        invalidateManifest();
-      }, 300);
-    });
-  } catch {
-    // File watching not available (CI, containers) — silent fail
+  for (const p of paths) {
+    try {
+      watch(p, { recursive: true }, (_, filename) => {
+        if (!filename?.endsWith('.ts') || filename.includes('.spec.')) return;
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          console.log(`[docs] ${filename} changed — invalidating manifest`);
+          invalidateManifest();
+        }, 300);
+      });
+    } catch {
+      // File watching not available (CI, containers) — silent fail
+    }
   }
 }

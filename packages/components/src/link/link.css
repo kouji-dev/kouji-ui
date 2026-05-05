@@ -1,0 +1,57 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-link — component-layer tokens + structural CSS
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-link {
+    --kj-link-fg:           var(--kj-color-primary);
+    --kj-link-bg:           transparent;
+    --kj-link-hover-fg:     var(--kj-color-primary);
+    --kj-link-hover-bg:     transparent;
+    --kj-link-padding-x:    0;
+    --kj-link-padding-y:    0;
+    --kj-link-radius:       var(--kj-radius-field);
+    --kj-link-decoration:   underline;
+    --kj-link-underline-offset: 4px;
+
+    display: inline-flex;
+    align-items: center;
+    color: var(--kj-link-fg);
+    background: var(--kj-link-bg);
+    padding: var(--kj-link-padding-y) var(--kj-link-padding-x);
+    border-radius: var(--kj-link-radius);
+    text-decoration: var(--kj-link-decoration);
+    text-underline-offset: var(--kj-link-underline-offset);
+    transition: var(--kj-transition);
+    cursor: pointer;
+  }
+
+  .kj-link:hover {
+    color: var(--kj-link-hover-fg);
+    background: var(--kj-link-hover-bg);
+  }
+
+  .kj-link:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+
+  .kj-link[data-variant="subtle"] {
+    --kj-link-fg: var(--kj-color-base-content);
+    --kj-link-decoration: none;
+  }
+  .kj-link[data-variant="subtle"]:hover {
+    --kj-link-hover-fg: var(--kj-color-primary);
+  }
+
+  .kj-link[data-variant="nav"] {
+    --kj-link-fg: var(--kj-color-base-content);
+    --kj-link-decoration: none;
+    --kj-link-padding-x: var(--kj-space-md);
+    --kj-link-padding-y: var(--kj-space-sm);
+    width: 100%;
+  }
+  .kj-link[data-variant="nav"]:hover {
+    --kj-link-hover-bg: var(--kj-color-base-200);
+  }
+}

@@ -1,6 +1,6 @@
 .toc-nav {
-  padding: 2rem 1.25rem;
-  font-family: 'JetBrains Mono', monospace;
+  padding: var(--kj-space-2xl) 1.25rem;
+  font-family: var(--kj-font-mono);
 }
 
 .toc-heading {
@@ -8,8 +8,8 @@
   font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
+  color: var(--kj-color-neutral);
+  margin-bottom: var(--kj-space-lg);
 }
 
 .toc-list {
@@ -26,18 +26,18 @@
 .toc-level-3 { padding-left: 0.75rem; }
 
 .toc-link {
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   text-decoration: none;
   font-size: 0.75rem;
   line-height: 1.4;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem var(--kj-space-sm);
   border-left: 2px solid transparent;
   transition: color 0.15s, border-color 0.15s;
   width: 100%;
 }
 
-.toc-link:hover { color: #888; border-left-color: var(--text-muted); }
+.toc-link:hover { color: var(--kj-color-neutral); border-left-color: var(--kj-color-neutral); }
 
-.toc-link.active { color: var(--accent); border-left-color: var(--accent); }
+.toc-link.active { color: var(--kj-color-primary); border-left-color: var(--kj-color-primary); }
 
-.toc-empty { color: var(--text-muted); font-size: 0.75rem; margin: 0; }
+.toc-empty { color: var(--kj-color-neutral); font-size: 0.75rem; margin: 0; }

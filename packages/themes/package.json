@@ -1,0 +1,27 @@
+{
+  "name": "@kouji-ui/themes",
+  "version": "0.0.1",
+  "description": "Theme tokens and theme stylesheets for kouji-ui — pure CSS, swappable at runtime via data-theme.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kouji-dev/kouji-ui.git",
+    "directory": "packages/themes"
+  },
+  "homepage": "https://kouji-ui.onrender.com",
+  "bugs": { "url": "https://github.com/kouji-dev/kouji-ui/issues" },
+  "keywords": ["css", "theme", "tokens", "design-system", "kouji"],
+  "publishConfig": { "access": "public", "provenance": true },
+  "sideEffects": ["**/*.css"],
+  "files": ["src/"],
+  "exports": {
+    ".": "./src/index.css",
+    "./base.css": "./src/base.css",
+    "./themes/dark.css": "./src/themes/dark.css"
+  },
+  "scripts": {
+    "build": "echo 'no build for css-only package'",
+    "test": "vitest run",
+    "lint": "echo 'no lint for css-only package'"
+  }
+}

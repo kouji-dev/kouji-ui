@@ -1,0 +1,111 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-card — component-layer tokens + structural CSS
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-card {
+    --kj-card-bg:           var(--kj-color-base-200);
+    --kj-card-fg:           var(--kj-color-base-content);
+    --kj-card-border-color: transparent;
+    --kj-card-border-width: var(--kj-border);
+    --kj-card-radius:       var(--kj-radius-box);
+    --kj-card-padding-x:    var(--kj-space-xl);
+    --kj-card-padding-y:    var(--kj-space-xl);
+    --kj-card-shadow:       none;
+
+    display: block;
+    background: var(--kj-card-bg);
+    color: var(--kj-card-fg);
+    border: var(--kj-card-border-width) solid var(--kj-card-border-color);
+    border-radius: var(--kj-card-radius);
+    box-shadow: var(--kj-card-shadow);
+    overflow: hidden;
+    transition: var(--kj-transition);
+  }
+
+  /* When no sub-components are used, fall back to the padded wrapper for plain content. */
+  .kj-card:not(:has(.kj-card-header, .kj-card-content, .kj-card-footer, .kj-card-cover)) {
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+  }
+
+  .kj-card[data-variant="outline"] {
+    --kj-card-bg: transparent;
+    --kj-card-border-color: var(--kj-color-neutral);
+  }
+
+  .kj-card[data-variant="subtle"] {
+    --kj-card-bg: var(--kj-color-base-300);
+  }
+
+  /* Cover image. Fixed aspect ratio + cover-fit prevents tall hero images
+     from blowing the card. The `--kj-card-cover-height` knob lets a
+     consumer override the height; `--kj-card-cover-fit` swaps cover/contain. */
+  .kj-card-cover {
+    --kj-card-cover-height: 12rem;
+    --kj-card-cover-fit:    cover;
+
+    display: block;
+    height: var(--kj-card-cover-height);
+    background: var(--kj-color-base-300);
+    overflow: hidden;
+  }
+  .kj-card-cover img,
+  .kj-card-cover video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: var(--kj-card-cover-fit);
+    object-position: center;
+  }
+  /* Per-instance override via [data-fit]. */
+  .kj-card-cover[data-fit="contain"] { --kj-card-cover-fit: contain; }
+  .kj-card-cover[data-fit="cover"]   { --kj-card-cover-fit: cover; }
+  .kj-card-cover[data-size="sm"] { --kj-card-cover-height: 8rem; }
+  .kj-card-cover[data-size="lg"] { --kj-card-cover-height: 16rem; }
+
+  /* Header */
+  .kj-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-xs, 0.25rem);
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+  }
+
+  /* Title */
+  .kj-card-title {
+    font: 600 1rem / 1.3 var(--kj-font-sans);
+    margin: 0;
+    color: var(--kj-color-base-content);
+  }
+
+  /* Subtitle */
+  .kj-card-subtitle {
+    font: 0.875rem / 1.4 var(--kj-font-sans);
+    color: var(--kj-color-base-content);
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  /* Content */
+  .kj-card-content {
+    display: block;
+    color: var(--kj-color-base-content);
+    font: 0.9375rem / 1.5 var(--kj-font-sans);
+  }
+  .kj-card-content[data-padded] {
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+  }
+
+  /* Footer */
+  .kj-card-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+    border-top: var(--kj-border) solid var(--kj-color-base-300);
+  }
+  .kj-card-footer[data-align="start"]   { justify-content: flex-start; }
+  .kj-card-footer[data-align="center"]  { justify-content: center; }
+  .kj-card-footer[data-align="end"]     { justify-content: flex-end; }
+  .kj-card-footer[data-align="between"] { justify-content: space-between; }
+}

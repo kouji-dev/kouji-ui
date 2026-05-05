@@ -1,0 +1,173 @@
+<div class="docs-layout">
+  <aside class="sidebar">
+    <kj-docs-sidebar />
+  </aside>
+
+  <main class="generator-main">
+    <header class="generator-bar">
+      <div class="generator-name-wrap">
+        <input
+          class="generator-name"
+          type="text"
+          placeholder="theme-name"
+          [value]="draft().name"
+          [attr.aria-invalid]="nameError() !== null"
+          aria-describedby="name-helper"
+          (input)="onNameChange($event)"
+          aria-label="Theme name"
+        />
+        <span id="name-helper" class="generator-name-helper" [class.error]="nameError() !== null">
+          {{ nameError() ?? 'kebab-case, max 32 chars' }}
+        </span>
+      </div>
+      <div class="generator-actions">
+        <kj-button variant="ghost"   size="sm" (click)="reset()">Reset</kj-button>
+        <kj-button variant="default" size="sm" [disabled]="saveDisabled()" (click)="save()">Save</kj-button>
+        <kj-button variant="outline" size="sm" (click)="copyCss()">Copy CSS</kj-button>
+        <kj-button variant="outline" size="sm" (click)="downloadCss()">Download .css</kj-button>
+        <kj-button variant="outline" size="sm" (click)="exportJson()">Export JSON</kj-button>
+      </div>
+    </header>
+
+    <section class="generator-body">
+      <div class="generator-controls" role="region" aria-label="Theme controls">
+        <details open>
+          <summary>Colors</summary>
+          @for (slot of derivedSlots; track slot) {
+            <div class="control-row">
+              <span class="control-label">{{ slot }}</span>
+              <button
+                type="button"
+                class="content-swatch"
+                [class.locked]="derivedFor(slot).isOverride"
+                [style.background]="derivedFor(slot).value"
+                [attr.aria-label]="derivedFor(slot).isOverride
+                  ? slot + ' (manual override — click to revert to auto-derive)'
+                  : slot + ' (auto-derived — click to override)'"
+                (click)="toggleDerivedOverride(slot)"
+              ></button>
+              @if (derivedFor(slot).isOverride) {
+                <kj-input
+                  type="color"
+                  [value]="hexForDerived(slot)"
+                  (input)="onDerivedChange(slot, $any($event.target).value)"
+                />
+              }
+            </div>
+          }
+          @for (slot of colorSlots; track slot) {
+            <div class="control-row">
+              <span class="control-label">{{ slot }}</span>
+              <kj-input
+                type="color"
+                [value]="hexFor(slot)"
+                (input)="onColorChange(slot, $any($event.target).value)"
+              />
+              <button
+                type="button"
+                class="content-swatch"
+                [class.locked]="contentFor(slot).isOverride"
+                [style.background]="contentFor(slot).value"
+                [attr.aria-label]="contentFor(slot).isOverride
+                  ? slot + ' content (manual override — click to revert to auto)'
+                  : slot + ' content (auto-derived — click to override)'"
+                (click)="toggleContentOverride(slot)"
+              ></button>
+              @if (contentFor(slot).isOverride) {
+                <kj-input
+                  type="color"
+                  [value]="hexForContent(slot)"
+                  (input)="onContentChange(slot, $any($event.target).value)"
+                />
+              }
+            </div>
+          }
+        </details>
+
+        <details>
+          <summary>Shape</summary>
+          <label class="control-row">
+            <span class="control-label">radius-box</span>
+            <input type="range" min="0" max="32" [value]="draft().shape.radiusBox"
+                   (input)="onShape('radiusBox', +$any($event.target).value)" />
+            <span class="control-value">{{ draft().shape.radiusBox }}px</span>
+          </label>
+          <label class="control-row">
+            <span class="control-label">radius-field</span>
+            <input type="range" min="0" max="32" [value]="draft().shape.radiusField"
+                   (input)="onShape('radiusField', +$any($event.target).value)" />
+            <span class="control-value">{{ draft().shape.radiusField }}px</span>
+          </label>
+          <label class="control-row">
+            <span class="control-label">radius-selector</span>
+            <input type="range" min="0" max="32" [value]="draft().shape.radiusSelector"
+                   (input)="onShape('radiusSelector', +$any($event.target).value)" />
+            <span class="control-value">{{ draft().shape.radiusSelector }}px</span>
+          </label>
+          <label class="control-row">
+            <span class="control-label">border</span>
+            <select [value]="draft().shape.border"
+                    (change)="onShape('border', +$any($event.target).value)">
+              <option [value]="0">0px</option><option [value]="1">1px</option>
+              <option [value]="2">2px</option><option [value]="4">4px</option>
+            </select>
+          </label>
+          <label class="control-row">
+            <span class="control-label">depth</span>
+            <select [value]="draft().shape.depth"
+                    (change)="onShape('depth', +$any($event.target).value)">
+              <option [value]="0">0</option><option [value]="1">1</option><option [value]="2">2</option>
+            </select>
+          </label>
+        </details>
+
+        <details>
+          <summary>Type</summary>
+          <label class="control-row">
+            <span class="control-label">font-sans</span>
+            <select [value]="fontIdFor('fontSans')"
+                    (change)="onFont('fontSans', $any($event.target).value)">
+              @for (f of fonts; track f.id) { <option [value]="f.id">{{ f.family }}</option> }
+            </select>
+          </label>
+          <label class="control-row">
+            <span class="control-label">font-mono</span>
+            <select [value]="fontIdFor('fontMono')"
+                    (change)="onFont('fontMono', $any($event.target).value)">
+              @for (f of fonts; track f.id) { <option [value]="f.id">{{ f.family }}</option> }
+            </select>
+          </label>
+          <label class="control-row">
+            <span class="control-label">font-display</span>
+            <select [value]="fontIdFor('fontDisplay')"
+                    (change)="onFont('fontDisplay', $any($event.target).value)">
+              @for (f of fonts; track f.id) { <option [value]="f.id">{{ f.family }}</option> }
+            </select>
+          </label>
+        </details>
+
+        <details>
+          <summary>Motion</summary>
+          <label class="control-row">
+            <span class="control-label">transition</span>
+            <select [value]="draft().motion.transition"
+                    (change)="onMotion('transition', $any($event.target).value)">
+              <option value="0s">none</option>
+              <option value="0.12s ease">fast</option>
+              <option value="0.2s ease">base</option>
+              <option value="0.4s ease">slow</option>
+            </select>
+          </label>
+        </details>
+      </div>
+
+      <div class="generator-preview" data-theme="custom-draft">
+        <kj-theme-generator-preview />
+      </div>
+    </section>
+
+    @if (toast(); as msg) {
+      <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
+    }
+  </main>
+</div>

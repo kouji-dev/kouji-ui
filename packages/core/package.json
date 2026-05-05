@@ -23,7 +23,16 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "module": "fesm2022/kouji-ui-core.mjs",
+    "typings": "types/kouji-ui-core.d.ts",
+    "exports": {
+      "./package.json": { "default": "./package.json" },
+      ".": {
+        "types": "./types/kouji-ui-core.d.ts",
+        "default": "./fesm2022/kouji-ui-core.mjs"
+      }
+    }
   },
   "peerDependencies": {
     "@angular/common": "^21.0.0",
@@ -31,6 +40,18 @@
     "@angular/cdk": "^21.0.0"
   },
   "sideEffects": false,
+  "type": "module",
+  "module": "../../dist/kj-core/fesm2022/kouji-ui-core.mjs",
+  "typings": "../../dist/kj-core/types/kouji-ui-core.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "../../dist/kj-core/types/kouji-ui-core.d.ts",
+      "default": "../../dist/kj-core/fesm2022/kouji-ui-core.mjs"
+    }
+  },
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
     "test": "vitest run",

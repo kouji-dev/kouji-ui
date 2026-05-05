@@ -1,0 +1,115 @@
+@layer kj.component {
+  /* ── Viewport ── */
+  .kj-toast-viewport {
+    position: fixed;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    z-index: var(--kj-toast-z-index, 1000);
+    /* Default position: bottom-right (mirrors KJ_TOAST_SONNER_STRATEGY) */
+    bottom: 1rem;
+    right: 1rem;
+    width: 22rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  /* Positional overrides driven by data-position-* from the directive */
+  .kj-toast-viewport[data-position-y="bottom"] { bottom: 1rem; top: auto; }
+  .kj-toast-viewport[data-position-y="top"]    { top: 1rem; bottom: auto; }
+  .kj-toast-viewport[data-position-x="end"]    { right: 1rem; left: auto; }
+  .kj-toast-viewport[data-position-x="start"]  { left: 1rem; right: auto; }
+  .kj-toast-viewport[data-position-x="center"] { left: 50%; right: auto; transform: translateX(-50%); }
+
+  /* Each <li> wraps a toast — absolutely positioned so siblings overlap. */
+  .kj-toast-viewport li {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition:
+      transform 0.4s cubic-bezier(0.21, 0.61, 0.35, 1),
+      opacity 0.3s ease;
+  }
+  .kj-toast-viewport[data-position-y="bottom"] li { bottom: 0; }
+  .kj-toast-viewport[data-position-y="top"]    li { top: 0; }
+
+  /* ── Collapsed (stacked) state ── */
+  .kj-toast-viewport[data-expanded="false"] .kj-toast:not([data-front="true"]) {
+    height: var(--kj-toast-front-height);
+    overflow: hidden;
+    transform:
+      translateY(calc((var(--kj-toast-index) - 1) * var(--kj-toast-gap, 14px) * -1))
+      scale(calc(1 - (var(--kj-toast-index) - 1) * 0.06));
+    opacity: calc(1 - (var(--kj-toast-index) - 1) * 0.25);
+  }
+  .kj-toast-viewport[data-position-y="top"][data-expanded="false"] .kj-toast:not([data-front="true"]) {
+    transform:
+      translateY(calc((var(--kj-toast-index) - 1) * var(--kj-toast-gap, 14px)))
+      scale(calc(1 - (var(--kj-toast-index) - 1) * 0.06));
+  }
+
+  /* ── Expanded state ── */
+  .kj-toast-viewport[data-expanded="true"] .kj-toast {
+    transform: translateY(
+      calc((var(--kj-toast-index) - 1) * (var(--kj-toast-height, 0px) + var(--kj-toast-gap, 14px)) * -1)
+    );
+  }
+  .kj-toast-viewport[data-position-y="top"][data-expanded="true"] .kj-toast {
+    transform: translateY(
+      calc((var(--kj-toast-index) - 1) * (var(--kj-toast-height, 0px) + var(--kj-toast-gap, 14px)))
+    );
+  }
+
+  /* ── Toast ── */
+  .kj-toast {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-md, 0.75rem);
+    padding: var(--kj-space-md, 0.75rem) var(--kj-space-lg, 1rem);
+    min-width: 18rem;
+    font: 0.875rem / 1.4 var(--kj-font-sans, sans-serif);
+    border-radius: var(--kj-radius-box, 0.5rem);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.18), 0 1px 0 rgb(255 255 255 / 0.04) inset;
+    border: var(--kj-border, 1px) solid var(--kj-color-base-300, #e2e8f0);
+    background: var(--kj-color-base-100, #fff);
+    color: var(--kj-color-base-content, #1a202c);
+    animation: kj-toast-enter 0.35s cubic-bezier(0.21, 0.61, 0.35, 1);
+  }
+
+  @keyframes kj-toast-enter {
+    from { opacity: 0; transform: translateY(100%) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .kj-toast[data-variant="success"] {
+    background: var(--kj-color-success, #16a34a);
+    color: var(--kj-color-success-content, #fff);
+    border-color: transparent;
+  }
+  .kj-toast[data-variant="warning"] {
+    background: var(--kj-color-warning, #d97706);
+    color: var(--kj-color-warning-content, #fff);
+    border-color: transparent;
+  }
+  .kj-toast[data-variant="destructive"] {
+    background: var(--kj-color-destructive, #dc2626);
+    color: var(--kj-color-destructive-content, #fff);
+    border-color: transparent;
+  }
+
+  /* ── Close button ── */
+  .kj-toast-close {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    font-size: 1.1rem;
+    opacity: 0.7;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .kj-toast-close:hover { opacity: 1; background: rgb(0 0 0 / 0.08); }
+  .kj-toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+}

@@ -1,0 +1,27 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-kbd — component-layer tokens + structural CSS
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-kbd {
+    --kj-kbd-bg:           var(--kj-color-base-300);
+    --kj-kbd-fg:           var(--kj-color-base-content);
+    --kj-kbd-border-color: var(--kj-color-neutral);
+    --kj-kbd-border-width: var(--kj-border);
+    --kj-kbd-radius:       var(--kj-radius-selector);
+    --kj-kbd-padding-x:    0.375rem;
+    --kj-kbd-padding-y:    0.125rem;
+    --kj-kbd-font:         var(--kj-font-mono);
+    --kj-kbd-font-size:    var(--kj-text-xs);
+
+    display: inline-flex;
+    align-items: center;
+    background: var(--kj-kbd-bg);
+    color: var(--kj-kbd-fg);
+    border: var(--kj-kbd-border-width) solid var(--kj-kbd-border-color);
+    border-radius: var(--kj-kbd-radius);
+    padding: var(--kj-kbd-padding-y) var(--kj-kbd-padding-x);
+    font: var(--kj-kbd-font-size) / 1 var(--kj-kbd-font);
+    line-height: 1.2;
+  }
+}

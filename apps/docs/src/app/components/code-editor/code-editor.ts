@@ -82,7 +82,7 @@ export class CodeEditorComponent {
 
     this.monaco = await this.monacoSvc.getMonaco();
 
-    const isDark  = this.themeService.theme() === 'dark';
+    const isDark  = this.themeService.isDark();
     const isMd    = this.lang() === 'md';
     const monacoLang = this.toMonacoLang(this.lang());
 

@@ -31,10 +31,15 @@ export class ComponentDocComponent {
   private readonly appRef = inject(ApplicationRef);
 
   protected readonly component = toSignal(
-    this.route.paramMap.pipe(
-      switchMap((params) =>
-        this.docs.loadManifest().pipe(map(() => this.docs.getComponent(params.get('slug') ?? ''))),
-      ),
+    this.route.url.pipe(
+      switchMap((segs) => {
+        // segs is [{path:'docs'},{path:'headless'|'components'},{path:slug}]
+        const trackId = segs[1]?.path === 'components' ? 'components' as const
+                       : segs[1]?.path === 'headless'   ? 'core'       as const
+                       : undefined;
+        const slug = segs[2]?.path ?? '';
+        return this.docs.loadManifest().pipe(map(() => this.docs.getComponent(slug, trackId)));
+      }),
     ),
   );
 

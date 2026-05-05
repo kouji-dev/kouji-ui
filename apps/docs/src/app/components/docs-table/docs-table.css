@@ -1,39 +1,39 @@
 .table-wrap {
-  border: 1px solid var(--border);
+  border: 1px solid var(--kj-color-base-300);
   font-size: 0.8rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--kj-space-sm);
   overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--kj-font-mono);
 }
 
 thead {
-  background: var(--bg-subtle);
-  border-bottom: 1px solid var(--border);
+  background: var(--kj-color-base-200);
+  border-bottom: 1px solid var(--kj-color-base-300);
 }
 
 th {
-  padding: 0.75rem 1rem;
+  padding: var(--kj-space-md) var(--kj-space-lg);
   text-align: left;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--kj-color-neutral);
   font-weight: 400;
   white-space: nowrap;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--kj-color-base-300);
 }
 th:last-child { border-right: none; }
 
 td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border);
-  color: var(--text-secondary);
+  padding: var(--kj-space-md) var(--kj-space-lg);
+  border-bottom: 1px solid var(--kj-color-base-200);
+  border-right: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-neutral);
   vertical-align: top;
   line-height: 1.5;
 }
@@ -43,25 +43,25 @@ tr:last-child td { border-bottom: none; }
 td[data-col="name"],
 td[data-col="type"],
 td[data-col="defaultValue"] {
-  color: var(--text);
+  color: var(--kj-color-base-content);
   white-space: nowrap;
 }
 
 td[data-col="description"] {
-  color: var(--text-secondary);
+  color: var(--kj-color-neutral);
   white-space: normal;
   max-width: 36ch;
 }
 
 .required-mark {
-  color: var(--accent);
+  color: var(--kj-color-primary);
   margin-left: 1px;
   font-size: 0.875em;
 }
 
 .empty-state {
-  padding: 1rem;
-  color: var(--text-muted);
+  padding: var(--kj-space-lg);
+  color: var(--kj-color-neutral);
   font-size: 0.8rem;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--kj-font-mono);
 }

@@ -52,8 +52,12 @@ export interface TypeAliasDef {
 export interface ComponentDoc {
   name: string;
   slug: string;
+  /** Source package — 'core' for headless directives, 'components' for styled wrappers. */
+  pkg: 'core' | 'components';
   categoryPath: string[];
-  category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
+  category:
+    | 'actions' | 'data-input' | 'data-display' | 'navigation' | 'feedback'
+    | 'base' | 'inputs' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -64,6 +68,22 @@ export interface SidebarNode {
   label: string;
   slug: string | null;
   children: SidebarNode[];
+}
+
+/**
+ * A docs track — a top-level grouping in the sidebar that drills into a tree.
+ * `id` is the URL segment (matches `/docs/<id>/<slug>` routes); `packageName`
+ * is the display label, sourced from the underlying package's package.json
+ * `name` field (or an override later, when extracted metadata is available).
+ */
+export interface DocsTrack {
+  id: string;
+  packageName: string;
+  /** Editorial title shown on track cards. */
+  title: string;
+  /** One-sentence tagline shown under the title. */
+  tagline: string;
+  tree: SidebarNode[];
 }
 
 export interface DocsManifest {
@@ -113,14 +133,23 @@ export class DocsService {
     );
   }
 
-  /** Returns all component slugs — used in `getPrerenderParams()`. */
+  /** Returns all CORE component slugs — used in `getPrerenderParams()` for /docs/headless/:slug. */
   getSlugs(): string[] {
-    return this._manifest?.components.map(c => c.slug) ?? this.provider.getSlugs();
+    return (this._manifest?.components ?? [])
+      .filter(c => c.pkg === 'core')
+      .map(c => c.slug);
   }
 
-  /** Get a component by slug. */
-  getComponent(slug: string): ComponentDoc | null {
-    return this._manifest?.components.find(c => c.slug === slug) ?? null;
+  /**
+   * Get a component by slug — optionally scoped to a package so the same
+   * slug (e.g. 'button') in both packages doesn't collide.
+   */
+  getComponent(slug: string, pkg?: 'core' | 'components'): ComponentDoc | null {
+    const components = this._manifest?.components ?? [];
+    const matches = components.filter(c => c.slug === slug);
+    if (!matches.length) return null;
+    if (pkg) return matches.find(c => c.pkg === pkg) ?? null;
+    return matches[0] ?? null;
   }
 
   /** Get components filtered by category. */
@@ -130,7 +159,16 @@ export class DocsService {
 
   /** Builds a 3-level nested category tree: Package > Category > Component */
   getSidebarTree(): SidebarNode[] {
-    const components = this._manifest?.components ?? [];
+    return this.buildTreeForPackage('core');
+  }
+
+  /** Builds the styled-components tree from the manifest (filtered to pkg='components'). */
+  getStyledComponentsTree(): SidebarNode[] {
+    return this.buildTreeForPackage('components');
+  }
+
+  private buildTreeForPackage(pkg: 'core' | 'components'): SidebarNode[] {
+    const components = (this._manifest?.components ?? []).filter(c => c.pkg === pkg);
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
     for (const comp of components) {
@@ -159,5 +197,37 @@ export class DocsService {
       slug: null,
       children: items,
     }));
+  }
+
+  /** Slug list for the styled components track — used by the route prerenderer. */
+  getStyledComponentSlugs(): string[] {
+    return (this._manifest?.components ?? [])
+      .filter(c => c.pkg === 'components')
+      .map(c => c.slug);
+  }
+
+  /**
+   * The list of docs tracks the sidebar drills into.
+   * `id` is the URL segment; `packageName` is the display label sourced from
+   * each package's package.json (will be replaceable by an extracted override
+   * once the metadata extractor reads the components package too).
+   */
+  getTracks(): DocsTrack[] {
+    return [
+      {
+        id: 'headless',
+        packageName: 'core',
+        title: 'Headless primitives',
+        tagline: 'Behavior-only directives. Bring your own CSS. Zero opinions, full a11y.',
+        tree: this.getSidebarTree(),
+      },
+      {
+        id: 'components',
+        packageName: 'components',
+        title: 'Styled components',
+        tagline: 'Opinionated, themable element wrappers built on the headless directives.',
+        tree: this.getStyledComponentsTree(),
+      },
+    ];
   }
 }

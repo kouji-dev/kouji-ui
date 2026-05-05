@@ -1,0 +1,141 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-button — component-layer tokens + structural CSS
+   Tokens default to shared-layer values from @kouji-ui/themes.
+   Variants/sizes/states retarget the component tokens; the
+   structural rules below are the only place raw var(--kj-button-*)
+   is read.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-button {
+    /* component knobs — themes/users can override any of these */
+    --kj-button-bg:               var(--kj-color-primary);
+    --kj-button-fg:               var(--kj-color-primary-content);
+    --kj-button-border-color:     transparent;
+    --kj-button-border-style:     solid;
+    --kj-button-border-width:     var(--kj-border);
+    --kj-button-radius:           var(--kj-radius-field);
+    --kj-button-padding-x:        var(--kj-space-md);
+    --kj-button-padding-y:        var(--kj-space-sm);
+    --kj-button-font:             var(--kj-font-sans);
+    --kj-button-font-size:        var(--kj-text-sm);
+    --kj-button-shadow:           none;
+    --kj-button-shadow-active:    none;
+    --kj-button-translate-active: none;
+
+    /* the only place raw var(--kj-button-*) is read */
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    background: var(--kj-button-bg);
+    color: var(--kj-button-fg);
+    border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
+    border-radius: var(--kj-button-radius);
+    padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
+    font: var(--kj-button-font-size) / 1.2 var(--kj-button-font);
+    box-shadow: var(--kj-button-shadow);
+    /* Transition only properties tied to user interaction (hover / active /
+       focus). NOT background-color — variant-driven bg changes propagate
+       through the wrapper input on the same tick as the host attribute, and
+       transitioning bg here animates the initial primary→variant flip on
+       components like <kj-button variant="ghost"> when the wrapper resolves. */
+    transition: color var(--kj-transition), border-color var(--kj-transition),
+                box-shadow var(--kj-transition), transform var(--kj-transition),
+                opacity var(--kj-transition);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  /* Variants flip component tokens. Each variant owns its hover so the
+     hover surface is designed per intent, not derived heuristically.
+
+     Filled variants (default, destructive) prefer a designed
+     `--kj-color-*-hover` token from the theme, falling back to a
+     base-content-mix that automatically darkens in light themes and
+     lightens in dark themes. Themes are encouraged to define the
+     `*-hover` tokens for a brand-correct shade. */
+
+  .kj-button[data-variant="destructive"] {
+    --kj-button-bg: var(--kj-color-destructive);
+    --kj-button-fg: var(--kj-color-destructive-content);
+  }
+  .kj-button[data-variant="destructive"]:hover {
+    --kj-button-bg: var(
+      --kj-color-destructive-hover,
+      color-mix(in oklab, var(--kj-color-destructive) 85%, var(--kj-color-base-content))
+    );
+  }
+
+  .kj-button[data-variant="ghost"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-color-base-content);
+    --kj-button-border-color: transparent;
+  }
+  .kj-button[data-variant="ghost"]:hover {
+    --kj-button-bg: var(--kj-color-base-200);
+  }
+
+  .kj-button[data-variant="outline"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-color-base-content);
+    --kj-button-border-color: var(--kj-color-neutral);
+  }
+  .kj-button[data-variant="outline"]:hover {
+    --kj-button-bg: var(--kj-color-base-200);
+  }
+
+  .kj-button[data-variant="link"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-color-primary);
+    --kj-button-padding-x: 0;
+    --kj-button-padding-y: 0;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .kj-button[data-variant="link"]:hover {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(
+      --kj-color-primary-hover,
+      color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content))
+    );
+  }
+
+  /* sizes */
+  .kj-button[data-size="sm"] {
+    --kj-button-padding-x: var(--kj-space-sm);
+    --kj-button-padding-y: 0.25rem;
+    --kj-button-font-size: 0.8125rem;
+  }
+  .kj-button[data-size="lg"] {
+    --kj-button-padding-x: var(--kj-space-lg);
+    --kj-button-padding-y: 0.625rem;
+    --kj-button-font-size: 1rem;
+  }
+  .kj-button[data-size="icon"] {
+    --kj-button-padding-x: var(--kj-space-sm);
+    --kj-button-padding-y: var(--kj-space-sm);
+  }
+
+  /* Default-variant hover (catches the unset-or-`default` case). Specificity
+     here is lower than the variant-specific rules above, so destructive /
+     ghost / outline / link override correctly. */
+  .kj-button:hover {
+    --kj-button-bg: var(
+      --kj-color-primary-hover,
+      color-mix(in oklab, var(--kj-color-primary) 85%, var(--kj-color-base-content))
+    );
+  }
+  .kj-button:active {
+    transform: var(--kj-button-translate-active);
+    box-shadow: var(--kj-button-shadow-active);
+  }
+  .kj-button:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+  .kj-button[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}

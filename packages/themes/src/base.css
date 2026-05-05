@@ -1,0 +1,73 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/themes — base layer
+   Raw primitives. Themes pull values from here.
+   Components MUST NOT read base tokens directly.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.reset, kj.base, kj.shared, kj.component;
+
+@layer kj.base {
+  :root {
+    /* ── color palette ── */
+    --kj-base-gray-50:  oklch(98% 0    0);
+    --kj-base-gray-100: oklch(95% 0    0);
+    --kj-base-gray-200: oklch(90% 0    0);
+    --kj-base-gray-300: oklch(82% 0    0);
+    --kj-base-gray-500: oklch(60% 0    0);
+    --kj-base-gray-700: oklch(35% 0    0);
+    --kj-base-gray-800: oklch(22% 0    0);
+    --kj-base-gray-900: oklch(15% 0    0);
+    --kj-base-gray-950: oklch(8%  0    0);
+
+    --kj-base-blue-400: oklch(70% 0.16 250);
+    --kj-base-blue-500: oklch(62% 0.19 250);
+    --kj-base-blue-600: oklch(55% 0.20 250);
+    --kj-base-blue-700: oklch(48% 0.20 250);
+
+    --kj-base-red-400:    oklch(72% 0.18  20);
+    --kj-base-red-500:    oklch(63% 0.22  20);
+    --kj-base-red-600:    oklch(55% 0.22  20);
+    --kj-base-green-500:  oklch(70% 0.18 145);
+    --kj-base-yellow-500: oklch(83% 0.16  90);
+
+    /* kouji brand lime — #b8f500 */
+    --kj-base-lime-500:   oklch(91% 0.21 124);
+
+    /* ── radii ── */
+    --kj-base-radius-0:    0px;
+    --kj-base-radius-1:    0.25rem;
+    --kj-base-radius-2:    0.5rem;
+    --kj-base-radius-3:    1rem;
+    --kj-base-radius-full: 9999px;
+
+    /* ── spacing — semantic scale (canonical names) ── */
+    --kj-base-space-0:   0;
+    --kj-base-space-xs:  0.25rem;   /*  4px */
+    --kj-base-space-sm:  0.5rem;    /*  8px */
+    --kj-base-space-md:  0.75rem;   /* 12px */
+    --kj-base-space-lg:  1rem;      /* 16px */
+    --kj-base-space-xl:  1.5rem;    /* 24px */
+    --kj-base-space-2xl: 2rem;      /* 32px */
+    --kj-base-space-3xl: 3rem;      /* 48px */
+    --kj-base-space-4xl: 4rem;      /* 64px */
+    --kj-base-space-5xl: 6rem;      /* 96px */
+    --kj-base-space-6xl: 8rem;      /* 128px */
+
+    /* ── type ── */
+    --kj-base-font-sans:    system-ui, -apple-system, sans-serif;
+    --kj-base-font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+    --kj-base-font-display: 'Syne', system-ui, sans-serif;
+    --kj-base-text-xs:   0.75rem;
+    --kj-base-text-sm:   0.875rem;
+    --kj-base-text-base: 1rem;
+    --kj-base-text-lg:   1.125rem;
+    --kj-base-text-xl:   1.25rem;
+    --kj-base-text-2xl:  1.5rem;
+
+    /* ── borders & motion ── */
+    --kj-base-border-1: 1px;
+    --kj-base-border-2: 2px;
+    --kj-base-transition-fast: 0.12s ease;
+    --kj-base-transition-base: 0.2s ease;
+  }
+}

@@ -4,10 +4,14 @@
   "scripts": {
     "dev": "ng serve docs",
     "build": "ng build docs",
+    "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "lint": "ng lint docs"
   },
   "dependencies": {
-    "@codemirror/lang-markdown": "^6.5.0"
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@kouji-ui/components": "workspace:*",
+    "@kouji-ui/themes": "workspace:*",
+    "zod": "^4.4.3"
   }
 }

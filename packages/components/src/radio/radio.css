@@ -1,0 +1,58 @@
+@layer kj.component {
+  .kj-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-sm);
+  }
+  .kj-radio-group[data-orientation="horizontal"] { flex-direction: row; gap: var(--kj-space-lg); }
+
+  /* Outer host. Acts as a single click target whose label area forwards to
+     the inner dot. */
+  .kj-radio {
+    display: inline-flex;
+  }
+  .kj-radio-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    cursor: pointer;
+    color: var(--kj-color-base-content);
+    font: 0.875rem / 1.4 var(--kj-font-sans);
+  }
+  .kj-radio-label { user-select: none; }
+
+  /* The interactive dot (carries the kjRadio directive). */
+  .kj-radio-dot {
+    --kj-radio-size:        1rem;
+    --kj-radio-border:      var(--kj-color-neutral);
+    --kj-radio-bg-checked:  var(--kj-color-primary);
+
+    display: inline-block;
+    width: var(--kj-radio-size);
+    height: var(--kj-radio-size);
+    flex-shrink: 0;
+    border: var(--kj-border) solid var(--kj-radio-border);
+    border-radius: 9999px;
+    background: var(--kj-color-base-100);
+    position: relative;
+    transition: var(--kj-transition);
+  }
+  .kj-radio-dot[data-checked]::after {
+    content: '';
+    position: absolute;
+    inset: 25%;
+    border-radius: 9999px;
+    background: var(--kj-radio-bg-checked);
+  }
+  .kj-radio-dot[data-checked] { border-color: var(--kj-radio-bg-checked); }
+  .kj-radio-dot:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+
+  /* Disabled — dim the whole group (dot + label text) for visual consistency
+     with native form controls. */
+  .kj-radio[data-disabled] .kj-radio-inner { cursor: not-allowed; }
+  .kj-radio[data-disabled] .kj-radio-dot,
+  .kj-radio[data-disabled] .kj-radio-label {
+    opacity: 0.45;
+  }
+  .kj-radio[data-disabled] .kj-radio-dot { pointer-events: none; }
+}

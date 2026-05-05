@@ -14,7 +14,7 @@
         <line x1="3" y1="18" x2="21" y2="18"/>
       </svg>
     </button>
-    <a routerLink="/" class="topbar-logo" aria-label="kouji home">
+    <a routerLink="/docs" class="topbar-logo" aria-label="kouji home">
       <svg width="20" height="20" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
         <line x1="10" y1="10" x2="10" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
         <line x1="10" y1="32" x2="34" y2="10" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
@@ -41,26 +41,22 @@
   <main class="docs-main">
     <div class="docs-hero">
       <span class="tag">Documentation</span>
-      <h1>Components</h1>
-      <p>{{ components().length }} components across {{ categories.length }} categories. All headless, all WCAG AAA.</p>
+      <h1>kouji-ui ecosystem</h1>
+      <p>The kouji-ui workspace ships {{ tracks().length }} consumable packages — pick a track to browse what's in each.</p>
     </div>
-    @for (cat of categories; track cat) {
-      @if (byCategory(cat).length) {
-        <section class="category-section">
-          <h2 class="category-title">{{ cat }}</h2>
-          <div class="component-grid">
-            @for (comp of byCategory(cat); track comp.slug) {
-              <a [routerLink]="['/docs/components', comp.slug]" class="component-card">
-                <span class="card-name">{{ comp.name }}</span>
-                <span class="card-count">{{ comp.directives.length }} directive{{ comp.directives.length !== 1 ? 's' : '' }}</span>
-                <p class="card-desc">{{ comp.description || comp.directives[0]?.description }}</p>
-                <span class="card-arrow">→</span>
-              </a>
-            }
-          </div>
-        </section>
+
+    <div class="track-grid">
+      @for (track of tracks(); track track.id) {
+        <kj-docs-track-card
+          [eyebrow]="'@kouji-ui/' + track.packageName"
+          [title]="track.title"
+          [description]="track.tagline"
+          [count]="itemCount(track)"
+          cta="Browse all"
+          [link]="['/docs', track.id]"
+        />
       }
-    }
+    </div>
   </main>
   <aside class="toc-col"></aside>
 </div>
