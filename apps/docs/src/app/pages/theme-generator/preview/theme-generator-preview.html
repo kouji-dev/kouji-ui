@@ -1,128 +1,211 @@
-<section class="sample-hero">
-  <h1>Preview heading</h1>
-  <p>Body paragraph in <code>font-sans</code>. Inline <code>code</code> uses <code>font-mono</code>.</p>
-</section>
+<!-- App-shell-style preview. Lives inside [data-theme="custom-draft"] so
+     every token used here re-flows when the user edits the draft. -->
 
-<section class="sample-block">
-  <h2 class="sample-h2">Buttons</h2>
-  <div class="row">
-    <kj-button variant="default">Default</kj-button>
-    <kj-button variant="destructive">Destructive</kj-button>
-    <kj-button variant="ghost">Ghost</kj-button>
-    <kj-button variant="outline">Outline</kj-button>
-    <kj-button variant="link">Link</kj-button>
+<header class="app-bar">
+  <div class="brand">
+    <span class="brand-mark">★</span>
+    <span class="brand-name">Atlas</span>
+    <kj-badge variant="secondary">v2.4</kj-badge>
   </div>
-  <div class="row">
-    <kj-button variant="default" size="sm">Small</kj-button>
-    <kj-button variant="default" size="md">Medium</kj-button>
-    <kj-button variant="default" size="lg">Large</kj-button>
-    <kj-button variant="default" [disabled]="true">Disabled</kj-button>
+  <div class="app-search">
+    <kj-input type="text" placeholder="Search projects, teams, docs…" />
+    <span class="kbd-hint"><kj-kbd>⌘</kj-kbd><kj-kbd>K</kj-kbd></span>
   </div>
-</section>
+  <div class="app-actions">
+    <kj-button variant="ghost" size="sm">Invite</kj-button>
+    <kj-avatar size="sm" content="JD" alt="Jane Doe" />
+  </div>
+</header>
 
-<section class="sample-block">
-  <h2 class="sample-h2">Form controls</h2>
-  <div class="form-card">
-    <label class="form-label">Email
-      <kj-input type="email" placeholder="you@example.com" />
-    </label>
-    <label class="form-label">Color
-      <kj-input type="color" value="#b8f500" />
-    </label>
-    <kj-checkbox [checked]="checked()">Subscribe to product updates</kj-checkbox>
-    <kj-radio-group [value]="plan()" ariaLabel="Plan">
-      <kj-radio [value]="'free'">Free</kj-radio>
-      <kj-radio [value]="'pro'">Pro</kj-radio>
-      <kj-radio [value]="'team'">Team</kj-radio>
-    </kj-radio-group>
-    <kj-toggle [pressed]="toggled()">Dark mode</kj-toggle>
-    <div class="row">
-      <kj-button variant="default">Save</kj-button>
-      <kj-button variant="ghost">Cancel</kj-button>
+<section class="page-head">
+  <div class="page-head-text">
+    <div class="row align-center small-gap">
+      <h1 class="page-title">Project Atlas</h1>
+      <kj-badge variant="default">Active</kj-badge>
     </div>
+    <p class="page-sub">Onboarding redesign · Due in 5 days · Owned by <kj-link href="#">Jane Doe</kj-link></p>
+  </div>
+  <div class="row">
+    <kj-button variant="ghost">Archive</kj-button>
+    <kj-button variant="outline">Share</kj-button>
+    <kj-button variant="default">Edit</kj-button>
   </div>
 </section>
 
-<section class="sample-block">
-  <h2 class="sample-h2">Cards</h2>
-  <div class="cards-row">
+<section class="stats-grid">
+  <kj-card>
+    <kj-card-header>
+      <kj-card-subtitle>Monthly revenue</kj-card-subtitle>
+      <kj-card-title>$12,480</kj-card-title>
+    </kj-card-header>
+    <kj-card-content>
+      <span class="delta delta-up">▲ 8.4%</span>
+      <span class="muted">vs last month</span>
+    </kj-card-content>
+  </kj-card>
+  <kj-card>
+    <kj-card-header>
+      <kj-card-subtitle>Active users</kj-card-subtitle>
+      <kj-card-title>1,243</kj-card-title>
+    </kj-card-header>
+    <kj-card-content>
+      <span class="delta delta-up">▲ 12.0%</span>
+      <span class="muted">7-day average</span>
+    </kj-card-content>
+  </kj-card>
+  <kj-card>
+    <kj-card-header>
+      <kj-card-subtitle>Churn rate</kj-card-subtitle>
+      <kj-card-title>2.4%</kj-card-title>
+    </kj-card-header>
+    <kj-card-content>
+      <span class="delta delta-down">▼ 0.6%</span>
+      <span class="muted">vs last month</span>
+    </kj-card-content>
+  </kj-card>
+</section>
+
+<section class="main-grid">
+  <kj-card class="main-panel">
+    <kj-card-header>
+      <kj-card-title>Workspace</kj-card-title>
+      <kj-card-subtitle>Recent activity & tasks</kj-card-subtitle>
+    </kj-card-header>
+    <kj-card-content [padded]="false">
+      <kj-tabs [value]="tab()">
+        <kj-tab id="overview" label="Overview">
+          <div class="activity-list">
+            <div class="activity-row">
+              <kj-avatar size="sm" content="LM" alt="Liam M." />
+              <div class="activity-text">
+                <strong>Liam</strong> opened
+                <kj-link href="#">PR #142 — Fix focus trap on dialog</kj-link>
+                <span class="muted"> · 2h ago</span>
+              </div>
+              <kj-badge variant="outline">PR</kj-badge>
+            </div>
+            <div class="activity-row">
+              <kj-avatar size="sm" content="AR" alt="Ana R." />
+              <div class="activity-text">
+                <strong>Ana</strong> commented on
+                <kj-link href="#">"Add dark-mode toggle to nav"</kj-link>
+                <span class="muted"> · 5h ago</span>
+              </div>
+              <kj-badge variant="secondary">Comment</kj-badge>
+            </div>
+            <div class="activity-row">
+              <kj-avatar size="sm" content="JD" alt="Jane D." />
+              <div class="activity-text">
+                <strong>Jane</strong> shipped
+                <kj-link href="#">v2.4.0</kj-link> to production
+                <span class="muted"> · yesterday</span>
+              </div>
+              <kj-badge variant="default">Release</kj-badge>
+            </div>
+            <div class="activity-row">
+              <kj-avatar size="sm" content="SK" alt="Sam K." />
+              <div class="activity-text">
+                <strong>Sam</strong> closed
+                <kj-link href="#">issue #98 — Toast escape handling</kj-link>
+                <span class="muted"> · 2d ago</span>
+              </div>
+              <kj-badge variant="destructive">Closed</kj-badge>
+            </div>
+          </div>
+        </kj-tab>
+        <kj-tab id="tasks" label="Tasks">
+          <div class="activity-list">
+            <div class="activity-row">
+              <kj-checkbox [checked]="true">Audit accordion accessibility</kj-checkbox>
+              <kj-badge variant="outline">a11y</kj-badge>
+            </div>
+            <div class="activity-row">
+              <kj-checkbox [checked]="false">Replace placeholder copy in docs</kj-checkbox>
+              <kj-badge variant="secondary">docs</kj-badge>
+            </div>
+            <div class="activity-row">
+              <kj-checkbox [checked]="false">Re-test toast strategy in SSR</kj-checkbox>
+              <kj-badge variant="destructive">bug</kj-badge>
+            </div>
+          </div>
+        </kj-tab>
+        <kj-tab id="files" label="Files">
+          <div class="activity-list">
+            <div class="activity-row">
+              <span class="file-icon">📄</span>
+              <div class="activity-text"><kj-link href="#">spec.md</kj-link><span class="muted"> · updated 3h ago</span></div>
+              <kj-badge variant="outline">md</kj-badge>
+            </div>
+            <div class="activity-row">
+              <span class="file-icon">📐</span>
+              <div class="activity-text"><kj-link href="#">tokens.json</kj-link><span class="muted"> · updated yesterday</span></div>
+              <kj-badge variant="outline">json</kj-badge>
+            </div>
+          </div>
+        </kj-tab>
+      </kj-tabs>
+    </kj-card-content>
+  </kj-card>
+
+  <aside class="side-stack">
     <kj-card>
       <kj-card-header>
-        <kj-card-title>Project Atlas</kj-card-title>
-        <kj-card-subtitle>Status: in progress</kj-card-subtitle>
+        <kj-card-title>Team</kj-card-title>
+        <kj-card-subtitle>4 members · 2 invited</kj-card-subtitle>
       </kj-card-header>
-      <kj-card-content>The platform-team planning tool. Drafts, comments, shared boards.</kj-card-content>
-      <kj-card-footer>
-        <kj-button variant="ghost">Dismiss</kj-button>
-        <kj-button>Open</kj-button>
+      <kj-card-content>
+        <div class="row align-center small-gap wrap">
+          <kj-avatar size="sm" content="JD" alt="Jane Doe" />
+          <kj-avatar size="sm" content="LM" alt="Liam M." />
+          <kj-avatar size="sm" content="AR" alt="Ana R." />
+          <kj-avatar size="sm" content="SK" alt="Sam K." />
+          <span class="muted">+2</span>
+        </div>
+      </kj-card-content>
+      <kj-card-footer align="start">
+        <kj-button variant="outline" size="sm">Invite member</kj-button>
       </kj-card-footer>
     </kj-card>
-    <kj-card variant="outline">
+
+    <kj-card>
       <kj-card-header>
-        <kj-card-title>Outline variant</kj-card-title>
-        <kj-card-subtitle>Border-only card</kj-card-subtitle>
+        <kj-card-title>Preferences</kj-card-title>
+        <kj-card-subtitle>Live preview of form controls</kj-card-subtitle>
       </kj-card-header>
-      <kj-card-content>Used when the card sits on a base-200 surface.</kj-card-content>
+      <kj-card-content>
+        <div class="form-stack">
+          <kj-toggle [pressed]="toggled()">Dark mode</kj-toggle>
+          <kj-checkbox [checked]="checked()">Email me weekly digest</kj-checkbox>
+          <kj-radio-group [value]="plan()" ariaLabel="Plan">
+            <kj-radio [value]="'free'">Free</kj-radio>
+            <kj-radio [value]="'pro'">Pro</kj-radio>
+            <kj-radio [value]="'team'">Team</kj-radio>
+          </kj-radio-group>
+        </div>
+      </kj-card-content>
+      <kj-card-footer>
+        <kj-button variant="ghost">Cancel</kj-button>
+        <kj-button>Save</kj-button>
+      </kj-card-footer>
     </kj-card>
-  </div>
+  </aside>
 </section>
 
-<section class="sample-block">
-  <h2 class="sample-h2">Data display</h2>
-  <div class="row align-center">
-    <kj-avatar size="md" content="JD" />
-    <kj-avatar size="md" content="LM" />
-    <kj-avatar size="md" content="AR" />
-    <kj-badge variant="default">New</kj-badge>
-    <kj-badge variant="secondary">Beta</kj-badge>
-    <kj-badge variant="destructive">Live</kj-badge>
-    <kj-badge variant="outline">Outline</kj-badge>
-  </div>
-</section>
-
-<section class="sample-block">
-  <h2 class="sample-h2">Navigation</h2>
-  <kj-tabs [value]="tab()">
-    <kj-tab id="overview" label="Overview">Theme tokens flow through every styled component.</kj-tab>
-    <kj-tab id="api" label="API">Inputs are signal-typed and forward to headless directives.</kj-tab>
-    <kj-tab id="examples" label="Examples">Every example is rendered live in the docs.</kj-tab>
-  </kj-tabs>
-</section>
-
-<section class="sample-block">
-  <h2 class="sample-h2">Accordion</h2>
-  <kj-accordion type="multiple">
-    <kj-accordion-item value="one" label="What changes when I edit a token?">
-      <kj-accordion-content>The preview re-renders instantly with the new value because everything in this panel reads from <code>--kj-color-*</code> custom properties scoped to the draft theme.</kj-accordion-content>
-    </kj-accordion-item>
-    <kj-accordion-item value="two" label="How do I export the theme?">
-      <kj-accordion-content>Use the export button to download CSS or JSON. Re-import via the import button to restore a saved draft.</kj-accordion-content>
-    </kj-accordion-item>
-  </kj-accordion>
-</section>
-
-<section class="sample-block">
-  <h2 class="sample-h2">Inline</h2>
-  <p class="inline-row">
-    Press <kj-kbd>⌘</kj-kbd><kj-kbd>K</kj-kbd> to search.
-    <kj-link href="#">A link</kj-link> renders in primary.
-    <span class="muted">Muted neutral text.</span>
-  </p>
-</section>
-
-<section class="sample-block">
-  <h2 class="sample-h2">Callouts</h2>
-  <div class="callout info">Info: this is the info color slot.</div>
-  <div class="callout success">Success: action completed.</div>
-  <div class="callout warning">Warning: heads up.</div>
-  <div class="callout destructive">Destructive: irreversible.</div>
-</section>
-
-<section class="sample-block">
-  <h2 class="sample-h2">Surfaces</h2>
-  <div class="surface s-100">base-100
-    <div class="surface s-200">base-200
-      <div class="surface s-300">base-300</div>
-    </div>
-  </div>
+<section class="faq-block">
+  <kj-card>
+    <kj-card-header>
+      <kj-card-title>Help</kj-card-title>
+      <kj-card-subtitle>Common questions</kj-card-subtitle>
+    </kj-card-header>
+    <kj-card-content [padded]="false">
+      <kj-accordion type="multiple">
+        <kj-accordion-item value="one" label="What changes when I edit a token?">
+          <kj-accordion-content>The preview re-renders instantly because every component reads from <code>--kj-color-*</code> custom properties scoped to the draft theme.</kj-accordion-content>
+        </kj-accordion-item>
+        <kj-accordion-item value="two" label="How do I export the theme?">
+          <kj-accordion-content>Use the export menu to download CSS or JSON. Re-import via the import button to restore a saved draft.</kj-accordion-content>
+        </kj-accordion-item>
+      </kj-accordion>
+    </kj-card-content>
+  </kj-card>
 </section>
