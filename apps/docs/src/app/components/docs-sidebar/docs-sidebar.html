@@ -53,109 +53,75 @@
   </div>
 </div>
 
-<div class="sidebar-pills" role="tablist" aria-label="Sections">
-  <a
-    role="tab"
-    [attr.aria-selected]="topSection() === 'docs'"
-    [class.active]="topSection() === 'docs'"
-    routerLink="/docs"
-    class="sidebar-pill"
-    (click)="close()"
-  >Docs</a>
-  <a
-    role="tab"
-    [attr.aria-selected]="topSection() === 'generator'"
-    [class.active]="topSection() === 'generator'"
-    routerLink="/theme-generator"
-    class="sidebar-pill"
-    (click)="close()"
-  >Theme Generator</a>
-</div>
+<nav class="sidebar-nav" [attr.aria-label]="'Sidebar — ' + view()">
+  <button class="sidebar-search-btn" (click)="openSearch()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    Search
+    <kbd>⌘K</kbd>
+  </button>
 
-@if (topSection() === 'docs') {
-  <nav class="sidebar-nav" aria-label="Documentation navigation">
-    <button class="sidebar-search-btn" (click)="openSearch()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+  @if (backTarget(); as back) {
+    <button type="button" class="sidebar-back" (click)="setView(back.view)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round">
+        <polyline points="15 18 9 12 15 6"/>
       </svg>
-      Search
-      <kbd>⌘K</kbd>
+      <span>{{ back.label }}</span>
     </button>
+  }
 
-    @if (!isDrilled()) {
-      <!-- TOP-LEVEL MENU: cross-track shortcuts + one drill row per track -->
-      <div class="sidebar-section">
-        <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
-          Getting Started
-        </a>
-      </div>
-
-      <div class="sidebar-section">
-        @for (track of tracks(); track track.id) {
-          <a [routerLink]="['/docs', track.id]" class="sidebar-drill" (click)="onDrill(track.id)">
-            <span class="sidebar-drill-label">
-              <span class="sidebar-drill-name">{{ track.packageName }}</span>
-            </span>
-            <span class="sidebar-drill-count">{{ totalItems(track.tree) }}</span>
-            <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <polyline points="9 6 15 12 9 18"/>
-            </svg>
-          </a>
-        }
-      </div>
-    } @else {
-      <!-- DRILLED VIEW: back row + active track's category tree -->
-      <button type="button" class="sidebar-back" (click)="setView('menu')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round">
-          <polyline points="15 18 9 12 15 6"/>
+  <!-- LEVEL 0 — top-level menu: Docs / Theme Generator -->
+  @if (view() === 'top') {
+    <div class="sidebar-section">
+      <a routerLink="/docs" class="sidebar-drill" (click)="onDrill('docs')">
+        <span class="sidebar-drill-label">
+          <span class="sidebar-drill-name">Docs</span>
+        </span>
+        <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="9 6 15 12 9 18"/>
         </svg>
-        <span>{{ activeTrack()?.packageName }}</span>
-      </button>
+      </a>
+      <a routerLink="/theme-generator" class="sidebar-drill" (click)="onDrill('generator')">
+        <span class="sidebar-drill-label">
+          <span class="sidebar-drill-name">Theme Generator</span>
+        </span>
+        <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="9 6 15 12 9 18"/>
+        </svg>
+      </a>
+    </div>
+  }
 
-      @for (cat of activeTrack()?.tree ?? []; track cat.label) {
-        <div class="sidebar-section">
-          <button
-            class="sidebar-category"
-            type="button"
-            [attr.aria-expanded]="!isCategoryCollapsed(view() + '-' + cat.label)"
-            (click)="toggleCategory(view() + '-' + cat.label)"
-          >
-            <span>{{ cat.label }}</span>
-            <svg
-              class="sidebar-chevron"
-              [class.collapsed]="isCategoryCollapsed(view() + '-' + cat.label)"
-              width="10" height="10" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-            >
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
-          @if (!isCategoryCollapsed(view() + '-' + cat.label)) {
-            <div class="sidebar-section-items">
-              @for (item of cat.children; track item.slug) {
-                @if (item.slug) {
-                  <a
-                    [routerLink]="['/docs', view(), item.slug]"
-                    routerLinkActive="active"
-                    class="sidebar-link"
-                    (click)="close()"
-                  >
-                    {{ item.label }}
-                  </a>
-                }
-              }
-            </div>
-          }
-        </div>
+  <!-- LEVEL 1A — Docs section: getting started + per-track drill rows -->
+  @if (view() === 'docs') {
+    <div class="sidebar-section">
+      <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
+        Getting Started
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      @for (track of tracks(); track track.id) {
+        <a [routerLink]="['/docs', track.id]" class="sidebar-drill" (click)="onDrill(track.id)">
+          <span class="sidebar-drill-label">
+            <span class="sidebar-drill-name">{{ track.packageName }}</span>
+          </span>
+          <span class="sidebar-drill-count">{{ totalItems(track.tree) }}</span>
+          <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="9 6 15 12 9 18"/>
+          </svg>
+        </a>
       }
-    }
-  </nav>
-}
+    </div>
+  }
 
-@if (topSection() === 'generator') {
-  <nav class="sidebar-nav" aria-label="Theme generator navigation">
+  <!-- LEVEL 1B — Theme Generator section: built-in + my themes -->
+  @if (view() === 'generator') {
     <div class="sidebar-section">
       <button
         class="sidebar-category"
@@ -207,5 +173,45 @@
         </div>
       }
     </div>
-  </nav>
-}
+  }
+
+  <!-- LEVEL 2 — drilled into a Docs track: category tree -->
+  @if (activeTrack(); as track) {
+    @for (cat of track.tree; track cat.label) {
+      <div class="sidebar-section">
+        <button
+          class="sidebar-category"
+          type="button"
+          [attr.aria-expanded]="!isCategoryCollapsed(view() + '-' + cat.label)"
+          (click)="toggleCategory(view() + '-' + cat.label)"
+        >
+          <span>{{ cat.label }}</span>
+          <svg
+            class="sidebar-chevron"
+            [class.collapsed]="isCategoryCollapsed(view() + '-' + cat.label)"
+            width="10" height="10" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        @if (!isCategoryCollapsed(view() + '-' + cat.label)) {
+          <div class="sidebar-section-items">
+            @for (item of cat.children; track item.slug) {
+              @if (item.slug) {
+                <a
+                  [routerLink]="['/docs', view(), item.slug]"
+                  routerLinkActive="active"
+                  class="sidebar-link"
+                  (click)="close()"
+                >
+                  {{ item.label }}
+                </a>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</nav>

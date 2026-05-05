@@ -10,11 +10,15 @@ import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.serv
 const BUILT_IN_THEME_NAMES = ['kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate'] as const;
 type BuiltInName = typeof BUILT_IN_THEME_NAMES[number];
 
-/** Top-level section: docs or theme generator. */
-export type TopSection = 'docs' | 'generator';
-/** Sidebar UI state — top-level menu, or the id of a drilled-into track. */
-export type SidebarView = 'menu' | string;     // unchanged: 'menu' | trackId
-const TRACK_STORAGE_KEY = 'kj-track';
+/**
+ * Sidebar UI state — drill-in navbar with three logical levels:
+ *   - 'top'        : top-level menu showing [Docs] / [Theme Generator] as drill rows
+ *   - 'docs'       : inside Docs section — getting-started + per-track drill rows
+ *   - 'generator'  : inside Theme Generator section — built-in + my themes
+ *   - <track-id>   : drilled into a specific Docs track ('headless', 'components')
+ */
+export type SidebarView = 'top' | 'docs' | 'generator' | string;
+const VIEW_STORAGE_KEY = 'kj-sidebar-view';
 
 @Component({
   selector: 'kj-docs-sidebar',
@@ -36,15 +40,10 @@ export class DocsSidebarComponent implements OnInit {
   protected readonly tracks = signal<DocsTrackInfo[]>([]);
   protected readonly isDark = computed(() => this.themeService.isDark());
 
-  /** Sidebar UI state: 'menu' (top level) or a track id (drilled in). */
-  protected readonly view = signal<SidebarView>('menu');
-  /** True when drilled into a track's items panel. */
-  protected readonly isDrilled = computed(() => this.view() !== 'menu');
-  /** Active top section: docs or generator, based on current URL. */
-  protected readonly topSection = computed<TopSection>(() =>
-    this.router.url.startsWith('/theme-generator') ? 'generator' : 'docs'
-  );
-  /** Active track when drilled in; null otherwise. */
+  /** Sidebar UI state — drives which level renders. */
+  protected readonly view = signal<SidebarView>('top');
+
+  /** Active track when drilled into one; null otherwise. */
   protected readonly activeTrack = computed(() =>
     this.tracks().find(t => t.id === this.view()) ?? null,
   );
@@ -62,9 +61,9 @@ export class DocsSidebarComponent implements OnInit {
   /** Controls picker open/closed state. */
   protected readonly pickerOpen = signal(false);
 
-  /** Built-in theme names for theme generator. */
+  /** Built-in theme names for the theme generator section. */
   protected readonly builtInThemes = BUILT_IN_THEME_NAMES;
-  /** Saved user themes for theme generator; stub for now; wired to ThemeDraftService in Phase B Task B6. */
+  /** Saved user themes — stub; wired to ThemeDraftService in Phase B Task B6. */
   protected readonly myThemes = signal<string[]>([]);
 
   protected isCategoryCollapsed(label: string): boolean {
@@ -96,24 +95,22 @@ export class DocsSidebarComponent implements OnInit {
       }
     });
 
-    // Init view from URL → localStorage → 'menu'. Runs in the browser only.
+    // Init view from URL → localStorage → 'top'. Runs in the browser only.
     afterNextRender(() => {
-      const fromUrl = this.trackFromUrl(this.router.url);
+      const fromUrl = this.viewFromUrl(this.router.url);
       if (fromUrl) {
         this.view.set(fromUrl);
       } else {
-        const stored = localStorage.getItem(TRACK_STORAGE_KEY) as SidebarView | null;
-        if (stored === 'headless' || stored === 'components' || stored === 'menu') {
-          this.view.set(stored);
-        }
+        const stored = localStorage.getItem(VIEW_STORAGE_KEY) as SidebarView | null;
+        if (stored && this.isKnownView(stored)) this.view.set(stored);
       }
 
-      // Auto-drill into the matching track when the URL changes.
+      // Auto-sync view with the URL on every navigation.
       this.router.events
         .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
         .subscribe(e => {
-          const t = this.trackFromUrl(e.urlAfterRedirects);
-          if (t && t !== this.view()) this.view.set(t);
+          const v = this.viewFromUrl(e.urlAfterRedirects);
+          if (v && v !== this.view()) this.view.set(v);
         });
     });
 
@@ -121,7 +118,7 @@ export class DocsSidebarComponent implements OnInit {
     effect(() => {
       const v = this.view();
       if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem(TRACK_STORAGE_KEY, v);
+        localStorage.setItem(VIEW_STORAGE_KEY, v);
       }
     });
   }
@@ -134,8 +131,17 @@ export class DocsSidebarComponent implements OnInit {
 
   protected setView(v: SidebarView): void { this.view.set(v); }
 
-  /** Click handler for the drill row — closes mobile drawer and lets the
-   *  routerLink navigate. The view auto-syncs via the NavigationEnd listener. */
+  /** "Back" target for the current view. Drives the back row visibility + label. */
+  protected backTarget(): { view: SidebarView; label: string } | null {
+    const v = this.view();
+    if (v === 'top') return null;
+    if (v === 'docs') return { view: 'top', label: 'Menu' };
+    if (v === 'generator') return { view: 'top', label: 'Menu' };
+    // Drilled into a track — back goes to the docs section top.
+    return { view: 'docs', label: 'Docs' };
+  }
+
+  /** Click handler for the drill row — closes mobile drawer; routerLink handles nav. */
   protected onDrill(_trackId: string): void { this.close(); }
 
   /** Total items across all categories of a tree — shown in the drill-row count chip. */
@@ -143,15 +149,22 @@ export class DocsSidebarComponent implements OnInit {
     return tree.reduce((acc, cat) => acc + cat.children.length, 0);
   }
 
-  /** Return the track id whose URL prefix matches, if any. */
-  private trackFromUrl(url: string): string | null {
+  /** Map a URL to the sidebar view that should be active for it. */
+  private viewFromUrl(url: string): SidebarView | null {
+    if (url.startsWith('/theme-generator')) return 'generator';
+    // Track URLs win over the generic /docs match below.
     for (const t of this.tracks()) {
       if (url.startsWith('/docs/' + t.id)) return t.id;
     }
-    // Manifest may not have loaded yet — fall back to the known route segments.
     if (url.startsWith('/docs/headless')) return 'headless';
     if (url.startsWith('/docs/components')) return 'components';
+    if (url.startsWith('/docs')) return 'docs';
     return null;
+  }
+
+  private isKnownView(v: string): boolean {
+    return v === 'top' || v === 'docs' || v === 'generator'
+        || v === 'headless' || v === 'components';
   }
 
   toggle(): void { this.open.update(v => !v); }
