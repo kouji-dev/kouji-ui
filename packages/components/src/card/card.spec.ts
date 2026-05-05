@@ -17,17 +17,18 @@ describe('KjCardComponent', () => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
 
-  test('renders an inner <div> with the .kj-card class', () => {
+  test('host element carries the .kj-card class', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const card = fixture.nativeElement.querySelector('kj-card div.kj-card');
+    const card = fixture.nativeElement.querySelector('kj-card');
     expect(card).not.toBeNull();
+    expect(card.classList.contains('kj-card')).toBe(true);
   });
 
   test('default variant has data-variant="default" attr', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const card = fixture.nativeElement.querySelector('kj-card div.kj-card');
+    const card = fixture.nativeElement.querySelector('kj-card');
     expect(card.getAttribute('data-variant')).toBe('default');
   });
 
@@ -35,14 +36,14 @@ describe('KjCardComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.variant = 'outline';
     fixture.detectChanges();
-    const card = fixture.nativeElement.querySelector('kj-card div.kj-card');
+    const card = fixture.nativeElement.querySelector('kj-card');
     expect(card.getAttribute('data-variant')).toBe('outline');
   });
 
-  test('projects content into the inner div', () => {
+  test('projects content into the host', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const card = fixture.nativeElement.querySelector('kj-card div.kj-card');
+    const card = fixture.nativeElement.querySelector('kj-card');
     expect(card.textContent.trim()).toBe('Content');
   });
 });

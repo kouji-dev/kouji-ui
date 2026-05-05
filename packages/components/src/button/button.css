@@ -34,7 +34,14 @@
     padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
     font: var(--kj-button-font-size) / 1.2 var(--kj-button-font);
     box-shadow: var(--kj-button-shadow);
-    transition: var(--kj-transition);
+    /* Transition only properties tied to user interaction (hover / active /
+       focus). NOT background-color — variant-driven bg changes propagate
+       through the wrapper input on the same tick as the host attribute, and
+       transitioning bg here animates the initial primary→variant flip on
+       components like <kj-button variant="ghost"> when the wrapper resolves. */
+    transition: color var(--kj-transition), border-color var(--kj-transition),
+                box-shadow var(--kj-transition), transform var(--kj-transition),
+                opacity var(--kj-transition);
     cursor: pointer;
     text-decoration: none;
   }
