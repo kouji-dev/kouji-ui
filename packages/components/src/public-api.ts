@@ -10,6 +10,7 @@ export * from './checkbox/index';
 export * from './input/index';
 export * from './kbd/index';
 export * from './link/index';
+export * from './menu/index';
 export * from './radio/index';
 export * from './select/index';
 export * from './toggle/index';
