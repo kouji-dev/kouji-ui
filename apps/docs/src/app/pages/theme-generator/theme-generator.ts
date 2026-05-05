@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, DestroyRef, computed, effect, injec
 import { DOCUMENT } from '@angular/common';
 import { converter, formatHex } from 'culori';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
-import { KjInputComponent } from '@kouji-ui/components';
+import { KjInputComponent, KjButtonComponent } from '@kouji-ui/components';
 import { ThemeGeneratorPreviewComponent } from './preview/theme-generator-preview';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { BUILT_IN_NAMES } from '../../lib/theme/built-in-themes';
@@ -35,7 +35,7 @@ function oklchToHex(css: string): string {
 @Component({
   selector: 'kj-theme-generator',
   standalone: true,
-  imports: [DocsSidebarComponent, KjInputComponent, ThemeGeneratorPreviewComponent],
+  imports: [DocsSidebarComponent, KjInputComponent, KjButtonComponent, ThemeGeneratorPreviewComponent],
   templateUrl: './theme-generator.html',
   styleUrl: './theme-generator.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

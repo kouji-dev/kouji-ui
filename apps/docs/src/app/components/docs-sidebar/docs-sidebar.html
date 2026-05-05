@@ -181,8 +181,9 @@
           }
           <a routerLink="/theme-generator" class="sidebar-link sidebar-link-special"
              (click)="onNewTheme()">+ New theme</a>
-          <button type="button" class="sidebar-link sidebar-link-special"
-                  (click)="fileInput.click()">Import JSON</button>
+          <kj-button class="sidebar-import-btn" variant="outline" size="sm" (click)="fileInput.click()">
+            Import JSON
+          </kj-button>
           <input #fileInput type="file" accept=".json,application/json" hidden
                  (change)="onImportFile($event)" />
         </div>

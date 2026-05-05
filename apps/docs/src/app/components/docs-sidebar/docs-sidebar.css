@@ -290,6 +290,15 @@
 
 .sidebar-link-special.active { color: var(--kj-color-primary); }
 
+.sidebar-import-btn {
+  display: block;
+  margin-top: 4px;
+}
+.sidebar-import-btn .kj-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .sidebar-link-nested {
   padding-left: var(--kj-space-xl);
   font-size: 0.75rem;

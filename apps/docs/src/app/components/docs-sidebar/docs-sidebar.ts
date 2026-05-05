@@ -2,6 +2,7 @@ import { Component, afterNextRender, computed, DestroyRef, effect, HostListener,
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { KjButtonComponent } from '@kouji-ui/components';
 import { DocsService, DocsTrack as DocsTrackInfo, SidebarNode } from '../../services/docs.service';
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
@@ -21,7 +22,7 @@ const VIEW_STORAGE_KEY = 'kj-sidebar-view';
 @Component({
   selector: 'kj-docs-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, KjButtonComponent],
   templateUrl: './docs-sidebar.html',
   styleUrl: './docs-sidebar.css',
 })
