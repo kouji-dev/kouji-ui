@@ -80,14 +80,19 @@
 }
 
 /* Component-layer overrides specific to the kouji theme.
-   Per the brutalist brand: buttons brighten + lift on hover instead of
-   the default darken behavior. */
+   Per the brutalist brand: filled buttons brighten + lift on hover instead
+   of the default darken behavior. Flip component tokens — never raw
+   `background` — so `ghost` / `outline` / `link` keep their own hover
+   surfaces (transparent / base-200) instead of the lime accent.
+
+   `default` and `destructive` are the only variants whose surface is
+   filled with brand color in this theme; brightening only those leaves
+   the secondary variants untouched. */
 @layer kj.component {
-  [data-theme="kouji"] .kj-button:hover {
-    background: #d4ff00;
-  }
   [data-theme="kouji"] .kj-button[data-variant="default"]:hover,
   [data-theme="kouji"] .kj-button[data-variant="destructive"]:hover {
+    --kj-button-bg: #d4ff00;
+    --kj-button-fg: #0c0c0c;
     transform: translateY(-2px);
   }
 }

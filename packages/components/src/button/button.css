@@ -51,13 +51,16 @@
     --kj-button-border-color: transparent;
   }
   .kj-button[data-variant="ghost"]:hover {
-    --kj-button-bg: var(--kj-color-base-200);
+    --kj-button-bg: var(--kj-color-base-300);
   }
 
   .kj-button[data-variant="outline"] {
     --kj-button-bg: transparent;
     --kj-button-fg: var(--kj-color-base-content);
     --kj-button-border-color: var(--kj-color-neutral);
+  }
+  .kj-button[data-variant="outline"]:hover {
+    --kj-button-bg: var(--kj-color-base-200);
   }
 
   .kj-button[data-variant="link"] {
@@ -67,6 +70,10 @@
     --kj-button-padding-y: 0;
     text-decoration: underline;
     text-underline-offset: 4px;
+  }
+  .kj-button[data-variant="link"]:hover {
+    --kj-button-bg: transparent;
+    --kj-button-fg: color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content));
   }
 
   /* sizes */
@@ -85,9 +92,13 @@
     --kj-button-padding-y: var(--kj-space-sm);
   }
 
-  /* states */
+  /* states.
+     Hover darkens in light themes and lightens in dark themes by mixing
+     toward `--kj-color-base-content` (which inverts with the theme).
+     The variant-specific :hover rules above (ghost / outline / link) win
+     by specificity and replace this fallback when needed. */
   .kj-button:hover {
-    --kj-button-bg: color-mix(in oklab, var(--kj-button-bg) 88%, black);
+    --kj-button-bg: color-mix(in oklab, var(--kj-button-bg) 85%, var(--kj-color-base-content));
   }
   .kj-button:active {
     transform: var(--kj-button-translate-active);
