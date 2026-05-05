@@ -109,6 +109,14 @@
   min-width: 40px;
   text-align: right;
 }
+.content-swatch {
+  width: 22px; height: 22px;
+  border: 1px solid var(--kj-color-base-300);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+}
+.content-swatch.locked { box-shadow: 0 0 0 2px var(--kj-color-primary); }
 
 .generator-preview {
   overflow-y: auto;

@@ -27,14 +27,31 @@
         <details open>
           <summary>Colors</summary>
           @for (slot of colorSlots; track slot) {
-            <label class="control-row">
+            <div class="control-row">
               <span class="control-label">{{ slot }}</span>
               <kj-input
                 type="color"
                 [value]="hexFor(slot)"
                 (input)="onColorChange(slot, $any($event.target).value)"
               />
-            </label>
+              <button
+                type="button"
+                class="content-swatch"
+                [class.locked]="contentFor(slot).isOverride"
+                [style.background]="contentFor(slot).value"
+                [attr.aria-label]="contentFor(slot).isOverride
+                  ? slot + ' content (manual override — click to revert to auto)'
+                  : slot + ' content (auto-derived — click to override)'"
+                (click)="toggleContentOverride(slot)"
+              ></button>
+              @if (contentFor(slot).isOverride) {
+                <kj-input
+                  type="color"
+                  [value]="hexForContent(slot)"
+                  (input)="onContentChange(slot, $any($event.target).value)"
+                />
+              }
+            </div>
           }
         </details>
 

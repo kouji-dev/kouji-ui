@@ -8,7 +8,7 @@ import { ClipboardService } from '../../services/clipboard.service';
 import { FontLoaderService } from '../../services/font-loader.service';
 import { serializeToScopedBlock } from '../../lib/theme/serialize-theme';
 import { CURATED_FONTS, type CuratedFont } from '../../lib/theme/font-catalog';
-import type { ColorSlot, ShapeKey, FontKey, MotionKey } from '../../lib/theme/types';
+import type { ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../../lib/theme/types';
 
 const STYLE_TAG_ID = 'kj-draft-style';
 const COLOR_SLOTS: readonly ColorSlot[] = [
@@ -75,6 +75,30 @@ export class ThemeGeneratorComponent {
   }
   protected onColorChange(slot: ColorSlot, hex: string): void {
     this.draftService.setColor(slot, hexToOklch(hex));
+  }
+
+  /** Resolved content color for a slot, plus whether the user has overridden it. */
+  protected contentFor(slot: ColorSlot): { value: string; isOverride: boolean } {
+    const key: ContentSlot = slot === 'base-100' ? 'base-content' : `${slot}-content` as ContentSlot;
+    return {
+      value: this.draftService.resolvedTokens().contents[key],
+      isOverride: !!this.draft().contentOverrides[key],
+    };
+  }
+  protected hexForContent(slot: ColorSlot): string {
+    return oklchToHex(this.contentFor(slot).value);
+  }
+  protected toggleContentOverride(slot: ColorSlot): void {
+    const key: ContentSlot = slot === 'base-100' ? 'base-content' : `${slot}-content` as ContentSlot;
+    if (this.draft().contentOverrides[key]) {
+      this.draftService.setContentOverride(key, null);
+    } else {
+      this.draftService.setContentOverride(key, this.contentFor(slot).value);
+    }
+  }
+  protected onContentChange(slot: ColorSlot, hex: string): void {
+    const key: ContentSlot = slot === 'base-100' ? 'base-content' : `${slot}-content` as ContentSlot;
+    this.draftService.setContentOverride(key, hexToOklch(hex));
   }
 
   protected onNameChange(ev: Event): void {
