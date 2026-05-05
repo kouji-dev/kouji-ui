@@ -50,11 +50,13 @@
           <h2 class="category-title">{{ cat }}</h2>
           <div class="component-grid">
             @for (comp of byCategory(cat); track comp.slug) {
-              <a [routerLink]="['/docs/components', comp.slug]" class="component-card">
-                <span class="card-name">{{ comp.name }}</span>
-                <span class="card-count">{{ comp.directives.length }} directive{{ comp.directives.length !== 1 ? 's' : '' }}</span>
-                <p class="card-desc">{{ comp.description || comp.directives[0]?.description }}</p>
-                <span class="card-arrow">→</span>
+              <a [routerLink]="['/docs/components', comp.slug]" class="component-card-link">
+                <kj-card variant="default">
+                  <span class="card-name">{{ comp.name }}</span>
+                  <span class="card-count">{{ comp.directives.length }} directive{{ comp.directives.length !== 1 ? 's' : '' }}</span>
+                  <p class="card-desc">{{ comp.description || comp.directives[0]?.description }}</p>
+                  <span class="card-arrow">→</span>
+                </kj-card>
               </a>
             }
           </div>

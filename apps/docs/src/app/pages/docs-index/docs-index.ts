@@ -2,11 +2,12 @@ import { Component, inject, OnInit, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DocsService, ComponentDoc } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
+import { KjCardComponent } from '@kouji-ui/components';
 
 @Component({
   selector: 'app-docs-index',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent],
+  imports: [RouterLink, DocsSidebarComponent, KjCardComponent],
   templateUrl: './docs-index.html',
   styleUrl: './docs-index.css',
 })
