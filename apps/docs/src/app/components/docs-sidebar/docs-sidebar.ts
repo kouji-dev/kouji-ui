@@ -194,4 +194,17 @@ export class DocsSidebarComponent implements OnInit {
     this.draftService.setName('');
     this.close();
   }
+
+  protected onImportFile(ev: Event): void {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    file.text().then(text => {
+      const result = this.draftService.importJson(text);
+      if (!result.ok) console.warn('[theme-import]', result.reason);
+      input.value = '';      // allow re-import of the same file
+      this.router.navigateByUrl('/theme-generator');
+    });
+    this.close();
+  }
 }

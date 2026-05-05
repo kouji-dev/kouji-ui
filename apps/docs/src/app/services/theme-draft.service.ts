@@ -2,6 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { BUILT_IN_THEMES, BUILT_IN_NAMES, type BuiltInName } from '../lib/theme/built-in-themes';
 import { deriveTokens } from '../lib/theme/derive-tokens';
 import { serializeToScopedBlock } from '../lib/theme/serialize-theme';
+import { DraftThemeSchema } from '../lib/theme/import-schema';
 import type { DraftTheme, ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../lib/theme/types';
 
 const STORAGE_KEY = 'kj-custom-themes';
@@ -104,6 +105,18 @@ export class ThemeDraftService {
 
   list(): SavedTheme[] {
     return this.read().themes;
+  }
+
+  /** Load a draft from a JSON string (e.g., file contents). Validated via Zod. */
+  importJson(text: string): { ok: true } | { ok: false; reason: string } {
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); }
+    catch { return { ok: false, reason: 'Not valid JSON' }; }
+    const result = DraftThemeSchema.safeParse(parsed);
+    if (!result.success) return { ok: false, reason: 'Invalid theme shape' };
+    this._draft.set(result.data as DraftTheme);
+    this.persistDraft();
+    return { ok: true };
   }
 
   resetToOriginal(): void {
