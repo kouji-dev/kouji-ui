@@ -15,10 +15,10 @@
       <h2 id="installation">Installation</h2>
       <p>Install the headless core for custom styling:</p>
       <kj-code-editor [showHeader]="false" [code]="installCore" lang="ts" />
-      <kj-callout variant="info">
+      <kj-docs-callout variant="info">
         <span class="callout-icon">◈</span>
         <p><strong>Requires Angular 21.</strong> The library uses signal inputs, <code>afterNextRender</code>, and <code>inject()</code> — all Angular 21+ features.</p>
-      </kj-callout>
+      </kj-docs-callout>
     </section>
 
     <!-- Quick start -->
@@ -48,10 +48,10 @@
       <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are handled by the CDK primitives under the hood.</p>
       <p>Use the a11y utilities to enhance your own components:</p>
       <kj-code-editor [showHeader]="false" [code]="a11yImports" lang="ts" />
-      <kj-callout variant="success">
+      <kj-docs-callout variant="success">
         <span class="callout-icon">♿</span>
         <p>All overlay components (Dialog, Menu, Select) use Angular CDK's <code>FocusTrap</code>, <code>FocusKeyManager</code>, and <code>LiveAnnouncer</code> for full keyboard and screen reader support.</p>
-      </kj-callout>
+      </kj-docs-callout>
     </section>
 
     <div class="next-steps">
