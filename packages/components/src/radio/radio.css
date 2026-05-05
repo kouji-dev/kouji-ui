@@ -1,0 +1,34 @@
+@layer kj.component {
+  .kj-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-sm);
+  }
+  .kj-radio-group[data-orientation="horizontal"] { flex-direction: row; gap: var(--kj-space-lg); }
+
+  .kj-radio {
+    --kj-radio-size:        1rem;
+    --kj-radio-border:      var(--kj-color-neutral);
+    --kj-radio-bg-checked:  var(--kj-color-primary);
+
+    display: inline-block;
+    width: var(--kj-radio-size);
+    height: var(--kj-radio-size);
+    border: var(--kj-border) solid var(--kj-radio-border);
+    border-radius: 9999px;
+    background: var(--kj-color-base-100);
+    cursor: pointer;
+    position: relative;
+    transition: var(--kj-transition);
+  }
+  .kj-radio[data-checked]::after {
+    content: '';
+    position: absolute;
+    inset: 25%;
+    border-radius: 9999px;
+    background: var(--kj-radio-bg-checked);
+  }
+  .kj-radio[data-checked] { border-color: var(--kj-radio-bg-checked); }
+  .kj-radio:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-radio[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+}
