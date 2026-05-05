@@ -189,6 +189,27 @@ export class DocsSidebarComponent implements OnInit {
     this.draftService.loadSaved(name);
     this.close();
   }
+
+  protected readonly pendingDelete = signal<{ name: string; theme: unknown; timer: number } | null>(null);
+
+  protected onDeleteSaved(name: string, ev: MouseEvent): void {
+    ev.stopPropagation(); ev.preventDefault();
+    const theme = this.draftService.list().find(t => t.name === name);
+    if (!theme) return;
+    this.draftService.delete(name);
+    const timer = window.setTimeout(() => this.pendingDelete.set(null), 5000);
+    this.pendingDelete.set({ name, theme, timer });
+  }
+
+  protected undoDelete(): void {
+    const p = this.pendingDelete();
+    if (!p) return;
+    clearTimeout(p.timer);
+    // Round-trip the saved theme through importJson, then save() to put it back.
+    this.draftService.importJson(JSON.stringify(p.theme));
+    this.draftService.save();
+    this.pendingDelete.set(null);
+  }
   protected onNewTheme(): void {
     this.draftService.loadFork('light');
     this.draftService.setName('');

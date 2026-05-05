@@ -163,10 +163,21 @@
       @if (!isCategoryCollapsed('gen-mine')) {
         <div class="sidebar-section-items">
           @for (name of myThemes(); track name) {
-            <a routerLink="/theme-generator" class="sidebar-link"
-               (click)="onLoadSaved(name)">{{ name }}</a>
+            <div class="sidebar-row">
+              <a routerLink="/theme-generator" class="sidebar-link sidebar-link-flex"
+                 (click)="onLoadSaved(name)">{{ name }}</a>
+              <button type="button" class="sidebar-row-delete"
+                      [attr.aria-label]="'Delete ' + name"
+                      (click)="onDeleteSaved(name, $event)">×</button>
+            </div>
           } @empty {
             <p class="sidebar-empty">No saved themes yet.</p>
+          }
+          @if (pendingDelete(); as p) {
+            <div class="sidebar-undo" role="status" aria-live="polite">
+              Deleted "{{ p.name }}".
+              <button type="button" (click)="undoDelete()">Undo</button>
+            </div>
           }
           <a routerLink="/theme-generator" class="sidebar-link sidebar-link-special"
              (click)="onNewTheme()">+ New theme</a>

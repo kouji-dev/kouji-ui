@@ -329,3 +329,39 @@
   color: var(--kj-color-neutral);
   margin: 0;
 }
+
+/* My-themes row + delete button + undo banner */
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.sidebar-row .sidebar-link-flex { flex: 1; }
+.sidebar-row-delete {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  color: var(--kj-color-neutral);
+  cursor: pointer;
+  padding: 0 var(--kj-space-sm);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.sidebar-row:hover .sidebar-row-delete { opacity: 1; }
+.sidebar-row-delete:hover { color: var(--kj-color-destructive); }
+.sidebar-undo {
+  margin: var(--kj-space-sm);
+  padding: var(--kj-space-xs) var(--kj-space-sm);
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  background: var(--kj-color-base-300);
+  color: var(--kj-color-base-content);
+  border-radius: var(--kj-radius-field);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar-undo button {
+  background: none; border: none;
+  color: var(--kj-color-primary); cursor: pointer;
+  font: inherit;
+}
