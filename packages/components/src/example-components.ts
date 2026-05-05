@@ -33,6 +33,12 @@ export { KjCheckboxIndeterminateExample } from './checkbox/checkbox.indeterminat
 export { KjCheckboxDisabledExample }      from './checkbox/checkbox.disabled.example';
 export { KjCheckboxWithLabelExample }     from './checkbox/checkbox.with-label.example';
 
+// Dialog
+export { KjDialogDefaultExample }      from './dialog/dialog.default.example';
+export { KjDialogWithFormExample }     from './dialog/dialog.with-form.example';
+export { KjDialogScrollableExample }   from './dialog/dialog.scrollable.example';
+export { KjDialogConfirmationExample } from './dialog/dialog.confirmation.example';
+
 // Input (existing)
 export { KjInputExample } from './input/input.example';
 

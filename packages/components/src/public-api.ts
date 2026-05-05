@@ -7,6 +7,7 @@ export * from './badge/index';
 export * from './button/index';
 export * from './card/index';
 export * from './checkbox/index';
+export * from './dialog/index';
 export * from './input/index';
 export * from './kbd/index';
 export * from './link/index';
