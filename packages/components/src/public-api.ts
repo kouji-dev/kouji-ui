@@ -1,6 +1,7 @@
 // Public API for @kouji-ui/components
 export const KJ_COMPONENTS_VERSION = '0.0.1';
 
+export * from './accordion/index';
 export * from './avatar/index';
 export * from './badge/index';
 export * from './button/index';
