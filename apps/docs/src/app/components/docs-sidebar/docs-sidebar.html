@@ -31,9 +31,12 @@
               <li
                 role="option"
                 class="theme-picker-option"
+                tabindex="0"
                 [class.active]="t === currentTheme()"
                 [attr.aria-selected]="t === currentTheme()"
                 (click)="selectTheme(t); closePicker()"
+                (keydown.enter)="selectTheme(t); closePicker()"
+                (keydown.space)="$event.preventDefault(); selectTheme(t); closePicker()"
               >
                 {{ t }}
               </li>
