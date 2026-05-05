@@ -735,6 +735,8 @@ git commit -m "build(components): register kj-components in angular.json + vites
 
 - [ ] **Step 7.1: Write the failing spec at `packages/components/src/button/button.spec.ts`**
 
+The spec verifies the element-wrapper pattern: `<kj-button>` is the host, an inner `<button kjButton>` is rendered by the component's template, and the component's signal inputs (`variant`, `size`, `disabled`) flow through template binding to the directive's `[kjVariant]`, `[kjSize]`, `[kjDisabled]`. Each test queries the inner `button[kjButton]` element.
+
 ```ts
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -744,7 +746,7 @@ import { KjButtonComponent } from './button';
 @Component({
   standalone: true,
   imports: [KjButtonComponent],
-  template: `<button kj-button [variant]="variant" [size]="size" [disabled]="disabled">Click</button>`,
+  template: `<kj-button [variant]="variant" [size]="size" [disabled]="disabled">Click</kj-button>`,
 })
 class HostComponent {
   variant: 'default' | 'destructive' | 'ghost' | 'link' | 'outline' = 'default';
@@ -757,49 +759,59 @@ describe('KjButtonComponent', () => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
 
-  test('renders the .kj-button host class', () => {
+  test('renders an inner <button> with the .kj-button class', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('button[kj-button]');
+    const wrapper = fixture.nativeElement.querySelector('kj-button');
+    expect(wrapper).not.toBeNull();
+    const btn = wrapper.querySelector('button.kj-button');
     expect(btn).not.toBeNull();
-    expect(btn.classList.contains('kj-button')).toBe(true);
   });
 
-  test('forwards variant input to the underlying KjButton directive (data-variant attr)', () => {
+  test('forwards variant signal input to the inner KjButton directive (data-variant attr)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.variant = 'destructive';
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('button[kj-button]');
+    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
     expect(btn.getAttribute('data-variant')).toBe('destructive');
   });
 
-  test('forwards size input (data-size attr)', () => {
+  test('forwards size signal input (data-size attr on inner button)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.size = 'lg';
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('button[kj-button]');
+    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
     expect(btn.getAttribute('data-size')).toBe('lg');
   });
 
-  test('forwards disabled input (aria-disabled attr)', () => {
+  test('forwards disabled signal input (aria-disabled attr on inner button)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.disabled = true;
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('button[kj-button]');
+    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
     expect(btn.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  test('projects content into the inner button', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
+    expect(btn.textContent.trim()).toBe('Click');
   });
 });
 ```
 
+Five tests now (the fifth — content projection — verifies `<ng-content />` works). The first one is split into "wrapper exists" + "inner button has class".
+
 - [ ] **Step 7.2: Create a deliberately-incomplete `packages/components/src/button/button.ts`**
 
-This makes the spec compile but not pass — used to verify the test correctly catches missing behavior.
+The stub renders no inner button at all (just `<ng-content />` directly), no signal inputs declared, no encapsulation override. This makes ALL tests fail at assertion level.
 
 ```ts
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'button[kj-button], a[kj-button]',
+  selector: 'kj-button',
   standalone: true,
   template: '<ng-content />',
 })
@@ -809,71 +821,143 @@ export class KjButtonComponent {}
 - [ ] **Step 7.3: Run the spec; it should fail**
 
 Run: `cd packages/components && pnpm test`
-Expected: FAIL — `renders the .kj-button host class` fails because no host class is set; `forwards variant input` fails because there's no hostDirectives composing KjButton (the data-variant attribute is not emitted).
 
-If the test passes accidentally at this stage, the test is wrong. Stop and re-examine.
+Expected:
+- "renders an inner <button> with the .kj-button class" FAILS — no inner button in the stub
+- variant/size/disabled forwarding tests FAIL — there's no inner button to query (queries return null, then attribute reads throw or return null)
+- "projects content into the inner button" FAILS — same reason (no inner button)
+
+NG0303 warnings about unknown `[variant]`, `[size]`, `[disabled]` properties on `<kj-button>` are expected because the stub declares no inputs. Will disappear in Task 8.
+
+If tests pass accidentally, the test is wrong. Stop and re-examine.
 
 - [ ] **Step 7.4: Commit (failing test + stub)**
 
 ```bash
 git add packages/components/src/button/button.ts packages/components/src/button/button.spec.ts
-git commit -m "test(components/button): failing spec — host class + input forwarding"
+git commit -m "test(components/button): failing spec — element wrapper composes KjButton via template"
 ```
 
 ---
 
-## Task 8: Implement `KjButtonComponent` to make the test pass
+## Task 8: Implement `KjButtonComponent` (template composition) to make the test pass
 
 **Files:**
 - Modify: `packages/components/src/button/button.ts` (replace the stub)
+- Modify: `packages/components/vite.config.ts` (add resolve alias so vitest can find `@kouji-ui/core` from source — see Step 8.0)
 
-- [ ] **Step 8.1: Replace the contents of `button.ts` with the real implementation**
+### Step 8.0 (precondition): Resolve `@kouji-ui/core` for vitest
+
+When `button.ts` imports `KjButton` from `@kouji-ui/core`, vitest needs to find it. Two paths:
+- **Option A (current default):** rebuild core first via `pnpm build:core`, then run tests — works but slow for dev iteration.
+- **Option B (recommended):** add a vite resolve alias so `@kouji-ui/core` maps to source. Lets `pnpm test` from inside `packages/components/` work without a fresh core build.
+
+This step uses Option B. Edit `packages/components/vite.config.ts`:
 
 ```ts
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjButton } from '@kouji-ui/core';
+import { defineProject } from 'vitest/config';
+import angular from '@analogjs/vite-plugin-angular';
+import { resolve } from 'node:path';
+
+export default defineProject({
+  plugins: [angular()],
+  resolve: {
+    alias: {
+      '@kouji-ui/core': resolve(__dirname, '../core/src/public-api.ts'),
+    },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['src/test-setup.ts'],
+    include: ['src/**/*.spec.ts'],
+    reporters: ['default'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/test-setup.ts'],
+    },
+  },
+});
+```
+
+The alias points to core's TS source (`packages/core/src/public-api.ts`), so the Angular plugin compiles core directly during tests. Production builds (`pnpm build`) are unaffected — they go through ng-packagr which respects the published package layout.
+
+### Step 8.1: Replace the contents of `button.ts` with the real implementation
+
+```ts
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless KjButton directive.
  *
- * Composes KjButton via hostDirectives, forwards inputs without the kj prefix,
- * adds the .kj-button host class so the component-layer CSS in button.css applies.
+ * Element-wrapper pattern: the host `<kj-button>` is a structural shell with
+ * `display: contents` (no layout box). The component template renders a real
+ * inner `<button>` with the `kjButton` directive applied. Signal inputs on
+ * the component (`variant`, `size`, `disabled`) flow through normal template
+ * binding to the directive's `kjVariant` / `kjSize` / `kjDisabled` inputs.
+ *
+ * `ViewEncapsulation.None` makes the component's CSS (button.css) global so
+ * theme overrides like `[data-theme="X"] .kj-button { ... }` and the
+ * `@layer kj.component` cascade rules from the design spec actually apply.
  *
  * @example
  * ```html
- * <button kj-button variant="destructive" size="lg">Delete</button>
- * <a kj-button href="/docs">Docs</a>
+ * <kj-button variant="destructive" size="lg" [disabled]="loading()">
+ *   Delete
+ * </kj-button>
  * ```
  */
 @Component({
-  selector: 'button[kj-button], a[kj-button]',
+  selector: 'kj-button',
   standalone: true,
-  hostDirectives: [{
-    directive: KjButton,
-    inputs: ['kjVariant: variant', 'kjSize: size', 'kjDisabled: disabled'],
-  }],
-  host: { class: 'kj-button' },
-  template: '<ng-content />',
+  imports: [KjButton],
+  template: `
+    <button
+      kjButton
+      class="kj-button"
+      [kjVariant]="variant()"
+      [kjSize]="size()"
+      [kjDisabled]="disabled()"
+    >
+      <ng-content />
+    </button>
+  `,
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjButtonComponent {}
+export class KjButtonComponent {
+  readonly variant = input<KjButtonVariant>('default');
+  readonly size = input<KjButtonSize>('md');
+  readonly disabled = input(false);
+}
 ```
 
-- [ ] **Step 8.2: Run the spec; it should pass**
+Key non-obvious bits:
+- `imports: [KjButton]` — the directive is used in the template, so it must be in the component's imports.
+- `[kjVariant]="variant()"` — calling the signal in template binding is the idiomatic Angular 21 pattern.
+- `encapsulation: ViewEncapsulation.None` — required for theme CSS in `@kouji-ui/themes` to override `.kj-button` rules. With Emulated encapsulation, `.kj-button` would be view-scoped and theme overrides outside the component wouldn't match.
+- `host: { style: 'display: contents;' }` — the wrapper element is invisible to layout. Without this, every `<kj-button>` would be an `inline` box wrapping its inner button, breaking flexbox/grid alignment.
+
+### Step 8.2: Run the spec; all 5 tests must pass
 
 Run: `cd packages/components && pnpm test`
-Expected: all four tests pass. Output ends with `Tests 4 passed (4)`.
+Expected output ends with: `Tests 5 passed (5)`. NG0303 warnings disappear because `variant`/`size`/`disabled` are now declared inputs on the component.
 
 If a test still fails:
-- "renders the .kj-button host class" failing → the `host: { class: 'kj-button' }` line is missing or misspelled
-- "forwards variant input" failing → the `inputs` array in `hostDirectives` is missing `'kjVariant: variant'` (the alias syntax is `'directiveInput: hostInput'`)
-- "forwards disabled input (aria-disabled)" failing → the underlying `KjButton` directive composes `KjDisabled` which sets `aria-disabled`; if this fails, recheck the import path is `@kouji-ui/core` and that `KjButton` resolves to the directive
+- "renders an inner <button> with the .kj-button class" failing → check the template renders `<button class="kj-button">` (note the literal `class` attribute, not `[class]`)
+- "forwards variant signal input (data-variant attr)" failing → check the template uses `[kjVariant]="variant()"` (call the signal); also verify `KjButton` actually emits `data-variant` (it does, via its host binding `[attr.data-variant]="kjVariant()"` in core)
+- "forwards disabled signal input (aria-disabled attr)" failing → `KjButton` composes `KjDisabled` which sets `aria-disabled` based on its `kjDisabled` input. Verify the template forwards `[kjDisabled]="disabled()"` and the import resolves
+- Module-load errors about `@kouji-ui/core` → the vite resolve alias from Step 8.0 isn't in place; re-check `vite.config.ts`
 
-- [ ] **Step 8.3: Commit**
+### Step 8.3: Commit
 
 ```bash
-git add packages/components/src/button/button.ts
-git commit -m "feat(components/button): implement KjButtonComponent — composes KjButton, forwards inputs"
+git add packages/components/src/button/button.ts packages/components/vite.config.ts
+git commit -m "feat(components/button): implement KjButtonComponent — element wrapper, template composition"
 ```
 
 ---
@@ -996,22 +1080,32 @@ git commit -m "feat(components/button): implement KjButtonComponent — composes
 
 - [ ] **Step 9.2: Wire the CSS into the component**
 
-Edit `packages/components/src/button/button.ts` and add a `styleUrl` field. Replace the `@Component` decorator block to:
+Edit `packages/components/src/button/button.ts` and add a `styleUrl` field to the `@Component` decorator. The decorator block becomes:
 
 ```ts
 @Component({
-  selector: 'button[kj-button], a[kj-button]',
+  selector: 'kj-button',
   standalone: true,
-  hostDirectives: [{
-    directive: KjButton,
-    inputs: ['kjVariant: variant', 'kjSize: size', 'kjDisabled: disabled'],
-  }],
-  host: { class: 'kj-button' },
-  template: '<ng-content />',
+  imports: [KjButton],
+  template: `
+    <button
+      kjButton
+      class="kj-button"
+      [kjVariant]="variant()"
+      [kjSize]="size()"
+      [kjDisabled]="disabled()"
+    >
+      <ng-content />
+    </button>
+  `,
   styleUrl: './button.css',
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 ```
+
+(Only adds the `styleUrl` line to what Task 8 already produced.)
 
 - [ ] **Step 9.3: Re-run tests; existing 4 tests should still pass**
 

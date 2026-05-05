@@ -275,56 +275,109 @@ packages/components/src/button/
 
 ### 5.2 Component class
 
+The styled component is an **element wrapper** that uses the headless directive in its template — NOT via `hostDirectives`. Composition happens through normal Angular template binding. This is the key architectural choice: the components package consumes core via templates, not through Angular's `hostDirectives` API.
+
 ```ts
 // button.ts
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjButton } from '@kouji-ui/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
 
+/**
+ * Styled wrapper around the headless KjButton directive.
+ *
+ * The component declares its own `variant` / `size` / `disabled` signal inputs
+ * and forwards them via template binding to the underlying KjButton directive
+ * applied to a real `<button>` inside the template. The host element is a
+ * `<kj-button>` custom element acting purely as a structural shell — all
+ * native button behavior comes from the inner real <button>.
+ *
+ * @example
+ * ```html
+ * <kj-button variant="destructive" size="lg" [disabled]="loading()">
+ *   Delete
+ * </kj-button>
+ * ```
+ */
 @Component({
-  selector: 'button[kj-button], a[kj-button]',
+  selector: 'kj-button',
   standalone: true,
-  hostDirectives: [{
-    directive: KjButton,
-    inputs: ['kjVariant: variant', 'kjSize: size', 'kjDisabled: disabled'],
-  }],
-  host: { class: 'kj-button' },
-  template: '<ng-content />',
+  imports: [KjButton],
+  template: `
+    <button
+      kjButton
+      class="kj-button"
+      [kjVariant]="variant()"
+      [kjSize]="size()"
+      [kjDisabled]="disabled()"
+    >
+      <ng-content />
+    </button>
+  `,
+  styleUrl: './button.css',
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjButtonComponent {}
+export class KjButtonComponent {
+  readonly variant = input<KjButtonVariant>('default');
+  readonly size = input<KjButtonSize>('md');
+  readonly disabled = input(false);
+}
 ```
+
+Two non-obvious decorator fields:
+- `encapsulation: ViewEncapsulation.None` — makes the component's CSS rules global. Required so theme overrides (`[data-theme="X"] .kj-button { ... }` declared in theme files outside the component) and `@layer kj.component` cascade rules from §3.3 actually apply to the inner `<button>`. Default Emulated encapsulation would scope `.kj-button` rules to a per-component attribute, breaking themes.
+- `host: { style: 'display: contents;' }` — the `<kj-button>` wrapper element gets `display: contents` so it doesn't add a layout box. Visually identical to the inner `<button>` being at the parent's flow level. Without this, every `<kj-button>` would be an `inline` box wrapping its inner button, breaking flexbox / grid layouts.
+
+Why this pattern (not `hostDirectives`):
+- **No transitive-input limitations.** `disabled` forwards to `kjDisabled` (a re-exposed input on `KjButton`) cleanly via normal `[kjDisabled]` template binding. `hostDirectives` can only forward inputs *directly declared* on the composed directive, which broke `kjDisabled` forwarding.
+- **Inner-template flexibility.** The component template can hold whatever DOM the styled component needs — icons, loading spinners, badges, content slots. With `hostDirectives` we were stuck with `<ng-content />` only.
+- **Composition reads naturally.** `imports: [KjButton]` + use it in the template is how every Angular consumer uses any directive. No new mental model.
 
 ### 5.3 Usage
 
 ```html
-<!-- headless: bring your own CSS -->
+<!-- headless: bring your own CSS, attach the directive directly to a <button> -->
 <button kjButton kjVariant="default" kjSize="md">Click</button>
 
-<!-- styled: themed -->
-<button kj-button variant="default" size="md">Click</button>
+<!-- styled: themed, element wrapper -->
+<kj-button variant="default" size="md">Click</kj-button>
 ```
+
+DOM that the styled usage produces:
+```html
+<kj-button variant="default" size="md">
+  <button kjbutton="" class="kj-button" data-variant="default" data-size="md">
+    Click
+  </button>
+</kj-button>
+```
+
+The inner `<button>` is the real focusable / clickable / form-submitting element. The outer `<kj-button>` is a structural shell that adds no semantics — no `role`, no `tabindex`. Component CSS targets `.kj-button` (the inner button); the host `<kj-button>` is `display: contents` so it doesn't interfere with layout.
 
 ### 5.4 Multi-part components (Dialog, Menu, Tabs, Accordion, Select, …)
 
-Each piece in the family gets its own component, mirroring the core directive family one-for-one. Same naming rules.
+Each piece in the family is its own element-wrapper component, using the corresponding directive in its template.
 
 ```html
-<!-- headless -->
+<!-- headless: directives attached directly to user-chosen elements -->
 <button kjDialogTrigger>Open</button>
 <div kjDialog>
   <h2 kjDialogTitle>Title</h2>
   <button kjDialogClose>Close</button>
 </div>
 
-<!-- styled — same shape, real elements -->
-<button kj-dialog-trigger>Open</button>
-<div kj-dialog>
-  <h2 kj-dialog-title>Title</h2>
-  <button kj-dialog-close>Close</button>
-</div>
+<!-- styled: element wrappers that internally use the directives -->
+<kj-dialog-trigger>Open</kj-dialog-trigger>
+<kj-dialog>
+  <kj-dialog-title>Title</kj-dialog-title>
+  <kj-dialog-close>Close</kj-dialog-close>
+</kj-dialog>
 ```
 
-No opaque `<kj-dialog>` custom element — keeping native semantics is the principle that makes the headless directives work in the first place, and the styled wrapper preserves it. Whether `kj-dialog` attaches to `<div>`, `<dialog>`, or a CDK overlay is determined by the underlying directive, not by the styled wrapper.
+Each styled component's template attaches the corresponding directive to a real semantic element (`<button>` for trigger/close, `<div>` or `<dialog>` for the dialog body, `<h2>` for the title). The wrapper element is structural shell.
+
+If the directive needs to live on a SPECIFIC element type (e.g., `kjDialogTrigger` must be on a `<button>` for keyboard semantics), the styled component's template enforces it — users can't accidentally apply the wrapper to the wrong element type because the wrapper has its own selector and template.
 
 ### 5.5 Presentation-only components (no core counterpart)
 
@@ -337,18 +390,21 @@ Some components in `@kouji-ui/components` are pure presentation — no behavior,
 | `KjLinkComponent` | Styled `<a>` for inline links and nav links | none — `KjButton variant="link"` exists but is button-shaped |
 | `KjSurfaceComponent` | Theme-aware section surface (used by docs nav, sidebar, etc.) | none |
 
-These follow the same naming and structure as components with core counterparts, except they have no `hostDirectives` composition — the component's CSS class IS the entirety of its behavior.
+These follow the same naming and structure as components with core counterparts. Since there's no core directive to use in the template, the component is the entirety of the implementation — own template, own CSS class, no `imports` of a core directive.
 
 ```ts
 @Component({
-  selector: 'div[kj-card], section[kj-card], article[kj-card]',
+  selector: 'kj-card',
   standalone: true,
-  host: { class: 'kj-card' },
   template: '<ng-content />',
+  styleUrl: './card.css',
+  host: { class: 'kj-card' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCardComponent {}
 ```
+
+(Host class on the wrapper element is fine here because there's no inner element to attach to. CSS handles it.)
 
 The Headless track does NOT show these (nothing to document on the directive side); the sidebar's Headless grouping simply omits them.
 
@@ -360,13 +416,20 @@ The Headless track does NOT show these (nothing to document on the directive sid
 |---|---|---|
 | Class name | `KjButton` | `KjButtonComponent` (suffix kept per CLAUDE.md rule — `KjButton` already taken in sibling package) |
 | File name | `button.ts` | `button.ts` (no suffix, per CLAUDE.md file rule) |
-| Selector | `[kjButton]` (camelCase attribute) | `button[kj-button], a[kj-button]` (hyphenated attribute, real elements only) |
-| Inputs | `kjVariant`, `kjSize`, `kjDisabled` | `variant`, `size`, `disabled` (forwarded via `hostDirectives`) |
-| Host class | none | `.kj-button` |
+| Selector | `[kjButton]` (attribute, attaches to user-chosen element) | `kj-button` (custom element wrapper) |
+| Inputs | `kjVariant`, `kjSize`, `kjDisabled` | `variant`, `size`, `disabled` (declared as signal inputs on the component) |
+| Composition with core | n/a | imports + uses the directive in its template — NOT `hostDirectives` |
+| Inner DOM | none — directive lives on a real user-chosen element | wrapper holds a real semantic inner element (`<button>`, `<a>`, `<div>`, etc.) where the core directive is applied |
+| Host class | none | placed on the inner element (or on the wrapper for presentation-only components) |
 
-Why two different attribute names: prevents Angular from dual-instantiating the directive (the styled component already composes it via `hostDirectives`). The user picks ONE attribute style per element.
+Why an element selector (not attribute on a real element):
+- Lets the styled component own its inner template — icons, loading spinners, badges, slot content can live alongside `<ng-content />` without composition gymnastics.
+- The wrapper is structural only; the real semantic element is inside the template. Native button / form / focus behavior comes from the inner element.
+- `display: contents` on the wrapper means it doesn't add a layout box — visually identical to the inner element being at the parent's level.
 
-Why selector restricted to real `<button>` / `<a>`: forces accessibility correctness. No `<kj-button>` element that needs `role="button"` and manual keyboard handling.
+Why NOT `hostDirectives`:
+- Angular's `hostDirectives` input forwarding only forwards inputs *directly declared* on the composed directive — not inputs the directive transitively re-exposes from its own host directives. `KjButton` re-exposes `kjDisabled` from its inner `KjDisabled` composition, which made `disabled → kjDisabled` forwarding via `hostDirectives` impossible. Template-based composition has none of these limits.
+- Inner-template flexibility: `hostDirectives` confines the wrapper to `<ng-content />` only.
 
 ---
 
