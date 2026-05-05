@@ -7,22 +7,26 @@
 @layer kj.shared {
   [data-theme="kouji"] {
     /* ── color slots ── */
-    --kj-color-base-100:     var(--kj-base-gray-950);
-    --kj-color-base-200:     var(--kj-base-gray-900);
-    --kj-color-base-300:     var(--kj-base-gray-800);
-    --kj-color-base-content: var(--kj-base-gray-50);
+    /* Literal hex values to recreate the original kouji-ui docs exactly:
+       - #0c0c0c page bg, #141414 elevated surface, #1a1a1a borders/separators,
+       - #f0ede6 warm-white text. These are slightly darker / warmer than the
+       generic dark theme's gray ramp, so we override at the slot level. */
+    --kj-color-base-100:     #0c0c0c;
+    --kj-color-base-200:     #141414;
+    --kj-color-base-300:     #1a1a1a;
+    --kj-color-base-content: #f0ede6;
 
-    --kj-color-primary:         var(--kj-base-lime-500);
-    --kj-color-primary-content: var(--kj-base-gray-950);
+    --kj-color-primary:         #b8f500;
+    --kj-color-primary-content: #0c0c0c;
 
     --kj-color-secondary:         var(--kj-base-gray-700);
     --kj-color-secondary-content: var(--kj-base-gray-50);
 
-    --kj-color-accent:         var(--kj-base-lime-500);
-    --kj-color-accent-content: var(--kj-base-gray-950);
+    --kj-color-accent:         #b8f500;
+    --kj-color-accent-content: #0c0c0c;
 
-    --kj-color-neutral:         var(--kj-base-gray-500);
-    --kj-color-neutral-content: var(--kj-base-gray-50);
+    --kj-color-neutral:         #888888;
+    --kj-color-neutral-content: #f0ede6;
 
     --kj-color-info:         var(--kj-base-blue-400);
     --kj-color-info-content: var(--kj-base-gray-950);
@@ -43,10 +47,11 @@
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           0;
 
-    /* ── type — mono everywhere (kouji brand) ── */
-    --kj-font-sans: var(--kj-base-font-mono);
+    /* ── type — mono for body / nav, Syne for display headings (matches
+       the original kouji-ui docs identity) ── */
+    --kj-font-sans:    var(--kj-base-font-mono);
     --kj-font-mono:    var(--kj-base-font-mono);
-    --kj-font-display: var(--kj-base-font-mono); /* mono everywhere — kouji brand */
+    --kj-font-display: var(--kj-base-font-display);
     --kj-text-xs:   var(--kj-base-text-xs);
     --kj-text-sm:   var(--kj-base-text-sm);
     --kj-text-base: var(--kj-base-text-base);
@@ -65,5 +70,18 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+  }
+}
+
+/* Component-layer overrides specific to the kouji theme.
+   Per the brutalist brand: buttons brighten + lift on hover instead of
+   the default darken behavior. */
+@layer kj.component {
+  [data-theme="kouji"] .kj-button:hover {
+    background: #d4ff00;
+  }
+  [data-theme="kouji"] .kj-button[data-variant="default"]:hover,
+  [data-theme="kouji"] .kj-button[data-variant="destructive"]:hover {
+    transform: translateY(-2px);
   }
 }

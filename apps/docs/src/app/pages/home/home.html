@@ -25,8 +25,8 @@
         <a routerLink="/docs" class="hero-cta">
           <kj-button variant="default" size="lg">Get started <span>→</span></kj-button>
         </a>
-        <a href="https://github.com" target="_blank" rel="noopener" class="hero-cta">
-          <kj-button variant="outline" size="lg">View on GitHub <span>↗</span></kj-button>
+        <a href="https://github.com" target="_blank" rel="noopener" class="btn-secondary">
+          View on GitHub <span>↗</span>
         </a>
       </div>
     </div>
@@ -34,58 +34,58 @@
 
   <!-- Stats -->
   <div class="stats">
-    <kj-card variant="subtle" class="stat">
+    <div class="stat">
       <div class="stat-num">{{ angularMajor }}</div>
       <div class="stat-label">Angular version</div>
-    </kj-card>
-    <kj-card variant="subtle" class="stat">
+    </div>
+    <div class="stat">
       <div class="stat-num">{{ componentCount() }}</div>
       <div class="stat-label">Components</div>
-    </kj-card>
-    <kj-card variant="subtle" class="stat">
+    </div>
+    <div class="stat">
       <div class="stat-num">AAA</div>
       <div class="stat-label">WCAG compliance</div>
-    </kj-card>
-    <kj-card variant="subtle" class="stat">
+    </div>
+    <div class="stat">
       <div class="stat-num">0</div>
       <div class="stat-label">CSS in core</div>
-    </kj-card>
+    </div>
   </div>
 
   <!-- Features -->
   <section class="features">
     <div class="section-label">Why kouji</div>
     <div class="features-grid">
-      <kj-card variant="default" class="feature">
+      <div class="feature">
         <span class="feature-icon">◈</span>
         <h3 class="feature-title">Directive-first</h3>
         <p class="feature-desc">Everything in core is a directive. Compose behaviors via hostDirectives. No components, no templates, no opinions.</p>
-      </kj-card>
-      <kj-card variant="default" class="feature">
+      </div>
+      <div class="feature">
         <span class="feature-icon">⚡</span>
         <h3 class="feature-title">Signals everywhere</h3>
         <p class="feature-desc">Built for Angular 21. Signal inputs, signal contexts, afterNextRender. No RxJS, no lifecycle interfaces.</p>
-      </kj-card>
-      <kj-card variant="default" class="feature">
+      </div>
+      <div class="feature">
         <span class="feature-icon">♿</span>
         <h3 class="feature-title">WCAG 2.1 AAA</h3>
         <p class="feature-desc">Every component targets AAA compliance. Full keyboard nav, ARIA patterns, focus management, live regions.</p>
-      </kj-card>
-      <kj-card variant="default" class="feature">
+      </div>
+      <div class="feature">
         <span class="feature-icon">◎</span>
         <h3 class="feature-title">CDK-powered</h3>
         <p class="feature-desc">Wraps Angular CDK primitives for overlays, menus, listbox, accordion. Battle-tested patterns, not reinvented.</p>
-      </kj-card>
-      <kj-card variant="default" class="feature">
+      </div>
+      <div class="feature">
         <span class="feature-icon">∅</span>
         <h3 class="feature-title">Zero-CSS core</h3>
         <p class="feature-desc">The core has no styles. Bring Tailwind, CSS modules, vanilla CSS, or anything else. The impl package ships Tailwind v4.</p>
-      </kj-card>
-      <kj-card variant="default" class="feature">
+      </div>
+      <div class="feature">
         <span class="feature-icon">⊞</span>
         <h3 class="feature-title">TanStack + ECharts</h3>
         <p class="feature-desc">Complex data components powered by TanStack Table for data grids and Apache ECharts for charts.</p>
-      </kj-card>
+      </div>
     </div>
   </section>
 
