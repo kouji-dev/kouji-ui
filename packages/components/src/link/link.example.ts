@@ -10,6 +10,6 @@ import { KjLinkComponent } from './link';
   standalone: true,
   imports: [KjLinkComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `<p>Read the <kj-link href="/docs">documentation</kj-link> or visit <kj-link href="https://github.com" external>GitHub</kj-link>.</p>`,
+  template: `<p>Read the <kj-link href="/docs">documentation</kj-link> or visit <kj-link href="https://github.com" [external]="true">GitHub</kj-link>.</p>`,
 })
 export class KjLinkExample {}

@@ -12,6 +12,7 @@
       "@kouji-ui/core/examples": ["packages/core/src/example-components.ts"],
       "@kouji-ui/core/*": ["packages/core/src/*"],
       "@kouji-ui/components": ["packages/components/src/public-api.ts"],
+      "@kouji-ui/components/examples": ["packages/components/src/example-components.ts"],
       "@kouji-ui/components/*": ["packages/components/src/*"]
     },
     "noImplicitReturns": true,
