@@ -97,9 +97,45 @@ export class ThemeGeneratorComponent {
   }
 
   async copyCss(): Promise<void> {
-    const css = serializeToScopedBlock(this.draft().name || 'custom', this.draftService.resolvedTokens());
-    const ok = await this.clipboard.copy(css);
+    const ok = await this.clipboard.copy(this.exportedCss());
     this.flash(ok ? 'CSS copied to clipboard' : 'Copy failed');
+  }
+
+  downloadCss(): void {
+    const filename = `${this.draft().name || 'custom'}.kj-theme.css`;
+    this.download(filename, this.exportedCss(), 'text/css');
+  }
+
+  exportJson(): void {
+    const filename = `${this.draft().name || 'custom'}.kj-theme.json`;
+    this.download(filename, JSON.stringify(this.draft(), null, 2), 'application/json');
+  }
+
+  /** Full CSS export: @import lines for any used Google Font + the scoped block. */
+  private exportedCss(): string {
+    const name = this.draft().name || 'custom';
+    const importLines = this.fontImports();
+    return [importLines, serializeToScopedBlock(name, this.draftService.resolvedTokens())]
+      .filter(Boolean).join('\n\n');
+  }
+
+  private fontImports(): string {
+    const used = new Set<string>();
+    for (const k of ['fontSans', 'fontMono', 'fontDisplay'] as const) {
+      const family = this.draft().type[k];
+      const f = CURATED_FONTS.find(c => family.includes(c.family));
+      if (f && f.query) used.add(`@import url('https://fonts.googleapis.com/css2?${f.query}&display=swap');`);
+    }
+    return [...used].join('\n');
+  }
+
+  private download(filename: string, content: string, mime: string): void {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = this.document.createElement('a');
+    a.href = url; a.download = filename;
+    this.document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
   }
 
   // ── shape / type / motion handlers ──────────────────────────────────
