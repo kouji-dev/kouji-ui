@@ -1,8 +1,47 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
 
+/**
+ * Styled wrapper around the headless KjButton directive.
+ *
+ * Element-wrapper pattern: the host `<kj-button>` is a structural shell with
+ * `display: contents` (no layout box). The component template renders a real
+ * inner `<button>` with the `kjButton` directive applied. Signal inputs on
+ * the component (`variant`, `size`, `disabled`) flow through normal template
+ * binding to the directive's `kjVariant` / `kjSize` / `kjDisabled` inputs.
+ *
+ * `ViewEncapsulation.None` makes the component's CSS (button.css) global so
+ * theme overrides like `[data-theme="X"] .kj-button { ... }` and the
+ * `@layer kj.component` cascade rules from the design spec actually apply.
+ *
+ * @example
+ * ```html
+ * <kj-button variant="destructive" size="lg" [disabled]="loading()">
+ *   Delete
+ * </kj-button>
+ * ```
+ */
 @Component({
   selector: 'kj-button',
   standalone: true,
-  template: '<ng-content />',
+  imports: [KjButton],
+  template: `
+    <button
+      kjButton
+      class="kj-button"
+      [kjVariant]="variant()"
+      [kjSize]="size()"
+      [kjDisabled]="disabled()"
+    >
+      <ng-content />
+    </button>
+  `,
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjButtonComponent {}
+export class KjButtonComponent {
+  readonly variant = input<KjButtonVariant>('default');
+  readonly size = input<KjButtonSize>('md');
+  readonly disabled = input(false);
+}
