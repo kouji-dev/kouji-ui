@@ -3,6 +3,7 @@ export type ColorSlot =
   | 'info' | 'success' | 'warning' | 'destructive';
 
 export type ContentSlot =
+  | 'base-200' | 'base-300'
   | 'base-content'
   | 'primary-content' | 'secondary-content' | 'accent-content' | 'neutral-content'
   | 'info-content' | 'success-content' | 'warning-content' | 'destructive-content';

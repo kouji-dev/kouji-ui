@@ -42,7 +42,9 @@ export function deriveBaseShades(base100Css: string): { base200: string; base300
 }
 
 export function deriveTokens(draft: DraftTheme): ResolvedTokens {
-  const { base200, base300 } = deriveBaseShades(draft.colors['base-100']);
+  const baseShades = deriveBaseShades(draft.colors['base-100']);
+  const base200 = draft.contentOverrides['base-200'] ?? baseShades.base200;
+  const base300 = draft.contentOverrides['base-300'] ?? baseShades.base300;
 
   const contents = { 'base-content': deriveContent(draft.colors['base-100']) } as Record<ContentSlot, string>;
   for (const slot of Object.keys(CONTENT_FOR) as Array<keyof typeof CONTENT_FOR>) {

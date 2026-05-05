@@ -5,6 +5,7 @@ const COLOR_SLOTS = [
 ] as const;
 
 const CONTENT_SLOTS = [
+  'base-200', 'base-300',
   'base-content',
   'primary-content','secondary-content','accent-content','neutral-content',
   'info-content','success-content','warning-content','destructive-content',

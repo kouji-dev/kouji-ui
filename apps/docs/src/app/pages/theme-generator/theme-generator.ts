@@ -18,6 +18,8 @@ const COLOR_SLOTS: readonly ColorSlot[] = [
   'info', 'success', 'warning', 'destructive',
 ];
 
+const DERIVED_SLOTS: readonly ContentSlot[] = ['base-200', 'base-300', 'base-content'];
+
 const toOklch = converter('oklch');
 const toRgb   = converter('rgb');
 
@@ -49,6 +51,7 @@ export class ThemeGeneratorComponent {
 
   protected readonly draft = this.draftService.draft;
   protected readonly colorSlots = COLOR_SLOTS;
+  protected readonly derivedSlots = DERIVED_SLOTS;
   protected readonly fonts: readonly CuratedFont[] = CURATED_FONTS;
   protected readonly toast = signal<string | null>(null);
 
@@ -114,6 +117,33 @@ export class ThemeGeneratorComponent {
   protected onContentChange(slot: ColorSlot, hex: string): void {
     const key: ContentSlot = slot === 'base-100' ? 'base-content' : `${slot}-content` as ContentSlot;
     this.draftService.setContentOverride(key, hexToOklch(hex));
+  }
+
+  /** Resolved value for a derived slot (base-200, base-300, base-content), plus override flag. */
+  protected derivedFor(slot: ContentSlot): { value: string; isOverride: boolean } {
+    const tokens = this.draftService.resolvedTokens();
+    let value: string;
+    if (slot === 'base-200') {
+      value = tokens.derivedBase.base200;
+    } else if (slot === 'base-300') {
+      value = tokens.derivedBase.base300;
+    } else {
+      value = tokens.contents[slot];
+    }
+    return { value, isOverride: !!this.draft().contentOverrides[slot] };
+  }
+  protected hexForDerived(slot: ContentSlot): string {
+    return oklchToHex(this.derivedFor(slot).value);
+  }
+  protected toggleDerivedOverride(slot: ContentSlot): void {
+    if (this.draft().contentOverrides[slot]) {
+      this.draftService.setContentOverride(slot, null);
+    } else {
+      this.draftService.setContentOverride(slot, this.derivedFor(slot).value);
+    }
+  }
+  protected onDerivedChange(slot: ContentSlot, hex: string): void {
+    this.draftService.setContentOverride(slot, hexToOklch(hex));
   }
 
   protected onNameChange(ev: Event): void {
