@@ -14,6 +14,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/getting-started/getting-started').then(m => m.GettingStartedComponent),
   },
   {
+    path: 'docs/headless',
+    loadComponent: () => import('./pages/track-index/track-index').then(m => m.TrackIndexComponent),
+    data: { trackId: 'headless' },
+  },
+  {
+    path: 'docs/components',
+    loadComponent: () => import('./pages/track-index/track-index').then(m => m.TrackIndexComponent),
+    data: { trackId: 'components' },
+  },
+  {
     path: 'docs/headless/:slug',
     loadComponent: () => import('./pages/component-doc/component-doc').then(m => m.ComponentDocComponent),
   },

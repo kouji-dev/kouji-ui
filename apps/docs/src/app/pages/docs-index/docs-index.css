@@ -73,6 +73,100 @@ h1 {
   border: 1px solid var(--kj-color-base-300);
 }
 
+/* ── Ecosystem track cards (used on /docs) ───────────────────────────────────
+   Larger, more editorial than the per-item cards. Count chip sits ABOVE the
+   title; hover lifts + reveals the lime accent border. */
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
+  gap: var(--kj-space-xl);
+  margin-top: var(--kj-space-2xl);
+}
+
+.track-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-sm);
+  padding: var(--kj-space-2xl);
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  overflow: hidden;
+}
+.track-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--kj-color-primary);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.18s ease;
+}
+.track-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--kj-color-neutral);
+  background: color-mix(in oklab, var(--kj-color-base-200) 85%, var(--kj-color-primary));
+}
+.track-card:hover::before { transform: scaleY(1); }
+.track-card:focus-visible {
+  outline: 2px solid var(--kj-color-primary);
+  outline-offset: 2px;
+}
+
+.track-card-count {
+  display: inline-block;
+  align-self: flex-start;
+  padding: var(--kj-space-xs) var(--kj-space-sm);
+  background: color-mix(in oklab, var(--kj-color-primary) 15%, transparent);
+  color: var(--kj-color-primary);
+  font-family: var(--kj-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in oklab, var(--kj-color-primary) 28%, transparent);
+}
+
+.track-card-name {
+  font-family: var(--kj-font-display);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--kj-color-base-content);
+  margin: var(--kj-space-md) 0 0;
+  text-transform: capitalize;
+}
+
+.track-card-pkg {
+  font-family: var(--kj-font-mono);
+  font-size: 0.75rem;
+  color: var(--kj-color-neutral);
+  margin: 0 0 var(--kj-space-md);
+}
+.track-card-pkg code {
+  font: inherit;
+  background: transparent;
+  padding: 0;
+}
+
+.track-card-cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  font-family: var(--kj-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kj-color-primary);
+  transition: transform 0.15s;
+}
+.track-card:hover .track-card-cta { transform: translateX(4px); }
+
 .component-card-link {
   display: block;
   text-decoration: none;

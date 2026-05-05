@@ -39,24 +39,39 @@
   </aside>
 
   <main class="docs-main">
-    <div class="docs-hero">
-      <span class="tag">Documentation</span>
-      <h1>kouji-ui ecosystem</h1>
-      <p>The kouji-ui workspace ships {{ tracks().length }} consumable packages — pick a track to browse what's in each.</p>
-    </div>
+    @if (track()) {
+      <div class="docs-hero">
+        <span class="tag">&#64;kouji-ui/{{ track()!.packageName }}</span>
+        <h1>{{ track()!.packageName }}</h1>
+        <p>Browse all items shipped from this package.</p>
+      </div>
 
-    <div class="track-grid">
-      @for (track of tracks(); track track.id) {
-        <a [routerLink]="['/docs', track.id]" class="track-card">
-          <span class="track-card-count">{{ itemCount(track) }} item{{ itemCount(track) !== 1 ? 's' : '' }}</span>
-          <h2 class="track-card-name">{{ track.packageName }}</h2>
-          <p class="track-card-pkg"><code>&#64;kouji-ui/{{ track.packageName }}</code></p>
-          <span class="track-card-cta">
-            Browse <span aria-hidden="true">→</span>
-          </span>
-        </a>
+      @for (cat of categories(); track cat.label) {
+        @if (cat.children.length) {
+          <section class="category-section">
+            <h2 class="category-title">{{ cat.label }}</h2>
+            <div class="component-grid">
+              @for (item of cat.children; track item.slug) {
+                @if (item.slug) {
+                  <a [routerLink]="['/docs', track()!.id, item.slug]" class="component-card-link">
+                    <kj-card variant="default">
+                      <span class="card-name">{{ item.label }}</span>
+                      <span class="card-arrow">→</span>
+                    </kj-card>
+                  </a>
+                }
+              }
+            </div>
+          </section>
+        }
       }
-    </div>
+    } @else {
+      <div class="docs-hero">
+        <h1>Track not found</h1>
+        <p>No track exists at <code>/docs/{{ trackId() }}</code>.</p>
+        <p><a routerLink="/docs">Back to overview →</a></p>
+      </div>
+    }
   </main>
   <aside class="toc-col"></aside>
 </div>
