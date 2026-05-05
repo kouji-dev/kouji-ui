@@ -3,7 +3,7 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DocsService, SidebarNode } from '../../services/docs.service';
 import { SearchService } from '../search/search.service';
-import { ThemeService } from '../../services/theme.service';
+import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
 
 @Component({
   selector: 'kj-docs-sidebar',
@@ -25,6 +25,15 @@ export class DocsSidebarComponent implements OnInit {
 
   /** Set of category labels that are currently collapsed. All expanded by default. */
   protected readonly collapsed = signal<Set<string>>(new Set());
+
+  /** All available themes for the picker. */
+  protected readonly themes = AVAILABLE_THEMES;
+
+  /** Currently active theme name. */
+  protected readonly currentTheme = computed(() => this.themeService.theme());
+
+  /** Controls picker open/closed state. */
+  protected readonly pickerOpen = signal(false);
 
   protected isCategoryCollapsed(label: string): boolean {
     return this.collapsed().has(label);
@@ -69,5 +78,11 @@ export class DocsSidebarComponent implements OnInit {
   onEscape(): void { if (this.open()) this.close(); }
 
   protected openSearch(): void { this.search.open(); }
-  protected toggleTheme(): void { this.themeService.toggle(); }
+
+  /** @deprecated Use togglePicker / selectTheme for the new picker. */
+  protected toggleTheme(): void { this.themeService.cycle(); }
+
+  protected togglePicker(): void { this.pickerOpen.update(v => !v); }
+  protected closePicker(): void { this.pickerOpen.set(false); }
+  protected selectTheme(t: Theme): void { this.themeService.set(t); }
 }
