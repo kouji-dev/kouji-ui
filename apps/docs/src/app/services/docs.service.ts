@@ -55,7 +55,9 @@ export interface ComponentDoc {
   /** Source package — 'core' for headless directives, 'components' for styled wrappers. */
   pkg: 'core' | 'components';
   categoryPath: string[];
-  category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
+  category:
+    | 'actions' | 'data-input' | 'data-display' | 'navigation' | 'feedback'
+    | 'base' | 'inputs' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];

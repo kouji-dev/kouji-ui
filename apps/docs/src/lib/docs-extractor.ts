@@ -75,7 +75,9 @@ export interface ComponentDoc {
   /** Top-level taxonomy: which workspace package the entry was extracted from. */
   pkg: SourcePkg;
   categoryPath: string[];
-  category: 'base' | 'inputs' | 'navigation' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
+  category:
+    | 'actions' | 'data-input' | 'data-display' | 'navigation' | 'feedback'
+    | 'base' | 'inputs' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -89,24 +91,53 @@ export interface DocsManifest {
 
 // ── Category mapping ─────────────────────────────────────────────────────────
 
-const CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
-  // Inputs
-  button: 'base', input: 'inputs', checkbox: 'inputs', radio: 'inputs',
-  toggle: 'inputs', select: 'inputs', form: 'inputs',
-  // Navigation
-  tabs: 'navigation', accordion: 'navigation', menu: 'navigation',
-  // Overlays
-  dialog: 'overlays', popover: 'overlays', tooltip: 'overlays', toast: 'overlays',
-  // Data
-  table: 'data', chart: 'data',
-  // Display
-  avatar: 'display', badge: 'display',
-  // A11y and primitives stay the same
-  a11y: 'a11y', primitives: 'primitives',
+/** Folder-name → category fallback for the core track. Used when a class has no @category tag. */
+const CORE_CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
+  button:     'base',
+  input:      'inputs',
+  checkbox:   'inputs',
+  radio:      'inputs',
+  toggle:     'inputs',
+  select:     'inputs',
+  form:       'inputs',
+  tabs:       'navigation',
+  accordion:  'navigation',
+  menu:       'navigation',
+  dialog:     'overlays',
+  popover:    'overlays',
+  tooltip:    'overlays',
+  toast:      'overlays',
+  table:      'data',
+  chart:      'data',
+  avatar:     'display',
+  badge:      'display',
+  a11y:       'a11y',
+  primitives: 'primitives',
 };
 
-function getCategory(folder: string): ComponentDoc['category'] {
-  return CATEGORY_MAP[folder] ?? 'inputs';
+/** Folder-name → category fallback for the components track (daisyUI-style groups). */
+const COMPONENTS_CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
+  button:     'actions',
+  dialog:     'actions',
+  checkbox:   'data-input',
+  radio:      'data-input',
+  select:     'data-input',
+  toggle:     'data-input',
+  input:      'data-input',
+  accordion:  'data-display',
+  avatar:     'data-display',
+  badge:      'data-display',
+  card:       'data-display',
+  kbd:        'data-display',
+  menu:       'navigation',
+  tabs:       'navigation',
+  link:       'navigation',
+  toast:      'feedback',
+};
+
+function getCategory(folder: string, pkg: SourcePkg): ComponentDoc['category'] {
+  const map = pkg === 'components' ? COMPONENTS_CATEGORY_MAP : CORE_CATEGORY_MAP;
+  return map[folder] ?? 'inputs';
 }
 
 // ── ts-query selectors ────────────────────────────────────────────────────────
@@ -560,6 +591,11 @@ function pkgNameForPath(filePath: string): string {
   return 'Core';
 }
 
+function sourcePkgForPath(filePath: string): SourcePkg {
+  if (filePath.includes('/packages/components/')) return 'components';
+  return 'core';
+}
+
 function folderFromPath(filePath: string): string | null {
   const p = filePath.replace(/\\/g, '/');
   const coreMatch = p.split('/packages/core/src/')[1];
@@ -629,7 +665,7 @@ function processSourceFile(
         slug: folder,
         pkg,
         categoryPath: [],
-        category: getCategory(folder),
+        category: getCategory(folder, pkg),
         description: '',
         directives: [],
         tokens: [],
@@ -738,7 +774,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
   void componentsScanned;
 
   // Fill in categoryPath for components that had no @category tag
-  const categoryFallbacks: Record<SourcePkg, Record<string, string[]>> = {
+  const categoryFallbacks: Record<SourcePkg, Partial<Record<ComponentDoc['category'], string[]>>> = {
     core: {
       base:       ['Core', 'Base'],
       inputs:     ['Core', 'Inputs'],
@@ -750,12 +786,17 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       primitives: ['Core', 'Primitives'],
     },
     components: {
+      'actions':      ['Library', 'Actions'],
+      'data-input':   ['Library', 'Data input'],
+      'data-display': ['Library', 'Data display'],
+      'navigation':   ['Library', 'Navigation'],
+      'feedback':     ['Library', 'Feedback'],
+      // safety net for components that fall back to legacy keys
       base:       ['Library', 'Base'],
-      inputs:     ['Library', 'Inputs'],
-      navigation: ['Library', 'Navigation'],
-      overlays:   ['Library', 'Overlays'],
-      data:       ['Library', 'Data'],
-      display:    ['Library', 'Display'],
+      inputs:     ['Library', 'Data input'],
+      overlays:   ['Library', 'Actions'],
+      data:       ['Library', 'Data display'],
+      display:    ['Library', 'Data display'],
       a11y:       ['Library', 'Accessibility'],
       primitives: ['Library', 'Primitives'],
     },
@@ -763,20 +804,29 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
   for (const comp of componentMap.values()) {
     if (!comp.categoryPath.length) {
+      const pkgLabel = comp.pkg === 'components' ? 'Library' : 'Core';
       comp.categoryPath = [
-        ...(categoryFallbacks[comp.pkg][comp.category] ?? [comp.pkg === 'core' ? 'Core' : 'Library', 'Other']),
+        ...(categoryFallbacks[comp.pkg][comp.category] ?? [pkgLabel, 'Other']),
         comp.name,
       ];
     }
   }
 
   // Sort by category order
-  const categoryOrder: ComponentDoc['category'][] = [
-    'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives',
+  const coreCategoryOrder: ComponentDoc['category'][] = [
+    'base', 'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives',
   ];
+  const componentsCategoryOrder: ComponentDoc['category'][] = [
+    'actions', 'data-input', 'data-display', 'navigation', 'feedback',
+  ];
+  const orderFor = (pkg: SourcePkg) =>
+    pkg === 'components' ? componentsCategoryOrder : coreCategoryOrder;
+
   const components = [...componentMap.values()].sort((a, b) => {
-    const ai = categoryOrder.indexOf(a.category);
-    const bi = categoryOrder.indexOf(b.category);
+    if (a.pkg !== b.pkg) return a.pkg.localeCompare(b.pkg);
+    const order = orderFor(a.pkg);
+    const ai = order.indexOf(a.category);
+    const bi = order.indexOf(b.category);
     return ai !== bi ? ai - bi : a.name.localeCompare(b.name);
   });
 
