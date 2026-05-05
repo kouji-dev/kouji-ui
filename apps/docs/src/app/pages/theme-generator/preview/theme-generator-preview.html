@@ -5,39 +5,109 @@
 
 <section class="sample-block">
   <h2 class="sample-h2">Buttons</h2>
-  <div class="buttons-grid">
-    <button class="kj-button" data-variant="default">Default</button>
-    <button class="kj-button" data-variant="primary">Primary</button>
-    <button class="kj-button" data-variant="secondary">Secondary</button>
-    <button class="kj-button" data-variant="accent">Accent</button>
-    <button class="kj-button" data-variant="ghost">Ghost</button>
-    <button class="kj-button" data-variant="destructive">Destructive</button>
-    <button class="kj-button" data-variant="link">Link</button>
+  <div class="row">
+    <kj-button variant="default">Default</kj-button>
+    <kj-button variant="destructive">Destructive</kj-button>
+    <kj-button variant="ghost">Ghost</kj-button>
+    <kj-button variant="outline">Outline</kj-button>
+    <kj-button variant="link">Link</kj-button>
   </div>
-  <div class="buttons-grid">
-    <button class="kj-button is-force-hover" data-variant="primary">Primary :hover</button>
-    <button class="kj-button is-force-hover" data-variant="default">Default :hover</button>
-    <button class="kj-button is-force-hover" data-variant="destructive">Destructive :hover</button>
+  <div class="row">
+    <kj-button variant="default" size="sm">Small</kj-button>
+    <kj-button variant="default" size="md">Medium</kj-button>
+    <kj-button variant="default" size="lg">Large</kj-button>
+    <kj-button variant="default" [disabled]="true">Disabled</kj-button>
   </div>
 </section>
 
 <section class="sample-block">
-  <h2 class="sample-h2">Form</h2>
+  <h2 class="sample-h2">Form controls</h2>
   <div class="form-card">
-    <label>Email
+    <label class="form-label">Email
       <kj-input type="email" placeholder="you@example.com" />
     </label>
-    <label>Color
+    <label class="form-label">Color
       <kj-input type="color" value="#b8f500" />
     </label>
-    <label>Focused (forced)
-      <kj-input type="text" placeholder="Focus state" />
-    </label>
-    <div class="form-actions">
-      <button class="kj-button" data-variant="primary">Submit</button>
-      <button class="kj-button" data-variant="ghost">Cancel</button>
+    <kj-checkbox [checked]="checked()">Subscribe to product updates</kj-checkbox>
+    <kj-radio-group [value]="plan()" ariaLabel="Plan">
+      <kj-radio [value]="'free'">Free</kj-radio>
+      <kj-radio [value]="'pro'">Pro</kj-radio>
+      <kj-radio [value]="'team'">Team</kj-radio>
+    </kj-radio-group>
+    <kj-toggle [pressed]="toggled()">Dark mode</kj-toggle>
+    <div class="row">
+      <kj-button variant="default">Save</kj-button>
+      <kj-button variant="ghost">Cancel</kj-button>
     </div>
   </div>
+</section>
+
+<section class="sample-block">
+  <h2 class="sample-h2">Cards</h2>
+  <div class="cards-row">
+    <kj-card>
+      <kj-card-header>
+        <kj-card-title>Project Atlas</kj-card-title>
+        <kj-card-subtitle>Status: in progress</kj-card-subtitle>
+      </kj-card-header>
+      <kj-card-content>The platform-team planning tool. Drafts, comments, shared boards.</kj-card-content>
+      <kj-card-footer>
+        <kj-button variant="ghost">Dismiss</kj-button>
+        <kj-button>Open</kj-button>
+      </kj-card-footer>
+    </kj-card>
+    <kj-card variant="outline">
+      <kj-card-header>
+        <kj-card-title>Outline variant</kj-card-title>
+        <kj-card-subtitle>Border-only card</kj-card-subtitle>
+      </kj-card-header>
+      <kj-card-content>Used when the card sits on a base-200 surface.</kj-card-content>
+    </kj-card>
+  </div>
+</section>
+
+<section class="sample-block">
+  <h2 class="sample-h2">Data display</h2>
+  <div class="row align-center">
+    <kj-avatar size="md" content="JD" />
+    <kj-avatar size="md" content="LM" />
+    <kj-avatar size="md" content="AR" />
+    <kj-badge variant="default">New</kj-badge>
+    <kj-badge variant="secondary">Beta</kj-badge>
+    <kj-badge variant="destructive">Live</kj-badge>
+    <kj-badge variant="outline">Outline</kj-badge>
+  </div>
+</section>
+
+<section class="sample-block">
+  <h2 class="sample-h2">Navigation</h2>
+  <kj-tabs [value]="tab()">
+    <kj-tab id="overview" label="Overview">Theme tokens flow through every styled component.</kj-tab>
+    <kj-tab id="api" label="API">Inputs are signal-typed and forward to headless directives.</kj-tab>
+    <kj-tab id="examples" label="Examples">Every example is rendered live in the docs.</kj-tab>
+  </kj-tabs>
+</section>
+
+<section class="sample-block">
+  <h2 class="sample-h2">Accordion</h2>
+  <kj-accordion type="multiple">
+    <kj-accordion-item value="one" label="What changes when I edit a token?">
+      <kj-accordion-content>The preview re-renders instantly with the new value because everything in this panel reads from <code>--kj-color-*</code> custom properties scoped to the draft theme.</kj-accordion-content>
+    </kj-accordion-item>
+    <kj-accordion-item value="two" label="How do I export the theme?">
+      <kj-accordion-content>Use the export button to download CSS or JSON. Re-import via the import button to restore a saved draft.</kj-accordion-content>
+    </kj-accordion-item>
+  </kj-accordion>
+</section>
+
+<section class="sample-block">
+  <h2 class="sample-h2">Inline</h2>
+  <p class="inline-row">
+    Press <kj-kbd>⌘</kj-kbd><kj-kbd>K</kj-kbd> to search.
+    <kj-link href="#">A link</kj-link> renders in primary.
+    <span class="muted">Muted neutral text.</span>
+  </p>
 </section>
 
 <section class="sample-block">
@@ -46,15 +116,6 @@
   <div class="callout success">Success: action completed.</div>
   <div class="callout warning">Warning: heads up.</div>
   <div class="callout destructive">Destructive: irreversible.</div>
-</section>
-
-<section class="sample-block">
-  <h2 class="sample-h2">Inline</h2>
-  <p>
-    Press <kbd>⌘</kbd><kbd>K</kbd> to search.
-    <a href="#">A link</a> renders in primary.
-    <span class="muted">Muted neutral text.</span>
-  </p>
 </section>
 
 <section class="sample-block">

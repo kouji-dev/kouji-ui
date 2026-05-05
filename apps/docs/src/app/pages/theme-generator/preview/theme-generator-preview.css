@@ -5,28 +5,54 @@
   background: var(--kj-color-base-100);
   font: var(--kj-text-base) var(--kj-font-sans);
 }
+
+/* Disable interactivity inside the preview by default — the area is for
+   visual feedback only. The form controls keep pointer-events so the
+   color picker and inputs work; everything else is non-interactive. */
 :host * { pointer-events: none; }
-:host kj-input { pointer-events: auto; }   /* allow color picker to open */
+:host kj-input,
+:host kj-checkbox,
+:host kj-toggle,
+:host kj-radio,
+:host kj-tab,
+:host kj-accordion-trigger,
+:host .kj-tab,
+:host .kj-accordion-trigger { pointer-events: auto; }
 
 .sample-hero h1 { font: var(--kj-text-2xl) var(--kj-font-display); margin: 0 0 var(--kj-space-sm); }
 .sample-hero code { font: var(--kj-text-sm) var(--kj-font-mono); color: var(--kj-color-neutral); }
 .sample-h2 { font: var(--kj-text-xl) var(--kj-font-display); margin: var(--kj-space-2xl) 0 var(--kj-space-md); }
 
-.buttons-grid {
-  display: flex; flex-wrap: wrap; gap: var(--kj-space-sm);
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kj-space-sm);
   margin-bottom: var(--kj-space-md);
+  align-items: flex-start;
 }
+.row.align-center { align-items: center; }
 
 .form-card {
-  display: grid; gap: var(--kj-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-md);
   background: var(--kj-color-base-200);
   border: var(--kj-border) solid var(--kj-color-base-300);
   border-radius: var(--kj-radius-box);
   padding: var(--kj-space-lg);
   max-width: 480px;
 }
-.form-card label { display: grid; gap: var(--kj-space-xs); font: var(--kj-text-sm) var(--kj-font-mono); }
-.form-actions { display: flex; gap: var(--kj-space-sm); }
+.form-label {
+  display: grid;
+  gap: var(--kj-space-xs);
+  font: var(--kj-text-sm) var(--kj-font-mono);
+}
+
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--kj-space-md);
+}
 
 .callout {
   padding: var(--kj-space-md) var(--kj-space-lg);
@@ -40,7 +66,7 @@
 .callout.warning     { border-color: var(--kj-color-warning); }
 .callout.destructive { border-color: var(--kj-color-destructive); }
 
-a { color: var(--kj-color-primary); }
+.inline-row { display: flex; align-items: center; gap: var(--kj-space-sm); flex-wrap: wrap; }
 .muted { color: var(--kj-color-neutral); }
 
 .surface {
@@ -52,6 +78,3 @@ a { color: var(--kj-color-primary); }
 .s-100 { background: var(--kj-color-base-100); }
 .s-200 { background: var(--kj-color-base-200); }
 .s-300 { background: var(--kj-color-base-300); }
-
-/* Forced hover — duplicates :hover styles for the demo row */
-.kj-button.is-force-hover { filter: brightness(1.05); transform: translateY(-1px); }

@@ -1,12 +1,62 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjInputComponent } from '@kouji-ui/components';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import {
+  KjButtonComponent,
+  KjInputComponent,
+  KjCheckboxComponent,
+  KjRadioGroupComponent,
+  KjRadioComponent,
+  KjToggleComponent,
+  KjBadgeComponent,
+  KjAvatarComponent,
+  KjKbdComponent,
+  KjLinkComponent,
+  KjCardComponent,
+  KjCardHeaderComponent,
+  KjCardTitleComponent,
+  KjCardSubtitleComponent,
+  KjCardContentComponent,
+  KjCardFooterComponent,
+  KjAccordionComponent,
+  KjAccordionItemComponent,
+  KjAccordionContentComponent,
+  KjTabsComponent,
+  KjTabComponent,
+} from '@kouji-ui/components';
 
 @Component({
   selector: 'kj-theme-generator-preview',
   standalone: true,
-  imports: [KjInputComponent],
+  imports: [
+    KjButtonComponent,
+    KjInputComponent,
+    KjCheckboxComponent,
+    KjRadioGroupComponent,
+    KjRadioComponent,
+    KjToggleComponent,
+    KjBadgeComponent,
+    KjAvatarComponent,
+    KjKbdComponent,
+    KjLinkComponent,
+    KjCardComponent,
+    KjCardHeaderComponent,
+    KjCardTitleComponent,
+    KjCardSubtitleComponent,
+    KjCardContentComponent,
+    KjCardFooterComponent,
+    KjAccordionComponent,
+    KjAccordionItemComponent,
+    KjAccordionContentComponent,
+    KjTabsComponent,
+    KjTabComponent,
+  ],
   templateUrl: './theme-generator-preview.html',
   styleUrl: './theme-generator-preview.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ThemeGeneratorPreviewComponent {}
+export class ThemeGeneratorPreviewComponent {
+  // Static demo state for components that need a model.
+  readonly tab = signal<string>('overview');
+  readonly checked = signal(true);
+  readonly toggled = signal(true);
+  readonly plan = signal<'free' | 'pro' | 'team'>('pro');
+}
