@@ -1,0 +1,22 @@
+.docs-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+.sidebar {
+  background: var(--kj-color-base-200);
+  border-right: 1px solid var(--kj-color-base-300);
+  overflow: hidden;
+}
+.generator-main {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.placeholder {
+  color: var(--kj-color-neutral);
+  font: var(--kj-text-sm) var(--kj-font-mono);
+}

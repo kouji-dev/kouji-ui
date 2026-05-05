@@ -32,6 +32,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/component-doc/component-doc').then(m => m.ComponentDocComponent),
   },
   {
+    path: 'theme-generator',
+    loadComponent: () => import('./pages/theme-generator/theme-generator')
+      .then(m => m.ThemeGeneratorComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
