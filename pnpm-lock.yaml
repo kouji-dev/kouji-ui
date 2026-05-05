@@ -77,6 +77,9 @@ importers:
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@analogjs/vite-plugin-angular':
         specifier: ^2.5.0
