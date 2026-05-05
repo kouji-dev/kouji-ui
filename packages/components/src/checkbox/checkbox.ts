@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, ViewEncapsulation, model, input, viewChild, ElementRef } from '@angular/core';
 import { KjCheckbox } from '@kouji-ui/core';
 
+let checkboxIdCounter = 0;
+
 /**
  * Styled wrapper around the headless `KjCheckbox` directive.
  *
@@ -34,8 +36,9 @@ import { KjCheckbox } from '@kouji-ui/core';
         [kjDisabled]="disabled()"
         [attr.data-size]="size()"
         [attr.data-indeterminate]="indeterminate() ? '' : null"
+        [attr.aria-labelledby]="labelId"
       ></span>
-      <span class="kj-checkbox-label"><ng-content /></span>
+      <span class="kj-checkbox-label" [id]="labelId"><ng-content /></span>
     </label>
   `,
   styleUrl: './checkbox.css',
@@ -51,6 +54,8 @@ export class KjCheckboxComponent {
   readonly disabled = input(false);
   readonly indeterminate = input(false);
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+
+  protected readonly labelId = `kj-checkbox-${++checkboxIdCounter}`;
 
   private readonly box = viewChild.required<ElementRef<HTMLElement>>('box');
 

@@ -33,6 +33,8 @@ export class KjRadioGroupComponent {
   readonly ariaLabel = input<string | undefined>(undefined);
 }
 
+let radioIdCounter = 0;
+
 /**
  * Single radio button. Must live inside `<kj-radio-group>`.
  *
@@ -55,8 +57,9 @@ export class KjRadioGroupComponent {
         class="kj-radio-dot"
         [kjRadioValue]="value()"
         [kjDisabled]="disabled()"
+        [attr.aria-labelledby]="labelId"
       ></span>
-      <span class="kj-radio-label"><ng-content /></span>
+      <span class="kj-radio-label" [id]="labelId"><ng-content /></span>
     </label>
   `,
   encapsulation: ViewEncapsulation.None,
@@ -69,6 +72,8 @@ export class KjRadioGroupComponent {
 export class KjRadioComponent {
   readonly value = input.required<unknown>();
   readonly disabled = input(false);
+
+  protected readonly labelId = `kj-radio-${++radioIdCounter}`;
 
   private readonly dot = viewChild.required<ElementRef<HTMLElement>>('dot');
 
