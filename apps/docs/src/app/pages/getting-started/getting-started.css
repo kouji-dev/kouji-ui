@@ -70,23 +70,7 @@ code {
 }
 
 
-.callout {
-  display: flex; gap: 1rem; align-items: flex-start;
-  background: #0d0d0d; border: 1px solid var(--border);
-  border-left: 3px solid var(--text-muted); padding: 1rem 1.25rem;
-  margin-top: 1rem;
-}
-
-.callout-green { border-left-color: var(--accent); }
-
 .callout-icon { color: var(--text-muted); font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
-.callout-green .callout-icon { color: var(--accent); }
-
-.callout p {
-  margin: 0; color: var(--text-secondary); font-size: 0.8rem; line-height: 1.6;
-}
-.callout p strong { color: #888; }
-.callout p code { background: var(--bg-subtle); color: var(--accent); }
 
 /* Next steps */
 .next-steps { padding: 3rem 0; }
