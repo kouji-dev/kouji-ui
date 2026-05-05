@@ -9,9 +9,10 @@
     --kj-callout-border-color: var(--kj-color-info);
     --kj-callout-border-width: var(--kj-border);
     --kj-callout-radius:       var(--kj-radius-box);
-    --kj-callout-padding-x:    var(--kj-space-4);
-    --kj-callout-padding-y:    var(--kj-space-3);
+    --kj-callout-padding-x:    var(--kj-space-xl);
+    --kj-callout-padding-y:    var(--kj-space-lg);
     --kj-callout-accent:       var(--kj-color-info);
+    --kj-callout-font-size:    var(--kj-text-base);
 
     display: block;
     background: var(--kj-callout-bg);
@@ -20,7 +21,7 @@
     border-left: 3px solid var(--kj-callout-accent);
     border-radius: var(--kj-callout-radius);
     padding: var(--kj-callout-padding-y) var(--kj-callout-padding-x);
-    font: var(--kj-text-sm) / 1.5 var(--kj-font-sans);
+    font: var(--kj-callout-font-size) / 1.5 var(--kj-font-sans);
   }
 
   .kj-callout strong { color: var(--kj-callout-accent); font-weight: 600; }

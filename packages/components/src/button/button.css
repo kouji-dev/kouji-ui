@@ -15,8 +15,8 @@
     --kj-button-border-style:     solid;
     --kj-button-border-width:     var(--kj-border);
     --kj-button-radius:           var(--kj-radius-field);
-    --kj-button-padding-x:        var(--kj-space-3);
-    --kj-button-padding-y:        var(--kj-space-2);
+    --kj-button-padding-x:        var(--kj-space-md);
+    --kj-button-padding-y:        var(--kj-space-sm);
     --kj-button-font:             var(--kj-font-sans);
     --kj-button-font-size:        var(--kj-text-sm);
     --kj-button-shadow:           none;
@@ -26,7 +26,7 @@
     /* the only place raw var(--kj-button-*) is read */
     display: inline-flex;
     align-items: center;
-    gap: var(--kj-space-2);
+    gap: var(--kj-space-sm);
     background: var(--kj-button-bg);
     color: var(--kj-button-fg);
     border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
@@ -71,18 +71,18 @@
 
   /* sizes */
   .kj-button[data-size="sm"] {
-    --kj-button-padding-x: var(--kj-space-2);
+    --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: 0.25rem;
     --kj-button-font-size: 0.8125rem;
   }
   .kj-button[data-size="lg"] {
-    --kj-button-padding-x: var(--kj-space-4);
+    --kj-button-padding-x: var(--kj-space-lg);
     --kj-button-padding-y: 0.625rem;
     --kj-button-font-size: 1rem;
   }
   .kj-button[data-size="icon"] {
-    --kj-button-padding-x: var(--kj-space-2);
-    --kj-button-padding-y: var(--kj-space-2);
+    --kj-button-padding-x: var(--kj-space-sm);
+    --kj-button-padding-y: var(--kj-space-sm);
   }
 
   /* states */

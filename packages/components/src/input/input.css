@@ -12,8 +12,8 @@
     --kj-input-border-style:     solid;
     --kj-input-border-width:     var(--kj-border);
     --kj-input-radius:           var(--kj-radius-field);
-    --kj-input-padding-x:        var(--kj-space-3);
-    --kj-input-padding-y:        var(--kj-space-2);
+    --kj-input-padding-x:        var(--kj-space-md);
+    --kj-input-padding-y:        var(--kj-space-sm);
     --kj-input-font:             var(--kj-font-sans);
     --kj-input-font-size:        var(--kj-text-sm);
     --kj-input-placeholder-fg:   var(--kj-color-neutral);

@@ -1,5 +1,5 @@
 .toc-nav {
-  padding: 2rem 1.25rem;
+  padding: var(--kj-space-2xl) 1.25rem;
   font-family: var(--kj-font-mono);
 }
 
@@ -9,7 +9,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--kj-color-neutral);
-  margin-bottom: 1rem;
+  margin-bottom: var(--kj-space-lg);
 }
 
 .toc-list {
@@ -30,7 +30,7 @@
   text-decoration: none;
   font-size: 0.75rem;
   line-height: 1.4;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem var(--kj-space-sm);
   border-left: 2px solid transparent;
   transition: color 0.15s, border-color 0.15s;
   width: 100%;

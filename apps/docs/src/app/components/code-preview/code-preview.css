@@ -12,7 +12,7 @@
   justify-content: space-between;
   background: var(--kj-color-base-100);
   border-bottom: 1px solid var(--kj-color-base-300);
-  padding: 0 1rem;
+  padding: 0 var(--kj-space-lg);
 }
 
 .file-tabs {
@@ -42,7 +42,7 @@
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--kj-space-md);
 }
 
 .copy-btn {
@@ -55,7 +55,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem 0;
+  padding: var(--kj-space-sm) 0;
   transition: color 0.15s;
   letter-spacing: 0.03em;
 }
@@ -71,7 +71,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem 0;
+  padding: var(--kj-space-sm) 0;
   transition: color 0.15s;
   letter-spacing: 0.03em;
 }
@@ -79,7 +79,7 @@
 .stackblitz-btn:hover { color: var(--kj-color-primary); }
 
 .no-examples {
-  padding: 1.5rem;
+  padding: var(--kj-space-xl);
   font-family: var(--kj-font-mono);
   font-size: 0.8rem;
   color: var(--kj-color-neutral);
@@ -114,7 +114,7 @@
 .preview-theme-strip {
   display: flex;
   gap: 0.35rem;
-  padding: 0.5rem 1rem;
+  padding: var(--kj-space-sm) var(--kj-space-lg);
   background: var(--kj-color-base-100);
   border-bottom: 1px solid var(--kj-color-base-300);
   min-height: 2.25rem;
@@ -146,7 +146,7 @@
 }
 
 .no-code-for-theme {
-  padding: 1rem 1.25rem;
+  padding: var(--kj-space-lg) 1.25rem;
   font-family: var(--kj-font-mono);
   font-size: 0.78rem;
   color: var(--kj-color-neutral);
@@ -159,7 +159,7 @@
   display: flex;
   background: var(--kj-color-base-200);
   border-bottom: 1px solid var(--kj-color-base-300);
-  padding: 0 1rem;
+  padding: 0 var(--kj-space-lg);
 }
 
 .example-tab {
@@ -169,7 +169,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: 0.5rem 0.875rem;
+  padding: var(--kj-space-sm) 0.875rem;
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: color 0.15s, border-color 0.15s;

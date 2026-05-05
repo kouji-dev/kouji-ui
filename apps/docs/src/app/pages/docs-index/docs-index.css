@@ -24,13 +24,13 @@
 
 /* Main content */
 .docs-main {
-  padding: 4rem 4rem 6rem;
+  padding: var(--kj-space-4xl) var(--kj-space-4xl) var(--kj-space-5xl);
   max-width: 960px;
 }
 
 .docs-hero {
-  margin-bottom: 4rem;
-  padding-bottom: 3rem;
+  margin-bottom: var(--kj-space-4xl);
+  padding-bottom: var(--kj-space-3xl);
   border-bottom: 1px solid var(--kj-color-base-300);
 }
 
@@ -42,7 +42,7 @@
   color: var(--kj-color-primary);
   border: 1px solid var(--kj-color-primary);
   padding: 0.2rem 0.6rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--kj-space-xl);
 }
 
 h1 {
@@ -50,7 +50,7 @@ h1 {
   font-size: 3.5rem;
   font-weight: 800;
   letter-spacing: -0.04em;
-  margin: 0 0 1rem;
+  margin: 0 0 var(--kj-space-lg);
   line-height: 1;
 }
 
@@ -63,7 +63,7 @@ h1 {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--kj-color-neutral);
-  margin: 0 0 1.5rem;
+  margin: 0 0 var(--kj-space-xl);
 }
 
 .component-grid {
@@ -101,7 +101,7 @@ h1 {
   font-size: 0.75rem;
   color: var(--kj-color-neutral);
   line-height: 1.5;
-  margin-top: 0.25rem;
+  margin-top: var(--kj-space-xs);
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -110,8 +110,8 @@ h1 {
 
 .card-arrow {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  top: var(--kj-space-xl);
+  right: var(--kj-space-xl);
   color: #222;
   font-size: 1rem;
   transition: color 0.15s, transform 0.15s;
@@ -151,13 +151,13 @@ h1 {
   .mobile-topbar {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--kj-space-md);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: 56px;
-    padding: 0 1rem;
+    padding: 0 var(--kj-space-lg);
     background: var(--kj-color-base-200);
     border-bottom: 1px solid var(--kj-color-base-300);
     z-index: 100;
@@ -179,7 +179,7 @@ h1 {
   .topbar-logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--kj-space-sm);
     text-decoration: none;
     opacity: 0.85;
     transition: opacity 0.15s;
@@ -218,7 +218,7 @@ h1 {
   }
 
   .docs-main {
-    padding: 2rem 1.25rem 4rem;
+    padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
   }
 
   h1 {

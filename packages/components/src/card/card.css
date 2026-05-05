@@ -9,8 +9,8 @@
     --kj-card-border-color: transparent;
     --kj-card-border-width: var(--kj-border);
     --kj-card-radius:       var(--kj-radius-box);
-    --kj-card-padding-x:    var(--kj-space-5);
-    --kj-card-padding-y:    var(--kj-space-5);
+    --kj-card-padding-x:    var(--kj-space-xl);
+    --kj-card-padding-y:    var(--kj-space-xl);
     --kj-card-shadow:       none;
 
     display: block;

@@ -20,7 +20,7 @@
 
 /* ── Main content ── */
 .doc-main {
-  padding: 4rem 3.5rem 6rem;
+  padding: var(--kj-space-4xl) 3.5rem var(--kj-space-5xl);
   min-width: 0; /* prevent grid blowout */
   overflow-x: hidden;
 }
@@ -43,7 +43,7 @@
 
 /* ── Page header ── */
 .doc-header {
-  padding-bottom: 2rem;
+  padding-bottom: var(--kj-space-2xl);
 }
 
 .tag {
@@ -54,7 +54,7 @@
   color: var(--kj-color-primary);
   border: 1px solid var(--kj-color-primary);
   padding: 0.2rem 0.6rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--kj-space-xl);
 }
 
 h1 {
@@ -62,7 +62,7 @@ h1 {
   font-size: 3.5rem;
   font-weight: 800;
   letter-spacing: -0.04em;
-  margin: 0 0 1rem;
+  margin: 0 0 var(--kj-space-lg);
   line-height: 1;
 }
 
@@ -83,15 +83,15 @@ h1 {
 .directive-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
+  gap: var(--kj-space-xl);
+  margin-bottom: var(--kj-space-lg);
 }
 
 .directive-selector {
   background: var(--kj-color-base-200);
   border: 1px solid var(--kj-color-base-300);
   color: var(--kj-color-primary);
-  padding: 0.3rem 0.75rem;
+  padding: 0.3rem var(--kj-space-md);
   font-size: 0.875rem;
   font-family: var(--kj-font-mono);
 }
@@ -103,7 +103,7 @@ h1 {
   font-size: 0.85rem;
   line-height: 1.7;
 
-  margin-bottom: 2rem;
+  margin-bottom: var(--kj-space-2xl);
 }
 
 /* ── Inputs table ── */
@@ -112,7 +112,7 @@ h1 {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--kj-color-neutral);
-  margin: 0 0 1rem;
+  margin: 0 0 var(--kj-space-lg);
   font-family: var(--kj-font-mono);
   font-weight: 400;
 }
@@ -131,24 +131,24 @@ h1 {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--kj-color-neutral);
-  padding: 0.5rem 0;
-  margin-bottom: 0.5rem;
+  padding: var(--kj-space-sm) 0;
+  margin-bottom: var(--kj-space-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--kj-space-sm);
 }
 .example-label::before { content: '○'; color: var(--kj-color-primary); font-size: 0.65rem; }
 .code-example {
   background: var(--kj-color-base-100);
   border: 1px solid var(--kj-color-base-300);
-  padding: 1.5rem;
+  padding: var(--kj-space-xl);
   font-family: var(--kj-font-mono);
   font-size: 0.8rem;
   color: var(--kj-color-neutral);
   overflow-x: auto;
   white-space: pre;
   line-height: 1.6;
-  margin-bottom: 1rem;
+  margin-bottom: var(--kj-space-lg);
 }
 
 /* ── Not found ── */
@@ -168,13 +168,13 @@ h1 {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--kj-color-base-content);
-  margin: 0 0 2rem;
+  margin: 0 0 var(--kj-space-2xl);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .inline-examples-block {
-  margin-top: 1.5rem;
+  margin-top: var(--kj-space-xl);
 }
 
 .required-badge { color: var(--kj-color-primary); margin-left: 4px; font-size: 0.9em; }
@@ -214,13 +214,13 @@ h1 {
   .mobile-topbar {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--kj-space-md);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: 56px;
-    padding: 0 1rem;
+    padding: 0 var(--kj-space-lg);
     background: var(--kj-color-base-200);
     border-bottom: 1px solid var(--kj-color-base-300);
     z-index: 100;
@@ -242,7 +242,7 @@ h1 {
   .topbar-logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--kj-space-sm);
     text-decoration: none;
     opacity: 0.85;
     transition: opacity 0.15s;
@@ -281,7 +281,7 @@ h1 {
   }
 
   .doc-main {
-    padding: 2rem 1.25rem 4rem;
+    padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
   }
 
   h1 {

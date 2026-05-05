@@ -29,8 +29,8 @@
 .gs-main { padding: 4rem; max-width: 780px; }
 
 .gs-header {
-  padding-bottom: 3rem;
-  margin-bottom: 3rem;
+  padding-bottom: var(--kj-space-3xl);
+  margin-bottom: var(--kj-space-3xl);
   border-bottom: 1px solid var(--kj-color-base-300);
 }
 
@@ -60,7 +60,7 @@ h1 {
 
 .section p {
   color: var(--kj-color-neutral); font-size: 0.85rem; line-height: 1.7;
-  margin-bottom: 1rem; max-width: 60ch;
+  margin-bottom: var(--kj-space-lg); max-width: 60ch;
 }
 
 code {
@@ -83,7 +83,7 @@ code {
 
 .next-card {
   display: flex; flex-direction: column; gap: 0.5rem;
-  padding: 1.5rem; background: #0d0d0d; border: 1px solid var(--kj-color-base-300);
+  padding: var(--kj-space-xl); background: #0d0d0d; border: 1px solid var(--kj-color-base-300);
   text-decoration: none; transition: background 0.15s;
 }
 .next-card:hover { background: var(--kj-color-base-200); }

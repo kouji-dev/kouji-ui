@@ -25,7 +25,10 @@
     --kj-color-accent:         #b8f500;
     --kj-color-accent-content: #0c0c0c;
 
-    --kj-color-neutral:         #888888;
+    /* #666 matches the original docs' dominant muted-text color
+       (was --text-secondary). #888 was reserved for the lightest hover
+       affordances and is rare; mapping both onto neutral is acceptable. */
+    --kj-color-neutral:         #666666;
     --kj-color-neutral-content: #f0ede6;
 
     --kj-color-info:         var(--kj-base-blue-400);
@@ -59,14 +62,17 @@
     --kj-text-xl:   var(--kj-base-text-xl);
     --kj-text-2xl:  var(--kj-base-text-2xl);
 
-    /* ── spacing ── */
-    --kj-space-1: var(--kj-base-space-1);
-    --kj-space-2: var(--kj-base-space-2);
-    --kj-space-3: var(--kj-base-space-3);
-    --kj-space-4: var(--kj-base-space-4);
-    --kj-space-5: var(--kj-base-space-5);
-    --kj-space-6: var(--kj-base-space-6);
-    --kj-space-8: var(--kj-base-space-8);
+    /* ── spacing (semantic) ── */
+    --kj-space-xs:  var(--kj-base-space-xs);
+    --kj-space-sm:  var(--kj-base-space-sm);
+    --kj-space-md:  var(--kj-base-space-md);
+    --kj-space-lg:  var(--kj-base-space-lg);
+    --kj-space-xl:  var(--kj-base-space-xl);
+    --kj-space-2xl: var(--kj-base-space-2xl);
+    --kj-space-3xl: var(--kj-base-space-3xl);
+    --kj-space-4xl: var(--kj-base-space-4xl);
+    --kj-space-5xl: var(--kj-base-space-5xl);
+    --kj-space-6xl: var(--kj-base-space-6xl);
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);

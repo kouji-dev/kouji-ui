@@ -1,7 +1,7 @@
 .table-wrap {
   border: 1px solid var(--kj-color-base-300);
   font-size: 0.8rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--kj-space-sm);
   overflow-x: auto;
 }
 
@@ -17,7 +17,7 @@ thead {
 }
 
 th {
-  padding: 0.75rem 1rem;
+  padding: var(--kj-space-md) var(--kj-space-lg);
   text-align: left;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
@@ -30,7 +30,7 @@ th {
 th:last-child { border-right: none; }
 
 td {
-  padding: 0.75rem 1rem;
+  padding: var(--kj-space-md) var(--kj-space-lg);
   border-bottom: 1px solid var(--kj-color-base-200);
   border-right: 1px solid var(--kj-color-base-300);
   color: var(--kj-color-neutral);
@@ -60,7 +60,7 @@ td[data-col="description"] {
 }
 
 .empty-state {
-  padding: 1rem;
+  padding: var(--kj-space-lg);
   color: var(--kj-color-neutral);
   font-size: 0.8rem;
   font-family: var(--kj-font-mono);

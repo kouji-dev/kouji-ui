@@ -37,15 +37,18 @@
     --kj-base-radius-3:    1rem;
     --kj-base-radius-full: 9999px;
 
-    /* ── spacing — 8-step scale ── */
-    --kj-base-space-0: 0;
-    --kj-base-space-1: 0.25rem;
-    --kj-base-space-2: 0.5rem;
-    --kj-base-space-3: 0.75rem;
-    --kj-base-space-4: 1rem;
-    --kj-base-space-5: 1.5rem;
-    --kj-base-space-6: 2rem;
-    --kj-base-space-8: 4rem;
+    /* ── spacing — semantic scale (canonical names) ── */
+    --kj-base-space-0:   0;
+    --kj-base-space-xs:  0.25rem;   /*  4px */
+    --kj-base-space-sm:  0.5rem;    /*  8px */
+    --kj-base-space-md:  0.75rem;   /* 12px */
+    --kj-base-space-lg:  1rem;      /* 16px */
+    --kj-base-space-xl:  1.5rem;    /* 24px */
+    --kj-base-space-2xl: 2rem;      /* 32px */
+    --kj-base-space-3xl: 3rem;      /* 48px */
+    --kj-base-space-4xl: 4rem;      /* 64px */
+    --kj-base-space-5xl: 6rem;      /* 96px */
+    --kj-base-space-6xl: 8rem;      /* 128px */
 
     /* ── type ── */
     --kj-base-font-sans:    system-ui, -apple-system, sans-serif;

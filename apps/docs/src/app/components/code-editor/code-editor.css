@@ -11,7 +11,7 @@
 .editor-header {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem;
+  padding: var(--kj-space-sm) var(--kj-space-lg);
   background: var(--kj-color-base-100);
   border-bottom: 1px solid var(--kj-color-base-300);
   flex-shrink: 0;
@@ -24,7 +24,7 @@
   text-transform: uppercase;
   color: var(--kj-color-primary);
   background: color-mix(in oklab, var(--kj-color-primary) 8%, transparent);
-  padding: 0.15rem 0.5rem;
+  padding: 0.15rem var(--kj-space-sm);
   border: 1px solid color-mix(in oklab, var(--kj-color-primary) 22%, transparent);
 }
 
@@ -41,7 +41,7 @@
   font-size: 0.65rem;
   letter-spacing: 0.06em;
   cursor: pointer;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem var(--kj-space-sm);
   transition: color 0.15s;
 }
 .copy-btn:hover { color: var(--kj-color-base-content); }

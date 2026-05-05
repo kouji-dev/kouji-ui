@@ -47,8 +47,8 @@
   .kj-link[data-variant="nav"] {
     --kj-link-fg: var(--kj-color-base-content);
     --kj-link-decoration: none;
-    --kj-link-padding-x: var(--kj-space-3);
-    --kj-link-padding-y: var(--kj-space-2);
+    --kj-link-padding-x: var(--kj-space-md);
+    --kj-link-padding-y: var(--kj-space-sm);
     width: 100%;
   }
   .kj-link[data-variant="nav"]:hover {
