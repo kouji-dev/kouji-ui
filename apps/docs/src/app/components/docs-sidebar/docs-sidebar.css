@@ -353,3 +353,10 @@
 @media (max-width: 220px) {
   .sidebar-pills { flex-wrap: wrap; }
 }
+
+.sidebar-empty {
+  padding: var(--kj-space-sm) var(--kj-space-md);
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-color-neutral);
+  margin: 0;
+}

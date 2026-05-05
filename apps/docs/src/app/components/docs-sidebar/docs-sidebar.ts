@@ -6,6 +6,10 @@ import { DocsService, DocsTrack as DocsTrackInfo, SidebarNode } from '../../serv
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
 
+// TEMPORARY — replaced in Phase B Task B6 by `import { BUILT_IN_NAMES } from '../../lib/theme/built-in-themes';`
+const BUILT_IN_THEME_NAMES = ['kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate'] as const;
+type BuiltInName = typeof BUILT_IN_THEME_NAMES[number];
+
 /** Top-level section: docs or theme generator. */
 export type TopSection = 'docs' | 'generator';
 /** Sidebar UI state — top-level menu, or the id of a drilled-into track. */
@@ -57,6 +61,11 @@ export class DocsSidebarComponent implements OnInit {
 
   /** Controls picker open/closed state. */
   protected readonly pickerOpen = signal(false);
+
+  /** Built-in theme names for theme generator. */
+  protected readonly builtInThemes = BUILT_IN_THEME_NAMES;
+  /** Saved user themes for theme generator; stub for now; wired to ThemeDraftService in Phase B Task B6. */
+  protected readonly myThemes = signal<string[]>([]);
 
   protected isCategoryCollapsed(label: string): boolean {
     return this.collapsed().has(label);
@@ -159,4 +168,8 @@ export class DocsSidebarComponent implements OnInit {
   protected togglePicker(): void { this.pickerOpen.update(v => !v); }
   protected closePicker(): void { this.pickerOpen.set(false); }
   protected selectTheme(t: Theme): void { this.themeService.set(t); }
+
+  protected onForkBuiltIn(_name: BuiltInName): void { this.close(); }
+  protected onLoadSaved(_name: string): void { this.close(); }
+  protected onNewTheme(): void { this.close(); }
 }
