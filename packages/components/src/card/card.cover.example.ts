@@ -9,7 +9,7 @@ import { KjButtonComponent } from '../button/button';
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-card style="max-width: 24rem;">
-      <kj-card-cover>
+      <kj-card-cover fit="contain">
         <img src="https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?w=480&fit=crop" alt="Mountains" />
       </kj-card-cover>
       <kj-card-header>
