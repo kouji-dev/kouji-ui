@@ -4,6 +4,9 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * Themed surface container — card, panel, feature box.
  * Presentation-only: no headless directive in core, no behavior.
  *
+ * Compose with `<kj-card-header>`, `<kj-card-content>`, `<kj-card-footer>`,
+ * `<kj-card-cover>` sub-components for structured layouts.
+ *
  * Variants:
  * - `default` — base surface (background `--kj-color-base-200`)
  * - `outline` — transparent background, neutral border
@@ -14,8 +17,12 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * <kj-card>Default card</kj-card>
  * <kj-card variant="outline">Outlined</kj-card>
  * ```
- * @doc
+ * @doc-example Default
  *   @doc-file card.example.ts
+ * @doc-example Full
+ *   @doc-file card.full.example.ts
+ * @doc-example Cover
+ *   @doc-file card.cover.example.ts
  * @category Library/Data display
  */
 @Component({
@@ -33,4 +40,80 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
 })
 export class KjCardComponent {
   readonly variant = input<'default' | 'outline' | 'subtle'>('default');
+}
+
+/** Full-bleed image area at the top of a card. */
+@Component({
+  selector: 'kj-card-cover',
+  standalone: true,
+  template: `<ng-content />`,
+  encapsulation: ViewEncapsulation.None,
+  host: { 'class': 'kj-card-cover' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjCardCoverComponent {}
+
+/** Header band inside the card. Flexes title/subtitle on the left and an optional extra slot on the right. */
+@Component({
+  selector: 'kj-card-header',
+  standalone: true,
+  template: `<ng-content />`,
+  encapsulation: ViewEncapsulation.None,
+  host: { 'class': 'kj-card-header' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjCardHeaderComponent {}
+
+/** Card heading. Renders semantically as `<h3>`. */
+@Component({
+  selector: 'kj-card-title',
+  standalone: true,
+  template: `<h3 class="kj-card-title"><ng-content /></h3>`,
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjCardTitleComponent {}
+
+/** Card subtitle — smaller, lighter text below the title. */
+@Component({
+  selector: 'kj-card-subtitle',
+  standalone: true,
+  template: `<p class="kj-card-subtitle"><ng-content /></p>`,
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjCardSubtitleComponent {}
+
+/** Main body slot. `padded` toggles the standard padding (default true). */
+@Component({
+  selector: 'kj-card-content',
+  standalone: true,
+  template: `<ng-content />`,
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    'class': 'kj-card-content',
+    '[attr.data-padded]': "padded() ? '' : null",
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjCardContentComponent {
+  readonly padded = input(true);
+}
+
+/** Footer actions area. `align` controls button placement. */
+@Component({
+  selector: 'kj-card-footer',
+  standalone: true,
+  template: `<ng-content />`,
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    'class': 'kj-card-footer',
+    '[attr.data-align]': 'align()',
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjCardFooterComponent {
+  readonly align = input<'start' | 'center' | 'end' | 'between'>('end');
 }

@@ -23,8 +23,10 @@ export { KjBadgeWithIconExample } from './badge/badge.with-icon.example';
 // Button (existing)
 export { KjButtonExample } from './button/button.example';
 
-// Card (existing)
-export { KjCardExample } from './card/card.example';
+// Card
+export { KjCardExample }      from './card/card.example';
+export { KjCardFullExample }  from './card/card.full.example';
+export { KjCardCoverExample } from './card/card.cover.example';
 
 // Checkbox
 export { KjCheckboxDefaultExample }       from './checkbox/checkbox.default.example';

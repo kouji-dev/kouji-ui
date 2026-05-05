@@ -18,9 +18,14 @@
     color: var(--kj-card-fg);
     border: var(--kj-card-border-width) solid var(--kj-card-border-color);
     border-radius: var(--kj-card-radius);
-    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
     box-shadow: var(--kj-card-shadow);
+    overflow: hidden;
     transition: var(--kj-transition);
+  }
+
+  /* When no sub-components are used, fall back to the padded wrapper for plain content. */
+  .kj-card:not(:has(.kj-card-header, .kj-card-content, .kj-card-footer, .kj-card-cover)) {
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
   }
 
   .kj-card[data-variant="outline"] {
@@ -31,4 +36,59 @@
   .kj-card[data-variant="subtle"] {
     --kj-card-bg: var(--kj-color-base-300);
   }
+
+  /* Cover image */
+  .kj-card-cover {
+    display: block;
+  }
+  .kj-card-cover img {
+    width: 100%;
+    display: block;
+  }
+
+  /* Header */
+  .kj-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-xs, 0.25rem);
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+  }
+
+  /* Title */
+  .kj-card-title {
+    font: 600 1rem / 1.3 var(--kj-font-sans);
+    margin: 0;
+    color: var(--kj-color-base-content);
+  }
+
+  /* Subtitle */
+  .kj-card-subtitle {
+    font: 0.875rem / 1.4 var(--kj-font-sans);
+    color: var(--kj-color-base-content);
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  /* Content */
+  .kj-card-content {
+    display: block;
+    color: var(--kj-color-base-content);
+    font: 0.9375rem / 1.5 var(--kj-font-sans);
+  }
+  .kj-card-content[data-padded] {
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+  }
+
+  /* Footer */
+  .kj-card-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
+    border-top: var(--kj-border) solid var(--kj-color-base-300);
+  }
+  .kj-card-footer[data-align="start"]   { justify-content: flex-start; }
+  .kj-card-footer[data-align="center"]  { justify-content: center; }
+  .kj-card-footer[data-align="end"]     { justify-content: flex-end; }
+  .kj-card-footer[data-align="between"] { justify-content: space-between; }
 }
