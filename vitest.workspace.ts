@@ -10,7 +10,7 @@ export default defineConfig({
       'packages/core/vite.config.ts',
       'packages/themes/vite.config.ts',
       'packages/components/vite.config.ts',
-      'apps/docs/vite.config.ts',
+      'apps/docs/vitest.config.ts',
     ],
   },
 });
