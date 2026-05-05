@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { KjDialogTrigger } from '@kouji-ui/core';
+import { KjDialogTrigger, KjButton } from '@kouji-ui/core';
+import { KjButtonComponent } from '../button/button';
+import { KjInputComponent } from '../input/input';
 import {
   KjDialogComponent, KjDialogOverlayComponent, KjDialogTitleComponent, KjDialogCloseComponent,
 } from './dialog';
@@ -7,10 +9,10 @@ import {
 @Component({
   selector: 'kj-dialog-with-form-example',
   standalone: true,
-  imports: [KjDialogTrigger, KjDialogComponent, KjDialogOverlayComponent, KjDialogTitleComponent, KjDialogCloseComponent],
+  imports: [KjDialogTrigger, KjButton, KjButtonComponent, KjInputComponent, KjDialogComponent, KjDialogOverlayComponent, KjDialogTitleComponent, KjDialogCloseComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <button [kjDialogTrigger]="dlg">New project</button>
+    <kj-button [kjDialogTrigger]="dlg">New project</kj-button>
     <ng-template #dlg>
       <kj-dialog-overlay>
         <kj-dialog>
@@ -18,11 +20,11 @@ import {
           <form (submit)="$event.preventDefault()" style="display:flex;flex-direction:column;gap:1rem;">
             <label style="display:flex;flex-direction:column;gap:0.25rem;">
               <span>Project name</span>
-              <input type="text" />
+              <kj-input type="text" placeholder="My project" />
             </label>
             <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
               <kj-dialog-close>Cancel</kj-dialog-close>
-              <button type="submit">Save</button>
+              <button kjButton class="kj-button" type="submit">Save</button>
             </div>
           </form>
         </kj-dialog>

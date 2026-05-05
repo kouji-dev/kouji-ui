@@ -1,24 +1,21 @@
 import { Component, TemplateRef, inject, viewChild } from '@angular/core';
 import { KjToastService } from '@kouji-ui/core';
 import type { KjToastContext, KjToastTemplateContext } from '@kouji-ui/core';
+import { KjButtonComponent } from '../button/button';
 import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } from './toast';
 
 @Component({
   selector: 'kj-toast-with-action-example',
   standalone: true,
-  imports: [KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
+  imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 8rem; }`],
   template: `
-    <button type="button" (click)="deleteItem()">Delete item</button>
+    <kj-button variant="destructive" (click)="deleteItem()">Delete item</kj-button>
     <kj-toast-viewport />
     <ng-template #tpl let-ctx>
       <kj-toast [variant]="ctx.variant" [id]="ctx.id">
         <span>{{ ctx.title }}</span>
-        <button
-          type="button"
-          style="margin-left:auto; background:transparent; border:1px solid currentColor; border-radius:4px; padding:2px 8px; cursor:pointer; color:inherit; font-size:0.8125rem;"
-          (click)="undo(ctx)"
-        >Undo</button>
+        <kj-button size="sm" variant="ghost" style="margin-left:auto" (click)="undo(ctx)">Undo</kj-button>
         <kj-toast-close [toastId]="ctx.id" aria-label="Dismiss">×</kj-toast-close>
       </kj-toast>
     </ng-template>

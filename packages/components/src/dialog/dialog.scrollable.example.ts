@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { KjDialogTrigger } from '@kouji-ui/core';
+import { KjButtonComponent } from '../button/button';
 import {
   KjDialogComponent, KjDialogOverlayComponent, KjDialogTitleComponent, KjDialogCloseComponent,
 } from './dialog';
@@ -7,10 +8,10 @@ import {
 @Component({
   selector: 'kj-dialog-scrollable-example',
   standalone: true,
-  imports: [KjDialogTrigger, KjDialogComponent, KjDialogOverlayComponent, KjDialogTitleComponent, KjDialogCloseComponent],
+  imports: [KjDialogTrigger, KjButtonComponent, KjDialogComponent, KjDialogOverlayComponent, KjDialogTitleComponent, KjDialogCloseComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <button [kjDialogTrigger]="dlg">Read more</button>
+    <kj-button [kjDialogTrigger]="dlg">Read more</kj-button>
     <ng-template #dlg>
       <kj-dialog-overlay>
         <kj-dialog>

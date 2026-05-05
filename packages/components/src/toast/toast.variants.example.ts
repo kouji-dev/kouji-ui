@@ -1,19 +1,20 @@
 import { Component, TemplateRef, inject, viewChild } from '@angular/core';
 import { KjToastService } from '@kouji-ui/core';
 import type { KjToastVariant, KjToastTemplateContext } from '@kouji-ui/core';
+import { KjButtonComponent } from '../button/button';
 import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } from './toast';
 
 @Component({
   selector: 'kj-toast-variants-example',
   standalone: true,
-  imports: [KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
+  imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 8rem; }`],
   template: `
     <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-      <button type="button" (click)="show('default')">Default</button>
-      <button type="button" (click)="show('success')">Success</button>
-      <button type="button" (click)="show('warning')">Warning</button>
-      <button type="button" (click)="show('destructive')">Destructive</button>
+      <kj-button (click)="show('default')">Default</kj-button>
+      <kj-button (click)="show('success')">Success</kj-button>
+      <kj-button (click)="show('warning')">Warning</kj-button>
+      <kj-button variant="destructive" (click)="show('destructive')">Destructive</kj-button>
     </div>
     <kj-toast-viewport />
     <ng-template #tpl let-ctx>
