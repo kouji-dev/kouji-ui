@@ -119,6 +119,10 @@ export class DocsSidebarComponent implements OnInit {
 
   protected setView(v: SidebarView): void { this.view.set(v); }
 
+  /** Click handler for the drill row — closes mobile drawer and lets the
+   *  routerLink navigate. The view auto-syncs via the NavigationEnd listener. */
+  protected onDrill(_trackId: string): void { this.close(); }
+
   /** Total items across all categories of a tree — shown in the drill-row count chip. */
   protected totalItems(tree: SidebarNode[]): number {
     return tree.reduce((acc, cat) => acc + cat.children.length, 0);
