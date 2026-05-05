@@ -1,0 +1,67 @@
+/* ─────────────────────────────────────────────────────────────
+   light theme — shared layer
+   Sets every shared-layer token from the contract.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="light"] {
+    /* ── color slots ── */
+    --kj-color-base-100:     var(--kj-base-gray-50);
+    --kj-color-base-200:     var(--kj-base-gray-100);
+    --kj-color-base-300:     var(--kj-base-gray-200);
+    --kj-color-base-content: var(--kj-base-gray-900);
+
+    --kj-color-primary:         var(--kj-base-blue-600);
+    --kj-color-primary-content: var(--kj-base-gray-50);
+
+    --kj-color-secondary:         var(--kj-base-gray-300);
+    --kj-color-secondary-content: var(--kj-base-gray-900);
+
+    --kj-color-accent:         var(--kj-base-blue-500);
+    --kj-color-accent-content: var(--kj-base-gray-50);
+
+    --kj-color-neutral:         var(--kj-base-gray-700);
+    --kj-color-neutral-content: var(--kj-base-gray-50);
+
+    --kj-color-info:         var(--kj-base-blue-500);
+    --kj-color-info-content: var(--kj-base-gray-50);
+
+    --kj-color-success:         var(--kj-base-green-500);
+    --kj-color-success-content: var(--kj-base-gray-900);
+
+    --kj-color-warning:         var(--kj-base-yellow-500);
+    --kj-color-warning-content: var(--kj-base-gray-900);
+
+    --kj-color-destructive:         var(--kj-base-red-500);
+    --kj-color-destructive-content: var(--kj-base-gray-50);
+
+    /* ── shape ── */
+    --kj-radius-box:      var(--kj-base-radius-2);
+    --kj-radius-field:    var(--kj-base-radius-1);
+    --kj-radius-selector: var(--kj-base-radius-1);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+
+    /* ── type ── */
+    --kj-font-sans: var(--kj-base-font-sans);
+    --kj-font-mono: var(--kj-base-font-mono);
+    --kj-text-xs:   var(--kj-base-text-xs);
+    --kj-text-sm:   var(--kj-base-text-sm);
+    --kj-text-base: var(--kj-base-text-base);
+    --kj-text-lg:   var(--kj-base-text-lg);
+    --kj-text-xl:   var(--kj-base-text-xl);
+    --kj-text-2xl:  var(--kj-base-text-2xl);
+
+    /* ── spacing ── */
+    --kj-space-1: var(--kj-base-space-1);
+    --kj-space-2: var(--kj-base-space-2);
+    --kj-space-3: var(--kj-base-space-3);
+    --kj-space-4: var(--kj-base-space-4);
+    --kj-space-5: var(--kj-base-space-5);
+    --kj-space-6: var(--kj-base-space-6);
+    --kj-space-8: var(--kj-base-space-8);
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-fast);
+  }
+}
