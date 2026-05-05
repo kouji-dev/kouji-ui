@@ -10,7 +10,9 @@
     "paths": {
       "@kouji-ui/core": ["packages/core/src/public-api.ts"],
       "@kouji-ui/core/examples": ["packages/core/src/example-components.ts"],
-      "@kouji-ui/core/*": ["packages/core/src/*"]
+      "@kouji-ui/core/*": ["packages/core/src/*"],
+      "@kouji-ui/components": ["packages/components/src/public-api.ts"],
+      "@kouji-ui/components/*": ["packages/components/src/*"]
     },
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,

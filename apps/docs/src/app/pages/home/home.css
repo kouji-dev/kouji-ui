@@ -129,42 +129,8 @@ nav {
   justify-content: center;
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--accent);
-  color: var(--accent-fg);
-  padding: 0.875rem 2rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: transform 0.15s, background 0.15s;
-  letter-spacing: 0.02em;
-}
-
-.btn-primary:hover {
-  background: #d4ff00;
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--text-secondary);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.875rem;
-  text-decoration: none;
-  border-bottom: 1px solid var(--text-muted);
-  padding-bottom: 0.125rem;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.btn-secondary:hover {
-  color: var(--text);
-  border-color: var(--text-secondary);
+.hero-cta {
+  display: contents;
 }
 
 /* ── Stats bar ── */
@@ -183,6 +149,7 @@ nav {
   border-right: none;
 }
 
+/* stat inner typography */
 .stat-num {
   font-family: 'Syne', sans-serif;
   font-size: 2.5rem;
@@ -244,6 +211,7 @@ nav {
   border-bottom: none;
 }
 
+/* feature inner typography */
 .feature-icon {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;

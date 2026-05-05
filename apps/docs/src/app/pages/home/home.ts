@@ -2,12 +2,13 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { LogoComponent } from '../../components/logo/logo';
 import { DocsService } from '../../services/docs.service';
+import { KjButtonComponent, KjCardComponent, KjLinkComponent } from '@kouji-ui/components';
 import corePackage from '../../../../../../packages/core/package.json';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, LogoComponent],
+  imports: [RouterLink, RouterOutlet, LogoComponent, KjButtonComponent, KjCardComponent, KjLinkComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

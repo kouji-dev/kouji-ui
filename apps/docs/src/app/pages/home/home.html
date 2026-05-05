@@ -8,7 +8,7 @@
     </a>
     <ul class="nav-links">
       <li><a routerLink="/docs">Docs</a></li>
-      <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
+      <li><kj-link href="https://github.com" [external]="true" variant="subtle">GitHub</kj-link></li>
     </ul>
   </nav>
 
@@ -22,13 +22,11 @@
         Zero CSS in the core. Full accessibility. Your styles, your rules.
       </p>
       <div class="hero-actions">
-        <a class="btn-primary" routerLink="/docs">
-          Get started
-          <span>→</span>
+        <a routerLink="/docs" class="hero-cta">
+          <kj-button variant="default" size="lg">Get started <span>→</span></kj-button>
         </a>
-        <a class="btn-secondary" href="https://github.com" target="_blank" rel="noopener">
-          View on GitHub
-          <span>↗</span>
+        <a href="https://github.com" target="_blank" rel="noopener" class="hero-cta">
+          <kj-button variant="outline" size="lg">View on GitHub <span>↗</span></kj-button>
         </a>
       </div>
     </div>
@@ -36,58 +34,58 @@
 
   <!-- Stats -->
   <div class="stats">
-    <div class="stat">
+    <kj-card variant="subtle" class="stat">
       <div class="stat-num">{{ angularMajor }}</div>
       <div class="stat-label">Angular version</div>
-    </div>
-    <div class="stat">
+    </kj-card>
+    <kj-card variant="subtle" class="stat">
       <div class="stat-num">{{ componentCount() }}</div>
       <div class="stat-label">Components</div>
-    </div>
-    <div class="stat">
+    </kj-card>
+    <kj-card variant="subtle" class="stat">
       <div class="stat-num">AAA</div>
       <div class="stat-label">WCAG compliance</div>
-    </div>
-    <div class="stat">
+    </kj-card>
+    <kj-card variant="subtle" class="stat">
       <div class="stat-num">0</div>
       <div class="stat-label">CSS in core</div>
-    </div>
+    </kj-card>
   </div>
 
   <!-- Features -->
   <section class="features">
     <div class="section-label">Why kouji</div>
     <div class="features-grid">
-      <div class="feature">
+      <kj-card variant="default" class="feature">
         <span class="feature-icon">◈</span>
         <h3 class="feature-title">Directive-first</h3>
         <p class="feature-desc">Everything in core is a directive. Compose behaviors via hostDirectives. No components, no templates, no opinions.</p>
-      </div>
-      <div class="feature">
+      </kj-card>
+      <kj-card variant="default" class="feature">
         <span class="feature-icon">⚡</span>
         <h3 class="feature-title">Signals everywhere</h3>
         <p class="feature-desc">Built for Angular 21. Signal inputs, signal contexts, afterNextRender. No RxJS, no lifecycle interfaces.</p>
-      </div>
-      <div class="feature">
+      </kj-card>
+      <kj-card variant="default" class="feature">
         <span class="feature-icon">♿</span>
         <h3 class="feature-title">WCAG 2.1 AAA</h3>
         <p class="feature-desc">Every component targets AAA compliance. Full keyboard nav, ARIA patterns, focus management, live regions.</p>
-      </div>
-      <div class="feature">
+      </kj-card>
+      <kj-card variant="default" class="feature">
         <span class="feature-icon">◎</span>
         <h3 class="feature-title">CDK-powered</h3>
         <p class="feature-desc">Wraps Angular CDK primitives for overlays, menus, listbox, accordion. Battle-tested patterns, not reinvented.</p>
-      </div>
-      <div class="feature">
+      </kj-card>
+      <kj-card variant="default" class="feature">
         <span class="feature-icon">∅</span>
         <h3 class="feature-title">Zero-CSS core</h3>
         <p class="feature-desc">The core has no styles. Bring Tailwind, CSS modules, vanilla CSS, or anything else. The impl package ships Tailwind v4.</p>
-      </div>
-      <div class="feature">
+      </kj-card>
+      <kj-card variant="default" class="feature">
         <span class="feature-icon">⊞</span>
         <h3 class="feature-title">TanStack + ECharts</h3>
         <p class="feature-desc">Complex data components powered by TanStack Table for data grids and Apache ECharts for charts.</p>
-      </div>
+      </kj-card>
     </div>
   </section>
 
