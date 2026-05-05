@@ -41,6 +41,41 @@
         }
       }
     },
+    "kj-components": {
+      "projectType": "library",
+      "root": "packages/components",
+      "sourceRoot": "packages/components/src",
+      "prefix": "kj",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "packages/components/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "packages/components/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "packages/components/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "packages/components/**/*.ts",
+              "packages/components/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "docs": {
       "projectType": "application",
       "schematics": {},

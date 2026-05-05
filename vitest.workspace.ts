@@ -9,6 +9,7 @@ export default defineConfig({
     projects: [
       'packages/core/vite.config.ts',
       'packages/themes/vite.config.ts',
+      'packages/components/vite.config.ts',
     ],
   },
 });
