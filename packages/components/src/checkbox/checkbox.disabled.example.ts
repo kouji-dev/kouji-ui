@@ -7,8 +7,8 @@ import { KjCheckboxComponent } from './checkbox';
   imports: [KjCheckboxComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); display: flex; gap: 1rem; }`],
   template: `
-    <kj-checkbox [(checked)]="off" [disabled]="true" ariaLabel="Disabled off"></kj-checkbox>
-    <kj-checkbox [(checked)]="on" [disabled]="true" ariaLabel="Disabled on"></kj-checkbox>
+    <kj-checkbox [(checked)]="off" [disabled]="true">Disabled off</kj-checkbox>
+    <kj-checkbox [(checked)]="on" [disabled]="true">Disabled on</kj-checkbox>
   `,
 })
 export class KjCheckboxDisabledExample {

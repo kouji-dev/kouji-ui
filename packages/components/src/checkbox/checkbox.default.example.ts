@@ -6,6 +6,6 @@ import { KjCheckboxComponent } from './checkbox';
   standalone: true,
   imports: [KjCheckboxComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `<kj-checkbox [(checked)]="value" ariaLabel="Accept terms"></kj-checkbox>`,
+  template: `<kj-checkbox [(checked)]="value">Accept terms</kj-checkbox>`,
 })
 export class KjCheckboxDefaultExample { readonly value = signal(false); }

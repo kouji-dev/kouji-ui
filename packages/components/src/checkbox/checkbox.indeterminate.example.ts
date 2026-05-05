@@ -6,6 +6,6 @@ import { KjCheckboxComponent } from './checkbox';
   standalone: true,
   imports: [KjCheckboxComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `<kj-checkbox [(checked)]="value" [indeterminate]="true" ariaLabel="Mixed selection"></kj-checkbox>`,
+  template: `<kj-checkbox [(checked)]="value" [indeterminate]="true">Mixed selection</kj-checkbox>`,
 })
 export class KjCheckboxIndeterminateExample { readonly value = signal(false); }

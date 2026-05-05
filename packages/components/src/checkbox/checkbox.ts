@@ -1,8 +1,13 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, model, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, model, input, viewChild, ElementRef } from '@angular/core';
 import { KjCheckbox } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjCheckbox` directive.
+ *
+ * The host renders a `<label>` wrapping the checkbox box and any projected
+ * content (label text). Clicking anywhere on the label checks/unchecks the
+ * box. When `disabled` is set, both the box and label text dim via
+ * `[data-disabled]` on the host.
  *
  * @doc-example Default
  *   @doc-file checkbox.default.example.ts
@@ -12,8 +17,6 @@ import { KjCheckbox } from '@kouji-ui/core';
  *   @doc-file checkbox.indeterminate.example.ts
  * @doc-example Disabled
  *   @doc-file checkbox.disabled.example.ts
- * @doc-example With label
- *   @doc-file checkbox.with-label.example.ts
  * @category Library/Data input
  */
 @Component({
@@ -21,20 +24,26 @@ import { KjCheckbox } from '@kouji-ui/core';
   standalone: true,
   imports: [KjCheckbox],
   template: `
-    <span
-      kjCheckbox
-      tabindex="0"
-      class="kj-checkbox"
-      [(kjChecked)]="checked"
-      [kjDisabled]="disabled()"
-      [attr.data-size]="size()"
-      [attr.data-indeterminate]="indeterminate() ? '' : null"
-      [attr.aria-label]="ariaLabel()"
-    ></span>
+    <label class="kj-checkbox-inner" (click)="onLabelClick($event)">
+      <span
+        #box
+        kjCheckbox
+        tabindex="0"
+        class="kj-checkbox-box"
+        [(kjChecked)]="checked"
+        [kjDisabled]="disabled()"
+        [attr.data-size]="size()"
+        [attr.data-indeterminate]="indeterminate() ? '' : null"
+      ></span>
+      <span class="kj-checkbox-label"><ng-content /></span>
+    </label>
   `,
   styleUrl: './checkbox.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-checkbox',
+    '[attr.data-disabled]': "disabled() ? '' : null",
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCheckboxComponent {
@@ -42,5 +51,16 @@ export class KjCheckboxComponent {
   readonly disabled = input(false);
   readonly indeterminate = input(false);
   readonly size = input<'sm' | 'md' | 'lg'>('md');
-  readonly ariaLabel = input<string | undefined>(undefined);
+
+  private readonly box = viewChild.required<ElementRef<HTMLElement>>('box');
+
+  /** Forward label-area clicks to the checkbox box. The box itself bubbles
+   *  through, so we early-return to avoid a double-toggle. */
+  protected onLabelClick(e: MouseEvent): void {
+    if (this.disabled()) return;
+    const boxEl = this.box().nativeElement;
+    const target = e.target as Node;
+    if (target === boxEl || boxEl.contains(target)) return;
+    boxEl.click();
+  }
 }

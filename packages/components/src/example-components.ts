@@ -31,7 +31,6 @@ export { KjCheckboxDefaultExample }       from './checkbox/checkbox.default.exam
 export { KjCheckboxCheckedExample }       from './checkbox/checkbox.checked.example';
 export { KjCheckboxIndeterminateExample } from './checkbox/checkbox.indeterminate.example';
 export { KjCheckboxDisabledExample }      from './checkbox/checkbox.disabled.example';
-export { KjCheckboxWithLabelExample }     from './checkbox/checkbox.with-label.example';
 
 // Dialog
 export { KjDialogDefaultExample }      from './dialog/dialog.default.example';

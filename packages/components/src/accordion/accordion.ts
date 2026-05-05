@@ -30,18 +30,6 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
 })
 export class KjAccordionComponent {}
 
-/** Single accordion item. Bind a unique `value`. */
-@Component({
-  selector: 'kj-accordion-item',
-  standalone: true,
-  hostDirectives: [{ directive: KjAccordionItem, inputs: ['kjItemValue: value'] }],
-  template: `<ng-content />`,
-  encapsulation: ViewEncapsulation.None,
-  host: { class: 'kj-accordion-item' },
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class KjAccordionItemComponent {}
-
 /** Click target that toggles the parent item. */
 @Component({
   selector: 'kj-accordion-trigger',
@@ -53,6 +41,33 @@ export class KjAccordionItemComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAccordionTriggerComponent {
+  readonly disabled = input(false);
+}
+
+/**
+ * Single accordion item. Bind a unique `value`.
+ *
+ * When `label` is provided the trigger is rendered internally — users only need
+ * to project `<kj-accordion-content>`. When `label` is omitted, project a
+ * `<kj-accordion-trigger>` manually for full control.
+ */
+@Component({
+  selector: 'kj-accordion-item',
+  standalone: true,
+  hostDirectives: [{ directive: KjAccordionItem, inputs: ['kjItemValue: value'] }],
+  imports: [KjAccordionTriggerComponent],
+  template: `
+    @if (label()) {
+      <kj-accordion-trigger [disabled]="disabled()">{{ label() }}</kj-accordion-trigger>
+    }
+    <ng-content />
+  `,
+  encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-accordion-item' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjAccordionItemComponent {
+  readonly label = input<string | undefined>(undefined);
   readonly disabled = input(false);
 }
 
