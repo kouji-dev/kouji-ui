@@ -2,7 +2,53 @@
   <aside class="sidebar">
     <kj-docs-sidebar />
   </aside>
+
   <main class="generator-main">
-    <p class="placeholder">Theme generator coming soon.</p>
+    <header class="generator-bar">
+      <input
+        class="generator-name"
+        type="text"
+        placeholder="theme-name"
+        [value]="draft().name"
+        (input)="onNameChange($event)"
+        aria-label="Theme name"
+      />
+      <div class="generator-actions">
+        <button type="button" class="generator-btn" (click)="reset()">Reset</button>
+        <button type="button" class="generator-btn primary" (click)="save()">Save</button>
+        <button type="button" class="generator-btn" (click)="copyCss()">Copy CSS</button>
+      </div>
+    </header>
+
+    <section class="generator-body">
+      <div class="generator-controls" role="region" aria-label="Theme controls">
+        <details open>
+          <summary>Colors</summary>
+          @for (slot of colorSlots; track slot) {
+            <label class="control-row">
+              <span class="control-label">{{ slot }}</span>
+              <kj-input
+                type="color"
+                [value]="hexFor(slot)"
+                (input)="onColorChange(slot, $any($event.target).value)"
+              />
+            </label>
+          }
+        </details>
+      </div>
+
+      <div class="generator-preview" data-theme="custom-draft">
+        <h1 class="preview-h1">Heading sample</h1>
+        <p class="preview-body">Body text rendered with the in-progress theme.</p>
+        <div class="preview-row">
+          <button class="kj-button" data-variant="primary">Primary</button>
+          <button class="kj-button" data-variant="default">Default</button>
+        </div>
+      </div>
+    </section>
+
+    @if (toast(); as msg) {
+      <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
+    }
   </main>
 </div>

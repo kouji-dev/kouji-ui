@@ -5,10 +5,8 @@ import { filter } from 'rxjs/operators';
 import { DocsService, DocsTrack as DocsTrackInfo, SidebarNode } from '../../services/docs.service';
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
-
-// TEMPORARY — replaced in Phase B Task B6 by `import { BUILT_IN_NAMES } from '../../lib/theme/built-in-themes';`
-const BUILT_IN_THEME_NAMES = ['kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate'] as const;
-type BuiltInName = typeof BUILT_IN_THEME_NAMES[number];
+import { ThemeDraftService } from '../../services/theme-draft.service';
+import { BUILT_IN_NAMES, type BuiltInName } from '../../lib/theme/built-in-themes';
 
 /**
  * Sidebar UI state — drill-in navbar with three logical levels:
@@ -31,6 +29,7 @@ export class DocsSidebarComponent implements OnInit {
   private readonly docs = inject(DocsService);
   private readonly search = inject(SearchService);
   private readonly themeService = inject(ThemeService);
+  private readonly draftService = inject(ThemeDraftService);
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -62,9 +61,9 @@ export class DocsSidebarComponent implements OnInit {
   protected readonly pickerOpen = signal(false);
 
   /** Built-in theme names for the theme generator section. */
-  protected readonly builtInThemes = BUILT_IN_THEME_NAMES;
-  /** Saved user themes — stub; wired to ThemeDraftService in Phase B Task B6. */
-  protected readonly myThemes = signal<string[]>([]);
+  protected readonly builtInThemes = BUILT_IN_NAMES;
+  /** Saved user themes — read from ThemeDraftService.list() at render time. */
+  protected readonly myThemes = computed(() => this.draftService.list().map(t => t.name));
 
   protected isCategoryCollapsed(label: string): boolean {
     return this.collapsed().has(label);
@@ -182,7 +181,17 @@ export class DocsSidebarComponent implements OnInit {
   protected closePicker(): void { this.pickerOpen.set(false); }
   protected selectTheme(t: Theme): void { this.themeService.set(t); }
 
-  protected onForkBuiltIn(_name: BuiltInName): void { this.close(); }
-  protected onLoadSaved(_name: string): void { this.close(); }
-  protected onNewTheme(): void { this.close(); }
+  protected onForkBuiltIn(name: BuiltInName): void {
+    this.draftService.loadFork(name);
+    this.close();
+  }
+  protected onLoadSaved(name: string): void {
+    this.draftService.loadSaved(name);
+    this.close();
+  }
+  protected onNewTheme(): void {
+    this.draftService.loadFork('light');
+    this.draftService.setName('');
+    this.close();
+  }
 }
