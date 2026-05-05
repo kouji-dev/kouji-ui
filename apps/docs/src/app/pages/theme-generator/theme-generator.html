@@ -35,6 +35,82 @@
             </label>
           }
         </details>
+
+        <details>
+          <summary>Shape</summary>
+          <label class="control-row">
+            <span class="control-label">radius-box</span>
+            <input type="range" min="0" max="32" [value]="draft().shape.radiusBox"
+                   (input)="onShape('radiusBox', +$any($event.target).value)" />
+            <span class="control-value">{{ draft().shape.radiusBox }}px</span>
+          </label>
+          <label class="control-row">
+            <span class="control-label">radius-field</span>
+            <input type="range" min="0" max="32" [value]="draft().shape.radiusField"
+                   (input)="onShape('radiusField', +$any($event.target).value)" />
+            <span class="control-value">{{ draft().shape.radiusField }}px</span>
+          </label>
+          <label class="control-row">
+            <span class="control-label">radius-selector</span>
+            <input type="range" min="0" max="32" [value]="draft().shape.radiusSelector"
+                   (input)="onShape('radiusSelector', +$any($event.target).value)" />
+            <span class="control-value">{{ draft().shape.radiusSelector }}px</span>
+          </label>
+          <label class="control-row">
+            <span class="control-label">border</span>
+            <select [value]="draft().shape.border"
+                    (change)="onShape('border', +$any($event.target).value)">
+              <option [value]="0">0px</option><option [value]="1">1px</option>
+              <option [value]="2">2px</option><option [value]="4">4px</option>
+            </select>
+          </label>
+          <label class="control-row">
+            <span class="control-label">depth</span>
+            <select [value]="draft().shape.depth"
+                    (change)="onShape('depth', +$any($event.target).value)">
+              <option [value]="0">0</option><option [value]="1">1</option><option [value]="2">2</option>
+            </select>
+          </label>
+        </details>
+
+        <details>
+          <summary>Type</summary>
+          <label class="control-row">
+            <span class="control-label">font-sans</span>
+            <select [value]="fontIdFor('fontSans')"
+                    (change)="onFont('fontSans', $any($event.target).value)">
+              @for (f of fonts; track f.id) { <option [value]="f.id">{{ f.family }}</option> }
+            </select>
+          </label>
+          <label class="control-row">
+            <span class="control-label">font-mono</span>
+            <select [value]="fontIdFor('fontMono')"
+                    (change)="onFont('fontMono', $any($event.target).value)">
+              @for (f of fonts; track f.id) { <option [value]="f.id">{{ f.family }}</option> }
+            </select>
+          </label>
+          <label class="control-row">
+            <span class="control-label">font-display</span>
+            <select [value]="fontIdFor('fontDisplay')"
+                    (change)="onFont('fontDisplay', $any($event.target).value)">
+              @for (f of fonts; track f.id) { <option [value]="f.id">{{ f.family }}</option> }
+            </select>
+          </label>
+        </details>
+
+        <details>
+          <summary>Motion</summary>
+          <label class="control-row">
+            <span class="control-label">transition</span>
+            <select [value]="draft().motion.transition"
+                    (change)="onMotion('transition', $any($event.target).value)">
+              <option value="0s">none</option>
+              <option value="0.12s ease">fast</option>
+              <option value="0.2s ease">base</option>
+              <option value="0.4s ease">slow</option>
+            </select>
+          </label>
+        </details>
       </div>
 
       <div class="generator-preview" data-theme="custom-draft">

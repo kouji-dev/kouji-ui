@@ -5,8 +5,10 @@ import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar
 import { KjInputComponent } from '@kouji-ui/components';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { ClipboardService } from '../../services/clipboard.service';
+import { FontLoaderService } from '../../services/font-loader.service';
 import { serializeToScopedBlock } from '../../lib/theme/serialize-theme';
-import type { ColorSlot } from '../../lib/theme/types';
+import { CURATED_FONTS, type CuratedFont } from '../../lib/theme/font-catalog';
+import type { ColorSlot, ShapeKey, FontKey, MotionKey } from '../../lib/theme/types';
 
 const STYLE_TAG_ID = 'kj-draft-style';
 const COLOR_SLOTS: readonly ColorSlot[] = [
@@ -39,11 +41,13 @@ function oklchToHex(css: string): string {
 export class ThemeGeneratorComponent {
   private readonly draftService = inject(ThemeDraftService);
   private readonly clipboard = inject(ClipboardService);
+  private readonly fontLoader = inject(FontLoaderService);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly draft = this.draftService.draft;
   protected readonly colorSlots = COLOR_SLOTS;
+  protected readonly fonts: readonly CuratedFont[] = CURATED_FONTS;
   protected readonly toast = signal<string | null>(null);
 
   // Inject/update the scoped draft style block — created in injection context (constructor field).
@@ -96,6 +100,31 @@ export class ThemeGeneratorComponent {
     const css = serializeToScopedBlock(this.draft().name || 'custom', this.draftService.resolvedTokens());
     const ok = await this.clipboard.copy(css);
     this.flash(ok ? 'CSS copied to clipboard' : 'Copy failed');
+  }
+
+  // ── shape / type / motion handlers ──────────────────────────────────
+
+  protected fontIdFor(key: FontKey): string {
+    const family = this.draft().type[key];
+    return CURATED_FONTS.find(f => family.includes(f.family))?.id ?? 'system-ui';
+  }
+
+  protected onShape(key: ShapeKey, value: number): void {
+    this.draftService.setShape(key, value);
+  }
+  protected onFont(key: FontKey, fontId: string): void {
+    const font = CURATED_FONTS.find(f => f.id === fontId);
+    if (!font) return;
+    this.fontLoader.ensureLoaded(fontId);
+    const stack = font.category === 'mono'
+      ? `'${font.family}', monospace`
+      : font.category === 'serif'
+        ? `'${font.family}', serif`
+        : `'${font.family}', system-ui, sans-serif`;
+    this.draftService.setFont(key, stack);
+  }
+  protected onMotion(key: MotionKey, value: string): void {
+    this.draftService.setMotion(key, value);
   }
 
   private flash(msg: string): void {

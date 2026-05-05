@@ -91,6 +91,24 @@
   font: var(--kj-text-sm) var(--kj-font-mono);
   color: var(--kj-color-neutral);
 }
+.control-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--kj-color-primary);
+}
+.control-row select {
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-base-content);
+  padding: var(--kj-space-xs) var(--kj-space-sm);
+  border-radius: var(--kj-radius-field);
+  font: var(--kj-text-sm) var(--kj-font-mono);
+}
+.control-value {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-color-neutral);
+  min-width: 40px;
+  text-align: right;
+}
 
 .generator-preview {
   overflow-y: auto;
