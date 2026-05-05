@@ -2,15 +2,15 @@ import { Injectable, afterNextRender, signal } from '@angular/core';
 
 /**
  * Theme name. Add new theme names here as @kouji-ui/themes ships more themes.
- * Wave 1: 'dark' | 'light'. Future waves: + 'kouji' | 'retro' | 'finance'.
+ * Wave 1: 'dark' | 'light' | 'kouji'. Future waves: + 'retro' | 'finance'.
  */
-export type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light' | 'kouji';
 
-export const AVAILABLE_THEMES: readonly Theme[] = ['dark', 'light'] as const;
+export const AVAILABLE_THEMES: readonly Theme[] = ['kouji', 'dark', 'light'] as const;
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  readonly theme = signal<Theme>('dark');
+  readonly theme = signal<Theme>('kouji');
 
   constructor() {
     afterNextRender(() => {
@@ -18,8 +18,8 @@ export class ThemeService {
       if (stored && (AVAILABLE_THEMES as readonly string[]).includes(stored)) {
         this.apply(stored);
       } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.apply(prefersDark ? 'dark' : 'light');
+        // First-visit default = kouji (the brand identity).
+        this.apply('kouji');
       }
     });
   }

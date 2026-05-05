@@ -14,7 +14,7 @@ html { scroll-behavior: smooth; }
 * { scrollbar-width: thin; scrollbar-color: var(--kj-color-base-300) transparent; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: var(--kj-radius-selector); }
 ::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
 
 body {

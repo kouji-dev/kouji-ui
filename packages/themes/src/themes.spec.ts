@@ -22,7 +22,7 @@ const REQUIRED_SHARED_TOKENS = [
   '--kj-radius-box', '--kj-radius-field', '--kj-radius-selector',
   '--kj-border', '--kj-depth',
   // type
-  '--kj-font-sans', '--kj-font-mono',
+  '--kj-font-sans', '--kj-font-mono', '--kj-font-display',
   '--kj-text-xs', '--kj-text-sm', '--kj-text-base', '--kj-text-lg', '--kj-text-xl', '--kj-text-2xl',
   // spacing
   '--kj-space-1', '--kj-space-2', '--kj-space-3', '--kj-space-4',

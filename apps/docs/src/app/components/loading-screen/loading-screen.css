@@ -17,7 +17,7 @@
 }
 
 .wordmark {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--kj-font-display);
   font-weight: 800;
   font-size: 1.5rem;
   letter-spacing: -0.03em;

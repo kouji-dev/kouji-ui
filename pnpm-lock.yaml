@@ -180,6 +180,12 @@ importers:
       '@codemirror/lang-markdown':
         specifier: ^6.5.0
         version: 6.5.0
+      '@kouji-ui/components':
+        specifier: workspace:*
+        version: link:../../packages/components
+      '@kouji-ui/themes':
+        specifier: workspace:*
+        version: link:../../packages/themes
 
   packages/components:
     dependencies:

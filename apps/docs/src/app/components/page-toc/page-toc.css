@@ -1,6 +1,6 @@
 .toc-nav {
   padding: 2rem 1.25rem;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--kj-font-mono);
 }
 
 .toc-heading {
@@ -36,7 +36,7 @@
   width: 100%;
 }
 
-.toc-link:hover { color: #888; border-left-color: var(--kj-color-neutral); }
+.toc-link:hover { color: var(--kj-color-neutral); border-left-color: var(--kj-color-neutral); }
 
 .toc-link.active { color: var(--kj-color-primary); border-left-color: var(--kj-color-primary); }
 

@@ -27,6 +27,9 @@
     --kj-base-green-500:  oklch(70% 0.18 145);
     --kj-base-yellow-500: oklch(83% 0.16  90);
 
+    /* kouji brand lime — #b8f500 */
+    --kj-base-lime-500:   oklch(91% 0.21 124);
+
     /* ── radii ── */
     --kj-base-radius-0:    0px;
     --kj-base-radius-1:    0.25rem;
@@ -45,8 +48,9 @@
     --kj-base-space-8: 4rem;
 
     /* ── type ── */
-    --kj-base-font-sans: system-ui, -apple-system, sans-serif;
-    --kj-base-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --kj-base-font-sans:    system-ui, -apple-system, sans-serif;
+    --kj-base-font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+    --kj-base-font-display: 'Syne', system-ui, sans-serif;
     --kj-base-text-xs:   0.75rem;
     --kj-base-text-sm:   0.875rem;
     --kj-base-text-base: 1rem;
