@@ -10,13 +10,13 @@ describe('DraftThemeSchema', () => {
   });
 
   test('rejects missing color slot', () => {
-    const broken = structuredClone(BUILT_IN_THEMES.light) as any;
+    const broken = structuredClone(BUILT_IN_THEMES.light) as Record<string, unknown> & { colors: Record<string, unknown>; name: string };
     delete broken.colors.primary;
     expect(() => DraftThemeSchema.parse(broken)).toThrow();
   });
 
   test('rejects name > 32 chars', () => {
-    const broken = structuredClone(BUILT_IN_THEMES.light) as any;
+    const broken = structuredClone(BUILT_IN_THEMES.light) as Record<string, unknown> & { colors: Record<string, unknown>; name: string };
     broken.name = 'x'.repeat(33);
     expect(() => DraftThemeSchema.parse(broken)).toThrow();
   });

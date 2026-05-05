@@ -591,11 +591,6 @@ function pkgNameForPath(filePath: string): string {
   return 'Core';
 }
 
-function sourcePkgForPath(filePath: string): SourcePkg {
-  if (filePath.includes('/packages/components/')) return 'components';
-  return 'core';
-}
-
 function folderFromPath(filePath: string): string | null {
   const p = filePath.replace(/\\/g, '/');
   const coreMatch = p.split('/packages/core/src/')[1];

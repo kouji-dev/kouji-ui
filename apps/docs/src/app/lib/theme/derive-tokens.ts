@@ -1,4 +1,4 @@
-import { oklch as parseOklch, formatCss } from 'culori';
+import { oklch as parseOklch } from 'culori';
 import type { DraftTheme, ResolvedTokens, ColorSlot, ContentSlot } from './types';
 
 const CONTENT_FOR: Record<Exclude<ColorSlot,'base-100'>, ContentSlot> = {
