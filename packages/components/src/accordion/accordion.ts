@@ -1,8 +1,12 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } from '@kouji-ui/core';
 
 /**
  * Root accordion container.
+ *
+ * Applies `KjAccordion` via `hostDirectives` so the `KJ_ACCORDION` provider lives
+ * on the `<kj-accordion>` host element — projected `<kj-accordion-item>` children
+ * find it in their element-injector chain.
  *
  * @doc-example Default
  *   @doc-file accordion.default.example.ts
@@ -17,30 +21,26 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
 @Component({
   selector: 'kj-accordion',
   standalone: true,
-  imports: [KjAccordion],
-  template: `<div kjAccordion [kjAccordionType]="type()" class="kj-accordion"><ng-content /></div>`,
+  hostDirectives: [{ directive: KjAccordion, inputs: ['kjAccordionType: type'] }],
+  template: `<ng-content />`,
   styleUrl: './accordion.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: { class: 'kj-accordion' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjAccordionComponent {
-  readonly type = input<'single' | 'multiple'>('single');
-}
+export class KjAccordionComponent {}
 
-/** Single accordion item. Provide a unique `value`. */
+/** Single accordion item. Bind a unique `value`. */
 @Component({
   selector: 'kj-accordion-item',
   standalone: true,
-  imports: [KjAccordionItem],
-  template: `<div kjAccordionItem [kjItemValue]="value()" class="kj-accordion-item"><ng-content /></div>`,
+  hostDirectives: [{ directive: KjAccordionItem, inputs: ['kjItemValue: value'] }],
+  template: `<ng-content />`,
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: { class: 'kj-accordion-item' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjAccordionItemComponent {
-  readonly value = input.required<string>();
-}
+export class KjAccordionItemComponent {}
 
 /** Click target that toggles the parent item. */
 @Component({

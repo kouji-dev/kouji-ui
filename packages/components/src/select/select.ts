@@ -17,15 +17,17 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
 @Component({
   selector: 'kj-select',
   standalone: true,
-  imports: [KjSelect],
-  template: `<div kjSelect [(kjSelectValue)]="value" class="kj-select" [attr.data-disabled]="disabled() ? '' : null"><ng-content /></div>`,
+  hostDirectives: [{ directive: KjSelect, inputs: ['kjSelectValue: value'], outputs: ['kjSelectValueChange: valueChange'] }],
+  template: `<ng-content />`,
   styleUrl: './select.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-select',
+    '[attr.data-disabled]': "disabled() ? '' : null",
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSelectComponent {
-  readonly value = model<unknown>(undefined);
   readonly disabled = input(false);
 }
 

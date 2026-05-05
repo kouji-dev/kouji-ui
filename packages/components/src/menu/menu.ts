@@ -17,11 +17,11 @@ import { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from '@kouji-ui/core
 @Component({
   selector: 'kj-menu',
   standalone: true,
-  imports: [KjMenu],
-  template: `<div kjMenu class="kj-menu"><ng-content /></div>`,
+  hostDirectives: [KjMenu],
+  template: `<ng-content />`,
   styleUrl: './menu.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: { class: 'kj-menu' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenuComponent {}

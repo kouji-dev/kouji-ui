@@ -17,23 +17,18 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
 @Component({
   selector: 'kj-tabs',
   standalone: true,
-  imports: [KjTabs],
-  template: `
-    <div
-      kjTabs
-      class="kj-tabs"
-      [(kjTabsValue)]="value"
-      [attr.data-variant]="variant()"
-      [attr.data-orientation]="orientation()"
-    ><ng-content /></div>
-  `,
+  hostDirectives: [{ directive: KjTabs, inputs: ['kjTabsValue: value'], outputs: ['kjTabsValueChange: valueChange'] }],
+  template: `<ng-content />`,
   styleUrl: './tabs.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-tabs',
+    '[attr.data-variant]': 'variant()',
+    '[attr.data-orientation]': 'orientation()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTabsComponent {
-  readonly value = model<string>('');
   readonly variant = input<'default' | 'pills'>('default');
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
 }

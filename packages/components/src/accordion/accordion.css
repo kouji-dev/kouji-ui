@@ -11,6 +11,7 @@
     overflow: hidden;
   }
 
+  .kj-accordion-item { display: block; }
   .kj-accordion-item + .kj-accordion-item { border-top: var(--kj-border) solid var(--kj-accordion-border); }
 
   .kj-accordion-trigger {

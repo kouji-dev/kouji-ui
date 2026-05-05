@@ -19,20 +19,15 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
 @Component({
   selector: 'kj-avatar',
   standalone: true,
-  imports: [KjAvatar],
-  template: `
-    <span
-      kjAvatar
-      class="kj-avatar"
-      [attr.data-size]="size()"
-      [attr.data-shape]="shape()"
-    >
-      <ng-content />
-    </span>
-  `,
+  hostDirectives: [KjAvatar],
+  template: `<ng-content />`,
   styleUrl: './avatar.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-avatar',
+    '[attr.data-size]': 'size()',
+    '[attr.data-shape]': 'shape()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAvatarComponent {

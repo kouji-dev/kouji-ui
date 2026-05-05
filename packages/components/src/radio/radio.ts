@@ -17,23 +17,18 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
 @Component({
   selector: 'kj-radio-group',
   standalone: true,
-  imports: [KjRadioGroup],
-  template: `
-    <div
-      kjRadioGroup
-      class="kj-radio-group"
-      [(kjValue)]="value"
-      [attr.data-orientation]="orientation()"
-      [attr.aria-label]="ariaLabel()"
-    ><ng-content /></div>
-  `,
+  hostDirectives: [{ directive: KjRadioGroup, inputs: ['kjValue: value'], outputs: ['kjValueChange: valueChange'] }],
+  template: `<ng-content />`,
   styleUrl: './radio.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-radio-group',
+    '[attr.data-orientation]': 'orientation()',
+    '[attr.aria-label]': 'ariaLabel()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjRadioGroupComponent {
-  readonly value = model<unknown>(undefined);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly ariaLabel = input<string | undefined>(undefined);
 }
