@@ -14,6 +14,7 @@
 
     --kj-color-primary:         #4b6bfb;
     --kj-color-primary-content: #ffffff;
+    --kj-color-primary-hover:   #3950d6;
 
     --kj-color-secondary:         #7b92b2;
     --kj-color-secondary-content: #ffffff;
@@ -35,6 +36,7 @@
 
     --kj-color-destructive:         #f87272;
     --kj-color-destructive-content: #ffffff;
+    --kj-color-destructive-hover: color-mix(in oklab, var(--kj-color-destructive) 80%, #000);
 
     /* ── shape — subtle rounding ── */
     --kj-radius-box:      var(--kj-base-radius-1);

@@ -14,6 +14,7 @@
 
     --kj-color-primary:         #ef9995;
     --kj-color-primary-content: #282425;
+    --kj-color-primary-hover:   #e98079;
 
     --kj-color-secondary:         #fab57a;
     --kj-color-secondary-content: #282425;
@@ -35,6 +36,7 @@
 
     --kj-color-destructive:         #c4625d;
     --kj-color-destructive-content: #ede5d0;
+    --kj-color-destructive-hover: #b04f4a;
 
     /* ── shape — soft rounded, vintage cards ── */
     --kj-radius-box:      var(--kj-base-radius-2);

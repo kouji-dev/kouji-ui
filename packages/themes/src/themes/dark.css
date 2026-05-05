@@ -13,6 +13,7 @@
 
     --kj-color-primary:         var(--kj-base-blue-500);
     --kj-color-primary-content: var(--kj-base-gray-50);
+    --kj-color-primary-hover:   var(--kj-base-blue-400);
 
     --kj-color-secondary:         var(--kj-base-gray-700);
     --kj-color-secondary-content: var(--kj-base-gray-50);
@@ -34,6 +35,7 @@
 
     --kj-color-destructive:         var(--kj-base-red-500);
     --kj-color-destructive-content: var(--kj-base-gray-50);
+    --kj-color-destructive-hover:   var(--kj-base-red-400);
 
     /* ── shape ── */
     --kj-radius-box:      var(--kj-base-radius-2);

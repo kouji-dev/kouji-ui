@@ -13,6 +13,7 @@
 
     --kj-color-primary:         #ff007f;
     --kj-color-primary-content: #ffee00;
+    --kj-color-primary-hover:   #ff3399;
 
     --kj-color-secondary:         #00f0ff;
     --kj-color-secondary-content: #0a0a0a;
@@ -34,6 +35,7 @@
 
     --kj-color-destructive:         #ff0040;
     --kj-color-destructive-content: #ffee00;
+    --kj-color-destructive-hover: #ff3366;
 
     /* ── shape — sharp, no rounding ── */
     --kj-radius-box:      var(--kj-base-radius-0);
