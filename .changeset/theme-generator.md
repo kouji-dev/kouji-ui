@@ -1,5 +1,4 @@
 ---
-'@kouji-ui/components': minor
 '@kouji-ui/core': patch
 ---
 

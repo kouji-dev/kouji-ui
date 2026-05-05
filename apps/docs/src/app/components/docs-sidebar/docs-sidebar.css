@@ -104,11 +104,21 @@
 .sidebar-home {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   opacity: 0.6;
   transition: opacity 0.15s;
   text-decoration: none;
 }
 .sidebar-home:hover { opacity: 1; }
+
+.sidebar-beta-badge {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--kj-color-warning);
+  color: var(--kj-color-warning-content);
+  font: 700 0.625rem/1 var(--kj-font-mono);
+  letter-spacing: 0.06em;
+}
 
 /* Scrollable nav body — only this part scrolls */
 .sidebar-nav {
