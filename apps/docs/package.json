@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "ng serve docs",
     "build": "ng build docs",
+    "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "lint": "ng lint docs"
   },
