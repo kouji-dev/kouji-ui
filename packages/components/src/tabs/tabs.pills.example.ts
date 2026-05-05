@@ -1,21 +1,16 @@
 import { Component, signal } from '@angular/core';
-import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from './tabs';
+import { KjTabsComponent, KjTabComponent } from './tabs';
 
 @Component({
   selector: 'kj-tabs-pills-example',
   standalone: true,
-  imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
+  imports: [KjTabsComponent, KjTabComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-tabs [(value)]="active" variant="pills">
-      <kj-tab-list>
-        <kj-tab [value]="'a'">A</kj-tab>
-        <kj-tab [value]="'b'">B</kj-tab>
-        <kj-tab [value]="'c'">C</kj-tab>
-      </kj-tab-list>
-      <kj-tab-panel [for]="'a'">Pill A content.</kj-tab-panel>
-      <kj-tab-panel [for]="'b'">Pill B content.</kj-tab-panel>
-      <kj-tab-panel [for]="'c'">Pill C content.</kj-tab-panel>
+      <kj-tab id="a" label="A">Pill A content.</kj-tab>
+      <kj-tab id="b" label="B">Pill B content.</kj-tab>
+      <kj-tab id="c" label="C">Pill C content.</kj-tab>
     </kj-tabs>
   `,
 })

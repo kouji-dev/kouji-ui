@@ -1,21 +1,16 @@
 import { Component, signal } from '@angular/core';
-import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from './tabs';
+import { KjTabsComponent, KjTabComponent } from './tabs';
 
 @Component({
   selector: 'kj-tabs-default-example',
   standalone: true,
-  imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
+  imports: [KjTabsComponent, KjTabComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-tabs [(value)]="active">
-      <kj-tab-list>
-        <kj-tab [value]="'overview'">Overview</kj-tab>
-        <kj-tab [value]="'api'">API</kj-tab>
-        <kj-tab [value]="'examples'">Examples</kj-tab>
-      </kj-tab-list>
-      <kj-tab-panel [for]="'overview'">Overview content.</kj-tab-panel>
-      <kj-tab-panel [for]="'api'">API content.</kj-tab-panel>
-      <kj-tab-panel [for]="'examples'">Examples content.</kj-tab-panel>
+      <kj-tab id="overview" label="Overview">Overview content.</kj-tab>
+      <kj-tab id="api" label="API">API content.</kj-tab>
+      <kj-tab id="examples" label="Examples">Examples content.</kj-tab>
     </kj-tabs>
   `,
 })
