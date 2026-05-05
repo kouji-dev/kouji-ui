@@ -71,7 +71,7 @@
             "server": "apps/docs/src/main.server.ts",
             "outputMode": "server",
             "security": {
-              "allowedHosts": []
+              "allowedHosts": ["*.onrender.com", "localhost"]
             },
             "ssr": {
               "entry": "apps/docs/src/server.ts"
