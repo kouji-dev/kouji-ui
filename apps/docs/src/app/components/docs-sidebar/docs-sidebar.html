@@ -53,6 +53,25 @@
   </div>
 </div>
 
+<div class="sidebar-pills" role="tablist" aria-label="Sections">
+  <a
+    role="tab"
+    [attr.aria-selected]="topSection() === 'docs'"
+    [class.active]="topSection() === 'docs'"
+    routerLink="/docs"
+    class="sidebar-pill"
+    (click)="close()"
+  >Docs</a>
+  <a
+    role="tab"
+    [attr.aria-selected]="topSection() === 'generator'"
+    [class.active]="topSection() === 'generator'"
+    routerLink="/theme-generator"
+    class="sidebar-pill"
+    (click)="close()"
+  >Theme Generator</a>
+</div>
+
 <nav class="sidebar-nav" aria-label="Documentation navigation">
   <button class="sidebar-search-btn" (click)="openSearch()">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

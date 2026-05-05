@@ -6,8 +6,10 @@ import { DocsService, DocsTrack as DocsTrackInfo, SidebarNode } from '../../serv
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
 
+/** Top-level section: docs or theme generator. */
+export type TopSection = 'docs' | 'generator';
 /** Sidebar UI state — top-level menu, or the id of a drilled-into track. */
-export type SidebarView = 'menu' | string;
+export type SidebarView = 'menu' | string;     // unchanged: 'menu' | trackId
 const TRACK_STORAGE_KEY = 'kj-track';
 
 @Component({
@@ -34,6 +36,10 @@ export class DocsSidebarComponent implements OnInit {
   protected readonly view = signal<SidebarView>('menu');
   /** True when drilled into a track's items panel. */
   protected readonly isDrilled = computed(() => this.view() !== 'menu');
+  /** Active top section: docs or generator, based on current URL. */
+  protected readonly topSection = computed<TopSection>(() =>
+    this.router.url.startsWith('/theme-generator') ? 'generator' : 'docs'
+  );
   /** Active track when drilled in; null otherwise. */
   protected readonly activeTrack = computed(() =>
     this.tracks().find(t => t.id === this.view()) ?? null,

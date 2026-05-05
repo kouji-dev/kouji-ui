@@ -322,3 +322,34 @@
   color: var(--kj-color-neutral);
   font-family: var(--kj-font-mono);
 }
+
+/* Top-section nav pills (Docs / Theme Generator) */
+.sidebar-pills {
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--kj-space-xs);
+  padding: var(--kj-space-md) var(--kj-space-xl);
+  border-bottom: 1px solid var(--kj-color-base-300);
+}
+.sidebar-pill {
+  flex: 1;
+  text-align: center;
+  padding: var(--kj-space-xs) var(--kj-space-sm);
+  font: 0.75rem/1 var(--kj-font-mono);
+  color: var(--kj-color-neutral);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--kj-radius-selector);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--kj-transition);
+}
+.sidebar-pill:hover { color: var(--kj-color-base-content); }
+.sidebar-pill.active {
+  color: var(--kj-color-base-content);
+  background: var(--kj-color-base-200);
+  border-color: var(--kj-color-base-300);
+}
+@media (max-width: 220px) {
+  .sidebar-pills { flex-wrap: wrap; }
+}
