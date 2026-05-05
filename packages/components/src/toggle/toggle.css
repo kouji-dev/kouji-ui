@@ -1,0 +1,44 @@
+@layer kj.component {
+  .kj-toggle {
+    --kj-toggle-bg:           var(--kj-color-base-200);
+    --kj-toggle-bg-pressed:   var(--kj-color-primary);
+    --kj-toggle-fg:           var(--kj-color-base-content);
+    --kj-toggle-fg-pressed:   var(--kj-color-primary-content);
+    --kj-toggle-radius:       var(--kj-radius-field);
+    --kj-toggle-padding-x:    var(--kj-space-md);
+    --kj-toggle-padding-y:    var(--kj-space-sm);
+    --kj-toggle-font-size:    var(--kj-text-sm);
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    background: var(--kj-toggle-bg);
+    color: var(--kj-toggle-fg);
+    border: var(--kj-border) solid transparent;
+    border-radius: var(--kj-toggle-radius);
+    padding: var(--kj-toggle-padding-y) var(--kj-toggle-padding-x);
+    font: var(--kj-toggle-font-size) / 1.2 var(--kj-font-sans);
+    cursor: pointer;
+    transition: var(--kj-transition);
+  }
+
+  .kj-toggle[data-pressed] {
+    background: var(--kj-toggle-bg-pressed);
+    color: var(--kj-toggle-fg-pressed);
+  }
+
+  .kj-toggle[data-size="sm"] {
+    --kj-toggle-padding-x: var(--kj-space-sm);
+    --kj-toggle-padding-y: 0.25rem;
+    --kj-toggle-font-size: 0.8125rem;
+  }
+  .kj-toggle[data-size="lg"] {
+    --kj-toggle-padding-x: var(--kj-space-lg);
+    --kj-toggle-padding-y: 0.625rem;
+    --kj-toggle-font-size: 1rem;
+  }
+
+  .kj-toggle:hover { background: color-mix(in oklab, var(--kj-toggle-bg) 88%, black); }
+  .kj-toggle:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-toggle[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+}

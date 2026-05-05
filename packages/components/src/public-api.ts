@@ -6,3 +6,4 @@ export * from './card/index';
 export * from './input/index';
 export * from './kbd/index';
 export * from './link/index';
+export * from './toggle/index';
