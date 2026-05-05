@@ -22,8 +22,11 @@
     --kj-base-blue-400: oklch(70% 0.16 250);
     --kj-base-blue-500: oklch(62% 0.19 250);
     --kj-base-blue-600: oklch(55% 0.20 250);
+    --kj-base-blue-700: oklch(48% 0.20 250);
 
+    --kj-base-red-400:    oklch(72% 0.18  20);
     --kj-base-red-500:    oklch(63% 0.22  20);
+    --kj-base-red-600:    oklch(55% 0.22  20);
     --kj-base-green-500:  oklch(70% 0.18 145);
     --kj-base-yellow-500: oklch(83% 0.16  90);
 

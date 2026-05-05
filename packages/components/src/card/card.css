@@ -37,14 +37,31 @@
     --kj-card-bg: var(--kj-color-base-300);
   }
 
-  /* Cover image */
+  /* Cover image. Fixed aspect ratio + cover-fit prevents tall hero images
+     from blowing the card. The `--kj-card-cover-height` knob lets a
+     consumer override the height; `--kj-card-cover-fit` swaps cover/contain. */
   .kj-card-cover {
+    --kj-card-cover-height: 12rem;
+    --kj-card-cover-fit:    cover;
+
     display: block;
+    height: var(--kj-card-cover-height);
+    background: var(--kj-color-base-300);
+    overflow: hidden;
   }
-  .kj-card-cover img {
+  .kj-card-cover img,
+  .kj-card-cover video {
     width: 100%;
+    height: 100%;
     display: block;
+    object-fit: var(--kj-card-cover-fit);
+    object-position: center;
   }
+  /* Per-instance override via [data-fit]. */
+  .kj-card-cover[data-fit="contain"] { --kj-card-cover-fit: contain; }
+  .kj-card-cover[data-fit="cover"]   { --kj-card-cover-fit: cover; }
+  .kj-card-cover[data-size="sm"] { --kj-card-cover-height: 8rem; }
+  .kj-card-cover[data-size="lg"] { --kj-card-cover-height: 16rem; }
 
   /* Header */
   .kj-card-header {

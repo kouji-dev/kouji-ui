@@ -42,16 +42,29 @@ export class KjCardComponent {
   readonly variant = input<'default' | 'outline' | 'subtle'>('default');
 }
 
-/** Full-bleed image area at the top of a card. */
+/**
+ * Full-bleed image / video area at the top of a card.
+ * `size` controls the fixed height (sm = 8rem, md = 12rem default, lg = 16rem).
+ * `fit` controls `object-fit` on the inner media (`cover` default — fills and
+ * crops; `contain` — letterboxes, no crop). Override the height directly with
+ * the CSS custom property `--kj-card-cover-height` if the presets don't fit.
+ */
 @Component({
   selector: 'kj-card-cover',
   standalone: true,
   template: `<ng-content />`,
   encapsulation: ViewEncapsulation.None,
-  host: { 'class': 'kj-card-cover' },
+  host: {
+    'class': 'kj-card-cover',
+    '[attr.data-size]': 'size()',
+    '[attr.data-fit]': 'fit()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardCoverComponent {}
+export class KjCardCoverComponent {
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly fit = input<'cover' | 'contain'>('cover');
+}
 
 /** Header band inside the card. Flexes title/subtitle on the left and an optional extra slot on the right. */
 @Component({
