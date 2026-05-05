@@ -7,16 +7,8 @@
   min-height: 100%;
 }
 
-/* Disable interactivity by default — preview is for visual feedback. The
-   form controls remain interactive so the color picker / toggles can be
-   sampled by the user. */
-:host * { pointer-events: none; }
-:host kj-input,
-:host kj-checkbox,
-:host kj-toggle,
-:host kj-radio,
-:host .kj-tab,
-:host .kj-accordion-trigger { pointer-events: auto; }
+/* Preview is fully interactive — let users sample :hover, :focus, and
+   active/expanded states across every component as they tune the theme. */
 
 /* ── App bar ─────────────────────────────────────────────────────── */
 .app-bar {
