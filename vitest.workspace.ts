@@ -8,6 +8,7 @@ export default defineConfig({
   test: {
     projects: [
       'packages/core/vite.config.ts',
+      'packages/themes/vite.config.ts',
     ],
   },
 });
