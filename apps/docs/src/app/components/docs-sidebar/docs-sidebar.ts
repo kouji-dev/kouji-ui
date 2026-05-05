@@ -20,7 +20,7 @@ export class DocsSidebarComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
 
   protected readonly tree = signal<SidebarNode[]>([]);
-  protected readonly isDark = computed(() => this.themeService.theme() === 'dark');
+  protected readonly isDark = computed(() => this.themeService.isDark());
   readonly open = signal(false);
 
   /** Set of category labels that are currently collapsed. All expanded by default. */

@@ -24,7 +24,7 @@ export class MonacoService {
     return _promise.then((monaco) => {
       // Use Monaco's bundled themes directly — full playground-quality syntax coloring.
       // Surface customization (backgrounds, gutter, scrollbar) is done in CSS.
-      monaco.editor.setTheme(this.themeService.theme() === 'dark' ? 'vs-dark' : 'vs');
+      monaco.editor.setTheme(this.themeService.isDark() ? 'vs-dark' : 'vs');
       return monaco;
     });
   }
