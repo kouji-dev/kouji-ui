@@ -42,4 +42,11 @@
     opacity: 0.55;
     cursor: not-allowed;
   }
+
+  .kj-input[type="color"] {
+    inline-size: 44px;
+    block-size: 32px;
+    padding: 2px;
+    cursor: pointer;
+  }
 }
