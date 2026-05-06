@@ -1,234 +1,33 @@
-<div class="sidebar-top">
-  <div class="sidebar-top-row">
-    <a routerLink="/docs" class="sidebar-home" aria-label="kouji home (beta)" (click)="close()">
-      <svg width="24" height="24" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="10" y1="10" x2="10" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
-        <line x1="10" y1="32" x2="34" y2="10" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
-        <line x1="10" y1="32" x2="34" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
-        <path d="M50 24 L50 48 Q50 56 42 56 Q38 56 36 54" stroke="#f0ede6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <circle cx="50" cy="14" r="4" fill="#f0ede6"/>
-      </svg>
-      <span class="sidebar-beta-badge" aria-hidden="true">BETA</span>
-    </a>
-    <div class="sidebar-top-actions">
-      <div class="theme-picker">
-        <button
-          type="button"
-          class="theme-picker-trigger"
-          [attr.aria-label]="'Current theme: ' + currentTheme() + '. Click to change.'"
-          [attr.aria-haspopup]="'listbox'"
-          [attr.aria-expanded]="pickerOpen()"
-          (click)="togglePicker()"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          </svg>
-          <span class="theme-picker-current">{{ currentTheme() }}</span>
-        </button>
-        @if (pickerOpen()) {
-          <ul class="theme-picker-list" role="listbox" [attr.aria-label]="'Theme'">
-            @for (t of themes; track t) {
-              <li
-                role="option"
-                class="theme-picker-option"
-                tabindex="0"
-                [class.active]="t === currentTheme()"
-                [attr.aria-selected]="t === currentTheme()"
-                (click)="selectTheme(t); closePicker()"
-                (keydown.enter)="selectTheme(t); closePicker()"
-                (keydown.space)="$event.preventDefault(); selectTheme(t); closePicker()"
-              >
-                {{ t }}
-              </li>
-            }
-          </ul>
-        }
-      </div>
-      <button class="sidebar-close-btn" (click)="close()" aria-label="Close navigation" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-</div>
-
-<nav class="sidebar-nav" [attr.aria-label]="'Sidebar — ' + view()">
-  <button class="sidebar-search-btn" (click)="openSearch()">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-    </svg>
-    Search
-    <kbd>⌘K</kbd>
-  </button>
-
-  @if (backTarget(); as back) {
-    <button type="button" class="sidebar-back" (click)="setView(back.view)">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round">
-        <polyline points="15 18 9 12 15 6"/>
-      </svg>
-      <span>{{ back.label }}</span>
-    </button>
-  }
-
-  <!-- LEVEL 0 — top-level menu: Docs / Theme Generator -->
-  @if (view() === 'top') {
-    <div class="sidebar-section">
-      <a routerLink="/docs" class="sidebar-drill" (click)="onDrill('docs')">
-        <span class="sidebar-drill-label">
-          <span class="sidebar-drill-name">Docs</span>
-        </span>
-        <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="9 6 15 12 9 18"/>
-        </svg>
-      </a>
-      <a routerLink="/theme-generator" class="sidebar-drill" (click)="onDrill('generator')">
-        <span class="sidebar-drill-label">
-          <span class="sidebar-drill-name">Theme Generator</span>
-        </span>
-        <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="9 6 15 12 9 18"/>
-        </svg>
-      </a>
-    </div>
-  }
-
-  <!-- LEVEL 1A — Docs section: getting started + per-track drill rows -->
-  @if (view() === 'docs') {
-    <div class="sidebar-section">
-      <a routerLink="/docs/getting-started" routerLinkActive="active" class="sidebar-link sidebar-link-special" (click)="close()">
-        Getting Started
-      </a>
-    </div>
-
-    <div class="sidebar-section">
-      @for (track of tracks(); track track.id) {
-        <a [routerLink]="['/docs', track.id]" class="sidebar-drill" (click)="onDrill(track.id)">
-          <span class="sidebar-drill-label">
-            <span class="sidebar-drill-name">{{ track.packageName }}</span>
-          </span>
-          <span class="sidebar-drill-count">{{ totalItems(track.tree) }}</span>
-          <svg class="sidebar-drill-arrow" width="10" height="10" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <polyline points="9 6 15 12 9 18"/>
-          </svg>
-        </a>
-      }
-    </div>
-  }
-
-  <!-- LEVEL 1B — Theme Generator section: built-in + my themes -->
-  @if (view() === 'generator') {
-    <div class="sidebar-section">
-      <button
-        class="sidebar-category"
-        type="button"
-        [attr.aria-expanded]="!isCategoryCollapsed('gen-builtin')"
-        (click)="toggleCategory('gen-builtin')"
+<aside class="kj-docs-sidebar">
+  <nav class="col-a" role="navigation" aria-label="Documentation sections">
+    <p class="col-label">Docs</p>
+    @for (row of rows; track row.id) {
+      <a
+        [routerLink]="row.href"
+        class="col-a-row"
+        [class.active]="activeSection() === row.id"
+        [attr.aria-current]="activeSection() === row.id ? 'page' : null"
+        [attr.aria-expanded]="row.hasChildren ? (activeSection() === row.id) : null"
       >
-        <span>Built-in themes</span>
-        <svg class="sidebar-chevron" [class.collapsed]="isCategoryCollapsed('gen-builtin')"
-             width="10" height="10" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
-      @if (!isCategoryCollapsed('gen-builtin')) {
-        <div class="sidebar-section-items">
-          @for (name of builtInThemes; track name) {
-            <a routerLink="/theme-generator" class="sidebar-link"
-               (click)="onForkBuiltIn(name)">{{ name }}</a>
-          }
-        </div>
-      }
-    </div>
-
-    <div class="sidebar-section">
-      <button
-        class="sidebar-category"
-        type="button"
-        [attr.aria-expanded]="!isCategoryCollapsed('gen-mine')"
-        (click)="toggleCategory('gen-mine')"
-      >
-        <span>My themes</span>
-        <svg class="sidebar-chevron" [class.collapsed]="isCategoryCollapsed('gen-mine')"
-             width="10" height="10" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
-      @if (!isCategoryCollapsed('gen-mine')) {
-        <div class="sidebar-section-items">
-          @for (name of myThemes(); track name) {
-            <div class="sidebar-row">
-              <a routerLink="/theme-generator" class="sidebar-link sidebar-link-flex"
-                 (click)="onLoadSaved(name)">{{ name }}</a>
-              <button type="button" class="sidebar-row-delete"
-                      [attr.aria-label]="'Delete ' + name"
-                      (click)="onDeleteSaved(name, $event)">×</button>
-            </div>
-          } @empty {
-            <p class="sidebar-empty">No saved themes yet.</p>
-          }
-          @if (pendingDelete(); as p) {
-            <div class="sidebar-undo" role="status" aria-live="polite">
-              Deleted "{{ p.name }}".
-              <button type="button" (click)="undoDelete()">Undo</button>
-            </div>
-          }
-          <a routerLink="/theme-generator" class="sidebar-link sidebar-link-special"
-             (click)="onNewTheme()">+ New theme</a>
-          <kj-button class="sidebar-import-btn" variant="outline" size="sm" (click)="fileInput.click()">
-            Import JSON
-          </kj-button>
-          <input #fileInput type="file" accept=".json,application/json" hidden
-                 (change)="onImportFile($event)" />
-        </div>
-      }
-    </div>
-  }
-
-  <!-- LEVEL 2 — drilled into a Docs track: category tree -->
-  @if (activeTrack(); as track) {
-    @for (cat of track.tree; track cat.label) {
-      <div class="sidebar-section">
-        <button
-          class="sidebar-category"
-          type="button"
-          [attr.aria-expanded]="!isCategoryCollapsed(view() + '-' + cat.label)"
-          (click)="toggleCategory(view() + '-' + cat.label)"
-        >
-          <span>{{ cat.label }}</span>
-          <svg
-            class="sidebar-chevron"
-            [class.collapsed]="isCategoryCollapsed(view() + '-' + cat.label)"
-            width="10" height="10" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-          >
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-        @if (!isCategoryCollapsed(view() + '-' + cat.label)) {
-          <div class="sidebar-section-items">
-            @for (item of cat.children; track item.slug) {
-              @if (item.slug) {
-                <a
-                  [routerLink]="['/docs', view(), item.slug]"
-                  routerLinkActive="active"
-                  class="sidebar-link"
-                  (click)="close()"
-                >
-                  {{ item.label }}
-                </a>
-              }
-            }
-          </div>
-        }
-      </div>
+        <span class="col-a-label">{{ row.label }}</span>
+        @if (row.hasChildren) { <span class="col-a-chev" aria-hidden="true">›</span> }
+      </a>
     }
+  </nav>
+
+  @if (colBOpen()) {
+    <nav class="col-b" role="navigation" [attr.aria-label]="activeSection() + ' items'">
+      @for (group of colBTree(); track group.label) {
+        <p class="col-b-group">{{ group.label }}</p>
+        @for (item of group.children; track item.slug) {
+          <a
+            [routerLink]="['/docs', activeSection(), item.slug]"
+            class="col-b-item"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >{{ item.label }}</a>
+        }
+      }
+    </nav>
   }
-</nav>
+</aside>

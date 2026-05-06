@@ -1,232 +1,73 @@
-import { Component, afterNextRender, computed, DestroyRef, effect, HostListener, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { filter } from 'rxjs/operators';
-import { KjButtonComponent } from '@kouji-ui/components';
-import { DocsService, DocsTrack as DocsTrackInfo, SidebarNode } from '../../services/docs.service';
-import { SearchService } from '../search/search.service';
-import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
-import { ThemeDraftService } from '../../services/theme-draft.service';
-import { BUILT_IN_NAMES, type BuiltInName } from '../../lib/theme/built-in-themes';
+import { filter, startWith } from 'rxjs/operators';
+import { DocsService, SidebarNode } from '../../services/docs.service';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 
-/**
- * Sidebar UI state — drill-in navbar with three logical levels:
- *   - 'top'        : top-level menu showing [Docs] / [Theme Generator] as drill rows
- *   - 'docs'       : inside Docs section — getting-started + per-track drill rows
- *   - 'generator'  : inside Theme Generator section — built-in + my themes
- *   - <track-id>   : drilled into a specific Docs track ('headless', 'components')
- */
-export type SidebarView = 'top' | 'docs' | 'generator' | string;
-const VIEW_STORAGE_KEY = 'kj-sidebar-view';
+export type DocsSection = 'getting-started' | 'headless' | 'components' | null;
+
+interface ColARow {
+  id: Exclude<DocsSection, null>;
+  label: string;
+  href: string;
+  hasChildren: boolean;
+}
 
 @Component({
   selector: 'kj-docs-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, KjButtonComponent],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './docs-sidebar.html',
   styleUrl: './docs-sidebar.css',
+  host: { '[class.open]': 'toggleService.open()' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DocsSidebarComponent implements OnInit {
-  private readonly docs = inject(DocsService);
-  private readonly search = inject(SearchService);
-  private readonly themeService = inject(ThemeService);
-  private readonly draftService = inject(ThemeDraftService);
-  private readonly document = inject(DOCUMENT);
-  private readonly platformId = inject(PLATFORM_ID);
-
+export class DocsSidebarComponent {
   private readonly router = inject(Router);
+  private readonly docs = inject(DocsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly url = signal<string>(this.router.url);
+  protected readonly toggleService = inject(SidebarToggleService);
 
-  /** All available tracks — populated from DocsService after manifest load. */
-  protected readonly tracks = signal<DocsTrackInfo[]>([]);
-  protected readonly isDark = computed(() => this.themeService.isDark());
+  protected readonly rows: ColARow[] = [
+    { id: 'getting-started', label: 'Getting Started', href: '/docs/getting-started', hasChildren: false },
+    { id: 'headless',        label: 'Headless',        href: '/docs/headless',        hasChildren: true  },
+    { id: 'components',      label: 'Components',      href: '/docs/components',      hasChildren: true  },
+  ];
 
-  /** Sidebar UI state — drives which level renders. */
-  protected readonly view = signal<SidebarView>('top');
+  protected readonly activeSection = computed<DocsSection>(() => {
+    const u = this.url();
+    if (u.startsWith('/docs/getting-started')) return 'getting-started';
+    if (u.startsWith('/docs/headless')) return 'headless';
+    if (u.startsWith('/docs/components')) return 'components';
+    return null;
+  });
 
-  /** Active track when drilled into one; null otherwise. */
-  protected readonly activeTrack = computed(() =>
-    this.tracks().find(t => t.id === this.view()) ?? null,
-  );
-  readonly open = signal(false);
+  /** Column B is rendered when an active section has children. (Markup added in Task 4.) */
+  protected readonly colBOpen = computed(() => {
+    const s = this.activeSection();
+    return s === 'headless' || s === 'components';
+  });
 
-  /** Set of category labels that are currently collapsed. All expanded by default. */
-  protected readonly collapsed = signal<Set<string>>(new Set());
-
-  /** All available themes for the picker. */
-  protected readonly themes = AVAILABLE_THEMES;
-
-  /** Currently active theme name. */
-  protected readonly currentTheme = computed(() => this.themeService.theme());
-
-  /** Controls picker open/closed state. */
-  protected readonly pickerOpen = signal(false);
-
-  /** Built-in theme names for the theme generator section. */
-  protected readonly builtInThemes = BUILT_IN_NAMES;
-  /** Saved user themes — read from ThemeDraftService.list() at render time. */
-  protected readonly myThemes = computed(() => this.draftService.list().map(t => t.name));
-
-  protected isCategoryCollapsed(label: string): boolean {
-    return this.collapsed().has(label);
-  }
-
-  protected toggleCategory(label: string): void {
-    this.collapsed.update(set => {
-      const next = new Set(set);
-      if (next.has(label)) {
-        next.delete(label);
-      } else {
-        next.add(label);
-      }
-      return next;
-    });
-  }
+  protected readonly colBTree = computed<SidebarNode[]>(() => {
+    const s = this.activeSection();
+    if (s !== 'headless' && s !== 'components') return [];
+    const track = this.docs.getTracks().find(t => t.id === s);
+    return track?.tree ?? [];
+  });
 
   constructor() {
-    const destroyRef = inject(DestroyRef);
-    effect(() => {
-      if (isPlatformBrowser(this.platformId)) {
-        this.document.body.style.overflow = this.open() ? 'hidden' : '';
-      }
-    });
-    destroyRef.onDestroy(() => {
-      if (isPlatformBrowser(this.platformId)) {
-        this.document.body.style.overflow = '';
-      }
-    });
-
-    // Init view from URL → localStorage → 'top'. Runs in the browser only.
-    afterNextRender(() => {
-      const fromUrl = this.viewFromUrl(this.router.url);
-      if (fromUrl) {
-        this.view.set(fromUrl);
-      } else {
-        const stored = localStorage.getItem(VIEW_STORAGE_KEY) as SidebarView | null;
-        if (stored && this.isKnownView(stored)) this.view.set(stored);
-      }
-
-      // Auto-sync view with the URL on every navigation.
-      this.router.events
-        .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-        .subscribe(e => {
-          const v = this.viewFromUrl(e.urlAfterRedirects);
-          if (v && v !== this.view()) this.view.set(v);
-        });
-    });
-
-    // Persist the view whenever it changes.
-    effect(() => {
-      const v = this.view();
-      if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem(VIEW_STORAGE_KEY, v);
-      }
-    });
-  }
-
-  ngOnInit(): void {
-    this.docs.loadManifest().subscribe(() => {
-      this.tracks.set(this.docs.getTracks());
-    });
-  }
-
-  protected setView(v: SidebarView): void { this.view.set(v); }
-
-  /** "Back" target for the current view. Drives the back row visibility + label. */
-  protected backTarget(): { view: SidebarView; label: string } | null {
-    const v = this.view();
-    if (v === 'top') return null;
-    if (v === 'docs') return { view: 'top', label: 'Menu' };
-    if (v === 'generator') return { view: 'top', label: 'Menu' };
-    // Drilled into a track — back goes to the docs section top.
-    return { view: 'docs', label: 'Docs' };
-  }
-
-  /** Click handler for the drill row — closes mobile drawer; routerLink handles nav. */
-  protected onDrill(_trackId: string): void { this.close(); }
-
-  /** Total items across all categories of a tree — shown in the drill-row count chip. */
-  protected totalItems(tree: SidebarNode[]): number {
-    return tree.reduce((acc, cat) => acc + cat.children.length, 0);
-  }
-
-  /** Map a URL to the sidebar view that should be active for it. */
-  private viewFromUrl(url: string): SidebarView | null {
-    if (url.startsWith('/theme-generator')) return 'generator';
-    // Track URLs win over the generic /docs match below.
-    for (const t of this.tracks()) {
-      if (url.startsWith('/docs/' + t.id)) return t.id;
-    }
-    if (url.startsWith('/docs/headless')) return 'headless';
-    if (url.startsWith('/docs/components')) return 'components';
-    if (url.startsWith('/docs')) return 'docs';
-    return null;
-  }
-
-  private isKnownView(v: string): boolean {
-    return v === 'top' || v === 'docs' || v === 'generator'
-        || v === 'headless' || v === 'components';
-  }
-
-  toggle(): void { this.open.update(v => !v); }
-  close(): void { this.open.set(false); }
-
-  @HostListener('document:keydown.escape')
-  onEscape(): void { if (this.open()) this.close(); }
-
-  protected openSearch(): void { this.search.open(); }
-
-  /** @deprecated Use togglePicker / selectTheme for the new picker. */
-  protected toggleTheme(): void { this.themeService.cycle(); }
-
-  protected togglePicker(): void { this.pickerOpen.update(v => !v); }
-  protected closePicker(): void { this.pickerOpen.set(false); }
-  protected selectTheme(t: Theme): void { this.themeService.set(t); }
-
-  protected onForkBuiltIn(name: BuiltInName): void {
-    this.draftService.loadFork(name);
-    this.close();
-  }
-  protected onLoadSaved(name: string): void {
-    this.draftService.loadSaved(name);
-    this.close();
-  }
-
-  protected readonly pendingDelete = signal<{ name: string; theme: unknown; timer: number } | null>(null);
-
-  protected onDeleteSaved(name: string, ev: MouseEvent): void {
-    ev.stopPropagation(); ev.preventDefault();
-    const theme = this.draftService.list().find(t => t.name === name);
-    if (!theme) return;
-    this.draftService.delete(name);
-    const timer = window.setTimeout(() => this.pendingDelete.set(null), 5000);
-    this.pendingDelete.set({ name, theme, timer });
-  }
-
-  protected undoDelete(): void {
-    const p = this.pendingDelete();
-    if (!p) return;
-    clearTimeout(p.timer);
-    // Round-trip the saved theme through importJson, then save() to put it back.
-    this.draftService.importJson(JSON.stringify(p.theme));
-    this.draftService.save();
-    this.pendingDelete.set(null);
-  }
-  protected onNewTheme(): void {
-    this.draftService.loadFork('light');
-    this.draftService.setName('');
-    this.close();
-  }
-
-  protected onImportFile(ev: Event): void {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    file.text().then(text => {
-      const result = this.draftService.importJson(text);
-      if (!result.ok) console.warn('[theme-import]', result.reason);
-      input.value = '';      // allow re-import of the same file
-      this.router.navigateByUrl('/theme-generator');
-    });
-    this.close();
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        startWith(null),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.url.set(this.router.url);
+        this.toggleService.close();
+      });
+    this.docs.loadManifest().subscribe();
   }
 }

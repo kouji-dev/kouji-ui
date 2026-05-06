@@ -1,0 +1,84 @@
+<nav class="kj-navbar" role="navigation" aria-label="Primary">
+  @if (hasSidebar()) {
+    <button
+      type="button"
+      class="kj-navbar-burger"
+      (click)="toggleSidebar()"
+      aria-label="Toggle navigation"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  }
+  <a routerLink="/" class="kj-navbar-logo" aria-label="kouji home">
+    <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
+      <line x1="10" y1="10" x2="10" y2="54" stroke="var(--kj-color-primary)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="34" y2="10" stroke="var(--kj-color-primary)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="34" y2="54" stroke="var(--kj-color-primary)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M50 24 L50 48 Q50 56 42 56 Q38 56 36 54" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="50" cy="14" r="4" fill="currentColor"/>
+    </svg>
+    <span class="kj-navbar-brand">kouji</span>
+  </a>
+
+  <a routerLink="/docs" routerLinkActive="active" class="kj-navbar-link">Docs</a>
+  <a routerLink="/theme-generator" routerLinkActive="active" class="kj-navbar-link">Theme Generator</a>
+
+  <span class="kj-navbar-spacer"></span>
+
+  <button type="button" class="kj-navbar-search" (click)="openSearch()" aria-label="Search docs">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <span>Search docs</span>
+    <kbd>⌘K</kbd>
+  </button>
+
+  <span class="kj-navbar-version" aria-label="Library version">v{{ version }}</span>
+
+  <a [href]="githubUrl" target="_blank" rel="noopener" class="kj-navbar-icon" aria-label="GitHub repository">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+  </a>
+
+  <a [href]="npmUrl" target="_blank" rel="noopener" class="kj-navbar-icon" aria-label="npm package">
+    <svg width="18" height="18" viewBox="0 0 18 7" fill="currentColor"><path d="M0 0h18v6H9v1H5V6H0V0zm1 5h2V2h1v3h1V1H1v4zm5-4v5h2V5h2V1H6zm2 1h1v2H8V2zm3-1v4h2V2h1v3h1V2h1v3h1V1h-6z"/></svg>
+  </a>
+
+  <div class="kj-navbar-theme">
+    <button
+      type="button"
+      class="kj-navbar-theme-trigger"
+      [attr.aria-label]="'Current theme: ' + currentTheme() + '. Click to change.'"
+      aria-haspopup="listbox"
+      [attr.aria-expanded]="pickerOpen()"
+      (click)="togglePicker()"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      </svg>
+      <span>{{ currentTheme() }}</span>
+    </button>
+    @defer (when isBrowser) {
+      @if (pickerOpen()) {
+        <ul class="kj-navbar-theme-list" role="listbox" aria-label="Theme">
+          @for (t of themes; track t) {
+            <li
+              role="option"
+              tabindex="0"
+              class="kj-navbar-theme-option"
+              [class.active]="t === currentTheme()"
+              [attr.aria-selected]="t === currentTheme()"
+              (click)="selectTheme(t)"
+              (keydown.enter)="selectTheme(t)"
+              (keydown.space)="$event.preventDefault(); selectTheme(t)"
+            >{{ t }}</li>
+          }
+        </ul>
+      }
+    }
+  </div>
+</nav>

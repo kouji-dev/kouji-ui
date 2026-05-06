@@ -3,7 +3,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, filter, take } from 'rxjs/operators';
 import { DocsService } from '../../services/docs.service';
-import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
@@ -15,7 +14,6 @@ import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-
   standalone: true,
   imports: [
     RouterLink,
-    DocsSidebarComponent,
     CodePreviewComponent,
     CodeEditorComponent,
     PageTocDirective,
@@ -33,17 +31,16 @@ export class ComponentDocComponent {
   protected readonly component = toSignal(
     this.route.url.pipe(
       switchMap((segs) => {
-        // segs is [{path:'docs'},{path:'headless'|'components'},{path:slug}]
-        const trackId = segs[1]?.path === 'components' ? 'components' as const
-                       : segs[1]?.path === 'headless'   ? 'core'       as const
+        // With nested routing under /docs, segs is [{path:'headless'|'components'},{path:slug}]
+        const trackId = segs[0]?.path === 'components' ? 'components' as const
+                       : segs[0]?.path === 'headless'   ? 'core'       as const
                        : undefined;
-        const slug = segs[2]?.path ?? '';
+        const slug = segs[1]?.path ?? '';
         return this.docs.loadManifest().pipe(map(() => this.docs.getComponent(slug, trackId)));
       }),
     ),
   );
 
-  protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
   private readonly pageToc = viewChild(PageTocDirective);
 
   protected readonly hasDocExamples = computed(() =>

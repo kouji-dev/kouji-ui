@@ -1,0 +1,163 @@
+:host { display: contents; }
+
+.kj-tg-sidebar {
+  display: flex;
+  align-self: stretch;
+  background: var(--kj-color-base-100);
+  border-right: 1px solid var(--kj-color-base-300);
+  min-height: 0;
+}
+
+.col-a {
+  width: 220px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.col-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
+  margin: 0 0 8px;
+  padding: 0 8px;
+}
+.col-group {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
+  margin: 12px 0 4px;
+  padding: 0 8px;
+}
+.col-group:first-of-type { margin-top: 0; }
+
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  color: var(--kj-color-base-content);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.theme-row:hover { background: var(--kj-color-base-200); }
+.theme-row.active {
+  background: color-mix(in oklch, var(--kj-color-primary) 12%, transparent);
+  color: var(--kj-color-primary);
+  font-weight: 500;
+}
+
+.swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--kj-color-primary, #b8f500) 50%, var(--kj-color-secondary, #00d4ff) 50%);
+  flex-shrink: 0;
+  border: 1px solid var(--kj-color-base-300);
+}
+.swatch.saved {
+  background: linear-gradient(135deg, var(--kj-color-accent, #ff00aa) 50%, var(--kj-color-base-content, #fff) 50%);
+}
+
+.new-theme {
+  margin-top: 12px;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px dashed var(--kj-color-base-300);
+  border-radius: 6px;
+  color: var(--kj-color-primary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.new-theme:hover { border-color: var(--kj-color-primary); }
+
+/* ── Col B — token editor ─────────────────────────────────────────── */
+.col-b {
+  width: 380px;
+  overflow-y: auto;
+  height: 100%;
+  background: var(--kj-color-base-100);
+  border-left: 1px solid var(--kj-color-base-300);
+}
+
+.col-b .generator-controls {
+  padding: var(--kj-space-lg);
+}
+.col-b .generator-controls details {
+  border: 1px solid var(--kj-color-base-300);
+  border-radius: var(--kj-radius-field);
+  padding: var(--kj-space-sm);
+  margin-bottom: var(--kj-space-md);
+}
+.col-b .generator-controls summary {
+  cursor: pointer;
+  font: var(--kj-text-sm) var(--kj-font-mono);
+  color: var(--kj-color-base-content);
+  padding: var(--kj-space-xs);
+  user-select: none;
+}
+.col-b .control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kj-space-sm);
+  padding: var(--kj-space-xs) var(--kj-space-sm);
+}
+.col-b .control-label {
+  font: var(--kj-text-sm) var(--kj-font-mono);
+  color: var(--kj-color-neutral);
+}
+.col-b .control-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--kj-color-primary);
+}
+.col-b .control-row select {
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-base-content);
+  padding: var(--kj-space-xs) var(--kj-space-sm);
+  border-radius: var(--kj-radius-field);
+  font: var(--kj-text-sm) var(--kj-font-mono);
+}
+.col-b .control-value {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-color-neutral);
+  min-width: 40px;
+  text-align: right;
+}
+.col-b .content-swatch {
+  width: 22px; height: 22px;
+  border: 1px solid var(--kj-color-base-300);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+}
+.col-b .content-swatch.locked { box-shadow: 0 0 0 2px var(--kj-color-primary); }
+
+@media (max-width: 767px) {
+  :host {
+    display: block;
+    position: fixed;
+    inset: 56px 0 0 0;
+    z-index: 40;
+    background: var(--kj-color-base-100);
+    transform: translateX(-100%);
+    transition: transform 200ms ease-out;
+    overflow-y: auto;
+  }
+  :host(.open) { transform: translateX(0); }
+  .kj-tg-sidebar { width: 100%; flex-direction: column; }
+  .col-a { width: 100%; }
+  .col-b { width: 100%; border-left: 0; border-top: 1px solid var(--kj-color-base-300); max-height: none; }
+}

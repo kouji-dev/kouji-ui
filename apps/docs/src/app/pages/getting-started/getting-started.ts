@@ -2,14 +2,13 @@
 import { RouterLink } from '@angular/router';
 import { DocsCalloutComponent } from '../../components/callout/callout';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
-import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
 
 @Component({
   selector: 'app-getting-started',
   standalone: true,
-  imports: [RouterLink, DocsCalloutComponent, CodeEditorComponent, DocsSidebarComponent, PageTocDirective, PageTocComponent],
+  imports: [RouterLink, DocsCalloutComponent, CodeEditorComponent, PageTocDirective, PageTocComponent],
   templateUrl: './getting-started.html',
   styleUrl: './getting-started.css',
 })

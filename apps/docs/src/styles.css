@@ -26,8 +26,37 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
 }
 
+html, body { height: 100%; }
+
 body {
+  margin: 0;
   background: var(--kj-color-base-100);
   color: var(--kj-color-base-content);
   font-family: var(--kj-font-mono);
+}
+
+/* ── TOC layout helper ──────────────────────────────────────────────────
+   Wraps <main> + <aside class="toc-col"> inside docs/getting-started/
+   component-doc pages to produce a 2-column layout (content | TOC).
+   Added here (global scope) so it works regardless of encapsulation.
+   ─────────────────────────────────────────────────────────────────── */
+.page-with-toc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 0;
+  align-items: start;
+}
+
+.page-with-toc .toc-col {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  border-left: 1px solid var(--kj-color-base-300);
+  background: var(--kj-color-base-100);
+}
+
+@media (max-width: 900px) {
+  .page-with-toc { grid-template-columns: 1fr; }
+  .page-with-toc .toc-col { display: none; }
 }

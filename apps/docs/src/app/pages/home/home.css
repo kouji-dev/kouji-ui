@@ -1,5 +1,16 @@
-:host {
-  display: block;
+/* ViewEncapsulation.None — rules target global DOM */
+app-home {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.noise {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ── Noise texture via SVG data URI ── */
@@ -19,64 +30,6 @@
   color: var(--kj-color-base-content);
   font-family: var(--kj-font-mono);
   overflow-x: hidden;
-}
-
-/* ── Nav ── */
-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--kj-space-xl) var(--kj-space-3xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  position: sticky;
-  top: 0;
-  background: color-mix(in oklab, var(--kj-color-base-100) 90%, transparent);
-  backdrop-filter: blur(12px);
-  z-index: 10;
-}
-
-.nav-logo-link {
-  display: flex;
-  align-items: center;
-  gap: var(--kj-space-sm);
-  text-decoration: none;
-}
-.nav-beta-badge {
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: var(--kj-color-warning);
-  color: var(--kj-color-warning-content);
-  font: 700 0.6875rem/1 var(--kj-font-mono);
-  letter-spacing: 0.06em;
-}
-
-.nav-logo-text {
-  font-family: var(--kj-font-display);
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
-  color: var(--kj-color-primary);
-}
-
-.nav-links {
-  display: flex;
-  gap: 2.5rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-links a {
-  color: var(--kj-color-neutral);
-  text-decoration: none;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition: color 0.2s;
-}
-
-.nav-links a:hover {
-  color: var(--kj-color-base-content);
 }
 
 /* ── Hero ── */
@@ -369,7 +322,6 @@ footer {
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  nav { padding: 1.25rem 1.5rem; }
   .hero { padding: 4rem 1.5rem 3rem; }
   .hero-sub { grid-template-columns: 1fr; gap: 2rem; }
   .stats { flex-direction: column; }

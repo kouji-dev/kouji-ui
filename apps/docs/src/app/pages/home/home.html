@@ -1,18 +1,6 @@
 <div class="noise">
 <div class="page">
 
-  <!-- Nav -->
-  <nav>
-    <a class="nav-logo-link" routerLink="/" aria-label="kouji home (beta)">
-      <kj-logo [size]="32" />
-      <span class="nav-beta-badge" aria-hidden="true">BETA</span>
-    </a>
-    <ul class="nav-links">
-      <li><a routerLink="/docs">Docs</a></li>
-      <li><kj-link href="https://github.com" [external]="true" variant="subtle">GitHub</kj-link></li>
-    </ul>
-  </nav>
-
   <!-- Hero -->
   <section class="hero">
     <span class="hero-tag">Angular 21 · Headless · WCAG AAA</span>
@@ -23,8 +11,11 @@
         Zero CSS in the core. Full accessibility. Your styles, your rules.
       </p>
       <div class="hero-actions">
-        <a routerLink="/docs" class="hero-cta">
+        <a routerLink="/docs/getting-started" class="hero-cta">
           <kj-button variant="default" size="lg">Get started <span>→</span></kj-button>
+        </a>
+        <a routerLink="/theme-generator" class="hero-cta hero-cta-secondary">
+          <kj-button variant="outline" size="lg">Try theme generator</kj-button>
         </a>
         <a href="https://github.com" target="_blank" rel="noopener" class="btn-secondary">
           View on GitHub <span>↗</span>
