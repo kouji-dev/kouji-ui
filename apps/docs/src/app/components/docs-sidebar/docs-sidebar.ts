@@ -53,6 +53,10 @@ export class DocsSidebarComponent {
   protected readonly colBTree = computed<SidebarNode[]>(() => {
     const s = this.activeSection();
     if (s !== 'headless' && s !== 'components') return [];
+    // Touch the components signal so this computed re-runs once the manifest
+    // finishes loading on a deep-link first paint (dev / non-prerendered).
+    // `getTracks()` reads from a plain field on the service, not a signal.
+    this.docs.components();
     const track = this.docs.getTracks().find(t => t.id === s);
     return track?.tree ?? [];
   });
