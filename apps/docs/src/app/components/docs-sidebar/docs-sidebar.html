@@ -7,10 +7,27 @@
         class="col-a-row"
         [class.active]="activeSection() === row.id"
         [attr.aria-current]="activeSection() === row.id ? 'page' : null"
+        [attr.aria-expanded]="row.hasChildren ? (activeSection() === row.id) : null"
       >
         <span class="col-a-label">{{ row.label }}</span>
         @if (row.hasChildren) { <span class="col-a-chev" aria-hidden="true">›</span> }
       </a>
     }
   </nav>
+
+  @if (colBOpen()) {
+    <nav class="col-b" role="navigation" [attr.aria-label]="activeSection() + ' items'">
+      @for (group of colBTree(); track group.label) {
+        <p class="col-b-group">{{ group.label }}</p>
+        @for (item of group.children; track item.slug) {
+          <a
+            [routerLink]="['/docs', activeSection(), item.slug]"
+            class="col-b-item"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >{{ item.label }}</a>
+        }
+      }
+    </nav>
+  }
 </aside>

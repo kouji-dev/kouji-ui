@@ -44,3 +44,22 @@ describe('DocsSidebarComponent — Column A', () => {
     expect(screen.getByRole('link', { name: /^headless$/i })).toHaveAttribute('aria-current', 'page');
   });
 });
+
+describe('DocsSidebarComponent — Column B', () => {
+  test('Col B is hidden on /docs/getting-started', async () => {
+    const { fixture } = await render(DocsSidebarComponent, { providers: baseProviders });
+    const router = fixture.debugElement.injector.get(Router);
+    await router.navigateByUrl('/docs/getting-started');
+    fixture.detectChanges();
+    expect(screen.queryByLabelText(/headless items/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/components items/i)).not.toBeInTheDocument();
+  });
+
+  test('Col B opens for /docs/headless with appropriate aria-label', async () => {
+    const { fixture } = await render(DocsSidebarComponent, { providers: baseProviders });
+    const router = fixture.debugElement.injector.get(Router);
+    await router.navigateByUrl('/docs/headless');
+    fixture.detectChanges();
+    expect(screen.getByRole('navigation', { name: /headless items/i })).toBeInTheDocument();
+  });
+});

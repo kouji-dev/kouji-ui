@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
 import { DocsService, SidebarNode } from '../../services/docs.service';
 
@@ -16,7 +16,7 @@ interface ColARow {
 @Component({
   selector: 'kj-docs-sidebar',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './docs-sidebar.html',
   styleUrl: './docs-sidebar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
