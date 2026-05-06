@@ -55,3 +55,8 @@ apps/*/dist/
 
 # Claude Code transient state
 .claude/scheduled_tasks.lock
+
+# Local worktrees + brainstorming session state
+.worktrees/
+.superpowers/
+.claire/
