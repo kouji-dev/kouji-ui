@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -17,6 +17,15 @@ class ClickHost {
   d = true;
   fired = 0;
   onClick() { this.fired++; }
+}
+
+@Component({
+  standalone: true,
+  imports: [KjButton],
+  template: `<button kjButton [(pressed)]="pressed">x</button>`,
+})
+class ToggleHost {
+  pressed = signal<boolean | undefined>(false);
 }
 
 describe('KjButton', () => {
@@ -100,6 +109,22 @@ describe('KjButton', () => {
     const btn = fixture.nativeElement.querySelector('button');
     btn.click();
     expect(fixture.componentInstance.fired).toBe(0);
+  });
+
+  it('auto-toggles pressed and emits pressedChange on click when bound', () => {
+    TestBed.configureTestingModule({ imports: [ToggleHost] });
+    const fixture = TestBed.createComponent(ToggleHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button');
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    btn.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.pressed()).toBe(true);
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    btn.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.pressed()).toBe(false);
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
   });
 
   it('provideKjButton at TestBed scope flows into directive defaults', async () => {

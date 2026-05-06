@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, model } from '@angular/core';
 import { KjButton } from '@kouji-ui/core';
 
 /**
@@ -46,7 +46,7 @@ import { KjButton } from '@kouji-ui/core';
       [size]="size()"
       [disabled]="disabled()"
       [loading]="loading()"
-      [pressed]="pressed()"
+      [(pressed)]="pressed"
       [attr.aria-label]="ariaLabel()"
     >
       @if (loading()) {
@@ -65,7 +65,7 @@ export class KjButtonComponent {
   readonly size = input<string>('md');
   readonly disabled = input(false);
   readonly loading = input(false);
-  readonly pressed = input<boolean | undefined>(undefined);
+  readonly pressed = model<boolean | undefined>(undefined);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
   readonly ariaLabel = input<string | undefined>(undefined);
 }
