@@ -176,7 +176,6 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
       kjInput
       class="kj-input"
       [type]="type()"
-      [value]="value()"
       [placeholder]="placeholder()"
       [kjInvalid]="invalid()"
       [kjDisabled]="disabled()"
@@ -192,12 +191,13 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
 })
 export class KjInputComponent {
   readonly type = input<KjInputType>('text');
-  readonly value = input<string>('');
   readonly placeholder = input<string>('');
   readonly invalid = input(false);
   readonly disabled = input(false);
 }
 ```
+
+> **NOTE (revised during implementation):** A `value` input was originally planned but reverted — the headless `kjInput` directive in `@kouji-ui/core` implements `ControlValueAccessor` and actively writes the form-control value back to the native `.value` on every change detection cycle, so a wrapper-level `[value]` binding cannot win. Consumers must use `[(ngModel)]` / `[formControl]` for value binding. The theme generator (Phase B/C) consequently uses raw `<input type="color">` for its swatches, NOT `<kj-input type="color">`, since the generator wants direct DOM property control without form integration.
 
 - [ ] **Step 4: Add color-input CSS to `input.css`**
 

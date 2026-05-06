@@ -60,3 +60,9 @@ apps/*/dist/
 .worktrees/
 .superpowers/
 .claire/
+
+# Test artifacts (Playwright + ad-hoc dumps)
+playwright-report/
+test-results/
+**/test-results/
+test-output.txt
