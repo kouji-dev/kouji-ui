@@ -692,12 +692,15 @@ function extractLiteralDefault(
 /**
  * Strips Angular signal-input wrappers (`InputSignal<T>`,
  * `InputSignalWithTransform<T, ...>`, `ModelSignal<T>`) from the displayed
- * type, leaving only the user-facing read type. Falls through unchanged for
- * any annotation that doesn't match a known wrapper.
+ * type, leaving only the user-facing read type. Also strips fully-qualified
+ * `import("…path…").` prefixes that ts-morph's TypeChecker emits when no
+ * matching name is in scope. Falls through unchanged for any annotation
+ * that doesn't match a known wrapper.
  */
 function unwrapSignalType(type: string): string {
-  const m = type.match(/^\s*(?:InputSignal(?:WithTransform)?|ModelSignal)\s*<\s*([^,>]+(?:<[^>]*>)?)/);
-  return m ? m[1].trim() : type;
+  const cleaned = type.replace(/import\("[^"]+"\)\./g, '');
+  const m = cleaned.match(/^\s*(?:InputSignal(?:WithTransform)?|ModelSignal)\s*<\s*([^,>]+(?:<[^>]*>)?)/);
+  return m ? m[1].trim() : cleaned;
 }
 
 function processSourceFile(
