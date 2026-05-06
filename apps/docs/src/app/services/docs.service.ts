@@ -1,4 +1,4 @@
-import { Injectable, inject, isDevMode, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, of } from 'rxjs';
 import { DocsManifestProvider } from './docs-manifest.provider';
@@ -118,11 +118,18 @@ export class DocsService {
 
   /**
    * Ensures the manifest is loaded.
-   * In dev mode always re-fetches so hot-reload picks up changes.
-   * In production returns immediately from cache (prerendered via TransferState).
+   *
+   * Returns the cached manifest synchronously when available (set in the
+   * constructor from TransferState in the browser, or from ServerDocsManifestProvider
+   * during SSR). Falls back to an HTTP fetch only when `_manifest` is null.
+   *
+   * Dev mode used to always re-fetch so the SPA picked up new components without
+   * a full refresh, but that caused a "Component not found" flicker on every doc
+   * page load while the fetch was in flight. A manual refresh after editing
+   * components is the standard Angular dev workflow — accepted tradeoff.
    */
   loadManifest() {
-    if (this._manifest && !isDevMode()) return of(this._manifest);
+    if (this._manifest) return of(this._manifest);
 
     return this.http.get<DocsManifest>('/api/docs/manifest').pipe(
       map(manifest => {

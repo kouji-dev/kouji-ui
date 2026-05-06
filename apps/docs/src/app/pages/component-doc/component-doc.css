@@ -121,9 +121,10 @@ h1 {
   margin-bottom: var(--kj-space-lg);
 }
 
-/* ── Not found ── */
+/* ── Not found / Loading ── */
 .not-found { padding: 4rem; color: var(--kj-color-neutral); font-size: 0.875rem; }
 .not-found a { color: var(--kj-color-primary); text-decoration: none; }
+.loading { padding: 4rem; color: var(--kj-color-neutral); font-size: 0.875rem; opacity: 0.6; }
 
 /* ── Section layout ── */
 .definitions-section,

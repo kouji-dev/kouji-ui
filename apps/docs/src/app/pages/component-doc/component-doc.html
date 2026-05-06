@@ -101,10 +101,14 @@
         }
       }
     }
-  } @else {
+  } @else if (component() === null) {
     <div class="not-found">
       <p>Component not found.</p>
       <a routerLink="/docs">← Back to docs</a>
+    </div>
+  } @else {
+    <div class="loading" aria-live="polite">
+      <p>Loading…</p>
     </div>
   }
 </main>
