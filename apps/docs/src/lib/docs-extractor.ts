@@ -576,9 +576,13 @@ function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): Inp
         initText.match(/(?:input(?:\.required)?|model)<([^>]+)>/)?.[1] ?? 'unknown';
     }
 
-    // Default value from input(defaultValue)
-    const defaultMatch = !required ? initText.match(/(?:input|model)\(([^)]+)\)/) : null;
-    const defaultValue = defaultMatch?.[1]?.trim();
+    // Default value: only emit when the first argument to input() / model()
+    // is a literal (string, number, boolean, null, undefined). Skip every
+    // expression — including identifier references like `this.preset.default`
+    // — because rendering an arbitrary JS expression in the docs table is
+    // noisy and the regex-on-source approach mis-parsed nested parens
+    // (e.g. an inline arrow body inside a transform option).
+    const defaultValue = required ? undefined : extractLiteralDefault(prop, sourceFile);
 
     results.push({ name, type, required, isModel, description, defaultValue });
   }
@@ -632,6 +636,37 @@ function folderFromPath(filePath: string): string | null {
   const componentsMatch = p.split('/packages/components/src/')[1];
   if (componentsMatch) return componentsMatch.split('/')[0] ?? null;
   return null;
+}
+
+/**
+ * Returns the default value for an `input()` / `model()` call, but only when
+ * the first argument is a primitive literal. Returns `undefined` for any
+ * other expression — identifiers, property accesses, function calls, etc.
+ * are not informative to a docs reader and lead to garbled output when the
+ * source uses nested parentheses (transforms, factories, …).
+ */
+function extractLiteralDefault(
+  prop: ts.PropertyDeclaration,
+  sourceFile: ts.SourceFile,
+): string | undefined {
+  const init = prop.initializer;
+  if (!init || !ts.isCallExpression(init) || init.arguments.length === 0) {
+    return undefined;
+  }
+  const arg = init.arguments[0];
+  switch (arg.kind) {
+    case ts.SyntaxKind.StringLiteral:
+    case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
+    case ts.SyntaxKind.NumericLiteral:
+    case ts.SyntaxKind.TrueKeyword:
+    case ts.SyntaxKind.FalseKeyword:
+    case ts.SyntaxKind.NullKeyword:
+      return arg.getText(sourceFile);
+    case ts.SyntaxKind.Identifier:
+      return (arg as ts.Identifier).text === 'undefined' ? 'undefined' : undefined;
+    default:
+      return undefined;
+  }
 }
 
 /**
