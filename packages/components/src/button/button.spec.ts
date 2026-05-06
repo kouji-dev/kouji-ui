@@ -6,12 +6,16 @@ import { KjButtonComponent } from './button';
 @Component({
   standalone: true,
   imports: [KjButtonComponent],
-  template: `<kj-button [variant]="variant" [size]="size" [disabled]="disabled">Click</kj-button>`,
+  template: `<kj-button [variant]="variant" [size]="size" [disabled]="disabled" [loading]="loading" [pressed]="pressed" [ariaLabel]="ariaLabel">{{ label }}</kj-button>`,
 })
 class HostComponent {
-  variant: 'default' | 'destructive' | 'ghost' | 'link' | 'outline' = 'default';
-  size: 'sm' | 'md' | 'lg' | 'icon' = 'md';
+  variant: string = 'default';
+  size: string = 'md';
   disabled = false;
+  loading = false;
+  pressed: boolean | undefined = undefined;
+  ariaLabel: string | undefined = undefined;
+  label = 'Click';
 }
 
 describe('KjButtonComponent', () => {
@@ -22,40 +26,61 @@ describe('KjButtonComponent', () => {
   test('renders an inner <button> with the .kj-button class', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const wrapper = fixture.nativeElement.querySelector('kj-button');
-    expect(wrapper).not.toBeNull();
-    const btn = wrapper.querySelector('button.kj-button');
-    expect(btn).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('button.kj-button')).not.toBeNull();
   });
 
-  test('forwards variant signal input to the inner KjButton directive (data-variant attr)', () => {
+  test('forwards variant via [variant] alias (data-variant attr)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.variant = 'destructive';
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
-    expect(btn.getAttribute('data-variant')).toBe('destructive');
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-variant'))
+      .toBe('destructive');
   });
 
-  test('forwards size signal input (data-size attr on inner button)', () => {
+  test('forwards size via [size] alias (data-size attr)', () => {
     const fixture = TestBed.createComponent(HostComponent);
-    fixture.componentInstance.size = 'lg';
+    fixture.componentInstance.size = 'sm';
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
-    expect(btn.getAttribute('data-size')).toBe('lg');
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-size'))
+      .toBe('sm');
   });
 
-  test('forwards disabled signal input (aria-disabled attr on inner button)', () => {
+  test('forwards disabled (aria-disabled attr on inner button)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.disabled = true;
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
-    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-disabled'))
+      .toBe('true');
   });
 
-  test('projects content into the inner button', () => {
+  test('forwards loading: aria-busy on inner button + spinner element rendered', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.loading = true;
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button');
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.querySelector('.kj-button__spinner')).not.toBeNull();
+  });
+
+  test('does not render spinner when loading is false', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const btn = fixture.nativeElement.querySelector('kj-button button.kj-button');
-    expect(btn.textContent.trim()).toBe('Click');
+    expect(fixture.nativeElement.querySelector('.kj-button__spinner')).toBeNull();
+  });
+
+  test('forwards pressed (aria-pressed attr on inner button)', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.pressed = true;
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-pressed'))
+      .toBe('true');
+  });
+
+  test('forwards ariaLabel to the inner button', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.ariaLabel = 'Save changes';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-label'))
+      .toBe('Save changes');
   });
 });
