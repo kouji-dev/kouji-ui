@@ -9,6 +9,19 @@ export default defineProject({
     setupFiles: ['src/test-setup.ts'],
     include: ['src/**/*.spec.ts'],
     reporters: ['default'],
+    // Threads beat forks substantially on Windows; combined with isolate:false
+    // each worker pays jsdom + Angular TestBed env cost once and reuses it
+    // across all spec files routed to that worker.
+    pool: 'threads',
+    isolate: false,
+    fileParallelism: true,
+    poolOptions: {
+      threads: {
+        singleThread: false,
+        minThreads: 4,
+        maxThreads: 12,
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json'],

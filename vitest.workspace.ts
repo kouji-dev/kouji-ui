@@ -6,6 +6,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    // Pool config (threads, isolate:false, parallelism) is set per-project so
+    // that `pnpm --filter <pkg> test` (which uses the per-project config
+    // directly) and the workspace runner both pick up the same tuning.
     projects: [
       'packages/core/vite.config.ts',
       'packages/themes/vite.config.ts',

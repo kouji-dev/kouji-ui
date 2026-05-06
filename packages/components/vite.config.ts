@@ -15,6 +15,18 @@ export default defineProject({
     setupFiles: ['src/test-setup.ts'],
     include: ['src/**/*.spec.ts'],
     reporters: ['default'],
+    // Threads beat forks on Windows; isolate:false reuses jsdom + Angular
+    // TestBed env per worker across files.
+    pool: 'threads',
+    isolate: false,
+    fileParallelism: true,
+    poolOptions: {
+      threads: {
+        singleThread: false,
+        minThreads: 2,
+        maxThreads: 6,
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json'],
