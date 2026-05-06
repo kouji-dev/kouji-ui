@@ -1,39 +1,35 @@
-<div class="page-with-toc">
-  <main class="track-index-main">
-    @if (track()) {
-      <div class="docs-hero">
-        <span class="tag">&#64;kouji-ui/{{ track()!.packageName }}</span>
-        <h1>{{ track()!.packageName }}</h1>
-        <p>Browse all items shipped from this package.</p>
-      </div>
+<main class="index-main">
+  @if (track()) {
+    <div class="docs-hero">
+      <span class="tag">&#64;kouji-ui/{{ track()!.packageName }}</span>
+      <h1>{{ track()!.packageName }}</h1>
+      <p>Browse all items shipped from this package.</p>
+    </div>
 
-      @for (cat of categories(); track cat.label) {
-        @if (cat.children.length) {
-          <section class="category-section">
-            <h2 class="category-title">{{ cat.label }}</h2>
-            <div class="track-grid">
-              @for (item of cat.children; track item.slug) {
-                @if (item.slug) {
-                  <kj-docs-track-card
-                    [eyebrow]="cat.label"
-                    [title]="item.label"
-                    cta="View"
-                    [link]="['/docs', track()!.id, item.slug]"
-                  />
-                }
+    @for (cat of categories(); track cat.label) {
+      @if (cat.children.length) {
+        <section class="category-section">
+          <h2 class="category-title">{{ cat.label }}</h2>
+          <div class="track-grid">
+            @for (item of cat.children; track item.slug) {
+              @if (item.slug) {
+                <kj-docs-track-card
+                  [eyebrow]="cat.label"
+                  [title]="item.label"
+                  cta="View"
+                  [link]="['/docs', track()!.id, item.slug]"
+                />
               }
-            </div>
-          </section>
-        }
+            }
+          </div>
+        </section>
       }
-    } @else {
-      <div class="docs-hero">
-        <h1>Track not found</h1>
-        <p>No track exists at <code>/docs/{{ trackId() }}</code>.</p>
-        <p><a routerLink="/docs">Back to overview →</a></p>
-      </div>
     }
-  </main>
-
-  <aside class="toc-col"></aside>
-</div>
+  } @else {
+    <div class="docs-hero">
+      <h1>Track not found</h1>
+      <p>No track exists at <code>/docs/{{ trackId() }}</code>.</p>
+      <p><a routerLink="/docs">Back to overview →</a></p>
+    </div>
+  }
+</main>

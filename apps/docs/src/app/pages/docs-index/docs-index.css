@@ -1,32 +1,6 @@
-.docs-layout {
-  display: grid;
-  /* Index pages don't need a TOC column — the toc-col element stays in the
-     template for layout parity but is collapsed to 0 here. */
-  grid-template-columns: 220px 1fr;
-  min-height: 100dvh;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
-  font-family: var(--kj-font-mono);
-}
-
-/* Sidebar */
-.sidebar {
-  border-right: 1px solid var(--kj-color-base-200);
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-  overflow: hidden;
-  background: var(--kj-color-base-200);
-}
-
-/* Hidden on index pages — there's no TOC content to show. */
-.toc-col { display: none; }
-
-/* Main content — index pages span the full available width (no
-   prose-line cap), so card grids actually fill the viewport. */
-.docs-main {
+.index-main {
   padding: var(--kj-space-4xl) var(--kj-space-4xl) var(--kj-space-5xl);
-  width: 100%;
+  max-width: 1200px;
 }
 
 .docs-hero {
@@ -74,7 +48,6 @@ h1 {
   border: 1px solid var(--kj-color-base-300);
 }
 
-/* The .track-grid + .track-card styles live in track-card.css now. */
 .track-grid { margin-top: var(--kj-space-2xl); }
 
 .component-card-link {
@@ -121,18 +94,8 @@ h1 {
   transition: color 0.15s, transform 0.15s;
 }
 
-@media (max-width: 1100px) {
-  .docs-layout { grid-template-columns: 220px 1fr; }
-  .toc-col { display: none; }
-}
-
-/* ── Mobile responsive overrides ── */
 @media (max-width: 767px) {
-  .docs-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .docs-main {
+  .index-main {
     padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
   }
 

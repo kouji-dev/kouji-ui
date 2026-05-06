@@ -1,10 +1,10 @@
-.track-index-main {
-  padding: 4rem;
-  max-width: 1080px;
+.index-main {
+  padding: var(--kj-space-4xl) var(--kj-space-4xl) var(--kj-space-5xl);
+  max-width: 1200px;
 }
 
-@media (max-width: 768px) {
-  .track-index-main {
-    padding: 2rem 1.5rem;
+@media (max-width: 767px) {
+  .index-main {
+    padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
   }
 }

@@ -1,18 +1,20 @@
-<div class="docs-hero">
-  <span class="tag">Documentation</span>
-  <h1>kouji-ui ecosystem</h1>
-  <p>The kouji-ui workspace ships {{ tracks().length }} consumable packages — pick a track to browse what's in each.</p>
-</div>
+<main class="index-main">
+  <div class="docs-hero">
+    <span class="tag">Documentation</span>
+    <h1>kouji-ui ecosystem</h1>
+    <p>The kouji-ui workspace ships {{ tracks().length }} consumable packages — pick a track to browse what's in each.</p>
+  </div>
 
-<div class="track-grid">
-  @for (track of tracks(); track track.id) {
-    <kj-docs-track-card
-      [eyebrow]="'@kouji-ui/' + track.packageName"
-      [title]="track.title"
-      [description]="track.tagline"
-      [count]="itemCount(track)"
-      cta="Browse all"
-      [link]="['/docs', track.id]"
-    />
-  }
-</div>
+  <div class="track-grid">
+    @for (track of tracks(); track track.id) {
+      <kj-docs-track-card
+        [eyebrow]="'@kouji-ui/' + track.packageName"
+        [title]="track.title"
+        [description]="track.tagline"
+        [count]="itemCount(track)"
+        cta="Browse all"
+        [link]="['/docs', track.id]"
+      />
+    }
+  </div>
+</main>
