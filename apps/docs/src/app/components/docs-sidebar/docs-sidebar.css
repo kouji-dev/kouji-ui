@@ -80,3 +80,20 @@
   color: var(--kj-color-primary);
   font-weight: 500;
 }
+
+@media (max-width: 767px) {
+  :host {
+    display: block;
+    position: fixed;
+    inset: 56px 0 0 0; /* below navbar */
+    z-index: 40;
+    background: var(--kj-color-base-100);
+    transform: translateX(-100%);
+    transition: transform 200ms ease-out;
+    overflow-y: auto;
+  }
+  :host(.open) { transform: translateX(0); }
+  .kj-docs-sidebar { width: 100%; flex-direction: column; }
+  .col-a, .col-b { width: 100%; }
+  .col-b { border-left: 0; border-top: 1px solid var(--kj-color-base-300); }
+}

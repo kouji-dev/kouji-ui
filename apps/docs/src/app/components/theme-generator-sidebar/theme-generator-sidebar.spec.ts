@@ -5,6 +5,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { ThemeGeneratorSidebarComponent } from './theme-generator-sidebar';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { DocsManifestProvider } from '../../services/docs-manifest.provider';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 import type { DraftTheme, ResolvedTokens } from '../../lib/theme/types';
 
 class StubManifestProvider {
@@ -70,6 +71,7 @@ class StubDraftService {
 const baseProviders = [
   provideRouter([]),
   { provide: DocsManifestProvider, useClass: StubManifestProvider },
+  SidebarToggleService,
 ];
 
 describe('ThemeGeneratorSidebarComponent — Col A', () => {

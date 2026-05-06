@@ -1,8 +1,12 @@
-import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, startWith } from 'rxjs/operators';
 import { converter, formatHex } from 'culori';
 import { KjInputComponent } from '@kouji-ui/components';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { FontLoaderService } from '../../services/font-loader.service';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 import { BUILT_IN_NAMES, type BuiltInName } from '../../lib/theme/built-in-themes';
 import { CURATED_FONTS, type CuratedFont } from '../../lib/theme/font-catalog';
 import type { ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../../lib/theme/types';
@@ -34,11 +38,25 @@ function oklchToHex(css: string): string {
   imports: [KjInputComponent],
   templateUrl: './theme-generator-sidebar.html',
   styleUrl: './theme-generator-sidebar.css',
+  host: { '[class.open]': 'toggleService.open()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ThemeGeneratorSidebarComponent {
   private readonly draftService = inject(ThemeDraftService);
   private readonly fontLoader = inject(FontLoaderService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly toggleService = inject(SidebarToggleService);
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        startWith(null),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.toggleService.close());
+  }
 
   protected readonly builtIns = BUILT_IN_NAMES;
   protected readonly mySaved = computed(() => this.draftService.list().map(t => t.name));

@@ -6,6 +6,7 @@ import { render, screen } from '@testing-library/angular';
 import { describe, expect, test } from 'vitest';
 import { DocsSidebarComponent } from './docs-sidebar';
 import { DocsManifestProvider } from '../../services/docs-manifest.provider';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 
 @Component({ standalone: true, template: '' })
 class StubPage {}
@@ -26,6 +27,7 @@ const baseProviders = [
   provideHttpClientTesting(),
   provideRouter(stubRoutes),
   { provide: DocsManifestProvider, useClass: StubManifestProvider },
+  SidebarToggleService,
 ];
 
 describe('DocsSidebarComponent — Column A', () => {

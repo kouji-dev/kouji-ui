@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { DocsService, DocsTrack } from '../../services/docs.service';
 import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 
@@ -13,7 +12,7 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 @Component({
   selector: 'app-docs-index',
   standalone: true,
-  imports: [RouterLink, DocsTrackCardComponent],
+  imports: [DocsTrackCardComponent],
   templateUrl: './docs-index.html',
   styleUrl: './docs-index.css',
 })

@@ -21,3 +21,18 @@ test('navbar persists across landing → docs → theme-generator', async ({ pag
   await page.getByRole('link', { name: /theme generator/i }).first().click();
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
 });
+
+test.describe('mobile (375x667)', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('hamburger toggles docs sidebar', async ({ page }) => {
+    await page.goto('/docs');
+    const burger = page.getByRole('button', { name: /toggle navigation/i });
+    await burger.click();
+    // After click, the host should have class 'open' so the docs-sidebar element is visible.
+    await expect(page.locator('kj-docs-sidebar.open')).toBeVisible();
+    await burger.click();
+    // After second click, drawer closes.
+    await expect(page.locator('kj-docs-sidebar.open')).toHaveCount(0);
+  });
+});

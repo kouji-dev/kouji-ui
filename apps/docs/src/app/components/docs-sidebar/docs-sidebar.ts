@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
 import { DocsService, SidebarNode } from '../../services/docs.service';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 
 export type DocsSection = 'getting-started' | 'headless' | 'components' | null;
 
@@ -19,6 +20,7 @@ interface ColARow {
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './docs-sidebar.html',
   styleUrl: './docs-sidebar.css',
+  host: { '[class.open]': 'toggleService.open()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocsSidebarComponent {
@@ -26,6 +28,7 @@ export class DocsSidebarComponent {
   private readonly docs = inject(DocsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly url = signal<string>(this.router.url);
+  protected readonly toggleService = inject(SidebarToggleService);
 
   protected readonly rows: ColARow[] = [
     { id: 'getting-started', label: 'Getting Started', href: '/docs/getting-started', hasChildren: false },
@@ -61,7 +64,10 @@ export class DocsSidebarComponent {
         startWith(null),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => this.url.set(this.router.url));
+      .subscribe(() => {
+        this.url.set(this.router.url);
+        this.toggleService.close();
+      });
     this.docs.loadManifest().subscribe();
   }
 }

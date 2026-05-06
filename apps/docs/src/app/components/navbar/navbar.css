@@ -132,3 +132,28 @@
   color: var(--kj-color-primary);
   font-weight: 500;
 }
+
+.kj-navbar-burger {
+  width: 32px;
+  height: 32px;
+  display: none; /* mobile-only by default */
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  color: var(--kj-color-base-content);
+  cursor: pointer;
+}
+.kj-navbar-burger:hover { background: var(--kj-color-base-200); }
+
+@media (max-width: 767px) {
+  .kj-navbar-burger { display: inline-flex; }
+  .kj-navbar-search span,
+  .kj-navbar-search kbd,
+  .kj-navbar-version,
+  .kj-navbar-icon[aria-label="GitHub repository"],
+  .kj-navbar-icon[aria-label="npm package"] { display: none; }
+  .kj-navbar-search { min-width: 0; padding: 5px 8px; }
+  .kj-navbar-link { padding: 4px 6px; font-size: 12px; }
+}
