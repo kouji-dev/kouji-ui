@@ -1,0 +1,34 @@
+<aside class="kj-tg-sidebar">
+  <nav class="col-a" role="navigation" aria-label="Themes">
+    <p class="col-label">Themes</p>
+    <p class="col-group">Built-in</p>
+    @for (name of builtIns; track name) {
+      <button
+        type="button"
+        class="theme-row"
+        [class.active]="currentName() === name"
+        (click)="onForkBuiltIn(name)"
+      >
+        <span class="swatch" [attr.data-theme]="name" aria-hidden="true"></span>
+        <span class="theme-name">{{ name }}</span>
+      </button>
+    }
+
+    @if (mySaved().length > 0) {
+      <p class="col-group">My themes</p>
+      @for (name of mySaved(); track name) {
+        <button
+          type="button"
+          class="theme-row"
+          [class.active]="currentName() === name"
+          (click)="onLoadSaved(name)"
+        >
+          <span class="swatch saved" aria-hidden="true"></span>
+          <span class="theme-name">{{ name }}</span>
+        </button>
+      }
+    }
+
+    <button type="button" class="new-theme" (click)="onNewTheme()">＋ New theme</button>
+  </nav>
+</aside>
