@@ -18,7 +18,7 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
   standalone: true,
   imports: [RouterLink, DocsTrackCardComponent],
   templateUrl: './track-index.html',
-  styleUrl: '../docs-index/docs-index.css',
+  styleUrls: ['../docs-index/docs-index.css', './track-index.css'],
 })
 export class TrackIndexComponent implements OnInit {
   private readonly docs = inject(DocsService);

@@ -1,8 +1,16 @@
-.tg-shell {
+:host {
   display: flex;
   flex: 1;
   min-height: 0;
 }
+
+.tg-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .tg-main {
   flex: 1;
   min-width: 0;

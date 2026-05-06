@@ -1,8 +1,16 @@
-.docs-shell {
+:host {
   display: flex;
   flex: 1;
   min-height: 0;
 }
+
+.docs-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .docs-main {
   flex: 1;
   min-width: 0;

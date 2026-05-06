@@ -21,8 +21,10 @@ import { NavbarComponent } from './components/navbar/navbar';
     <kj-search />
   `,
   styles: [`
+    :host { display: block; height: 100dvh; overflow: hidden; }
     .content-hidden { visibility: hidden; }
-    .app-shell { display: flex; flex-direction: column; min-height: 100dvh; }
+    .app-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+    .app-shell > router-outlet { display: contents; }
   `],
 })
 export class App implements OnInit {

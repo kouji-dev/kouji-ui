@@ -1,5 +1,16 @@
-:host {
-  display: block;
+/* ViewEncapsulation.None — rules target global DOM */
+app-home {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.noise {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ── Noise texture via SVG data URI ── */

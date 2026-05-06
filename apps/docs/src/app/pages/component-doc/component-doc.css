@@ -1,38 +1,8 @@
-/* 3-column layout: sidebar | content | toc */
-.docs-layout {
-  display: grid;
-  grid-template-columns: 220px 1fr 220px;
-  min-height: 100dvh;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
-  font-family: var(--kj-font-mono);
-}
-
-/* ── Sidebar ── */
-.sidebar {
-  border-right: 1px solid var(--kj-color-base-200);
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-  overflow: hidden;
-  background: var(--kj-color-base-200);
-}
-
 /* ── Main content ── */
 .doc-main {
   padding: var(--kj-space-4xl) 3.5rem var(--kj-space-5xl);
   min-width: 0; /* prevent grid blowout */
   overflow-x: hidden;
-}
-
-/* ── TOC column placeholder (component fills it) ── */
-.toc-col {
-  border-left: 1px solid var(--kj-color-base-200);
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-  overflow-y: auto;
-  background: var(--kj-color-base-200);
 }
 
 /* ── Scrollbar ── */
@@ -179,18 +149,8 @@ h1 {
 
 .required-badge { color: var(--kj-color-primary); margin-left: 4px; font-size: 0.9em; }
 
-/* ── Responsive ── */
-@media (max-width: 1100px) {
-  .docs-layout { grid-template-columns: 220px 1fr; }
-  .toc-col { display: none; }
-}
-
 /* ── Mobile responsive overrides ── */
 @media (max-width: 767px) {
-  .docs-layout {
-    grid-template-columns: 1fr;
-  }
-
   .doc-main {
     padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
   }
