@@ -55,10 +55,10 @@ export class KjButton {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** Disables the button. Reflects `aria-disabled` and `data-disabled`. */
-  readonly kjDisabled = input<boolean>(false);
+  readonly kjDisabled = input(false);
 
   /** Marks the button as in-flight (e.g. async action). Sets `aria-busy="true"` and forces disabled. */
-  readonly kjLoading = input<boolean>(false);
+  readonly kjLoading = input(false);
 
   /**
    * Toggle state. Unset (default) marks this as a non-toggle button and omits

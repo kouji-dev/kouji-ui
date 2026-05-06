@@ -118,6 +118,42 @@ Consumers of the wrapper bind through prefixed names too:
 <kj-button kjVariant="destructive" [(kjPressed)]="on">Toggle</kj-button>
 ```
 
+### Prefer TypeScript inference for input / output / model types
+
+Don't write explicit generic arguments on `input()`, `output()`, or `model()`
+calls when TypeScript can infer them from the initial value, the transform,
+or the surrounding usage. Explicit generics add noise, defeat the docs
+extractor's source-text type detection (it ends up showing the raw generic
+string instead of a clean type), and create churn whenever the inferred type
+is correct but slightly differently spelled.
+
+Justified exceptions — only these:
+
+- **Inference produces the wrong type.** E.g. an empty array literal `[]`
+  infers `never[]`; pin with `input<MyItem[]>([])`.
+- **ng-packagr emits a narrower type than intended.** Document the
+  workaround inline (we hit this once with `model<boolean | undefined>` for
+  toggle-state inputs — the field-type annotation is required to keep the
+  emitted `.d.ts` from collapsing the write type).
+- **The default cannot be expressed without a generic.** E.g.
+  `input.required<MyComplexType>()` — required inputs have no initial value,
+  so the type must come from the generic.
+
+```ts
+// ✅ inferred
+readonly kjVariant = input(this.preset.default, {
+  transform: (v?: string) => v || this.preset.default,
+});
+readonly kjDisabled = input(false);
+readonly kjLabel = input('');
+
+// ❌ explicit when inferable — noisy and confuses the docs extractor
+readonly kjVariant = input<string, string | undefined>(this.preset.default, {
+  transform: (v: string | undefined) => v || this.preset.default,
+});
+readonly kjDisabled = input<boolean>(false);
+```
+
 ## Signals — Use Everywhere
 
 - **Signal inputs/outputs:** `input()`, `input.required()`, `model()`, `output()` — never `@Input()` or `@Output()`

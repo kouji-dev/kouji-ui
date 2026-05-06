@@ -1,4 +1,4 @@
-import { Directive, InjectionToken, effect, inject, input, isDevMode } from '@angular/core';
+import { Directive, InjectionToken, InputSignalWithTransform, effect, inject, input, isDevMode } from '@angular/core';
 
 /**
  * Shape of the preset configuration consumed by `KjVariant`. One per consumer
@@ -38,9 +38,14 @@ export const KJ_VARIANT_PRESET = new InjectionToken<KjVariantPreset>('kj.variant
 export class KjVariant {
   private readonly preset = inject(KJ_VARIANT_PRESET);
 
-  readonly kjVariant = input<string, string | undefined>(this.preset.default, {
-    transform: (v: string | undefined) => v || this.preset.default,
-  });
+  // Explicit field annotation pins the ng-packagr-emitted .d.ts shape —
+  // without it ng-packagr collapses the write type to `string` (dropping the
+  // `| undefined` flow-through), which trips the docs extractor and any
+  // consumer trying to bind a `string | undefined` source.
+  readonly kjVariant: InputSignalWithTransform<string, string | undefined> = input(
+    this.preset.default,
+    { transform: (v?: string) => v || this.preset.default },
+  );
 
   constructor() {
     if (isDevMode()) {

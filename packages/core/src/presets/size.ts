@@ -1,4 +1,4 @@
-import { Directive, InjectionToken, effect, inject, input, isDevMode } from '@angular/core';
+import { Directive, InjectionToken, InputSignalWithTransform, effect, inject, input, isDevMode } from '@angular/core';
 
 /**
  * Shape of the preset configuration consumed by `KjSize`. One per consumer
@@ -38,9 +38,11 @@ export const KJ_SIZE_PRESET = new InjectionToken<KjSizePreset>('kj.size.preset',
 export class KjSize {
   private readonly preset = inject(KJ_SIZE_PRESET);
 
-  readonly kjSize = input<string, string | undefined>(this.preset.default, {
-    transform: (v: string | undefined) => v || this.preset.default,
-  });
+  // See `KjVariant.kjVariant` for why the field type is annotated explicitly.
+  readonly kjSize: InputSignalWithTransform<string, string | undefined> = input(
+    this.preset.default,
+    { transform: (v?: string) => v || this.preset.default },
+  );
 
   constructor() {
     if (isDevMode()) {
