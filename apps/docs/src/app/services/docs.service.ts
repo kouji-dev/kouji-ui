@@ -54,10 +54,12 @@ export interface ComponentDoc {
   slug: string;
   /** Source package — 'core' for headless directives, 'components' for styled wrappers. */
   pkg: 'core' | 'components';
+  /**
+   * Rendered category path, package-prefixed. First segment is `Core` or
+   * `Library` (derived from the file's source package by the extractor),
+   * remaining segments come from the directive's `@category` JSDoc tag.
+   */
   categoryPath: string[];
-  category:
-    | 'actions' | 'data-input' | 'data-display' | 'navigation' | 'feedback'
-    | 'base' | 'inputs' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -157,11 +159,6 @@ export class DocsService {
     if (!matches.length) return null;
     if (pkg) return matches.find(c => c.pkg === pkg) ?? null;
     return matches[0] ?? null;
-  }
-
-  /** Get components filtered by category. */
-  byCategory(category: ComponentDoc['category']): ComponentDoc[] {
-    return this._manifest?.components.filter(c => c.category === category) ?? [];
   }
 
   /** Builds a 3-level nested category tree: Package > Category > Component */

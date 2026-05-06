@@ -2,7 +2,7 @@
 <main class="doc-main" kjPageToc #pageToc="kjPageToc">
   @if (component(); as comp) {
     <header class="doc-header">
-      <span class="tag">{{ comp.category }}</span>
+      <span class="tag">{{ comp.categoryPath[comp.categoryPath.length - 1] }}</span>
       <h1>{{ comp.name }}</h1>
       @if (comp.description) {
         <p class="desc">{{ comp.description }}</p>

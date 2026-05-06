@@ -81,10 +81,13 @@ export interface ComponentDoc {
   slug: string;
   /** Top-level taxonomy: which workspace package the entry was extracted from. */
   pkg: SourcePkg;
+  /**
+   * Rendered category path, package-prefixed. First segment is `Core` (for
+   * `packages/core/`) or `Library` (for `packages/components/`); remaining
+   * segments come from the directive's `@category` JSDoc tag. Empty when no
+   * directive in this folder declared a `@category`.
+   */
   categoryPath: string[];
-  category:
-    | 'actions' | 'data-input' | 'data-display' | 'navigation' | 'feedback'
-    | 'base' | 'inputs' | 'overlays' | 'data' | 'display' | 'a11y' | 'primitives';
   description: string;
   directives: DirectiveDef[];
   tokens: TokenDef[];
@@ -94,57 +97,6 @@ export interface ComponentDoc {
 export interface DocsManifest {
   generatedAt: string;
   components: ComponentDoc[];
-}
-
-// ── Category mapping ─────────────────────────────────────────────────────────
-
-/** Folder-name → category fallback for the core track. Used when a class has no @category tag. */
-const CORE_CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
-  button:     'base',
-  input:      'inputs',
-  checkbox:   'inputs',
-  radio:      'inputs',
-  toggle:     'inputs',
-  select:     'inputs',
-  form:       'inputs',
-  tabs:       'navigation',
-  accordion:  'navigation',
-  menu:       'navigation',
-  dialog:     'overlays',
-  popover:    'overlays',
-  tooltip:    'overlays',
-  toast:      'overlays',
-  table:      'data',
-  chart:      'data',
-  avatar:     'display',
-  badge:      'display',
-  a11y:       'a11y',
-  primitives: 'primitives',
-};
-
-/** Folder-name → category fallback for the components track (daisyUI-style groups). */
-const COMPONENTS_CATEGORY_MAP: Record<string, ComponentDoc['category']> = {
-  button:     'actions',
-  dialog:     'actions',
-  checkbox:   'data-input',
-  radio:      'data-input',
-  select:     'data-input',
-  toggle:     'data-input',
-  input:      'data-input',
-  accordion:  'data-display',
-  avatar:     'data-display',
-  badge:      'data-display',
-  card:       'data-display',
-  kbd:        'data-display',
-  menu:       'navigation',
-  tabs:       'navigation',
-  link:       'navigation',
-  toast:      'feedback',
-};
-
-function getCategory(folder: string, pkg: SourcePkg): ComponentDoc['category'] {
-  const map = pkg === 'components' ? COMPONENTS_CATEGORY_MAP : CORE_CATEGORY_MAP;
-  return map[folder] ?? 'inputs';
 }
 
 // ── ts-query selectors ────────────────────────────────────────────────────────
@@ -433,14 +385,40 @@ function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceDir?: st
   return results;
 }
 
-function getCategoryPath(node: ts.Node): string[] {
+/** Top-level package label prepended to every category path, derived from
+ *  the file's source package — not from a hardcoded map. */
+function pkgLabel(pkg: SourcePkg): string {
+  return pkg === 'components' ? 'Library' : 'Core';
+}
+
+/**
+ * Reads the `@category` JSDoc tag and returns the rendered category path.
+ *
+ * The package label (`Core` for `packages/core/`, `Library` for
+ * `packages/components/`) is auto-prepended from the file's source package.
+ * If the tag already starts with that label, the segments are normalised to
+ * that casing and used as-is — so both `@category Base` and
+ * `@category Core/Base` produce `['Core', 'Base']` from a core-package file.
+ *
+ * Returns `[]` when no tag is present; the caller decides how to handle that
+ * (currently: the directive still renders, just without a categoryPath).
+ */
+function getCategoryPath(node: ts.Node, pkg: SourcePkg): string[] {
   const tags = tsquery<ts.JSDocTag>(node, CATEGORY_TAG_SELECTOR);
   if (!tags.length) return [];
   const comment = tags[0].comment;
   const raw = typeof comment === 'string'
     ? comment
     : (comment ?? []).map((x: { text?: string }) => x.text ?? '').join('');
-  return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
+  const segments = raw.trim().split('/').map(s => s.trim()).filter(Boolean);
+  if (!segments.length) return [];
+
+  const label = pkgLabel(pkg);
+  if (segments[0].toLowerCase() === label.toLowerCase()) {
+    segments[0] = label;
+    return segments;
+  }
+  return [label, ...segments];
 }
 
 function getRequired(node: ts.Node): boolean {
@@ -714,7 +692,6 @@ function processSourceFile(
   const folder = folderFromPath(filePath);
   if (!folder || folder === 'unknown') return;
 
-  const pkgName = pkgNameForPath(filePath);
   // Composite key so the same folder name (e.g. 'button') in two packages
   // results in two separate entries in the manifest.
   const mapKey = `${pkg}:${folder}`;
@@ -760,7 +737,7 @@ function processSourceFile(
     const ownInputs = ownInputsByClass.get(className) ?? [];
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const inputs = [...ownInputs, ...hdInputs];
-    const categoryPath = getCategoryPath(cls);
+    const categoryPath = getCategoryPath(cls, pkg);
     const required = getRequired(cls);
 
     // If themedExamples has a 'default' key, use it as exampleFiles fallback
@@ -774,7 +751,6 @@ function processSourceFile(
         slug: folder,
         pkg,
         categoryPath: [],
-        category: getCategory(folder, pkg),
         description: '',
         directives: [],
         tokens: [],
@@ -785,19 +761,16 @@ function processSourceFile(
     const comp = componentMap.get(mapKey)!;
     if (!comp.description && description) comp.description = description;
 
-    // Prepend package name to directive categoryPath (skip if already present to avoid duplication)
-    const fullPath = categoryPath.length
-      ? (categoryPath[0] === pkgName ? categoryPath : [pkgName, ...categoryPath])
-      : [];
-    if (!comp.categoryPath.length && fullPath.length) {
-      comp.categoryPath = fullPath;
+    // categoryPath is already package-prefixed by getCategoryPath().
+    if (!comp.categoryPath.length && categoryPath.length) {
+      comp.categoryPath = categoryPath;
     }
 
     const directiveWithPkg: DirectiveDef = {
       className,
       selector,
       ...(exportAs ? { exportAs } : {}),
-      categoryPath: fullPath,
+      categoryPath,
       description,
       inputs,
       examples,
@@ -914,61 +887,14 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
   }
   void componentsScanned;
 
-  // Fill in categoryPath for components that had no @category tag
-  const categoryFallbacks: Record<SourcePkg, Partial<Record<ComponentDoc['category'], string[]>>> = {
-    core: {
-      base:       ['Core', 'Base'],
-      inputs:     ['Core', 'Inputs'],
-      navigation: ['Core', 'Navigation'],
-      overlays:   ['Core', 'Overlays'],
-      data:       ['Core', 'Data'],
-      display:    ['Core', 'Display'],
-      a11y:       ['Core', 'Accessibility'],
-      primitives: ['Core', 'Primitives'],
-    },
-    components: {
-      'actions':      ['Library', 'Actions'],
-      'data-input':   ['Library', 'Data input'],
-      'data-display': ['Library', 'Data display'],
-      'navigation':   ['Library', 'Navigation'],
-      'feedback':     ['Library', 'Feedback'],
-      // safety net for components that fall back to legacy keys
-      base:       ['Library', 'Base'],
-      inputs:     ['Library', 'Data input'],
-      overlays:   ['Library', 'Actions'],
-      data:       ['Library', 'Data display'],
-      display:    ['Library', 'Data display'],
-      a11y:       ['Library', 'Accessibility'],
-      primitives: ['Library', 'Primitives'],
-    },
-  };
-
-  for (const comp of componentMap.values()) {
-    if (!comp.categoryPath.length) {
-      const pkgLabel = comp.pkg === 'components' ? 'Library' : 'Core';
-      comp.categoryPath = [
-        ...(categoryFallbacks[comp.pkg][comp.category] ?? [pkgLabel, 'Other']),
-        comp.name,
-      ];
-    }
-  }
-
-  // Sort by category order
-  const coreCategoryOrder: ComponentDoc['category'][] = [
-    'base', 'inputs', 'navigation', 'overlays', 'data', 'display', 'a11y', 'primitives',
-  ];
-  const componentsCategoryOrder: ComponentDoc['category'][] = [
-    'actions', 'data-input', 'data-display', 'navigation', 'feedback',
-  ];
-  const orderFor = (pkg: SourcePkg) =>
-    pkg === 'components' ? componentsCategoryOrder : coreCategoryOrder;
-
+  // Sort components by package, then by categoryPath, then by display name.
+  // No category-order map: if a track wants a specific category order, it
+  // belongs in the @category tag's path itself (e.g. prefix the segment
+  // with `01-` etc.) — this extractor stays purely TSDoc-driven.
   const components = [...componentMap.values()].sort((a, b) => {
     if (a.pkg !== b.pkg) return a.pkg.localeCompare(b.pkg);
-    const order = orderFor(a.pkg);
-    const ai = order.indexOf(a.category);
-    const bi = order.indexOf(b.category);
-    return ai !== bi ? ai - bi : a.name.localeCompare(b.name);
+    const pathCmp = a.categoryPath.join('/').localeCompare(b.categoryPath.join('/'));
+    return pathCmp !== 0 ? pathCmp : a.name.localeCompare(b.name);
   });
 
   _cached = { generatedAt: new Date().toISOString(), components };
