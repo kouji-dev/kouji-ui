@@ -62,21 +62,23 @@
       </svg>
       <span>{{ currentTheme() }}</span>
     </button>
-    @if (pickerOpen()) {
-      <ul class="kj-navbar-theme-list" role="listbox" aria-label="Theme">
-        @for (t of themes; track t) {
-          <li
-            role="option"
-            tabindex="0"
-            class="kj-navbar-theme-option"
-            [class.active]="t === currentTheme()"
-            [attr.aria-selected]="t === currentTheme()"
-            (click)="selectTheme(t)"
-            (keydown.enter)="selectTheme(t)"
-            (keydown.space)="$event.preventDefault(); selectTheme(t)"
-          >{{ t }}</li>
-        }
-      </ul>
+    @defer (when isBrowser) {
+      @if (pickerOpen()) {
+        <ul class="kj-navbar-theme-list" role="listbox" aria-label="Theme">
+          @for (t of themes; track t) {
+            <li
+              role="option"
+              tabindex="0"
+              class="kj-navbar-theme-option"
+              [class.active]="t === currentTheme()"
+              [attr.aria-selected]="t === currentTheme()"
+              (click)="selectTheme(t)"
+              (keydown.enter)="selectTheme(t)"
+              (keydown.space)="$event.preventDefault(); selectTheme(t)"
+            >{{ t }}</li>
+          }
+        </ul>
+      }
     }
   </div>
 </nav>

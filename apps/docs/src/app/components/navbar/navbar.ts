@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, DestroyRef, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
@@ -23,6 +24,7 @@ export class NavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly url = signal<string>(this.router.url);
 
+  protected readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   protected readonly themes = AVAILABLE_THEMES;
   protected readonly currentTheme = this.themeService.theme;
   protected readonly pickerOpen = signal(false);
