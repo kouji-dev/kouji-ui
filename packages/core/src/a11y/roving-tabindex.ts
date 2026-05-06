@@ -4,6 +4,7 @@
   InjectionToken,
   contentChildren,
   effect,
+  forwardRef,
   inject,
   signal,
 } from '@angular/core';
@@ -53,7 +54,7 @@ export class KjRovingTabindexItemDirective {
 @Directive({
   selector: '[kjRovingTabindex]',
   standalone: true,
-  providers: [{ provide: KJ_ROVING_TABINDEX, useExisting: KjRovingTabindex }],
+  providers: [{ provide: KJ_ROVING_TABINDEX, useExisting: forwardRef(() => KjRovingTabindex) }],
   host: {
     '(keydown)': 'onKeydown($event)',
     '(focusin)': 'onFocusIn($event)',
