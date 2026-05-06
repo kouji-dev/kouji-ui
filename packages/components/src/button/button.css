@@ -26,6 +26,7 @@
     /* the only place raw var(--kj-button-*) is read */
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: var(--kj-space-sm);
     background: var(--kj-button-bg);
     color: var(--kj-button-fg);
