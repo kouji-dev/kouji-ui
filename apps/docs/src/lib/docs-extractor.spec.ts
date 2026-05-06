@@ -28,4 +28,18 @@ describe('docs-extractor @internal filter', () => {
     expect(tokenNames).toContain('PUBLIC_TOKEN');
     expect(tokenNames).not.toContain('INTERNAL_TOKEN');
   });
+
+  it('resolves hostDirectives-forwarded input types from the source directive', () => {
+    const manifest = extractDocsManifest(FIXTURE_ROOT);
+    const directives = manifest.components.flatMap(c => c.directives);
+    const consumer = directives.find(d => d.className === 'ConsumerDirective');
+    expect(consumer).toBeDefined();
+    const forwarded = consumer!.inputs.find(i => i.name === 'kjVariantLike');
+    expect(forwarded).toBeDefined();
+    // The type was unwrapped from `InputSignal<string>` on `InternalDirective`
+    // and copied across via the registry — not left as the 'unknown' placeholder.
+    expect(forwarded!.type).toBe('string');
+    // Resolution metadata is stripped from the public manifest.
+    expect(forwarded).not.toHaveProperty('sourceDirective');
+  });
 });

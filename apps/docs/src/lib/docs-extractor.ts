@@ -27,6 +27,13 @@ export interface InputDef {
   isModel: boolean;
   description: string;
   defaultValue?: string;
+  /**
+   * For inputs forwarded via `hostDirectives` composition, the simple name of
+   * the directive class the input is defined on (e.g. `'KjVariant'`).
+   * Resolved into a real `type` and `defaultValue` in a post-extraction pass
+   * once every class's own inputs have been collected. Absent on own inputs.
+   */
+  sourceDirective?: string;
 }
 
 export interface TokenDef {
@@ -503,6 +510,13 @@ function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
     const inputsList = extractBracketContent(hdContent, arrStart);
     searchPos = arrStart + inputsList.length + 2; // advance past this array
 
+    // Find the `directive: ClassName` for the object literal that owns this
+    // `inputs:` array. The matching `directive:` is the last one before the
+    // inputs index inside the same object.
+    const before = hdContent.slice(0, inputsIdx);
+    const dirMatches = [...before.matchAll(/directive\s*:\s*(\w+)/g)];
+    const sourceDirective = dirMatches.length ? dirMatches[dirMatches.length - 1][1] : '';
+
     // Parse each quoted entry: 'originalName: aliasName' or 'name'
     const entryRe = /['"`]([^'"`]+)['"`]/g;
     for (const entry of inputsList.matchAll(entryRe)) {
@@ -516,11 +530,15 @@ function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
 
       results.push({
         name: alias,
-        type: 'boolean',
+        // Placeholder — resolved against `ownInputsByClass` after every file
+        // has been processed. See `resolveHostDirectiveInputTypes`.
+        type: 'unknown',
         required: false,
         isModel: false,
-        description: `Forwarded from \`${original}\` via \`hostDirectives\`.`,
-        defaultValue: 'false',
+        description: sourceDirective
+          ? `Forwarded from \`${sourceDirective}.${original}\` via \`hostDirectives\`.`
+          : `Forwarded from \`${original}\` via \`hostDirectives\`.`,
+        sourceDirective,
       });
     }
   }
@@ -546,9 +564,14 @@ function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): Inp
       initText.startsWith('input.required(') ||
       tsquery(prop, 'CallExpression > PropertyAccessExpression:has(Identifier[text="required"])').length > 0;
 
-    // Type: prefer explicit type annotation, fall back to generic argument
+    // Type: prefer explicit type annotation, fall back to generic argument.
+    // Strips Angular signal-input wrappers so the docs page shows the
+    // user-facing read type (e.g. `string` rather than
+    // `InputSignalWithTransform<string, string | undefined>`).
     let type = prop.type?.getText(sourceFile) ?? '';
-    if (!type) {
+    if (type) {
+      type = unwrapSignalType(type);
+    } else {
       type =
         initText.match(/(?:input(?:\.required)?|model)<([^>]+)>/)?.[1] ?? 'unknown';
     }
@@ -611,10 +634,22 @@ function folderFromPath(filePath: string): string | null {
   return null;
 }
 
+/**
+ * Strips Angular signal-input wrappers (`InputSignal<T>`,
+ * `InputSignalWithTransform<T, ...>`, `ModelSignal<T>`) from the displayed
+ * type, leaving only the user-facing read type. Falls through unchanged for
+ * any annotation that doesn't match a known wrapper.
+ */
+function unwrapSignalType(type: string): string {
+  const m = type.match(/^\s*(?:InputSignal(?:WithTransform)?|ModelSignal)\s*<\s*([^,>]+(?:<[^>]*>)?)/);
+  return m ? m[1].trim() : type;
+}
+
 function processSourceFile(
   morphFile: SourceFile,
   componentMap: Map<string, ComponentDoc>,
   pkg: SourcePkg,
+  ownInputsByClass: Map<string, InputDef[]>,
 ): void {
   const filePath = morphFile.getFilePath();
 
@@ -638,6 +673,15 @@ function processSourceFile(
   const directiveClasses = tsquery<ts.ClassDeclaration>(tsSourceFile, DIRECTIVE_CLASS_SELECTOR);
 
   for (const cls of directiveClasses) {
+    const className = cls.name?.text ?? '';
+
+    // Always register own inputs for the class — even for @internal classes
+    // and non-exported ones — because they may be referenced by another
+    // class's `hostDirectives` and we need to resolve the input type later.
+    if (className) {
+      ownInputsByClass.set(className, extractInputs(cls, tsSourceFile));
+    }
+
     if (hasInternalTag(cls)) continue;
     // Only exported classes
     const isExported = cls.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
@@ -648,14 +692,14 @@ function processSourceFile(
     if (!selector) continue;
 
     const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
-    const className = cls.name?.text ?? '';
     const sourceDir = dirname(morphFile.getFilePath());
     const description = getJsDocDescription(cls);
     const examples = getJsDocExamples(cls);
     const exampleFiles = getDocFiles(cls, tsSourceFile, sourceDir);
     const themedExamples = getDocThemes(cls, tsSourceFile, sourceDir);
     const docExamples = getDocExamples(cls, tsSourceFile, sourceDir);
-    const ownInputs = extractInputs(cls, tsSourceFile);
+    // Reuse the inputs we already collected above for the registry.
+    const ownInputs = ownInputsByClass.get(className) ?? [];
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const inputs = [...ownInputs, ...hdInputs];
     const categoryPath = getCategoryPath(cls);
@@ -739,6 +783,11 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
   project.addSourceFilesAtPaths([join(root, 'packages/core/src/**/*.ts')]);
 
   const componentMap = new Map<string, ComponentDoc>();
+  // Registry of own (declared) inputs per directive class name. Populated as
+  // each source file is processed (including @internal classes), then used in
+  // a post-process pass to resolve types for `hostDirectives`-forwarded
+  // inputs that this class composes from another directive.
+  const ownInputsByClass = new Map<string, InputDef[]>();
 
   // ── Pass 1: packages/core ─────────────────────────────────────────────────
   for (const morphFile of project.getSourceFiles()) {
@@ -751,7 +800,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       !filePath.includes('/packages/core/src/')
     ) continue;
 
-    processSourceFile(morphFile, componentMap, 'core');
+    processSourceFile(morphFile, componentMap, 'core', ownInputsByClass);
   }
 
   // ── Pass 2: packages/components ───────────────────────────────────────────
@@ -775,8 +824,35 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
       !filePath.includes('/packages/components/src/')
     ) continue;
 
-    processSourceFile(morphFile, componentMap, 'components');
+    processSourceFile(morphFile, componentMap, 'components', ownInputsByClass);
     componentsScanned++;
+  }
+
+  // ── Resolve hostDirectives input types from the registry ─────────────────
+  // Composed inputs were emitted with `type: 'unknown'` and a `sourceDirective`
+  // pointing at the class they're declared on. Walk every directive's inputs
+  // and copy the type / defaultValue from the source class's own inputs.
+  for (const comp of componentMap.values()) {
+    for (const dir of comp.directives) {
+      for (const input of dir.inputs) {
+        if (input.sourceDirective) {
+          const sourceInputs = ownInputsByClass.get(input.sourceDirective) ?? [];
+          const original = sourceInputs.find(i => i.name === input.name);
+          if (original) {
+            input.type = original.type;
+            if (original.defaultValue !== undefined) {
+              input.defaultValue = original.defaultValue;
+            } else {
+              delete input.defaultValue;
+            }
+            input.isModel = original.isModel;
+            input.required = original.required;
+          }
+          // Strip the resolution metadata from the public manifest.
+          delete input.sourceDirective;
+        }
+      }
+    }
   }
   void componentsScanned;
 
