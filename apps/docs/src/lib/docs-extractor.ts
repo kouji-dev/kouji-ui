@@ -175,6 +175,11 @@ const _DOC_FILE_RE = /@doc-file\s+(\S+)\s*\n([\s\S]*?)(?=@doc-file|@\w|\*\/|$)/g
 
 // ── JSDoc extraction using ts-query ──────────────────────────────────────────
 
+/** True when the node carries a JSDoc `@internal` tag. */
+function hasInternalTag(node: ts.Node): boolean {
+  return ts.getJSDocTags(node).some(t => t.tagName.text === 'internal');
+}
+
 function getJsDocDescription(node: ts.Node): string {
   const tags = tsquery<ts.JSDoc>(node, 'JSDoc');
   if (!tags.length) return '';
@@ -532,8 +537,8 @@ function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): Inp
     const name = (prop.name as ts.Identifier).text;
     if (name.startsWith('_')) continue;
 
+    if (hasInternalTag(prop)) continue;
     const description = getJsDocDescription(prop);
-    if (description.startsWith('@internal')) continue;
 
     const initText = prop.initializer?.getText(sourceFile) ?? '';
     const isModel = initText.startsWith('model(');
@@ -562,24 +567,30 @@ function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): Inp
 
 function extractTokens(sourceFile: ts.SourceFile): TokenDef[] {
   const stmts = tsquery<ts.VariableStatement>(sourceFile, INJECTION_TOKEN_SELECTOR);
-  return stmts.map(stmt => {
+  const out: TokenDef[] = [];
+  for (const stmt of stmts) {
+    if (hasInternalTag(stmt)) continue;
     const decl = stmt.declarationList.declarations[0];
     const name = (decl?.name as ts.Identifier)?.text ?? '';
-    const description = getJsDocDescription(stmt);
-    return { name, description };
-  }).filter(t => t.name);
+    if (!name) continue;
+    out.push({ name, description: getJsDocDescription(stmt) });
+  }
+  return out;
 }
 
 // ── Type alias extraction ─────────────────────────────────────────────────────
 
 function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
   const aliases = tsquery<ts.TypeAliasDeclaration>(sourceFile, TYPE_ALIAS_SELECTOR);
-  return aliases.map(alias => {
+  const out: TypeAliasDef[] = [];
+  for (const alias of aliases) {
+    if (hasInternalTag(alias)) continue;
     const name = alias.name.text;
     const type = alias.type.getText(sourceFile);
     const description = getJsDocDescription(alias);
-    return { name, type, description };
-  });
+    out.push({ name, type, description });
+  }
+  return out;
 }
 
 // ── Shared per-file processing ────────────────────────────────────────────────
@@ -627,6 +638,7 @@ function processSourceFile(
   const directiveClasses = tsquery<ts.ClassDeclaration>(tsSourceFile, DIRECTIVE_CLASS_SELECTOR);
 
   for (const cls of directiveClasses) {
+    if (hasInternalTag(cls)) continue;
     // Only exported classes
     const isExported = cls.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword);
     if (!isExported) continue;
