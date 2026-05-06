@@ -47,6 +47,77 @@ All directive selectors, class names, and injection tokens use the `kj` prefix:
 - Classes: `KjButton`, `KjSelect`, `KjOption`
 - Tokens: `KJ_SELECT`, `KJ_DIALOG`, `KJ_TABS`
 
+### Inputs, Outputs, and Models — `kj` prefix is mandatory
+
+Every `input()`, `output()`, and `model()` declaration on a kouji directive
+or component must expose a `kj`-prefixed external binding name. This applies
+to both the directive layer (`KjButton`, `KjSelect`, …) and the styled
+wrapper layer (`KjButtonComponent`, `KjSelectComponent`, …).
+
+**Why:** prevents collisions with native HTML attributes (`disabled`, `type`,
+`size`, `loading`, `value`, `name`, …), other directives on the same element,
+and the parent component's own properties when read inside template
+expressions. Without the prefix, `<button kjButton [disabled]="busy()">` is
+ambiguous — both the native button's `disabled` and `KjButton`'s `disabled`
+input could plausibly receive the binding.
+
+**Two equivalent shapes are accepted:**
+
+```ts
+// (A) Property name carries the prefix — simplest when the directive has a
+// matching selector.
+readonly kjVariant = input<string>('default');
+
+// (B) Internal property name is short, external binding is aliased.
+readonly disabled = input<boolean>(false, { alias: 'kjDisabled' });
+```
+
+Pick (A) by default. Use (B) when the internal property is read often inside
+the class body and a short name improves readability — but the external
+alias is still mandatory.
+
+**Outputs and models follow the same rule:**
+
+```ts
+readonly kjPressedChange = output<boolean>();
+readonly kjPressed = model<boolean | undefined>(undefined);
+```
+
+**`hostDirectives` input forwarding** preserves the prefix on the consumer's
+host element. A consumer composing `KjVariant` re-exposes the input to its
+own consumer, prefixed:
+
+```ts
+hostDirectives: [
+  { directive: KjVariant, inputs: ['kjVariant'] },           // pass through
+  { directive: KjSize,    inputs: ['kjSize: kjButtonSize'] }, // alias-rename, still prefixed
+],
+```
+
+A consumer-facing alias that drops the `kj` prefix is a violation of this
+rule.
+
+**Wrapper component example:**
+
+```ts
+@Component({ selector: 'kj-button', /* ... */ })
+export class KjButtonComponent {
+  readonly kjVariant = input<string>('default');
+  readonly kjSize = input<string>('md');
+  readonly kjDisabled = input<boolean>(false);
+  readonly kjLoading = input<boolean>(false);
+  readonly kjPressed = model<boolean | undefined>(undefined);
+  readonly kjType = input<'button' | 'submit' | 'reset'>('button');
+  readonly kjAriaLabel = input<string | undefined>(undefined);
+}
+```
+
+Consumers of the wrapper bind through prefixed names too:
+
+```html
+<kj-button kjVariant="destructive" [(kjPressed)]="on">Toggle</kj-button>
+```
+
 ## Signals — Use Everywhere
 
 - **Signal inputs/outputs:** `input()`, `input.required()`, `model()`, `output()` — never `@Input()` or `@Output()`
