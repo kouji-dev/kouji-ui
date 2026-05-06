@@ -27,7 +27,7 @@ import {
           </kj-dialog-header>
           <kj-dialog-body>This is a styled dialog.</kj-dialog-body>
           <kj-dialog-footer>
-            <kj-button variant="ghost" (click)="d.close()">Close</kj-button>
+            <kj-button kjVariant="ghost" (click)="d.close()">Close</kj-button>
           </kj-dialog-footer>
         </kj-dialog>
       </kj-dialog-overlay>

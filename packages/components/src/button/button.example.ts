@@ -10,6 +10,6 @@ import { KjButtonComponent } from './button';
   standalone: true,
   imports: [KjButtonComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `<kj-button variant="default">Click me</kj-button>`,
+  template: `<kj-button kjVariant="default">Click me</kj-button>`,
 })
 export class KjButtonExample {}

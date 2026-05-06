@@ -16,9 +16,9 @@ import { KjButton } from './button';
   `],
   template: `
     <div class="row">
-      <button kjButton [size]="'sm'">Small</button>
-      <button kjButton [size]="'md'">Medium (default)</button>
-      <button kjButton [size]="'lg'">Large</button>
+      <button kjButton [kjSize]="'sm'">Small</button>
+      <button kjButton [kjSize]="'md'">Medium (default)</button>
+      <button kjButton [kjSize]="'lg'">Large</button>
     </div>
   `,
 })

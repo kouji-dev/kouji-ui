@@ -26,11 +26,11 @@ import { KjButton } from './button';
   host: { class: 'kj-theme-finance' },
   template: `
     <div class="row">
-      <button kjButton [variant]="'default'">Default</button>
-      <button kjButton [variant]="'destructive'">Destructive</button>
-      <button kjButton [variant]="'link'">Link</button>
-      <button kjButton [variant]="'ghost'">Ghost</button>
-      <button kjButton [disabled]="true">Disabled</button>
+      <button kjButton [kjVariant]="'default'">Default</button>
+      <button kjButton [kjVariant]="'destructive'">Destructive</button>
+      <button kjButton [kjVariant]="'link'">Link</button>
+      <button kjButton [kjVariant]="'ghost'">Ghost</button>
+      <button kjButton [kjDisabled]="true">Disabled</button>
     </div>
   `,
 })

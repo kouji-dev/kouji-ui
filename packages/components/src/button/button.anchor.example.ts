@@ -7,7 +7,7 @@ import { KjButton } from '@kouji-ui/core';
   imports: [KjButton],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <a kjButton variant="link" href="#profile">View profile</a>
+    <a kjButton kjVariant="link" href="#profile">View profile</a>
   `,
 })
 export class KjButtonAnchorExample {}

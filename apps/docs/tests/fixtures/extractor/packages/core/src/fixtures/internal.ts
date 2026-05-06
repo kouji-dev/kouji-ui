@@ -4,7 +4,7 @@ import { Directive, InjectionToken, input } from '@angular/core';
  * Internal directive used to verify the `@internal` filter on classes.
  * @internal
  */
-@Directive({ selector: '[internalDirective]', standalone: true })
+@Directive({ selector: '[kjInternalDirective]', standalone: true })
 export class InternalDirective {}
 
 /**
@@ -13,7 +13,7 @@ export class InternalDirective {}
  * Has one public input and one internal input — the manifest should include
  * the directive but only list the public input.
  */
-@Directive({ selector: '[publicDirective]', standalone: true })
+@Directive({ selector: '[kjPublicDirective]', standalone: true })
 export class PublicDirective {
   /** A public input. */
   publicInput = input<string>('');

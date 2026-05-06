@@ -9,7 +9,7 @@ import { KjButton } from '@kouji-ui/core';
  *
  * @example
  * ```html
- * <kj-button variant="destructive" size="lg" [loading]="busy()">
+ * <kj-button kjVariant="destructive" kjSize="lg" [kjLoading]="busy()">
  *   Delete
  * </kj-button>
  * ```
@@ -39,17 +39,17 @@ import { KjButton } from '@kouji-ui/core';
   imports: [KjButton],
   template: `
     <button
-      [type]="type()"
+      [type]="kjType()"
       kjButton
       class="kj-button"
-      [variant]="variant()"
-      [size]="size()"
-      [disabled]="disabled()"
-      [loading]="loading()"
-      [(pressed)]="pressed"
-      [attr.aria-label]="ariaLabel()"
+      [kjVariant]="kjVariant()"
+      [kjSize]="kjSize()"
+      [kjDisabled]="kjDisabled()"
+      [kjLoading]="kjLoading()"
+      [(kjPressed)]="kjPressed"
+      [attr.aria-label]="kjAriaLabel()"
     >
-      @if (loading()) {
+      @if (kjLoading()) {
         <span class="kj-button__spinner" aria-hidden="true"></span>
       }
       <ng-content />
@@ -61,11 +61,11 @@ import { KjButton } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjButtonComponent {
-  readonly variant = input<string>('default');
-  readonly size = input<string>('md');
-  readonly disabled = input(false);
-  readonly loading = input(false);
-  readonly pressed = model<boolean | undefined>(undefined);
-  readonly type = input<'button' | 'submit' | 'reset'>('button');
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly kjVariant = input<string>('default');
+  readonly kjSize = input<string>('md');
+  readonly kjDisabled = input(false);
+  readonly kjLoading = input(false);
+  readonly kjPressed = model<boolean | undefined>(undefined);
+  readonly kjType = input<'button' | 'submit' | 'reset'>('button');
+  readonly kjAriaLabel = input<string | undefined>(undefined);
 }

@@ -7,7 +7,7 @@ import { KjButtonComponent } from './button';
   imports: [KjButtonComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <kj-button [loading]="busy()" (click)="run()">
+    <kj-button [kjLoading]="busy()" (click)="run()">
       {{ busy() ? 'Saving…' : 'Save' }}
     </kj-button>
   `,

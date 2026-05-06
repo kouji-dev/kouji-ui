@@ -17,7 +17,7 @@ import { KjButtonComponent } from '../button/button';
         <p>Atlas is the planning tool used by the platform team. It supports drafts, comments, and shared boards.</p>
       </kj-card-content>
       <kj-card-footer>
-        <kj-button variant="ghost">Dismiss</kj-button>
+        <kj-button kjVariant="ghost">Dismiss</kj-button>
         <kj-button>Open</kj-button>
       </kj-card-footer>
     </kj-card>

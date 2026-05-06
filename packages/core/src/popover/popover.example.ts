@@ -40,8 +40,8 @@ import { KjButton } from '../button/button';
         <p class="popover-title">Notification Settings</p>
         <p class="popover-body">Control how and when you receive notifications from this app.</p>
         <div class="popover-footer">
-          <button kjButton kjPopoverClose [variant]="'ghost'">Cancel</button>
-          <button kjButton kjPopoverClose [variant]="'default'">Save</button>
+          <button kjButton kjPopoverClose [kjVariant]="'ghost'">Cancel</button>
+          <button kjButton kjPopoverClose [kjVariant]="'default'">Save</button>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { KjButtonComponent } from './button';
   imports: [KjButtonComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <kj-button variant="outline" [(pressed)]="on">
+    <kj-button kjVariant="outline" [(kjPressed)]="on">
       {{ on() ? 'Bold ON' : 'Bold OFF' }}
     </kj-button>
   `,

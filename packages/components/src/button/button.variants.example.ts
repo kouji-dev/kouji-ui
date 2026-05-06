@@ -9,11 +9,11 @@ import { KjButtonComponent } from './button';
     :host { display: flex; gap: var(--kj-space-sm); flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
   `],
   template: `
-    <kj-button variant="default">Default</kj-button>
-    <kj-button variant="destructive">Destructive</kj-button>
-    <kj-button variant="ghost">Ghost</kj-button>
-    <kj-button variant="outline">Outline</kj-button>
-    <kj-button variant="link">Link</kj-button>
+    <kj-button kjVariant="default">Default</kj-button>
+    <kj-button kjVariant="destructive">Destructive</kj-button>
+    <kj-button kjVariant="ghost">Ghost</kj-button>
+    <kj-button kjVariant="outline">Outline</kj-button>
+    <kj-button kjVariant="link">Link</kj-button>
   `,
 })
 export class KjButtonVariantsExample {}

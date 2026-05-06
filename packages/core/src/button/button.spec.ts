@@ -11,7 +11,7 @@ expect.extend(toHaveNoViolations);
 @Component({
   standalone: true,
   imports: [KjButton],
-  template: `<button kjButton [disabled]="d" (click)="onClick()">x</button>`,
+  template: `<button kjButton [kjDisabled]="d" (click)="onClick()">x</button>`,
 })
 class ClickHost {
   d = true;
@@ -22,7 +22,7 @@ class ClickHost {
 @Component({
   standalone: true,
   imports: [KjButton],
-  template: `<button kjButton [(pressed)]="pressed">x</button>`,
+  template: `<button kjButton [(kjPressed)]="pressed">x</button>`,
 })
 class ToggleHost {
   pressed = signal<boolean | undefined>(false);
@@ -45,21 +45,21 @@ describe('KjButton', () => {
   });
 
   it('sets data-variant from the aliased input', async () => {
-    const { getByRole } = await render(`<button kjButton [variant]="'destructive'">x</button>`, {
+    const { getByRole } = await render(`<button kjButton [kjVariant]="'destructive'">x</button>`, {
       imports: [KjButton],
     });
     expect(getByRole('button')).toHaveAttribute('data-variant', 'destructive');
   });
 
   it('sets data-size from the aliased input', async () => {
-    const { getByRole } = await render(`<button kjButton [size]="'sm'">x</button>`, {
+    const { getByRole } = await render(`<button kjButton [kjSize]="'sm'">x</button>`, {
       imports: [KjButton],
     });
     expect(getByRole('button')).toHaveAttribute('data-size', 'sm');
   });
 
   it('sets aria-disabled and data-disabled when disabled is true', async () => {
-    const { getByRole } = await render(`<button kjButton [disabled]="true">x</button>`, {
+    const { getByRole } = await render(`<button kjButton [kjDisabled]="true">x</button>`, {
       imports: [KjButton],
     });
     const btn = getByRole('button');
@@ -75,7 +75,7 @@ describe('KjButton', () => {
   });
 
   it('loading=true sets aria-busy and forces aria-disabled true', async () => {
-    const { getByRole } = await render(`<button kjButton [loading]="true">x</button>`, {
+    const { getByRole } = await render(`<button kjButton [kjLoading]="true">x</button>`, {
       imports: [KjButton],
     });
     const btn = getByRole('button');
@@ -89,14 +89,14 @@ describe('KjButton', () => {
   });
 
   it('pressed=true sets aria-pressed="true"', async () => {
-    const { getByRole } = await render(`<button kjButton [pressed]="true">x</button>`, {
+    const { getByRole } = await render(`<button kjButton [kjPressed]="true">x</button>`, {
       imports: [KjButton],
     });
     expect(getByRole('button')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('pressed=false sets aria-pressed="false"', async () => {
-    const { getByRole } = await render(`<button kjButton [pressed]="false">x</button>`, {
+    const { getByRole } = await render(`<button kjButton [kjPressed]="false">x</button>`, {
       imports: [KjButton],
     });
     expect(getByRole('button')).toHaveAttribute('aria-pressed', 'false');

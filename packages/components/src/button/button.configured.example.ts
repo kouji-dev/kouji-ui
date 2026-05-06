@@ -19,8 +19,8 @@ import { KjButtonComponent } from './button';
   ],
   template: `
     <kj-button>Default (now 'brand')</kj-button>
-    <kj-button variant="warning">Warning</kj-button>
-    <kj-button variant="default">Original default</kj-button>
+    <kj-button kjVariant="warning">Warning</kj-button>
+    <kj-button kjVariant="default">Original default</kj-button>
   `,
 })
 export class KjButtonConfiguredExample {}

@@ -6,7 +6,7 @@ import { KjButtonComponent } from './button';
 @Component({
   standalone: true,
   imports: [KjButtonComponent],
-  template: `<kj-button [variant]="variant" [size]="size" [disabled]="disabled" [loading]="loading" [pressed]="pressed" [ariaLabel]="ariaLabel">{{ label }}</kj-button>`,
+  template: `<kj-button [kjVariant]="variant" [kjSize]="size" [kjDisabled]="disabled" [kjLoading]="loading" [kjPressed]="pressed" [kjAriaLabel]="ariaLabel">{{ label }}</kj-button>`,
 })
 class HostComponent {
   variant: string = 'default';
@@ -29,7 +29,7 @@ describe('KjButtonComponent', () => {
     expect(fixture.nativeElement.querySelector('button.kj-button')).not.toBeNull();
   });
 
-  test('forwards variant via [variant] alias (data-variant attr)', () => {
+  test('forwards variant via [kjVariant] (data-variant attr)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.variant = 'destructive';
     fixture.detectChanges();
@@ -37,7 +37,7 @@ describe('KjButtonComponent', () => {
       .toBe('destructive');
   });
 
-  test('forwards size via [size] alias (data-size attr)', () => {
+  test('forwards size via [kjSize] (data-size attr)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.size = 'sm';
     fixture.detectChanges();

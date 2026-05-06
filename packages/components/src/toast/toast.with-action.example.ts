@@ -10,12 +10,12 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
   imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 8rem; }`],
   template: `
-    <kj-button variant="destructive" (click)="deleteItem()">Delete item</kj-button>
+    <kj-button kjVariant="destructive" (click)="deleteItem()">Delete item</kj-button>
     <kj-toast-viewport />
     <ng-template #tpl let-ctx>
       <kj-toast [variant]="ctx.variant" [id]="ctx.id">
         <span>{{ ctx.title }}</span>
-        <kj-button size="sm" variant="ghost" style="margin-left:auto" (click)="undo(ctx)">Undo</kj-button>
+        <kj-button kjSize="sm" kjVariant="ghost" style="margin-left:auto" (click)="undo(ctx)">Undo</kj-button>
         <kj-toast-close [toastId]="ctx.id" aria-label="Dismiss">×</kj-toast-close>
       </kj-toast>
     </ng-template>

@@ -14,7 +14,7 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
       <kj-button (click)="show('default')">Default</kj-button>
       <kj-button (click)="show('success')">Success</kj-button>
       <kj-button (click)="show('warning')">Warning</kj-button>
-      <kj-button variant="destructive" (click)="show('destructive')">Destructive</kj-button>
+      <kj-button kjVariant="destructive" (click)="show('destructive')">Destructive</kj-button>
     </div>
     <kj-toast-viewport />
     <ng-template #tpl let-ctx>
