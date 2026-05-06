@@ -38,8 +38,8 @@ export const KJ_SIZE_PRESET = new InjectionToken<KjSizePreset>('kj.size.preset',
 export class KjSize {
   private readonly preset = inject(KJ_SIZE_PRESET);
 
-  readonly kjSize = input<string>(this.preset.default, {
-    transform: (v?: string) => v ?? this.preset.default,
+  readonly kjSize = input<string, string | undefined>(this.preset.default, {
+    transform: (v: string | undefined) => v || this.preset.default,
   });
 
   constructor() {

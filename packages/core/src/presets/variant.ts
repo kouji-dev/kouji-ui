@@ -38,8 +38,8 @@ export const KJ_VARIANT_PRESET = new InjectionToken<KjVariantPreset>('kj.variant
 export class KjVariant {
   private readonly preset = inject(KJ_VARIANT_PRESET);
 
-  readonly kjVariant = input<string>(this.preset.default, {
-    transform: (v?: string) => v ?? this.preset.default,
+  readonly kjVariant = input<string, string | undefined>(this.preset.default, {
+    transform: (v: string | undefined) => v || this.preset.default,
   });
 
   constructor() {
