@@ -2,9 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test('Col A always visible on /docs', async ({ page }) => {
   await page.goto('/docs');
-  await expect(page.getByRole('navigation', { name: 'Documentation sections' })).toBeVisible();
+  const nav = page.getByRole('navigation', { name: 'Documentation sections' });
+  await expect(nav).toBeVisible();
   for (const label of ['Getting Started', 'Headless', 'Components']) {
-    await expect(page.getByRole('link', { name: label })).toBeVisible();
+    await expect(nav.getByRole('link', { name: label, exact: true })).toBeVisible();
   }
 });
 

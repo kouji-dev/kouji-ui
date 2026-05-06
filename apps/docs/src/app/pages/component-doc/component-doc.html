@@ -1,148 +1,142 @@
-<div class="docs-layout">
-  <!-- Mobile top bar (TODO T9: wire mobile drawer) -->
-  <header class="mobile-topbar">
-    <button
-      class="hamburger"
-      type="button"
-      aria-label="Open navigation"
-      aria-expanded="false"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
-    </button>
-    <a routerLink="/docs" class="topbar-logo" aria-label="kouji home">
-      <svg width="20" height="20" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="10" y1="10" x2="10" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
-        <line x1="10" y1="32" x2="34" y2="10" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
-        <line x1="10" y1="32" x2="34" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
-        <path d="M50 24 L50 48 Q50 56 42 56 Q38 56 36 54" stroke="#f0ede6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <circle cx="50" cy="14" r="4" fill="#f0ede6"/>
-      </svg>
-      <span class="topbar-name">kouji</span>
-    </a>
-  </header>
+<!-- Mobile top bar (TODO T9: wire mobile drawer) -->
+<header class="mobile-topbar">
+  <button
+    class="hamburger"
+    type="button"
+    aria-label="Open navigation"
+    aria-expanded="false"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <a routerLink="/docs" class="topbar-logo" aria-label="kouji home">
+    <svg width="20" height="20" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="10" x2="10" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="34" y2="10" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="34" y2="54" stroke="#b8f500" stroke-width="6" stroke-linecap="round"/>
+      <path d="M50 24 L50 48 Q50 56 42 56 Q38 56 36 54" stroke="#f0ede6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="50" cy="14" r="4" fill="#f0ede6"/>
+    </svg>
+    <span class="topbar-name">kouji</span>
+  </a>
+</header>
 
-  <!-- Backdrop (mobile only) -->
-  <div class="sidebar-backdrop" aria-hidden="true"></div>
+<!-- Backdrop (mobile only) -->
+<div class="sidebar-backdrop" aria-hidden="true"></div>
 
-  <aside class="sidebar">
-    <kj-docs-sidebar />
-  </aside>
+<main class="doc-main" kjPageToc #pageToc="kjPageToc">
+  @if (component(); as comp) {
+    <header class="doc-header">
+      <span class="tag">{{ comp.category }}</span>
+      <h1>{{ comp.name }}</h1>
+      @if (comp.description) {
+        <p class="desc">{{ comp.description }}</p>
+      }
+    </header>
 
-  <main class="doc-main" kjPageToc #pageToc="kjPageToc">
-    @if (component(); as comp) {
-      <header class="doc-header">
-        <span class="tag">{{ comp.category }}</span>
-        <h1>{{ comp.name }}</h1>
-        @if (comp.description) {
-          <p class="desc">{{ comp.description }}</p>
-        }
-      </header>
+    <!-- Definitions section -->
+    <section class="definitions-section"
+             id="definitions"
+             data-toc-entry="Definitions"
+             data-toc-level="2">
+      <h2 class="section-title">Definitions</h2>
 
-      <!-- Definitions section -->
-      <section class="definitions-section"
-               id="definitions"
-               data-toc-entry="Definitions"
-               data-toc-level="2">
-        <h2 class="section-title">Definitions</h2>
+      @for (directive of sortedDirectives(); track directive.className) {
+        <section
+          class="directive-section"
+          [id]="directive.className"
+          [attr.data-toc-entry]="directive.className"
+          data-toc-level="3"
+        >
+          <div class="directive-header">
+            <code class="directive-selector">{{ directive.selector }}</code>
+            <span class="directive-class">{{ directive.className }}@if (directive.required) {<span class="required-badge" title="Required">*</span>}</span>
+          </div>
 
-        @for (directive of sortedDirectives(); track directive.className) {
-          <section
-            class="directive-section"
-            [id]="directive.className"
-            [attr.data-toc-entry]="directive.className"
-            data-toc-level="3"
-          >
-            <div class="directive-header">
-              <code class="directive-selector">{{ directive.selector }}</code>
-              <span class="directive-class">{{ directive.className }}@if (directive.required) {<span class="required-badge" title="Required">*</span>}</span>
+          @if (directive.description) {
+            <p class="desc">{{ directive.description }}</p>
+          }
+
+          @if (directive.inputs.length) {
+            <div class="inputs-block">
+              <h3 class="block-title">Inputs</h3>
+              <app-docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
+              <p class="required-note">* required</p>
             </div>
+          }
 
-            @if (directive.description) {
-              <p class="desc">{{ directive.description }}</p>
-            }
-
-            @if (directive.inputs.length) {
-              <div class="inputs-block">
-                <h3 class="block-title">Inputs</h3>
-                <app-docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
-                <p class="required-note">* required</p>
-              </div>
-            }
-
-            @if (directive.examples.length) {
-              <div class="inline-examples-block">
-                <h3 class="block-title">Usage</h3>
-                @for (ex of directive.examples; track $index) {
-                  <kj-code-editor
-                    [code]="ex"
-                    [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
-                  />
-                }
-              </div>
-            }
-          </section>
-        }
-      </section>
-
-      <!-- Examples section — only when docExamples exist -->
-      @if (hasDocExamples()) {
-        <section class="examples-section"
-                 id="examples"
-                 data-toc-entry="Examples"
-                 data-toc-level="2">
-          <h2 class="section-title">Examples</h2>
-
-          @for (directive of sortedDirectives(); track directive.className) {
-            @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
-              <div
-                class="example-section"
-                [id]="directive.className + '-ex-' + i"
-                [attr.data-toc-entry]="docEx.label"
-                data-toc-level="3"
-              >
-                <div class="example-label">{{ docEx.label }}</div>
-                <kj-code-preview
-                  [docExamples]="[docEx]"
-                  [componentName]="comp.name"
+          @if (directive.examples.length) {
+            <div class="inline-examples-block">
+              <h3 class="block-title">Usage</h3>
+              @for (ex of directive.examples; track $index) {
+                <kj-code-editor
+                  [code]="ex"
+                  [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
                 />
-              </div>
-            }
+              }
+            </div>
           }
         </section>
       }
+    </section>
 
-      @if (!hasDocExamples()) {
+    <!-- Examples section — only when docExamples exist -->
+    @if (hasDocExamples()) {
+      <section class="examples-section"
+               id="examples"
+               data-toc-entry="Examples"
+               data-toc-level="2">
+        <h2 class="section-title">Examples</h2>
+
         @for (directive of sortedDirectives(); track directive.className) {
-          @if (directive.exampleFiles.length || directive.themedExamples['default']?.length) {
-            <section class="examples-section"
-                     id="examples"
-                     data-toc-entry="Examples"
-                     data-toc-level="2">
-              <h2 class="section-title">Examples</h2>
-              @if (directive.exampleFiles.length) {
-                <kj-code-preview
-                  [examples]="directive.exampleFiles"
-                  [themedExamples]="directive.themedExamples"
-                  [componentName]="comp.name"
-                />
-              }
-            </section>
+          @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
+            <div
+              class="example-section"
+              [id]="directive.className + '-ex-' + i"
+              [attr.data-toc-entry]="docEx.label"
+              data-toc-level="3"
+            >
+              <div class="example-label">{{ docEx.label }}</div>
+              <kj-code-preview
+                [docExamples]="[docEx]"
+                [componentName]="comp.name"
+              />
+            </div>
           }
         }
-      }
-    } @else {
-      <div class="not-found">
-        <p>Component not found.</p>
-        <a routerLink="/docs">← Back to docs</a>
-      </div>
+      </section>
     }
-  </main>
 
-  <aside class="toc-col">
-    <kj-page-toc [toc]="pageToc" />
-  </aside>
-</div>
+    @if (!hasDocExamples()) {
+      @for (directive of sortedDirectives(); track directive.className) {
+        @if (directive.exampleFiles.length || directive.themedExamples['default']?.length) {
+          <section class="examples-section"
+                   id="examples"
+                   data-toc-entry="Examples"
+                   data-toc-level="2">
+            <h2 class="section-title">Examples</h2>
+            @if (directive.exampleFiles.length) {
+              <kj-code-preview
+                [examples]="directive.exampleFiles"
+                [themedExamples]="directive.themedExamples"
+                [componentName]="comp.name"
+              />
+            }
+          </section>
+        }
+      }
+    }
+  } @else {
+    <div class="not-found">
+      <p>Component not found.</p>
+      <a routerLink="/docs">← Back to docs</a>
+    </div>
+  }
+</main>
+
+<aside class="toc-col">
+  <kj-page-toc [toc]="pageToc" />
+</aside>

@@ -3,7 +3,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { DocsService, DocsTrack, SidebarNode } from '../../services/docs.service';
-import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 
 /**
@@ -17,7 +16,7 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 @Component({
   selector: 'app-track-index',
   standalone: true,
-  imports: [RouterLink, DocsSidebarComponent, DocsTrackCardComponent],
+  imports: [RouterLink, DocsTrackCardComponent],
   templateUrl: './track-index.html',
   styleUrl: '../docs-index/docs-index.css',
 })
