@@ -5,6 +5,12 @@ const angular = require('angular-eslint');
 
 module.exports = tseslint.config(
   {
+    // Test fixtures are synthetic source files used by extractor tests —
+    // they're test data, not real Angular directives, so the kj/app prefix
+    // rule (and other source rules) don't apply.
+    ignores: ['**/tests/fixtures/**'],
+  },
+  {
     files: ['**/*.ts'],
     extends: [
       eslint.configs.recommended,

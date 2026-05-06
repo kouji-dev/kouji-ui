@@ -28,8 +28,8 @@ import {
           </kj-dialog-header>
           <kj-dialog-body>This action cannot be undone.</kj-dialog-body>
           <kj-dialog-footer>
-            <kj-button variant="ghost" (click)="d.close()">Cancel</kj-button>
-            <kj-button variant="destructive" (click)="d.close('confirmed')">Delete</kj-button>
+            <kj-button kjVariant="ghost" (click)="d.close()">Cancel</kj-button>
+            <kj-button kjVariant="destructive" (click)="d.close('confirmed')">Delete</kj-button>
           </kj-dialog-footer>
         </kj-dialog>
       </kj-dialog-overlay>

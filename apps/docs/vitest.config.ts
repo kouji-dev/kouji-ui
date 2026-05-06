@@ -16,5 +16,12 @@ export default defineProject({
     setupFiles: ['src/test-setup.ts'],
     include: ['src/**/*.spec.ts'],
     reporters: ['default'],
+    // Match the core/components tuning: threads + isolate:false amortizes the
+    // jsdom + Angular TestBed env init cost across files in the same worker.
+    pool: 'threads',
+    isolate: false,
+    fileParallelism: true,
+    minWorkers: 1,
+    maxWorkers: 2,
   },
 });

@@ -9,10 +9,10 @@ import { KjButtonComponent } from './button';
     :host { display: flex; gap: var(--kj-space-sm); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
   `],
   template: `
-    <kj-button size="sm">Small</kj-button>
-    <kj-button size="md">Medium</kj-button>
-    <kj-button size="lg">Large</kj-button>
-    <kj-button size="icon" ariaLabel="Settings">⚙</kj-button>
+    <kj-button kjSize="sm">Small</kj-button>
+    <kj-button kjSize="md">Medium</kj-button>
+    <kj-button kjSize="lg">Large</kj-button>
+    <kj-button kjSize="icon" kjAriaLabel="Settings">⚙</kj-button>
   `,
 })
 export class KjButtonSizesExample {}

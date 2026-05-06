@@ -9,10 +9,10 @@ import { KjButtonComponent } from './button';
     :host { display: flex; gap: var(--kj-space-sm); flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
   `],
   template: `
-    <kj-button [disabled]="true">Default</kj-button>
-    <kj-button variant="destructive" [disabled]="true">Destructive</kj-button>
-    <kj-button variant="ghost" [disabled]="true">Ghost</kj-button>
-    <kj-button variant="outline" [disabled]="true">Outline</kj-button>
+    <kj-button [kjDisabled]="true">Default</kj-button>
+    <kj-button kjVariant="destructive" [kjDisabled]="true">Destructive</kj-button>
+    <kj-button kjVariant="ghost" [kjDisabled]="true">Ghost</kj-button>
+    <kj-button kjVariant="outline" [kjDisabled]="true">Outline</kj-button>
   `,
 })
 export class KjButtonDisabledExample {}

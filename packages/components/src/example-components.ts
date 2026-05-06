@@ -21,10 +21,15 @@ export { KjBadgeSizesExample }    from './badge/badge.sizes.example';
 export { KjBadgeWithIconExample } from './badge/badge.with-icon.example';
 
 // Button
-export { KjButtonExample }          from './button/button.example';
-export { KjButtonVariantsExample }  from './button/button.variants.example';
-export { KjButtonSizesExample }     from './button/button.sizes.example';
-export { KjButtonDisabledExample }  from './button/button.disabled.example';
+export { KjButtonExample }            from './button/button.example';
+export { KjButtonVariantsExample }    from './button/button.variants.example';
+export { KjButtonSizesExample }       from './button/button.sizes.example';
+export { KjButtonDisabledExample }    from './button/button.disabled.example';
+export { KjButtonLoadingExample }     from './button/button.loading.example';
+export { KjButtonPressedExample }     from './button/button.pressed.example';
+export { KjButtonIconExample }        from './button/button.icon.example';
+export { KjButtonAnchorExample }      from './button/button.anchor.example';
+export { KjButtonConfiguredExample }  from './button/button.configured.example';
 
 // Card
 export { KjCardExample }      from './card/card.example';

@@ -35,8 +35,8 @@ import {
             </form>
           </kj-dialog-body>
           <kj-dialog-footer>
-            <kj-button variant="ghost" (click)="d.close()">Cancel</kj-button>
-            <kj-button type="submit" (click)="d.close('saved')">Save</kj-button>
+            <kj-button kjVariant="ghost" (click)="d.close()">Cancel</kj-button>
+            <kj-button kjType="submit" (click)="d.close('saved')">Save</kj-button>
           </kj-dialog-footer>
         </kj-dialog>
       </kj-dialog-overlay>

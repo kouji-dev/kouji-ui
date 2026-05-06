@@ -1,22 +1,15 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
-import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, model } from '@angular/core';
+import { KjButton } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless KjButton directive.
  *
- * Element-wrapper pattern: the host `<kj-button>` is a structural shell with
- * `display: contents` (no layout box). The component template renders a real
- * inner `<button>` with the `kjButton` directive applied. Signal inputs on
- * the component (`variant`, `size`, `disabled`) flow through normal template
- * binding to the directive's `kjVariant` / `kjSize` / `kjDisabled` inputs.
- *
- * `ViewEncapsulation.None` makes the component's CSS (button.css) global so
- * theme overrides like `[data-theme="X"] .kj-button { ... }` and the
- * `@layer kj.component` cascade rules from the design spec actually apply.
+ * Variant and size are user-configurable strings. Configure the allowed values
+ * and defaults via `provideKjButton(…)` at the application or component scope.
  *
  * @example
  * ```html
- * <kj-button variant="destructive" size="lg" [disabled]="loading()">
+ * <kj-button kjVariant="destructive" kjSize="lg" [kjLoading]="busy()">
  *   Delete
  * </kj-button>
  * ```
@@ -28,6 +21,16 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
  *   @doc-file button.sizes.example.ts
  * @doc-example Disabled
  *   @doc-file button.disabled.example.ts
+ * @doc-example Loading
+ *   @doc-file button.loading.example.ts
+ * @doc-example Pressed (toggle)
+ *   @doc-file button.pressed.example.ts
+ * @doc-example Icon-only
+ *   @doc-file button.icon.example.ts
+ * @doc-example Anchor as button
+ *   @doc-file button.anchor.example.ts
+ * @doc-example Configured presets
+ *   @doc-file button.configured.example.ts
  * @category Library/Actions
  */
 @Component({
@@ -36,14 +39,19 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
   imports: [KjButton],
   template: `
     <button
-      [type]="type()"
+      [type]="kjType()"
       kjButton
       class="kj-button"
-      [kjVariant]="variant()"
-      [kjSize]="size()"
-      [kjDisabled]="disabled()"
-      [attr.aria-label]="ariaLabel()"
+      [kjVariant]="kjVariant()"
+      [kjSize]="kjSize()"
+      [kjDisabled]="kjDisabled()"
+      [kjLoading]="kjLoading()"
+      [(kjPressed)]="kjPressed"
+      [attr.aria-label]="kjAriaLabel()"
     >
+      @if (kjLoading()) {
+        <span class="kj-button__spinner" aria-hidden="true"></span>
+      }
       <ng-content />
     </button>
   `,
@@ -53,9 +61,11 @@ import { KjButton, KjButtonVariant, KjButtonSize } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjButtonComponent {
-  readonly variant = input<KjButtonVariant>('default');
-  readonly size = input<KjButtonSize>('md');
-  readonly disabled = input(false);
-  readonly type = input<'button' | 'submit' | 'reset'>('button');
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly kjVariant = input<string>('default');
+  readonly kjSize = input<string>('md');
+  readonly kjDisabled = input(false);
+  readonly kjLoading = input(false);
+  readonly kjPressed = model<boolean | undefined>(undefined);
+  readonly kjType = input<'button' | 'submit' | 'reset'>('button');
+  readonly kjAriaLabel = input<string | undefined>(undefined);
 }
