@@ -46,8 +46,8 @@
 .col-a-chev { margin-left: auto; opacity: 0.5; font-size: 12px; }
 
 .col-b {
-  width: 280px;
-  padding: 16px 8px;
+  width: 200px;
+  padding: 16px 6px;
   background: var(--kj-color-base-100);
   border-left: 1px solid var(--kj-color-base-300);
   animation: col-b-slide 180ms ease-out;
