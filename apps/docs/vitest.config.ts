@@ -21,12 +21,7 @@ export default defineProject({
     pool: 'threads',
     isolate: false,
     fileParallelism: true,
-    poolOptions: {
-      threads: {
-        singleThread: false,
-        minThreads: 2,
-        maxThreads: 6,
-      },
-    },
+    minWorkers: 1,
+    maxWorkers: 2,
   },
 });
