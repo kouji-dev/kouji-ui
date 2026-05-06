@@ -547,9 +547,18 @@ function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
 
 // ── Signal input extraction using ts-query ────────────────────────────────────
 
-function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): InputDef[] {
+function extractInputs(
+  cls: ts.ClassDeclaration,
+  sourceFile: ts.SourceFile,
+  morphFile: SourceFile,
+): InputDef[] {
   const props = tsquery<ts.PropertyDeclaration>(cls, SIGNAL_INPUT_SELECTOR);
   const results: InputDef[] = [];
+
+  // Resolve the matching ts-morph class once per call so inferred-type
+  // lookups via the TypeChecker don't pay per-property cost.
+  const className = cls.name?.text ?? '';
+  const morphClass = className ? morphFile.getClass(className) : undefined;
 
   for (const prop of props) {
     const name = (prop.name as ts.Identifier).text;
@@ -564,11 +573,22 @@ function extractInputs(cls: ts.ClassDeclaration, sourceFile: ts.SourceFile): Inp
       initText.startsWith('input.required(') ||
       tsquery(prop, 'CallExpression > PropertyAccessExpression:has(Identifier[text="required"])').length > 0;
 
-    // Type: prefer explicit type annotation, fall back to generic argument.
-    // Strips Angular signal-input wrappers so the docs page shows the
-    // user-facing read type (e.g. `string` rather than
-    // `InputSignalWithTransform<string, string | undefined>`).
+    // Type resolution, in priority order:
+    //   1. Explicit field annotation on the property — preserved verbatim
+    //      (this is how authors pin a type when ng-packagr's emission would
+    //      otherwise narrow the write type).
+    //   2. ts-morph TypeChecker on the property — the inferred type Angular
+    //      itself sees, e.g. `InputSignal<boolean>` for `input(false)` or
+    //      `ModelSignal<boolean | undefined>` for `model<boolean>()`.
+    //   3. Source-level regex on the call's generic argument as a last resort
+    //      for hand-written `input<T>(...)` forms not covered above.
+    // The signal-input wrappers (`InputSignal`, `InputSignalWithTransform`,
+    // `ModelSignal`) are stripped via `unwrapSignalType` so the docs page
+    // shows the user-facing read type.
     let type = prop.type?.getText(sourceFile) ?? '';
+    if (!type && morphClass) {
+      type = morphClass.getProperty(name)?.getType().getText() ?? '';
+    }
     if (type) {
       type = unwrapSignalType(type);
     } else {
@@ -714,7 +734,7 @@ function processSourceFile(
     // and non-exported ones — because they may be referenced by another
     // class's `hostDirectives` and we need to resolve the input type later.
     if (className) {
-      ownInputsByClass.set(className, extractInputs(cls, tsSourceFile));
+      ownInputsByClass.set(className, extractInputs(cls, tsSourceFile, morphFile));
     }
 
     if (hasInternalTag(cls)) continue;

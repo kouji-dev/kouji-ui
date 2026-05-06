@@ -66,9 +66,14 @@ export class KjButton {
    * `[(kjPressed)]`), the directive auto-toggles on click and emits the new
    * value via `kjPressedChange`.
    *
-   * The explicit `ModelSignal<boolean | undefined>` field type pins the
-   * emitted `.d.ts` shape — without it, ng-packagr collapses the model type
-   * to `ModelSignal<boolean>` and breaks consumer two-way bindings.
+   * Both the field annotation and the explicit generic+initial-value form
+   * are required: ng-packagr's declaration emission narrows
+   * `ModelSignal<T | undefined>` to `ModelSignal<T>` for any inferred form
+   * we tried (`model<boolean>()`, `model<boolean | undefined>(undefined)`),
+   * which breaks consumer two-way bindings of `boolean | undefined` signals.
+   * Pinning the field type preserves the read+write contract in the
+   * published .d.ts. See `rules/code_style.md` "Prefer TypeScript inference"
+   * for the documented ng-packagr exception.
    */
   readonly kjPressed: ModelSignal<boolean | undefined> = model<boolean | undefined>(undefined);
 

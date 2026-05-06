@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, model } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ModelSignal, ViewEncapsulation, input, model } from '@angular/core';
 import { KjButton } from '@kouji-ui/core';
 
 /**
@@ -61,11 +61,13 @@ import { KjButton } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjButtonComponent {
-  readonly kjVariant = input<string>('default');
-  readonly kjSize = input<string>('md');
+  readonly kjVariant = input('default');
+  readonly kjSize = input('md');
   readonly kjDisabled = input(false);
   readonly kjLoading = input(false);
-  readonly kjPressed = model<boolean | undefined>(undefined);
+  // Field annotation matches the directive's — ng-packagr otherwise narrows
+  // both sides to ModelSignal<boolean>, breaking the [(kjPressed)] binding.
+  readonly kjPressed: ModelSignal<boolean | undefined> = model<boolean | undefined>(undefined);
   readonly kjType = input<'button' | 'submit' | 'reset'>('button');
   readonly kjAriaLabel = input<string | undefined>(undefined);
 }
