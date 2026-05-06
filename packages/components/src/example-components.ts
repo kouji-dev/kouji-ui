@@ -29,6 +29,7 @@ export { KjButtonLoadingExample }     from './button/button.loading.example';
 export { KjButtonPressedExample }     from './button/button.pressed.example';
 export { KjButtonIconExample }        from './button/button.icon.example';
 export { KjButtonAnchorExample }      from './button/button.anchor.example';
+export { KjButtonConfiguredExample }  from './button/button.configured.example';
 
 // Card
 export { KjCardExample }      from './card/card.example';

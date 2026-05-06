@@ -1,4 +1,4 @@
-import { EnvironmentProviders, InjectionToken, makeEnvironmentProviders } from '@angular/core';
+import { InjectionToken, Provider } from '@angular/core';
 
 export interface KjButtonConfig {
   variants: string[];
@@ -19,21 +19,27 @@ export const KJ_BUTTON_DEFAULTS: KjButtonConfig = {
 /**
  * DI token for the active Button presets. Default factory yields
  * `KJ_BUTTON_DEFAULTS`. Override via `provideKjButton(…)` at the application
- * or component scope.
+ * scope (e.g. `bootstrapApplication`'s `providers` or a route's `providers`)
+ * or at the component scope (a component's own `providers: […]`).
  */
 export const KJ_BUTTON_CONFIG = new InjectionToken<KjButtonConfig>('kj.button.config', {
   factory: () => KJ_BUTTON_DEFAULTS,
 });
 
 /**
- * Configures the Button presets. Replaces (does not merge) `variants` and
- * `sizes`; spread `KJ_BUTTON_DEFAULTS.variants` to extend.
+ * Configures the Button presets for the enclosing injector. Replaces (does
+ * not merge) `variants` and `sizes`; spread `KJ_BUTTON_DEFAULTS.variants` to
+ * extend.
+ *
+ * Returns a `Provider[]` so it can be spread into either an environment
+ * `providers` (`bootstrapApplication`, route config) or a component-level
+ * `providers` array.
  */
-export function provideKjButton(config: Partial<KjButtonConfig>): EnvironmentProviders {
-  return makeEnvironmentProviders([
+export function provideKjButton(config: Partial<KjButtonConfig>): Provider[] {
+  return [
     {
       provide: KJ_BUTTON_CONFIG,
       useValue: { ...KJ_BUTTON_DEFAULTS, ...config },
     },
-  ]);
+  ];
 }
