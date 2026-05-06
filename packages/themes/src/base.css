@@ -29,6 +29,8 @@
     --kj-base-red-600:    oklch(55% 0.22  20);
     --kj-base-green-500:  oklch(70% 0.18 145);
     --kj-base-yellow-500: oklch(83% 0.16  90);
+    --kj-base-amber-500:  oklch(78% 0.17  60);
+    --kj-base-amber-600:  oklch(70% 0.18  55);
 
     /* kouji brand lime — #b8f500 */
     --kj-base-lime-500:   oklch(91% 0.21 124);

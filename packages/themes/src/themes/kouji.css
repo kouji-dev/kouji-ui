@@ -37,7 +37,9 @@
     --kj-color-success:         var(--kj-base-lime-500);
     --kj-color-success-content: var(--kj-base-gray-950);
 
-    --kj-color-warning:         var(--kj-base-yellow-500);
+    /* Amber instead of yellow so warning reads distinct from the lime
+       brand (#b8f500) — yellow at 90° was too close to lime at 124°. */
+    --kj-color-warning:         var(--kj-base-amber-500);
     --kj-color-warning-content: var(--kj-base-gray-950);
 
     --kj-color-destructive:         var(--kj-base-red-500);

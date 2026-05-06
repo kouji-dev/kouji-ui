@@ -114,6 +114,7 @@
   .kj-button[data-size="icon"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: var(--kj-space-sm);
+    aspect-ratio: 1;
   }
 
   /* Default-variant hover (catches the unset-or-`default` case). Specificity
@@ -140,8 +141,10 @@
   }
 
   /* ── Touch target enforcement (WCAG 2.5.5) ─────────────────────────── */
-  .kj-button[data-size='icon'],
-  .kj-button[data-size='sm'] {
+  /* Icon-only buttons have no inline text affordance, so they need the
+     full 44×44 touch target. The `sm` text variant relies on its label
+     for the equivalent-inline exception and stays visually small. */
+  .kj-button[data-size='icon'] {
     min-width: 2.75rem;  /* 44px */
     min-height: 2.75rem; /* 44px */
   }
