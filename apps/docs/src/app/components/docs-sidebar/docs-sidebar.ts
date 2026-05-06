@@ -56,7 +56,11 @@ export class DocsSidebarComponent {
 
   constructor() {
     this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd), startWith(null), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        startWith(null),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(() => this.url.set(this.router.url));
     this.docs.loadManifest().subscribe();
   }
