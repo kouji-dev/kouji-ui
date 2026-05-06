@@ -43,7 +43,6 @@ export class ComponentDocComponent {
     ),
   );
 
-  protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
   private readonly pageToc = viewChild(PageTocDirective);
 
   protected readonly hasDocExamples = computed(() =>

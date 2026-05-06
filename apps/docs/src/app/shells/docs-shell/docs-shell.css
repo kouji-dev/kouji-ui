@@ -1,0 +1,10 @@
+.docs-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.docs-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}

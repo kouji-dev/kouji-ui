@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { DocsService, DocsTrack } from '../../services/docs.service';
 import { DocsSidebarComponent } from '../../components/docs-sidebar/docs-sidebar';
 import { DocsTrackCardComponent } from '../../components/track-card/track-card';
@@ -20,8 +20,6 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 export class DocsIndexComponent implements OnInit {
   protected readonly docs = inject(DocsService);
   protected readonly tracks = signal<DocsTrack[]>([]);
-  protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
-
   ngOnInit(): void {
     this.docs.loadManifest().subscribe(() => {
       this.tracks.set(this.docs.getTracks());

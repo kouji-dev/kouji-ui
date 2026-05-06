@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
@@ -24,8 +24,6 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 export class TrackIndexComponent implements OnInit {
   private readonly docs = inject(DocsService);
   private readonly route = inject(ActivatedRoute);
-  protected readonly sidebar = viewChild.required<DocsSidebarComponent>('sidebar');
-
   protected readonly trackId = toSignal(
     this.route.data.pipe(map(d => (d['trackId'] as string) ?? '')),
     { initialValue: '' },
