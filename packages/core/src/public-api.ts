@@ -8,6 +8,9 @@ export * from './primitives/index';
 // ── Accessibility utilities ──────────────────────────────────
 export * from './a11y/index';
 
+// ── Internal presets (composed via hostDirectives; filtered from docs) ──
+export * from './presets/index';
+
 // ── Foundation components ────────────────────────────────────
 export * from './button/index';
 export * from './input/index';
