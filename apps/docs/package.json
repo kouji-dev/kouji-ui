@@ -5,7 +5,7 @@
     "dev": "ng serve docs",
     "build": "ng build docs",
     "test": "vitest run --passWithNoTests",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --config=../../playwright.config.ts",
     "lint": "ng lint docs"
   },
   "dependencies": {
