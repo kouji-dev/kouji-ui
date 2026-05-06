@@ -16,6 +16,7 @@ const baseProviders = [
   provideRouter([]),
   provideHttpClient(),
   { provide: DocsManifestProvider, useClass: StubManifestProvider },
+  { provide: SearchService, useValue: { open: () => undefined } },
 ];
 
 describe('NavbarComponent', () => {
