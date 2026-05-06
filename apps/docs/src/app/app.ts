@@ -4,22 +4,25 @@ import { LoadingScreenComponent } from './components/loading-screen/loading-scre
 import { LoadingService } from './services/loading.service';
 import { SearchComponent } from './components/search/search.component';
 import { ThemeService } from './services/theme.service';
+import { NavbarComponent } from './components/navbar/navbar';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, LoadingScreenComponent, SearchComponent],
+  imports: [RouterOutlet, LoadingScreenComponent, SearchComponent, NavbarComponent],
   template: `
     @if (loading.isLoading()) {
       <kj-loading-screen />
     }
-    <div [class.content-hidden]="loading.isLoading()">
+    <div class="app-shell" [class.content-hidden]="loading.isLoading()">
+      <kj-navbar />
       <router-outlet />
     </div>
     <kj-search />
   `,
   styles: [`
     .content-hidden { visibility: hidden; }
+    .app-shell { display: flex; flex-direction: column; min-height: 100dvh; }
   `],
 })
 export class App implements OnInit {
