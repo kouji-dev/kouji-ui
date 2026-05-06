@@ -71,8 +71,11 @@
     --kj-button-fg: var(--kj-color-base-content);
     --kj-button-border-color: transparent;
   }
+  /* Use a foreground-tinted overlay rather than a static base-200 surface so
+     the hover state stays visible even on themes where base-100 / base-200
+     are nearly the same value (e.g. kouji's deep #0c0c0c / #141414 ramp). */
   .kj-button[data-variant="ghost"]:hover {
-    --kj-button-bg: var(--kj-color-base-200);
+    --kj-button-bg: color-mix(in oklab, var(--kj-color-base-content) 10%, transparent);
   }
 
   .kj-button[data-variant="outline"] {
