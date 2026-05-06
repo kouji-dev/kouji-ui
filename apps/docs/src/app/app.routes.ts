@@ -39,7 +39,13 @@ export const routes: Routes = [
   },
   {
     path: 'theme-generator',
-    loadComponent: () => import('./pages/theme-generator/theme-generator').then(m => m.ThemeGeneratorComponent),
+    loadComponent: () => import('./shells/theme-generator-shell/theme-generator-shell').then(m => m.ThemeGeneratorShellComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/theme-generator/theme-generator').then(m => m.ThemeGeneratorComponent),
+      },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];

@@ -1,40 +1,32 @@
-<div class="docs-layout">
-  <aside class="sidebar">
-    <kj-docs-sidebar />
-  </aside>
+<header class="generator-bar">
+  <div class="generator-name-wrap">
+    <input
+      class="generator-name"
+      type="text"
+      placeholder="theme-name"
+      [value]="draft().name"
+      [attr.aria-invalid]="nameError() !== null"
+      aria-describedby="name-helper"
+      (input)="onNameChange($event)"
+      aria-label="Theme name"
+    />
+    <span id="name-helper" class="generator-name-helper" [class.error]="nameError() !== null">
+      {{ nameError() ?? 'kebab-case, max 32 chars' }}
+    </span>
+  </div>
+  <div class="generator-actions">
+    <kj-button variant="ghost"   size="sm" (click)="reset()">Reset</kj-button>
+    <kj-button variant="default" size="sm" [disabled]="saveDisabled()" (click)="save()">Save</kj-button>
+    <kj-button variant="outline" size="sm" (click)="copyCss()">Copy CSS</kj-button>
+    <kj-button variant="outline" size="sm" (click)="downloadCss()">Download .css</kj-button>
+    <kj-button variant="outline" size="sm" (click)="exportJson()">Export JSON</kj-button>
+  </div>
+</header>
 
-  <main class="generator-main">
-    <header class="generator-bar">
-      <div class="generator-name-wrap">
-        <input
-          class="generator-name"
-          type="text"
-          placeholder="theme-name"
-          [value]="draft().name"
-          [attr.aria-invalid]="nameError() !== null"
-          aria-describedby="name-helper"
-          (input)="onNameChange($event)"
-          aria-label="Theme name"
-        />
-        <span id="name-helper" class="generator-name-helper" [class.error]="nameError() !== null">
-          {{ nameError() ?? 'kebab-case, max 32 chars' }}
-        </span>
-      </div>
-      <div class="generator-actions">
-        <kj-button variant="ghost"   size="sm" (click)="reset()">Reset</kj-button>
-        <kj-button variant="default" size="sm" [disabled]="saveDisabled()" (click)="save()">Save</kj-button>
-        <kj-button variant="outline" size="sm" (click)="copyCss()">Copy CSS</kj-button>
-        <kj-button variant="outline" size="sm" (click)="downloadCss()">Download .css</kj-button>
-        <kj-button variant="outline" size="sm" (click)="exportJson()">Export JSON</kj-button>
-      </div>
-    </header>
-
-    <div class="generator-preview" data-theme="custom-draft">
-      <kj-theme-generator-preview />
-    </div>
-
-    @if (toast(); as msg) {
-      <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
-    }
-  </main>
+<div class="generator-preview" data-theme="custom-draft">
+  <kj-theme-generator-preview />
 </div>
+
+@if (toast(); as msg) {
+  <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
+}

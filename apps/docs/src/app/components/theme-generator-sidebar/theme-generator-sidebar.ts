@@ -44,6 +44,16 @@ export class ThemeGeneratorSidebarComponent {
   protected readonly mySaved = computed(() => this.draftService.list().map(t => t.name));
   protected readonly currentName = computed(() => this.draftService.draft().name);
 
+  /** Returns the built-in name a fork is based on (e.g. "retro-fork" → "retro"), or the name itself. */
+  protected readonly activeBase = computed<string>(() => {
+    const n = this.currentName();
+    if (n.endsWith('-fork')) {
+      const base = n.slice(0, -5);
+      if ((BUILT_IN_NAMES as readonly string[]).includes(base as BuiltInName)) return base;
+    }
+    return n;
+  });
+
   // ── Col B — token editor state ───────────────────────────────────────
   protected readonly draft = this.draftService.draft;
   protected readonly colorSlots = COLOR_SLOTS;

@@ -6,7 +6,7 @@
       <button
         type="button"
         class="theme-row"
-        [class.active]="currentName() === name"
+        [class.active]="activeBase() === name"
         (click)="onForkBuiltIn(name)"
       >
         <span class="swatch" [attr.data-theme]="name" aria-hidden="true"></span>
