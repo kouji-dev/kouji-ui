@@ -1,4 +1,4 @@
-import { Directive, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, input } from '@angular/core';
+import { Directive, ElementRef, InputSignalWithTransform, PLATFORM_ID, afterNextRender, computed, inject, input } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { KjFocusRing } from '../primitives';
 import { KjVariant, KjSize, bindPresets } from '../presets';
@@ -60,7 +60,10 @@ export class KjButton {
   readonly loading = input<boolean>(false);
 
   /** Toggle state. `undefined` (default) omits `aria-pressed`. */
-  readonly pressed = input<boolean | undefined>(undefined);
+  readonly pressed: InputSignalWithTransform<boolean | undefined, boolean | undefined> =
+    input<boolean | undefined, boolean | undefined>(undefined, {
+      transform: (v: boolean | undefined) => v,
+    });
 
   protected readonly effectiveDisabled = computed(() => this.disabled() || this.loading());
 
