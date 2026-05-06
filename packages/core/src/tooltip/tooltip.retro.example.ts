@@ -48,15 +48,15 @@ import { KjButton } from '../button/button';
   template: `
     <div class="row">
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'default'" [kjTooltipTrigger]="tip1">Default</button>
+        <button kjButton [variant]="'default'" [kjTooltipTrigger]="tip1">Default</button>
         <span #tip1 kjTooltipContent>Copy to clipboard</span>
       </div>
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'link'" [kjTooltipTrigger]="tip2">Link</button>
+        <button kjButton [variant]="'link'" [kjTooltipTrigger]="tip2">Link</button>
         <span #tip2 kjTooltipContent [kjTooltipSide]="'bottom'">Opens below</span>
       </div>
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'ghost'" [kjTooltipTrigger]="tip3">Ghost</button>
+        <button kjButton [variant]="'ghost'" [kjTooltipTrigger]="tip3">Ghost</button>
         <span #tip3 kjTooltipContent [kjTooltipSide]="'right'">Opens right</span>
       </div>
     </div>

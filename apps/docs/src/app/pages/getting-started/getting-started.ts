@@ -23,7 +23,7 @@ import { KjButton } from '@kouji-ui/core';
   standalone: true,
   imports: [KjButton],
   template: \`
-    <button kjButton [kjVariant]="'destructive'" [kjDisabled]="isLoading()">
+    <button kjButton [variant]="'destructive'" [disabled]="isLoading()">
       Delete
     </button>
   \`,

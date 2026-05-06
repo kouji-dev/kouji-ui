@@ -29,24 +29,24 @@ import { KjButton } from '../button/button';
     <div class="grid">
       <div class="empty"></div>
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'default'" [kjTooltipTrigger]="tipTop">Top</button>
+        <button kjButton [variant]="'default'" [kjTooltipTrigger]="tipTop">Top</button>
         <span #tipTop kjTooltipContent [kjTooltipSide]="'top'">Top tooltip</span>
       </div>
       <div class="empty"></div>
 
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'default'" [kjTooltipTrigger]="tipLeft">Left</button>
+        <button kjButton [variant]="'default'" [kjTooltipTrigger]="tipLeft">Left</button>
         <span #tipLeft kjTooltipContent [kjTooltipSide]="'left'">Left tooltip</span>
       </div>
       <div class="empty"></div>
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'default'" [kjTooltipTrigger]="tipRight">Right</button>
+        <button kjButton [variant]="'default'" [kjTooltipTrigger]="tipRight">Right</button>
         <span #tipRight kjTooltipContent [kjTooltipSide]="'right'">Right tooltip</span>
       </div>
 
       <div class="empty"></div>
       <div class="tip-wrap">
-        <button kjButton [kjVariant]="'default'" [kjTooltipTrigger]="tipBottom">Bottom</button>
+        <button kjButton [variant]="'default'" [kjTooltipTrigger]="tipBottom">Bottom</button>
         <span #tipBottom kjTooltipContent [kjTooltipSide]="'bottom'">Bottom tooltip</span>
       </div>
       <div class="empty"></div>

@@ -6,7 +6,7 @@
  *
  * @example
  * ```html
- * <button kjButton [kjDisabled]="isLoading()">Submit</button>
+ * <div kjDisabled [kjDisabled]="isLoading()">Content</div>
  * ```
  * @category Core/Primitives
  */

@@ -25,7 +25,7 @@ import { KjButton } from '../button/button';
     ::ng-deep .dialog-actions button[kjButton] { padding: 0.4rem 1rem; font-size: 0.8125rem; }
   `],
   template: `
-    <button kjButton [kjVariant]="'destructive'"
+    <button kjButton [variant]="'destructive'"
             [kjDialogTrigger]="confirmDialog"
             (kjDialogClosed)="onResult($event)">
       Delete Account
@@ -36,8 +36,8 @@ import { KjButton } from '../button/button';
           <h2 kjDialogTitle>Are you absolutely sure?</h2>
           <p class="dialog-body">This action cannot be undone. All your data will be permanently removed.</p>
           <div class="dialog-actions">
-            <button kjButton [kjVariant]="'outline'" (click)="dlg.close('cancelled')">Cancel</button>
-            <button kjButton [kjVariant]="'destructive'" (click)="dlg.close('confirmed')">Yes, delete</button>
+            <button kjButton [variant]="'outline'" (click)="dlg.close('cancelled')">Cancel</button>
+            <button kjButton [variant]="'destructive'" (click)="dlg.close('confirmed')">Yes, delete</button>
           </div>
         </div>
       </div>

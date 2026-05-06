@@ -22,15 +22,15 @@ import { KjButton } from '../button/button';
     ::ng-deep .dialog-actions button[kjButton] { padding: 0.4rem 1rem; font-size: 0.8125rem; }
   `],
   template: `
-    <button kjButton [kjVariant]="'default'" [kjDialogTrigger]="myDialog">Open Dialog</button>
+    <button kjButton [variant]="'default'" [kjDialogTrigger]="myDialog">Open Dialog</button>
     <ng-template #myDialog>
       <div kjDialogOverlay>
         <div kjDialog>
           <h2 kjDialogTitle>Edit Profile</h2>
           <p class="dialog-body">Make changes to your profile settings here.</p>
           <div class="dialog-actions">
-            <button kjButton [kjVariant]="'outline'" kjDialogClose>Cancel</button>
-            <button kjButton [kjVariant]="'default'" kjDialogClose>Save Changes</button>
+            <button kjButton [variant]="'outline'" kjDialogClose>Cancel</button>
+            <button kjButton [variant]="'default'" kjDialogClose>Save Changes</button>
           </div>
         </div>
       </div>
