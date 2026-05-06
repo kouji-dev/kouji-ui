@@ -40,6 +40,20 @@
             </div>
           }
 
+          @if (directive.models.length) {
+            <div class="inputs-block">
+              <h3 class="block-title">Models</h3>
+              <app-docs-table [columns]="modelColumns" [rows]="$any(directive.models)" label="Models" />
+            </div>
+          }
+
+          @if (directive.outputs.length) {
+            <div class="inputs-block">
+              <h3 class="block-title">Outputs</h3>
+              <app-docs-table [columns]="outputColumns" [rows]="$any(directive.outputs)" label="Outputs" />
+            </div>
+          }
+
           @if (directive.examples.length) {
             <div class="inline-examples-block">
               <h3 class="block-title">Usage</h3>

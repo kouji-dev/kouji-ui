@@ -59,6 +59,16 @@ export class ComponentDocComponent {
     { key: 'description',  header: 'Description' },
   ];
 
+  // Outputs don't have a default and aren't required-flagged.
+  protected readonly outputColumns: DocsTableColumn[] = [
+    { key: 'name',         header: 'Name'        },
+    { key: 'type',         header: 'Payload'     },
+    { key: 'description',  header: 'Description' },
+  ];
+
+  // Models share the input shape (read+write); reuse the same columns.
+  protected readonly modelColumns: DocsTableColumn[] = this.inputColumns;
+
   constructor() {
     toObservable(this.component).pipe(
       filter(Boolean),

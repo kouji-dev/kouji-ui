@@ -24,6 +24,14 @@ export interface DocExample {
   themedFiles: Record<string, ExampleFile[]>;
 }
 
+export type ModelDef = InputDef;
+
+export interface OutputDef {
+  name: string;
+  type: string;
+  description: string;
+}
+
 export interface DirectiveDef {
   className: string;
   selector: string;
@@ -31,6 +39,8 @@ export interface DirectiveDef {
   categoryPath: string[];
   description: string;
   inputs: InputDef[];
+  outputs: OutputDef[];
+  models: ModelDef[];
   examples: string[];
   exampleFiles: ExampleFile[];
   themedExamples: Record<string, ExampleFile[]>;

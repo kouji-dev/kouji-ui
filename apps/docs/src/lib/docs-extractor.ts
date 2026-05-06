@@ -59,13 +59,34 @@ export interface DocExample {
   themedFiles: Record<string, ExampleFile[]>;
 }
 
+/** Models are read+write signals — same descriptor shape as `InputDef`. */
+export type ModelDef = InputDef;
+
+export interface OutputDef {
+  name: string;
+  /** Payload type emitted by the output (the `T` in `output<T>()`). */
+  type: string;
+  description: string;
+  /**
+   * For outputs forwarded via `hostDirectives` composition, the simple name
+   * of the directive class the output is defined on. Resolved into a real
+   * `type` in the post-extraction pass and stripped from the public manifest.
+   */
+  sourceDirective?: string;
+}
+
 export interface DirectiveDef {
   className: string;
   selector: string;
   exportAs?: string;
   categoryPath: string[];
   description: string;
+  /** `input()` / `input.required()` declarations (excluding models). */
   inputs: InputDef[];
+  /** `output()` declarations. */
+  outputs: OutputDef[];
+  /** `model()` declarations — read+write signals shown separately from inputs. */
+  models: ModelDef[];
   examples: string[];
   exampleFiles: ExampleFile[];        // default theme files (backward compat)
   themedExamples: Record<string, ExampleFile[]>;  // keyed by theme name
@@ -111,6 +132,10 @@ const SIGNAL_INPUT_SELECTOR = [
   'PropertyDeclaration:has(CallExpression > PropertyAccessExpression:has(Identifier[text="required"]))',
   'PropertyDeclaration:has(CallExpression > Identifier[text="model"])',
 ].join(', ');
+
+/** Properties initialized with output() — emits the read-only event signal. */
+const OUTPUT_SELECTOR =
+  'PropertyDeclaration:has(CallExpression > Identifier[text="output"])';
 
 /** Exported InjectionToken const declarations */
 const INJECTION_TOKEN_SELECTOR =
@@ -546,9 +571,10 @@ function extractInputs(
     const description = getJsDocDescription(prop);
 
     const initText = prop.initializer?.getText(sourceFile) ?? '';
-    const isModel = initText.startsWith('model(');
+    // Match both `model(…)` and `model<T>(…)` shapes.
+    const isModel = /^model\s*[<(]/.test(initText);
     const required =
-      initText.startsWith('input.required(') ||
+      /^input(?:\s*<[^>]+>)?\s*\.required\s*[<(]/.test(initText) ||
       tsquery(prop, 'CallExpression > PropertyAccessExpression:has(Identifier[text="required"])').length > 0;
 
     // Type resolution, in priority order:
@@ -601,6 +627,44 @@ function extractTokens(sourceFile: ts.SourceFile): TokenDef[] {
     out.push({ name, description: getJsDocDescription(stmt) });
   }
   return out;
+}
+
+// ── Signal output extraction ──────────────────────────────────────────────────
+
+function extractOutputs(
+  cls: ts.ClassDeclaration,
+  sourceFile: ts.SourceFile,
+  morphFile: SourceFile,
+): OutputDef[] {
+  const props = tsquery<ts.PropertyDeclaration>(cls, OUTPUT_SELECTOR);
+  const results: OutputDef[] = [];
+
+  const className = cls.name?.text ?? '';
+  const morphClass = className ? morphFile.getClass(className) : undefined;
+
+  for (const prop of props) {
+    const name = (prop.name as ts.Identifier).text;
+    if (name.startsWith('_')) continue;
+    if (hasInternalTag(prop)) continue;
+
+    const description = getJsDocDescription(prop);
+    const initText = prop.initializer?.getText(sourceFile) ?? '';
+
+    // Same priority as inputs: explicit field annotation → TypeChecker → regex.
+    let type = prop.type?.getText(sourceFile) ?? '';
+    if (!type && morphClass) {
+      type = morphClass.getProperty(name)?.getType().getText() ?? '';
+    }
+    if (type) {
+      type = unwrapSignalType(type);
+    } else {
+      type = initText.match(/output<([^>]+)>/)?.[1] ?? 'void';
+    }
+
+    results.push({ name, type, description });
+  }
+
+  return results;
 }
 
 // ── Type alias extraction ─────────────────────────────────────────────────────
@@ -677,7 +741,7 @@ function extractLiteralDefault(
  */
 function unwrapSignalType(type: string): string {
   const cleaned = type.replace(/import\("[^"]+"\)\./g, '');
-  const m = cleaned.match(/^\s*(?:InputSignal(?:WithTransform)?|ModelSignal)\s*<\s*([^,>]+(?:<[^>]*>)?)/);
+  const m = cleaned.match(/^\s*(?:InputSignal(?:WithTransform)?|ModelSignal|OutputEmitterRef|OutputRef)\s*<\s*([^,>]+(?:<[^>]*>)?)/);
   return m ? m[1].trim() : cleaned;
 }
 
@@ -734,9 +798,15 @@ function processSourceFile(
     const themedExamples = getDocThemes(cls, tsSourceFile, sourceDir);
     const docExamples = getDocExamples(cls, tsSourceFile, sourceDir);
     // Reuse the inputs we already collected above for the registry.
-    const ownInputs = ownInputsByClass.get(className) ?? [];
+    const ownSignals = ownInputsByClass.get(className) ?? [];
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
-    const inputs = [...ownInputs, ...hdInputs];
+    // Split inputs from models. Models retain `isModel: true`; inputs don't.
+    // hostDirectives-forwarded entries default to non-model and resolve to
+    // their source's `isModel` in the post-processing pass.
+    const allInputs = [...ownSignals, ...hdInputs];
+    const inputs = allInputs.filter(i => !i.isModel);
+    const models = allInputs.filter(i => i.isModel);
+    const outputs = extractOutputs(cls, tsSourceFile, morphFile);
     const categoryPath = getCategoryPath(cls, pkg);
     const required = getRequired(cls);
 
@@ -773,6 +843,8 @@ function processSourceFile(
       categoryPath,
       description,
       inputs,
+      outputs,
+      models,
       examples,
       exampleFiles: resolvedExampleFiles,
       themedExamples,
@@ -865,7 +937,13 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
   // and copy the type / defaultValue from the source class's own inputs.
   for (const comp of componentMap.values()) {
     for (const dir of comp.directives) {
-      for (const input of dir.inputs) {
+      // Hold a reference to the original `inputs` array, then partition it
+      // back into inputs/models based on each entry's resolved isModel flag.
+      const pending = dir.inputs;
+      const resolvedInputs: InputDef[] = [];
+      const resolvedModels: ModelDef[] = [];
+
+      for (const input of pending) {
         if (input.sourceDirective) {
           const sourceInputs = ownInputsByClass.get(input.sourceDirective) ?? [];
           const original = sourceInputs.find(i => i.name === input.name);
@@ -879,10 +957,13 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
             input.isModel = original.isModel;
             input.required = original.required;
           }
-          // Strip the resolution metadata from the public manifest.
           delete input.sourceDirective;
         }
+        (input.isModel ? resolvedModels : resolvedInputs).push(input);
       }
+
+      dir.inputs = resolvedInputs;
+      dir.models = [...dir.models, ...resolvedModels];
     }
   }
   void componentsScanned;
