@@ -27,6 +27,7 @@ export * from './badge/index';
 export * from './overlay-badge/index';
 export * from './avatar/index';
 export * from './kbd/index';
+export * from './icon/index';
 
 // -- Data display --
 export * from './list/index';
