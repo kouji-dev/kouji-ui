@@ -473,9 +473,210 @@ _TBD_
 
 _TBD_
 
-## 7. ARIA labelling/describedby wiring
+## 7. ARIA labelling / describedby wiring
 
-_TBD_
+### Why this matters
+
+Two fundamental concepts under WCAG 2.1 every interactive widget MUST have:
+
+| Concept | Spec | Without it |
+|---|---|---|
+| **Accessible name** | WCAG 4.1.2 (Name, Role, Value) | SR announces "button" instead of "Submit". Failing AA. |
+| **Accessible description** | WCAG 1.3.1 / 3.3.2 | help/error text floats unattached; SR users can't tell why a field is invalid |
+
+Browser computes these via the W3C **Accessible Name and Description Computation** algorithm. Priority order:
+
+| Accessible **name** sources (first non-empty wins) | Accessible **description** sources |
+|---|---|
+| 1. `aria-labelledby` (id refs) | 1. `aria-describedby` (id refs) |
+| 2. `aria-label` (string) | 2. `aria-description` (string, newer) |
+| 3. native HTML label (`<label for>`, `alt`, `title`) | 3. `title` (tooltip, last resort) |
+| 4. visible text content (buttons, links) | |
+| 5. nothing → unnamed → broken | |
+
+**Antipattern to prevent:** `aria-label` on a control with a visible `<label for>` silently overrides the visible text. A primitive must enforce priority resolution.
+
+### Three labelling sub-patterns in the codebase
+
+| Sub-pattern | Where used | Primitive | Status |
+|---|---|---|---|
+| **A. Form-field labelling** (label + help + error linked by id) | every form control wrapped in `<kj-field>` | `KjField`, `KjFieldLabel`, `KjFieldHelp`, `KjFieldError`, `KjAriaDescribedBy` | ✅ exists, well-designed |
+| **B. Overlay panel labelling** (title + description by id) | dialog, drawer, alert-dialog, alert, bottom-sheet | each panel owns own `titleId`/`descriptionId` signals + `<kj-*-title>`/`<kj-*-description>` register ids | ✅ exists, consistent |
+| **C. Standalone `aria-label` input** | spinner, menubar, breadcrumb, calendar, carousel, color-picker, number-input, time-picker segments, slider thumb, file-upload, pagination, etc. | none — each control re-implements `kjAriaLabel` input + host binding | ❌ duplicated 20+ times |
+
+Sub-pattern B has no shared logic to extract beyond id minting (covered by `KjId`). Pattern stays local to each overlay component.
+
+### A — `KjField` ecosystem (already in place)
+
+| Primitive | Role |
+|---|---|
+| `KjField` | mints `controlId`, `labelId`; registers describedby ids; tracks `required`/`disabled`/`invalid` |
+| `KjFieldLabel` | reads `controlId`/`labelId` from context; auto-binds `[for]` and `[id]` |
+| `KjFieldHelp` | mints id; calls `field.registerDescribedBy(id, 'help')` |
+| `KjFieldError` | mints id; calls `field.registerDescribedBy(id, 'error')`; `role="alert"` + `aria-live="polite"` |
+| `KjAriaDescribedBy` | merges `field.describedByIds()` + user-provided `[kjDescribedBy]` into `[attr.aria-describedby]` |
+
+Consumer contract:
+
+```html
+<kj-field>
+  <label kjFieldLabel>Email</label>
+  <input kjInput kjAriaDescribedBy />
+  <span kjFieldHelp>We'll never share it.</span>
+  <span kjFieldError>Required.</span>
+</kj-field>
+```
+
+Wires automatically: `<label for="f-1" id="f-1-label">`, `<input id="f-1" aria-describedby="f-1-help f-1-error">`.
+
+### C — Standalone `aria-label` (the duplication)
+
+20+ controls each independently implement:
+
+```ts
+readonly kjAriaLabel = input<string | undefined>(undefined);
+host: { '[attr.aria-label]': 'kjAriaLabel() ?? null' }
+```
+
+Several have **hardcoded English fallbacks**:
+
+| Component | Hardcoded |
+|---|---|
+| color-picker | "Color saturation and value", "Hue", "Opacity", "Hex color value" |
+| command-palette | "Command palette", "Commands" |
+| date-picker | "Choose date" |
+| tree-select | "Collapse" / "Expand" |
+| bottom-sheet | "Resize sheet" |
+| time-picker segments | "Hours", "Minutes", "Seconds", "Toggle AM/PM" |
+| spinner | "Loading" |
+
+### When to use which
+
+| Situation | Use | Example |
+|---|---|---|
+| Icon-only button, no visible text | `aria-label` | `<button aria-label="Close">×</button>` |
+| Visible label exists elsewhere on page | `aria-labelledby` | `<input aria-labelledby="email-label">` |
+| Form control inside `<kj-field>` with `<label kjFieldLabel>` | native `<label for>` (auto-wired) | (KjField does it) |
+| Help text / error text linked to a field | `aria-describedby` | `<input aria-describedby="email-help email-error">` |
+| Tooltip describing a button | `aria-describedby` (tooltip's id) | done by `KjTooltipTrigger` |
+| Decorative element (icon next to a labelled button) | `aria-hidden="true"` | `<svg aria-hidden="true">` |
+
+### Primitives — final cut
+
+| Primitive | Kind | Why a primitive |
+|---|---|---|
+| `KjField` + children + `KjAriaDescribedBy` *(exists)* | hostDirective + directives | form-field labelling + describedby chain — the complex case |
+| **`KjAriaLabel`** *(new)* | hostDirective | fundamental name resolution with `labelledby > label > fallback > i18n` priority; replaces 20+ ad-hoc bindings; prevents silent-override antipattern |
+| **`KJ_A11Y_LABELS`** *(new)* | InjectionToken | i18n + per-app override of default strings |
+| **`KjId`** *(new — extract from `KjField`)* | provider service | id minting reusable beyond field (overlay panels, anywhere) |
+| **`KjAriaCurrent`** *(new, small)* | hostDirective | dedupes `aria-current` across pagination, breadcrumb, stepper, tabs, nav |
+
+`KjOverlayLabelling` was considered and **rejected** — overlay title/description pattern is local to each component; only id minting is shared (covered by `KjId`).
+
+### Composition rule
+
+Same as `KjFormControl` ↔ `KjDisabled`: `KjAriaLabel` is composed by the **consumer**, not declared as a hostDirective inside another primitive. Stays independently usable on any element.
+
+```ts
+@Directive({
+  selector: '[kjSpinner]',
+  hostDirectives: [
+    { directive: KjAriaLabel, inputs: ['kjAriaLabel', 'kjAriaLabelledBy'] },
+  ],
+})
+export class KjSpinner {
+  private readonly labels = inject(KJ_A11Y_LABELS);
+  // KjAriaLabel resolves: explicit input → fallback this directive provides → labels.loading
+}
+```
+
+Priority resolution inside `KjAriaLabel`:
+
+| Priority | Source |
+|---|---|
+| 1 | `kjAriaLabelledBy` (input) — wins, label suppressed |
+| 2 | `kjAriaLabel` (input) |
+| 3 | per-instance fallback (consumer default) |
+| 4 | `KJ_A11Y_LABELS` locale default |
+| 5 | empty → no `aria-label` attribute |
+
+### Composition decision: option **C** (status quo, harden + extract)
+
+| Action | Scope |
+|---|---|
+| 1. Keep `KjField` + children + `KjAriaDescribedBy` | already correct; document as the form-field labelling story |
+| 2. Document overlay title/description pattern | no primitive; just convention |
+| 3. **Extract `KjAriaLabel`** host directive | adopt in 20+ controls that currently roll their own `kjAriaLabel` input |
+| 4. **Introduce `KJ_A11Y_LABELS` token** | move all hardcoded strings here; i18n hook |
+| 5. **Extract `KjId` service** | id minting reusable outside `KjField` |
+| 6. **Introduce `KjAriaCurrent`** | dedupe `aria-current` across pagination, breadcrumb, stepper, tabs, nav |
+| 7. **`KjAriaLabel` decoupled** | composed on consumer host; never a hostDirective of `KjField`/`KjFormControl`/etc. |
+
+### Wins
+
+- Eliminates 20+ copy-pasted `kjAriaLabel` inputs + bindings
+- All hardcoded English strings become i18n-able via `KJ_A11Y_LABELS` (provideable per-app)
+- Consistent priority resolution (`labelledby` > `label` > fallback > i18n default)
+- Existing `KjField` story stays; just gets formal sibling primitives
+- `aria-current` consistent across navigation widgets
+
+---
+
+## A11Y roadmap — AAA-level attrs to address (post-cat-7)
+
+Survey of every ARIA attribute surface; some already covered, some missing. Roadmap items below are **gaps** worth tracking.
+
+### Already handled by existing categories
+
+| Attribute | Cat | Primitive |
+|---|---|---|
+| `aria-expanded`, `aria-controls`, `aria-haspopup` | 1 | `KjOverlayTrigger` |
+| `aria-modal` | 1 | dialog/drawer/alert-dialog |
+| `aria-multiselectable` | 2 | multi-select |
+| `aria-activedescendant` | 2 | `KjListNavigator` |
+| `aria-selected` | 2 | `KjSelectionModel` |
+| `aria-disabled` | 3 | `KjDisabled` |
+| `aria-invalid`, `aria-required`, `aria-readonly`, `aria-busy` | 3 | `KjFormControl` (touched-gated) |
+| `aria-live`, `aria-atomic`, `aria-relevant` | 8 | live announcer |
+| `aria-label`, `aria-labelledby` | 7 | `KjAriaLabel` |
+| `aria-describedby` | 7 | `KjAriaDescribedBy` |
+| `aria-current` | 7 | `KjAriaCurrent` |
+
+### Per-widget — no primitive needed (intrinsic to role)
+
+| Attribute | Used by | Why local |
+|---|---|---|
+| `aria-checked` | checkbox, radio, switch | semantics differ (`true`/`false`/`mixed`) |
+| `aria-pressed` | toggle button | single component |
+| `aria-orientation` | slider, tabs, separator, splitter | static input; 1 line |
+| `aria-level` | tree, heading | tree-specific |
+| `aria-multiline` | textarea | static |
+| `aria-valuemin/max/now/text` | slider, time-picker, progressbar, spinbutton | numeric semantics per widget |
+| `aria-sort` | data-table column headers | table-specific |
+
+### Roadmap — gaps to fix
+
+| # | Attribute / Concern | Used by | Severity | Action |
+|---|---|---|---|---|
+| 1 | **`aria-keyshortcuts`** not set on shortcut-aware items | command-palette items, dropdown-menu items, shortcut-aware buttons | medium (AAA UX, AA passable) | add input on `KjListNavigator` or shortcut-aware item primitives; advertise shortcuts to AT |
+| 2 | **`aria-roledescription`** for custom widgets | carousel slide, drawer, color-picker subparts | low | locale-aware, via `KJ_A11Y_LABELS` token |
+| 3 | **`aria-posinset` / `aria-setsize`** for virtualized lists | not yet — defer until virtualization | low (deferred) | add to `KjItemRegistry` when virtualization lands |
+| 4 | **`aria-owns`** for portal'd children | cascade-select sub-panels (verify), command-palette | low | audit overlay portals; ensure owner relation when DOM detached |
+| 5 | **`role="status"` vs `role="alert"`** semantic split | toast, form errors, validation | medium | document in cat 8 |
+| 6 | **Reduced motion** support | every animation | medium (WCAG 2.3.3 AAA) | global `prefers-reduced-motion` injection token + components respect it |
+| 7 | **High contrast / forced colors** | every styled component | medium (WCAG 1.4.11 AA) | CSS layer audit; ensure `forced-colors: active` doesn't break |
+| 8 | **Focus visible AAA** (`:focus-visible` consistently styled, ≥3:1 contrast) | every interactive | high (WCAG 2.4.7 AA, 1.4.11 AA) | already partially via `KjFocusRing`; audit coverage |
+| 9 | **Target size AAA** (≥44×44 CSS px for touch targets) | every interactive | high (WCAG 2.5.5 AAA) | design tokens; component default min-size |
+| 10 | **Pointer cancellation** (action on `pointerup` not `pointerdown`) | every clickable | medium (WCAG 2.5.2 A) | audit click handlers for cancellable actions |
+| 11 | **Skip links / landmark roles** | docs site / app shell — not lib's job | low | document recommended app-shell pattern |
+| 12 | **`prefers-color-scheme`** | theming | low | already addressed via tokens; audit |
+| 13 | **Screen-reader-only text** utility (`.sr-only`) | widgets needing visually-hidden text | medium | extract a utility class in components package |
+| 14 | **`inert` polyfill / fallback** | older browsers | low (deferred — modern targets) | n/a |
+| 15 | **Long-press alternative for `right-click` context-menu** | context-menu | medium (mobile A11Y) | already in cat 1 (`KjOverlayTrigger{events:'contextmenu/longpress'}`) |
+| 16 | **Auto-complete attributes** (`autocomplete`, `autocorrect`, `inputmode`) | form inputs | medium (WCAG 1.3.5 AA) | input config inputs; document |
+| 17 | **Locale-aware date/number/time formatting** | date-picker, time-picker, number-input, calendar | medium | already partial via `LOCALE_ID` injection; extend |
+
+Items 1–4 fit naturally into existing primitives. Items 5–17 cross-cut and need their own micro-categories or living issue tracker. Recommend: track items 5–17 as a separate "A11Y AAA hardening" milestone after primitives extraction lands.
 
 ## 8. Live region announcements
 
