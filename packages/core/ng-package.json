@@ -3,5 +3,9 @@
   "dest": "../../dist/kj-core",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    "src/typography/prose.css",
+    "src/icon/icon.css"
+  ]
 }

@@ -1,0 +1,40 @@
+/* packages/core/src/icon/icon.css
+ *
+ * Renders icons set up by `KjIconDirective`. The directive writes:
+ *   --kj-icon            → CSS-ready value (`url("...")` or `"glyph"`)
+ *   data-kj-icon-mode    → "svg" | "font"
+ *
+ * SVG / CSS-mask mode (default): uses `mask-image` + `currentColor`.
+ *   Works for any monochrome SVG including data: URIs.
+ * Font mode: uses pseudo-element `content`. Consumers must load the icon
+ *   font and (optionally) set `--kj-icon-font` on a parent.
+ */
+
+.kj-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.kj-icon[data-kj-icon-mode='svg'] {
+  background-color: currentColor;
+  mask-image: var(--kj-icon);
+  -webkit-mask-image: var(--kj-icon);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.kj-icon[data-kj-icon-mode='font'] {
+  font-family: var(--kj-icon-font, inherit);
+}
+
+.kj-icon[data-kj-icon-mode='font']::before {
+  content: var(--kj-icon);
+}
