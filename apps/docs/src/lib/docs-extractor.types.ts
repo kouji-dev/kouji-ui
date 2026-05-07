@@ -105,6 +105,7 @@ export interface DocItem {
   order: number | null;
   /** Source-file occurrence index, used as deterministic tiebreaker. */
   sourceOrder: number;
+  categoryPath: string[];
   directive?: DirectiveDef;
   service?: ServiceDef;
   function?: FunctionDef;

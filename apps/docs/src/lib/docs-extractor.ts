@@ -9,6 +9,15 @@ import {
   getDocThemes,
   getDocExamples,
 } from './examples';
+import {
+  getJsDocDescription,
+  extractInputs,
+  extractOutputs,
+  extractHostDirectiveInputs,
+  getDecoratorArg,
+  extractDecoratorProp,
+  getRequired,
+} from './extractor-helpers';
 
 /** Walks up from `start` until a directory contains pnpm-workspace.yaml AND packages/core. */
 function findWorkspaceRoot(start: string): string {
@@ -132,17 +141,6 @@ export interface DocsManifest {
 const DIRECTIVE_CLASS_SELECTOR =
   'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"])), ClassDeclaration:has(Decorator:has(Identifier[text="Component"]))';
 
-/** Properties initialized with input(), input.required(), or model() signals */
-const SIGNAL_INPUT_SELECTOR = [
-  'PropertyDeclaration:has(CallExpression > Identifier[text="input"])',
-  'PropertyDeclaration:has(CallExpression > PropertyAccessExpression:has(Identifier[text="required"]))',
-  'PropertyDeclaration:has(CallExpression > Identifier[text="model"])',
-].join(', ');
-
-/** Properties initialized with output() — emits the read-only event signal. */
-const OUTPUT_SELECTOR =
-  'PropertyDeclaration:has(CallExpression > Identifier[text="output"])';
-
 /** Exported InjectionToken const declarations */
 const INJECTION_TOKEN_SELECTOR =
   'VariableStatement:has(ExportKeyword):has(NewExpression > Identifier[text="InjectionToken"])';
@@ -159,21 +157,6 @@ const CATEGORY_TAG_SELECTOR = 'JSDocTag[tagName.text="category"]';
 /** True when the node carries a JSDoc `@internal` tag. */
 function hasInternalTag(node: ts.Node): boolean {
   return ts.getJSDocTags(node).some(t => t.tagName.text === 'internal');
-}
-
-function getJsDocDescription(node: ts.Node): string {
-  const tags = tsquery<ts.JSDoc>(node, 'JSDoc');
-  if (!tags.length) return '';
-  const comment = tags[0].comment;
-  if (!comment) return '';
-  // Preserve newlines so markdown (paragraphs, fenced code blocks) renders correctly.
-  if (typeof comment === 'string') return comment.replace(/[ \t]+\n/g, '\n').trim();
-  // NodeArray<JSDocComment>
-  return comment
-    .map(c => ('text' in c ? (c as ts.JSDocText).text : ''))
-    .join('')
-    .replace(/[ \t]+\n/g, '\n')
-    .trim();
 }
 
 // DOC_THEME_RE removed — using split-based parsing instead (regex lookahead fails inside code blocks)
@@ -214,173 +197,8 @@ function getCategoryPath(node: ts.Node, pkg: SourcePkg): string[] {
   return [label, ...segments];
 }
 
-function getRequired(node: ts.Node): boolean {
-  const tags = tsquery<ts.JSDocTag>(node, 'JSDocTag[tagName.text="required"]');
-  return tags.length > 0;
-}
-
 // getExampleFiles removed — replaced by getDocFiles() which uses @doc-file inline blocks.
 // @example-file tag is no longer used; @doc-file is the replacement.
-
-// ── Directive decorator metadata extraction ───────────────────────────────────
-
-function getDecoratorArg(cls: ts.ClassDeclaration): string {
-  // Match @Directive(...) OR @Component(...).
-  const callExpr = tsquery<ts.CallExpression>(
-    cls,
-    'Decorator > CallExpression:has(Identifier[text="Directive"]), Decorator > CallExpression:has(Identifier[text="Component"])'
-  );
-  return callExpr[0]?.arguments[0]?.getText() ?? '';
-}
-
-function extractDecoratorProp(decoratorArg: string, prop: string): string | undefined {
-  return decoratorArg.match(new RegExp(`${prop}:\\s*['"\`]([^'"\`]+)['"\`]`))?.[1];
-}
-
-/**
- * Extracts inputs exposed via hostDirectives with their public aliases.
- * e.g. `hostDirectives: [{ directive: KjDisabled, inputs: ['disabled: kjDisabled'] }]`
- * emits an InputDef with name='kjDisabled', type='boolean', description='(from KjDisabled)'
- */
-/** Extracts bracket-enclosed content with proper depth tracking (handles nested `[]`). */
-function extractBracketContent(text: string, startIdx: number): string {
-  let depth = 0;
-  for (let i = startIdx; i < text.length; i++) {
-    if (text[i] === '[') depth++;
-    else if (text[i] === ']') { depth--; if (depth === 0) return text.slice(startIdx + 1, i); }
-  }
-  return '';
-}
-
-/**
- * Extracts inputs exposed via hostDirectives with their public kj-prefixed aliases.
- * Uses depth-tracking bracket extraction to handle nested arrays like `inputs: ['x']`
- * inside `hostDirectives: [{ directive: X, inputs: [...] }]`.
- */
-function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
-  const results: InputDef[] = [];
-
-  // Find `hostDirectives:` then extract its array with depth tracking
-  const hdKeyIdx = decoratorArg.indexOf('hostDirectives');
-  if (hdKeyIdx === -1) return results;
-
-  const bracketStart = decoratorArg.indexOf('[', hdKeyIdx);
-  if (bracketStart === -1) return results;
-
-  const hdContent = extractBracketContent(decoratorArg, bracketStart);
-
-  // Find each `inputs: [...]` array inside the hostDirectives entries
-  let searchPos = 0;
-  while (searchPos < hdContent.length) {
-    const inputsIdx = hdContent.indexOf('inputs:', searchPos);
-    if (inputsIdx === -1) break;
-
-    const arrStart = hdContent.indexOf('[', inputsIdx);
-    if (arrStart === -1) break;
-
-    const inputsList = extractBracketContent(hdContent, arrStart);
-    searchPos = arrStart + inputsList.length + 2; // advance past this array
-
-    // Find the `directive: ClassName` for the object literal that owns this
-    // `inputs:` array. The matching `directive:` is the last one before the
-    // inputs index inside the same object.
-    const before = hdContent.slice(0, inputsIdx);
-    const dirMatches = [...before.matchAll(/directive\s*:\s*(\w+)/g)];
-    const sourceDirective = dirMatches.length ? dirMatches[dirMatches.length - 1][1] : '';
-
-    // Parse each quoted entry: 'originalName: aliasName' or 'name'
-    const entryRe = /['"`]([^'"`]+)['"`]/g;
-    for (const entry of inputsList.matchAll(entryRe)) {
-      const raw = entry[1].trim();
-      const parts = raw.split(':').map(s => s.trim());
-      const alias = parts[1] ?? parts[0];
-      const original = parts[0];
-
-      // Only expose inputs aliased with the kj prefix
-      if (!alias || !alias.startsWith('kj')) continue;
-
-      results.push({
-        name: alias,
-        // Placeholder — resolved against `ownInputsByClass` after every file
-        // has been processed. See `resolveHostDirectiveInputTypes`.
-        type: 'unknown',
-        required: false,
-        isModel: false,
-        description: sourceDirective
-          ? `Forwarded from \`${sourceDirective}.${original}\` via \`hostDirectives\`.`
-          : `Forwarded from \`${original}\` via \`hostDirectives\`.`,
-        sourceDirective,
-      });
-    }
-  }
-  return results;
-}
-
-// ── Signal input extraction using ts-query ────────────────────────────────────
-
-function extractInputs(
-  cls: ts.ClassDeclaration,
-  sourceFile: ts.SourceFile,
-  morphFile: SourceFile,
-): InputDef[] {
-  const props = tsquery<ts.PropertyDeclaration>(cls, SIGNAL_INPUT_SELECTOR);
-  const results: InputDef[] = [];
-
-  // Resolve the matching ts-morph class once per call so inferred-type
-  // lookups via the TypeChecker don't pay per-property cost.
-  const className = cls.name?.text ?? '';
-  const morphClass = className ? morphFile.getClass(className) : undefined;
-
-  for (const prop of props) {
-    const name = (prop.name as ts.Identifier).text;
-    if (name.startsWith('_')) continue;
-
-    if (hasInternalTag(prop)) continue;
-    const description = getJsDocDescription(prop);
-
-    const initText = prop.initializer?.getText(sourceFile) ?? '';
-    // Match both `model(…)` and `model<T>(…)` shapes.
-    const isModel = /^model\s*[<(]/.test(initText);
-    const required =
-      /^input(?:\s*<[^>]+>)?\s*\.required\s*[<(]/.test(initText) ||
-      tsquery(prop, 'CallExpression > PropertyAccessExpression:has(Identifier[text="required"])').length > 0;
-
-    // Type resolution, in priority order:
-    //   1. Explicit field annotation on the property — preserved verbatim
-    //      (this is how authors pin a type when ng-packagr's emission would
-    //      otherwise narrow the write type).
-    //   2. ts-morph TypeChecker on the property — the inferred type Angular
-    //      itself sees, e.g. `InputSignal<boolean>` for `input(false)` or
-    //      `ModelSignal<boolean | undefined>` for `model<boolean>()`.
-    //   3. Source-level regex on the call's generic argument as a last resort
-    //      for hand-written `input<T>(...)` forms not covered above.
-    // The signal-input wrappers (`InputSignal`, `InputSignalWithTransform`,
-    // `ModelSignal`) are stripped via `unwrapSignalType` so the docs page
-    // shows the user-facing read type.
-    let type = prop.type?.getText(sourceFile) ?? '';
-    if (!type && morphClass) {
-      type = morphClass.getProperty(name)?.getType().getText() ?? '';
-    }
-    if (type) {
-      type = unwrapSignalType(type);
-    } else {
-      type =
-        initText.match(/(?:input(?:\.required)?|model)<([^>]+)>/)?.[1] ?? 'unknown';
-    }
-
-    // Default value: only emit when the first argument to input() / model()
-    // is a literal (string, number, boolean, null, undefined). Skip every
-    // expression — including identifier references like `this.preset.default`
-    // — because rendering an arbitrary JS expression in the docs table is
-    // noisy and the regex-on-source approach mis-parsed nested parens
-    // (e.g. an inline arrow body inside a transform option).
-    const defaultValue = required ? undefined : extractLiteralDefault(prop, sourceFile);
-
-    results.push({ name, type, required, isModel, description, defaultValue });
-  }
-
-  return results;
-}
 
 // ── InjectionToken extraction ─────────────────────────────────────────────────
 
@@ -395,44 +213,6 @@ function extractTokens(sourceFile: ts.SourceFile): TokenDef[] {
     out.push({ name, description: getJsDocDescription(stmt) });
   }
   return out;
-}
-
-// ── Signal output extraction ──────────────────────────────────────────────────
-
-function extractOutputs(
-  cls: ts.ClassDeclaration,
-  sourceFile: ts.SourceFile,
-  morphFile: SourceFile,
-): OutputDef[] {
-  const props = tsquery<ts.PropertyDeclaration>(cls, OUTPUT_SELECTOR);
-  const results: OutputDef[] = [];
-
-  const className = cls.name?.text ?? '';
-  const morphClass = className ? morphFile.getClass(className) : undefined;
-
-  for (const prop of props) {
-    const name = (prop.name as ts.Identifier).text;
-    if (name.startsWith('_')) continue;
-    if (hasInternalTag(prop)) continue;
-
-    const description = getJsDocDescription(prop);
-    const initText = prop.initializer?.getText(sourceFile) ?? '';
-
-    // Same priority as inputs: explicit field annotation → TypeChecker → regex.
-    let type = prop.type?.getText(sourceFile) ?? '';
-    if (!type && morphClass) {
-      type = morphClass.getProperty(name)?.getType().getText() ?? '';
-    }
-    if (type) {
-      type = unwrapSignalType(type);
-    } else {
-      type = initText.match(/output<([^>]+)>/)?.[1] ?? 'void';
-    }
-
-    results.push({ name, type, description });
-  }
-
-  return results;
 }
 
 // ── Type alias extraction ─────────────────────────────────────────────────────
@@ -466,51 +246,6 @@ function folderFromPath(filePath: string): string | null {
   const componentsMatch = p.split('/packages/components/src/')[1];
   if (componentsMatch) return componentsMatch.split('/')[0] ?? null;
   return null;
-}
-
-/**
- * Returns the default value for an `input()` / `model()` call, but only when
- * the first argument is a primitive literal. Returns `undefined` for any
- * other expression — identifiers, property accesses, function calls, etc.
- * are not informative to a docs reader and lead to garbled output when the
- * source uses nested parentheses (transforms, factories, …).
- */
-function extractLiteralDefault(
-  prop: ts.PropertyDeclaration,
-  sourceFile: ts.SourceFile,
-): string | undefined {
-  const init = prop.initializer;
-  if (!init || !ts.isCallExpression(init) || init.arguments.length === 0) {
-    return undefined;
-  }
-  const arg = init.arguments[0];
-  switch (arg.kind) {
-    case ts.SyntaxKind.StringLiteral:
-    case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
-    case ts.SyntaxKind.NumericLiteral:
-    case ts.SyntaxKind.TrueKeyword:
-    case ts.SyntaxKind.FalseKeyword:
-    case ts.SyntaxKind.NullKeyword:
-      return arg.getText(sourceFile);
-    case ts.SyntaxKind.Identifier:
-      return (arg as ts.Identifier).text === 'undefined' ? 'undefined' : undefined;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Strips Angular signal-input wrappers (`InputSignal<T>`,
- * `InputSignalWithTransform<T, ...>`, `ModelSignal<T>`) from the displayed
- * type, leaving only the user-facing read type. Also strips fully-qualified
- * `import("…path…").` prefixes that ts-morph's TypeChecker emits when no
- * matching name is in scope. Falls through unchanged for any annotation
- * that doesn't match a known wrapper.
- */
-function unwrapSignalType(type: string): string {
-  const cleaned = type.replace(/import\("[^"]+"\)\./g, '');
-  const m = cleaned.match(/^\s*(?:InputSignal(?:WithTransform)?|ModelSignal|OutputEmitterRef|OutputRef)\s*<\s*([^,>]+(?:<[^>]*>)?)/);
-  return m ? m[1].trim() : cleaned;
 }
 
 function processSourceFile(
