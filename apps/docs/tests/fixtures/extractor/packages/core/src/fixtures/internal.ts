@@ -18,6 +18,9 @@ export class InternalDirective {
  *
  * Has one public input and one internal input — the manifest should include
  * the directive but only list the public input.
+ * @doc
+ * @doc-name public
+ * @doc-is-main
  */
 @Directive({ selector: '[publicDirective]', standalone: true })
 export class PublicDirective {
@@ -32,6 +35,9 @@ export class PublicDirective {
  * Public consumer that composes `InternalDirective` and forwards `kjVariantLike`.
  * The manifest should list this input on `ConsumerDirective` with the type
  * resolved from `InternalDirective` (`string`), not the placeholder.
+ * @doc
+ * @doc-name consumer
+ * @doc-is-main
  */
 @Directive({
   selector: '[consumerDirective]',
