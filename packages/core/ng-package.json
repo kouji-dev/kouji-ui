@@ -5,7 +5,7 @@
     "entryFile": "src/public-api.ts"
   },
   "assets": [
-    "src/typography/prose.css",
-    "src/icon/icon.css"
+    { "input": "src/typography", "glob": "prose.css", "output": "typography" },
+    { "input": "src/icon", "glob": "icon.css", "output": "icon" }
   ]
 }
