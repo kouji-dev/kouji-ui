@@ -1,2 +1,6 @@
-// Re-exports filled in as each unit lands.
-export {};
+export type {
+  IconResolver,
+  IconLoader,
+  KjIconColor,
+  KjIconSize,
+} from './icon.types';
