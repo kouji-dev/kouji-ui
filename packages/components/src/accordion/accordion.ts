@@ -21,7 +21,11 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
 @Component({
   selector: 'kj-accordion',
   standalone: true,
-  hostDirectives: [{ directive: KjAccordion, inputs: ['kjAccordionType: type'] }],
+  hostDirectives: [{
+    directive: KjAccordion,
+    inputs: ['kjType: type', 'kjValue: value', 'kjArrowNavigation: arrowNavigation'],
+    outputs: ['kjValueChange: valueChange'],
+  }],
   template: `<ng-content />`,
   styleUrl: './accordion.css',
   encapsulation: ViewEncapsulation.None,
@@ -54,7 +58,10 @@ export class KjAccordionTriggerComponent {
 @Component({
   selector: 'kj-accordion-item',
   standalone: true,
-  hostDirectives: [{ directive: KjAccordionItem, inputs: ['kjItemValue: value'] }],
+  hostDirectives: [{
+    directive: KjAccordionItem,
+    inputs: ['kjItemValue: value', 'kjItemDisabled: disabled'],
+  }],
   imports: [KjAccordionTriggerComponent],
   template: `
     @if (label()) {

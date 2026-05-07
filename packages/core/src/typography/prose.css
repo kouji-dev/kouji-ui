@@ -1,0 +1,304 @@
+/* ─────────────────────────────────────────────────────────────
+   kouji-ui Typography — `kj-prose` container + tone reflections
+   --------------------------------------------------------------
+   Apply `.kj-prose` to a container element to restyle every
+   descendant `h1`–`h6`, `p`, `a`, `blockquote`, `code`, `pre`,
+   `ul`, `ol`, `li`, `dl`, `dt`, `dd`, `hr`, `figure`,
+   `figcaption`, `table`, `strong`, `em`, `kbd` according to the
+   kouji type system.
+
+   The five attribute directives (`kjLead`, `kjMuted`, `kjCode`,
+   `kjBlockquote`, `kjTruncate`) reflect `data-tone` /
+   `data-truncate` host attributes; the rules below key off those
+   attributes so the same styling applies whether the consumer
+   used the directive, hand-typed `data-tone="muted"` on a span,
+   or wrapped a subtree in `.kj-prose`.
+
+   Tokens read from the kouji theme layer:
+     --kj-color-base-100 / 200 / 300 ........... background scale
+     --kj-color-base-content ................... primary text
+     --kj-color-base-content-muted ............. secondary text (≥ 7:1)
+     --kj-color-link ........................... anchor colour
+     --kj-color-link-visited ................... visited anchor
+     --kj-font-sans / --kj-font-mono / --kj-font-display
+     --kj-font-size-xs / sm / md / lg / xl / 2xl / 3xl / 4xl
+     --kj-line-height-tight / snug / normal / relaxed / loose
+     --kj-radius-sm / md
+     --kj-prose-max-width ...................... opt-out for CJK
+   ───────────────────────────────────────────────────────────── */
+
+@layer kj.prose {
+  .kj-prose {
+    color: var(--kj-color-base-content);
+    font-family: var(--kj-font-sans);
+    font-size: var(--kj-font-size-md, 1rem);
+    line-height: var(--kj-line-height-relaxed, 1.7);
+    max-width: var(--kj-prose-max-width, 65ch);
+    text-align: start;
+  }
+
+  /* ── Block rhythm: vertical margins between adjacent flow elements ── */
+  .kj-prose > * + * {
+    margin-block-start: 1em;
+  }
+
+  .kj-prose > :first-child {
+    margin-block-start: 0;
+  }
+
+  .kj-prose > :last-child {
+    margin-block-end: 0;
+  }
+
+  /* ── Headings ────────────────────────────────────────────── */
+  .kj-prose h1,
+  .kj-prose h2,
+  .kj-prose h3,
+  .kj-prose h4,
+  .kj-prose h5,
+  .kj-prose h6 {
+    color: var(--kj-color-base-content);
+    font-family: var(--kj-font-display, var(--kj-font-sans));
+    font-weight: 600;
+    line-height: var(--kj-line-height-tight, 1.2);
+    margin-block-start: 1.6em;
+    margin-block-end: 0.6em;
+  }
+
+  .kj-prose h1 {
+    font-size: var(--kj-font-size-4xl, 2.25rem);
+    font-weight: 700;
+    line-height: var(--kj-line-height-tight, 1.1);
+  }
+
+  .kj-prose h2 {
+    font-size: var(--kj-font-size-3xl, 1.875rem);
+  }
+
+  .kj-prose h3 {
+    font-size: var(--kj-font-size-2xl, 1.5rem);
+  }
+
+  .kj-prose h4 {
+    font-size: var(--kj-font-size-xl, 1.25rem);
+  }
+
+  .kj-prose h5 {
+    font-size: var(--kj-font-size-lg, 1.125rem);
+  }
+
+  .kj-prose h6 {
+    font-size: var(--kj-font-size-md, 1rem);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Paragraphs ──────────────────────────────────────────── */
+  .kj-prose p {
+    line-height: var(--kj-line-height-relaxed, 1.7);
+  }
+
+  /* ── Anchors ─────────────────────────────────────────────── */
+  .kj-prose a {
+    color: var(--kj-color-link, var(--kj-color-base-content));
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .kj-prose a:visited {
+    color: var(--kj-color-link-visited, var(--kj-color-link, var(--kj-color-base-content)));
+  }
+
+  .kj-prose a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* ── Lists ───────────────────────────────────────────────── */
+  .kj-prose ul,
+  .kj-prose ol {
+    padding-inline-start: 1.5em;
+  }
+
+  .kj-prose ul {
+    list-style: disc;
+  }
+
+  .kj-prose ol {
+    list-style: decimal;
+  }
+
+  .kj-prose li {
+    margin-block-start: 0.4em;
+    line-height: var(--kj-line-height-relaxed, 1.7);
+  }
+
+  .kj-prose li > ul,
+  .kj-prose li > ol {
+    margin-block-start: 0.4em;
+  }
+
+  /* ── Definition lists ────────────────────────────────────── */
+  .kj-prose dt {
+    font-weight: 600;
+    margin-block-start: 0.8em;
+  }
+
+  .kj-prose dd {
+    margin-inline-start: 1.5em;
+  }
+
+  /* ── Blockquote ──────────────────────────────────────────── */
+  .kj-prose blockquote {
+    border-inline-start: 4px solid var(--kj-color-base-300, currentColor);
+    color: var(--kj-color-base-content-muted, var(--kj-color-base-content));
+    font-style: italic;
+    margin-inline: 0;
+    padding-inline-start: 1em;
+  }
+
+  /* ── Code (inline + block) ───────────────────────────────── */
+  .kj-prose code {
+    background-color: var(--kj-color-base-200, transparent);
+    border-radius: var(--kj-radius-sm, 4px);
+    font-family: var(--kj-font-mono);
+    font-size: 0.9em;
+    padding-block: 0.1em;
+    padding-inline: 0.35em;
+  }
+
+  .kj-prose pre {
+    background-color: var(--kj-color-base-200, transparent);
+    border-radius: var(--kj-radius-md, 6px);
+    color: var(--kj-color-base-content);
+    font-family: var(--kj-font-mono);
+    line-height: var(--kj-line-height-snug, 1.45);
+    overflow-x: auto;
+    padding: 1em;
+  }
+
+  .kj-prose pre code {
+    background-color: transparent;
+    border-radius: 0;
+    font-size: inherit;
+    padding: 0;
+  }
+
+  /* ── Horizontal rule ─────────────────────────────────────── */
+  .kj-prose hr {
+    background-color: var(--kj-color-base-300, currentColor);
+    border: 0;
+    height: 1px;
+    margin-block: 2em;
+  }
+
+  /* ── Figures ─────────────────────────────────────────────── */
+  .kj-prose figure {
+    margin-inline: 0;
+  }
+
+  .kj-prose figcaption {
+    color: var(--kj-color-base-content-muted, var(--kj-color-base-content));
+    font-size: var(--kj-font-size-sm, 0.875rem);
+    margin-block-start: 0.5em;
+    text-align: center;
+  }
+
+  /* ── Tables ──────────────────────────────────────────────── */
+  .kj-prose table {
+    border-collapse: collapse;
+    font-size: var(--kj-font-size-sm, 0.9em);
+    width: 100%;
+  }
+
+  .kj-prose thead {
+    border-block-end: 2px solid var(--kj-color-base-300, currentColor);
+  }
+
+  .kj-prose th,
+  .kj-prose td {
+    border-block-end: 1px solid var(--kj-color-base-200, currentColor);
+    padding-block: 0.5em;
+    padding-inline: 0.75em;
+    text-align: start;
+    vertical-align: top;
+  }
+
+  .kj-prose th {
+    font-weight: 600;
+  }
+
+  /* ── Inline emphasis ─────────────────────────────────────── */
+  .kj-prose strong {
+    font-weight: 700;
+  }
+
+  .kj-prose em {
+    font-style: italic;
+  }
+
+  /* ── Size modifiers ──────────────────────────────────────── */
+  .kj-prose-sm {
+    font-size: var(--kj-font-size-sm, 0.875rem);
+    line-height: var(--kj-line-height-normal, 1.6);
+  }
+
+  .kj-prose-lg {
+    font-size: var(--kj-font-size-lg, 1.125rem);
+    line-height: var(--kj-line-height-loose, 1.8);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Tone reflections — applied by directives via `[data-tone]`,
+   readable in or out of a `.kj-prose` container.
+   ────────────────────────────────────────────────────────────── */
+
+@layer kj.tone {
+  [data-tone='lead'] {
+    color: var(--kj-color-base-content-muted, var(--kj-color-base-content));
+    font-size: var(--kj-font-size-lg, 1.125rem);
+    line-height: var(--kj-line-height-relaxed, 1.7);
+  }
+
+  [data-tone='muted'] {
+    color: var(--kj-color-base-content-muted, var(--kj-color-base-content));
+  }
+
+  [data-tone='code'] {
+    background-color: var(--kj-color-base-200, transparent);
+    border-radius: var(--kj-radius-sm, 4px);
+    font-family: var(--kj-font-mono);
+    font-size: 0.9em;
+    padding-block: 0.1em;
+    padding-inline: 0.35em;
+  }
+
+  [data-tone='blockquote'] {
+    border-inline-start: 4px solid var(--kj-color-base-300, currentColor);
+    color: var(--kj-color-base-content-muted, var(--kj-color-base-content));
+    font-style: italic;
+    margin-inline: 0;
+    padding-inline-start: 1em;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Truncate — single-line ellipsis (data-truncate="1") and
+   multi-line clamp (data-truncate="2"+).
+   ────────────────────────────────────────────────────────────── */
+
+@layer kj.truncate {
+  [data-truncate='1'] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  [data-truncate]:not([data-truncate='1']) {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: attr(data-truncate type(<number>), 2);
+    display: -webkit-box;
+    line-clamp: attr(data-truncate type(<number>), 2);
+    overflow: hidden;
+  }
+}

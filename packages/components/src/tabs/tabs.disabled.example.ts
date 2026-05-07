@@ -1,17 +1,32 @@
-import { Component, signal } from '@angular/core';
-import { KjTabsComponent, KjTabComponent } from './tabs';
+import { Component } from '@angular/core';
+import {
+  KjTabsComponent,
+  KjTabListComponent,
+  KjTabComponent,
+  KjTabPanelComponent,
+} from './tabs';
 
+/**
+ * Disabled-tab example — the middle tab announces `aria-disabled="true"` and
+ * cannot be activated by click or Enter/Space, but it remains in the roving
+ * sequence so users can still discover it via Home/End and arrow keys.
+ */
 @Component({
   selector: 'kj-tabs-disabled-example',
   standalone: true,
-  imports: [KjTabsComponent, KjTabComponent],
+  imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
   styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
-    <kj-tabs [(value)]="active">
-      <kj-tab id="one" label="Tab one">First panel.</kj-tab>
-      <kj-tab id="two" label="Tab two (disabled)" [disabled]="true">Second panel.</kj-tab>
-      <kj-tab id="three" label="Tab three">Third panel.</kj-tab>
+    <kj-tabs>
+      <kj-tab-list>
+        <kj-tab value="one">Tab one</kj-tab>
+        <kj-tab value="two" [disabled]="true">Tab two (disabled)</kj-tab>
+        <kj-tab value="three">Tab three</kj-tab>
+      </kj-tab-list>
+      <kj-tab-panel value="one">First panel.</kj-tab-panel>
+      <kj-tab-panel value="two">Second panel — unreachable while disabled.</kj-tab-panel>
+      <kj-tab-panel value="three">Third panel.</kj-tab-panel>
     </kj-tabs>
   `,
 })
-export class KjTabsDisabledExample { readonly active = signal('one'); }
+export class KjTabsDisabledExample {}

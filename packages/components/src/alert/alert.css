@@ -1,0 +1,133 @@
+@layer kj.component {
+  .kj-alert {
+    /* component knobs — themes/users override any of these */
+    --kj-alert-bg:           var(--kj-color-base-100);
+    --kj-alert-fg:           var(--kj-color-base-content);
+    --kj-alert-border-color: var(--kj-color-base-300);
+    --kj-alert-accent:       var(--kj-color-info);
+    --kj-alert-radius:       var(--kj-radius-box, 0.5rem);
+    --kj-alert-padding-x:    var(--kj-space-lg, 1rem);
+    --kj-alert-padding-y:    var(--kj-space-md, 0.75rem);
+    --kj-alert-gap:          var(--kj-space-md, 0.75rem);
+    --kj-alert-font-size:    var(--kj-text-sm, 0.875rem);
+
+    display: flex;
+    align-items: flex-start;
+    gap: var(--kj-alert-gap);
+    background: var(--kj-alert-bg);
+    color: var(--kj-alert-fg);
+    border: var(--kj-border, 1px) solid var(--kj-alert-border-color);
+    border-left: 4px solid var(--kj-alert-accent);
+    border-radius: var(--kj-alert-radius);
+    padding: var(--kj-alert-padding-y) var(--kj-alert-padding-x);
+    font: var(--kj-alert-font-size) / 1.45 var(--kj-font-sans, sans-serif);
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+
+  .kj-alert[data-dismissed="true"] {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  /* Severity variants — flip accent + (optionally) bg/fg. */
+  .kj-alert[data-variant="info"]    { --kj-alert-accent: var(--kj-color-info, #2563eb); }
+  .kj-alert[data-variant="success"] { --kj-alert-accent: var(--kj-color-success, #16a34a); }
+  .kj-alert[data-variant="warning"] { --kj-alert-accent: var(--kj-color-warning, #d97706); }
+  .kj-alert[data-variant="error"]   { --kj-alert-accent: var(--kj-color-error, #dc2626); }
+  .kj-alert[data-variant="neutral"] { --kj-alert-accent: var(--kj-color-neutral, #6b7280); }
+
+  /* Static / banner mode — span full width, sticky-friendly chrome. */
+  .kj-alert[data-mode="static"] {
+    border-left-width: var(--kj-border, 1px);
+    border-top: 4px solid var(--kj-alert-accent);
+    border-radius: 0;
+  }
+
+  /* Sizes */
+  .kj-alert[data-size="sm"] {
+    --kj-alert-padding-x: var(--kj-space-md, 0.75rem);
+    --kj-alert-padding-y: var(--kj-space-sm, 0.5rem);
+    --kj-alert-font-size: 0.8125rem;
+  }
+  .kj-alert[data-size="lg"] {
+    --kj-alert-padding-x: var(--kj-space-xl, 1.25rem);
+    --kj-alert-padding-y: var(--kj-space-lg, 1rem);
+    --kj-alert-font-size: 1rem;
+  }
+
+  /* ── Body wrapper ─────────────────────────────────────────────── */
+  .kj-alert__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* ── Title / Description ──────────────────────────────────────── */
+  .kj-alert__title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1em;
+    color: var(--kj-alert-accent);
+    line-height: 1.3;
+  }
+  .kj-alert__description {
+    margin: 0;
+    color: var(--kj-alert-fg);
+    opacity: 0.9;
+  }
+
+  /* ── Icon ─────────────────────────────────────────────────────── */
+  .kj-alert__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25em;
+    height: 1.25em;
+    color: var(--kj-alert-accent);
+    margin-top: 0.1em;
+  }
+
+  /* ── Actions ──────────────────────────────────────────────────── */
+  .kj-alert__actions {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-space-sm, 0.5rem);
+    margin-left: auto;
+  }
+
+  /* ── Dismiss ──────────────────────────────────────────────────── */
+  .kj-alert__dismiss {
+    flex: 0 0 auto;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    line-height: 1;
+    font-size: 1.1rem;
+    opacity: 0.7;
+    margin-left: auto;
+    /* Touch-target floor (WCAG 2.5.5) */
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .kj-alert__dismiss:hover { opacity: 1; background: rgb(0 0 0 / 0.06); }
+  .kj-alert__dismiss:focus-visible {
+    outline: 2px solid var(--kj-alert-accent);
+    outline-offset: 2px;
+  }
+
+  /* When actions and dismiss coexist, dismiss should not push actions away. */
+  .kj-alert__actions + .kj-alert__dismiss {
+    margin-left: 0;
+  }
+}

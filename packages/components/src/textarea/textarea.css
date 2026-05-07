@@ -1,0 +1,117 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-textarea — component-layer tokens + structural CSS
+   Same pattern as button.css / input.css: tokens default to
+   shared-layer values, variants/sizes/states retarget tokens,
+   structural CSS reads tokens only.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-textarea {
+    /* component knobs — themes/users can override any of these */
+    --kj-textarea-bg:               var(--kj-color-base-100);
+    --kj-textarea-fg:               var(--kj-color-base-content);
+    --kj-textarea-border-color:     var(--kj-color-base-300);
+    --kj-textarea-border-style:     solid;
+    --kj-textarea-border-width:     var(--kj-border);
+    --kj-textarea-radius:           var(--kj-radius-field);
+    --kj-textarea-padding-x:        var(--kj-space-md);
+    --kj-textarea-padding-y:        var(--kj-space-sm);
+    --kj-textarea-font:             var(--kj-font-sans);
+    --kj-textarea-font-size:        var(--kj-text-sm);
+    --kj-textarea-line-height:      1.5;
+    --kj-textarea-placeholder-fg:   var(--kj-color-neutral);
+    --kj-textarea-min-height:       2.75rem; /* WCAG 2.5.5 touch target floor */
+
+    display: block;
+    width: 100%;
+    min-height: var(--kj-textarea-min-height);
+    background: var(--kj-textarea-bg);
+    color: var(--kj-textarea-fg);
+    border: var(--kj-textarea-border-width) var(--kj-textarea-border-style) var(--kj-textarea-border-color);
+    border-radius: var(--kj-textarea-radius);
+    padding: var(--kj-textarea-padding-y) var(--kj-textarea-padding-x);
+    font: var(--kj-textarea-font-size) / var(--kj-textarea-line-height) var(--kj-textarea-font);
+    transition: var(--kj-transition);
+    /* `resize` is set inline by KjTextarea (`[style.resize]`) and overrides
+       this fallback when present. */
+    resize: vertical;
+  }
+
+  .kj-textarea::placeholder {
+    color: var(--kj-textarea-placeholder-fg);
+  }
+
+  .kj-textarea:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+    --kj-textarea-border-color: var(--kj-color-primary);
+  }
+
+  .kj-textarea[aria-invalid='true'] {
+    --kj-textarea-border-color: var(--kj-color-destructive);
+  }
+
+  .kj-textarea[aria-disabled='true'],
+  .kj-textarea:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* ── Variants ─────────────────────────────────────────────── */
+  .kj-textarea[data-variant='filled'] {
+    --kj-textarea-bg: var(--kj-color-base-200);
+    --kj-textarea-border-color: transparent;
+  }
+  .kj-textarea[data-variant='filled']:focus-visible {
+    --kj-textarea-border-color: var(--kj-color-primary);
+  }
+
+  /* ── Sizes ────────────────────────────────────────────────── */
+  .kj-textarea[data-size='sm'] {
+    --kj-textarea-padding-x: var(--kj-space-sm);
+    --kj-textarea-padding-y: 0.25rem;
+    --kj-textarea-font-size: 0.8125rem;
+  }
+  .kj-textarea[data-size='lg'] {
+    --kj-textarea-padding-x: var(--kj-space-lg);
+    --kj-textarea-padding-y: 0.625rem;
+    --kj-textarea-font-size: 1rem;
+  }
+
+  /* ── Auto-resize: hide the user drag handle ──────────────── */
+  .kj-textarea[data-autoresize] {
+    /* `[style.resize]` from the directive already sets resize:none, but
+       keeping the rule here for older browsers / SSR before the directive
+       initialises. */
+    resize: none;
+    overflow-y: hidden;
+  }
+
+  /* ── Counter ─────────────────────────────────────────────── */
+  .kj-textarea__counter {
+    margin-top: var(--kj-space-xs, 0.25rem);
+    font: var(--kj-text-xs, 0.75rem) / 1.2 var(--kj-font-mono, var(--kj-font-sans));
+    color: var(--kj-color-neutral);
+    text-align: end;
+  }
+  .kj-textarea__counter[data-state='warn'] {
+    color: var(--kj-color-warning, var(--kj-color-neutral));
+  }
+  .kj-textarea__counter[data-state='limit'] {
+    color: var(--kj-color-destructive);
+  }
+
+  /* Live region: visually hidden but readable to AT. Mirrors the
+     `.sr-only` pattern. */
+  .kj-textarea__live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

@@ -1,43 +1,18 @@
-# Agent Orchestration Strategy
+# Agent Orchestration
 
-When executing an implementation plan, agents must be managed intelligently for speed: **consecutive when order matters, parallel when it doesn't.**
+## Prompt style — caveman
+Ultra-terse. Lead with action verb. State WHAT + constraints + expected output. No filler.
 
 ## Phase 1 — Bootstrap (consecutive)
+Strict order: workspace → core lib → ui lib → docs app → Turborepo → base deps.
 
-Project scaffolding has strict ordering dependencies. Run these steps one at a time:
+## Phase 2 — Directives (parallel)
+Each directive is independent. One agent per directive, all simultaneous. Each owns: directive, context, spec, `index.ts`.
 
-1. Angular CLI: create empty workspace (`ng new`)
-2. Angular CLI: generate `@kouji-ui/core` library
-3. Angular CLI: generate `@kouji-ui/ui` library
-4. Angular CLI: generate `apps/docs` application
-5. Add Turborepo + configure `turbo.json` and `pnpm-workspace.yaml`
-6. Add base dependencies (TanStack, ECharts, floating-ui, Tailwind v4, Vitest, Playwright)
+## Phase 3 — Docs pages (parallel)
+One agent per page. Single follow-up agent for cross-cutting verification (build + E2E + a11y).
 
-Never parallelize bootstrap — each step assumes the previous one completed.
-
-## Phase 2 — Directive Implementation (maximally parallel)
-
-Once the workspace exists, each directive is independent. Spawn one agent per directive and run all in parallel:
-
-```
-Agent: kjButton + kjDisabled     |
-Agent: kjInput                   |
-Agent: kjCheckbox                | all running
-Agent: kjRadioGroup + kjRadio    | simultaneously
-Agent: kjToggle + kjBadge        |
-Agent: kjAvatar                  |
-Agent: kjSelect + kjOption       |
-... etc                          |
-```
-
-Each agent owns its directive folder end-to-end: directive file, context file, spec file, index.ts.
-
-## Phase 3 — Docs Pages (parallel, deferred verification)
-
-Doc pages for each component can be built in parallel once library contracts are defined. Spawn one agent per component page. Defer cross-cutting verification (full build, E2E, a11y audit) to a single follow-up agent.
-
-## General Rules
-
-- Never spawn a parallel agent that has a read/write dependency on another parallel agent's output
-- Shared primitives (overlay service, context tokens) must complete before dependent directives are parallelized
-- After any parallel phase, run a single verification agent: build, tests, a11y checks
+## Rules
+- No parallel agent with read/write dependency on another parallel agent's output
+- Shared primitives complete before dependents parallelize
+- Post-parallel phase → single verification agent

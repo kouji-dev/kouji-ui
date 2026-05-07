@@ -1,0 +1,102 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-number-input — wrapper around KjNumberInput + KjNumberStepper.
+
+   Tokens default to shared layer values; the stepper buttons live as
+   sibling buttons inside the group. Bounds-aware aria-disabled is
+   reflected from the directive — CSS only reads the attribute.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-number-input {
+    --kj-number-input-bg:               var(--kj-color-base-100);
+    --kj-number-input-fg:               var(--kj-color-base-content);
+    --kj-number-input-border-color:     var(--kj-color-base-300);
+    --kj-number-input-border-width:     var(--kj-border);
+    --kj-number-input-radius:           var(--kj-radius-field);
+    --kj-number-input-padding-x:        var(--kj-space-md);
+    --kj-number-input-padding-y:        var(--kj-space-sm);
+    --kj-number-input-font:             var(--kj-font-sans);
+    --kj-number-input-font-size:        var(--kj-text-sm);
+    --kj-number-input-stepper-bg:       var(--kj-color-base-200);
+    --kj-number-input-stepper-fg:       var(--kj-color-base-content);
+    --kj-number-input-stepper-size:     2.75rem; /* 44px touch target — WCAG 2.5.5 */
+
+    display: inline-flex;
+    align-items: stretch;
+    background: var(--kj-number-input-bg);
+    color: var(--kj-number-input-fg);
+    border: var(--kj-number-input-border-width) solid var(--kj-number-input-border-color);
+    border-radius: var(--kj-number-input-radius);
+    overflow: hidden;
+    font: var(--kj-number-input-font-size) / 1.4 var(--kj-number-input-font);
+    transition: var(--kj-transition);
+  }
+
+  .kj-number-input:focus-within {
+    --kj-number-input-border-color: var(--kj-color-primary);
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+
+  .kj-number-input[data-invalid] {
+    --kj-number-input-border-color: var(--kj-color-destructive);
+  }
+
+  .kj-number-input[data-disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .kj-number-input__field {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    color: inherit;
+    border: 0;
+    padding: var(--kj-number-input-padding-y) var(--kj-number-input-padding-x);
+    font: inherit;
+    text-align: right;
+  }
+  .kj-number-input__field:focus { outline: none; }
+  .kj-number-input__field::placeholder { color: var(--kj-color-neutral); }
+
+  .kj-number-input__stepper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--kj-number-input-stepper-size);
+    min-height: var(--kj-number-input-stepper-size);
+    background: var(--kj-number-input-stepper-bg);
+    color: var(--kj-number-input-stepper-fg);
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    line-height: 1;
+    transition: background var(--kj-transition), color var(--kj-transition), opacity var(--kj-transition);
+  }
+  .kj-number-input__stepper:hover {
+    background: color-mix(in oklab, var(--kj-color-base-content) 8%, var(--kj-number-input-stepper-bg));
+  }
+  .kj-number-input__stepper[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* Flanking layout (default): decrement | input | increment */
+  .kj-number-input[data-stepper-layout="flanking"] .kj-number-input__stepper--down { order: -1; }
+  .kj-number-input[data-stepper-layout="flanking"] .kj-number-input__stepper--up   { order:  1; }
+
+  /* Stacked layout: input on the left, up / down stacked vertically on the right. */
+  .kj-number-input[data-stepper-layout="stacked"] {
+    align-items: stretch;
+  }
+  .kj-number-input[data-stepper-layout="stacked"] .kj-number-input__steppers {
+    display: flex;
+    flex-direction: column;
+  }
+  .kj-number-input[data-stepper-layout="stacked"] .kj-number-input__stepper {
+    flex: 1 1 auto;
+    min-height: calc(var(--kj-number-input-stepper-size) / 2);
+  }
+}

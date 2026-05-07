@@ -73,7 +73,12 @@
     </kj-card-header>
     <kj-card-content [padded]="false">
       <kj-tabs [value]="tab()">
-        <kj-tab id="overview" label="Overview">
+        <kj-tab-list>
+          <kj-tab value="overview">Overview</kj-tab>
+          <kj-tab value="tasks">Tasks</kj-tab>
+          <kj-tab value="files">Files</kj-tab>
+        </kj-tab-list>
+        <kj-tab-panel value="overview">
           <div class="activity-list">
             <div class="activity-row">
               <kj-avatar size="sm" content="LM" alt="Liam M." />
@@ -112,8 +117,8 @@
               <kj-badge variant="destructive">Closed</kj-badge>
             </div>
           </div>
-        </kj-tab>
-        <kj-tab id="tasks" label="Tasks">
+        </kj-tab-panel>
+        <kj-tab-panel value="tasks">
           <div class="activity-list">
             <div class="activity-row">
               <kj-checkbox [checked]="true">Audit accordion accessibility</kj-checkbox>
@@ -128,8 +133,8 @@
               <kj-badge variant="destructive">bug</kj-badge>
             </div>
           </div>
-        </kj-tab>
-        <kj-tab id="files" label="Files">
+        </kj-tab-panel>
+        <kj-tab-panel value="files">
           <div class="activity-list">
             <div class="activity-row">
               <span class="file-icon">📄</span>
@@ -142,7 +147,7 @@
               <kj-badge variant="outline">json</kj-badge>
             </div>
           </div>
-        </kj-tab>
+        </kj-tab-panel>
       </kj-tabs>
     </kj-card-content>
   </kj-card>

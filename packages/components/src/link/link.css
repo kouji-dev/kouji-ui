@@ -1,34 +1,38 @@
 /* ─────────────────────────────────────────────────────────────
    .kj-link — component-layer tokens + structural CSS
+   Tokens default to shared-layer values from @kouji-ui/themes.
+   Variants / sizes / states retarget the component tokens; the
+   structural rules below are the only place raw var(--kj-link-*)
+   is read.
    ──────────────────────────────────────────────────────────── */
 
 @layer kj.component {
   .kj-link {
-    --kj-link-fg:           var(--kj-color-primary);
-    --kj-link-bg:           transparent;
-    --kj-link-hover-fg:     var(--kj-color-primary);
-    --kj-link-hover-bg:     transparent;
-    --kj-link-padding-x:    0;
-    --kj-link-padding-y:    0;
-    --kj-link-radius:       var(--kj-radius-field);
-    --kj-link-decoration:   underline;
-    --kj-link-underline-offset: 4px;
+    /* component knobs — themes / users can override any of these */
+    --kj-link-fg:               var(--kj-color-link, var(--kj-color-primary));
+    --kj-link-hover-fg:         var(--kj-color-link-hover, var(--kj-color-primary-hover, var(--kj-color-primary)));
+    --kj-link-visited-fg:       var(--kj-color-link-visited, var(--kj-color-secondary, var(--kj-color-primary)));
+    --kj-link-decoration:       underline;
+    --kj-link-underline-offset: 3px;
+    --kj-link-font-size:        inherit;
+    --kj-link-radius:           var(--kj-radius-field, 0.25rem);
 
-    display: inline-flex;
-    align-items: center;
+    /* the only place raw var(--kj-link-*) is read */
     color: var(--kj-link-fg);
-    background: var(--kj-link-bg);
-    padding: var(--kj-link-padding-y) var(--kj-link-padding-x);
-    border-radius: var(--kj-link-radius);
     text-decoration: var(--kj-link-decoration);
     text-underline-offset: var(--kj-link-underline-offset);
-    transition: var(--kj-transition);
+    font-size: var(--kj-link-font-size);
+    border-radius: var(--kj-link-radius);
     cursor: pointer;
+    transition: color var(--kj-transition), text-decoration-color var(--kj-transition);
   }
 
   .kj-link:hover {
     color: var(--kj-link-hover-fg);
-    background: var(--kj-link-hover-bg);
+  }
+
+  .kj-link:visited {
+    color: var(--kj-link-visited-fg);
   }
 
   .kj-link:focus-visible {
@@ -36,22 +40,77 @@
     outline-offset: 2px;
   }
 
-  .kj-link[data-variant="subtle"] {
-    --kj-link-fg: var(--kj-color-base-content);
-    --kj-link-decoration: none;
-  }
-  .kj-link[data-variant="subtle"]:hover {
-    --kj-link-hover-fg: var(--kj-color-primary);
+  /* ── Underline modes ────────────────────────────────────────── */
+  .kj-link[data-underline="always"] { --kj-link-decoration: underline; }
+  .kj-link[data-underline="hover"]  { --kj-link-decoration: none; }
+  .kj-link[data-underline="hover"]:hover,
+  .kj-link[data-underline="hover"]:focus-visible { --kj-link-decoration: underline; }
+  .kj-link[data-underline="none"]   { --kj-link-decoration: none; }
+
+  /* ── Variants ───────────────────────────────────────────────── */
+  .kj-link[data-variant="primary"] {
+    --kj-link-fg: var(--kj-color-link, var(--kj-color-primary));
+    --kj-link-hover-fg: var(
+      --kj-color-link-hover,
+      color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content))
+    );
   }
 
-  .kj-link[data-variant="nav"] {
-    --kj-link-fg: var(--kj-color-base-content);
-    --kj-link-decoration: none;
-    --kj-link-padding-x: var(--kj-space-md);
-    --kj-link-padding-y: var(--kj-space-sm);
-    width: 100%;
+  .kj-link[data-variant="secondary"] {
+    --kj-link-fg: var(--kj-color-secondary);
+    --kj-link-hover-fg: var(
+      --kj-color-secondary-hover,
+      color-mix(in oklab, var(--kj-color-secondary) 80%, var(--kj-color-base-content))
+    );
   }
-  .kj-link[data-variant="nav"]:hover {
-    --kj-link-hover-bg: var(--kj-color-base-200);
+
+  .kj-link[data-variant="muted"] {
+    --kj-link-fg: var(
+      --kj-color-link-muted,
+      color-mix(in oklab, var(--kj-color-base-content) 70%, transparent)
+    );
+    --kj-link-hover-fg: var(--kj-color-base-content);
+  }
+
+  .kj-link[data-variant="destructive"] {
+    --kj-link-fg: var(--kj-color-destructive);
+    --kj-link-hover-fg: var(
+      --kj-color-destructive-hover,
+      color-mix(in oklab, var(--kj-color-destructive) 80%, var(--kj-color-base-content))
+    );
+  }
+
+  /* ── Sizes ──────────────────────────────────────────────────── */
+  .kj-link[data-size="sm"]      { --kj-link-font-size: 0.8125rem; }
+  .kj-link[data-size="md"]      { --kj-link-font-size: 0.9375rem; }
+  .kj-link[data-size="lg"]      { --kj-link-font-size: 1.0625rem; }
+  .kj-link[data-size="inherit"] { --kj-link-font-size: inherit; }
+
+  /* ── External-link icon (sighted-user story) ───────────────── */
+  .kj-link[data-external="true"]::after {
+    content: "";
+    display: inline-block;
+    width: 0.75em;
+    height: 0.75em;
+    margin-inline-start: 0.25em;
+    background-color: currentColor;
+    /* Mask is a tiny "arrow leaving box" glyph; aria-hidden by virtue of CSS. */
+    -webkit-mask: var(
+      --kj-link-external-icon,
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M9 3h4v4M13 3 7 9M11 9v4H3V5h4'/></svg>")
+      center / contain no-repeat;
+    mask: var(
+      --kj-link-external-icon,
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M9 3h4v4M13 3 7 9M11 9v4H3V5h4'/></svg>")
+      center / contain no-repeat;
+    vertical-align: -0.05em;
+  }
+
+  /* ── Disabled state ─────────────────────────────────────────── */
+  .kj-link[aria-disabled="true"],
+  .kj-link[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    text-decoration: none;
   }
 }

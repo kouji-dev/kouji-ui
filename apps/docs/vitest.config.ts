@@ -5,10 +5,12 @@ import { resolve } from 'node:path';
 export default defineProject({
   plugins: [angular()],
   resolve: {
-    alias: {
-      '@kouji-ui/core':       resolve(__dirname, '../../packages/core/src/public-api.ts'),
-      '@kouji-ui/components': resolve(__dirname, '../../packages/components/src/public-api.ts'),
-    },
+    alias: [
+      { find: /^@kouji-ui\/core\/(.*)$/, replacement: resolve(__dirname, '../../packages/core/src/$1') },
+      { find: '@kouji-ui/core', replacement: resolve(__dirname, '../../packages/core/src/public-api.ts') },
+      { find: /^@kouji-ui\/components\/(.*)$/, replacement: resolve(__dirname, '../../packages/components/src/$1') },
+      { find: '@kouji-ui/components', replacement: resolve(__dirname, '../../packages/components/src/public-api.ts') },
+    ],
   },
   test: {
     globals: true,

@@ -1,0 +1,125 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-input-group — flex wrapper that joins an input with
+   prefix/suffix addons into a single visually-unified field.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-input-group {
+    --kj-input-group-border-color: var(--kj-color-base-300);
+    --kj-input-group-border-width: var(--kj-border, 1px);
+    --kj-input-group-radius:       var(--kj-radius-field);
+    --kj-input-group-addon-bg:     var(--kj-color-base-100);
+    --kj-input-group-addon-fg:     var(--kj-color-base-content);
+    --kj-input-group-addon-font:   var(--kj-font-sans);
+    --kj-input-group-addon-size:   var(--kj-text-sm);
+    --kj-input-group-padding-x:    var(--kj-space-md);
+    --kj-input-group-padding-y:    var(--kj-space-sm);
+
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: var(--kj-input-group-radius);
+  }
+
+  /* ── Vertical layout ──────────────────────────────────────────────────── */
+  .kj-input-group[data-orientation='vertical'] {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* ── Shared border collapse ───────────────────────────────────────────── */
+  /* Every child (input or addon) shares the same border so they appear as
+     one component. We zero out the border-radius on inner edges and use a
+     negative margin to collapse duplicate borders. */
+
+  .kj-input-group [kjInput],
+  .kj-input-group .kj-input,
+  .kj-input-group [kjInputGroupAddon] {
+    border-radius: 0;
+    flex: 0 0 auto;
+  }
+
+  /* Give the native input flex-grow so it fills remaining space. */
+  .kj-input-group [kjInput],
+  .kj-input-group .kj-input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Horizontal: collapse left border on non-first children. */
+  .kj-input-group:not([data-orientation='vertical']) > * + [kjInput],
+  .kj-input-group:not([data-orientation='vertical']) > * + [kjInputGroupAddon],
+  .kj-input-group:not([data-orientation='vertical']) > * + kj-input-group-addon,
+  .kj-input-group:not([data-orientation='vertical']) > kj-input-group-addon + * {
+    margin-left: -1px;
+  }
+
+  /* Vertical: collapse top border on non-first children. */
+  .kj-input-group[data-orientation='vertical'] > * + [kjInput],
+  .kj-input-group[data-orientation='vertical'] > * + [kjInputGroupAddon],
+  .kj-input-group[data-orientation='vertical'] > * + kj-input-group-addon,
+  .kj-input-group[data-orientation='vertical'] > kj-input-group-addon + * {
+    margin-top: -1px;
+  }
+
+  /* ── Outer-corner rounding ──────────────────────────────────────────────
+     The first and last child get rounded corners on their outer edges only,
+     giving the group its pill/rounded-box appearance. */
+
+  /* Horizontal — first child */
+  .kj-input-group:not([data-orientation='vertical']) > :first-child,
+  .kj-input-group:not([data-orientation='vertical']) > :first-child [kjInput],
+  .kj-input-group:not([data-orientation='vertical']) > :first-child [kjInputGroupAddon] {
+    border-top-left-radius: var(--kj-input-group-radius);
+    border-bottom-left-radius: var(--kj-input-group-radius);
+  }
+
+  /* Horizontal — last child */
+  .kj-input-group:not([data-orientation='vertical']) > :last-child,
+  .kj-input-group:not([data-orientation='vertical']) > :last-child [kjInput],
+  .kj-input-group:not([data-orientation='vertical']) > :last-child [kjInputGroupAddon] {
+    border-top-right-radius: var(--kj-input-group-radius);
+    border-bottom-right-radius: var(--kj-input-group-radius);
+  }
+
+  /* Vertical — first child */
+  .kj-input-group[data-orientation='vertical'] > :first-child,
+  .kj-input-group[data-orientation='vertical'] > :first-child [kjInput] {
+    border-top-left-radius: var(--kj-input-group-radius);
+    border-top-right-radius: var(--kj-input-group-radius);
+  }
+
+  /* Vertical — last child */
+  .kj-input-group[data-orientation='vertical'] > :last-child,
+  .kj-input-group[data-orientation='vertical'] > :last-child [kjInput] {
+    border-bottom-left-radius: var(--kj-input-group-radius);
+    border-bottom-right-radius: var(--kj-input-group-radius);
+  }
+
+  /* ── Addon skin ─────────────────────────────────────────────────────── */
+  .kj-input-group__addon {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--kj-input-group-padding-y) var(--kj-input-group-padding-x);
+    background: var(--kj-input-group-addon-bg);
+    color: var(--kj-input-group-addon-fg);
+    border: var(--kj-input-group-border-width) solid var(--kj-input-group-border-color);
+    font: var(--kj-input-group-addon-size) / 1.4 var(--kj-input-group-addon-font);
+    transition: var(--kj-transition);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  /* ── Focus — lift focused child above siblings so its border isn't clipped */
+  .kj-input-group [kjInput]:focus-visible,
+  .kj-input-group .kj-input:focus-visible,
+  .kj-input-group .kj-button:focus-visible {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Disabled state ─────────────────────────────────────────────────── */
+  .kj-input-group[data-disabled] {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}

@@ -1,13 +1,32 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
-import { KjDialog, KjDialogOverlay, KjDialogTitle } from '@kouji-ui/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  booleanAttribute,
+  input,
+} from '@angular/core';
+import {
+  KjDialog,
+  KjDialogActions,
+  KjDialogContent,
+  KjDialogDescription,
+  KjDialogOverlay,
+  KjDialogTitle,
+} from '@kouji-ui/core';
 
 /**
- * Dialog panel. Apply via `hostDirectives`; the host carries the `KjDialog`
- * directive so `<kj-dialog #d="kjDialog">` exports the directive instance and
- * consumers can call `d.close(value?)`.
+ * Styled wrapper around the headless `KjDialog` panel directive.
  *
- * Compose with `<kj-dialog-header>`, `<kj-dialog-body>`, `<kj-dialog-footer>`
- * inside, plus an outer `<kj-dialog-overlay>`.
+ * Hosts `KjDialog` via `hostDirectives` so consumers retain access to the
+ * `exportAs: 'kjDialog'` reference (`<kj-dialog #d="kjDialog">`) and can
+ * call `d.close(value?)`. Compose with `<kj-dialog-overlay>` outside,
+ * plus `<kj-dialog-header>`, `<kj-dialog-body>`, `<kj-dialog-footer>` (or
+ * the `[kjDialogContent]` / `[kjDialogActions]` slot directives) inside.
+ *
+ * Modal lifecycle — overlay-stack registration, body scroll-lock, focus
+ * trap, focus restore, and cancellable close — all live on the underlying
+ * `KjDialog` family and are wired by `[kjDialogTrigger]` (declarative) or
+ * `KjDialogService.open` (programmatic).
  *
  * @doc-example Default
  *   @doc-file dialog.default.example.ts
@@ -31,18 +50,36 @@ import { KjDialog, KjDialogOverlay, KjDialogTitle } from '@kouji-ui/core';
 })
 export class KjDialogComponent {}
 
+/**
+ * Backdrop that wraps the dialog panel. Forwards
+ * `kjDialogOverlayCloseOnClick` to the underlying `KjDialogOverlay` directive.
+ *
+ * @category Library/Actions
+ */
 @Component({
   selector: 'kj-dialog-overlay',
   standalone: true,
-  hostDirectives: [KjDialogOverlay],
+  hostDirectives: [
+    {
+      directive: KjDialogOverlay,
+      inputs: ['kjDialogOverlayCloseOnClick: kjDialogOverlayCloseOnClick'],
+    },
+  ],
   template: `<ng-content />`,
   encapsulation: ViewEncapsulation.None,
+  styleUrl: './dialog.css',
   host: { class: 'kj-dialog-overlay' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjDialogOverlayComponent {}
 
-/** Heading inside `<kj-dialog-header>`. Wraps `KjDialogTitle` for ARIA labelling. */
+/**
+ * Heading inside `<kj-dialog-header>`. Wraps `KjDialogTitle` to register the
+ * heading id with the dialog context so `aria-labelledby` is wired
+ * automatically.
+ *
+ * @category Library/Actions
+ */
 @Component({
   selector: 'kj-dialog-title',
   standalone: true,
@@ -54,7 +91,29 @@ export class KjDialogOverlayComponent {}
 })
 export class KjDialogTitleComponent {}
 
-/** Header band inside the dialog. Optional `align` for title placement. */
+/**
+ * Long-form description for the dialog body. Wraps `KjDialogDescription`
+ * to register the description id with the dialog context for automatic
+ * `aria-describedby` wiring.
+ *
+ * @category Library/Actions
+ */
+@Component({
+  selector: 'kj-dialog-description',
+  standalone: true,
+  hostDirectives: [KjDialogDescription],
+  template: `<ng-content />`,
+  encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-dialog-description' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjDialogDescriptionComponent {}
+
+/**
+ * Header band inside the dialog. Optional `align` for title placement.
+ *
+ * @category Library/Actions
+ */
 @Component({
   selector: 'kj-dialog-header',
   standalone: true,
@@ -71,10 +130,19 @@ export class KjDialogHeaderComponent {
   readonly align = input<'start' | 'center'>('start');
 }
 
-/** Main scrollable body. `padded` toggles the standard padding (default true). `scroll` enables overflow scroll inside the body slot. */
+/**
+ * Main body slot. `padded` toggles the standard padding (default `true`).
+ * `scroll` enables overflow scroll inside the body slot.
+ *
+ * Composes `KjDialogContent` for the structural marker; consumers can
+ * additionally style via `[data-kj-dialog-content]`.
+ *
+ * @category Library/Actions
+ */
 @Component({
   selector: 'kj-dialog-body',
   standalone: true,
+  hostDirectives: [KjDialogContent],
   template: `<ng-content />`,
   styleUrl: './dialog.css',
   encapsulation: ViewEncapsulation.None,
@@ -86,14 +154,20 @@ export class KjDialogHeaderComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjDialogBodyComponent {
-  readonly padded = input(true);
-  readonly scroll = input(false);
+  readonly padded = input<boolean, unknown>(true, { transform: booleanAttribute });
+  readonly scroll = input<boolean, unknown>(false, { transform: booleanAttribute });
 }
 
-/** Footer band. `align` controls action button placement. */
+/**
+ * Footer / action band. `align` controls action button placement. Composes
+ * `KjDialogActions` for the structural marker.
+ *
+ * @category Library/Actions
+ */
 @Component({
   selector: 'kj-dialog-footer',
   standalone: true,
+  hostDirectives: [KjDialogActions],
   template: `<ng-content />`,
   styleUrl: './dialog.css',
   encapsulation: ViewEncapsulation.None,

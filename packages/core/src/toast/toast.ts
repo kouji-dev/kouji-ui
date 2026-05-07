@@ -1,6 +1,6 @@
 import {
   DestroyRef, Directive, ElementRef, TemplateRef,
-  afterNextRender, computed, inject, input, signal,
+  afterNextRender, booleanAttribute, computed, inject, input, signal,
 } from '@angular/core';
 import { KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
@@ -48,6 +48,7 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
     '[attr.aria-atomic]': '"true"',
     '[attr.data-variant]': 'kjToastVariant()',
     '[attr.data-front]': 'isFront()',
+    '[attr.data-toast-id]': 'kjToastId()',
     '[style.--kj-toast-index]': 'index()',
     '[style.--kj-toast-before]': 'before()',
     '[style.--kj-toast-after]': 'after()',
@@ -112,9 +113,12 @@ export class KjToast {
       const measure = () => this._height.set(Math.round(node.getBoundingClientRect().height));
       measure();
       // Use border-box geometry via getBoundingClientRect — contentRect strips padding.
-      const ro = new ResizeObserver(measure);
-      ro.observe(node);
-      this.destroyRef.onDestroy(() => ro.disconnect());
+      // Guard ResizeObserver for SSR / older test environments.
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(measure);
+        ro.observe(node);
+        this.destroyRef.onDestroy(() => ro.disconnect());
+      }
     });
   }
 }
@@ -167,6 +171,7 @@ export interface KjToastRenderable<TData = unknown> {
   exportAs: 'kjToastViewport',
   host: {
     'role': 'region',
+    'tabindex': '-1',
     '[attr.aria-live]': '"polite"',
     '[attr.aria-atomic]': '"false"',
     '[attr.aria-relevant]': '"additions removals"',
@@ -177,10 +182,10 @@ export interface KjToastRenderable<TData = unknown> {
     '[style.--kj-toast-z-index]': 'kjToastBaseZIndex()',
     '[style.--kj-toasts-count]': 'renderable().length',
     '[style.--kj-toast-front-height]': 'frontHeightPx()',
-    '(mouseenter)': 'onHover(true)',
-    '(mouseleave)': 'onHover(false)',
-    '(focusin)':    'onHover(true)',
-    '(focusout)':   'onHover(false)',
+    '(mouseenter)': 'onPointerEnter()',
+    '(mouseleave)': 'onPointerLeave()',
+    '(focusin)':    'onFocusIn($event)',
+    '(focusout)':   'onFocusOut($event)',
   },
 })
 export class KjToastViewport {
@@ -214,7 +219,24 @@ export class KjToastViewport {
    */
   readonly kjToastExpand = input<boolean | undefined>(undefined);
 
+  /**
+   * When `true` (default), hover/focus on the viewport pauses every in-flight
+   * auto-dismiss timer via `KjToastService.pause('hover'|'focus')`. Required
+   * for WCAG 2.2.1 (AAA) and 1.4.13. Distinct from visual stacking expansion
+   * (`kjToastExpand` / `strategy.expandOnHover`). Defaults from the active
+   * `KjToastStrategy.pauseOnHover`.
+   */
+  readonly kjToastPauseOnHover = input<boolean, unknown>(this.strategy.pauseOnHover, {
+    transform: booleanAttribute,
+  });
+
   private readonly _hovered = signal(false);
+  /** Tracks pointer-driven pause state so resume() runs exactly once per enter/leave pair. */
+  private pointerPauseHeld = false;
+  /** Tracks focus-driven pause state — independent ref so blur after re-enter doesn't double-resume. */
+  private focusPauseHeld = false;
+  /** Element to restore focus to when F6/Escape leaves the viewport. */
+  private previouslyFocused: HTMLElement | null = null;
 
   /** Resolved expand state — explicit input wins; otherwise falls back to hover when the strategy enables it. */
   readonly expanded = computed(() => {
@@ -223,8 +245,72 @@ export class KjToastViewport {
     return this.strategy.expandOnHover && this._hovered();
   });
 
-  protected onHover(state: boolean): void {
-    if (this.strategy.expandOnHover) this._hovered.set(state);
+  protected onPointerEnter(): void {
+    if (this.strategy.expandOnHover) this._hovered.set(true);
+    if (this.kjToastPauseOnHover() && !this.pointerPauseHeld) {
+      this.pointerPauseHeld = true;
+      this.svc.pause('hover');
+    }
+  }
+
+  protected onPointerLeave(): void {
+    if (this.strategy.expandOnHover) this._hovered.set(false);
+    if (this.pointerPauseHeld) {
+      this.pointerPauseHeld = false;
+      this.svc.resume('hover');
+    }
+  }
+
+  protected onFocusIn(event: FocusEvent): void {
+    if (this.strategy.expandOnHover) this._hovered.set(true);
+    // Capture the *external* focus owner so F6/Escape can restore. Only the
+    // first focusin counts — subsequent focus moves *within* the viewport
+    // (e.g. Tab between toasts) must not overwrite the restore target.
+    if (!this.focusPauseHeld) {
+      const previous = event.relatedTarget as HTMLElement | null;
+      const root = this.el.nativeElement;
+      // relatedTarget can be null on programmatic focus; fall back to
+      // document.activeElement if it's outside the viewport.
+      if (previous && !root.contains(previous)) {
+        this.previouslyFocused = previous;
+      }
+    }
+    if (this.kjToastPauseOnHover() && !this.focusPauseHeld) {
+      this.focusPauseHeld = true;
+      this.svc.pause('focus');
+    }
+  }
+
+  protected onFocusOut(event: FocusEvent): void {
+    const root = this.el.nativeElement;
+    const next = event.relatedTarget as HTMLElement | null;
+    // focusout fires for every internal focus move; only count *real* exits
+    // — the new focus target is null or outside the viewport root.
+    if (next && root.contains(next)) return;
+    if (this.strategy.expandOnHover) this._hovered.set(false);
+    if (this.focusPauseHeld) {
+      this.focusPauseHeld = false;
+      this.svc.resume('focus');
+    }
+  }
+
+  private focusFrontToast(): void {
+    const root = this.el.nativeElement as HTMLElement;
+    // Front-most toast is the *last* in DOM order (newest). Prefer the first
+    // focusable inside it; fall back to the toast element itself.
+    const fronts = root.querySelectorAll('[kjToast][data-front="true"]');
+    const front = fronts.length > 0 ? (fronts[fronts.length - 1] as HTMLElement) : null;
+    if (!front) return;
+    const focusable = front.querySelector(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) as HTMLElement | null;
+    (focusable ?? front).focus();
+  }
+
+  private restorePreviousFocus(): void {
+    const target = this.previouslyFocused;
+    this.previouslyFocused = null;
+    if (target && typeof target.focus === 'function') target.focus();
   }
 
   /** Live list of queued toasts (uncapped). */
@@ -259,6 +345,49 @@ export class KjToastViewport {
   });
 
   constructor() {
+    // Register the F6 / Escape document-level listener eagerly — registering
+    // from `afterNextRender` was too late for tests that dispatch immediately
+    // after `service.show()`. Sonner uses the same pattern of a long-lived
+    // top-level listener. Handles both directions of F6 (outside → in,
+    // inside → out) and Escape (dismiss focused toast + restore focus) so
+    // there is exactly one source of truth — host listeners would race the
+    // document listener over the same event.
+    const doc = (typeof document !== 'undefined' ? document : null);
+    if (doc) {
+      const onDocKeydown = (event: KeyboardEvent) => {
+        if (event.key !== 'F6' && event.key !== 'Escape') return;
+        if (this.svc.toasts().length === 0) return;
+        const root = this.el.nativeElement as HTMLElement;
+        const active = doc.activeElement as HTMLElement | null;
+        const inside = active != null && root.contains(active);
+        if (event.key === 'F6') {
+          if (inside) {
+            event.preventDefault();
+            this.restorePreviousFocus();
+            return;
+          }
+          event.preventDefault();
+          this.previouslyFocused = active;
+          this.focusFrontToast();
+          return;
+        }
+        // Escape: only act when focus is inside the viewport so we don't
+        // hijack the consumer's other Escape affordances.
+        if (event.key === 'Escape' && inside) {
+          event.preventDefault();
+          const target = event.target as HTMLElement | null;
+          const toastEl = (target?.closest('[kjToast]')) as HTMLElement | null;
+          const id = toastEl?.getAttribute('data-toast-id')
+            ?? this.svc.toasts().at(-1)?.id
+            ?? null;
+          this.restorePreviousFocus();
+          if (id) this.svc.dismiss(id);
+        }
+      };
+      doc.addEventListener('keydown', onDocKeydown);
+      this.destroyRef.onDestroy(() => doc.removeEventListener('keydown', onDocKeydown));
+    }
+
     afterNextRender(() => {
       const root = this.el.nativeElement as HTMLElement;
       const measure = () => {
@@ -267,13 +396,20 @@ export class KjToastViewport {
         this._frontHeight.set(Math.round(front.getBoundingClientRect().height));
       };
       measure();
-      const ro = new ResizeObserver(measure);
-      // Observe the viewport — children added/resized trigger remeasure.
-      ro.observe(root);
-      // MutationObserver picks up new children (data-front="true" added on a new toast).
-      const mo = new MutationObserver(measure);
-      mo.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-front'] });
-      this.destroyRef.onDestroy(() => { ro.disconnect(); mo.disconnect(); });
+      // Guard ResizeObserver / MutationObserver for SSR + older test envs.
+      let ro: ResizeObserver | undefined;
+      let mo: MutationObserver | undefined;
+      if (typeof ResizeObserver !== 'undefined') {
+        ro = new ResizeObserver(measure);
+        // Observe the viewport — children added/resized trigger remeasure.
+        ro.observe(root);
+      }
+      if (typeof MutationObserver !== 'undefined') {
+        // MutationObserver picks up new children (data-front="true" added on a new toast).
+        mo = new MutationObserver(measure);
+        mo.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-front'] });
+      }
+      this.destroyRef.onDestroy(() => { ro?.disconnect(); mo?.disconnect(); });
     });
   }
 }

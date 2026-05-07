@@ -1,0 +1,140 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-pagination — component-layer tokens + structural CSS
+   The directive family reflects state via `data-current` /
+   `data-disabled` / `aria-current` / `aria-disabled` /
+   `data-pagination-action` — every selector here keys off those.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-pagination {
+    /* component knobs — themes/users can override any of these */
+    --kj-pagination-gap:                  var(--kj-space-xs);
+    --kj-pagination-item-size:            2.75rem; /* 44px — WCAG 2.5.5 */
+    --kj-pagination-item-radius:          var(--kj-radius-field);
+    --kj-pagination-item-bg:              transparent;
+    --kj-pagination-item-bg-hover:        var(--kj-color-base-200);
+    --kj-pagination-item-bg-current:      var(--kj-color-primary);
+    --kj-pagination-item-fg:              var(--kj-color-base-content);
+    --kj-pagination-item-fg-current:      var(--kj-color-primary-content);
+    --kj-pagination-item-border-color:    var(--kj-color-base-300);
+    --kj-pagination-item-border-width:    var(--kj-border);
+    --kj-pagination-item-font:            var(--kj-font-sans);
+    --kj-pagination-item-font-size:       var(--kj-text-sm);
+    --kj-pagination-ellipsis-color:       var(--kj-color-base-content);
+    --kj-pagination-info-color:           var(--kj-color-base-content);
+
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--kj-pagination-gap);
+    color: var(--kj-color-base-content);
+  }
+
+  /* Numeric items + boundary controls share the same visual chrome —
+     the `.kj-pagination-action` class names map to Previous / Next /
+     First / Last so consumers can target them individually if needed. */
+  .kj-pagination-item,
+  .kj-pagination-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--kj-pagination-item-size);
+    min-height: var(--kj-pagination-item-size);
+    padding: 0 var(--kj-space-sm);
+    background: var(--kj-pagination-item-bg);
+    color: var(--kj-pagination-item-fg);
+    border: var(--kj-pagination-item-border-width) solid var(--kj-pagination-item-border-color);
+    border-radius: var(--kj-pagination-item-radius);
+    font: var(--kj-pagination-item-font-size) / 1.2 var(--kj-pagination-item-font);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--kj-transition);
+  }
+
+  .kj-pagination-item:hover,
+  .kj-pagination-action:hover {
+    background: var(--kj-pagination-item-bg-hover);
+  }
+
+  .kj-pagination-item:focus-visible,
+  .kj-pagination-action:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Active page — keep the touch target intact (don't shrink the active
+     state). The directive reflects `aria-current="page"` and
+     `data-current="true"`; we key off `aria-current` for AT correctness. */
+  .kj-pagination-item[aria-current='page'] {
+    background: var(--kj-pagination-item-bg-current);
+    color: var(--kj-pagination-item-fg-current);
+    border-color: var(--kj-pagination-item-bg-current);
+    cursor: default;
+  }
+  .kj-pagination-item[aria-current='page']:hover {
+    background: var(--kj-pagination-item-bg-current);
+  }
+
+  /* Disabled — `aria-disabled="true"` rather than the native attribute,
+     so the control stays focusable (kouji's WCAG 2.1 AAA stance). */
+  .kj-pagination-item[aria-disabled='true'],
+  .kj-pagination-action[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .kj-pagination-item[aria-disabled='true']:hover,
+  .kj-pagination-action[aria-disabled='true']:hover {
+    background: var(--kj-pagination-item-bg);
+  }
+
+  /* Ellipsis is non-interactive — no hover, no border, no touch target. */
+  .kj-pagination-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--kj-pagination-item-size);
+    min-height: var(--kj-pagination-item-size);
+    color: var(--kj-pagination-ellipsis-color);
+    user-select: none;
+  }
+
+  /* Info span — AT-readable, visible. */
+  .kj-pagination-info {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--kj-space-sm);
+    color: var(--kj-pagination-info-color);
+    font: var(--kj-pagination-item-font-size) / 1.2 var(--kj-pagination-item-font);
+  }
+
+  /* ── Variants ──────────────────────────────────────────────── */
+  /* The root cascades `data-variant` to children via the context; each
+     child's KjVariant host directive reflects its own. We target the
+     children directly so the wrapper variant flows through. */
+
+  .kj-pagination-item[data-variant='outline'],
+  .kj-pagination-action[data-variant='outline'] {
+    --kj-pagination-item-bg: transparent;
+    --kj-pagination-item-border-color: var(--kj-color-neutral);
+  }
+
+  .kj-pagination-item[data-variant='ghost'],
+  .kj-pagination-action[data-variant='ghost'] {
+    --kj-pagination-item-bg: transparent;
+    --kj-pagination-item-border-color: transparent;
+  }
+
+  /* ── Sizes ─────────────────────────────────────────────────── */
+  .kj-pagination-item[data-size='sm'],
+  .kj-pagination-action[data-size='sm'] {
+    min-width: 2rem;
+    min-height: 2rem;
+    --kj-pagination-item-font-size: 0.8125rem;
+  }
+  .kj-pagination-item[data-size='lg'],
+  .kj-pagination-action[data-size='lg'] {
+    min-width: 3rem;
+    min-height: 3rem;
+    --kj-pagination-item-font-size: 1rem;
+  }
+}

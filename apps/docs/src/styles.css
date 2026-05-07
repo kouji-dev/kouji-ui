@@ -50,8 +50,7 @@ body {
 .page-with-toc .toc-col {
   position: sticky;
   top: 0;
-  max-height: 100vh;
-  overflow-y: auto;
+  overflow-x: hidden;
   border-left: 1px solid var(--kj-color-base-300);
   background: var(--kj-color-base-100);
 }

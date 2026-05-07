@@ -1,0 +1,87 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-input-otp — OTP input widget.
+
+   Each cell is a square input (min 44×44 — WCAG 2.5.5).
+   Cells sit in a flex row with a small gap between them.
+   A decorative separator dash can appear between groups.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-input-otp {
+    display: inline-flex;
+  }
+
+  .kj-input-otp__group {
+    --kj-otp-cell-size:         2.75rem; /* 44px — WCAG 2.5.5 touch target */
+    --kj-otp-cell-gap:          0.5rem;
+    --kj-otp-cell-bg:           var(--kj-color-base-100);
+    --kj-otp-cell-fg:           var(--kj-color-base-content);
+    --kj-otp-cell-border-color: var(--kj-color-base-300);
+    --kj-otp-cell-border-width: var(--kj-border);
+    --kj-otp-cell-radius:       var(--kj-radius-field);
+    --kj-otp-cell-font:         var(--kj-font-sans);
+    --kj-otp-cell-font-size:    var(--kj-text-base);
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-otp-cell-gap);
+  }
+
+  .kj-input-otp__cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width:      var(--kj-otp-cell-size);
+    height:     var(--kj-otp-cell-size);
+    min-width:  var(--kj-otp-cell-size);
+    min-height: var(--kj-otp-cell-size);
+    background:    var(--kj-otp-cell-bg);
+    color:         var(--kj-otp-cell-fg);
+    border:        var(--kj-otp-cell-border-width) solid var(--kj-otp-cell-border-color);
+    border-radius: var(--kj-otp-cell-radius);
+    font:          var(--kj-otp-cell-font-size) / 1 var(--kj-otp-cell-font);
+    text-align:    center;
+    caret-color:   var(--kj-color-primary);
+    transition:    border-color var(--kj-transition), box-shadow var(--kj-transition);
+    /* Remove default browser padding so content stays centred */
+    padding: 0;
+  }
+
+  /* Focus ring via data-focus-visible (KjFocusRing on each cell) */
+  .kj-input-otp__cell[data-focus-visible],
+  .kj-input-otp__cell:focus-visible {
+    outline:        2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+    --kj-otp-cell-border-color: var(--kj-color-primary);
+  }
+
+  /* Invalid state */
+  .kj-input-otp__group[data-invalid] .kj-input-otp__cell,
+  .kj-input-otp__group[aria-invalid="true"] .kj-input-otp__cell {
+    --kj-otp-cell-border-color: var(--kj-color-destructive);
+  }
+
+  /* Disabled state */
+  .kj-input-otp__group[data-disabled] .kj-input-otp__cell,
+  .kj-input-otp__cell:disabled {
+    opacity:    0.55;
+    cursor:     not-allowed;
+    background: var(--kj-color-base-200);
+  }
+
+  /* Readonly */
+  .kj-input-otp__cell:read-only {
+    background: var(--kj-color-base-200);
+    cursor:     default;
+  }
+
+  /* Separator dash between cell groups */
+  .kj-input-otp__separator {
+    display:     inline-flex;
+    align-items: center;
+    color:       var(--kj-color-neutral);
+    font-size:   var(--kj-text-sm);
+    user-select: none;
+    padding:     0 0.125rem;
+  }
+}

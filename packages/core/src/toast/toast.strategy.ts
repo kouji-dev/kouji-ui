@@ -21,6 +21,14 @@ export interface KjToastStrategy {
   duration: number;
   /** When `true`, the viewport flips `data-expanded` on `mouseenter` / `mouseleave`. */
   expandOnHover: boolean;
+  /**
+   * When `true`, the viewport pauses every in-flight auto-dismiss timer while
+   * the pointer hovers it or focus is inside it. Required for WCAG 2.2.1 (AAA)
+   * and 1.4.13 — without it, a user reaching for the toast's action button
+   * may have it disappear underneath them. Distinct from `expandOnHover`,
+   * which controls visual stacking only.
+   */
+  pauseOnHover: boolean;
 }
 
 /**
@@ -36,6 +44,7 @@ export const KJ_TOAST_SONNER_STRATEGY: KjToastStrategy = Object.freeze({
   positionY: 'bottom',
   duration: 4000,
   expandOnHover: true,
+  pauseOnHover: true,
 });
 
 /**
@@ -50,6 +59,7 @@ export const KJ_TOAST_LIST_STRATEGY: KjToastStrategy = Object.freeze({
   positionY: 'bottom',
   duration: 5000,
   expandOnHover: false,
+  pauseOnHover: true,
 });
 
 /** DI token holding the active toast strategy. Defaults to `KJ_TOAST_SONNER_STRATEGY`. */

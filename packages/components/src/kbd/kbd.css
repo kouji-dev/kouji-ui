@@ -1,27 +1,67 @@
 /* ─────────────────────────────────────────────────────────────
    .kj-kbd — component-layer tokens + structural CSS
+
+   Theme-token-only. The directive sets `data-size` on the host;
+   the rest is a small "raised key" silhouette: 1px border + soft
+   inner shadow + monospace text. No variant — the kbd is tonally
+   neutral (see analysis Open question section).
    ──────────────────────────────────────────────────────────── */
 
 @layer kj.component {
   .kj-kbd {
-    --kj-kbd-bg:           var(--kj-color-base-300);
+    --kj-kbd-bg:           var(--kj-color-base-200);
     --kj-kbd-fg:           var(--kj-color-base-content);
-    --kj-kbd-border-color: var(--kj-color-neutral);
-    --kj-kbd-border-width: var(--kj-border);
-    --kj-kbd-radius:       var(--kj-radius-selector);
-    --kj-kbd-padding-x:    0.375rem;
-    --kj-kbd-padding-y:    0.125rem;
+    --kj-kbd-border-color: var(--kj-color-base-300);
+    --kj-kbd-border-width: var(--kj-border, 1px);
+    --kj-kbd-radius:       var(--kj-radius-selector, 0.25rem);
+    --kj-kbd-padding-x:    0.4em;
+    --kj-kbd-padding-y:    0.15em;
     --kj-kbd-font:         var(--kj-font-mono);
-    --kj-kbd-font-size:    var(--kj-text-xs);
+    --kj-kbd-font-size:    var(--kj-text-sm);
 
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    vertical-align: baseline;
+
     background: var(--kj-kbd-bg);
     color: var(--kj-kbd-fg);
     border: var(--kj-kbd-border-width) solid var(--kj-kbd-border-color);
     border-radius: var(--kj-kbd-radius);
     padding: var(--kj-kbd-padding-y) var(--kj-kbd-padding-x);
-    font: var(--kj-kbd-font-size) / 1 var(--kj-kbd-font);
-    line-height: 1.2;
+
+    font-family: var(--kj-kbd-font);
+    font-size: var(--kj-kbd-font-size);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Size routing — driven by the directive's [attr.data-size]. */
+  .kj-kbd[data-size='xs'] {
+    /* At xs the border carries most of the visual identity; bump it to a
+       higher-contrast token so it clears 3:1 against base-100/200/300 page
+       backgrounds (analysis Open question 5). */
+    --kj-kbd-border-color: color-mix(in oklab, var(--kj-color-base-content) 30%, transparent);
+    --kj-kbd-font-size: var(--kj-text-xs);
+    --kj-kbd-padding-x: 0.3em;
+    --kj-kbd-padding-y: 0.1em;
+  }
+
+  .kj-kbd[data-size='sm'] {
+    --kj-kbd-font-size: var(--kj-text-xs);
+    --kj-kbd-padding-x: 0.35em;
+    --kj-kbd-padding-y: 0.12em;
+  }
+
+  .kj-kbd[data-size='md'] {
+    --kj-kbd-font-size: var(--kj-text-sm);
+    --kj-kbd-padding-x: 0.4em;
+    --kj-kbd-padding-y: 0.15em;
+  }
+
+  .kj-kbd[data-size='lg'] {
+    --kj-kbd-font-size: var(--kj-text-base);
+    --kj-kbd-padding-x: 0.5em;
+    --kj-kbd-padding-y: 0.2em;
   }
 }

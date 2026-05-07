@@ -1,0 +1,80 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-button-group — segmented cluster of <kj-button> children.
+   The wrapper itself is a flex container with no padding/bg of
+   its own; segmented "chunky" feel comes from collapsing the
+   inner borders between adjacent buttons and squaring their
+   touching edges while keeping the group's outer corners
+   rounded.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-button-group {
+    --kj-button-group-gap: 0;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--kj-button-group-gap);
+    border-radius: var(--kj-radius-field);
+    /* Hide pseudo-overflow from collapsed-corner siblings. Children also
+       inherit display:contents semantics from <kj-button>, so the inner
+       <button> is the actual flex item. */
+    isolation: isolate;
+  }
+
+  .kj-button-group[data-orientation='vertical'] {
+    flex-direction: column;
+  }
+
+  /* Each <kj-button> sets `display: contents` on its host (see button.ts);
+     the styled element is the inner `.kj-button`. Squarish inner edges +
+     rounded outer edges fall out of :first-child / :last-child rules on
+     those inner buttons. */
+
+  /* ── Horizontal: collapse left/right radii on middle items ─────────── */
+  .kj-button-group:not([data-orientation='vertical']) > kj-button > .kj-button {
+    border-radius: 0;
+    /* Pull adjacent borders into a single visual line. */
+    margin-left: calc(-1 * var(--kj-border));
+  }
+  .kj-button-group:not([data-orientation='vertical']) > kj-button:first-child > .kj-button {
+    border-top-left-radius: var(--kj-radius-field);
+    border-bottom-left-radius: var(--kj-radius-field);
+    margin-left: 0;
+  }
+  .kj-button-group:not([data-orientation='vertical']) > kj-button:last-child > .kj-button {
+    border-top-right-radius: var(--kj-radius-field);
+    border-bottom-right-radius: var(--kj-radius-field);
+  }
+
+  /* ── Vertical: collapse top/bottom radii on middle items ───────────── */
+  .kj-button-group[data-orientation='vertical'] > kj-button > .kj-button {
+    border-radius: 0;
+    margin-top: calc(-1 * var(--kj-border));
+    width: 100%;
+  }
+  .kj-button-group[data-orientation='vertical'] > kj-button:first-child > .kj-button {
+    border-top-left-radius: var(--kj-radius-field);
+    border-top-right-radius: var(--kj-radius-field);
+    margin-top: 0;
+  }
+  .kj-button-group[data-orientation='vertical'] > kj-button:last-child > .kj-button {
+    border-bottom-left-radius: var(--kj-radius-field);
+    border-bottom-right-radius: var(--kj-radius-field);
+  }
+
+  /* Lift the focused / hovered / pressed button above its neighbours so its
+     border isn't clipped by the negative-margin overlap. */
+  .kj-button-group > kj-button > .kj-button:hover,
+  .kj-button-group > kj-button > .kj-button:focus-visible,
+  .kj-button-group > kj-button > .kj-button[aria-pressed='true'] {
+    z-index: 1;
+  }
+
+  /* Group-level disabled: visually muted when the directive flags it. The
+     individual <kj-button>s still render their own aria-disabled when their
+     own kjDisabled is true; consumers wiring the group context as a fallback
+     will get aria-disabled on every child. */
+  .kj-button-group[data-disabled] {
+    opacity: 0.7;
+  }
+}

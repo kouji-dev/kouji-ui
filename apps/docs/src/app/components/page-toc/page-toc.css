@@ -1,6 +1,8 @@
 .toc-nav {
   padding: var(--kj-space-2xl) 1.25rem;
   font-family: var(--kj-font-mono);
+  width: 15rem;
+  overflow: hidden;
 }
 
 .toc-heading {
@@ -34,6 +36,10 @@
   border-left: 2px solid transparent;
   transition: color 0.15s, border-color 0.15s;
   width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
 }
 
 .toc-link:hover { color: var(--kj-color-neutral); border-left-color: var(--kj-color-neutral); }

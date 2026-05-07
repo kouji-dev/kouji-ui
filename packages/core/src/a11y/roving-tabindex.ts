@@ -6,6 +6,7 @@
   effect,
   forwardRef,
   inject,
+  input,
   signal,
 } from '@angular/core';
 
@@ -61,14 +62,42 @@ export class KjRovingTabindexItemDirective {
   },
 })
 export class KjRovingTabindex {
-  private readonly items = contentChildren(KjRovingTabindexItemDirective);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly items = contentChildren(KjRovingTabindexItemDirective, {
+    descendants: true,
+  });
   private readonly activeIndex = signal(0);
+
+  /**
+   * Restricts arrow-key navigation to a single axis.
+   * - `'horizontal'`: only ArrowLeft / ArrowRight move focus.
+   * - `'vertical'`: only ArrowUp / ArrowDown move focus.
+   * - `'both'`: all four arrow keys move focus (default — preserves prior behaviour).
+   *
+   * Under `'horizontal'`, ArrowLeft / ArrowRight are swapped when the host
+   * element resolves to `dir="rtl"`.
+   */
+  readonly kjRovingOrientation = input<'horizontal' | 'vertical' | 'both'>('both');
 
   constructor() {
     effect(() => {
       const all = this.items();
       all.forEach((item, i) => item.active.set(i === this.activeIndex()));
     });
+  }
+
+  private resolveRtl(): boolean {
+    const el = this.host.nativeElement;
+    if (typeof getComputedStyle === 'function') {
+      const direction = getComputedStyle(el).direction;
+      if (direction === 'rtl') return true;
+      if (direction === 'ltr') {
+        // Some test environments (jsdom) return the default 'ltr' even when an
+        // ancestor sets `dir="rtl"`. Fall through to attribute lookup.
+      }
+    }
+    const dirHost = el.closest('[dir]') as HTMLElement | null;
+    return dirHost?.dir.toLowerCase() === 'rtl';
   }
 
   /** @internal — syncs activeIndex when focus moves into an item programmatically */
@@ -86,9 +115,24 @@ export class KjRovingTabindex {
     if (!all.length) return;
     let next = this.activeIndex();
 
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+    const orientation = this.kjRovingOrientation();
+    const horizontalActive = orientation === 'horizontal' || orientation === 'both';
+    const verticalActive = orientation === 'vertical' || orientation === 'both';
+
+    // Resolve directionality lazily; only matters when horizontal arrows are active.
+    // Prefer computed style; fall back to the nearest `dir` attribute (jsdom does
+    // not propagate ancestor `dir` to computed style in all cases).
+    const isRtl = horizontalActive && this.resolveRtl();
+    const forwardKey = isRtl ? 'ArrowLeft' : 'ArrowRight';
+    const backwardKey = isRtl ? 'ArrowRight' : 'ArrowLeft';
+
+    if (horizontalActive && event.key === forwardKey) {
       next = (next + 1) % all.length;
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+    } else if (horizontalActive && event.key === backwardKey) {
+      next = (next - 1 + all.length) % all.length;
+    } else if (verticalActive && event.key === 'ArrowDown') {
+      next = (next + 1) % all.length;
+    } else if (verticalActive && event.key === 'ArrowUp') {
       next = (next - 1 + all.length) % all.length;
     } else if (event.key === 'Home') {
       next = 0;

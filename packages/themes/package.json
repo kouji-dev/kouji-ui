@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/themes",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Theme tokens and theme stylesheets for kouji-ui — pure CSS, swappable at runtime via data-theme.",
   "license": "MIT",
   "repository": {

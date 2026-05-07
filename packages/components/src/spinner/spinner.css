@@ -1,0 +1,161 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-spinner — component-layer tokens + structural CSS
+
+   The directive owns role/label/data-attribute reflection. The CSS
+   below renders the visual glyph via the inner `.kj-spinner__glyph`
+   element (kept `aria-hidden="true"` in the template so AT only sees
+   the host's `role="status"` + `aria-label`). Variant + size + animation
+   routing all happens through `data-*` attributes on the wrapper host.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-spinner {
+    --kj-spinner-size:     1.25rem; /* md default */
+    --kj-spinner-color:    currentColor; /* neutral resolves to currentColor */
+    --kj-spinner-track:    color-mix(in srgb, currentColor 20%, transparent);
+    --kj-spinner-duration: 0.7s;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--kj-spinner-size);
+    block-size: var(--kj-spinner-size);
+    color: var(--kj-spinner-color);
+    /* Keep the glyph centred without offering a hit-target — spinners are
+       not interactive. */
+    pointer-events: none;
+  }
+
+  /* Sizes — circular shapes use --kj-spinner-size for both axes. Linear
+     shapes (dots / bars) override inline-size on the host below. */
+  .kj-spinner[data-size="xs"] { --kj-spinner-size: 0.75rem; }
+  .kj-spinner[data-size="sm"] { --kj-spinner-size: 1rem; }
+  .kj-spinner[data-size="md"] { --kj-spinner-size: 1.25rem; }
+  .kj-spinner[data-size="lg"] { --kj-spinner-size: 1.75rem; }
+
+  /* Variant routing — neutral inherits currentColor (matches the
+     daisyUI / lucide convention so a spinner inside a primary button
+     picks up the button's text colour). */
+  .kj-spinner[data-variant="neutral"]   { --kj-spinner-color: currentColor; }
+  .kj-spinner[data-variant="primary"]   { --kj-spinner-color: var(--kj-color-primary); }
+  .kj-spinner[data-variant="secondary"] { --kj-spinner-color: var(--kj-color-secondary, var(--kj-color-base-content)); }
+  .kj-spinner[data-variant="success"]   { --kj-spinner-color: var(--kj-color-success, #16a34a); }
+  .kj-spinner[data-variant="warning"]   { --kj-spinner-color: var(--kj-color-warning, #d97706); }
+  .kj-spinner[data-variant="error"]     { --kj-spinner-color: var(--kj-color-destructive, #dc2626); }
+  .kj-spinner[data-variant="info"]      { --kj-spinner-color: var(--kj-color-info, #2563eb); }
+
+  /* Glyph host — themes can repaint the inner element per data-animation. */
+  .kj-spinner__glyph {
+    display: inline-block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  /* ── Animation: spin (default) — rotating arc ─────────────────────── */
+  .kj-spinner[data-animation="spin"] .kj-spinner__glyph {
+    border: 2px solid var(--kj-spinner-track);
+    border-block-start-color: var(--kj-spinner-color);
+    border-radius: 50%;
+    animation: kj-spinner-spin var(--kj-spinner-duration) linear infinite;
+  }
+
+  /* ── Animation: pulse — single fading circle ──────────────────────── */
+  .kj-spinner[data-animation="pulse"] .kj-spinner__glyph {
+    background: var(--kj-spinner-color);
+    border-radius: 50%;
+    animation: kj-spinner-pulse calc(var(--kj-spinner-duration) * 2) ease-in-out infinite;
+  }
+
+  /* ── Animation: dots — three pulsing dots side by side ────────────── */
+  .kj-spinner[data-animation="dots"] {
+    /* Linear shape — width is auto, height is the size token. */
+    inline-size: auto;
+  }
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph {
+    display: inline-flex;
+    gap: calc(var(--kj-spinner-size) * 0.25);
+    inline-size: auto;
+    block-size: 100%;
+  }
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph::before,
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph::after,
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph {
+    /* Each dot via pseudo + the glyph itself acts as a flex container. */
+  }
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph::before,
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph::after {
+    content: "";
+    inline-size: calc(var(--kj-spinner-size) * 0.3);
+    block-size: calc(var(--kj-spinner-size) * 0.3);
+    background: var(--kj-spinner-color);
+    border-radius: 50%;
+    animation: kj-spinner-dots calc(var(--kj-spinner-duration) * 2) ease-in-out infinite;
+  }
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph {
+    background: transparent;
+  }
+  /* Middle dot rendered via box-shadow on ::before for a 3-dot row without
+     extra DOM. The two pseudos animate offset; the middle dot is the glyph
+     element's own background dot. */
+  .kj-spinner[data-animation="dots"] .kj-spinner__glyph::after {
+    animation-delay: calc(var(--kj-spinner-duration) * 0.4);
+  }
+
+  /* ── Animation: bars — vertical bars rising/falling ───────────────── */
+  .kj-spinner[data-animation="bars"] {
+    inline-size: auto;
+  }
+  .kj-spinner[data-animation="bars"] .kj-spinner__glyph {
+    display: inline-flex;
+    align-items: stretch;
+    gap: calc(var(--kj-spinner-size) * 0.15);
+    inline-size: auto;
+    block-size: 100%;
+  }
+  .kj-spinner[data-animation="bars"] .kj-spinner__glyph::before,
+  .kj-spinner[data-animation="bars"] .kj-spinner__glyph::after {
+    content: "";
+    inline-size: calc(var(--kj-spinner-size) * 0.2);
+    background: var(--kj-spinner-color);
+    border-radius: calc(var(--kj-spinner-size) * 0.05);
+    animation: kj-spinner-bars calc(var(--kj-spinner-duration) * 1.6) ease-in-out infinite;
+    transform-origin: center;
+  }
+  .kj-spinner[data-animation="bars"] .kj-spinner__glyph::after {
+    animation-delay: calc(var(--kj-spinner-duration) * 0.4);
+  }
+
+  /* ── Reduced motion — directive sets `data-reduced-motion="true"` ──── */
+  /* WCAG 2.3.3 (AAA): swap continuous rotation for a slow opacity pulse. */
+  .kj-spinner[data-reduced-motion="true"] .kj-spinner__glyph,
+  .kj-spinner[data-reduced-motion="true"] .kj-spinner__glyph::before,
+  .kj-spinner[data-reduced-motion="true"] .kj-spinner__glyph::after {
+    animation: kj-spinner-reduced-motion 1.6s ease-in-out infinite !important;
+  }
+}
+
+/* Keyframes live outside the cascade layer so consumers can't accidentally
+   defeat them with a higher-priority unlayered rule. */
+@keyframes kj-spinner-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes kj-spinner-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1); }
+}
+
+@keyframes kj-spinner-dots {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes kj-spinner-bars {
+  0%, 40%, 100% { transform: scaleY(0.4); }
+  20%           { transform: scaleY(1); }
+}
+
+@keyframes kj-spinner-reduced-motion {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}

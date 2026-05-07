@@ -1,0 +1,55 @@
+@layer kj.component {
+  /* The wrapper hosts use display: contents — they don't add a box. */
+
+  .kj-tooltip-content {
+    --kj-tooltip-bg:           var(--kj-color-base-content);
+    --kj-tooltip-fg:           var(--kj-color-base-100);
+    --kj-tooltip-border-color: transparent;
+    --kj-tooltip-radius:       var(--kj-radius-selector);
+    --kj-tooltip-padding-x:    var(--kj-space-md);
+    --kj-tooltip-padding-y:    var(--kj-space-xs);
+    --kj-tooltip-font-size:    0.8125rem;
+    --kj-tooltip-shadow:       0 4px 12px rgb(0 0 0 / 0.18);
+    --kj-tooltip-arrow-size:   6px;
+
+    /* Layout — the directive applies position: fixed and writes top/left. */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    max-width: min(20rem, calc(100vw - 1rem));
+    background: var(--kj-tooltip-bg);
+    color: var(--kj-tooltip-fg);
+    border: var(--kj-border) solid var(--kj-tooltip-border-color);
+    border-radius: var(--kj-tooltip-radius);
+    padding: var(--kj-tooltip-padding-y) var(--kj-tooltip-padding-x);
+    font: var(--kj-tooltip-font-size) / 1.4 var(--kj-font-sans);
+    box-shadow: var(--kj-tooltip-shadow);
+    pointer-events: auto;
+    z-index: 1000;
+    word-wrap: break-word;
+  }
+
+  .kj-tooltip-content[hidden] { display: none; }
+
+  /* Arrow positioning relative to the content's resolved data-side. */
+  .kj-tooltip-arrow {
+    position: absolute;
+    width: var(--kj-tooltip-arrow-size);
+    height: var(--kj-tooltip-arrow-size);
+    background: var(--kj-tooltip-bg);
+    transform: rotate(45deg);
+  }
+
+  .kj-tooltip-content[data-side="top"]    .kj-tooltip-arrow { bottom: calc(var(--kj-tooltip-arrow-size) / -2); left: 50%; margin-left: calc(var(--kj-tooltip-arrow-size) / -2); }
+  .kj-tooltip-content[data-side="bottom"] .kj-tooltip-arrow { top:    calc(var(--kj-tooltip-arrow-size) / -2); left: 50%; margin-left: calc(var(--kj-tooltip-arrow-size) / -2); }
+  .kj-tooltip-content[data-side="left"]   .kj-tooltip-arrow { right:  calc(var(--kj-tooltip-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-tooltip-arrow-size) / -2); }
+  .kj-tooltip-content[data-side="right"]  .kj-tooltip-arrow { left:   calc(var(--kj-tooltip-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-tooltip-arrow-size) / -2); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .kj-tooltip-content {
+      transition: opacity 120ms ease-out;
+    }
+    .kj-tooltip-content[data-state="closed"] { opacity: 0; }
+    .kj-tooltip-content[data-state="open"]   { opacity: 1; }
+  }
+}

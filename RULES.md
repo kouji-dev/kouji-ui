@@ -1,11 +1,11 @@
 # kouji-ui Rules
 
-All rules live in the `rules/` folder:
+Rules live in `rules/`:
 
-- [Stack & Dependency Policy](rules/stack.md) — tech stack, no-CDK policy, approved dependencies
-- [Code Style & Design Process](rules/code_style.md) — naming, signals, lifecycle, TSDoc, design process, WCAG/library references
-- [Architecture](rules/architecture.md) — packages, directive patterns, signal-context, hostDirectives, file conventions
-- [Accessibility](rules/accessibility.md) — WCAG 2.1 AAA, keyboard contracts, ARIA quick reference, a11y primitives
-- [TSDoc & Comments](rules/tsdoc.md) — TSDoc format, custom `@doc*` tags, inline comment policy
-- [Agent Orchestration](rules/agent_orchestration.md) — parallel vs sequential agent strategy
-- [Docs UI](rules/docs.md) — apps/docs must use `@kouji-ui/components` components, not raw HTML
+- [stack.md](rules/stack.md) — tech stack, no-CDK policy, approved deps
+- [code_style.md](rules/code_style.md) — naming, signals, lifecycle, design process
+- [architecture.md](rules/architecture.md) — packages, signal-context, hostDirectives, file layout
+- [accessibility.md](rules/accessibility.md) — WCAG 2.1 AAA, keyboard, ARIA, a11y primitives
+- [tsdoc.md](rules/tsdoc.md) — TSDoc format, `@doc*` tags, inline comment policy
+- [agent_orchestration.md](rules/agent_orchestration.md) — caveman prompts, parallel vs sequential strategy
+- [docs.md](rules/docs.md) — `apps/docs` must use `@kouji-ui/components`, not raw HTML

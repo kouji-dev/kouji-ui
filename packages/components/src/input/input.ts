@@ -1,4 +1,12 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+  ViewEncapsulation,
+  forwardRef,
+  input,
+} from '@angular/core';
+import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { KjInput } from '@kouji-ui/core';
 
 export type KjInputType = 'text' | 'email' | 'password' | 'number'
@@ -7,14 +15,11 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
 /**
  * Styled wrapper around the headless KjInput directive.
  *
- * Element-wrapper pattern: <kj-input> is structural shell; inner <input>
- * carries native input semantics (focus, form integration, validation).
+ * Supports `[(ngModel)]` and `[formControl]` bindings.
  *
  * @example
  * ```html
- * <kj-input type="email" placeholder="you@example.com" [invalid]="emailCtrl.invalid" />
- * <kj-input type="color" [value]="hex()" (input)="hex.set($any($event.target).value)" />
- * <kj-input type="text" [(ngModel)]="name" />
+ * <kj-input type="email" placeholder="you@example.com" [(ngModel)]="email" />
  * ```
  * @doc
  *   @doc-file input.example.ts
@@ -25,6 +30,13 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
   selector: 'kj-input',
   standalone: true,
   imports: [KjInput],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => KjInputComponent),
+      multi: true,
+    },
+  ],
   template: `
     <input
       kjInput
@@ -44,10 +56,26 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjInputComponent {
+export class KjInputComponent implements ControlValueAccessor {
   readonly type = input<KjInputType>('text');
   readonly value = input<string>('');
   readonly placeholder = input<string>('');
   readonly invalid = input(false);
   readonly disabled = input(false);
+
+  @ViewChild(KjInput, { static: true })
+  protected innerInput?: KjInput;
+
+  writeValue(val: unknown): void {
+    this.innerInput?.formCtrl.writeValue(val);
+  }
+  registerOnChange(fn: (value: unknown) => void): void {
+    this.innerInput?.formCtrl.registerOnChange(fn);
+  }
+  registerOnTouched(fn: () => void): void {
+    this.innerInput?.formCtrl.registerOnTouched(fn);
+  }
+  setDisabledState(isDisabled: boolean): void {
+    this.innerInput?.formCtrl.setDisabledState(isDisabled);
+  }
 }

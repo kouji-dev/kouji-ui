@@ -1,0 +1,142 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-list — component-layer tokens + structural CSS
+   The list root carries layout (flex direction, gap) and reads
+   `data-orientation` / `data-divided` / `data-hoverable` from the
+   composed `KjList` directive to flip variants. Per-row chrome is
+   driven by `data-active` / `data-disabled` on `<kj-list-item>`.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-list {
+    --kj-list-bg:           transparent;
+    --kj-list-fg:           var(--kj-color-base-content);
+    --kj-list-border-color: var(--kj-color-base-300);
+    --kj-list-radius:       var(--kj-radius-box);
+    --kj-list-row-gap:      0;
+    --kj-list-row-padding-x: var(--kj-space-md);
+    --kj-list-row-padding-y: var(--kj-space-sm);
+    --kj-list-row-radius:   var(--kj-radius-field);
+    --kj-list-row-min-h:    2.75rem; /* 44px — WCAG 2.5.5 */
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-list-row-gap);
+    background: var(--kj-list-bg);
+    color: var(--kj-list-fg);
+    border-radius: var(--kj-list-radius);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Horizontal axis flips flex-direction. The `data-orientation` mirror is
+     emitted by `KjList` so themes do not need the JS-level orientation. */
+  .kj-list[data-orientation='horizontal'] {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /* Sizes — drive row density via the row-padding / min-height tokens. */
+  .kj-list[data-size='xs'] {
+    --kj-list-row-padding-y: 0.125rem;
+    --kj-list-row-padding-x: var(--kj-space-sm);
+    --kj-list-row-min-h:    1.5rem;
+  }
+  .kj-list[data-size='sm'] {
+    --kj-list-row-padding-y: 0.25rem;
+    --kj-list-row-padding-x: var(--kj-space-sm);
+    --kj-list-row-min-h:    2rem;
+  }
+  .kj-list[data-size='lg'] {
+    --kj-list-row-padding-y: var(--kj-space-md);
+    --kj-list-row-padding-x: var(--kj-space-lg);
+    --kj-list-row-min-h:    3rem;
+  }
+
+  /* Variants — chrome on the container itself. */
+  .kj-list[data-variant='bordered'] {
+    border: var(--kj-border) solid var(--kj-list-border-color);
+    overflow: hidden;
+  }
+  .kj-list[data-variant='flat'] {
+    border: 0;
+    --kj-list-bg: transparent;
+  }
+
+  /* Per-row layout. Rows are flex containers so consumers can drop in
+     leading icons / trailing badges without juggling spans. */
+  .kj-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    padding: var(--kj-list-row-padding-y) var(--kj-list-row-padding-x);
+    min-height: var(--kj-list-row-min-h);
+    border-radius: var(--kj-list-row-radius);
+    color: inherit;
+    /* Transition only state-tied properties so the active / hover flip is
+       buttery without animating layout. */
+    transition: background-color var(--kj-transition),
+                color var(--kj-transition),
+                opacity var(--kj-transition);
+  }
+
+  /* Divided rows — between-row border via `:not(:last-child)` so the final
+     row stays clean. The `data-divided` mirror lives on the root. */
+  .kj-list[data-divided] .kj-list-item {
+    border-radius: 0;
+  }
+  .kj-list[data-divided][data-orientation='vertical'] .kj-list-item:not(:last-child) {
+    border-bottom: var(--kj-border) solid var(--kj-list-border-color);
+  }
+  .kj-list[data-divided][data-orientation='horizontal'] .kj-list-item:not(:last-child) {
+    border-right: var(--kj-border) solid var(--kj-list-border-color);
+  }
+
+  /* Hoverable rows. Cascade order matters: the `:hover` rule comes BEFORE
+     the `[data-active]` rule so the active row wins when both are true. */
+  .kj-list[data-hoverable] .kj-list-item:hover {
+    background: color-mix(in oklab, var(--kj-color-base-content) 6%, transparent);
+    cursor: pointer;
+  }
+
+  /* Active row — current location in a nav. Painted via background tint plus
+     a left bar (≥3:1 against background per WCAG 1.4.11). */
+  .kj-list-item[data-active] {
+    background: color-mix(in oklab, var(--kj-color-primary) 12%, transparent);
+    color: var(--kj-color-primary);
+    box-shadow: inset 3px 0 0 0 var(--kj-color-primary);
+  }
+  .kj-list[data-orientation='horizontal'] .kj-list-item[data-active] {
+    box-shadow: inset 0 -3px 0 0 var(--kj-color-primary);
+  }
+
+  /* Disabled row — dim the chrome and any projected interactive child.
+     Keyboard reachability is the projected child's responsibility. */
+  .kj-list-item[data-disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .kj-list-item[data-disabled] :where(a, button) {
+    pointer-events: none;
+  }
+
+  /* Projected anchors fill the row so the click target meets WCAG 2.5.5
+     without consumers wiring widths manually. Themes are free to override. */
+  .kj-list-item > :where(a, button) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-space-sm);
+    color: inherit;
+    text-decoration: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+  .kj-list-item > :where(a, button):focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+    border-radius: var(--kj-list-row-radius);
+  }
+}

@@ -1,0 +1,111 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-skeleton — component-layer tokens + structural CSS
+   The directive lands `aria-hidden="true"` and reflects
+   `data-shape` / `data-animation` on the host. CSS owns the
+   shimmer / pulse keyframes and the reduced-motion override —
+   per `skeleton.md`, the directive deliberately does *not*
+   detect `prefers-reduced-motion` itself; theme CSS does, here.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-skeleton {
+    /* component knobs — themes/users can override any of these */
+    --kj-skeleton-bg:           var(--kj-color-base-300, color-mix(in oklab, var(--kj-color-base-content, #000) 12%, transparent));
+    --kj-skeleton-highlight:    var(--kj-color-base-200, color-mix(in oklab, var(--kj-color-base-content, #000) 5%, transparent));
+    --kj-skeleton-radius:       var(--kj-radius-field, 0.375rem);
+    --kj-skeleton-line-height:  1em;
+    --kj-skeleton-line-radius:  0.25rem;
+    --kj-skeleton-shimmer-duration: 1.4s;
+    --kj-skeleton-pulse-duration:   1.6s;
+
+    display: block;
+    background-color: var(--kj-skeleton-bg);
+    border-radius: var(--kj-skeleton-radius);
+    /* Sized by consumer-supplied width/height. Default to a sensible
+       rectangle so a bare <kj-skeleton/> still paints something. */
+    inline-size: 100%;
+    block-size: 1rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Shape routing ──────────────────────────────────────────────────── */
+
+  .kj-skeleton[data-shape="circle"] {
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .kj-skeleton[data-shape="text"],
+  .kj-skeleton.kj-skeleton--line {
+    block-size: var(--kj-skeleton-line-height);
+    border-radius: var(--kj-skeleton-line-radius);
+  }
+
+  /* The text-block host is a layout container — it doesn't paint itself,
+     it stacks N child .kj-skeleton--line elements. Drop the default
+     paint chrome so only the lines are visible. */
+  .kj-skeleton[data-shape="text-block"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-sm, 0.5rem);
+    background-color: transparent;
+    border-radius: 0;
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+
+  /* ── Animation routing ──────────────────────────────────────────────── */
+
+  /* Shimmer: a moving highlight gradient sweeps left-to-right. */
+  .kj-skeleton[data-animation="shimmer"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--kj-skeleton-highlight) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: kj-skeleton-shimmer var(--kj-skeleton-shimmer-duration) linear infinite;
+  }
+
+  /* The text-block host doesn't paint, so its ::after sweep would be a
+     ghost. Suppress it; each child line runs its own shimmer. */
+  .kj-skeleton[data-shape="text-block"][data-animation="shimmer"]::after {
+    content: none;
+  }
+
+  .kj-skeleton[data-animation="pulse"] {
+    animation: kj-skeleton-pulse var(--kj-skeleton-pulse-duration) ease-in-out infinite;
+  }
+
+  .kj-skeleton[data-animation="none"]::after {
+    content: none;
+  }
+
+  @keyframes kj-skeleton-shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%);  }
+  }
+
+  @keyframes kj-skeleton-pulse {
+    0%, 100% { opacity: 1;   }
+    50%      { opacity: 0.55; }
+  }
+
+  /* ── Reduced motion ─────────────────────────────────────────────────── */
+  /* Per skeleton.md: when the OS sets the preference, theme CSS pins the
+     animation off regardless of `kjSkeletonAnimation`. The directive
+     deliberately does not detect the media query — this rule is the
+     enforcement layer. */
+  @media (prefers-reduced-motion: reduce) {
+    .kj-skeleton,
+    .kj-skeleton::after {
+      animation: none !important;
+    }
+  }
+}

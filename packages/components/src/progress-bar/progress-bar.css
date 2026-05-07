@@ -1,0 +1,113 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-progress-bar — component-layer tokens + structural CSS
+   The directive owns the value math + ARIA contract. The theme
+   only renders track + fill. Variant tokens flip the fill colour;
+   size tokens flip the bar height. The indeterminate stripe is a
+   pure CSS animation, neutralised under prefers-reduced-motion.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-progress-bar {
+    /* component knobs — themes/users can override any of these */
+    --kj-progress-bar-track:        var(--kj-color-base-300);
+    --kj-progress-bar-fill:         var(--kj-color-primary);
+    --kj-progress-bar-radius:       9999px;
+    --kj-progress-bar-height:       0.5rem; /* md default — 8px */
+    --kj-progress-bar-transition:   200ms ease-out;
+    --kj-progress-bar-indeterminate-duration: 1.6s;
+
+    display: block;
+    position: relative;
+    width: 100%;
+    height: var(--kj-progress-bar-height);
+    background: var(--kj-progress-bar-track);
+    border-radius: var(--kj-progress-bar-radius);
+    overflow: hidden;
+  }
+
+  /* ── Sizes ── (data-size mirrored by KjSize host directive) */
+  .kj-progress-bar[data-size="xs"] { --kj-progress-bar-height: 0.125rem; } /* 2px */
+  .kj-progress-bar[data-size="sm"] { --kj-progress-bar-height: 0.25rem; }  /* 4px */
+  .kj-progress-bar[data-size="md"] { --kj-progress-bar-height: 0.5rem; }   /* 8px */
+  .kj-progress-bar[data-size="lg"] { --kj-progress-bar-height: 0.75rem; }  /* 12px */
+
+  /* ── Variants ── (data-variant mirrored by KjVariant host directive) */
+  .kj-progress-bar[data-variant="primary"] { --kj-progress-bar-fill: var(--kj-color-primary); }
+  .kj-progress-bar[data-variant="success"] { --kj-progress-bar-fill: var(--kj-color-success); }
+  .kj-progress-bar[data-variant="warning"] { --kj-progress-bar-fill: var(--kj-color-warning); }
+  .kj-progress-bar[data-variant="error"]   { --kj-progress-bar-fill: var(--kj-color-error, var(--kj-color-destructive)); }
+
+  /* ── Fill (determinate) ──
+     The directive sets --kj-progress-fraction (0..1) on the host AND on the
+     fill. Reading from the fill is one selector hop shorter and lets us scope
+     the transition cleanly. */
+  .kj-progress-bar__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--kj-progress-bar-fill);
+    border-radius: inherit;
+    transform-origin: left center;
+    transform: scaleX(var(--kj-progress-fraction, 0));
+    /* Transition the fill width on value changes — but never the colour, so
+       a variant flip mid-flight is instantaneous. */
+    transition: transform var(--kj-progress-bar-transition);
+  }
+
+  /* RTL: the fill grows from the right edge. */
+  [dir="rtl"] .kj-progress-bar__fill {
+    transform-origin: right center;
+  }
+
+  /* ── Fill (indeterminate) ──
+     When data-indeterminate="true", abandon the scaleX(fraction) transform
+     and run a stripe that travels left → right. The stripe is a 50%-wide
+     coloured band on a transparent track, which gives a clean "working"
+     read on every theme without needing the track itself to animate. */
+  .kj-progress-bar__fill[data-indeterminate="true"] {
+    transform: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--kj-progress-bar-fill) 50%,
+      transparent 100%
+    );
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+    animation: kj-progress-bar-indeterminate
+      var(--kj-progress-bar-indeterminate-duration) linear infinite;
+  }
+
+  @keyframes kj-progress-bar-indeterminate {
+    from { background-position: -50% 0; }
+    to   { background-position: 150% 0; }
+  }
+
+  /* ── Reduced motion ──
+     APG / WCAG 2.3.3: animations from interactions must respect
+     prefers-reduced-motion. The directive reflects data-reduced-motion;
+     we also honour the media query directly so the rule kicks in even if
+     the directive's media-query subscription hasn't run yet (SSR, very
+     early paint). The indeterminate stripe collapses to a static, dimmed
+     fill — still visible as "something is happening", just not moving. */
+  .kj-progress-bar[data-reduced-motion="reduce"] .kj-progress-bar__fill,
+  .kj-progress-bar[data-reduced-motion="reduce"] .kj-progress-bar__fill[data-indeterminate="true"] {
+    animation: none;
+    transition: none;
+  }
+  .kj-progress-bar[data-reduced-motion="reduce"] .kj-progress-bar__fill[data-indeterminate="true"] {
+    background: var(--kj-progress-bar-fill);
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kj-progress-bar__fill {
+      transition: none;
+    }
+    .kj-progress-bar__fill[data-indeterminate="true"] {
+      animation: none;
+      background: var(--kj-progress-bar-fill);
+      opacity: 0.6;
+    }
+  }
+}

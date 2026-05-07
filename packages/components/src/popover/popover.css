@@ -1,0 +1,71 @@
+@layer kj.component {
+  /* The wrapper hosts use display: contents — they don't add a box. The
+     panel is portal-mounted to <body> by the underlying directive; the
+     `.kj-popover-content` class lands on the panel via `kjPanelClass`. */
+
+  .kj-popover-content {
+    --kj-popover-bg:           var(--kj-color-base-100);
+    --kj-popover-fg:           var(--kj-color-base-content);
+    --kj-popover-border-color: var(--kj-color-base-300);
+    --kj-popover-radius:       var(--kj-radius-box);
+    --kj-popover-padding-x:    var(--kj-space-md);
+    --kj-popover-padding-y:    var(--kj-space-md);
+    --kj-popover-shadow:       0 12px 32px rgb(0 0 0 / 0.18);
+    --kj-popover-arrow-size:   8px;
+
+    /* Layout — the directive applies position: fixed and writes top/left. */
+    display: block;
+    box-sizing: border-box;
+    max-width: min(28rem, calc(100vw - 2rem));
+    background: var(--kj-popover-bg);
+    color: var(--kj-popover-fg);
+    border: var(--kj-border) solid var(--kj-popover-border-color);
+    border-radius: var(--kj-popover-radius);
+    padding: var(--kj-popover-padding-y) var(--kj-popover-padding-x);
+    font: 0.875rem / 1.5 var(--kj-font-sans);
+    box-shadow: var(--kj-popover-shadow);
+    pointer-events: auto;
+    z-index: 1000;
+    word-wrap: break-word;
+  }
+
+  .kj-popover-content[hidden] { display: none; }
+
+  .kj-popover-title {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0 0 var(--kj-space-xs);
+    color: var(--kj-color-base-content);
+  }
+
+  /* Arrow positioning relative to the panel's resolved data-side. */
+  .kj-popover-arrow {
+    position: absolute;
+    width: var(--kj-popover-arrow-size, 8px);
+    height: var(--kj-popover-arrow-size, 8px);
+    background: var(--kj-popover-bg, var(--kj-color-base-100));
+    border: var(--kj-border) solid var(--kj-popover-border-color, var(--kj-color-base-300));
+    transform: rotate(45deg);
+  }
+
+  .kj-popover-content[data-side="top"]    .kj-popover-arrow { bottom: calc(var(--kj-popover-arrow-size) / -2); left: 50%; margin-left: calc(var(--kj-popover-arrow-size) / -2); border-top-color: transparent; border-left-color: transparent; }
+  .kj-popover-content[data-side="bottom"] .kj-popover-arrow { top:    calc(var(--kj-popover-arrow-size) / -2); left: 50%; margin-left: calc(var(--kj-popover-arrow-size) / -2); border-bottom-color: transparent; border-right-color: transparent; }
+  .kj-popover-content[data-side="left"]   .kj-popover-arrow { right:  calc(var(--kj-popover-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-popover-arrow-size) / -2); border-left-color: transparent; border-bottom-color: transparent; }
+  .kj-popover-content[data-side="right"]  .kj-popover-arrow { left:   calc(var(--kj-popover-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-popover-arrow-size) / -2); border-right-color: transparent; border-top-color: transparent; }
+
+  /* Modal-mode body scroll lock. Multiple stacked modals coordinate via
+     a counter in KjOverlayService; this just hides body overflow when the
+     attribute is present. */
+  body[data-kj-scroll-lock="true"] {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .kj-popover-content {
+      transition: opacity 140ms ease-out, transform 140ms ease-out;
+    }
+    .kj-popover-content[data-state="closed"] { opacity: 0; transform: scale(0.98); }
+    .kj-popover-content[data-state="open"]   { opacity: 1; transform: scale(1); }
+  }
+}

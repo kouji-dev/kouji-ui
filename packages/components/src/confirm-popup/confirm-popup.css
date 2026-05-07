@@ -1,0 +1,47 @@
+@layer kj.component {
+  .kj-confirm-popup-content {
+    --kj-confirm-popup-bg:           var(--kj-color-base-100);
+    --kj-confirm-popup-fg:           var(--kj-color-base-content);
+    --kj-confirm-popup-border-color: var(--kj-color-base-300);
+    --kj-confirm-popup-radius:       var(--kj-radius-box);
+    --kj-confirm-popup-padding-x:    var(--kj-space-md);
+    --kj-confirm-popup-padding-y:    var(--kj-space-md);
+    --kj-confirm-popup-shadow:       0 12px 32px rgb(0 0 0 / 0.18);
+
+    display: block;
+    box-sizing: border-box;
+    max-width: min(20rem, calc(100vw - 2rem));
+    background: var(--kj-confirm-popup-bg);
+    color: var(--kj-confirm-popup-fg);
+    border: var(--kj-border) solid var(--kj-confirm-popup-border-color);
+    border-radius: var(--kj-confirm-popup-radius);
+    padding: var(--kj-confirm-popup-padding-y) var(--kj-confirm-popup-padding-x);
+    font: 0.875rem / 1.5 var(--kj-font-sans);
+    box-shadow: var(--kj-confirm-popup-shadow);
+    pointer-events: auto;
+    z-index: 1000;
+    word-wrap: break-word;
+  }
+
+  .kj-confirm-popup-content[hidden] { display: none; }
+
+  .kj-confirm-popup-message {
+    display: block;
+    margin: 0 0 var(--kj-space-sm);
+    color: var(--kj-color-base-content);
+  }
+
+  .kj-confirm-popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--kj-space-sm);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .kj-confirm-popup-content {
+      transition: opacity 140ms ease-out, transform 140ms ease-out;
+    }
+    .kj-confirm-popup-content[data-state="closed"] { opacity: 0; transform: scale(0.98); }
+    .kj-confirm-popup-content[data-state="open"]   { opacity: 1; transform: scale(1); }
+  }
+}

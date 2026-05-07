@@ -1,0 +1,160 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-tag — component-layer tokens + structural CSS
+   Mirrors .kj-badge's chrome (rounded pill, density tokens) and
+   layers in the interactive states (hover, focus-visible, pressed,
+   disabled) that distinguish a tag from a static badge.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-tag {
+    --kj-tag-bg:           var(--kj-color-primary);
+    --kj-tag-fg:           var(--kj-color-primary-content);
+    --kj-tag-border-color: transparent;
+    --kj-tag-radius:       var(--kj-radius-selector);
+    --kj-tag-padding-x:    var(--kj-space-sm);
+    --kj-tag-padding-y:    0.125rem;
+    --kj-tag-font-size:    0.75rem;
+    --kj-tag-gap:          0.25rem;
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-tag-gap);
+    background: var(--kj-tag-bg);
+    color: var(--kj-tag-fg);
+    border: var(--kj-border) solid var(--kj-tag-border-color);
+    border-radius: var(--kj-tag-radius);
+    padding: var(--kj-tag-padding-y) var(--kj-tag-padding-x);
+    font: var(--kj-tag-font-size) / 1 var(--kj-font-sans);
+    font-weight: 500;
+    transition: background-color var(--kj-transition),
+                color var(--kj-transition),
+                border-color var(--kj-transition);
+  }
+
+  /* ── Variants (parity with KjBadge) ──────────────────────────────── */
+  .kj-tag[data-variant="secondary"] {
+    --kj-tag-bg: var(--kj-color-base-200);
+    --kj-tag-fg: var(--kj-color-base-content);
+  }
+  .kj-tag[data-variant="destructive"],
+  .kj-tag[data-variant="danger"] {
+    --kj-tag-bg: var(--kj-color-destructive);
+    --kj-tag-fg: var(--kj-color-destructive-content);
+  }
+  .kj-tag[data-variant="success"] {
+    --kj-tag-bg: var(--kj-color-success, var(--kj-color-primary));
+    --kj-tag-fg: var(--kj-color-success-content, var(--kj-color-primary-content));
+  }
+  .kj-tag[data-variant="warning"] {
+    --kj-tag-bg: var(--kj-color-warning, var(--kj-color-primary));
+    --kj-tag-fg: var(--kj-color-warning-content, var(--kj-color-primary-content));
+  }
+  .kj-tag[data-variant="info"] {
+    --kj-tag-bg: var(--kj-color-info, var(--kj-color-primary));
+    --kj-tag-fg: var(--kj-color-info-content, var(--kj-color-primary-content));
+  }
+  .kj-tag[data-variant="outline"] {
+    --kj-tag-bg: transparent;
+    --kj-tag-fg: var(--kj-color-base-content);
+    --kj-tag-border-color: var(--kj-color-neutral);
+  }
+  .kj-tag[data-variant="ghost"] {
+    --kj-tag-bg: transparent;
+    --kj-tag-fg: var(--kj-color-base-content);
+    --kj-tag-border-color: transparent;
+  }
+
+  /* ── Sizes ───────────────────────────────────────────────────────── */
+  .kj-tag[data-size="sm"] {
+    --kj-tag-padding-x: 0.375rem;
+    --kj-tag-font-size: 0.6875rem;
+  }
+  .kj-tag[data-size="lg"] {
+    --kj-tag-padding-x: var(--kj-space-md);
+    --kj-tag-font-size: 0.875rem;
+  }
+
+  /* ── Interactive states (selectable / listbox option) ────────────── */
+  .kj-tag[role="button"],
+  .kj-tag[role="option"] {
+    cursor: pointer;
+    user-select: none;
+  }
+  .kj-tag[role="button"]:hover,
+  .kj-tag[role="option"]:hover {
+    --kj-tag-bg: color-mix(in oklab, var(--kj-tag-bg) 88%, var(--kj-color-base-content));
+  }
+  .kj-tag[aria-pressed="true"],
+  .kj-tag[aria-selected="true"],
+  .kj-tag[data-selected] {
+    --kj-tag-bg: var(--kj-color-primary);
+    --kj-tag-fg: var(--kj-color-primary-content);
+    --kj-tag-border-color: var(--kj-color-primary);
+  }
+  .kj-tag[data-focus-visible]:focus,
+  .kj-tag:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+
+  /* ── Disabled ─────────────────────────────────────────────────────── */
+  .kj-tag[aria-disabled="true"],
+  .kj-tag[data-disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ── Remove button ────────────────────────────────────────────────── */
+  .kj-tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    margin-inline-start: 0.125rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    border-radius: 999px;
+    cursor: pointer;
+    line-height: 1;
+    font: inherit;
+    /* Touch-target enlargement (WCAG 2.5.5): visible glyph stays small,
+       the hit area grows via a transparent ::after overlay so it does
+       not inflate the chip's visible footprint. */
+    position: relative;
+  }
+  .kj-tag-remove::after {
+    content: '';
+    position: absolute;
+    inset: -0.875rem;
+    border-radius: inherit;
+  }
+  .kj-tag-remove:hover {
+    background: color-mix(in oklab, currentColor 18%, transparent);
+  }
+  .kj-tag-remove:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  .kj-tag-remove[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ── Tag list container ───────────────────────────────────────────── */
+  .kj-tag-list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--kj-space-sm);
+    align-items: center;
+  }
+  .kj-tag-list[role="listbox"]:focus-visible,
+  .kj-tag-list[role="grid"]:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+}

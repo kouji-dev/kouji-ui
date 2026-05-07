@@ -1,0 +1,118 @@
+@layer kj.component {
+  .kj-overlay-badge-anchor {
+    /* The anchor is also the positioning context. `position: relative` is
+       inline-style-bound by `KjOverlayBadge`; we add the inline-flex layout
+       here so projected anchors keep their inline rhythm. */
+    display: inline-flex;
+    vertical-align: middle;
+  }
+
+  .kj-overlay-badge {
+    /* Visual chrome inherited from <kj-badge>. We re-apply the same token
+       set here so the slot renders identically whether the consumer uses
+       <kj-overlay-badge> or projects a manual <span kjOverlayBadgeContent>. */
+    --kj-badge-bg:           var(--kj-color-primary);
+    --kj-badge-fg:           var(--kj-color-primary-content);
+    --kj-badge-border-color: transparent;
+    --kj-badge-radius:       var(--kj-radius-selector);
+    --kj-badge-padding-x:    var(--kj-space-sm);
+    --kj-badge-padding-y:    0.125rem;
+    --kj-badge-font-size:    0.6875rem;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    background: var(--kj-badge-bg);
+    color: var(--kj-badge-fg);
+    border: var(--kj-border) solid var(--kj-badge-border-color);
+    border-radius: var(--kj-badge-radius);
+    padding: var(--kj-badge-padding-y) var(--kj-badge-padding-x);
+    font: var(--kj-badge-font-size) / 1 var(--kj-font-sans);
+    font-weight: 600;
+
+    /* 2px halo against the anchor for WCAG 1.4.11 non-text contrast — the
+       badge is a small element sitting on top of arbitrary surfaces. */
+    box-shadow: 0 0 0 2px var(--kj-color-base-100);
+
+    /* Logical-property positioning so RTL flips for free. The translate
+       pulls the badge half-out of the anchor at each corner — keeps the
+       majority of the chip visible above an avatar's overflow mask, etc. */
+    inset-block-start: auto;
+    inset-block-end:   auto;
+    inset-inline-start: auto;
+    inset-inline-end:   auto;
+  }
+
+  /* Variant overrides — mirror <kj-badge>'s data-variant rules. */
+  .kj-overlay-badge[data-variant="secondary"] {
+    --kj-badge-bg: var(--kj-color-base-200);
+    --kj-badge-fg: var(--kj-color-base-content);
+  }
+  .kj-overlay-badge[data-variant="destructive"] {
+    --kj-badge-bg: var(--kj-color-destructive);
+    --kj-badge-fg: var(--kj-color-destructive-content);
+  }
+  .kj-overlay-badge[data-variant="outline"] {
+    --kj-badge-bg: transparent;
+    --kj-badge-fg: var(--kj-color-base-content);
+    --kj-badge-border-color: var(--kj-color-neutral);
+  }
+
+  /* Sizes. */
+  .kj-overlay-badge[data-size="sm"] {
+    min-width: 1rem;
+    height: 1rem;
+    --kj-badge-font-size: 0.625rem;
+    --kj-badge-padding-x: 0.25rem;
+  }
+  .kj-overlay-badge[data-size="lg"] {
+    min-width: 1.5rem;
+    height: 1.5rem;
+    --kj-badge-font-size: 0.75rem;
+    --kj-badge-padding-x: 0.5rem;
+  }
+
+  /* Dot mode — fixed 0.5rem circle, no padding, no min-width. */
+  .kj-overlay-badge[data-dot] {
+    min-width: 0;
+    width: 0.625rem;
+    height: 0.625rem;
+    padding: 0;
+    border-radius: 9999px;
+  }
+  .kj-overlay-badge[data-dot][data-size="sm"] { width: 0.5rem;  height: 0.5rem; }
+  .kj-overlay-badge[data-dot][data-size="lg"] { width: 0.75rem; height: 0.75rem; }
+
+  /* Logical-corner placement. RTL flips automatically because we use
+     inline-start / inline-end. */
+  .kj-overlay-badge[data-position="top-end"] {
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    transform: translate(50%, -50%);
+  }
+  .kj-overlay-badge[data-position="top-start"] {
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    transform: translate(-50%, -50%);
+  }
+  .kj-overlay-badge[data-position="bottom-end"] {
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    transform: translate(50%, 50%);
+  }
+  .kj-overlay-badge[data-position="bottom-start"] {
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    transform: translate(-50%, 50%);
+  }
+
+  /* RTL inverts the inline-axis translation so the badge stays outside the
+     anchor's edge rather than tucking inward. Logical insets handle the
+     position itself; only the translate sign needs flipping. */
+  [dir="rtl"] .kj-overlay-badge[data-position="top-end"]    { transform: translate(-50%, -50%); }
+  [dir="rtl"] .kj-overlay-badge[data-position="top-start"]  { transform: translate(50%,  -50%); }
+  [dir="rtl"] .kj-overlay-badge[data-position="bottom-end"] { transform: translate(-50%, 50%); }
+  [dir="rtl"] .kj-overlay-badge[data-position="bottom-start"] { transform: translate(50%, 50%); }
+}

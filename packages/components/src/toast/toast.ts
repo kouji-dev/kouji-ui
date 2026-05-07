@@ -13,14 +13,20 @@ import type { KjToastVariant } from '@kouji-ui/core';
  * Renders each active toast using the per-call template passed to
  * `KjToastService.show(template, options)`.
  *
- * @doc-example Default
- *   @doc-file toast.default.example.ts
- * @doc-example Variants
- *   @doc-file toast.variants.example.ts
- * @doc-example With action
- *   @doc-file toast.with-action.example.ts
- * @doc-example Dismissible
- *   @doc-file toast.dismissible.example.ts
+ * @doc
+ *  @doc-example Default
+ *    @doc-theme default
+ *      @doc-file toast.default.example.ts
+ *  @doc-example Variants
+ *    @doc-theme default
+ *      @doc-file toast.variants.example.ts
+ *  @doc-example With action
+ *    @doc-theme default
+ *      @doc-file toast.with-action.example.ts
+ *  @doc-example Dismissible
+ *    @doc-theme default
+ *      @doc-file toast.dismissible.example.ts
+ *
  * @category Library/Feedback
  */
 @Component({
@@ -74,14 +80,23 @@ export class KjToastComponent {
 }
 
 /**
- * Dismiss button for a toast. Bind `[toastId]` from `ctx.id`.
- * Clicking automatically calls `KjToastService.dismiss(id)`.
+ * Dismiss button for a toast. Bind `[toastId]` from `ctx.id`. Clicking calls
+ * `KjToastService.dismiss(id)`.
+ *
+ * The rendered `<button>` carries a default `aria-label="Dismiss notification"`
+ * so icon-only close buttons remain accessible (WCAG 4.1.2). Override via the
+ * `ariaLabel` input or by projecting visible text.
  */
 @Component({
   selector: 'kj-toast-close',
   standalone: true,
   imports: [KjToastClose],
-  template: `<button type="button" [kjToastClose]="toastId()" class="kj-toast-close"><ng-content /></button>`,
+  template: `<button
+    type="button"
+    [kjToastClose]="toastId()"
+    [attr.aria-label]="ariaLabel()"
+    class="kj-toast-close"
+  ><ng-content /></button>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -89,4 +104,12 @@ export class KjToastComponent {
 export class KjToastCloseComponent {
   /** The id of the toast to dismiss — bind from `ctx.id` in your template context. */
   readonly toastId = input.required<string>();
+
+  /**
+   * Accessible name for the close button. Defaults to `"Dismiss notification"`
+   * so icon-only close affordances satisfy WCAG 4.1.2 (Name, Role, Value)
+   * without consumer ceremony. Override per-instance when the toast already
+   * names its dismiss action elsewhere.
+   */
+  readonly ariaLabel = input<string>('Dismiss notification');
 }

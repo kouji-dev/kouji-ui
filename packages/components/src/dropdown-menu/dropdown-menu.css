@@ -1,0 +1,102 @@
+@layer kj.component {
+  /* The trigger and most wrappers use display: contents — they don't add a
+     box. Theme tokens land on `.kj-dropdown-menu` (the panel), which the
+     directive moves to a body-level container on open so it escapes any
+     clipping ancestor. */
+
+  .kj-dropdown-menu {
+    --kj-dropdown-menu-bg:           var(--kj-color-base-100);
+    --kj-dropdown-menu-fg:           var(--kj-color-base-content);
+    --kj-dropdown-menu-border-color: var(--kj-color-base-300);
+    --kj-dropdown-menu-radius:       var(--kj-radius-box);
+    --kj-dropdown-menu-padding:      var(--kj-space-xs);
+    --kj-dropdown-menu-shadow:       0 12px 32px rgb(0 0 0 / 0.18);
+
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 12rem;
+    max-width: min(20rem, calc(100vw - 2rem));
+    background: var(--kj-dropdown-menu-bg);
+    color: var(--kj-dropdown-menu-fg);
+    border: var(--kj-border) solid var(--kj-dropdown-menu-border-color);
+    border-radius: var(--kj-dropdown-menu-radius);
+    padding: var(--kj-dropdown-menu-padding);
+    font: 0.875rem / 1.5 var(--kj-font-sans);
+    box-shadow: var(--kj-dropdown-menu-shadow);
+    pointer-events: auto;
+    z-index: 1000;
+  }
+
+  .kj-dropdown-menu[hidden] { display: none; }
+
+  .kj-dropdown-menu-item {
+    --kj-dropdown-menu-item-padding-x: var(--kj-space-md);
+    --kj-dropdown-menu-item-padding-y: var(--kj-space-sm);
+    --kj-dropdown-menu-item-min-height: 2.75rem; /* 44px AAA touch target */
+    --kj-dropdown-menu-item-radius:    var(--kj-radius-field);
+    --kj-dropdown-menu-item-hover-bg:  var(--kj-color-base-200);
+    --kj-dropdown-menu-item-active-bg: var(--kj-color-base-300);
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--kj-space-sm);
+    width: 100%;
+    min-height: var(--kj-dropdown-menu-item-min-height);
+    box-sizing: border-box;
+    padding: var(--kj-dropdown-menu-item-padding-y) var(--kj-dropdown-menu-item-padding-x);
+    margin: 0;
+    background: transparent;
+    color: inherit;
+    border: none;
+    border-radius: var(--kj-dropdown-menu-item-radius);
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .kj-dropdown-menu-item:hover:not([data-disabled]) {
+    background: var(--kj-dropdown-menu-item-hover-bg);
+  }
+  .kj-dropdown-menu-item:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: -2px;
+  }
+  .kj-dropdown-menu-item[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .kj-dropdown-menu-separator {
+    display: block;
+    height: 1px;
+    margin: var(--kj-space-xs) 0;
+    background: var(--kj-color-base-300);
+  }
+
+  .kj-dropdown-menu-label {
+    display: block;
+    padding: var(--kj-space-xs) var(--kj-space-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--kj-color-base-content);
+    opacity: 0.65;
+  }
+
+  .kj-dropdown-menu-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .kj-dropdown-menu {
+      transition: opacity 120ms ease-out, transform 120ms ease-out;
+    }
+    .kj-dropdown-menu[data-state="closed"] { opacity: 0; transform: scale(0.98); }
+    .kj-dropdown-menu[data-state="open"]   { opacity: 1; transform: scale(1); }
+  }
+}

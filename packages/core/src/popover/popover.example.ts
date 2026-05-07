@@ -1,31 +1,32 @@
 import { Component } from '@angular/core';
-import {
-  KjPopover, KjPopoverTrigger,
-  KjPopoverContent, KjPopoverClose,
-} from './popover';
+import { KjPopover } from './popover';
+import { KjPopoverTrigger } from './popover-trigger';
+import { KjPopoverContent } from './popover-content';
+import { KjPopoverTitle } from './popover-title';
+import { KjPopoverClose } from './popover-close';
 import { KjButton } from '../button/button';
 
 @Component({
   selector: 'kj-example-popover-basic',
   standalone: true,
   imports: [
-    KjPopover, KjPopoverTrigger,
-    KjPopoverContent, KjPopoverClose,
+    KjPopover,
+    KjPopoverTrigger,
+    KjPopoverContent,
+    KjPopoverTitle,
+    KjPopoverClose,
     KjButton,
   ],
   styleUrls: ['../styles/docs-themes.css'],
   styles: [`
     :host { display: flex; align-items: flex-start; justify-content: center; padding: 3rem 2rem 10rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 220px; }
-    .anchor { position: relative; display: inline-block; }
     button[kjButton] { padding: 0.5rem 1.25rem; border: 1px solid var(--kj-border); background: transparent; color: var(--kj-text); cursor: pointer; font-family: inherit; font-size: 0.875rem; }
     button[kjButton]:hover { border-color: var(--kj-accent); color: var(--kj-accent); }
-    [kjPopoverContent] {
-      position: absolute; top: calc(100% + 8px); left: 0; z-index: 20;
+    [data-kj-overlay] [role="dialog"] {
+      position: fixed; z-index: 20;
       background: var(--kj-surface); border: 1px solid var(--kj-border); padding: 1rem; min-width: 14rem;
       color: var(--kj-text);
     }
-    [kjPopoverContent][hidden] { display: none; }
-    [kjPopoverContent][data-align="end"] { left: auto; right: 0; }
     .popover-title { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--kj-accent); }
     .popover-body { font-size: 0.8125rem; color: var(--kj-text-muted); margin: 0 0 1rem; line-height: 1.5; }
     .popover-footer { display: flex; justify-content: flex-end; gap: 0.5rem; }
@@ -34,16 +35,18 @@ import { KjButton } from '../button/button';
     [data-variant="ghost"] { border-color: transparent; background: transparent; color: var(--kj-text-muted); }
   `],
   template: `
-    <div class="anchor" kjPopover>
+    <div kjPopover>
       <button kjButton kjPopoverTrigger>Open Popover</button>
-      <div kjPopoverContent>
-        <p class="popover-title">Notification Settings</p>
-        <p class="popover-body">Control how and when you receive notifications from this app.</p>
-        <div class="popover-footer">
-          <button kjButton kjPopoverClose [kjVariant]="'ghost'">Cancel</button>
-          <button kjButton kjPopoverClose [kjVariant]="'default'">Save</button>
+      <ng-template kjPopoverContent kjAriaLabel="Notification settings">
+        <div role="document">
+          <h3 kjPopoverTitle class="popover-title">Notification Settings</h3>
+          <p class="popover-body">Control how and when you receive notifications from this app.</p>
+          <div class="popover-footer">
+            <button kjButton kjPopoverClose [kjVariant]="'ghost'">Cancel</button>
+            <button kjButton kjPopoverClose [kjVariant]="'default'">Save</button>
+          </div>
         </div>
-      </div>
+      </ng-template>
     </div>
   `,
 })

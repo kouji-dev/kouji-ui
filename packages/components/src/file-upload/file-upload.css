@@ -1,0 +1,207 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-file-upload — themed wrapper for the headless KjFileUpload
+   directive family. The directives own state + ARIA; CSS only
+   handles drop-zone / list / row visuals, drag-active highlight,
+   and per-row status icons.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-file-upload {
+    --kj-file-upload-gap:           var(--kj-space-md, 0.75rem);
+    --kj-file-upload-radius:        var(--kj-radius-md, 0.5rem);
+    --kj-file-upload-border:        1px dashed var(--kj-color-base-300, #d4d4d8);
+    --kj-file-upload-border-active: 2px dashed var(--kj-color-primary, #2563eb);
+    --kj-file-upload-bg:            var(--kj-color-base-100, transparent);
+    --kj-file-upload-bg-active:     var(--kj-color-primary-50, rgba(37, 99, 235, 0.06));
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-file-upload-gap);
+    width: 100%;
+  }
+
+  .kj-file-upload[data-disabled] {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  /* ── Drop-zone ───────────────────────────────────────────── */
+  .kj-file-upload__dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--kj-space-sm, 0.5rem);
+    padding: var(--kj-space-xl, 2rem) var(--kj-space-md, 1rem);
+    border: var(--kj-file-upload-border);
+    border-radius: var(--kj-file-upload-radius);
+    background: var(--kj-file-upload-bg);
+    color: var(--kj-color-base-content, currentColor);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 150ms ease-out, border-color 150ms ease-out;
+    min-height: 8rem; /* roomy enough for a thumbnail grid in the gallery example */
+  }
+
+  .kj-file-upload__dropzone:focus-visible {
+    outline: 2px solid var(--kj-color-primary, #2563eb);
+    outline-offset: 2px;
+  }
+
+  .kj-file-upload__dropzone[data-drag-active] {
+    border: var(--kj-file-upload-border-active);
+    background: var(--kj-file-upload-bg-active);
+  }
+
+  .kj-file-upload__dropzone[data-disabled] {
+    cursor: not-allowed;
+  }
+
+  .kj-file-upload__dropzone-hint {
+    font-size: 0.875rem;
+    color: var(--kj-color-base-500, #71717a);
+  }
+
+  /* ── Toolbar (trigger button) ───────────────────────────── */
+  .kj-file-upload__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--kj-space-sm, 0.5rem);
+    align-items: center;
+  }
+
+  /* ── List + rows ────────────────────────────────────────── */
+  .kj-file-upload__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-xs, 0.25rem);
+  }
+
+  .kj-file-upload__list:empty {
+    display: none;
+  }
+
+  .kj-file-upload__row {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-sm, 0.5rem);
+    padding: var(--kj-space-sm, 0.5rem) var(--kj-space-md, 0.75rem);
+    border: 1px solid var(--kj-color-base-200, #e4e4e7);
+    border-radius: var(--kj-file-upload-radius);
+    background: var(--kj-color-base-100, transparent);
+  }
+
+  .kj-file-upload__row[data-status="error"] {
+    border-color: var(--kj-color-error, #ef4444);
+    background: var(--kj-color-error-50, rgba(239, 68, 68, 0.06));
+  }
+
+  .kj-file-upload__row[data-status="done"] {
+    border-color: var(--kj-color-success, #10b981);
+  }
+
+  .kj-file-upload__row[data-status="cancelled"] {
+    opacity: 0.6;
+  }
+
+  .kj-file-upload__thumb {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--kj-radius-sm, 0.25rem);
+    object-fit: cover;
+    background: var(--kj-color-base-200, #e4e4e7);
+    flex: none;
+  }
+
+  .kj-file-upload__row-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .kj-file-upload__row-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--kj-space-sm, 0.5rem);
+    font-size: 0.875rem;
+  }
+
+  .kj-file-upload__row-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kj-file-upload__row-size {
+    color: var(--kj-color-base-500, #71717a);
+    font-variant-numeric: tabular-nums;
+    flex: none;
+  }
+
+  .kj-file-upload__row-status {
+    font-size: 0.75rem;
+    color: var(--kj-color-base-500, #71717a);
+  }
+
+  .kj-file-upload__row[data-status="error"] .kj-file-upload__row-status {
+    color: var(--kj-color-error, #ef4444);
+  }
+
+  .kj-file-upload__row[data-status="done"] .kj-file-upload__row-status {
+    color: var(--kj-color-success, #10b981);
+  }
+
+  .kj-file-upload__row-actions {
+    display: flex;
+    gap: var(--kj-space-xs, 0.25rem);
+    align-items: center;
+    flex: none;
+  }
+
+  /* Status icons — pure CSS, ::before content covers ✓ ✕ … */
+  .kj-file-upload__row-icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+  .kj-file-upload__row-icon[data-status="done"] { color: var(--kj-color-success, #10b981); }
+  .kj-file-upload__row-icon[data-status="done"]::before { content: "✓"; }
+  .kj-file-upload__row-icon[data-status="error"] { color: var(--kj-color-error, #ef4444); }
+  .kj-file-upload__row-icon[data-status="error"]::before { content: "✕"; }
+  .kj-file-upload__row-icon[data-status="uploading"]::before { content: "…"; }
+
+  .kj-file-upload__remove {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    color: inherit;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--kj-radius-sm, 0.25rem);
+    font-size: 0.875rem;
+    min-width: 44px;
+    min-height: 44px; /* WCAG 2.5.5 touch target floor */
+  }
+  .kj-file-upload__remove:focus-visible {
+    outline: 2px solid var(--kj-color-primary, #2563eb);
+    outline-offset: 2px;
+  }
+  .kj-file-upload__remove:hover {
+    background: var(--kj-color-base-200, #e4e4e7);
+  }
+
+  /* Reduced motion: collapse drop-zone hover transitions */
+  @media (prefers-reduced-motion: reduce) {
+    .kj-file-upload__dropzone {
+      transition: none;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/components",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Opinionated styled Angular components built on @kouji-ui/core directives. Themed at runtime via @kouji-ui/themes.",
   "license": "MIT",
   "repository": {

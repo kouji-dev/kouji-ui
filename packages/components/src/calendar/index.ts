@@ -1,0 +1,1 @@
+export { KjCalendarComponent } from './calendar';

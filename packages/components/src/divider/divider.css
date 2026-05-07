@@ -1,0 +1,93 @@
+@layer kj.component {
+  .kj-divider {
+    --kj-divider-color:     var(--kj-color-border, color-mix(in oklch, var(--kj-color-base-content) 20%, transparent));
+    --kj-divider-thickness: 1px;
+    --kj-divider-spacing:   var(--kj-space-md, 1rem);
+    --kj-divider-gap:       var(--kj-space-md, 1rem);
+
+    border: 0;
+    color: inherit;
+  }
+
+  /* Rule-only (the <hr> branch and any <div> with no projected label). */
+  .kj-divider[data-with-content="false"] {
+    block-size: var(--kj-divider-thickness);
+    inline-size: 100%;
+    margin-block: var(--kj-divider-spacing);
+    background-color: var(--kj-divider-color);
+  }
+
+  /* Vertical, rule-only — flips the axis using logical sizing. */
+  .kj-divider[data-with-content="false"][data-orientation="vertical"] {
+    inline-size: var(--kj-divider-thickness);
+    block-size: auto;
+    align-self: stretch;
+    margin-block: 0;
+    margin-inline: var(--kj-divider-spacing);
+  }
+
+  /* With-content (label nestled into the rule). */
+  .kj-divider[data-with-content="true"] {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-divider-gap);
+    margin-block: var(--kj-divider-spacing);
+  }
+
+  .kj-divider[data-with-content="true"][data-orientation="vertical"] {
+    flex-direction: column;
+    block-size: 100%;
+    margin-block: 0;
+    margin-inline: var(--kj-divider-spacing);
+  }
+
+  .kj-divider[data-with-content="true"]::before,
+  .kj-divider[data-with-content="true"]::after {
+    content: "";
+    flex: 1 1 0;
+    background-color: var(--kj-divider-color);
+    block-size: var(--kj-divider-thickness);
+  }
+
+  .kj-divider[data-with-content="true"][data-orientation="vertical"]::before,
+  .kj-divider[data-with-content="true"][data-orientation="vertical"]::after {
+    inline-size: var(--kj-divider-thickness);
+    block-size: auto;
+  }
+
+  /* Alignment of the projected label within the rule. */
+  .kj-divider[data-with-content="true"][data-align="start"]::before  { flex-grow: 0; flex-basis: 1rem; }
+  .kj-divider[data-with-content="true"][data-align="end"]::after     { flex-grow: 0; flex-basis: 1rem; }
+
+  /* Variant routing — line style. */
+  .kj-divider[data-variant="dashed"][data-with-content="false"] {
+    background-color: transparent;
+    border-block-start: var(--kj-divider-thickness) dashed var(--kj-divider-color);
+    block-size: 0;
+  }
+  .kj-divider[data-variant="dashed"][data-with-content="false"][data-orientation="vertical"] {
+    border-block-start: 0;
+    border-inline-start: var(--kj-divider-thickness) dashed var(--kj-divider-color);
+    inline-size: 0;
+  }
+  .kj-divider[data-variant="dotted"][data-with-content="false"] {
+    background-color: transparent;
+    border-block-start: var(--kj-divider-thickness) dotted var(--kj-divider-color);
+    block-size: 0;
+  }
+  .kj-divider[data-variant="dotted"][data-with-content="false"][data-orientation="vertical"] {
+    border-block-start: 0;
+    border-inline-start: var(--kj-divider-thickness) dotted var(--kj-divider-color);
+    inline-size: 0;
+  }
+
+  /* Size routing — spacing + thickness. */
+  .kj-divider[data-size="sm"] { --kj-divider-spacing: var(--kj-space-sm, 0.5rem); --kj-divider-thickness: 1px; }
+  .kj-divider[data-size="lg"] { --kj-divider-spacing: var(--kj-space-lg, 2rem);  --kj-divider-thickness: 2px; }
+
+  .kj-divider__content {
+    color: var(--kj-color-base-content);
+    font: inherit;
+    white-space: nowrap;
+  }
+}

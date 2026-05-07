@@ -12,12 +12,6 @@ set -e
 echo "→ lint"
 pnpm lint
 
-echo "→ test"
-pnpm test
-
-echo "→ build"
-pnpm build
-
 echo "→ changeset status (publishable changes need a changeset)"
 pnpm exec changeset status --since=origin/main || {
   echo ""

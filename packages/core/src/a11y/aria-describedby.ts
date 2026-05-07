@@ -21,7 +21,7 @@
 })
 export class KjAriaDescribedBy {
   /** One or more element IDs to reference via `aria-describedby`. */
-  kjDescribedBy = input<string | string[]>('');
+  kjDescribedBy = input<string | readonly string[]>('');
 
   /** @internal */
   readonly ariaDescribedBy = computed(() => {

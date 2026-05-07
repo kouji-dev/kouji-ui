@@ -29,13 +29,13 @@
 
   <span class="kj-navbar-spacer"></span>
 
-  <button type="button" class="kj-navbar-search" (click)="openSearch()" aria-label="Search docs">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+  <kj-button kjVariant="outline" class="kj-navbar-search" (click)="openSearch()" kjAriaLabel="Search docs">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
     <span>Search docs</span>
     <kbd>⌘K</kbd>
-  </button>
+  </kj-button>
 
   <span class="kj-navbar-version" aria-label="Library version">v{{ version }}</span>
 

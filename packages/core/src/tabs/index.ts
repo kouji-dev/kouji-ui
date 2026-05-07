@@ -1,2 +1,7 @@
-﻿export { KjTabs, KjTabList, KjTab, KjTabPanel } from './tabs';
-export { KJ_TABS, type KjTabsContext } from './tabs.context';
+export { KjTabs, KjTabList, KjTab, KjTabPanel } from './tabs';
+export {
+  KJ_TABS,
+  type KjTabsContext,
+  type KjTabsActivationMode,
+  type KjTabsOrientation,
+} from './tabs.context';

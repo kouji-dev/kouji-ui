@@ -1,15 +1,19 @@
 import { Component } from '@angular/core';
-import {
-  KjPopover, KjPopoverTrigger,
-  KjPopoverContent, KjPopoverClose,
-} from './popover';
+import { KjPopover } from './popover';
+import { KjPopoverTrigger } from './popover-trigger';
+import { KjPopoverContent } from './popover-content';
+import { KjPopoverTitle } from './popover-title';
+import { KjPopoverClose } from './popover-close';
 
 @Component({
   selector: 'kj-example-popover-finance',
   standalone: true,
   imports: [
-    KjPopover, KjPopoverTrigger,
-    KjPopoverContent, KjPopoverClose,
+    KjPopover,
+    KjPopoverTrigger,
+    KjPopoverContent,
+    KjPopoverTitle,
+    KjPopoverClose,
   ],
   styleUrls: ['../styles/docs-themes.css'],
   host: { class: 'kj-theme-finance' },
@@ -38,14 +42,16 @@ import {
   template: `
     <div class="anchor" kjPopover>
       <button kjPopoverTrigger>Preferences</button>
-      <div kjPopoverContent>
-        <p class="popover-title">Notification Preferences</p>
-        <p class="popover-body">Choose how you receive alerts and account notifications.</p>
-        <div class="popover-footer">
-          <button class="btn-cancel" kjPopoverClose>Cancel</button>
-          <button class="btn-primary" kjPopoverClose>Apply</button>
+      <ng-template kjPopoverContent>
+        <div role="document">
+          <h3 kjPopoverTitle class="popover-title">Notification Preferences</h3>
+          <p class="popover-body">Choose how you receive alerts and account notifications.</p>
+          <div class="popover-footer">
+            <button class="btn-cancel" kjPopoverClose>Cancel</button>
+            <button class="btn-primary" kjPopoverClose>Apply</button>
+          </div>
         </div>
-      </div>
+      </ng-template>
     </div>
   `,
 })

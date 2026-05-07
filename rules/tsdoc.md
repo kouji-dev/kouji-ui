@@ -1,151 +1,43 @@
-# TSDoc & Comments Rules
+# TSDoc & Comments
 
-## When TSDoc Is Required
+## When required
+All exported directives, classes, interfaces, type aliases, enums, methods, inputs, outputs. Private/internal → skip.
 
-Every **exported** directive, class, interface, type alias, enum, method, input, and output must have a TSDoc comment. The docs app uses `ts-morph` to extract TSDoc at build time — missing TSDoc means missing documentation.
+## Directive block format
+Reference: `packages/core/src/button/button.ts`
 
-Private members, internal helpers, and `@internal`-tagged items do not need TSDoc.
+Structure:
+1. One-sentence description
+2. Optional second sentence for nuance
+3. `@example` with minimal HTML snippet
+4. `@doc` block with `@doc-example` / `@doc-file` / `@doc-theme` tags
+5. `@category` path
 
-## Directive TSDoc — Canonical Format
+## Custom tags
 
-Use `packages/core/src/button/button.ts` as the reference. A directive block comment must follow this exact structure:
+| Tag | Purpose |
+|---|---|
+| `@doc` | Primary docs entry point (one per component) |
+| `@doc-example <Label>` | Named preview tab |
+| `@doc-theme <name>` | Theme variant (`default`, `retro`, `finance`) |
+| `@doc-file <filename>` | Example component file (relative to directive folder) |
+| `@category <path>` | Sidebar path e.g. `Core/Base/Button` |
 
-```ts
-/**
- * One-sentence description of what this directive does.
- * Optional second sentence for nuance or usage context.
- *
- * @example
- * ```html
- * <button kjButton [kjVariant]="'destructive'" [kjDisabled]="isLoading()">Delete</button>
- * ```
- * @doc
- *  @doc-example Basic
- *    @doc-theme default
- *      @doc-file button.example.ts
- *    @doc-theme retro
- *      @doc-file button.retro.example.ts
- *    @doc-theme finance
- *      @doc-file button.finance.example.ts
- *  @doc-example Sizes
- *    @doc-file button.sizes.example.ts
- * @category Core/Base/Button
- */
-```
+## Themed example references
 
-## Custom Docs Tags
+| Theme | Reference |
+|---|---|
+| `default` | [shadcn/ui](https://ui.shadcn.com) — neutral, soft radii |
+| `retro` | [retroui.dev](https://retroui.dev) — brutalist, hard shadows, uppercase |
+| `finance` | [Ant Design](https://ant.design) — 14px, blue `#1668dc`, 6px radius |
 
-These tags drive the docs site's live preview system. The docs extractor reads them from the directive's TSDoc block.
+Match the same component on the reference site before writing CSS.
 
-### `@doc`
-Marks this directive as the primary entry point for a docs page. Required on exactly one directive per component (usually the root one).
+## Inputs/outputs
+Single-line `/** */`. State purpose + default value. Don't describe the type.
 
-### `@doc-example <Label>`
-Declares a named example section. Maps to a tab in the docs preview. Each directive can have multiple examples.
+## Methods
+`/** One-sentence. @param x Description. @returns Description. */`
 
-```
-@doc-example Basic
-@doc-example Confirmation
-@doc-example Sizes
-```
-
-### `@doc-theme <name>`
-Declares a theme variant for the preceding `@doc-example`. Valid names: `default`, `retro`, `finance`. Each theme renders a separate live preview tab.
-
-#### Themed Example Design References
-
-When authoring a `*.<theme>.example.ts` file, mirror the visual language of the theme's reference library — same component proportions, weights, shadow language, hover behaviour. The examples are showcases of how kouji-ui composes inside an existing design system, not free-form design exercises.
-
-| Theme | Reference | Visual cues |
-|---|---|---|
-| `default` | [shadcn/ui](https://ui.shadcn.com) | Neutral palette, subtle borders, soft radii, restrained hovers |
-| `retro` | [retroui.dev](https://retroui.dev) (e.g. [Button](https://retroui.dev/docs/components/button#link)) | Brutalist boxes, hard shadows, thick borders, uppercase labels, transform-on-hover |
-| `finance` | [Ant Design](https://ant.design) (e.g. [Button](https://ant.design/components/button)) | Tight type (14px / weight 400), blue accents (`#1668dc`), 6px radius, low chrome — note: ghost uses a visible 1px border in text color, link uses transparent border for layout consistency |
-
-When adding a new component example, open the matching reference page and match the **same component** (e.g. retro Button → retroui.dev Button) before writing CSS.
-
-### `@doc-file <filename>`
-Points to the example component file relative to the directive's folder. The file must export a standalone Angular component.
-
-```
-@doc-file button.example.ts
-@doc-file button.retro.example.ts
-```
-
-### `@category <path>`
-Sets the docs sidebar category path. Format: `Core/<Category>/<Name>`.
-
-```
-@category Core/Base/Button
-@category Core/Overlays/Dialog
-@category Core/Inputs/Select
-```
-
-## Input & Output Documentation
-
-Single-line TSDoc for every public input and output:
-
-```ts
-/** The visual variant of the button. Defaults to `'default'`. */
-kjVariant = input<KjButtonVariant>('default');
-
-/** The size of the button. Defaults to `'md'`. */
-kjSize = input<KjButtonSize>('md');
-
-/** Emits the close result when the dialog is dismissed. */
-kjDialogClosed = output<unknown>();
-```
-
-Rules:
-- State the purpose, not the type (the type is visible from the signature)
-- Always document the default value for inputs that have one: `Defaults to \`'value'\`.`
-- Required inputs: no default mention needed, describe what it accepts
-
-## Method Documentation
-
-```ts
-/**
- * Selects a value and closes the dropdown.
- * @param val The value to select.
- */
-select(val: unknown): void { ... }
-
-/**
- * Announces a message to screen readers.
- * @param message The text to announce.
- * @param durationMs Optional duration in ms before clearing the announcement.
- * @returns A promise that resolves when the announcement is complete.
- */
-announce(message: string, durationMs?: number): Promise<void> { ... }
-```
-
-## Inline Comment Policy
-
-**Default: no inline comments.** The code itself communicates what it does through well-named identifiers.
-
-Only add an inline comment when the **WHY** is non-obvious — a hidden constraint, a subtle invariant, a workaround for a specific bug, or behaviour that would surprise a reader:
-
-```ts
-// afterNextRender: FocusMonitor requires the element to exist in the DOM
-afterNextRender(() => {
-  this.focusMonitor.monitor(this.el, false).subscribe(...);
-});
-```
-
-Never write comments that describe **what** the code does:
-
-```ts
-// ❌ obvious — the code already says this
-// Set the active index to the next item
-this.activeIndex.set(next);
-
-// ❌ task reference — belongs in git commit, not code
-// Fix for issue #42
-this._open.set(false);
-
-// ❌ who called this — irrelevant in the file
-// Used by KjDialogTrigger
-close(result?: unknown): void { ... }
-```
-
-No multi-line comment blocks (`/* ... */`) in source files — use TSDoc (`/** ... */`) for documentation and single-line `//` for the rare necessary inline note.
+## Inline comments — default: none
+Only when WHY is non-obvious. Never describe WHAT the code does. No `/* */` blocks — only `/** */` for TSDoc and `//` for rare inline notes.

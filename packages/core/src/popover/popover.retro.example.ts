@@ -1,15 +1,19 @@
 import { Component } from '@angular/core';
-import {
-  KjPopover, KjPopoverTrigger,
-  KjPopoverContent, KjPopoverClose,
-} from './popover';
+import { KjPopover } from './popover';
+import { KjPopoverTrigger } from './popover-trigger';
+import { KjPopoverContent } from './popover-content';
+import { KjPopoverTitle } from './popover-title';
+import { KjPopoverClose } from './popover-close';
 
 @Component({
   selector: 'kj-example-popover-retro',
   standalone: true,
   imports: [
-    KjPopover, KjPopoverTrigger,
-    KjPopoverContent, KjPopoverClose,
+    KjPopover,
+    KjPopoverTrigger,
+    KjPopoverContent,
+    KjPopoverTitle,
+    KjPopoverClose,
   ],
   styleUrls: ['../styles/docs-themes.css'],
   host: { class: 'kj-theme-retro' },
@@ -39,14 +43,16 @@ import {
   template: `
     <div class="anchor" kjPopover>
       <button kjPopoverTrigger>Settings</button>
-      <div kjPopoverContent>
-        <p class="popover-title">Notifications</p>
-        <p class="popover-body">Configure notification frequency and delivery preferences.</p>
-        <div class="popover-footer">
-          <button kjPopoverClose>Cancel</button>
-          <button kjPopoverClose class="btn-primary">Save</button>
+      <ng-template kjPopoverContent>
+        <div role="document">
+          <h3 kjPopoverTitle class="popover-title">Notifications</h3>
+          <p class="popover-body">Configure notification frequency and delivery preferences.</p>
+          <div class="popover-footer">
+            <button kjPopoverClose>Cancel</button>
+            <button kjPopoverClose class="btn-primary">Save</button>
+          </div>
         </div>
-      </div>
+      </ng-template>
     </div>
   `,
 })

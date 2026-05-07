@@ -4,9 +4,9 @@
   "scripts": {
     "ng": "ng",
     "build": "turbo run build",
-    "test": "vitest run --config=vitest.workspace.ts --passWithNoTests",
-    "test:watch": "vitest --config=vitest.workspace.ts",
-    "test:coverage": "vitest run --config=vitest.workspace.ts --coverage --passWithNoTests",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "test:coverage": "turbo run test --coverage",
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",
     "build:core": "turbo run build --filter=@kouji-ui/core",

@@ -1,25 +1,51 @@
-﻿import { Directive, inject, input, signal } from '@angular/core';
-import { KJ_POPOVER, KjPopoverContext, type KjPopoverSide, type KjPopoverAlign } from './popover.context';
-
-let _popoverIdCounter = 0;
+import {
+  Directive,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+} from '@angular/core';
+import { KjPopoverController } from './popover.controller';
+import {
+  KJ_POPOVER,
+  type KjAutoFocusEvent,
+  type KjPopoverAlign,
+  type KjPopoverContext,
+  type KjPopoverCloseEvent,
+  type KjPopoverCloseReason,
+  type KjPopoverSide,
+  type KjPopoverTriggerEvent,
+} from './popover.context';
 
 /**
- * Root popover container. Manages open state, ARIA wiring, and click-outside dismissal.
- * Pairs with `[kjPopoverTrigger]` and `[kjPopoverContent]`.
+ * Root popover state container.
  *
- * Click outside or Escape closes the popover. Clicking the trigger toggles it.
- * `aria-expanded` and `aria-controls` are automatically set on the trigger.
+ * Provides the `KJ_POPOVER` context shared with `[kjPopoverTrigger]`,
+ * `[kjPopoverContent]`, `[kjPopoverArrow]`, `[kjPopoverTitle]` and
+ * `[kjPopoverClose]`. Owns the `kjOpen` model and emits the family's
+ * cancellable lifecycle outputs (`kjCloseRequested`, `kjOpenAutoFocus`,
+ * `kjCloseAutoFocus`).
  *
- * @example
+ * The directive sets no host attributes — it is a transparent state
+ * container. Place it on whatever element naturally groups the trigger and
+ * the content (typically the same parent that wraps both).
+ *
+ * **Compound shape (default):**
+ *
  * ```html
  * <div kjPopover>
- *   <button kjPopoverTrigger>Options</button>
- *   <div kjPopoverContent>
- *     <p>Popover body</p>
- *     <button kjPopoverClose>Done</button>
- *   </div>
+ *   <button kjPopoverTrigger>Open</button>
+ *   <ng-template kjPopoverContent>
+ *     <h3 kjPopoverTitle>Profile</h3>
+ *     <button kjPopoverClose>Close</button>
+ *   </ng-template>
  * </div>
  * ```
+ *
+ * For a flat ergonomic without an outer wrapper see
+ * `[kjPopoverTriggerFor]` on `KjPopoverTrigger`.
+ *
  * @doc
  *  @doc-example Basic
  *    @doc-theme default
@@ -33,92 +59,104 @@ let _popoverIdCounter = 0;
 @Directive({
   selector: '[kjPopover]',
   standalone: true,
-  providers: [{ provide: KJ_POPOVER, useExisting: KjPopover }],
   exportAs: 'kjPopover',
+  providers: [
+    KjPopoverController,
+    { provide: KJ_POPOVER, useExisting: KjPopover },
+  ],
 })
 export class KjPopover implements KjPopoverContext {
-  /** Preferred side for the popover panel. Used via `data-side` for CSS. Defaults to `'bottom'`. */
-  kjPopoverSide = input<KjPopoverSide>('bottom');
-  /** Alignment along the cross-axis. Used via `data-align` for CSS. Defaults to `'start'`. */
-  kjPopoverAlign = input<KjPopoverAlign>('start');
+  /** The shared controller; provided in this directive's injector. */
+  readonly controller = inject(KjPopoverController);
 
-  readonly open = signal(false);
-  readonly popoverId = `kj-popover-${++_popoverIdCounter}`;
+  /** Preferred side for the panel. Reflected as `data-side` on content. Default `'bottom'`. */
+  readonly kjPopoverSide = input<KjPopoverSide>(this.controller.defaults.side);
+
+  /** Cross-axis alignment. Reflected as `data-align`. Default `'start'`. */
+  readonly kjPopoverAlign = input<KjPopoverAlign>(this.controller.defaults.align);
+
+  /** Pixel gap between trigger and panel. Default `8`. */
+  readonly kjPopoverOffset = input<number>(this.controller.defaults.offset);
+
+  /** Whether to flip / shift on collision. Default `true`. */
+  readonly kjAvoidCollisions = input<boolean>(true);
+
+  /** Pixel viewport padding for collision detection. Default `8`. */
+  readonly kjCollisionPadding = input<number>(this.controller.defaults.collisionPadding);
+
+  /** How the popover is opened. Default `'click'`. */
+  readonly kjTriggerEvent = input<KjPopoverTriggerEvent>(this.controller.defaults.triggerEvent);
+
+  /** Two-way bindable open state. */
+  readonly kjOpen = model<boolean>(false);
+
+  /** Convenience event paired with the `kjOpen` model. */
+  readonly kjOpenChange = output<boolean>();
+
+  /** Emitted before each close attempt. Cancellable via `event.preventDefault()`. */
+  readonly kjCloseRequested = output<KjPopoverCloseEvent>();
+
+  /** Emitted before auto-focus runs on open. Cancellable. */
+  readonly kjOpenAutoFocus = output<KjAutoFocusEvent>();
+
+  /** Emitted before focus restoration runs on close. Cancellable. */
+  readonly kjCloseAutoFocus = output<KjAutoFocusEvent>();
+
+  // ── KjPopoverContext fields (sourced from controller) ───────────────
+
+  readonly open = this.controller.open;
+  readonly popoverId = this.controller.popoverId;
+  readonly titleId = this.controller.titleId;
+  readonly modal = this.controller.modal;
+  readonly triggerElement = this.controller.triggerElement;
+
+  constructor() {
+    this.controller.configure({
+      emitOpenChange: (v) => {
+        if (this.kjOpen() !== v) this.kjOpen.set(v);
+        this.kjOpenChange.emit(v);
+      },
+      emitCloseRequested: (ev) => this.kjCloseRequested.emit(ev),
+      emitOpenAutoFocus: (ev) => this.kjOpenAutoFocus.emit(ev),
+      emitCloseAutoFocus: (ev) => this.kjCloseAutoFocus.emit(ev),
+    });
+
+    let lastModelOpen = this.kjOpen();
+    effect(() => {
+      const wanted = this.kjOpen();
+      if (wanted === lastModelOpen) return;
+      lastModelOpen = wanted;
+      this.controller.syncFromModel(wanted);
+    });
+  }
+
+  // ── KjPopoverContext mutations ──────────────────────────────────────
+
+  show(): void {
+    this.controller.show();
+  }
+
+  hide(reason: KjPopoverCloseReason): void {
+    this.controller.hide(reason);
+  }
 
   toggle(): void {
-    this.open.update(v => !v);
+    this.controller.toggle();
   }
 
-  hide(): void {
-    this.open.set(false);
+  registerTitleId(id: string): void {
+    this.controller.registerTitleId(id);
   }
-}
 
-/**
- * Trigger button that toggles the popover. Automatically sets `aria-expanded`
- * and `aria-controls` on the host element.
- *
- * @category Core/Overlays
- */
-@Directive({
-  selector: '[kjPopoverTrigger]',
-  standalone: true,
-  host: {
-    '[attr.aria-expanded]': 'ctx.open().toString()',
-    '[attr.aria-haspopup]': '"dialog"',
-    '[attr.aria-controls]': 'ctx.popoverId',
-    // stopPropagation prevents the document:click on kjPopoverContent from immediately closing
-    '(click)': '$event.stopPropagation(); ctx.toggle()',
-  },
-})
-export class KjPopoverTrigger {
-  readonly ctx = inject(KJ_POPOVER);
-}
+  unregisterTitleId(id: string): void {
+    this.controller.unregisterTitleId(id);
+  }
 
-/**
- * Popover content panel. Hidden when closed. Uses `hidden` attribute for
- * accessibility-compliant visibility. Click-outside and Escape both dismiss it.
- *
- * Clicks inside the panel are stopped so they don't bubble to the document listener.
- *
- * @category Core/Overlays
- */
-@Directive({
-  selector: '[kjPopoverContent]',
-  standalone: true,
-  host: {
-    '[attr.id]': 'ctx.popoverId',
-    '[attr.hidden]': '!ctx.open() ? "" : null',
-    '[attr.data-side]': 'ctx.kjPopoverSide()',
-    '[attr.data-align]': 'ctx.kjPopoverAlign()',
-    // Prevent clicks inside from closing the popover
-    '(click)': '$event.stopPropagation()',
-    // Close on Escape
-    '(document:keydown.escape)': 'ctx.open() && ctx.hide()',
-    // Close on any click outside (trigger stopPropagation prevents self-close)
-    '(document:click)': 'ctx.open() && ctx.hide()',
-  },
-})
-export class KjPopoverContent {
-  readonly ctx = inject(KJ_POPOVER);
-}
+  captureTriggerFocus(el: HTMLElement): void {
+    this.controller.captureTriggerFocus(el);
+  }
 
-/**
- * Closes the parent popover when clicked. Place inside `[kjPopoverContent]`.
- *
- * @example
- * ```html
- * <button kjPopoverClose>Done</button>
- * ```
- * @category Core/Overlays
- */
-@Directive({
-  selector: '[kjPopoverClose]',
-  standalone: true,
-  host: {
-    '(click)': 'ctx.hide()',
-  },
-})
-export class KjPopoverClose {
-  readonly ctx = inject(KJ_POPOVER);
+  restoreTriggerFocus(): void {
+    this.controller.restoreTriggerFocus();
+  }
 }

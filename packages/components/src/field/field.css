@@ -1,0 +1,138 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-field — vertical-stack form-row container.
+   The wrapper itself is `display: contents`-style transparent;
+   .kj-field renders the actual flex container so projected
+   children participate in the stack without an extra div.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  kj-field.kj-field {
+    --kj-field-gap:               var(--kj-space-xs);
+    --kj-field-label-fg:          var(--kj-color-base-content);
+    --kj-field-label-font:        var(--kj-font-sans);
+    --kj-field-label-font-size:   var(--kj-text-sm);
+    --kj-field-label-weight:      500;
+    --kj-field-help-fg:           var(--kj-color-neutral);
+    --kj-field-help-font-size:    var(--kj-text-xs);
+    --kj-field-error-fg:          var(--kj-color-destructive);
+    --kj-field-error-font-size:   var(--kj-text-xs);
+    --kj-field-required-fg:       var(--kj-color-destructive);
+    --kj-field-disabled-opacity:  0.55;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-field-gap);
+    width: 100%;
+  }
+
+  kj-field.kj-field[data-orientation="horizontal"] {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--kj-space-md);
+  }
+
+  kj-field.kj-field[data-disabled] {
+    opacity: var(--kj-field-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* Label */
+  .kj-field-label {
+    color: var(--kj-field-label-fg);
+    font: var(--kj-field-label-weight) var(--kj-field-label-font-size) / 1.4
+          var(--kj-field-label-font);
+  }
+  .kj-field-label[data-required]::after {
+    content: " *";
+    color: var(--kj-field-required-fg);
+    /* Aria-hidden via CSS — the * is purely visual; aria-required carries
+       semantics on the inner control. */
+  }
+  .kj-field-label[data-invalid] {
+    color: var(--kj-field-error-fg);
+  }
+
+  /* Help / description */
+  .kj-field-help {
+    color: var(--kj-field-help-fg);
+    font: var(--kj-field-help-font-size) / 1.4 var(--kj-font-sans);
+  }
+
+  /* Error */
+  .kj-field-error {
+    color: var(--kj-field-error-fg);
+    font: var(--kj-field-error-font-size) / 1.4 var(--kj-font-sans);
+  }
+
+  /* Compound input layout */
+  .kj-field-group {
+    --kj-field-group-bg:           var(--kj-color-base-100);
+    --kj-field-group-fg:           var(--kj-color-base-content);
+    --kj-field-group-border-color: var(--kj-color-base-300);
+    --kj-field-group-radius:       var(--kj-radius-field);
+    --kj-field-group-addon-fg:     var(--kj-color-neutral);
+    --kj-field-group-addon-bg:     var(--kj-color-base-200);
+    --kj-field-group-padding-x:    var(--kj-space-md);
+
+    display: inline-flex;
+    align-items: stretch;
+    width: 100%;
+    background: var(--kj-field-group-bg);
+    color: var(--kj-field-group-fg);
+    border: var(--kj-border) solid var(--kj-field-group-border-color);
+    border-radius: var(--kj-field-group-radius);
+    overflow: hidden;
+    transition: var(--kj-transition);
+  }
+  .kj-field-group:focus-within {
+    border-color: var(--kj-color-primary);
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: -2px;
+  }
+  .kj-field-group[data-invalid] {
+    border-color: var(--kj-color-destructive);
+  }
+  .kj-field-group[data-disabled] {
+    opacity: var(--kj-field-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  .kj-field-group__prefix,
+  .kj-field-group__suffix {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--kj-field-group-padding-x);
+    color: var(--kj-field-group-addon-fg);
+    background: var(--kj-field-group-addon-bg);
+    font: var(--kj-text-sm) / 1 var(--kj-font-sans);
+    white-space: nowrap;
+  }
+  /* Hide empty addon slots so the layout collapses cleanly when only one
+     side is used. The :empty selector handles the comment-only / no-content
+     case in projected slots. */
+  .kj-field-group__prefix:empty,
+  .kj-field-group__suffix:empty {
+    display: none;
+  }
+
+  .kj-field-group__control {
+    display: inline-flex;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  /* Inner controls inside a group should drop their own border / radius and
+     fill the group's box. Targeting common inner-control classes; the
+     consumer is responsible for ensuring their custom controls cooperate. */
+  .kj-field-group__control > .kj-input,
+  .kj-field-group__control > input,
+  .kj-field-group__control > kj-input,
+  .kj-field-group__control > kj-input > .kj-input {
+    border: 0;
+    border-radius: 0;
+    width: 100%;
+  }
+  .kj-field-group__control > .kj-input:focus-visible,
+  .kj-field-group__control > input:focus-visible {
+    outline: none;
+  }
+}

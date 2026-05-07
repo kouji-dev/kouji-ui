@@ -684,7 +684,7 @@ function extractTypeAliases(sourceFile: ts.SourceFile): TypeAliasDef[] {
 
 // ── Shared per-file processing ────────────────────────────────────────────────
 
-function pkgNameForPath(filePath: string): string {
+function _pkgNameForPath(filePath: string): string {
   const p = filePath.replace(/\\/g, '/');
   if (p.includes('/packages/core/src/')) return 'Core';
   if (p.includes('/packages/components/src/')) return 'Library';

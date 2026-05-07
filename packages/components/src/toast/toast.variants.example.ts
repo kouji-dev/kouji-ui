@@ -20,7 +20,7 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
     <ng-template #tpl let-ctx>
       <kj-toast [variant]="ctx.variant" [id]="ctx.id">
         <span>{{ ctx.title }}</span>
-        <kj-toast-close [toastId]="ctx.id" aria-label="Dismiss">×</kj-toast-close>
+        <kj-toast-close [toastId]="ctx.id">×</kj-toast-close>
       </kj-toast>
     </ng-template>
   `,

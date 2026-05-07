@@ -16,7 +16,7 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
       <kj-toast [variant]="ctx.variant" [id]="ctx.id">
         <span>{{ ctx.title }}</span>
         <kj-button kjSize="sm" kjVariant="ghost" style="margin-left:auto" (click)="undo(ctx)">Undo</kj-button>
-        <kj-toast-close [toastId]="ctx.id" aria-label="Dismiss">×</kj-toast-close>
+        <kj-toast-close [toastId]="ctx.id">×</kj-toast-close>
       </kj-toast>
     </ng-template>
   `,

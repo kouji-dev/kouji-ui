@@ -21,6 +21,8 @@ import {
   KjAccordionContentComponent,
   KjTabsComponent,
   KjTabComponent,
+  KjTabListComponent,
+  KjTabPanelComponent,
 } from '@kouji-ui/components';
 
 @Component({
@@ -48,6 +50,8 @@ import {
     KjAccordionContentComponent,
     KjTabsComponent,
     KjTabComponent,
+    KjTabListComponent,
+    KjTabPanelComponent,
   ],
   templateUrl: './theme-generator-preview.html',
   styleUrl: './theme-generator-preview.css',

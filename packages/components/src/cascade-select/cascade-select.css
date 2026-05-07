@@ -1,0 +1,123 @@
+@layer kj.component {
+  /* ── Root ────────────────────────────────────────────────────────────── */
+  .kj-cascade-select {
+    position: relative;
+    display: inline-block;
+    min-width: 12rem;
+  }
+
+  /* ── Trigger button ──────────────────────────────────────────────────── */
+  .kj-cascade-trigger {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--kj-space-sm);
+    background: var(--kj-color-base-100);
+    color: var(--kj-color-base-content);
+    border: 1px solid var(--kj-color-base-300);
+    border-radius: var(--kj-radius-field);
+    padding: var(--kj-space-sm) var(--kj-space-md);
+    font: 0.875rem var(--kj-font-sans);
+    cursor: pointer;
+    min-height: 2.75rem; /* 44px touch target */
+  }
+  .kj-cascade-trigger:focus-visible {
+    outline: 2px solid var(--kj-color-primary);
+    outline-offset: 2px;
+  }
+  .kj-cascade-select[data-disabled] .kj-cascade-trigger {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ── Root panel ──────────────────────────────────────────────────────── */
+  .kj-cascade-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background: var(--kj-color-base-100);
+    border: 1px solid var(--kj-color-base-300);
+    border-radius: var(--kj-radius-field);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+    padding: 4px;
+    min-width: 12rem;
+    max-height: 20rem;
+    overflow: auto;
+    z-index: 200;
+  }
+  .kj-cascade-panel[hidden] { display: none; }
+
+  /* ── Sub-panel ───────────────────────────────────────────────────────── */
+  .kj-cascade-sub-panel {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-left: 2px;
+    background: var(--kj-color-base-100);
+    border: 1px solid var(--kj-color-base-300);
+    border-radius: var(--kj-radius-field);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+    padding: 4px;
+    min-width: 12rem;
+    max-height: 20rem;
+    overflow: auto;
+    z-index: 201;
+  }
+  .kj-cascade-sub-panel[hidden] { display: none; }
+
+  /* ── Option row ──────────────────────────────────────────────────────── */
+  .kj-cascade-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--kj-space-sm) var(--kj-space-md);
+    border-radius: var(--kj-radius-selector);
+    cursor: pointer;
+    color: var(--kj-color-base-content);
+    font: 0.875rem var(--kj-font-sans);
+    min-height: 2.75rem; /* 44px touch target */
+    position: relative;
+  }
+  .kj-cascade-option:hover,
+  .kj-cascade-option[data-active] {
+    background: var(--kj-color-base-200);
+  }
+  .kj-cascade-option[aria-selected="true"] {
+    background: var(--kj-color-primary-subtle, var(--kj-color-base-200));
+    color: var(--kj-color-primary, var(--kj-color-base-content));
+  }
+  .kj-cascade-option[data-disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .kj-cascade-option[data-active-path] {
+    font-weight: 500;
+  }
+
+  /* ── Option label ────────────────────────────────────────────────────── */
+  .kj-cascade-option-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Chevron ─────────────────────────────────────────────────────────── */
+  .kj-cascade-option-chevron {
+    flex-shrink: 0;
+    font-size: 1rem;
+    color: var(--kj-color-base-400, currentColor);
+    opacity: 0.6;
+    margin-left: var(--kj-space-sm);
+  }
+  /* Hide chevron on leaf options (data-leaf="true" is set on the host element) */
+  [data-leaf="true"] .kj-cascade-option-chevron,
+  [data-leaf="true"].kj-cascade-option .kj-cascade-option-chevron {
+    display: none;
+  }
+}

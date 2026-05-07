@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
+import { KjButtonComponent } from '@kouji-ui/components';
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
@@ -11,7 +12,7 @@ import corePackage from '../../../../../../packages/core/package.json';
 @Component({
   selector: 'kj-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, KjButtonComponent],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

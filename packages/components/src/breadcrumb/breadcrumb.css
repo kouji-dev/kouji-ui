@@ -1,0 +1,121 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-breadcrumb — component-layer tokens + structural CSS
+   Tokens default to shared-layer values from @kouji-ui/themes.
+   The component owns its own gap, separator content, and per-cell
+   colours; the per-crumb anchor inherits Link's tokens by default.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-breadcrumb {
+    /* component knobs — themes / users can override any of these */
+    --kj-breadcrumb-gap:                var(--kj-space-sm, 0.5rem);
+    --kj-breadcrumb-separator-content:  '/';
+    --kj-breadcrumb-overflow-pad:       0.25rem;
+    --kj-color-breadcrumb-muted:        var(--kj-color-link, var(--kj-color-base-content));
+    --kj-color-breadcrumb-current:      var(--kj-color-base-content);
+
+    display: block;
+    color: var(--kj-color-breadcrumb-muted);
+    font-size: 0.875rem;
+  }
+
+  /* ── Sizes (root) ───────────────────────────────────────────── */
+  .kj-breadcrumb[data-size="sm"] { font-size: 0.8125rem; }
+  .kj-breadcrumb[data-size="md"] { font-size: 0.875rem; }
+  .kj-breadcrumb[data-size="lg"] { font-size: 1rem; }
+
+  /* ── Ordered list ───────────────────────────────────────────── */
+  .kj-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: var(--kj-breadcrumb-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+  }
+
+  .kj-breadcrumb-list[data-wrap="wrap"]     { flex-wrap: wrap; }
+  .kj-breadcrumb-list[data-wrap="no-wrap"]  { flex-wrap: nowrap; }
+  .kj-breadcrumb-list[data-wrap="truncate"] { flex-wrap: nowrap; }
+
+  /* ── Item ───────────────────────────────────────────────────── */
+  .kj-breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kj-breadcrumb-gap);
+    min-width: 0;
+  }
+
+  .kj-breadcrumb-item[data-hidden] { display: none; }
+
+  /* ── Auto separator (CSS pseudo-element) ────────────────────── */
+  .kj-breadcrumb-list:not([data-explicit-separators]) > .kj-breadcrumb-item:not(:first-child)::before {
+    content: var(--kj-breadcrumb-separator-content, '/');
+    color: var(--kj-color-breadcrumb-muted);
+    opacity: 0.65;
+    user-select: none;
+    margin-inline-end: var(--kj-breadcrumb-gap);
+  }
+
+  /* RTL mirroring: chevron-like glyphs flip; slashes stay. The data-attr
+     is set by the consumer when they want mirroring; we ship the rule. */
+  [dir="rtl"] .kj-breadcrumb-list:not([data-explicit-separators]) > .kj-breadcrumb-item:not(:first-child)::before {
+    /* No-op for '/'. For '›' / '→' the consumer adds [data-mirror-separator]. */
+  }
+  [dir="rtl"] .kj-breadcrumb[data-mirror-separator] .kj-breadcrumb-list:not([data-explicit-separators]) > .kj-breadcrumb-item:not(:first-child)::before {
+    display: inline-block;
+    transform: scaleX(-1);
+  }
+
+  /* ── Explicit separator ─────────────────────────────────────── */
+  .kj-breadcrumb-separator {
+    display: inline-flex;
+    align-items: center;
+    color: var(--kj-color-breadcrumb-muted);
+    opacity: 0.65;
+    user-select: none;
+  }
+
+  /* ── Per-crumb link (inherits KjLink styling via .kj-link) ──── */
+  .kj-breadcrumb-link {
+    text-decoration: none;
+    padding-block: 0.5rem; /* hit-area extension for WCAG 2.5.5 */
+  }
+
+  /* ── Current cell ───────────────────────────────────────────── */
+  .kj-breadcrumb-current {
+    color: var(--kj-color-breadcrumb-current);
+    font-weight: 500;
+  }
+
+  /* ── Ellipsis cell ──────────────────────────────────────────── */
+  .kj-breadcrumb-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    padding-inline: var(--kj-breadcrumb-overflow-pad);
+    color: var(--kj-color-breadcrumb-muted);
+    background: transparent;
+    border: 0;
+    cursor: default;
+    user-select: none;
+  }
+
+  .kj-breadcrumb-ellipsis[data-overflow="menu"] {
+    cursor: pointer;
+    border-radius: var(--kj-radius-field, 0.25rem);
+  }
+
+  .kj-breadcrumb-ellipsis[data-overflow="menu"]:hover {
+    background: var(--kj-color-base-200, transparent);
+  }
+
+  /* ── Print: show the full breadcrumb ────────────────────────── */
+  @media print {
+    .kj-breadcrumb-item[data-hidden] { display: revert; }
+    .kj-breadcrumb-ellipsis          { display: none; }
+  }
+}
