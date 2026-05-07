@@ -1,0 +1,109 @@
+import ts from 'typescript';
+import { tsquery } from '@phenomnomnominal/tsquery';
+import { SourceFile } from 'ts-morph';
+import { parseDocTags } from '../doc-tags';
+import { readCategoryTag } from '../extractor-helpers';
+import type {
+  DocItem,
+  DocKind,
+  FunctionDef,
+  FunctionParam,
+  SourcePkg,
+} from '../docs-extractor.types';
+
+export function detectFunctions(
+  morphFile: SourceFile,
+  pkg: SourcePkg,
+): DocItem[] {
+  const tsSourceFile = tsquery.ast(
+    morphFile.getFullText(),
+    morphFile.getFilePath(),
+    ts.ScriptKind.TS,
+  );
+
+  const fns = tsquery<ts.FunctionDeclaration>(
+    tsSourceFile,
+    'FunctionDeclaration:has(ExportKeyword)',
+  );
+  const items: DocItem[] = [];
+  let sourceOrder = 0;
+
+  for (const fn of fns) {
+    if (!fn.name) continue;
+    const tags = parseDocTags(fn);
+    if (!tags.hasDoc || !tags.name) continue;
+
+    const symbol = fn.name.text;
+    const returnType = fn.type ? fn.type.getText(tsSourceFile) : 'void';
+    const kind: DocKind = classify(fn, returnType);
+    const params: FunctionParam[] = fn.parameters.map(p => paramOf(p, tsSourceFile));
+    const signature = `${symbol}(${params
+      .map(p => `${p.name}${p.optional ? '?' : ''}: ${p.type}`)
+      .join(', ')}): ${returnType}`;
+
+    const def: FunctionDef = { name: symbol, signature, parameters: params, returnType };
+    const description = tags.description ?? jsDocSummary(fn);
+
+    items.push({
+      id: makeItemId(pkg, morphFile.getFilePath(), symbol),
+      symbol,
+      pageName: tags.name,
+      kind,
+      pkg,
+      filePath: morphFile.getFilePath(),
+      description,
+      isMain: tags.isMain,
+      order: tags.order,
+      sourceOrder: sourceOrder++,
+      categoryPath: readCategoryTag(fn, pkg),
+      function: def,
+    });
+  }
+
+  return items;
+}
+
+function classify(fn: ts.FunctionDeclaration, returnType: string): DocKind {
+  if (/EnvironmentProviders|Provider\[\]/.test(returnType)) return 'provider-fn';
+  if (fn.body && containsInjectCall(fn.body)) return 'inject-fn';
+  return 'function';
+}
+
+function containsInjectCall(body: ts.Block): boolean {
+  let found = false;
+  body.forEachChild(function visit(n) {
+    if (found) return;
+    if (
+      ts.isCallExpression(n) &&
+      ts.isIdentifier(n.expression) &&
+      n.expression.text === 'inject'
+    ) {
+      found = true;
+      return;
+    }
+    n.forEachChild(visit);
+  });
+  return found;
+}
+
+function paramOf(p: ts.ParameterDeclaration, sf: ts.SourceFile): FunctionParam {
+  return {
+    name: ts.isIdentifier(p.name) ? p.name.text : p.name.getText(sf),
+    type: p.type ? p.type.getText(sf) : 'unknown',
+    description: '',
+    optional: !!p.questionToken || !!p.initializer,
+  };
+}
+
+function jsDocSummary(node: ts.Node): string {
+  const block = ts.getJSDocCommentsAndTags(node)[0];
+  if (!block || !ts.isJSDoc(block)) return '';
+  const c = block.comment;
+  if (!c) return '';
+  return typeof c === 'string' ? c.trim() : (ts.getTextOfJSDocComment(c) ?? '').trim();
+}
+
+function makeItemId(pkg: SourcePkg, filePath: string, symbol: string): string {
+  const rel = filePath.replace(/\\/g, '/').split('/packages/')[1] ?? filePath;
+  return `${pkg}:${rel}:${symbol}`;
+}
