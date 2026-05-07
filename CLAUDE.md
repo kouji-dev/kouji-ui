@@ -52,3 +52,9 @@ The same rule applies to **file names**: name files after what they contain or d
 - ✅ `dialog.example.ts`, `dialog.retro.example.ts` — multi-part suffixes that describe purpose are fine
 
 Spec and test files follow the same base name as the file they test: `table.spec.ts` not `table.directive.spec.ts`.
+
+## Worktree Location
+
+Always create git worktrees inside the repo at `.worktrees/<name>` (e.g. `C:/Users/narut/Desktop/projects/kouji/.worktrees/overlay-impl`). Never create worktrees as siblings of the repo (e.g. `Desktop/projects/kouji-foo`) — keeping them inside the repo lets the user monitor them in the IDE alongside the main checkout.
+
+The `.worktrees/` directory is git-ignored (see `.gitignore`).
