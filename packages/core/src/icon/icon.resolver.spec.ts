@@ -2,16 +2,16 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideIcons, provideIconLoader, provideIconResolver } from './icon.providers';
-import { kjInjectIconResolver } from './icon.resolver';
+import { injectKjIconResolver } from './icon.resolver';
 import { KJ_ICON_REGISTRY } from './icon.tokens';
 
 function makeResolver(providers: any[]) {
   TestBed.configureTestingModule({ providers });
   const injector = TestBed.inject(Injector);
-  return runInInjectionContext(injector, () => kjInjectIconResolver());
+  return runInInjectionContext(injector, () => injectKjIconResolver());
 }
 
-describe('kjInjectIconResolver', () => {
+describe('injectKjIconResolver', () => {
   beforeEach(() => TestBed.resetTestingModule());
 
   describe('registry path', () => {

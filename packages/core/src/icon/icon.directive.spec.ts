@@ -6,6 +6,30 @@ import { provideIcons, provideIconLoader } from './icon.providers';
 
 expect.extend(toHaveNoViolations);
 
+describe('KjIconDirective — selector', () => {
+  it('attaches to <i> hosts', async () => {
+    const { container } = await render(`<i [kjIcon]="'settings'"></i>`, {
+      imports: [KjIconDirective],
+      providers: [provideIcons({ settings: 'url("a")' })],
+    });
+    const host = container.querySelector('i')!;
+    expect(host.classList.contains('kj-icon')).toBe(true);
+    expect(host.getAttribute('data-kj-icon-mode')).toBe('svg');
+  });
+
+  it('does NOT attach to disallowed hosts (e.g. <div>)', async () => {
+    // Static `kjIcon` attribute (no binding) — Angular only matches the
+    // directive against the host element's tag, not the attribute binding.
+    const { container } = await render(`<div kjIcon="settings"></div>`, {
+      imports: [KjIconDirective],
+      providers: [provideIcons({ settings: 'url("a")' })],
+    });
+    const host = container.querySelector('div')!;
+    expect(host.classList.contains('kj-icon')).toBe(false);
+    expect(host.hasAttribute('data-kj-icon-mode')).toBe(false);
+  });
+});
+
 describe('KjIconDirective — svg mode (decorative default)', () => {
   it('writes --kj-icon and data-kj-icon-mode="svg"', async () => {
     const { container } = await render(`<span [kjIcon]="'settings'"></span>`, {

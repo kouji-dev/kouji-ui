@@ -16,7 +16,7 @@ import {
  *
  * Must be called in an injection context.
  */
-export function kjInjectIconResolver(): (name: string) => string | null {
+export function injectKjIconResolver(): (name: string) => string | null {
   const registry = inject(KJ_ICON_REGISTRY);
   const loader = inject(KJ_ICON_LOADER);
   const fallback = inject(KJ_ICON_RESOLVER);

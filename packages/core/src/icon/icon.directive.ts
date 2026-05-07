@@ -1,6 +1,6 @@
 import { Directive, computed, input } from '@angular/core';
 import { getIconMode } from './icon.mode';
-import { kjInjectIconResolver } from './icon.resolver';
+import { injectKjIconResolver } from './icon.resolver';
 import type { KjIconColor, KjIconSize } from './icon.types';
 
 /**
@@ -17,7 +17,7 @@ import type { KjIconColor, KjIconSize } from './icon.types';
  * @category Core/Icon
  */
 @Directive({
-  selector: '[kjIcon]',
+  selector: 'span[kjIcon], i[kjIcon]',
   standalone: true,
   host: {
     class: 'kj-icon',
@@ -31,7 +31,7 @@ import type { KjIconColor, KjIconSize } from './icon.types';
   },
 })
 export class KjIconDirective {
-  private readonly resolve = kjInjectIconResolver();
+  private readonly resolve = injectKjIconResolver();
 
   /** Icon name. Names starting with `@font.` use font mode. */
   readonly kjIcon = input.required<string>();
