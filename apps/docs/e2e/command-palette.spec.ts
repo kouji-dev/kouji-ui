@@ -12,7 +12,7 @@ test('command-palette examples each render a trigger button + closed modal', asy
   ]) {
     const root = page.locator(sel);
     await expect(root).toBeVisible();
-    await expect(root.locator('.trigger').first()).toBeVisible();
+    await expect(root.locator('kj-button').first()).toBeVisible();
     // Shell is rendered but not open by default.
     await expect(root.locator('.kj-command-palette__shell')).toHaveCount(1);
     await expect(root.locator('.kj-command-palette__shell.is-open')).toHaveCount(0);
@@ -23,7 +23,7 @@ test('clicking the trigger opens the modal with backdrop, dialog, and footer', a
   await page.goto('/docs/components/command-palette');
 
   const example = page.locator('kj-command-palette-example');
-  await example.locator('.trigger').click();
+  await example.locator('kj-button button').first().click();
 
   const shell = example.locator('.kj-command-palette__shell.is-open');
   await expect(shell).toBeVisible();
