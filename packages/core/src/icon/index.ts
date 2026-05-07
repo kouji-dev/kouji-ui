@@ -5,3 +5,10 @@ export type {
   KjIconColor,
   KjIconSize,
 } from './icon.types';
+export {
+  KJ_ICON_ENTRIES,
+  KJ_ICON_REGISTRY,
+  KJ_ICON_RESOLVER,
+  KJ_ICON_LOADER,
+  KJ_ICON_CSS_PATH,
+} from './icon.tokens';
