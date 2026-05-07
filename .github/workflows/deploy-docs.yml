@@ -2,13 +2,10 @@ name: Deploy Docs
 
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
-    paths:
-      - 'apps/docs/**'
-      - 'angular.json'
-      - 'packages/core/src/**'
-      - '.github/workflows/deploy-docs.yml'
 
 concurrency:
   group: deploy-docs-${{ github.ref }}
@@ -18,6 +15,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Trigger Render deploy and wait
