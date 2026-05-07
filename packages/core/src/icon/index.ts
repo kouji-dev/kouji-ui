@@ -1,3 +1,4 @@
+export { getIconMode, type IconMode } from './icon.mode';
 export type {
   IconResolver,
   IconLoader,
