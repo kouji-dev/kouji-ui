@@ -96,6 +96,7 @@ export interface DocItem {
   /** Stable id within a manifest. Built from `<pkg>:<filePath>:<symbol>`. */
   id: string;
   symbol: string;
+  pageName: string;
   kind: DocKind;
   pkg: SourcePkg;
   filePath: string;
