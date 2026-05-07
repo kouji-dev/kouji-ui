@@ -12,3 +12,8 @@ export {
   KJ_ICON_LOADER,
   KJ_ICON_CSS_PATH,
 } from './icon.tokens';
+export {
+  provideIcons,
+  provideIconResolver,
+  provideIconLoader,
+} from './icon.providers';
