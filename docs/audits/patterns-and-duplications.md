@@ -274,7 +274,9 @@ Decision rule:
 
 > Note: `kjCommandPalette.register()` was considered but rejected — async filtering and result ranking belong at the component level (consumer passes filter fn / observable), not in a global registry.
 
-### Final shipping list
+### Final shipping list (overlay-scoped only)
+
+> Scope: this list covers **only overlay-using surfaces**. Non-overlay form controls — `kj-input`, `kj-textarea`, `kj-checkbox`, `kj-radio`, `kj-switch`, `kj-slider`, `kj-rating`, `kj-input-group`, `kj-input-mask`, `kj-input-otp` — are out of scope for category 1 and ship unchanged. They will be revisited in category 3 (Form control bridge).
 
 | Layer | Items |
 |---|---|
