@@ -21,6 +21,15 @@
 4. WCAG 1.1.1 / 1.4.1 / 1.4.11 compliance enforced by the directive (not delegated to consumers).
 5. Pure-projection composition with existing components (button, alert, etc.) — components remain icon-agnostic.
 
+## This session's scope
+
+This implementation session ships **only the core icon layer**. Out of this session:
+
+- The Lucide adapter in `@kouji-ui/components` (deferred to a follow-up session).
+- Migration of existing component examples from inlined `<svg>` to `[kjIcon]` (deferred).
+
+The core layer must be complete and self-testable without those follow-ups landing.
+
 ## Non-goals (v1)
 
 - Multi-color SVGs (the CSS mask-image approach is monochrome). Future `@inline.` mode may address this.
