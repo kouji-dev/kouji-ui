@@ -19,7 +19,7 @@ import { KjSliderComponent } from './slider';
   `,
 })
 class SingleHost {
-  value = signal<number | undefined>(40);
+  value = signal<number>(40);
   min = 0;
   max = 100;
   step = 1;

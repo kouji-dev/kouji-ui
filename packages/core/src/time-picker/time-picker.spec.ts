@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { fireEvent } from '@testing-library/angular';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test } from 'vitest';
 import {
   KjTimePicker,
   KjTimePickerHours,
@@ -25,6 +25,7 @@ import { parseTimeString, toParts } from './time-picker.format';
       kjTimePicker
       [(kjValue)]="value"
       [kj12Hour]="twelveHour()"
+      [kjHourCycle]="hourCycle()"
       [kjShowSeconds]="showSeconds()"
       [kjStep]="step()"
       [kjValueShape]="valueShape()"
@@ -41,6 +42,7 @@ import { parseTimeString, toParts } from './time-picker.format';
 class HostComponent {
   value = signal<Date | string | null>(new Date(2024, 0, 1, 9, 30, 0));
   twelveHour = signal(false);
+  hourCycle = signal<'h11' | 'h12' | 'h23' | 'h24' | 'auto'>('h23');
   showSeconds = signal(false);
   step = signal(1);
   valueShape = signal<'date' | 'string'>('date');
@@ -54,6 +56,8 @@ function setup(): { fixture: ReturnType<typeof TestBed.createComponent<HostCompo
 }
 
 describe('KjTimePicker (headless)', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
   test('wrapper is a group with role="group"', () => {
     const { root } = setup();
     const wrapper = root.querySelector('[kjTimePicker]') as HTMLElement;

@@ -103,17 +103,17 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCalendarComponent {
-  /** Currently selected date. Two-way bindable — `[(kjValue)]`. */
-  readonly kjValue = model<Date>(new Date(-8640000000000000));
+  /** Currently selected date. Two-way bindable — `[(kjValue)]`. `null` clears. */
+  readonly kjValue = model<Date | null>(null);
 
-  /** Earliest selectable date (inclusive). */
-  readonly kjMin = input<Date>(new Date(-8640000000000000));
+  /** Earliest selectable date (inclusive). `null` = open. */
+  readonly kjMin = input<Date | null>(null);
 
-  /** Latest selectable date (inclusive). */
-  readonly kjMax = input<Date>(new Date(8640000000000000));
+  /** Latest selectable date (inclusive). `null` = open. */
+  readonly kjMax = input<Date | null>(null);
 
   /** Per-date predicate; `false` disables the cell. */
-  readonly kjDisabledDates = input<(d: Date) => boolean>(() => false);
+  readonly kjDisabledDates = input<((d: Date) => boolean) | null>(null);
 
   /** BCP-47 locale tag. Defaults to Angular's `LOCALE_ID`. */
   readonly kjLocale = input<string>('');

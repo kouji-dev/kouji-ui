@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ModelSignal,
   ViewEncapsulation,
   booleanAttribute,
   computed,
@@ -109,8 +108,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTimePickerComponent {
-  /** Two-way bindable time value. */
-  readonly kjValue: ModelSignal<Date | string> = model<Date | string>(new Date(-8640000000000000));
+  /** Two-way bindable time value. `null` clears. */
+  readonly kjValue = model<Date | string | null>(null);
 
   readonly kjValueShape = input<'date' | 'string'>('date');
   readonly kj12Hour = input(false, { transform: booleanAttribute });
@@ -124,15 +123,15 @@ export class KjTimePickerComponent {
   });
   readonly kjSecondStep = input<number, unknown>(1, { transform: numberAttribute });
 
-  readonly kjMin = input<Date | string | TimeParts>(new Date(-8640000000000000));
-  readonly kjMax = input<Date | string | TimeParts>(new Date(8640000000000000));
+  readonly kjMin = input<Date | string | TimeParts | null>(null);
+  readonly kjMax = input<Date | string | TimeParts | null>(null);
 
   readonly kjReadonly = input(false, { transform: booleanAttribute });
   readonly kjDisabled = input(false, { transform: booleanAttribute });
   readonly kjInvalid = input(false, { transform: booleanAttribute });
 
   readonly kjLocale = input<string>('');
-  readonly kjReferenceDate = input<Date>(new Date(8640000000000000));
+  readonly kjReferenceDate = input<Date | undefined>(undefined);
 
   readonly kjAriaLabel = input<string>('');
   readonly kjHoursLabel = input<string>('Hours');

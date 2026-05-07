@@ -114,6 +114,8 @@ export class KjTimePicker implements KjTimePickerContext {
   // ── Internal state ────────────────────────────────────────────────────────
 
   private readonly _parts = signal<TimeParts | null>(null);
+  /** Stable fallback reference Date when kjReferenceDate is undefined. */
+  private readonly _refDate = new Date();
 
   /** @internal */
   readonly value: Signal<TimeParts | null> = this._parts.asReadonly();
@@ -249,7 +251,7 @@ export class KjTimePicker implements KjTimePickerContext {
     if (this.kjValueShape() === 'string') {
       return formatTimeString(t, this.showSeconds());
     }
-    return toDate(t, this.kjReferenceDate() ?? new Date());
+    return toDate(t, this.kjReferenceDate() ?? this._refDate);
   }
 }
 

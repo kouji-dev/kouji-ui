@@ -346,7 +346,7 @@ export class KjColorPickerTrigger {
 
   /** @internal */
   readonly ariaLabel = computed(() =>
-    this.root.kjAriaLabel() ?? `Color picker, current value ${this.ctx.hex()}`);
+    this.root.kjAriaLabel() || `Color picker, current value ${this.ctx.hex()}`);
 
   /** @internal */
   onClick(event: Event): void {

@@ -130,7 +130,7 @@ export class KjSliderComponent {
   readonly kjValue = model<number>(0);
 
   /** Range-mode value tuple. Setting this switches to two-thumb mode. */
-  readonly kjRange = model<readonly [number, number]>([0, 0]);
+  readonly kjRange = model<readonly [number, number] | undefined>(undefined);
 
   readonly kjMin = input<number>(0);
   readonly kjMax = input<number>(100);
