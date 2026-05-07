@@ -287,7 +287,179 @@ Decision rule:
 
 ## 3. Form control bridge (CVA)
 
-_TBD_
+### Impacted
+
+`input`, `textarea`, `checkbox`, `radio`, `toggle`, `switch`, `slider`, `rating`, `number-input`, `input-mask`, `input-otp`, `select`, `multi-select`, `combobox`, `tree-select`, `cascade-select`, `calendar`, `date-picker`, `time-picker`, `color-picker`.
+
+### Feature comparison
+
+| Directive | Value type | CVA wiring | writeValue | onChange | onTouched | setDisabledState | Validator | 2-way `model()` | Touched/dirty |
+|---|---|---|---|---|---|---|---|---|---|
+| **KjInput** | string | ✅ via `KjFormControl` | effect → DOM | `notifyChange()` | blur | via FormCtrl | ❌ | ❌ | `formCtrl.touched()` |
+| **KjTextarea** | string | ✅ via `KjFormControl` | effect → DOM | `notifyChange()` | blur | via FormCtrl | ❌ | ❌ | ✅ |
+| **KjNumberInput** | number\|null | ✅ via `KjFormControl` | effect + parse | `notifyChange()` | blur | via FormCtrl | min/max | `kjValue` | ✅ |
+| **KjCheckbox** | boolean | ✅ via `KjFormControl` | via `model()` | `notifyChange()` | blur | via FormCtrl | ❌ | `kjChecked` | ✅ |
+| **KjRadio** | unknown | ✅ via `KjFormControl` | via group | `notifyChange()` | blur | via FormCtrl | ❌ | ❌ | ✅ |
+| **KjToggle** | boolean | ✅ via `KjFormControl` | via `model()` | `notifyChange()` | blur | via FormCtrl | ❌ | `kjPressed` | ✅ |
+| **KjTimePicker** | Date\|string\|null | ✅ via `KjFormControl` | effect + parse | `notifyChange()` | manual | via FormCtrl | min/max | `kjValue` | ✅ |
+| **KjColorPicker** | string\|array\|obj | ✅ via `KjFormControl` | effect + parse HSV | `notifyChange()` | manual | via FormCtrl | ❌ | computed | ✅ |
+| **KjInputOtp** | string | ✅ via `KjFormControl` | effect → cells | `notifyChange()` | blur delegate | via FormCtrl | ❌ | computed | ✅ |
+| **KjInputMask** | string | ✅ via host `KjInput` | via parent | parent | parent | parent | incomplete | ❌ | parent |
+| **KjCombobox** | unknown | ⚠️ partial (input only) | n/a | `commitActive()` | manual | via `KjDisabled` | ❌ | `kjValue` | ✅ |
+| **KjCascadeSelect** | unknown | ⚠️ via composed `KjSelect` | via `model()` | `select()` | manual | via `KjDisabled` | ❌ | composed | ❌ |
+| **KjSlider** | number\|tuple | ❌ none | via `model()` | manual | manual | via `KjDisabled` | min/max bounds | `kjValue`/`kjRange` | ❌ |
+| **KjSelect** | unknown | ❌ none | via `model()` | `select()` | manual | via `KjDisabled` | ❌ | `kjValue` | ❌ |
+| **KjMultiSelect** | unknown[] | ❌ none | via `model()` | toggle | manual | via `KjDisabled` | ❌ | `kjValue` | ❌ |
+| **KjTreeSelect** | unknown\|array | ❌ none | via `model()` | `selectNode()` | manual | via `KjDisabled` | ❌ | `kjValue` | ❌ |
+| **KjCalendar** | Date\|null | ❌ none | via `model()` | `selectDate()` | manual | via `KjDisabled` | min/max | `kjValue` | ❌ |
+| **KjDatePicker** | Date\|null | ❌ none | via `model()` | `selectDate()` | manual | via `KjDisabled` | min/max | `kjValue` | ❌ |
+
+### The big finding — 3 inconsistent CVA patterns
+
+| Pattern | Members | Problem |
+|---|---|---|
+| ✅ **Full CVA via `KjFormControl`** | input, textarea, number-input, checkbox, radio, toggle, time-picker, color-picker, input-otp, input-mask | works correctly with Angular Forms |
+| ⚠️ **Partial CVA** | combobox, cascade-select | only some flows wired; `formCtrl.touched()` missing on parts |
+| ❌ **No CVA at all** | slider, select, multi-select, tree-select, calendar, date-picker | **don't integrate with `[formControl]` / `formControlName`** |
+
+This is a gap, not a feature. Every form control in a UI library MUST integrate with Angular Forms. The "model-only" group breaks reactive forms, validation, `ng-touched` styling, `submitted` state, and `formGroup.valueChanges`.
+
+### A11Y angle — ARIA attributes driven by CVA state
+
+| ARIA attr | Source signal | When applied | AAA gotcha |
+|---|---|---|---|
+| `aria-disabled` / native `disabled` | `disabled()` (from `KjDisabled`) | always | native `disabled` removes from tab order; `aria-disabled` keeps it focusable. Pick per control type. |
+| `aria-invalid="true"` | `invalid() && touched()` | **only after touched** | AAA: never announce error before user interaction (don't shout "invalid" on first paint) |
+| `aria-required="true"` | `required()` | always when required | mirrors HTML `required`; SR announces "required" |
+| `aria-readonly="true"` | `readonly()` | always | distinct from disabled — value still announced |
+| `aria-busy="true"` | `pending()` (async validation) | during validation | prevents SR mid-validate spam |
+
+**Touched gating is the AAA rule.** Showing `aria-invalid` on first render of an empty required field is a known WCAG 3.3.1 violation pattern.
+
+**The 6 "model-only" controls fail A11Y too**, not just Forms — `aria-invalid`, `aria-required`, `aria-busy` are never set because there's no `KjFormControl` host instance to drive them. Migration is an A11Y fix.
+
+### Pattern ownership across categories
+
+| Concern | Cat |
+|---|---|
+| Is the control disabled / invalid / required / readonly / busy? | **3 (CVA)** |
+| What's the label / description text and where is it? | 7 |
+| Where is the error message rendered and how is it linked (`aria-describedby`)? | 7 |
+| When and how is the error announced to AT? | 8 |
+
+CVA owns the **state**. Cat 7 owns the **wiring**. Cat 8 owns the **announcement**.
+
+### Two clusters by value semantics
+
+| Cluster | Members | Bridge shape |
+|---|---|---|
+| **Direct** (DOM value === model value) | input, textarea, checkbox, radio, toggle | `writeValue` → DOM attr; `(input)`/`(change)` → `notifyChange` |
+| **Parsed** (model ↔ internal representation) | number-input, time-picker, color-picker, slider, date-picker, calendar, select, multi-select, combobox, tree-select, cascade-select, input-otp, input-mask | external value parsed into internal state; commit serialises back |
+
+### Shared vs divergent
+
+| Aspect | Shared (`KjFormControl`) | Divergent (per-control) |
+|---|---|---|
+| `writeValue` callback storage | ✅ | parsing/coercion logic |
+| `registerOnChange` | ✅ | when to call `notifyChange()` |
+| `registerOnTouched` | ✅ | what counts as "touched" (blur vs interaction vs commit) |
+| `setDisabledState` | ✅ (delegates to `KjDisabled`) | downstream propagation to children |
+| `value` / `disabled` / `touched` / `dirty` / `pending` signals | ✅ | shape/type |
+| `NG_VALUE_ACCESSOR` provider | ✅ (one place) | — |
+| `Validator` (`NG_VALIDATORS`) | ❌ | min/max/pattern/required vary |
+| 2-way `model()` ergonomic | ❌ | most controls expose one |
+
+### Primitives to extract / harden
+
+| Primitive | Kind | Shape | A11Y contract |
+|---|---|---|---|
+| `KjFormControl` *(exists, harden)* | hostDirective | provides `NG_VALUE_ACCESSOR`; **`inject()`s `KjDisabled` from host injector**; signals: `value()`, `disabled()`, `touched()`, `dirty()`, `pending()`, `invalid()`, `required()`, `readonly()`, `showError()` | owns `aria-invalid` (touched-gated), `aria-required`, `aria-readonly`, `aria-busy` |
+| `KjDisabled` *(exists, reused)* | hostDirective | owns `disabled()` signal + native `disabled` attr | owns `aria-disabled` / native `disabled`. Reusable on buttons, links, anywhere — **NOT a hostDirective of `KjFormControl`** |
+| `KjValidator` | hostDirective | provides `NG_VALIDATORS`; configurable check fn | feeds `invalid()` + `errors()` into `KjFormControl` |
+| `KjValueAdapter<TExt, TInt>` | provider service | `parse(external) → internal`; `serialise(internal) → external` | none (data layer) |
+
+### Composition rule — `KjDisabled` lives on the consumer host, not inside `KjFormControl`
+
+`KjFormControl` does **not** declare `KjDisabled` in its `hostDirectives`. Instead it `inject()`s `KjDisabled` from the consumer's host injector, **expecting** the consumer to compose it.
+
+**Why:** `KjDisabled` is reused on buttons, links, toggles, anywhere — not just form controls. Forcing it as a `KjFormControl` hostDirective would tightly couple the two. Keeping the composition at the consumer level lets `KjDisabled` stay independently usable.
+
+```ts
+// ❌ Wrong — couples KjDisabled to form-control use only
+@Directive({
+  selector: '[kjFormControl]',
+  hostDirectives: [KjDisabled],  // <— don't do this
+})
+export class KjFormControl<T> { ... }
+
+// ✅ Right — consumer composes both; KjFormControl injects what it expects
+@Directive({
+  selector: '[kjFormControl]',
+  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: KjFormControl, multi: true }],
+  host: {
+    '[attr.aria-invalid]': 'showError() ? "true" : null',
+    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-readonly]': 'readonly() ? "true" : null',
+    '[attr.aria-busy]': 'pending() ? "true" : null',
+  },
+})
+export class KjFormControl<T> implements ControlValueAccessor {
+  // Expects KjDisabled to be on the same host. Throws (or fails DI) if missing.
+  private readonly disabledDir = inject(KjDisabled);
+  readonly disabled = this.disabledDir.disabled;
+  // ...
+}
+
+// Consumer:
+@Directive({
+  selector: '[kjInput]',
+  hostDirectives: [
+    { directive: KjDisabled, inputs: ['kjDisabled'] },     // first — KjFormControl injects it
+    { directive: KjFormControl, inputs: ['kjReadonly'] },
+  ],
+})
+export class KjInput { ... }
+```
+
+### Composition decision: option **C** (status quo + harden + migrate)
+
+| Action | Scope |
+|---|---|
+| 1. Standardize on `KjFormControl` as **the** CVA bridge | every form control adopts the host directive |
+| 2. **Migrate "no CVA" group** | slider, select, multi-select, tree-select, calendar, date-picker → add `[KjDisabled, KjFormControl]` to `hostDirectives`, route `model()` writes through `formCtrl.notifyChange()` |
+| 3. **Fix "partial CVA" group** | combobox, cascade-select → ensure `markTouched()` fires on commit/blur consistently |
+| 4. Extract `KjValidator` for min/max/pattern | number-input, slider, date-picker, calendar, time-picker, input-mask |
+| 5. Keep `model()` ergonomic | 2-way `kjValue` stays on top of CVA — both fire from a single commit point |
+| 6. **`KjDisabled` stays decoupled** | composed on consumer host, injected (not hostDirective'd) inside `KjFormControl` |
+
+### Per-control composition target
+
+| Control | Current | Target hostDirectives |
+|---|---|---|
+| KjInput | `KjFormControl` | `KjDisabled, KjFormControl` (unchanged in spirit) |
+| KjTextarea | `KjFormControl` | `KjDisabled, KjFormControl` |
+| KjNumberInput | `KjFormControl` | `KjDisabled, KjFormControl, KjValidator{min,max}` |
+| KjCheckbox / KjRadio / KjToggle | `KjFormControl` | `KjDisabled, KjFormControl` |
+| KjTimePicker | `KjFormControl` | `KjDisabled, KjFormControl, KjValidator{min,max}` |
+| KjColorPicker | `KjFormControl` | `KjDisabled, KjFormControl` |
+| KjInputOtp | `KjFormControl` | `KjDisabled, KjFormControl` |
+| KjInputMask | host `KjInput` | inherits via parent + `KjValidator{incomplete}` |
+| **KjCombobox** | partial | `KjDisabled, KjFormControl` (full) |
+| **KjSlider** | none | `KjDisabled, KjFormControl, KjValidator{min,max}` |
+| **KjSelect** | none | `KjDisabled, KjFormControl` |
+| **KjMultiSelect** | none | `KjDisabled, KjFormControl` |
+| **KjTreeSelect** | none | `KjDisabled, KjFormControl` |
+| **KjCalendar** | none | `KjDisabled, KjFormControl, KjValidator{min,max}` |
+| **KjDatePicker** | none | `KjDisabled, KjFormControl, KjValidator{min,max}` |
+| **KjCascadeSelect** | partial via `KjSelect` | `KjDisabled, KjFormControl` (own, not via composed select) |
+
+### Wins
+
+- All form controls integrate uniformly with reactive forms
+- All form controls expose `aria-invalid` (touched-gated), `aria-required`, `aria-busy` — A11Y fix for 6 controls
+- 6 controls fix a real Angular Forms gap
+- Single commit point per directive — no double-source-of-truth bugs
+- `KjDisabled` stays reusable on buttons, links, anywhere — not coupled to forms
 
 ## 4. Item registration
 
