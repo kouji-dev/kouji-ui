@@ -463,7 +463,128 @@ export class KjInput { ... }
 
 ## 4. Item registration
 
-_TBD_
+### What this pattern is
+
+A **container directive** owns a list of **children directives** that need to coordinate. The container needs to know:
+- which children exist (count, identity, order)
+- which is active / selected / expanded
+- which are disabled (skip during keyboard nav)
+- where each lives (for `aria-posinset`, `aria-setsize`, `aria-controls`)
+
+Children need a way for the parent to discover them.
+
+Concrete example — `<kj-tabs>` with `<kj-tab>` children:
+
+```html
+<kj-tabs [(kjValue)]="active">
+  <kj-tab kjValue="one">One</kj-tab>
+  <kj-tab kjValue="two" disabled>Two</kj-tab>
+  <kj-tab kjValue="three">Three</kj-tab>
+</kj-tabs>
+```
+
+`<kj-tabs>` must enumerate tabs to handle `→ Home End`, skip disabled, derive `aria-setsize`/`aria-posinset`, link `aria-controls` to panels.
+
+### Three mechanisms in current code
+
+| Way | Members | Issue |
+|---|---|---|
+| **Explicit register/unregister** (signal-backed) | accordion, tabs, carousel, stepper, breadcrumb, input-group, input-otp | ~30 lines of boilerplate copy-pasted per container |
+| **DI + `DestroyRef`** | multi-select, combobox, command-palette | modern shape but still re-implemented per consumer |
+| **`querySelectorAll()` at read time** | select, menu, dropdown-menu, tree-select, cascade-select, avatar-group (partial) | misses portal'd children; runs in hot path; OnPush-fragile; misses items added via `@for` until next CD |
+
+### Revised verdict — use the framework first
+
+**Most of these don't need a primitive — they need to stop reinventing what Angular already provides.**
+
+`contentChildren()` (Angular 17.1+, signal-based) walks the parent's logical view tree and returns a `Signal<readonly T[]>`. Zero code on the child side. Reactive. Auto-cleanup.
+
+```ts
+@Directive({ selector: '[kjTabs]' })
+export class KjTabs {
+  readonly tabs = contentChildren(KjTab, { descendants: true });
+  readonly setSize = computed(() => this.tabs().length);
+}
+
+@Directive({ selector: '[kjTab]' })
+export class KjTab { /* nothing — just exists */ }
+```
+
+### When `contentChildren()` doesn't reach
+
+| Situation | Why it fails | Fallback |
+|---|---|---|
+| **Portal'd children** | items mounted into `document.body` via `KjPortal` live in a different `ViewContainerRef`; original parent's content query doesn't see them | DI register + `DestroyRef` |
+| **Items from input arrays** | `[kjItems]="['New file', 'Open']"` — items are data, not directives | not a registration pattern at all |
+| **Sub-panels rendered on-demand** | dynamic TemplateRef in different context | DI register + `DestroyRef` per sub-panel |
+| **Path-keyed deeply-nested registries** | form `'address.street'` | observable registry (existing — keep) |
+| **Service-driven runtime queues** | toast — items born from a service, no parent template | service queue (existing — keep) |
+| **DOM-sibling grouping** | chat — group by adjacent DOM nodes | WeakMap (existing — keep) |
+
+### Per-container target
+
+| Container | Current | Target |
+|---|---|---|
+| tabs | explicit register | **`contentChildren()`** |
+| accordion | explicit register | **`contentChildren()`** |
+| carousel | explicit register | **`contentChildren()`** |
+| stepper | explicit register | **`contentChildren()`** |
+| breadcrumb | explicit register | **`contentChildren()`** |
+| input-group | explicit register | **`contentChildren()`** |
+| input-otp | explicit register (Map) | **`contentChildren()`** + index from query order |
+| multi-select | DI + `DestroyRef` | **`contentChildren()`** |
+| combobox | DI + `DestroyRef` | **`contentChildren()`** |
+| avatar-group | `contentChildren()` (already!) | unchanged |
+| radio | DI context only | unchanged (single value, no list) |
+| select | `querySelectorAll` | **`contentChildren({descendants: true})`** |
+| menu | `querySelectorAll` | **`contentChildren({descendants: true})`** |
+| tree-select | `querySelectorAll` recursive | **`contentChildren()` + recursion at each node** |
+| **dropdown-menu** *(portal'd)* | `querySelectorAll` | **DI register + `DestroyRef`** |
+| **context-menu** *(portal'd)* | `querySelectorAll` | **DI register + `DestroyRef`** |
+| **cascade-select** *(dynamic sub-panels)* | `querySelectorAll` per panel | **DI register + `DestroyRef`** per sub-panel |
+| **command-palette** *(input-array mode)* | DI + `DestroyRef` | input-array: no registry; declarative items: `contentChildren()` |
+| toast | service queue | unchanged |
+| form | observable registry | unchanged |
+| chat | WeakMap DOM-sibling | unchanged |
+| pagination | algorithmic | unchanged |
+
+### Primitives — final cut
+
+| Primitive | Kind | Used in |
+|---|---|---|
+| `contentChildren()` (Angular built-in) | query | ~12 containers — replace explicit register, replace `querySelectorAll` |
+| **`KjPortalChildRegistry<T>`** *(small, ~30 lines)* | provider service | 3 portal'd-content cases: dropdown-menu, context-menu, cascade-select sub-panels |
+| existing observable registry | service | form (unchanged) |
+| existing WeakMap | service | chat (unchanged) |
+| existing service queue | service | toast (unchanged) |
+
+`KjChildRegistry<T>` / `KjOrderedRegistry<T>` / `KjTreeRegistry<T>` from earlier draft → **dropped**. `contentChildren()` already orders by DOM and recursion is a child-level concern (each node has its own `contentChildren()`).
+
+### Composition decision: option **C** (delete boilerplate, use framework, keep small portal helper)
+
+| Action | Scope |
+|---|---|
+| 1. **Migrate 9 explicit-register/DI-register containers to `contentChildren()`** | tabs, accordion, carousel, stepper, breadcrumb, input-group, input-otp, multi-select, combobox — drop ~30 lines per container |
+| 2. **Migrate 3 `querySelectorAll` containers to `contentChildren({descendants: true})`** | select, menu, tree-select — gain reactivity + portal-safety |
+| 3. **Extract `KjPortalChildRegistry<T>`** *(small)* | dropdown-menu, context-menu, cascade-select sub-panels — keep DI register pattern but in one place |
+| 4. **Leave fit-for-purpose registries alone** | toast (service queue), form (observable), chat (WeakMap), pagination (algorithmic), radio (DI context) |
+
+### A11Y derivation comes free
+
+| ARIA attr | Without query | With `contentChildren()` |
+|---|---|---|
+| `aria-setsize` | manual count | `tabs().length` |
+| `aria-posinset` | manual index | `tabs().indexOf(this) + 1` |
+| `aria-activedescendant` | id lookup against DOM | id lookup against `tabs()` |
+| Skip-disabled in keyboard nav | DOM filter | `tabs().filter(t => !t.disabled())` |
+
+### Wins
+
+- ~30 lines × 9 components of register/unregister → **deleted entirely**
+- 3 `querySelectorAll` consumers gain reactivity + portal-safety + OnPush-correctness
+- Smaller surface: 1 small primitive (`KjPortalChildRegistry`) instead of 3 (`KjChildRegistry` + `KjOrderedRegistry` + `KjTreeRegistry`)
+- Aligned with idiomatic Angular — uses framework primitives over custom ones
+- Foundation for cat 5 (hotkey items registry) and cat 6 (filterable list — they consume the `contentChildren()` signal)
 
 ## 5. Keyboard chord / hotkey
 
