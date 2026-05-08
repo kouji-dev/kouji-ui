@@ -1,0 +1,96 @@
+<div class="chat">
+  <aside class="chat__sidebar" aria-label="Conversations">
+    <h2 class="chat__heading">Inbox</h2>
+    <ul class="chat__list" role="list">
+      @for (c of conversations; track c.id) {
+        <li>
+          <button
+            type="button"
+            class="chat__row"
+            [class.chat__row--active]="activeId() === c.id"
+            [attr.aria-current]="activeId() === c.id ? 'true' : null"
+            (click)="select(c.id)"
+          >
+            <kj-avatar [content]="c.who.charAt(0)" [alt]="c.who" />
+            <div class="chat__row-meta">
+              <div class="chat__row-name">{{ c.who }}</div>
+              <div class="chat__row-preview">{{ c.preview }}</div>
+            </div>
+            @if (c.unread > 0) {
+              <kj-badge class="chat__row-badge" [attr.aria-label]="c.unread + ' unread'">
+                {{ c.unread }}
+              </kj-badge>
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  </aside>
+
+  <section class="chat__pane" aria-label="Conversation">
+    <header class="chat__thread-hd">
+      <kj-avatar content="AL" alt="Ada Lovelace" />
+      <div class="chat__thread-name">Ada Lovelace</div>
+    </header>
+
+    <kj-chat-log kjChatLogLabel="Conversation with Ada Lovelace" class="chat__log">
+      @for (m of messages; track $index) {
+        @if (m.mine) {
+          <kj-chat kjSide="end" kjChatAuthor="me">
+            <kj-chat-header>You <time>{{ m.at }}</time></kj-chat-header>
+            <kj-chat-bubble kjVariant="primary">{{ m.text }}</kj-chat-bubble>
+            <kj-chat-footer kjState="delivered">Delivered</kj-chat-footer>
+          </kj-chat>
+        } @else {
+          <kj-chat kjSide="start" [kjChatAuthor]="m.from">
+            <kj-chat-avatar>
+              <kj-avatar [content]="m.from.charAt(0)" [alt]="m.from" />
+            </kj-chat-avatar>
+            <kj-chat-header>{{ m.from }} <time>{{ m.at }}</time></kj-chat-header>
+            <kj-chat-bubble>{{ m.text }}</kj-chat-bubble>
+          </kj-chat>
+        }
+      }
+    </kj-chat-log>
+
+    <form class="chat__composer" (ngSubmit)="send()">
+      <label class="chat__composer-input">
+        <span class="visually-hidden">Message</span>
+        <kj-input
+          type="text"
+          placeholder="Write a message…"
+          [(ngModel)]="draft"
+          name="draft"
+        />
+      </label>
+
+      <kj-popover>
+        <kj-popover-trigger>
+          <kj-button kjVariant="ghost" kjAriaLabel="Insert emoji">😊</kj-button>
+        </kj-popover-trigger>
+        <kj-popover-content kjAriaLabel="Pick emoji">
+          <kj-popover-title>Emoji</kj-popover-title>
+          <div class="chat__emoji-grid">
+            @for (e of emojis; track e) {
+              <kj-popover-close>
+                <kj-button kjVariant="ghost" (click)="appendEmoji(e)" [kjAriaLabel]="'Insert ' + e">
+                  {{ e }}
+                </kj-button>
+              </kj-popover-close>
+            }
+          </div>
+        </kj-popover-content>
+      </kj-popover>
+
+      <kj-file-upload
+        class="chat__upload"
+        [kjMultiple]="false"
+        kjTriggerLabel="Attach"
+        kjDropzoneLabel="Drop file"
+        kjDropzoneHint="Attach a file to the message"
+      />
+
+      <kj-button type="submit" kjVariant="default">Send</kj-button>
+    </form>
+  </section>
+</div>
