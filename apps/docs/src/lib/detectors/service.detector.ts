@@ -79,7 +79,9 @@ export function detectServices(
 }
 
 function memberIsPrivate(m: ts.ClassElement): boolean {
-  return !!m.modifiers?.some(
+  const mods = (m as ts.MethodDeclaration | ts.PropertyDeclaration).modifiers;
+  if (!mods) return false;
+  return Array.from(mods).some(
     mod => mod.kind === ts.SyntaxKind.PrivateKeyword || mod.kind === ts.SyntaxKind.ProtectedKeyword,
   );
 }

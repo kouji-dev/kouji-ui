@@ -22,5 +22,5 @@ export class HomeComponent {
     corePackage.peerDependencies['@angular/core'] ?? '',
   )?.[1] ?? '';
 
-  readonly componentCount = computed(() => this.docs.components().length);
+  readonly componentCount = computed(() => this.docs.pages().length);
 }

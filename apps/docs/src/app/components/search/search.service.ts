@@ -39,37 +39,41 @@ export class SearchService {
     if (!q.trim()) { this.results.set([]); return; }
 
     const term = q.toLowerCase().trim();
-    const components = this.docs.components();
+    const pages = this.docs.pages();
     const found: SearchResult[] = [];
 
-    for (const comp of components) {
-      const compName = comp.name.toLowerCase();
-      const slug = comp.slug;
-      const catPath = comp.categoryPath;
+    for (const page of pages) {
+      const compName = page.title.toLowerCase();
+      const slug = page.name;
+      const catPath = page.categoryPath;
 
-      // Component name match
+      // Page title match
       if (compName.includes(term)) {
         found.push({
-          slug, componentName: comp.name, categoryPath: catPath,
-          matchLabel: comp.name, matchType: 'component',
+          slug, componentName: page.title, categoryPath: catPath,
+          matchLabel: page.title, matchType: 'component',
           score: compName.startsWith(term) ? 100 : 80,
         });
       }
 
-      for (const dir of comp.directives) {
+      for (const item of page.items) {
+        if (item.kind !== 'directive') continue;
+        const dir = item.directive;
+        if (!dir) continue;
+
         // Directive class name
-        if (dir.className.toLowerCase().includes(term)) {
+        if (item.symbol.toLowerCase().includes(term)) {
           found.push({
-            slug, componentName: comp.name, categoryPath: catPath,
-            matchLabel: dir.className, matchType: 'directive',
-            score: dir.className.toLowerCase().startsWith(term) ? 70 : 60,
+            slug, componentName: page.title, categoryPath: catPath,
+            matchLabel: item.symbol, matchType: 'directive',
+            score: item.symbol.toLowerCase().startsWith(term) ? 70 : 60,
           });
         }
 
         // Selector match
         if (dir.selector.toLowerCase().includes(term)) {
           found.push({
-            slug, componentName: comp.name, categoryPath: catPath,
+            slug, componentName: page.title, categoryPath: catPath,
             matchLabel: dir.selector, matchType: 'selector',
             score: 65,
           });
@@ -79,7 +83,7 @@ export class SearchService {
         for (const input of dir.inputs) {
           if (input.name.toLowerCase().includes(term)) {
             found.push({
-              slug, componentName: comp.name, categoryPath: catPath,
+              slug, componentName: page.title, categoryPath: catPath,
               matchLabel: `${dir.selector} → ${input.name}`, matchType: 'input',
               score: 50,
             });

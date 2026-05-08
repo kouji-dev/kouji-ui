@@ -1,123 +1,152 @@
 <div class="page-with-toc">
 <main class="doc-main" kjPageToc #pageToc="kjPageToc">
-  @if (component(); as comp) {
+  @if (page(); as p) {
     <header class="doc-header">
-      <span class="tag">{{ comp.categoryPath[comp.categoryPath.length - 1] }}</span>
-      <h1>{{ comp.name }}</h1>
-      @if (comp.description) {
-        <p class="desc">{{ comp.description }}</p>
+      <span class="tag">{{ p.categoryPath[p.categoryPath.length - 1] || p.pkg }}</span>
+      <h1>{{ p.title }}</h1>
+      @if (p.description) {
+        <p class="desc">{{ p.description }}</p>
       }
     </header>
 
-    <!-- Definitions section -->
     <section class="definitions-section"
              id="definitions"
              data-toc-entry="Definitions"
              data-toc-level="2">
       <h2 class="section-title">Definitions</h2>
 
-      @for (directive of sortedDirectives(); track directive.className) {
+      @for (item of items(); track item.id) {
         <section
-          class="directive-section"
-          [id]="directive.className"
-          [attr.data-toc-entry]="directive.className"
+          class="item-section"
+          [id]="item.symbol"
+          [attr.data-toc-entry]="item.symbol"
           data-toc-level="3"
         >
-          <div class="directive-header">
-            <code class="directive-selector">{{ directive.selector }}</code>
-            <span class="directive-class">{{ directive.className }}@if (directive.required) {<span class="required-badge" title="Required">*</span>}</span>
+          <div class="item-header">
+            <code class="item-symbol">{{ item.symbol }}</code>
+            <span class="item-kind">{{ kindLabel(item.kind) }}</span>
+            @if (item.isMain) { <span class="main-badge" title="Main">main</span> }
           </div>
 
-          @if (directive.description) {
-            <p class="desc">{{ directive.description }}</p>
+          @if (item.description) {
+            <p class="desc">{{ item.description }}</p>
           }
 
-          @if (directive.inputs.length) {
-            <div class="inputs-block">
-              <h3 class="block-title">Inputs</h3>
-              <app-docs-table [columns]="inputColumns" [rows]="$any(directive.inputs)" label="Inputs" />
-              <p class="required-note">* required</p>
-            </div>
-          }
-
-          @if (directive.models.length) {
-            <div class="inputs-block">
-              <h3 class="block-title">Models</h3>
-              <app-docs-table [columns]="modelColumns" [rows]="$any(directive.models)" label="Models" />
-            </div>
-          }
-
-          @if (directive.outputs.length) {
-            <div class="inputs-block">
-              <h3 class="block-title">Outputs</h3>
-              <app-docs-table [columns]="outputColumns" [rows]="$any(directive.outputs)" label="Outputs" />
-            </div>
-          }
-
-          @if (directive.examples.length) {
-            <div class="inline-examples-block">
-              <h3 class="block-title">Usage</h3>
-              @for (ex of directive.examples; track $index) {
-                <kj-code-editor
-                  [code]="ex"
-                  [lang]="ex.trimStart().startsWith('<') ? 'html' : 'ts'"
-                />
+          @switch (item.kind) {
+            @case ('directive') {
+              @if (item.directive; as d) {
+                <p><code class="directive-selector">{{ d.selector }}</code></p>
+                @if (d.inputs.length) {
+                  <div class="inputs-block">
+                    <h4 class="block-title">Inputs</h4>
+                    <app-docs-table [columns]="inputColumns" [rows]="$any(d.inputs)" label="Inputs" />
+                  </div>
+                }
+                @if (d.models.length) {
+                  <div class="inputs-block">
+                    <h4 class="block-title">Models</h4>
+                    <app-docs-table [columns]="modelColumns" [rows]="$any(d.models)" label="Models" />
+                  </div>
+                }
+                @if (d.outputs.length) {
+                  <div class="inputs-block">
+                    <h4 class="block-title">Outputs</h4>
+                    <app-docs-table [columns]="outputColumns" [rows]="$any(d.outputs)" label="Outputs" />
+                  </div>
+                }
               }
-            </div>
+            }
+            @case ('service') {
+              @if (item.service; as s) {
+                @if (s.methods.length) {
+                  <div class="inputs-block">
+                    <h4 class="block-title">Methods</h4>
+                    <app-docs-table [columns]="methodColumns" [rows]="$any(s.methods)" label="Methods" />
+                  </div>
+                }
+                @if (s.properties.length) {
+                  <div class="inputs-block">
+                    <h4 class="block-title">Properties</h4>
+                    <app-docs-table [columns]="propertyColumns" [rows]="$any(s.properties)" label="Properties" />
+                  </div>
+                }
+              }
+            }
+            @case ('provider-fn') {
+              @if (item.function; as f) {
+                <pre class="signature"><code>{{ f.signature }}</code></pre>
+                @if (f.parameters.length) {
+                  <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
+                }
+              }
+            }
+            @case ('inject-fn') {
+              @if (item.function; as f) {
+                <pre class="signature"><code>{{ f.signature }}</code></pre>
+                @if (f.parameters.length) {
+                  <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
+                }
+              }
+            }
+            @case ('function') {
+              @if (item.function; as f) {
+                <pre class="signature"><code>{{ f.signature }}</code></pre>
+                @if (f.parameters.length) {
+                  <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
+                }
+              }
+            }
+            @case ('token') {
+              @if (item.token; as t) {
+                <p><code class="token-type">{{ t.type }}</code></p>
+              }
+            }
+            @case ('type-alias') {
+              @if (item.typeAlias; as t) {
+                <pre class="signature"><code>{{ t.type }}</code></pre>
+              }
+            }
+            @case ('const') {
+              @if (item.const; as c) {
+                <p><code class="const-type">{{ c.type }}</code></p>
+                @if (c.literalValue) {
+                  <pre class="signature"><code>{{ c.literalValue }}</code></pre>
+                }
+              }
+            }
           }
         </section>
       }
     </section>
 
-    <!-- Examples section — only when docExamples exist -->
-    @if (hasDocExamples()) {
+    @if (hasExamples()) {
       <section class="examples-section"
                id="examples"
                data-toc-entry="Examples"
                data-toc-level="2">
         <h2 class="section-title">Examples</h2>
 
-        @for (directive of sortedDirectives(); track directive.className) {
-          @for (docEx of directive.docExamples; track docEx.label; let i = $index) {
+        @for (item of items(); track item.id) {
+          @for (docEx of (item.examples ?? []); track docEx.label; let i = $index) {
             <div
               class="example-section"
-              [id]="directive.className + '-ex-' + i"
+              [id]="item.symbol + '-ex-' + i"
               [attr.data-toc-entry]="docEx.label"
               data-toc-level="3"
             >
               <div class="example-label">{{ docEx.label }}</div>
               <kj-code-preview
                 [docExamples]="[docEx]"
-                [componentName]="comp.name"
+                [componentName]="p.title"
               />
             </div>
           }
         }
       </section>
     }
-
-    @if (!hasDocExamples()) {
-      @for (directive of sortedDirectives(); track directive.className) {
-        @if (directive.exampleFiles.length || directive.themedExamples['default']?.length) {
-          <section class="examples-section"
-                   id="examples"
-                   data-toc-entry="Examples"
-                   data-toc-level="2">
-            <h2 class="section-title">Examples</h2>
-            @if (directive.exampleFiles.length) {
-              <kj-code-preview
-                [examples]="directive.exampleFiles"
-                [themedExamples]="directive.themedExamples"
-                [componentName]="comp.name"
-              />
-            }
-          </section>
-        }
-      }
-    }
-  } @else if (component() === null) {
+  } @else if (page() === null) {
     <div class="not-found">
-      <p>Component not found.</p>
+      <p>Page not found.</p>
       <a routerLink="/docs">← Back to docs</a>
     </div>
   } @else {

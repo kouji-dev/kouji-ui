@@ -22,12 +22,13 @@ app.get('/api/docs/manifest', (_req, res) => {
 
 app.get('/api/docs/components/:slug', (req, res) => {
   try {
-    const component = getManifest().components.find(c => c.slug === req.params['slug']);
-    if (!component) {
-      res.status(404).json({ error: `Component '${req.params['slug']}' not found` });
+    const slug = req.params['slug'];
+    const page = getManifest().pages.find(p => p.name === slug);
+    if (!page) {
+      res.status(404).json({ error: `Page '${slug}' not found` });
       return;
     }
-    res.json(component);
+    res.json(page);
   } catch (e) {
     res.status(500).json({ error: 'Extraction failed', detail: String(e) });
   }

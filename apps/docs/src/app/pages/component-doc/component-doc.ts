@@ -3,8 +3,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map, filter, take } from 'rxjs/operators';
 import { DocsService } from '../../services/docs.service';
+import type { DocItem } from '../../services/docs.service';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
-import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
 import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-table/docs-table';
@@ -15,7 +15,6 @@ import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-
   imports: [
     RouterLink,
     CodePreviewComponent,
-    CodeEditorComponent,
     PageTocDirective,
     PageTocComponent,
     DocsTableComponent,
@@ -28,29 +27,27 @@ export class ComponentDocComponent {
   private readonly docs = inject(DocsService);
   private readonly appRef = inject(ApplicationRef);
 
-  protected readonly component = toSignal(
+  protected readonly page = toSignal(
     this.route.url.pipe(
       switchMap((segs) => {
-        // With nested routing under /docs, segs is [{path:'headless'|'components'},{path:slug}]
+        // /docs/headless/<name> or /docs/components/<name>
         const trackId = segs[0]?.path === 'components' ? 'components' as const
                        : segs[0]?.path === 'headless'   ? 'core'       as const
                        : undefined;
-        const slug = segs[1]?.path ?? '';
-        return this.docs.loadManifest().pipe(map(() => this.docs.getComponent(slug, trackId)));
+        const name = segs[1]?.path ?? '';
+        return this.docs.loadManifest().pipe(map(() => this.docs.getPage(name, trackId)));
       }),
     ),
   );
 
   private readonly pageToc = viewChild(PageTocDirective);
 
-  protected readonly hasDocExamples = computed(() =>
-    (this.component()?.directives ?? []).some(d => d.docExamples.length > 0)
+  protected readonly hasExamples = computed(() =>
+    (this.page()?.items ?? []).some(i => (i.examples?.length ?? 0) > 0)
   );
 
-  protected readonly sortedDirectives = computed(() => {
-    const dirs = this.component()?.directives ?? [];
-    return [...dirs].sort((a, b) => (b.required ? 1 : 0) - (a.required ? 1 : 0));
-  });
+  /** Items in render order (assembler already pinned the main first). */
+  protected readonly items = computed(() => this.page()?.items ?? []);
 
   protected readonly inputColumns: DocsTableColumn[] = [
     { key: 'name',         header: 'Name'        },
@@ -59,18 +56,48 @@ export class ComponentDocComponent {
     { key: 'description',  header: 'Description' },
   ];
 
-  // Outputs don't have a default and aren't required-flagged.
   protected readonly outputColumns: DocsTableColumn[] = [
     { key: 'name',         header: 'Name'        },
     { key: 'type',         header: 'Payload'     },
     { key: 'description',  header: 'Description' },
   ];
 
-  // Models share the input shape (read+write); reuse the same columns.
   protected readonly modelColumns: DocsTableColumn[] = this.inputColumns;
 
+  protected readonly methodColumns: DocsTableColumn[] = [
+    { key: 'name',         header: 'Method'      },
+    { key: 'signature',    header: 'Signature'   },
+    { key: 'description',  header: 'Description' },
+  ];
+
+  protected readonly propertyColumns: DocsTableColumn[] = [
+    { key: 'name',         header: 'Name'        },
+    { key: 'type',         header: 'Type'        },
+    { key: 'description',  header: 'Description' },
+  ];
+
+  protected readonly paramColumns: DocsTableColumn[] = [
+    { key: 'name',         header: 'Param'       },
+    { key: 'type',         header: 'Type'        },
+    { key: 'optional',     header: 'Optional'    },
+    { key: 'description',  header: 'Description' },
+  ];
+
+  protected kindLabel(kind: DocItem['kind']): string {
+    switch (kind) {
+      case 'directive':   return 'Directive';
+      case 'service':     return 'Service';
+      case 'provider-fn': return 'Provider';
+      case 'inject-fn':   return 'Inject helper';
+      case 'function':    return 'Function';
+      case 'token':       return 'Injection token';
+      case 'type-alias':  return 'Type';
+      case 'const':       return 'Constant';
+    }
+  }
+
   constructor() {
-    toObservable(this.component).pipe(
+    toObservable(this.page).pipe(
       filter(Boolean),
       switchMap(() => this.appRef.isStable.pipe(filter(Boolean), take(1))),
     ).subscribe(() => this.pageToc()?.refresh());
