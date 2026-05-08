@@ -1412,7 +1412,7 @@ git commit -m "feat(theme-gen): wire URL hash sync + Copy link button"
 - Create: `apps/docs/src/app/services/theme-import.service.ts`
 - Test: `apps/docs/src/app/services/theme-import.service.spec.ts`
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```ts
 // theme-import.service.spec.ts
@@ -1454,12 +1454,12 @@ describe('ThemeImportService', () => {
 });
 ```
 
-- [ ] **Step 2: Run test**
+- [x] **Step 2: Run test**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/theme-import.service.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // theme-import.service.ts
@@ -1518,12 +1518,12 @@ export class ThemeImportService {
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/theme-import.service.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/services/theme-import.service.ts apps/docs/src/app/services/theme-import.service.spec.ts
