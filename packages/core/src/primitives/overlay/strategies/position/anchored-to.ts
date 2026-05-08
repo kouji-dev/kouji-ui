@@ -14,18 +14,86 @@ export interface KjAnchoredToOpts {
 
 const read = <T>(v: Signal<T> | T): T => isSignal(v) ? v() : v;
 
+let _anchorIdCounter = 0;
+
+const supportsCssAnchor = (): boolean => {
+  try {
+    return typeof CSS !== 'undefined'
+      && typeof CSS.supports === 'function'
+      && CSS.supports('anchor-name', '--kj');
+  } catch {
+    return false;
+  }
+};
+
+const positionAreaFor = (side: KjSide, align: KjAlign): string => {
+  if (side === 'top' || side === 'bottom') {
+    const cross = align === 'start' ? 'span-right'
+                : align === 'end'   ? 'span-left'
+                                    : 'center';
+    return `${side} ${cross}`;
+  }
+  const cross = align === 'start' ? 'span-bottom'
+              : align === 'end'   ? 'span-top'
+                                  : 'center';
+  return `${side} ${cross}`;
+};
+
 export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
   let ctx: KjOverlayContext | null = null;
   let onResize: (() => void) | null = null;
   let onScroll: (() => void) | null = null;
   let resizeObserver: ResizeObserver | null = null;
+  let useCssAnchor: boolean | null = null;
+  let anchorIdent: string | null = null;
+  let cssTrigger: HTMLElement | null = null;
   const _placement = signal<KjPlacement | null>(null);
   const placement = computed(() => _placement());
 
   const flip = opts.flip ?? true;
   const shift = opts.shift ?? true;
 
-  const apply = () => {
+  const applyCss = () => {
+    if (!ctx?.platform.isBrowser) return;
+    const trigger = opts.trigger();
+    const panel = ctx.panelEl();
+    if (!trigger || !panel) return;
+
+    const side = read(opts.side);
+    const align = read(opts.align);
+    const offset = read(opts.offset ?? 0);
+
+    if (!anchorIdent) anchorIdent = `--kj-anchor-${++_anchorIdCounter}`;
+    trigger.style.setProperty('anchor-name', anchorIdent);
+    cssTrigger = trigger;
+
+    panel.style.setProperty('position', 'fixed');
+    panel.style.setProperty('position-anchor', anchorIdent);
+    panel.style.setProperty('position-area', positionAreaFor(side, align));
+    panel.style.setProperty('margin', `${offset}px`);
+
+    _placement.set({ side, align });
+  };
+
+  const clearCss = () => {
+    const panel = ctx?.panelEl();
+    if (panel) {
+      panel.style.removeProperty('position');
+      panel.style.removeProperty('position-anchor');
+      panel.style.removeProperty('position-area');
+      panel.style.removeProperty('margin');
+    }
+    if (cssTrigger && anchorIdent) {
+      const current = cssTrigger.style.getPropertyValue('anchor-name');
+      if (current === anchorIdent) {
+        cssTrigger.style.removeProperty('anchor-name');
+      }
+    }
+    cssTrigger = null;
+    _placement.set(null);
+  };
+
+  const applyManual = () => {
     if (!ctx?.platform.isBrowser) return;
     const trigger = opts.trigger();
     const panel = ctx.panelEl();
@@ -73,7 +141,7 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
     _placement.set({ side: resolvedSide, align });
   };
 
-  const clear = () => {
+  const clearManual = () => {
     const panel = ctx?.panelEl();
     if (!panel) return;
     panel.style.position = '';
@@ -86,29 +154,43 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
     placement,
     attach(c) { ctx = c; },
     onOpen() {
-      apply();
+      if (useCssAnchor === null) {
+        useCssAnchor = ctx?.platform.isBrowser ? supportsCssAnchor() : false;
+      }
+      if (useCssAnchor) {
+        applyCss();
+        return;
+      }
+      applyManual();
       if (!ctx?.platform.isBrowser) return;
-      onResize = () => apply();
-      onScroll = () => apply();
+      onResize = () => applyManual();
+      onScroll = () => applyManual();
       window.addEventListener('resize', onResize);
       window.addEventListener('scroll', onScroll, true);
       const trigger = opts.trigger();
       const panel = ctx.panelEl();
       if (typeof ResizeObserver !== 'undefined' && trigger && panel) {
-        resizeObserver = new ResizeObserver(() => apply());
+        resizeObserver = new ResizeObserver(() => applyManual());
         resizeObserver.observe(trigger);
         resizeObserver.observe(panel);
       }
     },
     onClose() {
-      clear();
+      if (useCssAnchor) {
+        clearCss();
+        return;
+      }
+      clearManual();
       if (onResize) window.removeEventListener('resize', onResize);
       if (onScroll) window.removeEventListener('scroll', onScroll, true);
       onResize = onScroll = null;
       resizeObserver?.disconnect();
       resizeObserver = null;
     },
-    update() { apply(); },
+    update() {
+      if (useCssAnchor) return;
+      applyManual();
+    },
     detach() { ctx = null; },
   };
 }
