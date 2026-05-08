@@ -30,7 +30,7 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
   ],
   imports: [KjSelectTrigger, KjSelectContent],
   template: `
-    <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null">
+    <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null" [kjMultiple]="multiple()">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
       <span class="kj-select-trigger-caret" aria-hidden="true">▾</span>
     </button>
@@ -43,17 +43,22 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
   host: {
     'class': 'kj-select',
     '[attr.data-disabled]': "disabled() ? '' : null",
+    '[attr.data-multiple]': "multiple() ? '' : null",
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSelectComponent {
   readonly placeholder = input<string>('Select…');
   readonly disabled = input(false);
+  readonly multiple = input(false);
 
   private readonly select = inject(KjSelect);
   readonly displayLabel = computed(() => {
     const v = this.select.value();
     if (v === undefined || v === null || v === '') return this.placeholder();
+    if (Array.isArray(v)) {
+      return v.length === 0 ? this.placeholder() : v.map(String).join(', ');
+    }
     return String(v);
   });
 }
