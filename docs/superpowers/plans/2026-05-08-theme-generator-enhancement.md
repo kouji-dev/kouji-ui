@@ -2281,7 +2281,7 @@ git commit -m "feat(theme-gen): preview search tab"
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/chat.css`
 - Modify: `theme-generator-preview.ts`.
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 // chat.ts
@@ -2385,11 +2385,11 @@ export class PreviewChatComponent {
 @media (max-width: 800px) { .chat { grid-template-columns: 1fr; } .sidebar { display: none; } }
 ```
 
-- [ ] **Step 2: Wire and verify**
+- [x] **Step 2: Wire and verify**
 
 Add `PreviewChatComponent` to preview imports.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/preview-tabs/chat.* apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts
