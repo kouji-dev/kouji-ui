@@ -1,6 +1,5 @@
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
-import { SourceFile } from 'ts-morph';
 import { parseDocTags } from '../doc-tags';
 import { readCategoryTag } from '../extractor-helpers';
 import type {
@@ -10,17 +9,11 @@ import type {
   FunctionParam,
   SourcePkg,
 } from '../docs-extractor.types';
+import type { ParsedFile } from '../parsed-file';
+import { makeItemId } from './ids';
 
-export function detectFunctions(
-  morphFile: SourceFile,
-  pkg: SourcePkg,
-): DocItem[] {
-  const tsSourceFile = tsquery.ast(
-    morphFile.getFullText(),
-    morphFile.getFilePath(),
-    ts.ScriptKind.TS,
-  );
-
+export function detectFunctions(file: ParsedFile, pkg: SourcePkg): DocItem[] {
+  const { tsSourceFile, filePath } = file;
   const fns = tsquery<ts.FunctionDeclaration>(
     tsSourceFile,
     'FunctionDeclaration:has(ExportKeyword)',
@@ -46,12 +39,12 @@ export function detectFunctions(
     const docDescription = tags.description ?? undefined;
 
     items.push({
-      id: makeItemId(pkg, morphFile.getFilePath(), symbol),
+      id: makeItemId(pkg, filePath, symbol),
       symbol,
       pageName: tags.name,
       kind,
       pkg,
-      filePath: morphFile.getFilePath(),
+      filePath,
       description,
       docDescription,
       isMain: tags.isMain,
@@ -105,7 +98,3 @@ function jsDocSummary(node: ts.Node): string {
   return typeof c === 'string' ? c.trim() : (ts.getTextOfJSDocComment(c) ?? '').trim();
 }
 
-function makeItemId(pkg: SourcePkg, filePath: string, symbol: string): string {
-  const rel = filePath.replace(/\\/g, '/').split('/packages/')[1] ?? filePath;
-  return `${pkg}:${rel}:${symbol}`;
-}

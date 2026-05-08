@@ -1,6 +1,5 @@
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
-import { SourceFile } from 'ts-morph';
 import { dirname } from 'node:path';
 import { parseDocTags } from '../doc-tags';
 import { getDocFiles, getDocThemes, getDocExamples } from '../examples';
@@ -11,6 +10,7 @@ import type {
   OutputDef,
   SourcePkg,
 } from '../docs-extractor.types';
+import type { ParsedFile } from '../parsed-file';
 import {
   extractInputs,
   extractOutputs,
@@ -21,20 +21,13 @@ import {
   getRequired,
   readCategoryTag,
 } from '../extractor-helpers';
+import { makeItemId } from './ids';
 
 const DIRECTIVE_CLASS_SELECTOR =
   'ClassDeclaration:has(Decorator:has(Identifier[text="Directive"])), ClassDeclaration:has(Decorator:has(Identifier[text="Component"]))';
 
-export function detectDirectives(
-  morphFile: SourceFile,
-  pkg: SourcePkg,
-): DocItem[] {
-  const tsSourceFile = tsquery.ast(
-    morphFile.getFullText(),
-    morphFile.getFilePath(),
-    ts.ScriptKind.TS,
-  );
-
+export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
+  const { tsSourceFile, filePath } = file;
   const classes = tsquery<ts.ClassDeclaration>(tsSourceFile, DIRECTIVE_CLASS_SELECTOR);
   const items: DocItem[] = [];
   let sourceOrder = 0;
@@ -52,15 +45,15 @@ export function detectDirectives(
     if (!selector) continue;
 
     const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
-    const sourceDir = dirname(morphFile.getFilePath());
+    const sourceDir = dirname(filePath);
     const description = getJsDocDescription(cls);
     const docDescription = tags.description ?? undefined;
-    const ownInputs = extractInputs(cls, tsSourceFile, morphFile);
+    const ownInputs = extractInputs(cls, tsSourceFile);
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const allInputs = [...ownInputs, ...hdInputs];
     const inputs: InputDef[] = allInputs.filter(i => !i.isModel);
     const models: ModelDef[] = allInputs.filter(i => i.isModel);
-    const outputs: OutputDef[] = extractOutputs(cls, tsSourceFile, morphFile);
+    const outputs: OutputDef[] = extractOutputs(cls, tsSourceFile);
     const required = getRequired(cls);
     const categoryPath = readCategoryTag(cls, pkg);
     const exampleFiles = getDocFiles(cls, tsSourceFile, sourceDir);
@@ -68,12 +61,12 @@ export function detectDirectives(
     const docExamples = getDocExamples(cls, tsSourceFile, sourceDir);
 
     items.push({
-      id: makeItemId(pkg, morphFile.getFilePath(), className),
+      id: makeItemId(pkg, filePath, className),
       symbol: className,
       pageName: tags.name,
       kind: 'directive',
       pkg,
-      filePath: morphFile.getFilePath(),
+      filePath,
       description,
       docDescription,
       isMain: tags.isMain,
@@ -98,9 +91,4 @@ export function detectDirectives(
   }
 
   return items;
-}
-
-function makeItemId(pkg: SourcePkg, filePath: string, symbol: string): string {
-  const rel = filePath.replace(/\\/g, '/').split('/packages/')[1] ?? filePath;
-  return `${pkg}:${rel}:${symbol}`;
 }

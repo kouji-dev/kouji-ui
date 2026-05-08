@@ -1,10 +1,9 @@
-import { Project } from 'ts-morph';
 import { describe, expect, it } from 'vitest';
 import { detectTokens } from '../../detectors/token.detector';
+import { parseTestFile } from './test-utils';
 
 function projectWith(src: string) {
-  const project = new Project({ useInMemoryFileSystem: true });
-  return project.createSourceFile('tokens.ts', src);
+  return parseTestFile('tokens.ts', src);
 }
 
 describe('detectTokens', () => {

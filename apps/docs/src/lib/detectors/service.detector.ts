@@ -1,23 +1,16 @@
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
-import { SourceFile } from 'ts-morph';
 import { parseDocTags } from '../doc-tags';
 import { readCategoryTag } from '../extractor-helpers';
 import type { DocItem, ServiceDef, SourcePkg } from '../docs-extractor.types';
+import type { ParsedFile } from '../parsed-file';
+import { makeItemId } from './ids';
 
 const SERVICE_CLASS_SELECTOR =
   'ClassDeclaration:has(Decorator:has(Identifier[text="Injectable"]))';
 
-export function detectServices(
-  morphFile: SourceFile,
-  pkg: SourcePkg,
-): DocItem[] {
-  const tsSourceFile = tsquery.ast(
-    morphFile.getFullText(),
-    morphFile.getFilePath(),
-    ts.ScriptKind.TS,
-  );
-
+export function detectServices(file: ParsedFile, pkg: SourcePkg): DocItem[] {
+  const { tsSourceFile, filePath } = file;
   const classes = tsquery<ts.ClassDeclaration>(tsSourceFile, SERVICE_CLASS_SELECTOR);
   const items: DocItem[] = [];
   let sourceOrder = 0;
@@ -60,12 +53,12 @@ export function detectServices(
     }
 
     items.push({
-      id: makeItemId(pkg, morphFile.getFilePath(), className),
+      id: makeItemId(pkg, filePath, className),
       symbol: className,
       pageName: tags.name,
       kind: 'service',
       pkg,
-      filePath: morphFile.getFilePath(),
+      filePath,
       description: jsDocSummary(cls),
       docDescription: tags.description ?? undefined,
       isMain: tags.isMain,
@@ -113,7 +106,3 @@ function jsDocSummary(node: ts.Node): string {
   return typeof c === 'string' ? c.trim() : (ts.getTextOfJSDocComment(c) ?? '').trim();
 }
 
-function makeItemId(pkg: SourcePkg, filePath: string, symbol: string): string {
-  const rel = filePath.replace(/\\/g, '/').split('/packages/')[1] ?? filePath;
-  return `${pkg}:${rel}:${symbol}`;
-}

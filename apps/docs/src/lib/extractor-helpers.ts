@@ -1,7 +1,6 @@
 // apps/docs/src/lib/extractor-helpers.ts
 // Shared helpers extracted from docs-extractor.ts for use by detectors.
 
-import { SourceFile } from 'ts-morph';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import type { SourcePkg, InputDef, OutputDef } from './docs-extractor.types';
@@ -140,13 +139,9 @@ export function extractHostDirectiveInputs(decoratorArg: string): InputDef[] {
 export function extractInputs(
   cls: ts.ClassDeclaration,
   sourceFile: ts.SourceFile,
-  morphFile: SourceFile,
 ): InputDef[] {
   const props = tsquery<ts.PropertyDeclaration>(cls, SIGNAL_INPUT_SELECTOR);
   const results: InputDef[] = [];
-
-  const className = cls.name?.text ?? '';
-  const morphClass = className ? morphFile.getClass(className) : undefined;
 
   for (const prop of props) {
     const name = (prop.name as ts.Identifier).text;
@@ -163,14 +158,13 @@ export function extractInputs(
       tsquery(prop, 'CallExpression > PropertyAccessExpression:has(Identifier[text="required"])').length > 0;
 
     let type = prop.type?.getText(sourceFile) ?? '';
-    if (!type && morphClass) {
-      type = morphClass.getProperty(name)?.getType().getText() ?? '';
-    }
     if (type) {
       type = unwrapSignalType(type);
     } else {
       type =
-        initText.match(/(?:input(?:\.required)?|model)<([^>]+)>/)?.[1] ?? 'unknown';
+        initText.match(/(?:input(?:\.required)?|model)<([^>]+)>/)?.[1] ??
+        inferTypeFromCallArg(prop.initializer) ??
+        'unknown';
     }
 
     const defaultValue = required ? undefined : extractLiteralDefault(prop, sourceFile);
@@ -184,13 +178,9 @@ export function extractInputs(
 export function extractOutputs(
   cls: ts.ClassDeclaration,
   sourceFile: ts.SourceFile,
-  morphFile: SourceFile,
 ): OutputDef[] {
   const props = tsquery<ts.PropertyDeclaration>(cls, OUTPUT_SELECTOR);
   const results: OutputDef[] = [];
-
-  const className = cls.name?.text ?? '';
-  const morphClass = className ? morphFile.getClass(className) : undefined;
 
   for (const prop of props) {
     const name = (prop.name as ts.Identifier).text;
@@ -201,9 +191,6 @@ export function extractOutputs(
     const initText = prop.initializer?.getText(sourceFile) ?? '';
 
     let type = prop.type?.getText(sourceFile) ?? '';
-    if (!type && morphClass) {
-      type = morphClass.getProperty(name)?.getType().getText() ?? '';
-    }
     if (type) {
       type = unwrapSignalType(type);
     } else {
@@ -214,6 +201,36 @@ export function extractOutputs(
   }
 
   return results;
+}
+
+/**
+ * For an input/model/output property whose type isn't annotated and whose
+ * call site has no generic argument (e.g. `input(false)`), infer the type
+ * from the literal kind of the first call argument. Covers ~95% of the
+ * common cases without needing a full TypeChecker.
+ */
+function inferTypeFromCallArg(init: ts.Expression | undefined): string | undefined {
+  if (!init || !ts.isCallExpression(init)) return undefined;
+  const arg = init.arguments[0];
+  if (!arg) return undefined;
+  switch (arg.kind) {
+    case ts.SyntaxKind.StringLiteral:
+    case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
+      return 'string';
+    case ts.SyntaxKind.NumericLiteral:
+      return 'number';
+    case ts.SyntaxKind.TrueKeyword:
+    case ts.SyntaxKind.FalseKeyword:
+      return 'boolean';
+    case ts.SyntaxKind.NullKeyword:
+      return 'null';
+    case ts.SyntaxKind.ArrayLiteralExpression:
+      return 'unknown[]';
+    case ts.SyntaxKind.ObjectLiteralExpression:
+      return 'object';
+    default:
+      return undefined;
+  }
 }
 
 // ── Literal default & signal-type unwrap ──────────────────────────────────────

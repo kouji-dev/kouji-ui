@@ -1,10 +1,9 @@
-import { Project } from 'ts-morph';
 import { describe, expect, it } from 'vitest';
 import { detectDirectives } from '../../detectors/directive.detector';
+import { parseTestFile } from './test-utils';
 
 function projectWith(src: string) {
-  const project = new Project({ useInMemoryFileSystem: true });
-  return project.createSourceFile('icon.directive.ts', src);
+  return parseTestFile('icon.directive.ts', src);
 }
 
 describe('detectDirectives', () => {

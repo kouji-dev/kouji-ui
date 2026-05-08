@@ -1,21 +1,15 @@
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
-import { SourceFile } from 'ts-morph';
 import { parseDocTags } from '../doc-tags';
 import { readCategoryTag } from '../extractor-helpers';
 import type { DocItem, SourcePkg } from '../docs-extractor.types';
+import type { ParsedFile } from '../parsed-file';
+import { makeItemId } from './ids';
 
 const SELECTOR = 'TypeAliasDeclaration:has(ExportKeyword)';
 
-export function detectTypeAliases(
-  morphFile: SourceFile,
-  pkg: SourcePkg,
-): DocItem[] {
-  const tsSourceFile = tsquery.ast(
-    morphFile.getFullText(),
-    morphFile.getFilePath(),
-    ts.ScriptKind.TS,
-  );
+export function detectTypeAliases(file: ParsedFile, pkg: SourcePkg): DocItem[] {
+  const { tsSourceFile, filePath } = file;
   const decls = tsquery<ts.TypeAliasDeclaration>(tsSourceFile, SELECTOR);
   const items: DocItem[] = [];
   let sourceOrder = 0;
@@ -30,12 +24,12 @@ export function detectTypeAliases(
     const docDescription = tags.description ?? undefined;
 
     items.push({
-      id: makeItemId(pkg, morphFile.getFilePath(), symbol),
+      id: makeItemId(pkg, filePath, symbol),
       symbol,
       pageName: tags.name,
       kind: 'type-alias',
       pkg,
-      filePath: morphFile.getFilePath(),
+      filePath,
       description,
       docDescription,
       isMain: tags.isMain,
@@ -54,9 +48,4 @@ function jsDocSummary(node: ts.Node): string {
   const c = block.comment;
   if (!c) return '';
   return typeof c === 'string' ? c.trim() : (ts.getTextOfJSDocComment(c) ?? '').trim();
-}
-
-function makeItemId(pkg: SourcePkg, filePath: string, symbol: string): string {
-  const rel = filePath.replace(/\\/g, '/').split('/packages/')[1] ?? filePath;
-  return `${pkg}:${rel}:${symbol}`;
 }
