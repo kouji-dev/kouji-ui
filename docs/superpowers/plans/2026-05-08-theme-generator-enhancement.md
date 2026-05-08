@@ -2182,7 +2182,7 @@ git commit -m "feat(theme-gen): preview big-form tab"
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/search.css`
 - Modify: `theme-generator-preview.ts`.
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 // search.ts
@@ -2262,11 +2262,11 @@ export class PreviewSearchComponent {
 .results__sub { font-size: 0.875rem; opacity: 0.7; }
 ```
 
-- [ ] **Step 2: Wire and verify**
+- [x] **Step 2: Wire and verify**
 
 Add `PreviewSearchComponent` to preview imports.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/preview-tabs/search.* apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts
