@@ -1,5 +1,5 @@
 ---
-'@kouji-ui/themes': minor
+'@kouji-ui/themes': patch
 ---
 
 Add three new themes: `retro`, `cyberpunk`, `corporate`.

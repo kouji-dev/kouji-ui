@@ -1,6 +1,7 @@
 ---
-'@kouji-ui/core': minor
+'@kouji-ui/core': patch
 '@kouji-ui/components': patch
+'@kouji-ui/themes': patch
 ---
 
 Overlay primitive refactor and select-family alignment.
