@@ -14,7 +14,7 @@ import {
   untracked,
 } from '@angular/core';
 import { KjDirectionality } from '../primitives/directionality/directionality';
-import { KjDisabled } from '../primitives/interaction/disabled';
+import { KjDisabled } from '../primitives/forms/interaction/disabled';
 import { clamp, snapToStep } from '../number-input/number-input.format';
 import {
   KJ_SLIDER,

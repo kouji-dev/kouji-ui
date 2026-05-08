@@ -13,8 +13,8 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { KjFocusRing } from '../primitives/interaction/focus-ring';
-import { KjDisabled } from '../primitives/interaction/disabled';
+import { KjFocusRing } from '../primitives/forms/interaction/focus-ring';
+import { KjDisabled } from '../primitives/forms/interaction/disabled';
 import { KjSize, KjVariant, bindPresets } from '../presets';
 import { KJ_TAG, KJ_TAG_LIST, KjTagContext } from './tag.context';
 import { KJ_TAG_CONFIG } from './config';

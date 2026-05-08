@@ -1,6 +1,6 @@
 import { Directive, ElementRef, computed, effect, inject } from '@angular/core';
 import { KjFormControl } from '../primitives/forms/form-control';
-import { KjFocusRing } from '../primitives/interaction/focus-ring';
+import { KjFocusRing } from '../primitives/forms/interaction/focus-ring';
 import { formatDateShort, parseDate } from '../calendar/date-utils';
 import { KJ_DATE_PICKER } from './date-picker.context';
 
