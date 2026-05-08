@@ -12,6 +12,8 @@ import {
   KjConfirmPopupContent,
   KjConfirmPopupMessage,
   KjConfirmPopupTrigger,
+  KjPopoverContent,
+  type KjOverlayTriggerLike,
 } from '@kouji-ui/core';
 
 /**
@@ -109,17 +111,11 @@ export class KjConfirmPopupTriggerComponent {}
 @Component({
   selector: 'kj-confirm-popup-content',
   standalone: true,
-  imports: [KjConfirmPopupContent],
+  imports: [KjPopoverContent, KjConfirmPopupContent],
   template: `
-    <ng-template
-      kjConfirmPopupContent
-      [kjAriaLabel]="kjAriaLabel()"
-      [kjCloseOnEsc]="kjCloseOnEsc()"
-      [kjCloseOnOutsideClick]="kjCloseOnOutsideClick()"
-      [kjPanelClass]="resolvedPanelClass()"
-    >
+    <kj-popover-content [kjFor]="kjFor()" kjConfirmPopupContent [class]="resolvedPanelClass()">
       <ng-content />
-    </ng-template>
+    </kj-popover-content>
   `,
   styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
@@ -130,12 +126,8 @@ export class KjConfirmPopupTriggerComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjConfirmPopupContentComponent {
-  /** Optional fallback aria-label when no message is projected (rare). */
-  readonly kjAriaLabel = input<string>('');
-  /** Esc closes (resolves cancel). Default `true`. */
-  readonly kjCloseOnEsc = input<boolean>(true);
-  /** Outside-click closes (resolves cancel). Default `true`. */
-  readonly kjCloseOnOutsideClick = input<boolean>(true);
+  /** Anchor — the `[kjConfirmPopupTrigger]` template reference. */
+  readonly kjFor = input.required<KjOverlayTriggerLike>();
   /** Optional class hook for the body-level overlay container. */
   readonly kjPanelClass = input<string | string[]>('');
 
@@ -144,7 +136,7 @@ export class KjConfirmPopupContentComponent {
    * styled wrapper CSS lands on the floating box. Consumer-provided classes
    * are concatenated.
    */
-  readonly resolvedPanelClass = computed<string[]>(() => {
+  readonly resolvedPanelClass = computed<string>(() => {
     const out: string[] = ['kj-confirm-popup-content'];
     const c = this.kjPanelClass();
     if (Array.isArray(c)) {
@@ -152,7 +144,7 @@ export class KjConfirmPopupContentComponent {
     } else if (c) {
       out.push(c);
     }
-    return out;
+    return out.join(' ');
   });
 }
 

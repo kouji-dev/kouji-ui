@@ -6,16 +6,17 @@ import {
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
   KjConfirmPopupMessageComponent,
-  KjConfirmPopupTriggerComponent,
 } from './confirm-popup';
+import { KjConfirmPopupTrigger } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 
 /**
  * Default confirm popup — anchored confirmation for a delete action.
  *
- * Compound shape — `<kj-confirm-popup>` owns the state, the trigger button
- * anchors the panel, and the content slot hosts the message and the
- * confirm / cancel actions. The cancel button receives initial focus
+ * Flat shape — `<kj-confirm-popup>` owns the state, the trigger button
+ * (any element with `[kjConfirmPopupTrigger]`) anchors the panel, and
+ * `<kj-confirm-popup-content [kjFor]="trig">` resolves the panel against
+ * that trigger ref. The cancel button receives initial focus
  * (WCAG 3.3.4 *Error Prevention*).
  */
 @Component({
@@ -23,7 +24,7 @@ import { KjButtonComponent } from '../button/button';
   standalone: true,
   imports: [
     KjConfirmPopupComponent,
-    KjConfirmPopupTriggerComponent,
+    KjConfirmPopupTrigger,
     KjConfirmPopupContentComponent,
     KjConfirmPopupMessageComponent,
     KjConfirmPopupActionComponent,
@@ -40,10 +41,8 @@ import { KjButtonComponent } from '../button/button';
     <div class="kj-confirm-popup-example__row">
       <kj-confirm-popup
         (kjResult)="onResult($event)">
-        <kj-confirm-popup-trigger>
-          <kj-button kjVariant="default">Delete item</kj-button>
-        </kj-confirm-popup-trigger>
-        <kj-confirm-popup-content>
+        <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="default">Delete item</kj-button>
+        <kj-confirm-popup-content [kjFor]="trig">
           <p kjConfirmPopupMessage class="kj-confirm-popup-message">Delete this item?</p>
           <kj-confirm-popup-actions>
             <kj-confirm-popup-cancel>
