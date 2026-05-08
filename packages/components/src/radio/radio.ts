@@ -4,6 +4,10 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
 /**
  * Radio group root. Two-way bind via `[(value)]`.
  *
+ * Use `<kj-radio-group>` with `<kj-radio>` children to render a themed
+ * single-selection control with label forwarding, disabled propagation, and
+ * the design-system tokens applied on top of the headless `KjRadioGroup`.
+ *
  * @doc-example Default
  *   @doc-file radio.default.example.ts
  * @doc-example Group
@@ -15,7 +19,7 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  * @category Library/Data input
  * @doc
  * @doc-name radio
- * @doc-description The pre-styled kouji radio group. Use `<kj-radio-group>` with `<kj-radio>` children to get a fully accessible single-selection control with theme tokens, label forwarding, disabled support, and two-way value binding out of the box.
+ * @doc-description Themed radio group for accessible single-selection forms input with label forwarding.
  * @doc-is-main
  */
 @Component({

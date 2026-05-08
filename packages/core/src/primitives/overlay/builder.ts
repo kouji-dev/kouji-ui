@@ -45,7 +45,7 @@ export interface KjAttachOptions<D = unknown> {
  * @category Core/Overlay
  * @doc
  * @doc-name overlay-handle
- * @doc-description Hands callers a single object that exposes the controller, the per-overlay injector, and a `destroy()` that tears down the overlay's DOM and views atomically.
+ * @doc-description Disposable handle for a single open overlay with controller, injector, and destroy access.
  */
 export class KjOverlayHandle {
   constructor(
@@ -77,7 +77,7 @@ export class KjOverlayHandle {
  * @doc
  * @doc-name overlay-builder
  * @doc-is-main
- * @doc-description Constructs service-launched overlays by assembling a per-overlay controller, element injector, and wrapper component from a strategy config and returning a disposable handle.
+ * @doc-description Builds and opens a service-launched overlay (dialog, drawer, toast) and returns a disposable handle.
  */
 @Injectable({ providedIn: 'root' })
 export class KjOverlayBuilder {

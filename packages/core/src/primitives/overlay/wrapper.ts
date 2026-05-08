@@ -22,7 +22,7 @@ import { KjOverlayController } from './controller';
  * @doc
  * @doc-name overlay-wrapper
  * @doc-is-main
- * @doc-description Hosts a single overlay's DOM, anchors its backdrop and panel views as siblings, and cascades destroy down to the controller so teardown is atomic.
+ * @doc-description Hosts one overlay's DOM and tears down its backdrop, panel, and controller together.
  */
 @Component({
   selector: 'kj-overlay-wrapper',

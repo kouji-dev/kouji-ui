@@ -44,7 +44,7 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
  * @doc
  * @doc-name tree-select
  * @doc-is-main
- * @doc-description Root container that owns the tree selection model, expanded-node state, and a shared overlay controller so the trigger, content, and nodes all wire to the same state.
+ * @doc-description Unstyled tree-select root that holds the selection model and shares state with trigger, content, and nodes.
  */
 @Directive({
   selector: '[kjTreeSelect]',

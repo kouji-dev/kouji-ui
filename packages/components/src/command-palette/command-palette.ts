@@ -30,7 +30,7 @@ import {
  * keyboard-hint footer and renders the projected content instead.
  * @doc
  * @doc-name command-palette
- * @doc-description A pre-styled modal command palette with fuzzy filtering, keyboard-chord activation, grouped results, and an optional item-template API — drop in `<kj-command-palette>` for an instant Cmd-K style launcher with full keyboard navigation.
+ * @doc-description Themed Cmd-K modal command palette with fuzzy filtering, grouped results, and keyboard navigation.
  * @doc-is-main
  */
 @Directive({

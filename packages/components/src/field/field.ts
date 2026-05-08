@@ -34,7 +34,7 @@ import {
  * @category Library/Data input
  * @doc
  * @doc-name field
- * @doc-description Pre-styled form field wrapper that auto-wires label `for=`, `aria-describedby` from help and error messages, and required/invalid/disabled state — drop any `kjField`-aware input inside `<kj-field>` for zero-boilerplate accessible field composition.
+ * @doc-description Themed form field wrapper that auto-wires label, help, error, and required/invalid/disabled state.
  * @doc-is-main
  */
 @Component({

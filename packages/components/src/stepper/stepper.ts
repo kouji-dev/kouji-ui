@@ -44,7 +44,7 @@ import {
  * @category Library/Navigation
  * @doc
  * @doc-name stepper
- * @doc-description The pre-styled kouji stepper. Compose `<kj-stepper>` with `<kj-step>`, `<kj-step-label>`, and `<kj-step-content>` to render a multi-step wizard with theme tokens, linear or non-linear progression, horizontal/vertical orientation, and built-in Next/Previous/Reset controls.
+ * @doc-description Themed multi-step wizard with linear or non-linear progression and built-in navigation controls.
  * @doc-is-main
  */
 @Component({

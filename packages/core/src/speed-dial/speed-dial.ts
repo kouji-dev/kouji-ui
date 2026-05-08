@@ -39,7 +39,7 @@ import {
  * @category Core/Actions
  * @doc
  * @doc-name speed-dial
- * @doc-description Root container for a Speed Dial / FAB — owns open/closed state and fan-out direction, providing context to trigger and action directives and optionally opening on hover for fine-pointer devices.
+ * @doc-description Unstyled speed dial root that owns open state and fan-out direction for trigger and action children.
  * @doc-is-main
  */
 @Directive({

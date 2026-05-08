@@ -99,7 +99,7 @@ export function kjFileMatchesAccept(file: File, accept: string | undefined): boo
  * @category Core/Data input
  * @doc
  * @doc-name file-upload
- * @doc-description Headless file-upload state machine — owns the file list, drag state, and accept/size/count validation, then emits structured events so the consumer controls the actual upload transport.
+ * @doc-description Manages file selection, drag state, and validation while you control the upload transport.
  * @doc-is-main
  */
 @Directive({

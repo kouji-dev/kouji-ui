@@ -27,11 +27,16 @@ export class KjRadioGroup implements KjRadioContext {
 
 /**
  * Individual radio button within a `[kjRadioGroup]`. Includes CVA for forms integration.
+ *
+ * Owns `role="radio"`, `aria-checked`, Space/Enter activation, and Angular
+ * forms integration via the `KjFormControl` host directive so each radio
+ * participates in reactive and template-driven forms.
+ *
  * @example `<div kjRadio [kjRadioValue]="'a'" tabindex="0">Option A</div>`
  * @category Core/Inputs
  * @doc
  * @doc-name radio
- * @doc-description Individual radio button within a `[kjRadioGroup]` — owns `role="radio"`, `aria-checked`, Space/Enter activation, and Angular forms integration via `KjFormControl` host directive.
+ * @doc-description Individual radio button within a radio group with accessible activation and forms support.
  * @doc-is-main
  */
 @Directive({

@@ -29,7 +29,7 @@ interface StackEntry {
  * @doc
  * @doc-name overlay-stack
  * @doc-is-main
- * @doc-description Coordinates nested overlays so only the topmost receives Escape and outside-click, preventing the double-close problem when dialogs, popovers, and menus stack.
+ * @doc-description Routes Escape and outside-click to only the topmost overlay when overlays are nested.
  */
 @Injectable({ providedIn: 'root' })
 export class KjOverlayStack {

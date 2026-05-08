@@ -58,7 +58,7 @@ let nextId = 0;
  *    @doc-file number-input.currency.example.ts
  * @category Core/Inputs
  * @doc-name number-input
- * @doc-description Enhances a native `<input>` with numeric-spinbutton semantics — bounded min/max/step, Arrow/Page/Home/End key steps, locale-aware display formatting, and the full WAI-ARIA spinbutton contract.
+ * @doc-description Adds numeric spinbutton behaviour to a native input with min, max, step, and locale formatting.
  * @doc-is-main
  */
 @Directive({

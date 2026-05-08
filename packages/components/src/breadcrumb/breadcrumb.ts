@@ -48,7 +48,7 @@ import {
  * @category Library/Navigation
  * @doc
  * @doc-name breadcrumb
- * @doc-description Accessible breadcrumb trail with built-in `<nav>` landmark, configurable separator, and overflow ellipsis — compose `<kj-breadcrumb-item>` children for instant hierarchy navigation with no ARIA boilerplate.
+ * @doc-description Themed breadcrumb trail with a nav landmark, configurable separator, and overflow ellipsis.
  * @doc-is-main
  */
 @Component({

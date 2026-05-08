@@ -38,7 +38,7 @@ import {
  * @doc
  * @doc-name cascade-select
  * @doc-is-main
- * @doc-description Root container that owns the cascade selection model, the open sub-panel chain, and a shared overlay controller so the trigger, panels, and options all wire to the same state.
+ * @doc-description Unstyled cascade-select root that holds the selection model and shares state with trigger, panels, and options.
  */
 @Directive({
   selector: '[kjCascadeSelect]',

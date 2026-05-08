@@ -49,7 +49,7 @@ import {
  * @category Core/Inputs
  * @doc
  * @doc-name time-picker
- * @doc-description Root directive for the time picker — owns the time-of-day model, resolved hour cycle, segment bounds, and step config, bridging them to Angular forms and providing `KJ_TIME_PICKER` context to child segment inputs.
+ * @doc-description Unstyled time-picker root that holds the time-of-day model and shares state with segment inputs.
  * @doc-is-main
  */
 @Directive({

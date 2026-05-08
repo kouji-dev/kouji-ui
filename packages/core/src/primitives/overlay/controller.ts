@@ -29,7 +29,7 @@ export interface KjOverlayStrategies {
  * @doc
  * @doc-name overlay-controller
  * @doc-is-main
- * @doc-description Coordinates an overlay's open/close state machine and drives the strategy chain so panels, triggers, and backdrops stay in sync through every transition.
+ * @doc-description Owns one overlay's open/close state and keeps its panel, trigger, and backdrop in sync.
  */
 @Injectable()
 export class KjOverlayController {

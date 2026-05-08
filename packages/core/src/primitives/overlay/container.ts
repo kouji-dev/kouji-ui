@@ -14,7 +14,7 @@
  * @doc
  * @doc-name overlay-container
  * @doc-is-main
- * @doc-description Lazily appends a single positioned root to `document.body` so every overlay shares one z-stacking context, one pointer-events scope, and one teardown owner.
+ * @doc-description Lazily creates the shared body-level root element where every overlay mounts.
  */
 let _root: HTMLElement | null = null;
 

@@ -63,7 +63,7 @@ import {
  * @category Core/Navigation
  * @doc
  * @doc-name menubar
- * @doc-description Application menubar directive (`role="menubar"`) that coordinates horizontal roving-tabindex, pointer roll-over disclosure, and cross-bar arrow-key popup hand-off across its child `[kjMenubarItem]` triggers.
+ * @doc-description Unstyled application menubar with horizontal arrow-key navigation and hover disclosure across menus.
  * @doc-is-main
  */
 @Directive({

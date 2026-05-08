@@ -2,7 +2,10 @@
 
 /**
  * Applies disabled state to any element via ARIA and data attributes.
- * Compose via `hostDirectives` on other directives to add disabled behavior.
+ *
+ * Compose via `hostDirectives` on other directives to add disabled behaviour.
+ * The directive reflects `aria-disabled` and `data-disabled` so consumers do
+ * not need to repeat the same host-binding pattern on every input.
  *
  * @example
  * ```html
@@ -11,7 +14,7 @@
  * @category Core/Primitives
  * @doc
  * @doc-name interaction
- * @doc-description Foundational disabled-state primitive — compose via `hostDirectives` to reflect `aria-disabled` and `data-disabled` onto any element without duplicating the host-binding pattern.
+ * @doc-description Adds accessible disabled state to any element you compose it onto.
  * @doc-is-main
  */
 @Directive({

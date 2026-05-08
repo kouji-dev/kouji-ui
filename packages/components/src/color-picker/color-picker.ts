@@ -45,7 +45,7 @@ import {
  * @category Library/Data input
  * @doc
  * @doc-name color-picker
- * @doc-description Pre-styled color picker with saturation/value canvas, hue and alpha sliders, hex input, and preset swatches — supports `[(ngModel)]` and `[formControl]` out of the box for seamless Angular Forms integration.
+ * @doc-description Themed color picker with saturation canvas, hue and alpha sliders, hex input, and preset swatches.
  * @doc-is-main
  */
 @Component({

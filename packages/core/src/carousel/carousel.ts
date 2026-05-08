@@ -73,7 +73,7 @@ function prefersReducedMotion(): boolean {
  * @category Core/Data display
  * @doc
  * @doc-name carousel
- * @doc-description Headless carousel root for kouji-ui. Apply `[kjCarousel]` to a region container to own slide registration, active-slide state, loop semantics, autoplay gating (hover/focus/reduced-motion), and live-region announcements — compose with `[kjCarouselViewport]`, `[kjCarouselSlide]`, previous/next controls, and indicator dots. Zero styling.
+ * @doc-description Unstyled carousel root that owns slide state, autoplay, loop semantics, and ARIA announcements.
  * @doc-is-main
  */
 @Directive({

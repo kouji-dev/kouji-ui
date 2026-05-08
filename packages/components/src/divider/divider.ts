@@ -59,7 +59,7 @@ import {
  * @category Library/Layout/Divider
  * @doc
  * @doc-name divider
- * @doc-description Pre-styled separator line in horizontal or vertical orientation — auto-elects `<hr>` for the rule-only case (semantic separator) or `<div>` when content is projected, with solid/dashed/dotted variants and optional centered label support.
+ * @doc-description Themed horizontal or vertical separator line with solid, dashed, or dotted variants and optional label.
  * @doc-is-main
  */
 @Component({

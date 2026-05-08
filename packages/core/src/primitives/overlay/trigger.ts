@@ -12,7 +12,7 @@ import type { KjOverlayPanel } from './panel';
  * @doc
  * @doc-name overlay-trigger
  * @doc-is-main
- * @doc-description Wires a host element as the overlay's trigger, exposing aria-haspopup/expanded/controls and a two-way `kjOpen` model bound to the controller's state.
+ * @doc-description Marks an element as the trigger that opens and closes an overlay panel.
  */
 @Directive({
   selector: '[kjOverlayTrigger]',

@@ -36,7 +36,7 @@ import {
  * @category Library/Data input
  * @doc
  * @doc-name combobox
- * @doc-description Pre-styled autocomplete combobox with built-in case-insensitive filtering, async search support, and free-text mode — project `<kj-combobox-option>` children for the simple case or wire `(queryChange)` for server-driven flows.
+ * @doc-description Themed autocomplete combobox with built-in filtering, async search support, and free-text mode.
  * @doc-is-main
  */
 @Component({

@@ -12,7 +12,7 @@ import type { EChartsOption } from 'echarts';
  * @category Core/Data
  * @doc
  * @doc-name chart
- * @doc-description Headless Apache ECharts wrapper for kouji-ui. Apply `[kjChart]` to any sized `<div>` and bind a reactive `kjChartOption` to get a lazily-initialised ECharts instance that updates on every render, disposes on destroy, and carries `role="img"` with an accessible label. Zero styling.
+ * @doc-description Renders a reactive ECharts chart on any sized element with an accessible label.
  * @doc-is-main
  */
 @Directive({

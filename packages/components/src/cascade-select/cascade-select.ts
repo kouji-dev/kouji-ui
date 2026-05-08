@@ -35,7 +35,7 @@ import {
  * @category Library/Data input
  * @doc
  * @doc-name cascade-select
- * @doc-description Hierarchical select control for multi-level option trees — each level opens a sub-panel on hover or arrow key, the selected leaf value is two-way bindable, and the full selection path is available via `(kjCascadePathChange)`.
+ * @doc-description Themed hierarchical select for multi-level option trees with hover or arrow-key sub-panel navigation.
  * @doc-is-main
  */
 @Component({

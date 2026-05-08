@@ -44,7 +44,7 @@ import { Directive } from '@angular/core';
  * @category Library/Data display
  * @doc
  * @doc-name typography
- * @doc-description The kouji typography system. Apply the `kj-prose` CSS class to a container for flow-element styling, or use the `kjLead`, `kjMuted`, `kjCode`, `kjBlockquote`, and `kjTruncate` directives to style individual elements with theme-token type settings — no wrapper components needed.
+ * @doc-description Themed typography system for prose containers and individual lead, muted, code, quote, and truncate text.
  * @doc-is-main
  */
 @Directive({

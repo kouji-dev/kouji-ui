@@ -61,7 +61,7 @@ import {
  * @category Library/Navigation
  * @doc
  * @doc-name pagination
- * @doc-description Pre-styled pagination control with sibling/boundary window ellipsis, ARIA-labelled `<nav>`, and two-way `[(kjPage)]` binding — use `<kj-pagination-default>` for the 80% case or hand-author the layout with the compound component API.
+ * @doc-description Themed pagination control with ellipsis windowing, accessible nav, and two-way page binding.
  * @doc-is-main
  */
 @Component({

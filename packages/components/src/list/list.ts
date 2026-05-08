@@ -59,7 +59,7 @@ import { KjList, KjListItem, type KjListAs, type KjListOrientation } from '@kouj
  * @category Library/Data display
  * @doc
  * @doc-name list
- * @doc-description Pre-styled list surface for settings panels, sidebar navigation, and data feeds — supports divided rows, hover highlight, arrow-key navigation, and `as="nav"` for a proper `navigation` landmark, all without extra wrapper elements.
+ * @doc-description Themed list surface for settings panels, sidebar navigation, and data feeds.
  * @doc-is-main
  */
 @Component({

@@ -48,7 +48,7 @@ import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/
  * @category Library/Feedback
  * @doc
  * @doc-name spinner
- * @doc-description The pre-styled kouji spinner. Drop in `<kj-spinner>` to signal indeterminate loading with a themed animation glyph, configurable variant and size tokens, and a built-in accessible label — no extra ARIA wiring needed.
+ * @doc-description Themed indeterminate loading spinner with variant, size, and animation glyph options.
  * @doc-is-main
  */
 @Component({

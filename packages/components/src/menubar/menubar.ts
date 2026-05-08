@@ -30,7 +30,7 @@ import {
  * @category Library/Navigation
  * @doc
  * @doc-name menubar
- * @doc-description Pre-styled application menubar with horizontal arrow-key navigation, auto-disclosure on adjacent hover, and dropdown sub-menus — wraps the headless `KjMenubar` directive for a native desktop-style menu experience.
+ * @doc-description Themed desktop-style application menubar with arrow-key navigation and dropdown submenus.
  * @doc-is-main
  */
 @Component({

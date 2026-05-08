@@ -51,7 +51,7 @@ const CHAT_ROW_REGISTRY = new WeakMap<Element, KjChat>();
  * @category Core/Data display
  * @doc
  * @doc-name chat
- * @doc-description Headless chat-row primitive for kouji-ui. Apply `[kjChat]` to a message element to own the logical side, per-sender auto-grouping via DOM traversal, `role="article"` / `role="listitem"` semantics, and `aria-labelledby`/`aria-describedby` wiring from header/footer children — compose freely onto any markup. Zero styling.
+ * @doc-description Unstyled chat row with side, sender grouping, and ARIA wiring for message log semantics.
  * @doc-is-main
  */
 @Directive({
