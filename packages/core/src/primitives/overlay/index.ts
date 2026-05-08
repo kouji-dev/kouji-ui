@@ -7,12 +7,6 @@ export type { KjOverlayRegistration, KjOverlayHandle } from './stack';
 export { KjScrollLock } from './scroll-lock';
 export { KjLiveAnnouncerService, type KjLivePoliteness as KjOverlayLivePoliteness } from './live-announcer';
 
-// Existing (kept until cleanup plan)
-export { KjOverlayService, KjOverlayRef } from './overlay';
-export type { KjOverlayRegistration as KjOverlayServiceRegistration } from './overlay';
-export { KjAnchor } from './anchor';
-export type { KjAnchorSide, KjAnchorAlign, KjAnchorPlacement } from './anchor';
-
 export { KjOverlayController } from './controller';
 export type { KjOverlayStrategies } from './controller';
 export { KjOverlayBuilder } from './builder';
