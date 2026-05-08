@@ -33,6 +33,7 @@ import { KJ_COMBOBOX } from './combobox.context';
  */
 @Directive({
   selector: 'input[kjComboboxInput]',
+  exportAs: 'kjComboboxInput',
   standalone: true,
   hostDirectives: [
     { directive: KjDisabled, inputs: ['kjDisabled'] },

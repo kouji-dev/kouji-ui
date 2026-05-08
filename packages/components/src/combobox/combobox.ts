@@ -61,10 +61,11 @@ import {
   template: `
     <input
       kjComboboxInput
+      #trig="kjComboboxInput"
       class="kj-combobox-input"
       [placeholder]="placeholder()"
       [disabled]="disabled() || null" />
-    <div kjComboboxListbox class="kj-combobox-listbox">
+    <div kjComboboxListbox [kjFor]="trig" class="kj-combobox-listbox">
       <ng-content />
     </div>
   `,
