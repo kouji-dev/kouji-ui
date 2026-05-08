@@ -10,6 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
@@ -129,5 +130,10 @@ export class KjDropdownMenuTrigger implements KjDropdownMenuContext {
   hide(reason: KjDropdownMenuCloseReason): void {
     this.controller.close('programmatic');
     this.kjMenuClosed.emit(reason);
+  }
+
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
   }
 }

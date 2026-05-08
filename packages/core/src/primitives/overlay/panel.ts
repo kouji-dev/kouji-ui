@@ -11,7 +11,15 @@ import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
   KJ_OVERLAY_PANEL_ROLE,
 } from './tokens';
-import type { KjOverlayTrigger } from './trigger';
+/**
+ * Trigger-like contract accepted by `KjOverlayPanel.kjFor`. Any directive
+ * that exposes an `attachPanel(panel)` method satisfies this — including
+ * `KjOverlayTrigger` itself and consumer trigger directives that compose it
+ * via `hostDirectives`.
+ */
+export interface KjOverlayTriggerLike {
+  attachPanel(panel: KjOverlayPanel): void;
+}
 
 @Directive({
   selector: '[kjOverlayPanel]',
@@ -39,7 +47,7 @@ export class KjOverlayPanel {
   private readonly trigger       = inject(KJ_OVERLAY_TRIGGER_EVENT_STRATEGY);
   private readonly role_         = inject(KJ_OVERLAY_PANEL_ROLE);
 
-  readonly kjFor = input<KjOverlayTrigger | null>(null);
+  readonly kjFor = input<KjOverlayTriggerLike | null>(null);
   readonly role    = computed(() => this.role_);
   readonly isModal = computed(() => !!this.backdrop?.inertSiblings);
   readonly state   = computed(() => this.controller.state());

@@ -3,19 +3,18 @@ import {
   Component,
   computed,
   effect,
-  inject,
   input,
   model,
+  output,
+  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
-  KjCascadeSelect,
   KjCascadeSelectOption,
   KjCascadeSelectPanel,
   KjCascadeSelectSubPanel,
+  KjCascadeSelectTrigger,
 } from '@kouji-ui/core';
-import { KjSelectTrigger } from '@kouji-ui/core';
-import { KJ_SELECT } from '@kouji-ui/core';
 
 /**
  * Cascade-select root wrapper. Renders a trigger button + caret, the root
@@ -39,26 +38,28 @@ import { KJ_SELECT } from '@kouji-ui/core';
 @Component({
   selector: 'kj-cascade-select',
   standalone: true,
-  hostDirectives: [
-    {
-      directive: KjCascadeSelect,
-      inputs: ['kjCascadePath'],
-      outputs: ['kjCascadePathChange'],
-    },
-  ],
-  imports: [KjSelectTrigger, KjCascadeSelectPanel],
+  imports: [KjCascadeSelectTrigger, KjCascadeSelectPanel],
   template: `
     <button
       type="button"
-      kjSelectTrigger
+      kjCascadeSelectTrigger
+      #trigger="kjCascadeSelectTrigger"
       class="kj-cascade-trigger"
-      aria-haspopup="tree"
       [disabled]="disabled() || null"
     >
       <span class="kj-cascade-trigger-label">{{ displayLabel() }}</span>
       <span class="kj-cascade-trigger-caret" aria-hidden="true">▾</span>
     </button>
-    <div kjCascadeSelectPanel class="kj-cascade-panel">
+    <div
+      kjCascadeSelectPanel
+      #panel="kjCascadeSelectPanel"
+      class="kj-cascade-panel"
+      [kjFor]="trigger"
+      [kjSelectValue]="kjValue()"
+      (kjSelectValueChange)="kjValue.set($event)"
+      [kjCascadePath]="kjCascadePath()"
+      (kjCascadePathChange)="onPathChange($event)"
+    >
       <ng-content />
     </div>
   `,
@@ -80,25 +81,33 @@ export class KjCascadeSelectComponent {
   /** Two-way bindable selected leaf value. */
   readonly kjValue = model<unknown>(undefined);
 
-  private readonly select = inject(KJ_SELECT);
+  /** Two-way bindable path of values from root to selected leaf. */
+  readonly kjCascadePath = model<readonly unknown[]>([]);
+
+  /** Emitted when the cascade path changes. */
+  readonly kjCascadePathChange = output<readonly unknown[]>();
+
+  private readonly panel = viewChild<KjCascadeSelectPanel>('panel');
 
   constructor() {
-    // Sync kjValue model ↔ KjSelect (which is two levels deep via hostDirectives)
-    // Sync outward: when KjSelect commits a leaf, update our kjValue model
+    // Mirror outward: when the panel commits a value, sync our model.
     effect(() => {
-      const v = this.select.value();
+      const p = this.panel();
+      if (!p) return;
+      const v = p.value();
       if (v !== this.kjValue()) this.kjValue.set(v);
-    });
-    // Sync inward: when kjValue is set programmatically, push to KjSelect
-    effect(() => {
-      const v = this.kjValue();
-      if (v !== this.select.value()) this.select.select(v);
     });
   }
 
   /** @internal */
+  onPathChange(path: readonly unknown[]): void {
+    this.kjCascadePath.set(path);
+    this.kjCascadePathChange.emit(path);
+  }
+
+  /** @internal */
   readonly displayLabel = computed(() => {
-    const v = this.select.value() as string | null | undefined;
+    const v = this.kjValue() as string | null | undefined;
     if (v === undefined || v === null || v === '') return this.placeholder();
     return String(v);
   });

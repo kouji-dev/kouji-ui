@@ -1,5 +1,6 @@
-import { Directive } from '@angular/core';
+import { Directive, inject } from '@angular/core';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
@@ -32,4 +33,9 @@ import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click
     { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'listbox' as const },
   ],
 })
-export class KjCascadeSelectTrigger {}
+export class KjCascadeSelectTrigger {
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
+  }
+}

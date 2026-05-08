@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { KjFocusRing } from '../primitives';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
@@ -87,5 +88,10 @@ export class KjSelectTrigger {
         this.controller.close('programmatic');
       }
     });
+  }
+
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
   }
 }

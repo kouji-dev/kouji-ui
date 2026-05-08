@@ -1,6 +1,7 @@
 // command-palette-trigger.ts
-import { Directive, input } from '@angular/core';
+import { Directive, inject, input } from '@angular/core';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
@@ -51,4 +52,9 @@ export class KjCommandPaletteTrigger {
    * Captured at provider construction; reactive switching is a follow-up.
    */
   readonly kjHotkey = input<string>('mod+k');
+
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
+  }
 }

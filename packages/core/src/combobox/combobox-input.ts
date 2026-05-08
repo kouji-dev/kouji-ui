@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
@@ -127,5 +128,10 @@ export class KjComboboxInput {
         if (this.ctx.open()) this.ctx.hide();
         break;
     }
+  }
+
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
   }
 }

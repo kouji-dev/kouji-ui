@@ -4,6 +4,7 @@ import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import { formatDateShort, parseDate } from '../calendar/date-utils';
 import { KJ_DATE_PICKER } from './date-picker.context';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
@@ -172,6 +173,11 @@ export class KjDatePickerTrigger {
       // Restore previous formatted value.
       this.el.nativeElement.value = this.displayValue();
     }
+  }
+
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
   }
 
   private isOutOfBounds(d: Date): boolean {
