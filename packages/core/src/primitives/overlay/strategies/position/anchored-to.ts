@@ -25,6 +25,27 @@ export type KjAnchoredToStrategy = KjPositionStrategy & {
 
 const read = <T>(v: Signal<T> | T): T => isSignal(v) ? v() : v;
 
+/**
+ * Returns the trigger's effective bounding rect. If the trigger element has
+ * `display: contents` (rect is 0×0), walks to the first child until a sized
+ * element is found. Common case: `<kj-button kjPopoverTrigger>` where the
+ * `<kj-button>` host is `display: contents` and the actual `<button>` is a
+ * descendant.
+ */
+const effectiveRect = (el: HTMLElement): DOMRect => {
+  let r = el.getBoundingClientRect();
+  if (r.width > 0 || r.height > 0) return r;
+  let cur: HTMLElement | null = el;
+  while (cur) {
+    const child = cur.firstElementChild as HTMLElement | null;
+    if (!child) break;
+    r = child.getBoundingClientRect();
+    if (r.width > 0 || r.height > 0) return r;
+    cur = child;
+  }
+  return el.getBoundingClientRect();
+};
+
 let _anchorIdCounter = 0;
 
 const supportsCssAnchor = (): boolean => {
@@ -112,7 +133,7 @@ export function anchoredTo(initialOpts: Partial<KjAnchoredToOpts> = {}): KjAncho
     const flip = opts.flip ?? true;
     const shift = opts.shift ?? true;
     const matchWidth = opts.matchTriggerWidth ?? 'none';
-    const tRect = trigger.getBoundingClientRect();
+    const tRect = effectiveRect(trigger);
 
     // Apply width matching BEFORE measuring panel — affects pRect.
     if (matchWidth === 'fixed') {
