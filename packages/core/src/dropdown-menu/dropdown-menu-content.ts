@@ -2,6 +2,8 @@ import {
   Component,
   ChangeDetectionStrategy,
   ViewEncapsulation,
+  Injector,
+  computed,
   inject,
   input,
 } from '@angular/core';
@@ -23,7 +25,12 @@ import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-t
 import { pointAt } from '../primitives/overlay/strategies/position/point-at';
 import { inPlaceSibling } from '../primitives/overlay/strategies/position/in-place-sibling';
 import { KjRovingTabindex } from '../a11y/roving-tabindex';
-import { KjDropdownMenuTrigger } from './dropdown-menu-trigger';
+import {
+  KjDropdownMenuTrigger,
+  KJ_DROPDOWN_MENU,
+  type KjDropdownMenuCloseReason,
+  type KjDropdownMenuContext,
+} from './dropdown-menu-trigger';
 
 type KjDeferredMount = KjMountStrategy & { setDelegate(d: KjMountStrategy): void };
 type KjDeferredPosition = KjPositionStrategy & { setDelegate(d: KjPositionStrategy): void };
@@ -92,15 +99,33 @@ function deferredPosition(): KjDeferredPosition {
     { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'menu' as const },
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => deferredMount() },
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => deferredPosition() },
+    { provide: KJ_DROPDOWN_MENU, useExisting: KjDropdownMenuContent },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `<ng-content />`,
 })
-export class KjDropdownMenuContent {
+export class KjDropdownMenuContent implements KjDropdownMenuContext {
   readonly kjSide  = input<KjSide>('bottom');
   readonly kjAlign = input<KjAlign>('start');
   readonly kjMount = input<'portal' | 'point' | 'inline'>('portal');
+
+  private readonly _injector = inject(Injector);
+  private _panelCache: KjOverlayPanel | null | undefined = undefined;
+  private get _panel(): KjOverlayPanel | null {
+    if (this._panelCache === undefined) {
+      this._panelCache = this._injector.get(KjOverlayPanel, null);
+    }
+    return this._panelCache;
+  }
+
+  /** Mirror of trigger's closeOnSelect — defaults to true; trigger overrides via its own provider. */
+  readonly closeOnSelect = computed(() => true);
+
+  /** Item-driven close. Routes through the panel's controller (resolved via `kjFor`). */
+  hide(_reason: KjDropdownMenuCloseReason): void {
+    this._panel?.controller?.close('programmatic');
+  }
 
   constructor() {
     const mount = inject(KJ_OVERLAY_MOUNT_STRATEGY) as KjDeferredMount;
