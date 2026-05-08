@@ -31,7 +31,7 @@
 - Create: `apps/docs/src/app/lib/theme/harmonies.ts`
 - Test: `apps/docs/src/app/lib/theme/harmonies.spec.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // apps/docs/src/app/lib/theme/harmonies.spec.ts
@@ -69,12 +69,12 @@ describe('harmonies', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/harmonies.spec.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement `harmonies.ts`**
+- [x] **Step 3: Implement `harmonies.ts`**
 
 ```ts
 // apps/docs/src/app/lib/theme/harmonies.ts
@@ -96,12 +96,12 @@ export const complementary = (hex: string): string => hueShift(hex, 180);
 export const triadic = (hex: string): string => hueShift(hex, 120);
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/harmonies.spec.ts`
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/lib/theme/harmonies.ts apps/docs/src/app/lib/theme/harmonies.spec.ts
