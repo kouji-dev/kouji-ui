@@ -13,8 +13,8 @@ import { isSameDay } from '../calendar/date-utils';
   imports: [KjDatePicker, KjDatePickerTrigger, KjDatePickerCalendar],
   template: `
     <div kjDatePicker [(kjValue)]="value" [(kjOpen)]="open">
-      <input kjDatePickerTrigger />
-      <div kjDatePickerCalendar></div>
+      <input kjDatePickerTrigger #t="kjDatePickerTrigger" />
+      <div kjDatePickerCalendar [kjFor]="t"></div>
     </div>
   `,
 })

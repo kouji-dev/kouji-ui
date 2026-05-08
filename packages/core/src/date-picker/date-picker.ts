@@ -18,10 +18,12 @@ function nextPanelId(): string {
 }
 
 /**
- * Headless Date Picker root. Owns the value, popover open/close state, and
- * the bounds / locale config. Renders nothing on its own — pair with
- * `KjDatePickerTrigger` (the input) and `KjDatePickerCalendar` (the popover
- * body composing `KjCalendar`).
+ * Headless Date Picker root. Owns the value, the bounds / locale config, and
+ * a two-way bindable `kjOpen` model. The actual show/hide wiring (and the
+ * minted panel id) lives on the overlay primitives composed by
+ * `KjDatePickerTrigger` (`KjOverlayTrigger`) and `KjDatePickerCalendar`
+ * (`KjOverlayPanel`); the trigger bridges its overlay controller back into
+ * this root's `kjOpen` model.
  *
  * Native `Date` only — locale-aware via `Intl.DateTimeFormat`.
  *
@@ -29,8 +31,8 @@ function nextPanelId(): string {
  *
  * ```html
  * <div kjDatePicker [(kjValue)]="when">
- *   <input kjDatePickerTrigger />
- *   <div kjDatePickerCalendar></div>
+ *   <input kjDatePickerTrigger #t="kjDatePickerTrigger" />
+ *   <div kjDatePickerCalendar [kjFor]="t"></div>
  * </div>
  * ```
  *
@@ -72,13 +74,22 @@ export class KjDatePicker implements KjDatePickerContext {
   /** Read-only — value displays but cannot be edited. */
   readonly kjReadonly = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
-  /** Two-way bindable open state for the popover. */
+  /**
+   * Two-way bindable open state for the popover. Bridged to the trigger's
+   * overlay controller — flipping this opens/closes the calendar.
+   */
   readonly kjOpen = model<boolean>(false);
 
   // ── KjDatePickerContext implementation ─────────────────────────────
 
   readonly value = this.kjValue.asReadonly();
   readonly open = this.kjOpen;
+  /**
+   * @deprecated The real panel id is minted by the composed
+   * `KjOverlayPanel` host directive on `KjDatePickerCalendar`. Retained as a
+   * stable string so existing template references compile; consumers should
+   * migrate to `[kjFor]="trigger"` for `aria-controls` wiring.
+   */
   readonly panelId = nextPanelId();
   readonly minDate = computed(() => this.kjMin());
   readonly maxDate = computed(() => this.kjMax());
