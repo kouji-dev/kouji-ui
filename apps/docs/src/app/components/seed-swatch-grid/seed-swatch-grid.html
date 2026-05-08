@@ -1,0 +1,19 @@
+@for (group of grouped(); track group.family) {
+  <section class="swatch-group" [attr.data-family]="group.family" [attr.aria-label]="group.family + ' seeds'">
+    <h4 class="swatch-group__label">{{ group.family }}</h4>
+    <div class="swatch-row">
+      @for (s of group.items; track s.hex) {
+        <button
+          type="button"
+          class="swatch"
+          [class.swatch--active]="isActive(s.hex)"
+          [attr.data-hex]="s.hex"
+          [attr.aria-pressed]="isActive(s.hex)"
+          [attr.aria-label]="s.name + ' (' + s.hex + ')'"
+          [style.background]="s.hex"
+          (click)="pick(s.hex)"
+        ></button>
+      }
+    </div>
+  </section>
+}
