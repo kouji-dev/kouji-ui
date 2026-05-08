@@ -4,7 +4,7 @@ import {
   afterNextRender,
   inject,
 } from '@angular/core';
-import { nextDropdownMenuLabelId } from './dropdown-menu.context';
+import { nextDropdownMenuLabelId } from './dropdown-menu-trigger';
 
 /**
  * A non-interactive heading inside a `[kjDropdownMenu]` panel.

@@ -12,7 +12,7 @@ import { KjRovingTabindexItemDirective } from '../a11y/roving-tabindex';
 import {
   KJ_DROPDOWN_MENU,
   type KjDropdownMenuContext,
-} from './dropdown-menu.context';
+} from './dropdown-menu-trigger';
 
 /**
  * An individual item inside a `[kjDropdownMenu]` panel.

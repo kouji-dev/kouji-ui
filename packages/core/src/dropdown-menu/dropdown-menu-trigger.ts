@@ -1,294 +1,133 @@
 import {
-  DestroyRef,
   Directive,
   ElementRef,
-  EmbeddedViewRef,
-  PLATFORM_ID,
-  TemplateRef,
-  ViewContainerRef,
-  afterNextRender,
+  InjectionToken,
   booleanAttribute,
-  effect,
   inject,
   input,
-  model,
   output,
   signal,
+  type Signal,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import { KjOverlayController } from '../primitives/overlay/controller';
 import {
-  KJ_DROPDOWN_MENU,
-  type KjDropdownMenuAlign,
-  type KjDropdownMenuCloseReason,
-  type KjDropdownMenuContext,
-  type KjDropdownMenuSide,
-  nextDropdownMenuPanelId,
-} from './dropdown-menu.context';
+  KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
+} from '../primitives/overlay/tokens';
+import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click';
+import { onContextMenu } from '../primitives/overlay/strategies/trigger-event/on-context-menu';
+
+/** Trigger event mode. `'click'` (default) or `'contextmenu'` (right-click / long-press). */
+export type KjDropdownMenuTriggerKind = 'click' | 'contextmenu';
+
+/** How and where the panel mounts: portal (default), at a point, or inline (in-place). */
+export type KjDropdownMenuMount = 'portal' | 'point' | 'inline';
+
+/** Reason a dropdown menu close was requested. */
+export type KjDropdownMenuCloseReason =
+  | 'item'
+  | 'escape'
+  | 'tab'
+  | 'click-outside'
+  | 'programmatic';
 
 /**
- * The button that opens a dropdown menu.
+ * Minimal context surface consumed by item-level directives
+ * (`KjDropdownMenuItem`, etc.). The trigger directive provides this token.
+ */
+export interface KjDropdownMenuContext {
+  readonly closeOnSelect: Signal<boolean>;
+  hide(reason: KjDropdownMenuCloseReason): void;
+}
+
+/** DI token for the dropdown menu shared context (item-level). */
+export const KJ_DROPDOWN_MENU = new InjectionToken<KjDropdownMenuContext>(
+  'KjDropdownMenu',
+);
+
+let _labelIdCounter = 0;
+/** Allocate a stable label id for `aria-labelledby` wiring on a group. */
+export function nextDropdownMenuLabelId(): string {
+  return `kj-dropdown-menu-label-${++_labelIdCounter}`;
+}
+
+/**
+ * The button that opens a dropdown menu. Composes `KjOverlayTrigger`.
  *
- * Place on a `<button>` (or any focusable element with `tabindex="0"`) and
- * point it at a `<ng-template>` containing a `[kjDropdownMenu]` panel:
+ * `kjTrigger` switches between `onClick()` (default) and `onContextMenu()`
+ * (replacement for the old `KjContextMenuTrigger`). For `kjMount="point"`,
+ * the trigger captures the originating pointer coords into signals consumed
+ * by `pointAt()` in the content component.
  *
- * ```html
- * <button kjButton [kjDropdownMenuTriggerFor]="menuTpl">Actions</button>
- * <ng-template #menuTpl>
- *   <div kjDropdownMenu>
- *     <button kjDropdownMenuItem>Profile</button>
- *     <button kjDropdownMenuItem>Settings</button>
- *   </div>
- * </ng-template>
- * ```
- *
- * Wires `aria-haspopup="menu"`, `aria-expanded`, `aria-controls` on the host.
- * Owns the open / close state and the keyboard contract for opening:
- *
- * - `Click` / `Enter` / `Space` — toggle open; on open, focus moves to the
- *   first item.
- * - `ArrowDown` — open + focus first item.
- * - `ArrowUp` — open + focus last item.
- *
- * Closes via Escape, click-outside, item activation, or Tab — see
- * `[kjDropdownMenu]` for the panel-side keyboard contract. Focus is restored
- * to the trigger on close (except for click-outside / Tab).
- *
- * The trigger directive does **not** compose `KjButton` — it is meant to sit
- * on whatever the consumer already put the trigger on (commonly a button
- * wrapper or `[kjButton]`). It contributes only ARIA + keyboard wiring.
+ * Wires `aria-haspopup="menu"`, `aria-expanded`, `aria-controls` via the
+ * underlying `KjOverlayTrigger` host directive.
  *
  * @category Core/Actions
  */
 @Directive({
-  selector: '[kjDropdownMenuTriggerFor]',
-  standalone: true,
+  selector: '[kjDropdownMenuTrigger]',
   exportAs: 'kjDropdownMenuTrigger',
+  standalone: true,
+  hostDirectives: [{ directive: KjOverlayTrigger, inputs: ['kjOpen'] }],
   providers: [
+    KjOverlayController,
+    {
+      provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
+      // MVP: resolve at construction. `contextmenu` consumers should set
+      // `kjTrigger="contextmenu"` declaratively at construction time.
+      useFactory: () => {
+        // Read input attribute on the host element synchronously to pick the
+        // strategy. Falls back to click.
+        const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+        const kind = el.getAttribute('kjTrigger') ?? el.getAttribute('kjtrigger');
+        return kind === 'contextmenu' ? onContextMenu({ longPressMs: 500 }) : onClick();
+      },
+    },
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'menu' as const },
     { provide: KJ_DROPDOWN_MENU, useExisting: KjDropdownMenuTrigger },
   ],
   host: {
-    '[attr.aria-haspopup]': '"menu"',
-    '[attr.aria-expanded]': 'open()',
-    '[attr.aria-controls]': 'panelId',
-    '[attr.aria-disabled]': 'kjDisabled() ? "true" : null',
-    '[attr.data-state]': 'open() ? "open" : "closed"',
-    '(click)': 'onClick($event)',
-    '(keydown)': 'onKeydown($event)',
+    '(click)': 'onPointer($event)',
+    '(contextmenu)': 'onPointer($event)',
   },
 })
 export class KjDropdownMenuTrigger implements KjDropdownMenuContext {
-  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly vcr = inject(ViewContainerRef);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly controller = inject(KjOverlayController);
 
-  /** The `<ng-template>` containing the `[kjDropdownMenu]` panel. */
-  readonly kjDropdownMenuTriggerFor = input.required<TemplateRef<unknown>>();
+  /** Trigger event kind. */
+  readonly kjTrigger = input<KjDropdownMenuTriggerKind>('click');
 
-  /** Suppresses opening entirely. Reflects `aria-disabled`. */
+  /** Mount mode for the content panel. */
+  readonly kjMount = input<KjDropdownMenuMount>('portal');
+
+  /** Suppresses opening entirely. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
-
-  /** Preferred panel side. */
-  readonly kjSide = input<KjDropdownMenuSide>('bottom');
-
-  /** Cross-axis alignment. */
-  readonly kjAlign = input<KjDropdownMenuAlign>('start');
-
-  /** Pixel gap between trigger and panel. */
-  readonly kjOffset = input<number>(4);
 
   /** Whether item activation closes the menu by default. */
   readonly kjCloseOnSelect = input(true, { transform: booleanAttribute });
 
-  /** Two-way bindable open state. */
-  readonly kjOpen = model<boolean>(false);
-
-  /** Convenience event paired with the `kjOpen` model. */
-  readonly kjOpenChange = output<boolean>();
-
-  /** Emitted when the menu opens. */
-  readonly kjMenuOpened = output<void>();
-
   /** Emitted when the menu closes, with the reason. */
   readonly kjMenuClosed = output<KjDropdownMenuCloseReason>();
 
-  // ── KjDropdownMenuContext ──────────────────────────────────────────
+  /** Captured pointer coordinates for `kjMount="point"`. */
+  readonly kjPointX = signal<number>(0);
+  readonly kjPointY = signal<number>(0);
 
-  private readonly _open = signal(false);
-  /** Reactive open state. */
-  readonly open = this._open.asReadonly();
-
-  /** Stable panel id used as `aria-controls` and `id` on the panel. */
-  readonly panelId = nextDropdownMenuPanelId();
-
-  /** Context mirrors — InputSignals satisfy `Signal<T>`. */
-  readonly side = this.kjSide;
-  readonly align = this.kjAlign;
-  readonly offset = this.kjOffset;
+  /** Mirror exposed to item directives via `KJ_DROPDOWN_MENU`. */
   readonly closeOnSelect = this.kjCloseOnSelect;
 
-  private readonly _trigger = signal<HTMLElement | null>(null);
-  readonly triggerElement = this._trigger.asReadonly();
-
-  /** Focus directive used by the panel after opening; set by `show()`. */
-  private _pendingFocus: 'first' | 'last' | 'none' = 'first';
-  /** @internal Read by the panel directive on mount. */
-  consumePendingFocus(): 'first' | 'last' | 'none' {
-    const f = this._pendingFocus;
-    this._pendingFocus = 'first';
-    return f;
-  }
-
-  /** The currently stamped template view (when open). */
-  private templateView: EmbeddedViewRef<unknown> | null = null;
-
-  /**
-   * Walks past `display: contents` ancestors to find the first descendant with
-   * a real layout box — required so positioning math has a non-zero rect.
-   */
-  private resolveAnchor(el: HTMLElement | null): HTMLElement | null {
-    if (!el || typeof window === 'undefined') return el;
-    if (getComputedStyle(el).display !== 'contents') return el;
-    let cur: Element | null = el.firstElementChild;
-    while (cur) {
-      if (getComputedStyle(cur as HTMLElement).display !== 'contents') return cur as HTMLElement;
-      cur = cur.firstElementChild ?? cur.nextElementSibling;
+  /** Capture pointer coords for point-mount; the strategy reads them. */
+  protected onPointer(e: MouseEvent): void {
+    if (this.kjMount() === 'point') {
+      this.kjPointX.set(e.clientX);
+      this.kjPointY.set(e.clientY);
     }
-    return el;
   }
 
-  constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      // Initial best-effort capture; refined by afterNextRender once the
-      // projected child element exists in the DOM (wrappers using
-      // `display: contents` have no firstElementChild at constructor time).
-      this._trigger.set(this.el.nativeElement);
-      afterNextRender(() => {
-        const anchor = this.resolveAnchor(this.el.nativeElement);
-        if (anchor) this._trigger.set(anchor);
-      });
-    }
-
-    // Stamp / unstamp the panel template based on the open state. The panel
-    // template — provided as `<ng-template>` via `[kjDropdownMenuTriggerFor]`
-    // — must be instantiated for `[kjDropdownMenu]` (the inner attribute
-    // directive) to come into existence. On close, the embedded view is
-    // destroyed so the directive's `DestroyRef.onDestroy` runs and tears
-    // down its overlay registration cleanly.
-    effect(() => {
-      const isOpen = this._open();
-      const tpl = this.kjDropdownMenuTriggerFor();
-      if (isOpen && tpl && !this.templateView) {
-        // Pass the trigger's own injector so descendants of the projected
-        // template inject KJ_DROPDOWN_MENU from this trigger.
-        this.templateView = tpl.createEmbeddedView(null as never, this.vcr.injector);
-        this.vcr.insert(this.templateView);
-        this.templateView.detectChanges();
-      } else if (!isOpen && this.templateView) {
-        try {
-          this.templateView.destroy();
-        } catch {
-          /* ignore */
-        }
-        this.templateView = null;
-      }
-    });
-
-    this.destroyRef.onDestroy(() => {
-      if (this.templateView) {
-        try {
-          this.templateView.destroy();
-        } catch {
-          /* ignore */
-        }
-        this.templateView = null;
-      }
-      if (this._open()) {
-        this._open.set(false);
-      }
-    });
-  }
-
-  // ── Mutations ──────────────────────────────────────────────────────
-
-  show(invoker: HTMLElement | null, focus: 'first' | 'last' | 'none' = 'first'): void {
-    if (this.kjDisabled()) return;
-    if (this._open()) return;
-    this._pendingFocus = focus;
-    if (invoker) {
-      // Resolve display:contents wrappers to a real-box descendant so the
-      // panel anchors to the visible element, not a zero-rect host.
-      const anchor = this.resolveAnchor(invoker) ?? invoker;
-      this._trigger.set(anchor);
-    }
-    this._open.set(true);
-    this.kjOpen.set(true);
-    this.kjOpenChange.emit(true);
-    this.kjMenuOpened.emit();
-  }
-
+  /** Item-driven close (`KJ_DROPDOWN_MENU.hide`). */
   hide(reason: KjDropdownMenuCloseReason): void {
-    if (!this._open()) return;
-    this._open.set(false);
-    this.kjOpen.set(false);
-    this.kjOpenChange.emit(false);
+    this.controller.close('programmatic');
     this.kjMenuClosed.emit(reason);
-
-    // Focus restoration: not for click-outside / tab — natural focus follows.
-    if (reason !== 'click-outside' && reason !== 'tab') {
-      const target = this._trigger();
-      if (target) {
-        try {
-          target.focus();
-        } catch {
-          /* element may be detached */
-        }
-      }
-    }
-  }
-
-  toggle(invoker: HTMLElement | null): void {
-    if (this._open()) {
-      this.hide('programmatic');
-    } else {
-      this.show(invoker, 'first');
-    }
-  }
-
-  // ── Host event handlers ───────────────────────────────────────────
-
-  protected onClick(event: MouseEvent): void {
-    if (this.kjDisabled()) return;
-    event.stopPropagation();
-    this.toggle(this.el.nativeElement);
-  }
-
-  protected onKeydown(event: KeyboardEvent): void {
-    if (this.kjDisabled()) return;
-    const tag = (event.currentTarget as HTMLElement | null)?.tagName.toLowerCase();
-    switch (event.key) {
-      case 'Enter':
-      case ' ':
-      case 'Spacebar': {
-        // For native <button> Enter/Space already triggers click — let click handler run.
-        if (tag === 'button') return;
-        event.preventDefault();
-        event.stopPropagation();
-        this.toggle(this.el.nativeElement);
-        return;
-      }
-      case 'ArrowDown': {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!this._open()) this.show(this.el.nativeElement, 'first');
-        return;
-      }
-      case 'ArrowUp': {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!this._open()) this.show(this.el.nativeElement, 'last');
-        return;
-      }
-    }
   }
 }
