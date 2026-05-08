@@ -1,4 +1,4 @@
-import { EnvironmentInjector, Injectable, Type, inject, runInInjectionContext } from '@angular/core';
+import { EnvironmentInjector, Injectable, Type, effect, inject, runInInjectionContext } from '@angular/core';
 import { KjOverlayBuilder } from '../primitives/overlay/builder';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { viewportCentered } from '../primitives/overlay/strategies/position/viewport-centered';
@@ -46,6 +46,22 @@ export class KjDialog {
       data: opts.data,
     });
     ref.bindInstance(cmpRef.instance);
+    runInInjectionContext(this.env, () => {
+      let wasOpen = false;
+      const eff = effect(() => {
+        const s = ctrl.state();
+        if (s === 'open' || s === 'opening') wasOpen = true;
+        if (s === 'closed' && wasOpen) {
+          eff.destroy();
+          // Run cleanup on next microtask so afterClosed$ subscribers see the
+          // result before the component view is torn down.
+          queueMicrotask(() => {
+            cmpRef.destroy();
+            ctrl.dispose();
+          });
+        }
+      });
+    });
     ctrl.open();
     return ref;
   }

@@ -1,4 +1,4 @@
-import { EnvironmentInjector, Injectable, TemplateRef, Type, inject, runInInjectionContext, signal } from '@angular/core';
+import { EnvironmentInjector, Injectable, TemplateRef, Type, effect, inject, runInInjectionContext, signal } from '@angular/core';
 import { KjOverlayBuilder } from '../primitives/overlay/builder';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { corner, type KjCornerPosition } from '../primitives/overlay/strategies/position/corner';
@@ -166,9 +166,27 @@ export class KjToastService {
       panelRole: variant === 'destructive' ? 'alert' : 'status',
     }));
 
+    let cmpRef: { destroy: () => void } | null = null;
     if (opts.component) {
-      runInInjectionContext(this.env, () => this.builder.attachComponent(ctrl, opts.component!, { data: opts.data }));
+      cmpRef = runInInjectionContext(this.env, () => this.builder.attachComponent(ctrl, opts.component!, { data: opts.data }));
     }
+
+    runInInjectionContext(this.env, () => {
+      let wasOpen = false;
+      const eff = effect(() => {
+        const s = ctrl.state();
+        if (s === 'open' || s === 'opening') wasOpen = true;
+        if (s === 'closed' && wasOpen) {
+          eff.destroy();
+          // Run cleanup on next microtask so afterClosed$ subscribers see the
+          // result before the component view is torn down.
+          queueMicrotask(() => {
+            cmpRef?.destroy();
+            ctrl.dispose();
+          });
+        }
+      });
+    });
 
     this._toasts.update((ts) => [...ts, {
       id,

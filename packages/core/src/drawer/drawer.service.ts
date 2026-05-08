@@ -6,6 +6,7 @@ import {
   Injector,
   Type,
   createComponent,
+  effect,
   inject,
   runInInjectionContext,
 } from '@angular/core';
@@ -117,6 +118,22 @@ export class KjDrawerService {
     document.body.appendChild(cmpRef.location.nativeElement);
 
     ref.bindInstance(cmpRef.instance);
+    runInInjectionContext(this.env, () => {
+      let wasOpen = false;
+      const eff = effect(() => {
+        const s = ctrl.state();
+        if (s === 'open' || s === 'opening') wasOpen = true;
+        if (s === 'closed' && wasOpen) {
+          eff.destroy();
+          // Run cleanup on next microtask so afterClosed$ subscribers see the
+          // result before the component view is torn down.
+          queueMicrotask(() => {
+            cmpRef.destroy();
+            ctrl.dispose();
+          });
+        }
+      });
+    });
     ctrl.open();
     return ref;
   }
