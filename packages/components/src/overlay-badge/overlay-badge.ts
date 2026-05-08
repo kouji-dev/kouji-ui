@@ -58,6 +58,7 @@ import {
  * @category Library/Data display
  * @doc
  * @doc-name overlay-badge
+ * @doc-description Pre-styled positioned badge for notification counts or status dots over avatars, icons, and tabs — numeric values auto-truncate at `kjMaxValue`, dot mode skips the number, and the accessible description merges cleanly into the anchor's `aria-describedby`.
  * @doc-is-main
  */
 @Component({

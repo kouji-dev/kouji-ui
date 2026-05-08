@@ -72,6 +72,7 @@ import type {
  * @category Library/Data display
  * @doc
  * @doc-name carousel
+ * @doc-description Pre-styled rotating content region with prev/next controls, dot indicators, optional autoplay, and a built-in live region for screen-reader announcements — slide identity is value-keyed so it two-way binds cleanly with router params or analytics.
  * @doc-is-main
  */
 @Component({

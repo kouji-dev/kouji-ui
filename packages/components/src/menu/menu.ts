@@ -15,6 +15,7 @@ import { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from '@kouji-ui/core
  * @category Library/Navigation
  * @doc
  * @doc-name menu
+ * @doc-description Pre-styled pop-up menu for trigger-driven navigation or actions — compose `<kj-menu-trigger>`, `<kj-menu-content>`, and `<kj-menu-item>` children inside `<kj-menu>` for a keyboard-navigable flyout with the design system applied.
  * @doc-is-main
  */
 @Component({

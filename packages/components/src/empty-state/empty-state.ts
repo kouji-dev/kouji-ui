@@ -70,6 +70,7 @@ export type KjEmptyStateLevel = 1 | 2 | 3 | 4 | 5 | 6;
  * @category Library/Data display
  * @doc
  * @doc-name empty-state
+ * @doc-description Pre-styled placeholder surface for no-data, no-results, or error scenarios — compose icon, title, description, and action sub-components into a centred layout with the correct ARIA live-region politeness for each empty-state type.
  * @doc-is-main
  */
 @Component({

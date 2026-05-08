@@ -37,6 +37,7 @@ import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
  * @category Library/Data input
  * @doc
  * @doc-name input-group
+ * @doc-description Pre-styled input with flanking addons (icons, units, buttons) that collapse into a single bordered control — wrap any `[kjInput]` with `<kj-input-group>` and add `<kj-input-group-addon>` elements for prefix/suffix decoration.
  * @doc-is-main
  */
 @Component({

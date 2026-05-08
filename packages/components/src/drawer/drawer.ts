@@ -42,6 +42,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name drawer
+ * @doc-description Pre-styled slide-in drawer panel for navigation or detail overlays — slides from any edge, with focus trap, scroll lock, and reduced-motion support wired automatically by the underlying `KjDrawer` family.
  * @doc-is-main
  */
 @Component({

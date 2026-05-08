@@ -56,6 +56,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name context-menu
+ * @doc-description Pre-styled context menu that opens on right-click, long-press, or keyboard shortcut — uses the same dropdown panel components as `<kj-dropdown-menu>`, so menus look and behave identically regardless of what triggered them.
  * @doc-is-main
  */
 @Component({

@@ -42,6 +42,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name bottom-sheet
+ * @doc-description Pre-styled bottom sheet for mobile-first overlay flows — slides up from the bottom with a draggable handle, focus trap, scroll lock, and snap-point support, all wired by the underlying headless family.
  * @doc-is-main
  */
 @Component({

@@ -205,6 +205,7 @@ export class KjMultiSelectComponent {
  * @category Library/Data input
  * @doc
  * @doc-name multi-select
+ * @doc-description Pre-styled multi-select control with removable chip tags, optional search input, select-all toggle, and overflow chip — bind `[(value)]` and project `<kj-multi-select-option>` children for a full multi-selection experience.
  * @doc-is-main
  */
 @Component({

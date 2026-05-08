@@ -42,6 +42,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name dropdown-menu
+ * @doc-description Pre-styled dropdown menu with keyboard-navigable items, separators, and group labels — pair `<kj-dropdown-menu-trigger>` with an `<ng-template>` panel for a fully accessible flyout menu with arrow-key navigation.
  * @doc-is-main
  */
 @Component({

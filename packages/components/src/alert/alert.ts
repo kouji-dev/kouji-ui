@@ -50,6 +50,7 @@ import type { KjAlertMode } from '@kouji-ui/core';
  * @category Library/Feedback
  * @doc
  * @doc-name alert
+ * @doc-description Pre-styled in-flow notification surface with severity variants, optional dismiss button, and action slots — visibility is consumer-managed so alerts fit naturally into reactive data flows without portal overhead.
  * @doc-is-main
  */
 @Component({

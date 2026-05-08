@@ -19,6 +19,7 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
  * @category Library/Data display
  * @doc
  * @doc-name accordion
+ * @doc-description Pre-styled accordion for collapsible content sections — drop in `<kj-accordion>` with `<kj-accordion-item>` children for single or multi-open panels, keyboard navigation, and accessible expand/collapse built in.
  * @doc-is-main
  */
 @Component({

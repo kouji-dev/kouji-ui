@@ -37,6 +37,7 @@ import { KJ_SELECT } from '@kouji-ui/core';
  * @category Library/Data input
  * @doc
  * @doc-name cascade-select
+ * @doc-description Hierarchical select control for multi-level option trees — each level opens a sub-panel on hover or arrow key, the selected leaf value is two-way bindable, and the full selection path is available via `(kjCascadePathChange)`.
  * @doc-is-main
  */
 @Component({

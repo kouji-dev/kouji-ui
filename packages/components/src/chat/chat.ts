@@ -63,6 +63,7 @@ export type KjChatLogLive = 'polite' | 'off';
  * @category Library/Data display
  * @doc
  * @doc-name chat
+ * @doc-description Pre-styled chat message log with per-bubble variants, sender avatars, read-state footers, and automatic `aria-live="polite"` announcements — compose `<kj-chat>` rows inside `<kj-chat-log>` for an accessible, grouped conversation feed.
  * @doc-is-main
  */
 @Component({

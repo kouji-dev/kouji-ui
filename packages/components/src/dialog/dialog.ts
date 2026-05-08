@@ -39,6 +39,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name dialog
+ * @doc-description Pre-styled modal dialog with focus trap, scroll lock, focus restore, and cancellable close — compose header, body, and footer sub-components inside `<kj-dialog>` for a fully accessible overlay that works declaratively or programmatically.
  * @doc-is-main
  */
 @Component({

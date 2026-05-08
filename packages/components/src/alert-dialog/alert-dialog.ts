@@ -37,6 +37,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name alert-dialog
+ * @doc-description A pre-styled, fully accessible alert dialog for destructive or irreversible actions — focus trap, scroll lock, cancel-defaults-to-cancel, and `aria-labelledby`/`aria-describedby` wiring come pre-wired so you can drop in `<kj-alert-dialog>` without reinventing the modal lifecycle.
  * @doc-is-main
  */
 @Component({

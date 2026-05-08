@@ -22,6 +22,7 @@ let checkboxIdCounter = 0;
  * @category Library/Data input
  * @doc
  * @doc-name checkbox
+ * @doc-description Pre-styled checkbox with label, indeterminate state, and size variants — the entire label area is clickable, and the inner `KjCheckbox` directive handles ARIA semantics, keyboard activation, and disabled dimming automatically.
  * @doc-is-main
  */
 @Component({

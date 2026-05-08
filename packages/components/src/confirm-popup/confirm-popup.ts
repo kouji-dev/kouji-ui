@@ -35,6 +35,7 @@ import {
  * @category Library/Actions
  * @doc
  * @doc-name confirm-popup
+ * @doc-description Pre-styled inline confirmation popup for destructive actions — a floating `alertdialog` anchored to the trigger, with confirm/cancel slots, focus management, and Esc/outside-click dismissal, so you never need to wire a separate modal for simple "are you sure?" flows.
  * @doc-is-main
  */
 @Component({

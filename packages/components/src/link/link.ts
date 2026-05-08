@@ -34,6 +34,7 @@ import { KjLink } from '@kouji-ui/core';
  * @category Library/Navigation
  * @doc
  * @doc-name link
+ * @doc-description Pre-styled hyperlink wrapping a native `<a>` with variant, size, underline mode, external-link detection, and disabled semantics — configure allowed values via `provideKjLink()` and drop `<kj-link>` anywhere in prose or UI.
  * @doc-is-main
  */
 @Component({
