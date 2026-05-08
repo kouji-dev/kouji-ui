@@ -153,7 +153,7 @@ describe('KjIconDirective — loader pending', () => {
 
   it('updates --kj-icon once loader resolves', async () => {
     let resolveLoad!: (v: string) => void;
-    const loader = (n: string) =>
+    const loader = (_n: string) =>
       new Promise<string>((res) => {
         resolveLoad = res;
       });

@@ -1,11 +1,11 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Provider, EnvironmentProviders } from '@angular/core';
 import { provideIcons, provideIconLoader, provideIconResolver } from './icon.providers';
 import { injectKjIconResolver } from './icon.resolver';
-import { KJ_ICON_REGISTRY } from './icon.tokens';
 
-function makeResolver(providers: any[]) {
+function makeResolver(providers: (Provider | EnvironmentProviders)[]) {
   TestBed.configureTestingModule({ providers });
   const injector = TestBed.inject(Injector);
   return runInInjectionContext(injector, () => injectKjIconResolver());
@@ -41,7 +41,7 @@ describe('injectKjIconResolver', () => {
     it('returns null while load is pending, then fills registry on success', async () => {
       let resolveLoad: (v: string) => void;
       const loader = vi.fn(
-        (n: string) =>
+        (_n: string) =>
           new Promise<string>((res) => {
             resolveLoad = (v) => res(v);
           }),
@@ -64,7 +64,7 @@ describe('injectKjIconResolver', () => {
 
     it('on loader rejection, removes pending so a subsequent call retries', async () => {
       let calls = 0;
-      const loader = vi.fn(async (n: string) => {
+      const loader = vi.fn(async (_n: string) => {
         calls++;
         if (calls === 1) throw new Error('boom');
         return 'url("ok")';
