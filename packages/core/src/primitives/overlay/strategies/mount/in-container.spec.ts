@@ -13,12 +13,11 @@ function makeCtx(panel: HTMLElement): KjOverlayContext {
 }
 
 describe('inContainer', () => {
-  it('accepts HTMLElement target', () => {
+  it('accepts HTMLElement target — onOpen moves panel; onClose restores', () => {
     const target = document.createElement('div');
     const parent = document.createElement('div');
     const panel = document.createElement('div');
     parent.appendChild(panel);
-    document.body.append(target, parent);
 
     const s = inContainer(target);
     s.attach(makeCtx(panel));
@@ -26,24 +25,19 @@ describe('inContainer', () => {
     expect(panel.parentElement).toBe(target);
     s.onClose!();
     expect(panel.parentElement).toBe(parent);
-
-    target.remove(); parent.remove();
   });
 
   it('accepts function target (lazy)', () => {
     const target = document.createElement('div');
-    document.body.appendChild(target);
     const parent = document.createElement('div');
     const panel = document.createElement('div');
     parent.appendChild(panel);
-    document.body.appendChild(parent);
 
     const s = inContainer(() => target);
     s.attach(makeCtx(panel));
     s.onOpen!();
     expect(panel.parentElement).toBe(target);
     s.onClose!();
-
-    target.remove(); parent.remove();
+    expect(panel.parentElement).toBe(parent);
   });
 });

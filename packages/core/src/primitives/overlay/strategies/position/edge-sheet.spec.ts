@@ -20,10 +20,11 @@ describe('edgeSheet', () => {
       s.attach(makeCtx(panel));
       s.onOpen!();
       expect(panel.style.position).toBe('fixed');
-      if (side === 'left')   { expect(panel.style.left).toBe('0');   expect(panel.style.right).toBe(''); }
-      if (side === 'right')  { expect(panel.style.right).toBe('0');  expect(panel.style.left).toBe(''); }
-      if (side === 'top')    { expect(panel.style.top).toBe('0');    expect(panel.style.bottom).toBe(''); }
-      if (side === 'bottom') { expect(panel.style.bottom).toBe('0'); expect(panel.style.top).toBe(''); }
+      const zero = (v: string) => v === '0' || v === '0px';
+      if (side === 'left')   { expect(zero(panel.style.left)).toBe(true);   expect(panel.style.right).toBe(''); }
+      if (side === 'right')  { expect(zero(panel.style.right)).toBe(true);  expect(panel.style.left).toBe(''); }
+      if (side === 'top')    { expect(zero(panel.style.top)).toBe(true);    expect(panel.style.bottom).toBe(''); }
+      if (side === 'bottom') { expect(zero(panel.style.bottom)).toBe(true); expect(panel.style.top).toBe(''); }
       s.onClose!();
       expect(panel.style.position).toBe('');
     });

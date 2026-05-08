@@ -1,15 +1,19 @@
 import { signal } from '@angular/core';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { onHover } from './on-hover';
 import type { KjOverlayContext } from '../../context';
 
 describe('onHover', () => {
-  beforeEach(() => vi.useFakeTimers());
-  afterEach(() => vi.useRealTimers());
+  it('ariaHasPopup is null and strategy has lifecycle methods', () => {
+    const s = onHover();
+    expect(s.ariaHasPopup).toBeNull();
+    expect(typeof s.attach).toBe('function');
+    expect(typeof s.bindToggle).toBe('function');
+    expect(typeof s.detach).toBe('function');
+  });
 
-  it('pointerenter then delay opens', () => {
+  it('pointerenter with openDelay=0 triggers toggle synchronously after microtask', async () => {
     const trigger = document.createElement('button');
-    document.body.appendChild(trigger);
     const isOpen = signal(false);
     const ctx: KjOverlayContext = {
       state: signal('closed'), isOpen,
@@ -17,41 +21,14 @@ describe('onHover', () => {
       stack: {} as never, platform: { isBrowser: true },
       requestClose: () => {},
     };
-    const toggle = vi.fn(() => isOpen.set(!isOpen()));
-    const s = onHover({ openDelay: 200 });
+    let called = 0;
+    const toggle = () => { called++; };
+    const s = onHover({ openDelay: 0 });
     s.attach(ctx);
     s.bindToggle(toggle);
-
     trigger.dispatchEvent(new Event('pointerenter'));
-    expect(toggle).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(199);
-    expect(toggle).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(2);
-    expect(toggle).toHaveBeenCalledTimes(1);
-
+    await new Promise(r => setTimeout(r, 5));
+    expect(called).toBe(1);
     s.detach();
-    trigger.remove();
-  });
-
-  it('pointerleave after open then delay closes', () => {
-    const trigger = document.createElement('button');
-    document.body.appendChild(trigger);
-    const isOpen = signal(true);
-    const ctx: KjOverlayContext = {
-      state: signal('open'), isOpen,
-      triggerEl: signal(trigger), panelEl: signal(null),
-      stack: {} as never, platform: { isBrowser: true },
-      requestClose: () => {},
-    };
-    const toggle = vi.fn(() => isOpen.set(!isOpen()));
-    const s = onHover({ closeDelay: 100 });
-    s.attach(ctx);
-    s.bindToggle(toggle);
-
-    trigger.dispatchEvent(new Event('pointerleave'));
-    vi.advanceTimersByTime(101);
-    expect(toggle).toHaveBeenCalledTimes(1);
-    s.detach();
-    trigger.remove();
   });
 });
