@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { KjOverlayController } from '../primitives/overlay/controller';
+import type { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -80,7 +80,11 @@ export class KjCascadeSelectPanel
   implements KjCascadeSelectContext
 {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly controller = inject(KjOverlayController);
+  private readonly _panel = inject(KjOverlayPanel, { self: true });
+  /** @internal */
+  get controller(): KjOverlayController | null {
+    return this._panel.controller;
+  }
 
   // ── Overlay placement inputs ──────────────────────────────────────────
 
@@ -130,23 +134,25 @@ export class KjCascadeSelectPanel
   // ── KjSelectContext impl ──────────────────────────────────────────────
 
   /** Reflects the overlay controller's open state. */
-  readonly open = computed(() => this.controller.isOpen());
+  readonly open = computed(() => this.controller?.isOpen() ?? false);
 
   /** Selects a value (without committing a path). Closes the panel. */
   select(val: unknown): void {
     this.kjSelectValue.set(val);
-    this.controller.close('programmatic');
+    this.controller?.close('programmatic');
   }
 
   /** Toggles the panel via the overlay controller. */
   toggle(): void {
-    if (this.controller.isOpen()) this.controller.close('programmatic');
-    else this.controller.open();
+    const ctrl = this.controller;
+    if (!ctrl) return;
+    if (ctrl.isOpen()) ctrl.close('programmatic');
+    else ctrl.open();
   }
 
   /** Closes the panel (and flushes sub-panels via the open-effect). */
   hide(): void {
-    this.controller.close('programmatic');
+    this.controller?.close('programmatic');
   }
 
   // ── KjCascadeSelectContext impl ───────────────────────────────────────
@@ -169,7 +175,7 @@ export class KjCascadeSelectPanel
   constructor() {
     // When the root panel closes, flush all sub-panels.
     effect(() => {
-      if (!this.controller.isOpen()) {
+      if (!this.controller?.isOpen()) {
         this._openSubPanels.set([]);
       }
     });
@@ -179,7 +185,7 @@ export class KjCascadeSelectPanel
     this.kjSelectValue.set(value);
     this.kjCascadePath.set(path);
     this._openSubPanels.set([]);
-    this.controller.close('programmatic');
+    this.controller?.close('programmatic');
   }
 
   openSubPanel(ownerOptionId: string): void {
@@ -218,7 +224,7 @@ export class KjCascadeSelectPanel
 
   /** @internal */
   onDocClick(): void {
-    if (this.controller.isOpen()) {
+    if (this.controller?.isOpen()) {
       this.hide();
       this.closeAll();
     }

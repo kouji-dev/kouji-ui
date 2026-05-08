@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { KjOverlayController } from '../primitives/overlay/controller';
+import type { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -57,7 +57,7 @@ import { KJ_TREE_SELECT } from './tree-select.context';
     '[attr.aria-multiselectable]':
       'ctx?.selectionMode() === "multiple" ? "true" : null',
     '(keydown)': 'onKeydown($event)',
-    '(document:keydown.escape)': 'controller.close("esc")',
+    '(document:keydown.escape)': 'controller?.close("esc")',
     '(document:click)': 'onDocClick($event)',
     '(click)': '$event.stopPropagation()',
   },
@@ -67,8 +67,11 @@ import { KJ_TREE_SELECT } from './tree-select.context';
 })
 export class KjTreeSelectContent {
   private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly _panel = inject(KjOverlayPanel, { self: true });
   /** @internal */
-  readonly controller = inject(KjOverlayController);
+  get controller(): KjOverlayController | null {
+    return this._panel.controller;
+  }
   /** @internal */
   readonly ctx = inject(KJ_TREE_SELECT, { optional: true });
 
@@ -82,13 +85,14 @@ export class KjTreeSelectContent {
 
   /** @internal */
   onDocClick(event: MouseEvent): void {
-    if (!this.controller.isOpen()) return;
+    const ctrl = this.controller;
+    if (!ctrl?.isOpen()) return;
     const target = event.target as Node | null;
     if (!target) return;
     if (this.el.nativeElement.contains(target)) return;
-    const trigger = this.controller.triggerEl();
+    const trigger = ctrl.triggerEl();
     if (trigger && trigger.contains(target)) return;
-    this.controller.close('outside');
+    ctrl.close('outside');
   }
 
   /** @internal */
@@ -171,7 +175,7 @@ export class KjTreeSelectContent {
       }
       case 'Escape':
         event.preventDefault();
-        this.controller.close('esc');
+        this.controller?.close('esc');
         break;
       default: {
         const char = event.key.length === 1 ? event.key.toLowerCase() : null;
