@@ -14,8 +14,8 @@ import {
   untracked,
 } from '@angular/core';
 import { KjRovingTabindex, KjRovingTabindexItemDirective } from '../a11y/roving-tabindex';
-import { KjDisabled } from '../primitives/forms/interaction/disabled';
-import { KjFocusRing } from '../primitives/forms/interaction/focus-ring';
+import { KjDisabled } from '../primitives/interaction/disabled';
+import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import {
   KJ_TABS,
   KjTabsActivationMode,

@@ -8,7 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { KjDisabled } from '../primitives/forms/interaction/disabled';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import { KjSize } from '../presets/size';
 import { KjVariant } from '../presets/variant';
 import { KJ_INPUT_GROUP, KjInputGroupContext } from './input-group.context';

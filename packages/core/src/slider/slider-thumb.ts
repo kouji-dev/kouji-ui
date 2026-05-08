@@ -11,8 +11,8 @@ import {
   model,
   signal,
 } from '@angular/core';
-import { KjDisabled } from '../primitives/forms/interaction/disabled';
-import { KjFocusRing } from '../primitives/forms/interaction/focus-ring';
+import { KjDisabled } from '../primitives/interaction/disabled';
+import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import { KjFormControl } from '../primitives/forms/form-control';
 import { KJ_SLIDER, KjSliderSource, KjSliderThumbHandle } from './slider.context';
 import { fractionForValue } from './slider.geometry';

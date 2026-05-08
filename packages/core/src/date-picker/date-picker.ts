@@ -7,7 +7,7 @@ import {
   input,
   model,
 } from '@angular/core';
-import { KjDisabled } from '../primitives/forms/interaction/disabled';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import { startOfDay } from '../calendar/date-utils';
 import { KJ_DATE_PICKER, type KjDatePickerContext } from './date-picker.context';
 

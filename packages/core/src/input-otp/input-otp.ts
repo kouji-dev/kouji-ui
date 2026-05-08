@@ -13,10 +13,10 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { KjDisabled } from '../primitives/forms/interaction/disabled';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import { KjFormControl } from '../primitives/forms/form-control';
 import { KjLiveRegion } from '../a11y/live-region';
-import { KjFocusRing } from '../primitives/forms/interaction/focus-ring';
+import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
 
 /**

@@ -8,7 +8,7 @@ import {
   model,
   signal,
 } from '@angular/core';
-import { KjDisabled } from '../primitives/forms/interaction/disabled';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import {
   addDays,
   addMonths,
