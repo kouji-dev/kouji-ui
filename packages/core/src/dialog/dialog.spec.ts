@@ -5,7 +5,7 @@ import { KjDialog as KjDialogService } from './dialog.service';
 import { KjDialogRef } from './dialog.ref';
 
 @Component({
-  selector: 'simple-dlg',
+  selector: 'kj-simple-dlg',
   standalone: true,
   template: `<button (click)="ref.close('ok')">OK</button>`,
 })

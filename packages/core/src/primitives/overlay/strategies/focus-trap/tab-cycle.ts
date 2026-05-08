@@ -57,7 +57,7 @@ export function tabCycle(initialOpts: KjTabCycleOpts = {}): KjTabCycleStrategy {
     focusFirst() {
       if (!isEnabled()) return;
       const cfg = opts.initialFocus ?? 'first';
-      let target: HTMLElement | null = null;
+      let target: HTMLElement | null;
       if (cfg instanceof HTMLElement) target = cfg;
       else if (typeof cfg === 'function') target = cfg();
       else target = focusables()[0] ?? null;

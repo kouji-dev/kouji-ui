@@ -7,7 +7,7 @@ import { KjPopoverContent } from './popover-content';
 describe('KjPopover', () => {
   it('trigger has aria-haspopup=dialog and aria-expanded=false initially', async () => {
     @Component({
-      selector: 'pop-host',
+      selector: 'kj-pop-host',
       standalone: true,
       imports: [KjPopoverTrigger, KjPopoverContent],
       template: `
@@ -24,7 +24,7 @@ describe('KjPopover', () => {
 
   it('panel has role=dialog and is hidden initially', async () => {
     @Component({
-      selector: 'pop-host',
+      selector: 'kj-pop-host',
       standalone: true,
       imports: [KjPopoverTrigger, KjPopoverContent],
       template: `
@@ -41,7 +41,7 @@ describe('KjPopover', () => {
 
   it('kjTrigger="hover" keeps role=dialog and aria-haspopup=dialog', async () => {
     @Component({
-      selector: 'pop-host',
+      selector: 'kj-pop-host',
       standalone: true,
       imports: [KjPopoverTrigger, KjPopoverContent],
       template: `

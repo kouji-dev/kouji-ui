@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { KjDrawer } from './drawer';
 import { KjDrawerService, DRAWER_DATA } from './drawer.service';
 import { KjDrawerRef } from './drawer.ref';
 
 @Component({
-  selector: 'simple-drawer',
+  selector: 'kj-simple-drawer',
   standalone: true,
   imports: [KjDrawer],
   template: `<kj-drawer><button id="ok" (click)="ref.close('ok')">OK</button></kj-drawer>`,
@@ -17,7 +17,7 @@ class SimpleDrawer {
 }
 
 @Component({
-  selector: 'data-drawer',
+  selector: 'kj-data-drawer',
   standalone: true,
   imports: [KjDrawer],
   template: `<kj-drawer>{{ data }}</kj-drawer>`,

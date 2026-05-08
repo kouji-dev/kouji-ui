@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { KjOverlayBuilder } from './builder';
 import type { KjOverlayStrategies } from './controller';
 import { bodyPortal } from './strategies/mount/body-portal';

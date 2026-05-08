@@ -212,7 +212,7 @@ describe('KjToastViewport interactions', () => {
       </ng-template>
     `,
   })
-  class Host {
+  class _Host {
     @ViewChild('tpl') tpl!: TemplateRef<KjToastTemplateContext>;
   }
 

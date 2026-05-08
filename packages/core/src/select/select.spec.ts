@@ -6,7 +6,7 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from './select';
 describe('KjSelect', () => {
   it('panel exposes role=listbox', async () => {
     @Component({
-      selector: 'sel-host',
+      selector: 'kj-sel-host',
       standalone: true,
       imports: [KjSelect, KjSelectTrigger, KjSelectContent, KjOption],
       template: `
@@ -26,7 +26,7 @@ describe('KjSelect', () => {
 
   it('trigger advertises aria-haspopup=listbox', async () => {
     @Component({
-      selector: 'sel-host',
+      selector: 'kj-sel-host',
       standalone: true,
       imports: [KjSelect, KjSelectTrigger, KjSelectContent, KjOption],
       template: `
@@ -47,7 +47,7 @@ describe('KjSelect', () => {
 
   it('panel reflects aria-multiselectable when kjMultiple is set on trigger', async () => {
     @Component({
-      selector: 'sel-host',
+      selector: 'kj-sel-host',
       standalone: true,
       imports: [KjSelect, KjSelectTrigger, KjSelectContent, KjOption],
       template: `
@@ -68,7 +68,7 @@ describe('KjSelect', () => {
 
   it('panel omits aria-multiselectable in single mode', async () => {
     @Component({
-      selector: 'sel-host',
+      selector: 'kj-sel-host',
       standalone: true,
       imports: [KjSelect, KjSelectTrigger, KjSelectContent, KjOption],
       template: `
@@ -88,7 +88,7 @@ describe('KjSelect', () => {
 
   it('options carry role=option', async () => {
     @Component({
-      selector: 'sel-host',
+      selector: 'kj-sel-host',
       standalone: true,
       imports: [KjSelect, KjSelectTrigger, KjSelectContent, KjOption],
       template: `

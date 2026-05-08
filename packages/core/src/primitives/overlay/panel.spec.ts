@@ -14,7 +14,7 @@ import { viewportCentered } from './strategies/position/viewport-centered';
 import { programmatic } from './strategies/trigger-event/programmatic';
 
 @Component({
-  selector: 'panel-host',
+  selector: 'kj-panel-host',
   standalone: true,
   hostDirectives: [KjOverlayPanel],
   providers: [

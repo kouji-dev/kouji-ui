@@ -8,7 +8,7 @@ import { KjDropdownMenuItem } from './dropdown-menu-item';
 
 function mkHost(triggerKind: 'click' | 'contextmenu', mount: 'portal' | 'point' | 'inline') {
   @Component({
-    selector: 'host-cmp',
+    selector: 'kj-host-cmp',
     standalone: true,
     imports: [KjDropdownMenuTrigger, KjDropdownMenuContent, KjDropdownMenuItem],
     template: `

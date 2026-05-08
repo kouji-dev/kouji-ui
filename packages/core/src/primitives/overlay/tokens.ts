@@ -30,6 +30,7 @@ export interface KjFocusTrapStrategy extends KjStrategy {
   restoreFocus(): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface KjScrollLockStrategy extends KjStrategy {}
 
 export interface KjLiveAnnouncerStrategy extends KjStrategy {

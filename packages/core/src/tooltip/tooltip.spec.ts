@@ -7,7 +7,7 @@ import { KjTooltipContent } from './tooltip-content';
 describe('KjTooltip', () => {
   it('trigger has aria-expanded false initially', async () => {
     @Component({
-      selector: 'tt-host',
+      selector: 'kj-tt-host',
       standalone: true,
       imports: [KjTooltipTrigger, KjTooltipContent],
       template: `
@@ -23,7 +23,7 @@ describe('KjTooltip', () => {
 
   it('panel is hidden + has role=tooltip', async () => {
     @Component({
-      selector: 'tt-host',
+      selector: 'kj-tt-host',
       standalone: true,
       imports: [KjTooltipTrigger, KjTooltipContent],
       template: `

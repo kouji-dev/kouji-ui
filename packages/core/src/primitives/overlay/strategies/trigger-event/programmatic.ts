@@ -1,12 +1,12 @@
 import type { KjTriggerEventStrategy } from '../../tokens';
 
 export function programmatic(): KjTriggerEventStrategy {
-  let toggle: (() => void) | null = null;
+  let _toggle: (() => void) | null = null;
   return {
     ariaHasPopup: null,
     attach() {},
-    bindToggle(t) { toggle = t; },
+    bindToggle(t) { _toggle = t; },
     onOpen() {}, onClose() {},
-    detach() { toggle = null; },
+    detach() { _toggle = null; },
   };
 }

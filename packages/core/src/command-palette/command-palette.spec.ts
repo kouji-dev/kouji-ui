@@ -237,7 +237,7 @@ describe('KjCommandPaletteTrigger / KjCommandPaletteDialog — overlay primitive
 
   it('trigger has aria-haspopup="dialog" and aria-expanded="false" initially', async () => {
     @Component({
-      selector: 'cp-host',
+      selector: 'kj-cp-host',
       standalone: true,
       imports: [KjCommandPaletteTrigger, KjCommandPaletteDialog],
       template: `
@@ -253,7 +253,7 @@ describe('KjCommandPaletteTrigger / KjCommandPaletteDialog — overlay primitive
 
   it('panel has role="dialog" and is hidden while closed', async () => {
     @Component({
-      selector: 'cp-host',
+      selector: 'kj-cp-host',
       standalone: true,
       imports: [KjCommandPaletteTrigger, KjCommandPaletteDialog],
       template: `
@@ -270,7 +270,7 @@ describe('KjCommandPaletteTrigger / KjCommandPaletteDialog — overlay primitive
 
   it('mod+k hotkey dispatch toggles the trigger', async () => {
     @Component({
-      selector: 'cp-host',
+      selector: 'kj-cp-host',
       standalone: true,
       imports: [KjCommandPaletteTrigger, KjCommandPaletteDialog],
       template: `

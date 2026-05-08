@@ -11,7 +11,7 @@ import {
 describe('KjCombobox', () => {
   it('input has role=combobox and aria-haspopup=listbox', async () => {
     @Component({
-      selector: 'cb-host',
+      selector: 'kj-cb-host',
       standalone: true,
       imports: [KjCombobox, KjComboboxInput, KjComboboxListbox, KjComboboxOption],
       template: `
@@ -33,7 +33,7 @@ describe('KjCombobox', () => {
 
   it('panel exposes role=listbox', async () => {
     @Component({
-      selector: 'cb-host',
+      selector: 'kj-cb-host',
       standalone: true,
       imports: [KjCombobox, KjComboboxInput, KjComboboxListbox, KjComboboxOption],
       template: `
@@ -53,7 +53,7 @@ describe('KjCombobox', () => {
 
   it('options carry role=option', async () => {
     @Component({
-      selector: 'cb-host',
+      selector: 'kj-cb-host',
       standalone: true,
       imports: [KjCombobox, KjComboboxInput, KjComboboxListbox, KjComboboxOption],
       template: `

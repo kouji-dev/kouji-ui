@@ -9,7 +9,7 @@ import { bodyPortal } from './strategies/mount/body-portal';
 import { viewportCentered } from './strategies/position/viewport-centered';
 
 @Component({
-  selector: 'trig-host',
+  selector: 'kj-trig-host',
   standalone: true,
   hostDirectives: [KjOverlayTrigger],
   providers: [
@@ -30,7 +30,7 @@ class TrigHost {
 }
 
 @Component({
-  selector: 'trig-menu-host',
+  selector: 'kj-trig-menu-host',
   standalone: true,
   hostDirectives: [KjOverlayTrigger],
   providers: [
@@ -54,7 +54,7 @@ class TrigMenuHost {
 }
 
 @Component({
-  selector: 'trig-ctrl-host',
+  selector: 'kj-trig-ctrl-host',
   standalone: true,
   hostDirectives: [KjOverlayTrigger],
   providers: [

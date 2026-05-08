@@ -102,7 +102,6 @@ export class KjOverlayStack {
     if (!top || !top.opts.closeOnOutside) return;
     const target = e.target as Node | null;
     if (top.contentEl && target && top.contentEl.contains(target)) return;
-    console.log('[stack] outside-click → close', top.id, 'target=', (target as Element)?.tagName);
     top.opts.onClose();
   }
 }
