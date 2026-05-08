@@ -1540,7 +1540,7 @@ git commit -m "feat(theme-gen): import service for JSON and CSS theme payloads"
 - Modify: `apps/docs/src/app/pages/theme-generator/theme-generator.ts`
 - Modify: `apps/docs/src/app/pages/theme-generator/theme-generator.html`
 
-- [ ] **Step 1: Write failing component test**
+- [x] **Step 1: Write failing component test**
 
 ```ts
 // theme-import-dialog.spec.ts
@@ -1591,12 +1591,12 @@ describe('ThemeImportDialogComponent', () => {
 });
 ```
 
-- [ ] **Step 2: Run test**
+- [x] **Step 2: Run test**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/theme-import-dialog/theme-import-dialog.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // theme-import-dialog.ts
@@ -1690,7 +1690,7 @@ export class ThemeImportDialogComponent {
 .actions button { min-height: 44px; min-width: 88px; }
 ```
 
-- [ ] **Step 4: Wire into the page**
+- [x] **Step 4: Wire into the page**
 
 In `theme-generator.ts`:
 ```ts
@@ -1714,7 +1714,7 @@ In `theme-generator.html`:
 <kj-theme-import-dialog [open]="importOpen()" (closed)="onImportClosed($event)" />
 ```
 
-- [ ] **Step 5: Run tests + a11y review**
+- [x] **Step 5: Run tests + a11y review**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/theme-import-dialog/theme-import-dialog.spec.ts`
 Expected: PASS.
@@ -1723,7 +1723,7 @@ Note: "Accessibility — focus trap not yet wired (no CDK per stack rule); next 
 
 Add to `theme-import-dialog.html` outer dialog div: `(keydown.escape)="cancel()" tabindex="-1"`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/docs/src/app/components/theme-import-dialog/ apps/docs/src/app/pages/theme-generator/
