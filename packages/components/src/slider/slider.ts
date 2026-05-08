@@ -51,7 +51,8 @@ import {
       kjSlider
       class="kj-slider"
       [(kjValue)]="kjValue"
-      [(kjRange)]="kjRange"
+      [kjRange]="$any(kjRange())"
+      (kjRangeChange)="kjRange.set($event)"
       [kjMin]="kjMin()"
       [kjMax]="kjMax()"
       [kjStep]="kjStep()"

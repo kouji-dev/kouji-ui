@@ -45,12 +45,13 @@ import {
     <div
       kjCalendar
       class="kj-calendar"
-      [(kjValue)]="kjValue"
-      [kjMin]="kjMin()"
-      [kjMax]="kjMax()"
-      [kjDisabledDates]="kjDisabledDates()"
+      [kjValue]="$any(kjValue())"
+      (kjValueChange)="kjValue.set($event)"
+      [kjMin]="$any(kjMin())"
+      [kjMax]="$any(kjMax())"
+      [kjDisabledDates]="$any(kjDisabledDates())"
       [kjLocale]="kjLocale()"
-      [kjFirstDayOfWeek]="kjFirstDayOfWeek()"
+      [kjFirstDayOfWeek]="$any(kjFirstDayOfWeek())"
       [kjAriaLabel]="kjAriaLabel()"
       [kjDisabled]="kjDisabled()"
     >

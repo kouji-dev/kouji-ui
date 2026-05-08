@@ -7,7 +7,6 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import type {
   DocItem,
   DocsManifest,
-  ExtractorWarning,
   InputDef,
   SourcePkg,
 } from './docs-extractor.types';

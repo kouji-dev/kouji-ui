@@ -57,7 +57,8 @@ import {
     <div
       kjTimePicker
       class="kj-time-picker"
-      [(kjValue)]="kjValue"
+      [kjValue]="$any(kjValue())"
+      (kjValueChange)="kjValue.set($event)"
       [kjValueShape]="kjValueShape()"
       [kj12Hour]="kj12Hour()"
       [kjHourCycle]="kjHourCycle()"
@@ -66,13 +67,13 @@ import {
       [kjHourStep]="kjHourStep()"
       [kjMinuteStep]="kjMinuteStep()"
       [kjSecondStep]="kjSecondStep()"
-      [kjMin]="kjMin()"
-      [kjMax]="kjMax()"
+      [kjMin]="$any(kjMin())"
+      [kjMax]="$any(kjMax())"
       [kjReadonly]="kjReadonly()"
       [kjDisabled]="kjDisabled()"
       [kjInvalid]="kjInvalid()"
       [kjLocale]="kjLocale()"
-      [kjReferenceDate]="kjReferenceDate()"
+      [kjReferenceDate]="$any(kjReferenceDate())"
       [attr.data-disabled]="kjDisabled() ? '' : null"
       [attr.aria-label]="kjAriaLabel()"
     >

@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { extractDocsManifest } from './docs-extractor';
 
 const FIXTURE_ROOT = resolve(__dirname, '../../tests/fixtures/extractor');
