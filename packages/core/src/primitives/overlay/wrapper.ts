@@ -17,6 +17,12 @@ import { KjOverlayController } from './controller';
  * stacking among open overlays — last opened wins.
  *
  * Internal: not exported as part of the public API surface.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-wrapper
+ * @doc-is-main
+ * @doc-description Hosts a single overlay's DOM, anchors its backdrop and panel views as siblings, and cascades destroy down to the controller so teardown is atomic.
  */
 @Component({
   selector: 'kj-overlay-wrapper',

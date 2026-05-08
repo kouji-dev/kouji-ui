@@ -9,6 +9,12 @@
  * {@link createOverlayWrapper} instead of reaching for `document.body`
  * directly — a single positioned root owns z-stacking, pointer-events
  * isolation, and cleanup ordering across the whole overlay system.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-container
+ * @doc-is-main
+ * @doc-description Lazily appends a single positioned root to `document.body` so every overlay shares one z-stacking context, one pointer-events scope, and one teardown owner.
  */
 let _root: HTMLElement | null = null;
 

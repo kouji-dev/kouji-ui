@@ -23,6 +23,17 @@ export interface KjOverlayTriggerLike {
   attachPanel(panel: KjOverlayPanel): void;
 }
 
+/**
+ * Marks an element as the overlay's panel — wires it to the controller,
+ * resolves the panel role/aria-modal, and binds DOM state attributes
+ * (`data-state`, `hidden`, `id`) for transition styling.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-panel
+ * @doc-is-main
+ * @doc-description Marks an element as the overlay panel, wires it to the controller via DI or `kjFor`, and projects state, role, aria-modal, and hidden attributes onto the host.
+ */
 @Directive({
   selector: '[kjOverlayPanel]',
   exportAs: 'kjOverlayPanel',

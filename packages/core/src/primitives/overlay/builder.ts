@@ -41,6 +41,11 @@ export interface KjAttachOptions<D = unknown> {
  * Callers dispose the entire overlay (DOM, child views, strategy detach
  * chain) by calling {@link destroy} — Angular's component destroy cascade
  * does the work; no manual ref tracking needed.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-handle
+ * @doc-description Hands callers a single object that exposes the controller, the per-overlay injector, and a `destroy()` that tears down the overlay's DOM and views atomically.
  */
 export class KjOverlayHandle {
   constructor(
@@ -61,6 +66,19 @@ export class KjOverlayHandle {
   }
 }
 
+/**
+ * Service that constructs per-overlay controllers + wrapper components from
+ * a strategy bundle. Wires up the per-overlay element injector, appends the
+ * wrapper to the singleton overlay container, and returns a
+ * {@link KjOverlayHandle} for service-launched overlays (dialog, drawer,
+ * toast, etc.).
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-builder
+ * @doc-is-main
+ * @doc-description Constructs service-launched overlays by assembling a per-overlay controller, element injector, and wrapper component from a strategy config and returning a disposable handle.
+ */
 @Injectable({ providedIn: 'root' })
 export class KjOverlayBuilder {
   private readonly appRef = inject(ApplicationRef);

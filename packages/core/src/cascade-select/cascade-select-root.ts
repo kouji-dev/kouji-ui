@@ -35,6 +35,10 @@ import {
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name cascade-select
+ * @doc-is-main
+ * @doc-description Root container that owns the cascade selection model, the open sub-panel chain, and a shared overlay controller so the trigger, panels, and options all wire to the same state.
  */
 @Directive({
   selector: '[kjCascadeSelect]',

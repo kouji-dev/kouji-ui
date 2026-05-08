@@ -20,6 +20,17 @@ export interface KjOverlayStrategies {
   liveAnnouncer?: KjLiveAnnouncerStrategy | null;
 }
 
+/**
+ * Owns the overlay's open/closed state machine plus the rAF/transition
+ * orchestration. Strategies (mount/position/backdrop/focus-trap/scroll-lock/
+ * trigger-event) attach to it; the panel + trigger directives bind to it via DI.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-controller
+ * @doc-is-main
+ * @doc-description Coordinates an overlay's open/close state machine and drives the strategy chain so panels, triggers, and backdrops stay in sync through every transition.
+ */
 @Injectable()
 export class KjOverlayController {
   private readonly platformId = inject(PLATFORM_ID);

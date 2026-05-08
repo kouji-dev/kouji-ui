@@ -28,6 +28,9 @@ import { KJ_TREE_SELECT } from './tree-select.context';
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
+ * @doc-description Renders one tree node with full ARIA `treeitem` semantics — level, setsize, posinset, expanded, selected, disabled — and routes click/Enter/Space into the parent context's selection.
  */
 @Directive({
   selector: '[kjTreeSelectNode]',

@@ -3,6 +3,17 @@ import { KjOverlayController } from './controller';
 import { KJ_OVERLAY_TRIGGER_EVENT_STRATEGY } from './tokens';
 import type { KjOverlayPanel } from './panel';
 
+/**
+ * Marks an element as the overlay trigger — owns `aria-haspopup`,
+ * `aria-expanded`, `aria-controls`, the trigger-event strategy, and the
+ * two-way `kjOpen` model that mirrors the controller's open state.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-trigger
+ * @doc-is-main
+ * @doc-description Wires a host element as the overlay's trigger, exposing aria-haspopup/expanded/controls and a two-way `kjOpen` model bound to the controller's state.
+ */
 @Directive({
   selector: '[kjOverlayTrigger]',
   exportAs: 'kjOverlayTrigger',

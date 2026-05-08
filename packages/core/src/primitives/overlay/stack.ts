@@ -24,6 +24,12 @@ interface StackEntry {
  * Esc / outside-click — prevents the double-close problem.
  *
  * SSR-safe: every DOM access guarded by isPlatformBrowser.
+ *
+ * @category Core/Overlay
+ * @doc
+ * @doc-name overlay-stack
+ * @doc-is-main
+ * @doc-description Coordinates nested overlays so only the topmost receives Escape and outside-click, preventing the double-close problem when dialogs, popovers, and menus stack.
  */
 @Injectable({ providedIn: 'root' })
 export class KjOverlayStack {
