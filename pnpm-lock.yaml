@@ -195,6 +195,9 @@ importers:
       '@kouji-ui/themes':
         specifier: workspace:*
         version: link:../../packages/themes
+      lucide-static:
+        specifier: ^1.14.0
+        version: 1.14.0
       zod:
         specifier: ^4.4.3
         version: 4.4.3
