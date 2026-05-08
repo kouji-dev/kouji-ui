@@ -1,43 +1,22 @@
-import { Component } from '@angular/core';
-import { KjDialogTrigger } from '@kouji-ui/core';
+import { Component, inject } from '@angular/core';
+import { KjDialog, KjDialogService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
-import {
-  KjDialogComponent, KjDialogOverlayComponent,
-  KjDialogHeaderComponent, KjDialogTitleComponent,
-  KjDialogBodyComponent, KjDialogFooterComponent,
-} from './dialog';
+
+// TODO(wrapper-overlay): re-skin scrollable demo.
+@Component({
+  standalone: true,
+  imports: [KjDialog],
+  template: `<kj-dialog><h2>Long content</h2><div style="max-height:60vh; overflow:auto"><p>Lorem ipsum…</p></div></kj-dialog>`,
+})
+class ScrollableBody {}
 
 @Component({
   selector: 'kj-dialog-scrollable-example',
   standalone: true,
-  imports: [
-    KjDialogTrigger, KjButtonComponent,
-    KjDialogComponent, KjDialogOverlayComponent,
-    KjDialogHeaderComponent, KjDialogTitleComponent,
-    KjDialogBodyComponent, KjDialogFooterComponent,
-  ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `
-    <kj-button [kjDialogTrigger]="dlg">Read more</kj-button>
-    <ng-template #dlg>
-      <kj-dialog-overlay>
-        <kj-dialog #d="kjDialog">
-          <kj-dialog-header>
-            <kj-dialog-title>Terms of service</kj-dialog-title>
-          </kj-dialog-header>
-          <kj-dialog-body [scroll]="true" style="max-height: 16rem;">
-            @for (i of items; track i) {
-              <p>Paragraph {{ i }}: lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            }
-          </kj-dialog-body>
-          <kj-dialog-footer>
-            <kj-button (click)="d.close()">Close</kj-button>
-          </kj-dialog-footer>
-        </kj-dialog>
-      </kj-dialog-overlay>
-    </ng-template>
-  `,
+  imports: [KjButtonComponent],
+  template: `<kj-button (click)="open()">Open scrollable</kj-button>`,
 })
 export class KjDialogScrollableExample {
-  readonly items = Array.from({ length: 30 }, (_, i) => i + 1);
+  private readonly dialog = inject(KjDialogService);
+  open(): void { this.dialog.open(ScrollableBody); }
 }

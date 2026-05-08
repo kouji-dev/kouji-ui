@@ -1,34 +1,22 @@
-import { Component } from '@angular/core';
-import { KjDrawerTrigger } from '@kouji-ui/core';
+import { Component, inject } from '@angular/core';
+import { KjDrawer, KjDrawerService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
-import {
-  KjDrawerComponent, KjDrawerHeaderComponent, KjDrawerTitleComponent,
-  KjDrawerBodyComponent, KjDrawerFooterComponent,
-} from './drawer';
+
+// TODO(wrapper-overlay): re-skin via styled wrapper.
+@Component({
+  standalone: true,
+  imports: [KjDrawer],
+  template: `<kj-drawer><h2>Drawer</h2><p>Body</p></kj-drawer>`,
+})
+class DrawerBody {}
 
 @Component({
   selector: 'kj-drawer-example',
   standalone: true,
-  imports: [
-    KjDrawerTrigger, KjButtonComponent,
-    KjDrawerComponent,
-    KjDrawerHeaderComponent, KjDrawerTitleComponent,
-    KjDrawerBodyComponent, KjDrawerFooterComponent,
-  ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `
-    <kj-button [kjDrawerTrigger]="drawer">Open drawer</kj-button>
-    <ng-template #drawer>
-      <kj-drawer #d="kjDrawerContent">
-        <kj-drawer-header>
-          <kj-drawer-title>Drawer</kj-drawer-title>
-        </kj-drawer-header>
-        <kj-drawer-body>This is a drawer that slides in from the right.</kj-drawer-body>
-        <kj-drawer-footer>
-          <kj-button kjVariant="ghost" (click)="d.close()">Close</kj-button>
-        </kj-drawer-footer>
-      </kj-drawer>
-    </ng-template>
-  `,
+  imports: [KjButtonComponent],
+  template: `<kj-button (click)="open()">Open drawer</kj-button>`,
 })
-export class KjDrawerExample {}
+export class KjDrawerExample {
+  private readonly drawer = inject(KjDrawerService);
+  open(): void { this.drawer.open(DrawerBody); }
+}

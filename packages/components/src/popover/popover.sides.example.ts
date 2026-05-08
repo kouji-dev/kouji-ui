@@ -1,84 +1,24 @@
 import { Component } from '@angular/core';
-import {
-  KjPopoverComponent,
-  KjPopoverTriggerComponent,
-  KjPopoverContentComponent,
-  KjPopoverTitleComponent,
-  KjPopoverArrowComponent,
-} from './popover';
+import { KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverArrow } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 
-/**
- * One popover per side — top, right, bottom, left. The `kjPopoverSide` input
- * on `<kj-popover>` forwards to the underlying state container so the
- * `data-side` attribute on the floating panel reflects the requested side
- * (collision avoidance may flip it at the viewport edge).
- */
+// TODO(wrapper-overlay): re-skin sides demo.
 @Component({
   selector: 'kj-popover-sides-example',
   standalone: true,
-  imports: [
-    KjPopoverComponent,
-    KjPopoverTriggerComponent,
-    KjPopoverContentComponent,
-    KjPopoverTitleComponent,
-    KjPopoverArrowComponent,
-    KjButtonComponent,
-  ],
-  styles: [`
-    :host {
-      display: flex;
-      gap: var(--kj-space-md);
-      flex-wrap: wrap;
-      padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
-      min-height: 16rem;
-    }
-  `],
+  imports: [KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverArrow, KjButtonComponent],
   template: `
-    <kj-popover [kjPopoverSide]="'top'">
-      <kj-popover-trigger>
-        <kj-button>Top</kj-button>
-      </kj-popover-trigger>
-      <kj-popover-content kjAriaLabel="Top popover">
-        <kj-popover-title>Top</kj-popover-title>
-        <p>Above the trigger.</p>
-        <kj-popover-arrow></kj-popover-arrow>
-      </kj-popover-content>
-    </kj-popover>
+    <kj-button kjPopoverTrigger #top="kjPopoverTrigger">Top</kj-button>
+    <kj-popover-content [kjFor]="top" kjSide="top"><h3 kjPopoverTitle>Top</h3><span kjPopoverArrow></span></kj-popover-content>
 
-    <kj-popover [kjPopoverSide]="'right'">
-      <kj-popover-trigger>
-        <kj-button>Right</kj-button>
-      </kj-popover-trigger>
-      <kj-popover-content kjAriaLabel="Right popover">
-        <kj-popover-title>Right</kj-popover-title>
-        <p>Right of the trigger.</p>
-        <kj-popover-arrow></kj-popover-arrow>
-      </kj-popover-content>
-    </kj-popover>
+    <kj-button kjPopoverTrigger #right="kjPopoverTrigger">Right</kj-button>
+    <kj-popover-content [kjFor]="right" kjSide="right"><h3 kjPopoverTitle>Right</h3><span kjPopoverArrow></span></kj-popover-content>
 
-    <kj-popover [kjPopoverSide]="'bottom'">
-      <kj-popover-trigger>
-        <kj-button>Bottom</kj-button>
-      </kj-popover-trigger>
-      <kj-popover-content kjAriaLabel="Bottom popover">
-        <kj-popover-title>Bottom</kj-popover-title>
-        <p>Below the trigger.</p>
-        <kj-popover-arrow></kj-popover-arrow>
-      </kj-popover-content>
-    </kj-popover>
+    <kj-button kjPopoverTrigger #bottom="kjPopoverTrigger">Bottom</kj-button>
+    <kj-popover-content [kjFor]="bottom" kjSide="bottom"><h3 kjPopoverTitle>Bottom</h3><span kjPopoverArrow></span></kj-popover-content>
 
-    <kj-popover [kjPopoverSide]="'left'">
-      <kj-popover-trigger>
-        <kj-button>Left</kj-button>
-      </kj-popover-trigger>
-      <kj-popover-content kjAriaLabel="Left popover">
-        <kj-popover-title>Left</kj-popover-title>
-        <p>Left of the trigger.</p>
-        <kj-popover-arrow></kj-popover-arrow>
-      </kj-popover-content>
-    </kj-popover>
+    <kj-button kjPopoverTrigger #left="kjPopoverTrigger">Left</kj-button>
+    <kj-popover-content [kjFor]="left" kjSide="left"><h3 kjPopoverTitle>Left</h3><span kjPopoverArrow></span></kj-popover-content>
   `,
 })
 export class KjPopoverSidesExample {}
