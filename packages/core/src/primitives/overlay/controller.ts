@@ -126,7 +126,7 @@ export class KjOverlayController {
   private runTransition(_kind: 'open' | 'close', done: () => void): void {
     if (!this.isBrowser) { done(); return; }
     const panel = this._panel();
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)').matches : false;
     const cs = panel ? getComputedStyle(panel) : null;
     const transitionMs = cs ? parseFloat(cs.transitionDuration) * 1000 : 0;
     const animationMs  = cs ? parseFloat(cs.animationDuration)  * 1000 : 0;
