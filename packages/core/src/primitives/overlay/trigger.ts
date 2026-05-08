@@ -37,6 +37,10 @@ export class KjOverlayTrigger {
 
   constructor() {
     this.controller.bindTrigger(this.host.nativeElement);
+    // The trigger strategy lives on the trigger element. Attach + bind here so
+    // its DOM listeners wire up regardless of whether a panel ever attaches
+    // (e.g. tooltip with no [kjFor]).
+    this.triggerStrategy.attach(this.controller.context);
     this.triggerStrategy.bindToggle(() => this.controller.toggle());
     effect(() => {
       const wantOpen = this.kjOpen();
