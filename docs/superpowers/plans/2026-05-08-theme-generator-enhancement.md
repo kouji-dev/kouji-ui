@@ -730,7 +730,7 @@ git commit -m "feat(theme-gen): seed swatch grid component"
 - Modify: `apps/docs/src/app/components/theme-generator-sidebar/theme-generator-sidebar.css`
 - Modify: `apps/docs/src/app/components/theme-generator-sidebar/theme-generator-sidebar.spec.ts`
 
-- [ ] **Step 1: Add failing tests**
+- [x] **Step 1: Add failing tests**
 
 Append to `theme-generator-sidebar.spec.ts`:
 
@@ -765,12 +765,12 @@ test('re-derive button preserves dirty accent', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/theme-generator-sidebar/theme-generator-sidebar.spec.ts`
 Expected: FAIL — selectors not present.
 
-- [ ] **Step 3: Wire sidebar UI**
+- [x] **Step 3: Wire sidebar UI**
 
 In `theme-generator-sidebar.ts`:
 
@@ -838,12 +838,12 @@ protected rederive(): void {
 .palette-actions button:focus-visible { outline: 2px solid var(--kj-primary); outline-offset: 2px; }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/theme-generator-sidebar/theme-generator-sidebar.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Accessibility review + commit**
+- [x] **Step 5: Accessibility review + commit**
 
 Note in commit body: "Accessibility: aria-labels on action buttons; 44px hit areas; focus-visible rings; aria-pressed on swatches."
 
