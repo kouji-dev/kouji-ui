@@ -38,7 +38,6 @@ export * from './tag/index';
 // -- Overlay components --
 export * from './dialog/index';
 export * from './drawer/index';
-export * from './bottom-sheet/index';
 export * from './tooltip/index';
 export * from './popover/index';
 export * from './confirm-popup/index';

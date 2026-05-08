@@ -1,16 +1,10 @@
+export { KjDrawer } from './drawer';
 export {
-  KjDrawerTrigger,
-  KjDrawer,
-  KjDrawerContent,
-  KjDrawerTitle,
-  KjDrawerDescription,
-  KjDrawerClose,
-} from './drawer';
-export {
-  KJ_DRAWER,
-  type KjDrawerContext,
-  type KjDrawerCloseEvent,
-  type KjDrawerCloseReason,
-  type KjDrawerAutoFocusEvent,
+  KjDrawerService,
+  DRAWER_DATA,
+  DRAWER_SIDE,
+  DRAWER_DRAG,
+  type KjDrawerOpenOptions,
   type KjDrawerSide,
-} from './drawer.context';
+} from './drawer.service';
+export { KjDrawerRef } from './drawer.ref';

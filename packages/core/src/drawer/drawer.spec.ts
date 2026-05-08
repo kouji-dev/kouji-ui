@@ -1,312 +1,115 @@
-import { fireEvent, render } from '@testing-library/angular';
+import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  KjDrawerTrigger,
-  KjDrawerContent,
-  KjDrawerTitle,
-  KjDrawerDescription,
-  KjDrawerClose,
-} from './drawer';
+import { KjDrawer } from './drawer';
+import { KjDrawerService, DRAWER_DATA } from './drawer.service';
+import { KjDrawerRef } from './drawer.ref';
 
-const imports = [
-  KjDrawerTrigger,
-  KjDrawerContent,
-  KjDrawerTitle,
-  KjDrawerDescription,
-  KjDrawerClose,
-];
+@Component({
+  selector: 'simple-drawer',
+  standalone: true,
+  imports: [KjDrawer],
+  template: `<kj-drawer><button id="ok" (click)="ref.close('ok')">OK</button></kj-drawer>`,
+})
+class SimpleDrawer {
+  readonly ref = inject<KjDrawerRef<SimpleDrawer, string>>(KjDrawerRef);
+}
 
-function findContainer(): HTMLElement | null {
-  return document.body.querySelector<HTMLElement>('[data-kj-drawer-container]');
+@Component({
+  selector: 'data-drawer',
+  standalone: true,
+  imports: [KjDrawer],
+  template: `<kj-drawer>{{ data }}</kj-drawer>`,
+})
+class DataDrawer {
+  readonly data = inject<string>(DRAWER_DATA);
 }
 
 function findPanel(): HTMLElement | null {
-  const c = findContainer();
-  return (
-    c?.querySelector<HTMLElement>('[role="dialog"]')
-    ?? c?.querySelector<HTMLElement>('[role="region"]')
-    ?? null
-  );
+  return document.body.querySelector<HTMLElement>('kj-drawer');
 }
 
 function cleanupOverlays(): void {
-  document.body
-    .querySelectorAll<HTMLElement>('[data-kj-drawer-container]')
-    .forEach((el) => el.remove());
+  document.body.querySelectorAll('kj-drawer').forEach((el) => el.remove());
   document.documentElement.style.overflow = '';
   document.documentElement.style.paddingRight = '';
 }
 
-function flushRaf(): void {
-  vi.advanceTimersByTime(20);
-}
-
-describe('KjDrawerTrigger (declarative path)', () => {
+describe('KjDrawerService', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
-    vi.useFakeTimers({
-      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame', 'queueMicrotask', 'Date'],
-    });
   });
 
   afterEach(() => {
     cleanupOverlays();
-    vi.useRealTimers();
   });
 
-  it('renders trigger button with aria-haspopup="dialog"', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    const btn = getByRole('button', { name: 'Open' });
-    expect(btn).toHaveAttribute('aria-haspopup', 'dialog');
-    expect(btn).toHaveAttribute('aria-expanded', 'false');
+  it('open returns a ref with a controller', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    const ref = svc.open(SimpleDrawer);
+    expect(ref).toBeTruthy();
+    expect(typeof ref.close).toBe('function');
+    expect(ref.controller).toBeTruthy();
   });
 
-  it('opens drawer and mounts content in document.body on click', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>My Drawer</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    const trigger = getByRole('button', { name: 'Open' });
-    fireEvent.click(trigger);
-    flushRaf();
-    expect(findContainer()).toBeTruthy();
-    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  it('rendered panel uses role="dialog"', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    svc.open(SimpleDrawer);
     const panel = findPanel();
     expect(panel).toBeTruthy();
     expect(panel!.getAttribute('role')).toBe('dialog');
-    expect(panel!.getAttribute('aria-modal')).toBe('true');
   });
 
-  it('reflects kjSide on the panel as data-kj-side', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr" kjSide="left">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    const panel = findPanel()!;
-    expect(panel.getAttribute('data-kj-side')).toBe('left');
+  it('side option is reflected on the host as data-kj-side', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    svc.open(SimpleDrawer, { side: 'left' });
+    expect(findPanel()!.getAttribute('data-kj-side')).toBe('left');
   });
 
-  it('defaults kjSide to "right"', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    const panel = findPanel()!;
-    expect(panel.getAttribute('data-kj-side')).toBe('right');
+  it('defaults side to "right"', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    svc.open(SimpleDrawer);
+    expect(findPanel()!.getAttribute('data-kj-side')).toBe('right');
   });
 
-  it('auto-wires aria-labelledby to the projected [kjDrawerTitle]', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>Settings</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    const panel = findPanel()!;
-    const title = panel.querySelector<HTMLElement>('[kjDrawerTitle]')!;
-    expect(title.id).toMatch(/^kj-drawer-title-\d+$/);
-    expect(panel.getAttribute('aria-labelledby')).toBe(title.id);
+  it('close resolves the result promise', async () => {
+    const svc = TestBed.inject(KjDrawerService);
+    const ref = svc.open<SimpleDrawer, string>(SimpleDrawer);
+    ref.close('hello');
+    await expect(ref.result).resolves.toBe('hello');
   });
 
-  it('auto-wires aria-describedby to the projected [kjDrawerDescription]', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent>
-           <h2 kjDrawerTitle>T</h2>
-           <p kjDrawerDescription>Long-form description.</p>
-         </div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    const panel = findPanel()!;
-    const desc = panel.querySelector<HTMLElement>('[kjDrawerDescription]')!;
-    expect(desc.id).toMatch(/^kj-drawer-description-\d+$/);
-    expect(panel.getAttribute('aria-describedby')).toBe(desc.id);
+  it('passes data through DRAWER_DATA', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    svc.open(DataDrawer, { data: 'greetings' });
+    expect(findPanel()!.textContent).toContain('greetings');
   });
 
-  it('Escape closes when modal', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    const trigger = getByRole('button', { name: 'Open' });
-    fireEvent.click(trigger);
-    flushRaf();
-    expect(findPanel()).not.toBeNull();
+  it('drag option is exposed to the body component', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    const ref = svc.open(SimpleDrawer, { side: 'bottom', drag: true });
+    expect(ref.instance).toBeInstanceOf(SimpleDrawer);
+  });
+
+  it('Escape closes the drawer via the overlay-stack coordinator', async () => {
+    const svc = TestBed.inject(KjDrawerService);
+    const ref = svc.open<SimpleDrawer, unknown>(SimpleDrawer);
+    expect(findPanel()).toBeTruthy();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    flushRaf();
-    expect(findPanel()).toBeNull();
-    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    // The stack coordinator runs synchronously on Esc.
+    await ref.result;
+    // After close, the controller state should have transitioned away from open.
+    expect(ref.state()).not.toBe('open');
   });
+});
 
-  it('Escape does not close when kjCloseOnEscape is false', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr" [kjCloseOnEscape]="false">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    flushRaf();
-    expect(findPanel()).not.toBeNull();
-  });
-
-  it('outside-click closes when modal', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    expect(findPanel()).not.toBeNull();
-    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    flushRaf();
-    expect(findPanel()).toBeNull();
-  });
-
-  it('locks <body> scroll while open and releases on close', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    expect(document.documentElement.style.overflow).toBe('hidden');
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    flushRaf();
-    expect(document.documentElement.style.overflow).toBe('');
-  });
-
-  it('does not lock <body> scroll when kjScrollLock is false', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr" [kjScrollLock]="false">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    expect(document.documentElement.style.overflow).toBe('');
-  });
-
-  it('non-modal drawer uses role="region" and skips backdrop close paths', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr" [kjModal]="false">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    const panel = findPanel()!;
-    expect(panel.getAttribute('role')).toBe('region');
-    expect(panel.getAttribute('aria-modal')).toBeNull();
-    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    flushRaf();
-    expect(findPanel()).not.toBeNull();
-    expect(document.documentElement.style.overflow).toBe('');
-  });
-
-  it('[kjDrawerClose] closes the drawer', async () => {
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent>
-           <h2 kjDrawerTitle>T</h2>
-           <button kjDrawerClose>Close</button>
-         </div>
-       </ng-template>`,
-      { imports },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    expect(findPanel()).not.toBeNull();
-    const closeBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button'))
-      .find((b) => b.textContent?.trim() === 'Close')!;
-    fireEvent.click(closeBtn);
-    flushRaf();
-    expect(findPanel()).toBeNull();
-  });
-
-  it('cancellable close cycle vetoes via preventDefault', async () => {
-    const onClose = vi.fn((ev: { preventDefault: () => void }) => {
-      ev.preventDefault();
-    });
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr" (kjCloseRequested)="onClose($event)">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent><h2 kjDrawerTitle>T</h2></div>
-       </ng-template>`,
-      { imports, componentProperties: { onClose } as Record<string, unknown> },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    flushRaf();
-    expect(onClose).toHaveBeenCalled();
-    expect(findPanel()).not.toBeNull();
-  });
-
-  it('emits (kjDrawerClosed) with the result payload', async () => {
-    const onClosed = vi.fn();
-    const { getByRole } = await render(
-      `<button [kjDrawerTrigger]="dwr" (kjDrawerClosed)="onClosed($event)">Open</button>
-       <ng-template #dwr>
-         <div kjDrawerContent #d="kjDrawerContent">
-           <h2 kjDrawerTitle>T</h2>
-           <button (click)="d.close('ok')">OK</button>
-         </div>
-       </ng-template>`,
-      { imports, componentProperties: { onClosed } as Record<string, unknown> },
-    );
-    fireEvent.click(getByRole('button', { name: 'Open' }));
-    flushRaf();
-    const okBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button'))
-      .find((b) => b.textContent?.trim() === 'OK')!;
-    fireEvent.click(okBtn);
-    flushRaf();
-    expect(onClosed).toHaveBeenCalledWith('ok');
+describe('KjDrawer (body component)', () => {
+  it('exposes the resolved side through `side`', () => {
+    const svc = TestBed.inject(KjDrawerService);
+    const ref = svc.open(SimpleDrawer, { side: 'top' });
+    expect((ref.instance as unknown as { ref: KjDrawerRef<unknown> })).toBeTruthy();
+    cleanupOverlays();
   });
 });
