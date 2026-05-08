@@ -1876,7 +1876,7 @@ git commit -m "feat(theme-gen): preview tabs container with deferred panels"
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/dashboard.css`
 - Modify: `theme-generator-preview.ts` to import the component.
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 // dashboard.ts
@@ -1967,15 +1967,15 @@ export class PreviewDashboardComponent {
 .people__role { font-size: 0.875rem; opacity: 0.7; }
 ```
 
-- [ ] **Step 2: Wire into preview tabs**
+- [x] **Step 2: Wire into preview tabs**
 
 In `theme-generator-preview.ts`, add `PreviewDashboardComponent` to imports.
 
-- [ ] **Step 3: Verify renders without console errors**
+- [x] **Step 3: Verify renders without console errors**
 
 Run dev server, open `/theme-generator?preview=dashboard`. Confirm no errors. (Some `kj-*` props may need adjusting based on actual component APIs — adjust template imports/inputs as needed.)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/preview-tabs/dashboard.* apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts
