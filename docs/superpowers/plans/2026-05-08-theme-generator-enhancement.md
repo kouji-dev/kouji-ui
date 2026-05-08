@@ -588,7 +588,7 @@ git commit -m "feat(theme-gen): add setColors/dirtySlots/rederiveFromPrimary to 
 - Create: `apps/docs/src/app/components/seed-swatch-grid/seed-swatch-grid.css`
 - Create: `apps/docs/src/app/components/seed-swatch-grid/seed-swatch-grid.spec.ts`
 
-- [ ] **Step 1: Write the failing component test**
+- [x] **Step 1: Write the failing component test**
 
 ```ts
 // seed-swatch-grid.spec.ts
@@ -626,12 +626,12 @@ describe('SeedSwatchGridComponent', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/seed-swatch-grid/seed-swatch-grid.spec.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement the component**
+- [x] **Step 3: Implement the component**
 
 ```ts
 // seed-swatch-grid.ts
@@ -708,12 +708,12 @@ export class SeedSwatchGridComponent {
 
 > Touch target: WCAG 2.5.5 requires 44×44; the visible swatch is smaller but the button hit-area meets the rule.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/seed-swatch-grid/seed-swatch-grid.spec.ts`
 Expected: PASS, 3 tests.
 
-- [ ] **Step 5: Accessibility review (per CLAUDE.md) + commit**
+- [x] **Step 5: Accessibility review (per CLAUDE.md) + commit**
 
 Add to commit body: "Accessibility: buttons have aria-label and aria-pressed; 44×44 hit area; keyboard reachable; focus-visible ring."
 
