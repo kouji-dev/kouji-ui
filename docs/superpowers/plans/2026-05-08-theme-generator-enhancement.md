@@ -402,7 +402,7 @@ git commit -m "feat(theme-gen): add curated AAA seed swatch palette (~33 swatche
 - Modify: `apps/docs/src/app/lib/theme/palette-derive.ts`
 - Modify: `apps/docs/src/app/lib/theme/palette-derive.spec.ts`
 
-- [ ] **Step 1: Add failing test**
+- [x] **Step 1: Add failing test**
 
 Append to `palette-derive.spec.ts`:
 
@@ -430,12 +430,12 @@ describe('randomAccessiblePalette', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/palette-derive.spec.ts`
 Expected: FAIL — `randomAccessiblePalette` not exported.
 
-- [ ] **Step 3: Implement `randomAccessiblePalette`**
+- [x] **Step 3: Implement `randomAccessiblePalette`**
 
 Append to `palette-derive.ts`:
 
@@ -454,12 +454,12 @@ export function randomAccessiblePalette(opts: RandomOpts = {}): Record<ColorSlot
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/palette-derive.spec.ts`
 Expected: PASS, 10 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/lib/theme/palette-derive.ts apps/docs/src/app/lib/theme/palette-derive.spec.ts
