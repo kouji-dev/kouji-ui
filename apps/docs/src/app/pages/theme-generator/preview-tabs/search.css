@@ -133,23 +133,50 @@
 }
 
 .chip {
-  min-height: 44px;
-  padding: 0.375rem 0.75rem;
+  --chip-tone: var(--kj-color-base-content);
+  --chip-tone-content: var(--kj-color-base-100);
+  min-height: 32px;
+  padding: 0.25rem 0.625rem;
   font: inherit;
   font-size: 0.8125rem;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
-  border: 1px solid var(--kj-color-base-300);
+  font-weight: 500;
+  background: color-mix(in oklab, var(--chip-tone) 12%, transparent);
+  color: color-mix(in oklab, var(--chip-tone) 75%, var(--kj-color-base-content));
+  border: 1px solid color-mix(in oklab, var(--chip-tone) 30%, transparent);
   border-radius: 999px;
   cursor: pointer;
+  transition: background var(--kj-transition, 150ms), border-color var(--kj-transition, 150ms);
 }
 .chip:hover {
-  background: var(--kj-color-base-300);
+  background: color-mix(in oklab, var(--chip-tone) 22%, transparent);
+  border-color: color-mix(in oklab, var(--chip-tone) 50%, transparent);
+}
+.chip:focus-visible {
+  outline: 2px solid var(--chip-tone);
+  outline-offset: 2px;
 }
 .chip--on {
-  background: var(--kj-color-primary);
-  color: var(--kj-color-primary-content);
-  border-color: var(--kj-color-primary);
+  background: var(--chip-tone);
+  color: var(--chip-tone-content);
+  border-color: var(--chip-tone);
+}
+.chip--on:hover {
+  background: color-mix(in oklab, var(--chip-tone) 88%, black 12%);
+  border-color: color-mix(in oklab, var(--chip-tone) 88%, black 12%);
+}
+
+.filters kj-multi-select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.filters kj-multi-select * {
+  max-width: 100%;
+}
+.filters kj-multi-select [class*='chip'],
+.filters kj-multi-select [class*='tag'] {
+  max-width: 100%;
 }
 
 .results-pane {

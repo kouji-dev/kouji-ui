@@ -29,8 +29,8 @@
   </div>
 
   <kj-tag-list class="chips" aria-label="Active filters">
-    @for (c of chips; track c) {
-      <kj-tag>{{ c }}</kj-tag>
+    @for (c of chips; track c.label) {
+      <kj-tag [kjVariant]="c.variant">{{ c.label }}</kj-tag>
     }
   </kj-tag-list>
 </header>
@@ -67,6 +67,8 @@
             class="chip"
             [class.chip--on]="isTagSelected(t)"
             [attr.aria-pressed]="isTagSelected(t)"
+            [style.--chip-tone]="toneFor(t)"
+            [style.--chip-tone-content]="toneContentFor(t)"
             (click)="toggleTag(t)"
           >{{ t }}</button>
         }
