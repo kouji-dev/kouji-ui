@@ -1190,7 +1190,7 @@ git commit -m "feat(theme-gen): contrast scorecard with per-pair AAA/AA verdicts
 - Create: `apps/docs/src/app/services/theme-url.service.ts`
 - Test: `apps/docs/src/app/services/theme-url.service.spec.ts`
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```ts
 // theme-url.service.spec.ts
@@ -1223,12 +1223,12 @@ describe('ThemeUrlService encode/decode', () => {
 });
 ```
 
-- [ ] **Step 2: Run test**
+- [x] **Step 2: Run test**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/theme-url.service.spec.ts`
 Expected: FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // theme-url.service.ts
@@ -1329,7 +1329,7 @@ export class ThemeUrlService {
 }
 ```
 
-- [ ] **Step 4: Add `load` method to `ThemeDraftService`**
+- [x] **Step 4: Add `load` method to `ThemeDraftService`**
 
 In `theme-draft.service.ts`, add:
 
@@ -1341,12 +1341,12 @@ load(draft: DraftTheme): void {
 }
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/theme-url.service.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/docs/src/app/services/theme-url.service.ts apps/docs/src/app/services/theme-url.service.spec.ts apps/docs/src/app/services/theme-draft.service.ts
