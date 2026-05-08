@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, model, computed, effect } from '@angular/core';
+import { Directive, ElementRef, inject, model, computed, effect, untracked } from '@angular/core';
 import { KjOverlayController } from './controller';
 import { KJ_OVERLAY_TRIGGER_EVENT_STRATEGY } from './tokens';
 import type { KjOverlayPanel } from './panel';
@@ -42,11 +42,18 @@ export class KjOverlayTrigger {
     // (e.g. tooltip with no [kjFor]).
     this.triggerStrategy.attach(this.controller.context);
     this.triggerStrategy.bindToggle(() => this.controller.toggle());
+    // Sync model → controller (user toggled kjOpen via two-way binding)
     effect(() => {
       const wantOpen = this.kjOpen();
-      if (wantOpen && !this.controller.isOpen()) this.controller.open();
-      if (!wantOpen && this.controller.isOpen()) this.controller.close('programmatic');
+      const isOpen = untracked(() => this.controller.isOpen());
+      if (wantOpen && !isOpen) this.controller.open();
+      if (!wantOpen && isOpen) this.controller.close('programmatic');
     });
-    effect(() => { this.kjOpen.set(this.controller.isOpen()); });
+    // Sync controller → model (controller state changed via trigger event / outside-click / esc)
+    effect(() => {
+      const isOpen = this.controller.isOpen();
+      const wantOpen = untracked(() => this.kjOpen());
+      if (isOpen !== wantOpen) this.kjOpen.set(isOpen);
+    });
   }
 }
