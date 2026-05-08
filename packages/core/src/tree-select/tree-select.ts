@@ -3,7 +3,6 @@ import {
   computed,
   Directive,
   effect,
-  ElementRef,
   inject,
   input,
   model,
@@ -11,7 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { KjFocusRing } from '../primitives';
+import { KjOverlayController } from '../primitives/overlay/controller';
 import { KJ_TREE_SELECT, type KjTreeNode, type KjTreeSelectContext } from './tree-select.context';
 
 let _treeSelectIdCounter = 0;
@@ -23,20 +22,24 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
 }
 
 /**
- * Root Tree Select container. Manages open/close state, selected values,
- * and expanded node IDs. Composes with `KjTreeSelectPanel` (the dropdown
- * tree) and `KjTreeSelectTrigger` (the trigger button).
+ * Root Tree Select container. Manages selected values, expanded node IDs,
+ * and the selection model. Composes with `KjTreeSelectTrigger` (which now
+ * brings overlay primitives) and `KjTreeSelectContent` (the dropdown tree
+ * panel).
  *
  * Supports two selection modes:
  * - `'single'` (default) — selecting a node writes that value and closes the panel.
  * - `'multiple'` — selecting toggles the value in the selection set; the panel
  *   stays open.
  *
+ * Open/close state lives on the overlay primitives — this directive is no
+ * longer responsible for it.
+ *
  * @example
  * ```html
  * <div kjTreeSelect [(kjValue)]="selected" [kjNodes]="categories">
- *   <button kjTreeSelectTrigger>Select category</button>
- *   <div kjTreeSelectPanel></div>
+ *   <button kjTreeSelectTrigger #t="kjTreeSelectTrigger">Select category</button>
+ *   <kj-tree-select-content [kjFor]="t"></kj-tree-select-content>
  * </div>
  * ```
  * @category Core/Inputs
@@ -47,6 +50,9 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
   providers: [{ provide: KJ_TREE_SELECT, useExisting: KjTreeSelect }],
 })
 export class KjTreeSelect implements KjTreeSelectContext {
+  /** @internal — optional overlay controller for closing on single select. */
+  private readonly controller = inject(KjOverlayController, { optional: true });
+
   /** Tree node data. Each node may carry children, forming a hierarchy. */
   readonly kjNodes = input<readonly KjTreeNode[]>([]);
 
@@ -74,14 +80,11 @@ export class KjTreeSelect implements KjTreeSelectContext {
   /** Stable panel id used for `aria-controls`. */
   readonly panelId = `kj-tree-select-panel-${++_treeSelectIdCounter}`;
 
-  private readonly _open = signal(false);
   private readonly _expandedIds = signal<Set<string>>(new Set());
   private readonly _expandedValues = signal<Set<unknown>>(new Set());
   private readonly _selectedValues = signal<readonly unknown[]>([]);
 
   // ── KjTreeSelectContext implementation ──────────────────────────────
-
-  readonly open = this._open.asReadonly();
 
   readonly selectionMode = computed(() => this.kjSelectionMode());
 
@@ -115,9 +118,8 @@ export class KjTreeSelect implements KjTreeSelectContext {
     if (this.kjSelectionMode() === 'single') {
       this.kjValue.set(value);
       this._selectedValues.set([value]);
-      this._open.set(false);
+      this.controller?.close('programmatic');
     } else {
-      // Toggle in multi mode
       const current = this._selectedValues();
       const idx = current.indexOf(value);
       if (idx >= 0) {
@@ -149,9 +151,7 @@ export class KjTreeSelect implements KjTreeSelectContext {
       set.add(value);
     }
     this._expandedValues.set(set);
-    // Keep kjExpandedKeys model in sync
     this.kjExpandedKeys.set(Array.from(set));
-    // Emit lifecycle outputs (single point of truth)
     if (wasExpanded) {
       this.kjNodeCollapse.emit(value);
     } else {
@@ -172,228 +172,6 @@ export class KjTreeSelect implements KjTreeSelectContext {
       return this.kjValue() === value;
     }
     return this._selectedValues().includes(value);
-  }
-
-  // ── Panel ops ────────────────────────────────────────────────────────
-
-  hide(): void {
-    this._open.set(false);
-  }
-
-  toggleOpen(): void {
-    if (this._open()) {
-      this.hide();
-    } else {
-      this._open.set(true);
-    }
-  }
-}
-
-/**
- * Trigger button that opens/closes the Tree Select panel. Wires
- * `role="combobox"`, `aria-haspopup="tree"`, `aria-expanded`, and
- * `aria-controls` to the panel.
- *
- * @example
- * ```html
- * <button kjTreeSelectTrigger>Select category</button>
- * ```
- * @category Core/Inputs
- */
-@Directive({
-  selector: '[kjTreeSelectTrigger]',
-  standalone: true,
-  hostDirectives: [KjFocusRing],
-  host: {
-    'role': 'combobox',
-    'aria-haspopup': 'tree',
-    '[attr.aria-expanded]': 'ctx.open() ? "true" : "false"',
-    '[attr.aria-controls]': 'ctx.panelId',
-    '[attr.data-open]': 'ctx.open() ? "" : null',
-    '(click)': '$event.stopPropagation(); ctx.toggleOpen()',
-    '(keydown)': 'onKeydown($event)',
-  },
-})
-export class KjTreeSelectTrigger {
-  /** @internal */
-  readonly ctx = inject(KJ_TREE_SELECT);
-
-  /** @internal */
-  onKeydown(event: KeyboardEvent): void {
-    switch (event.key) {
-      case 'ArrowDown':
-      case ' ':
-      case 'Enter':
-        event.preventDefault();
-        if (!this.ctx.open()) this.ctx.toggleOpen();
-        break;
-      case 'Escape':
-        if (this.ctx.open()) {
-          event.preventDefault();
-          this.ctx.hide();
-        }
-        break;
-    }
-  }
-}
-
-/**
- * Tree panel container. Carries `role="tree"` and `aria-multiselectable`.
- * Hidden when the parent context is closed. Implements ArrowDown/Up for
- * vertical focus movement, ArrowRight to expand a branch, ArrowLeft to
- * collapse a branch or move to parent, Enter/Space to select the focused
- * node, Home/End to jump to first/last visible node, and Escape to close.
- *
- * Outside-clicks and Escape close the panel.
- *
- * @example
- * ```html
- * <div kjTreeSelectPanel>
- *   <!-- tree nodes rendered here -->
- * </div>
- * ```
- * @category Core/Inputs
- */
-@Directive({
-  selector: '[kjTreeSelectPanel]',
-  standalone: true,
-  host: {
-    'role': 'tree',
-    '[attr.id]': 'ctx.panelId',
-    '[attr.hidden]': '!ctx.open() ? "" : null',
-    '[attr.aria-multiselectable]': 'ctx.selectionMode() === "multiple" ? "true" : null',
-    '(keydown)': 'onKeydown($event)',
-    '(document:keydown.escape)': 'ctx.hide()',
-    '(document:click)': 'onDocClick($event)',
-    '(click)': '$event.stopPropagation()',
-  },
-})
-export class KjTreeSelectPanel {
-  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  /** @internal */
-  readonly ctx = inject(KJ_TREE_SELECT);
-
-  private readonly _activeIndex = signal(-1);
-
-  /** @internal */
-  onDocClick(event: MouseEvent): void {
-    if (!this.ctx.open()) return;
-    const target = event.target as Node | null;
-    if (!target) return;
-    if (this.el.nativeElement.contains(target)) return;
-    this.ctx.hide();
-  }
-
-  /** @internal */
-  onKeydown(event: KeyboardEvent): void {
-    const items = this._getVisibleNodes();
-    if (!items.length) return;
-    let idx = this._activeIndex();
-
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        idx = idx < items.length - 1 ? idx + 1 : 0;
-        this._activeIndex.set(idx);
-        items[idx]?.focus();
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        idx = idx > 0 ? idx - 1 : items.length - 1;
-        this._activeIndex.set(idx);
-        items[idx]?.focus();
-        break;
-      case 'Home':
-        event.preventDefault();
-        this._activeIndex.set(0);
-        items[0]?.focus();
-        break;
-      case 'End':
-        event.preventDefault();
-        this._activeIndex.set(items.length - 1);
-        items[items.length - 1]?.focus();
-        break;
-      case 'ArrowRight': {
-        event.preventDefault();
-        const node = items[idx];
-        if (node) {
-          const hasChildren = node.getAttribute('data-has-children') === 'true';
-          const expanded = node.getAttribute('data-expanded') === 'true';
-          if (hasChildren && !expanded) {
-            // Expand: find and click the toggle
-            const toggle = node.querySelector('[kjTreeSelectToggle]') as HTMLElement | null;
-            toggle?.click();
-          } else if (hasChildren && expanded) {
-            // Move focus to first child
-            const nextItems = this._getVisibleNodes();
-            const nextIdx = idx + 1;
-            if (nextIdx < nextItems.length) {
-              this._activeIndex.set(nextIdx);
-              nextItems[nextIdx]?.focus();
-            }
-          }
-        }
-        break;
-      }
-      case 'ArrowLeft': {
-        event.preventDefault();
-        const node = items[idx];
-        if (node) {
-          const expanded = node.getAttribute('data-expanded') === 'true';
-          if (expanded) {
-            // Collapse
-            const toggle = node.querySelector('[kjTreeSelectToggle]') as HTMLElement | null;
-            toggle?.click();
-          } else {
-            // Move to parent (lower aria-level)
-            const currentLevel = parseInt(node.getAttribute('aria-level') ?? '1', 10);
-            for (let i = idx - 1; i >= 0; i--) {
-              const parentLevel = parseInt(items[i]?.getAttribute('aria-level') ?? '1', 10);
-              if (parentLevel < currentLevel) {
-                this._activeIndex.set(i);
-                items[i]?.focus();
-                break;
-              }
-            }
-          }
-        }
-        break;
-      }
-      case 'Enter':
-      case ' ': {
-        event.preventDefault();
-        const node = items[idx];
-        if (node) {
-          node.click();
-        }
-        break;
-      }
-      case 'Escape':
-        event.preventDefault();
-        this.ctx.hide();
-        break;
-      default: {
-        // Type-ahead: jump to first visible node whose label starts with typed char
-        const char = event.key.length === 1 ? event.key.toLowerCase() : null;
-        if (char) {
-          const match = items.findIndex(item =>
-            (item.textContent ?? '').trim().toLowerCase().startsWith(char),
-          );
-          if (match >= 0) {
-            this._activeIndex.set(match);
-            items[match]?.focus();
-          }
-        }
-      }
-    }
-  }
-
-  private _getVisibleNodes(): HTMLElement[] {
-    return (
-      Array.from(
-        this.el.nativeElement.querySelectorAll('[kjTreeSelectNode]'),
-      ) as HTMLElement[]
-    ).filter(el => el.getAttribute('hidden') === null && !el.hasAttribute('hidden'));
   }
 }
 
@@ -484,10 +262,8 @@ export class KjTreeSelectNode {
 
   /** @internal */
   handleClick(event: Event): void {
-    // Ignore clicks that originated from the toggle button (it handles expand itself)
     const target = event.target as HTMLElement;
     if (target.closest('[kjTreeSelectToggle]')) return;
-    // Ignore clicks that originated from a descendant tree node (child handles its own selection)
     const targetNode = target.closest('[kjTreeSelectNode]');
     if (targetNode && targetNode !== (event.currentTarget as HTMLElement)) return;
     if (this.kjDisabled()) return;
@@ -531,7 +307,6 @@ export class KjTreeSelectToggle {
   handleClick(event: Event): void {
     event.stopPropagation();
     if (this.node.kjDisabled()) return;
-    // Update both id-based (for headless keyboard nav) and value-based (for wrapper) expansion.
     this.ctx.toggleNode(this.node.id);
     this.ctx.toggleNodeByValue(this.node.kjValue());
   }

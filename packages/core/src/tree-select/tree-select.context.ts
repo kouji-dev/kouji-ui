@@ -19,12 +19,13 @@ export interface KjTreeNode<T = unknown> {
 /**
  * Context interface exposed by `KjTreeSelect` to descendant directives
  * (panel, nodes, toggle buttons) via the `KJ_TREE_SELECT` injection token.
+ *
+ * Open/close state lives on the overlay primitives and is not part of this
+ * context — descendants that need it inject `KjOverlayController` directly.
  */
 export interface KjTreeSelectContext<T = unknown> {
-  /** Auto-minted id for the panel element. */
+  /** Stable id for the panel element (used for `aria-controls`). */
   readonly panelId: string;
-  /** Whether the dropdown panel is currently open. */
-  readonly open: Signal<boolean>;
   /** Current selection mode: `'single'` or `'multiple'`. */
   readonly selectionMode: Signal<'single' | 'multiple'>;
   /** Currently selected values. Single mode: 0 or 1 item; multi: N items. */
@@ -37,8 +38,9 @@ export interface KjTreeSelectContext<T = unknown> {
   readonly nodes: Signal<readonly KjTreeNode<T>[]>;
 
   /**
-   * Select a node. In single mode closes the panel; in multiple mode toggles
-   * the value in the selection set.
+   * Select a node. In single mode closes the panel (via overlay controller);
+   * in multiple mode toggles the value in the selection set and keeps the
+   * panel open.
    */
   selectNode(value: T): void;
   /**
@@ -57,10 +59,6 @@ export interface KjTreeSelectContext<T = unknown> {
   isValueExpanded(value: T): boolean;
   /** Returns `true` when the given value is in the current selection set. */
   isSelected(value: T): boolean;
-  /** Close the panel. */
-  hide(): void;
-  /** Toggle the panel open/closed. */
-  toggleOpen(): void;
 }
 
 /** Injection token providing the nearest `KjTreeSelect` context to descendants. */
