@@ -1,20 +1,45 @@
-import { Component, inject } from '@angular/core';
-import { KjDrawer, KjDrawerService } from '@kouji-ui/core';
+import { Component, inject, signal } from '@angular/core';
+import { KjDrawer, KjDrawerService, KjDrawerRef } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
+import { KjInputComponent } from '../input/input';
+import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 
-// TODO(wrapper-overlay): re-skin form drawer.
 @Component({
   standalone: true,
-  imports: [KjDrawer],
-  template: `<kj-drawer><h2>Form</h2><input type="text" /></kj-drawer>`,
+  imports: [
+    KjDrawer,
+    KjButtonComponent,
+    KjInputComponent,
+    KjFieldComponent,
+    KjFieldLabelComponent,
+  ],
+  template: `
+    <kj-drawer>
+      <h2 style="margin: 0 0 var(--kj-space-md);">Edit profile</h2>
+      <kj-field>
+        <kj-field-label>Display name</kj-field-label>
+        <kj-input placeholder="Jane Doe" />
+      </kj-field>
+      <kj-field>
+        <kj-field-label>Email</kj-field-label>
+        <kj-input placeholder="jane@example.com" />
+      </kj-field>
+      <div style="display: flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-lg);">
+        <kj-button kjVariant="ghost" (click)="ref.close()">Cancel</kj-button>
+        <kj-button (click)="ref.close('saved')">Save</kj-button>
+      </div>
+    </kj-drawer>
+  `,
 })
-class Body {}
+class Body {
+  protected readonly ref = inject(KjDrawerRef);
+}
 
 @Component({
   selector: 'kj-drawer-with-form-example',
   standalone: true,
   imports: [KjButtonComponent],
-  template: `<kj-button (click)="open()">Open</kj-button>`,
+  template: `<kj-button (click)="open()">Open form drawer</kj-button>`,
 })
 export class KjDrawerWithFormExample {
   private readonly drawer = inject(KjDrawerService);
