@@ -44,10 +44,10 @@ import { KjToastService } from './toast.service';
   `],
   template: `
     <div class="row">
-      <button class="btn-success" (click)="toast.success('Transaction completed.')">Success</button>
-      <button class="btn-error"   (click)="toast.error('Payment declined.')">Error</button>
-      <button class="btn-warning" (click)="toast.warning('Session expiring soon.')">Warning</button>
-      <button class="btn-info"    (click)="toast.info('Statement ready to download.')">Info</button>
+      <button class="btn-success" (click)="toast.show('Transaction completed.', { variant: 'success' })">Success</button>
+      <button class="btn-error"   (click)="toast.show('Payment declined.', { variant: 'destructive' })">Error</button>
+      <button class="btn-warning" (click)="toast.show('Session expiring soon.', { variant: 'warning' })">Warning</button>
+      <button class="btn-info"    (click)="toast.show('Statement ready to download.')">Info</button>
     </div>
     <ol kjToastViewport [kjToastDefaultTemplate]="defaultTpl" #vp="kjToastViewport" aria-label="Notifications">
       @for (r of vp.renderable(); track r.id) {

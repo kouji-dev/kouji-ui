@@ -96,10 +96,10 @@ import { KjButton } from '../button/button';
   `],
   template: `
     <div class="row">
-      <button kjButton [attr.data-variant]="'success'"     (click)="toast.success('Changes saved successfully!')">Success</button>
-      <button kjButton [attr.data-variant]="'destructive'" (click)="toast.error('Something went wrong!')">Error</button>
-      <button kjButton [attr.data-variant]="'warning'"     (click)="toast.warning('Session expires in 5 minutes.')">Warning</button>
-      <button kjButton [attr.data-variant]="'default'"     (click)="toast.info('New update available.')">Info</button>
+      <button kjButton [attr.data-variant]="'success'"     (click)="toast.show('Changes saved successfully!', { variant: 'success' })">Success</button>
+      <button kjButton [attr.data-variant]="'destructive'" (click)="toast.show('Something went wrong!', { variant: 'destructive' })">Error</button>
+      <button kjButton [attr.data-variant]="'warning'"     (click)="toast.show('Session expires in 5 minutes.', { variant: 'warning' })">Warning</button>
+      <button kjButton [attr.data-variant]="'default'"     (click)="toast.show('New update available.')">Info</button>
     </div>
 
     <ol kjToastViewport [kjToastDefaultTemplate]="defaultTpl" #vp="kjToastViewport" aria-label="Notifications">

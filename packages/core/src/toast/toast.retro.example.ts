@@ -45,10 +45,10 @@ import { KjToastService } from './toast.service';
   `],
   template: `
     <div class="row">
-      <button class="btn-ok"   (click)="toast.success('File saved!')">OK</button>
-      <button class="btn-err"  (click)="toast.error('Access denied!')">ERR</button>
-      <button class="btn-warn" (click)="toast.warning('Low disk space.')">WARN</button>
-      <button class="btn-info" (click)="toast.info('Update available.')">INFO</button>
+      <button class="btn-ok"   (click)="toast.show('File saved!', { variant: 'success' })">OK</button>
+      <button class="btn-err"  (click)="toast.show('Access denied!', { variant: 'destructive' })">ERR</button>
+      <button class="btn-warn" (click)="toast.show('Low disk space.', { variant: 'warning' })">WARN</button>
+      <button class="btn-info" (click)="toast.show('Update available.')">INFO</button>
     </div>
     <ol kjToastViewport [kjToastDefaultTemplate]="defaultTpl" #vp="kjToastViewport" aria-label="Notifications">
       @for (r of vp.renderable(); track r.id) {

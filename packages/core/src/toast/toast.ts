@@ -1,7 +1,8 @@
 import {
-  DestroyRef, Directive, ElementRef, TemplateRef,
+  ChangeDetectionStrategy, Component, DestroyRef, Directive, ElementRef, TemplateRef, ViewEncapsulation,
   afterNextRender, booleanAttribute, computed, inject, input, signal,
 } from '@angular/core';
+import { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
 import { KjToastPositionX, KjToastPositionY } from './toast.types';
@@ -441,3 +442,20 @@ export class KjToastClose {
     this.svc.dismiss(this.kjToastClose());
   }
 }
+
+/**
+ * Service-launched toast panel. Composes `KjOverlayPanel` as a host directive
+ * so the overlay primitives wire role/state/aria management. The role is
+ * decided by the service via `KJ_OVERLAY_PANEL_ROLE` (`status` or `alert`).
+ *
+ * @category Core/Overlays
+ */
+@Component({
+  selector: 'kj-toast',
+  standalone: true,
+  hostDirectives: [{ directive: KjOverlayPanel }],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  template: `<ng-content />`,
+})
+export class KjToastPanel {}
