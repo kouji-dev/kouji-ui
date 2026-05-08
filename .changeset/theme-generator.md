@@ -1,5 +1,7 @@
 ---
 '@kouji-ui/core': patch
+'@kouji-ui/components': patch
+'@kouji-ui/themes': patch
 ---
 
 `kj-input` now supports `type="color"` and a new `value` input that forwards to the underlying native input via property binding. Includes a `data-type` host attribute (mirrors `type`) and a small built-in style normalization for color swatches (44×32px). Existing `type` values and form-control bindings continue to work unchanged.

@@ -1,4 +1,5 @@
 ---
+'@kouji-ui/core': patch
 '@kouji-ui/components': patch
 '@kouji-ui/themes': patch
 ---
