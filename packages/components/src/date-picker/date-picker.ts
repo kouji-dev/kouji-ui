@@ -66,7 +66,7 @@ import { KjCalendarComponent } from '../calendar/calendar';
       [kjMax]="kjMax()"
       [kjDisabledDates]="kjDisabledDates()"
       [kjLocale]="kjLocale()"
-      [kjFirstDayOfWeek]="kjFirstDayOfWeek()"
+      [kjFirstDayOfWeek]="kjFirstDayOfWeek() ?? 0"
       [kjReadonly]="kjReadonly()"
       [kjDisabled]="kjDisabled()"
     >
@@ -96,7 +96,7 @@ import { KjCalendarComponent } from '../calendar/calendar';
           [kjMax]="kjMax()"
           [kjDisabledDates]="kjDisabledDates()"
           [kjLocale]="kjLocale()"
-          [kjFirstDayOfWeek]="kjFirstDayOfWeek()"
+          [kjFirstDayOfWeek]="kjFirstDayOfWeek() ?? 0"
           (kjValueChange)="onCalendarSelect($event, picker)"
         />
       </div>
@@ -141,7 +141,7 @@ export class KjDatePickerComponent {
   readonly kjDisabled = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   /** @internal — wired from the projected calendar. */
-  onCalendarSelect(date: Date, picker: KjDatePicker): void {
+  onCalendarSelect(date: Date | null, picker: KjDatePicker): void {
     if (date) picker.selectDate(date);
   }
 
