@@ -17,14 +17,13 @@ import { Directive } from '@angular/core';
  * </ng-template>
  * ```
  *
- * @category Core/Overlays
- * @doc
- * @doc-name tooltip
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjTooltipArrow]',
   standalone: true,
   host: {
+    'class': 'kj-tooltip-arrow',
     'aria-hidden': 'true',
     'data-kj-tooltip-arrow': '',
   },

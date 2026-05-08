@@ -9,28 +9,38 @@ import { KjToastViewport, KjToast, KjToastClose } from '@kouji-ui/core';
 import type { KjToastVariant } from '@kouji-ui/core';
 
 /**
+ * Toast suite shell. Hosts the documentation page for the toast service +
+ * viewport + close button trio. Use `KjToastService.show()` to enqueue a
+ * toast, mount `<kj-toast-viewport>` near your trigger, and place
+ * `<kj-toast>` / `<kj-toast-close>` inside the per-call `<ng-template>`.
+ *
+ * @doc-name Toast
+ * @doc-is-main
+ * @doc-example Default
+ *   @doc-file toast.default.example.ts
+ * @doc-example Variants
+ *   @doc-file toast.variants.example.ts
+ * @doc-example With action
+ *   @doc-file toast.with-action.example.ts
+ * @doc-example Dismissible
+ *   @doc-file toast.dismissible.example.ts
+ * @category Library/Overlay
+ */
+@Component({
+  selector: 'kj-toast-wrapper',
+  standalone: true,
+  template: `<ng-content />`,
+  styleUrl: './toast.css',
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjToastWrapperComponent {}
+
+/**
  * Toast viewport. Mount once near your trigger button (or in your app shell).
  * Renders each active toast using the per-call template passed to
  * `KjToastService.show(template, options)`.
- *
- * @doc
- *  @doc-example Default
- *    @doc-theme default
- *      @doc-file toast.default.example.ts
- *  @doc-example Variants
- *    @doc-theme default
- *      @doc-file toast.variants.example.ts
- *  @doc-example With action
- *    @doc-theme default
- *      @doc-file toast.with-action.example.ts
- *  @doc-example Dismissible
- *    @doc-theme default
- *      @doc-file toast.dismissible.example.ts
- *
- * @category Library/Feedback
- * @doc-name toast
- * @doc-description The pre-styled kouji toast system. Mount `<kj-toast-viewport>` once in your app shell and call `KjToastService.show(template)` to queue themed notifications — use `<kj-toast>` and `<kj-toast-close>` in the template for the visual shell and dismissal wiring.
- * @doc-is-main
  */
 @Component({
   selector: 'kj-toast-viewport',
@@ -60,8 +70,6 @@ export class KjToastViewportComponent {}
 /**
  * Single toast item. Bind `[variant]` from `ctx.variant` and `[id]` from `ctx.id`.
  * Place inside the `<ng-template let-ctx>` you pass to `KjToastService.show()`.
- * @doc
- * @doc-name toast
  */
 @Component({
   selector: 'kj-toast',
@@ -91,8 +99,6 @@ export class KjToastComponent {
  * The rendered `<button>` carries a default `aria-label="Dismiss notification"`
  * so icon-only close buttons remain accessible (WCAG 4.1.2). Override via the
  * `ariaLabel` input or by projecting visible text.
- * @doc
- * @doc-name toast
  */
 @Component({
   selector: 'kj-toast-close',

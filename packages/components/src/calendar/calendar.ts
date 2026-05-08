@@ -32,10 +32,6 @@ import {
  * @doc-example Default
  *   @doc-file calendar.example.ts
  * @category Library/Data input
- * @doc
- * @doc-name calendar
- * @doc-description Pre-styled day-grid calendar for single-date selection — locale-aware month/weekday labels via `Intl`, full APG keyboard contract, min/max bounds, and per-date disable predicates, all without a third-party date library.
- * @doc-is-main
  */
 @Component({
   selector: 'kj-calendar',
@@ -45,13 +41,13 @@ import {
     <div
       kjCalendar
       class="kj-calendar"
-      [kjValue]="$any(kjValue())"
+      [kjValue]="kjValue() ?? null!"
       (kjValueChange)="kjValue.set($event)"
-      [kjMin]="$any(kjMin())"
-      [kjMax]="$any(kjMax())"
-      [kjDisabledDates]="$any(kjDisabledDates())"
+      [kjMin]="kjMin() ?? null!"
+      [kjMax]="kjMax() ?? null!"
+      [kjDisabledDates]="kjDisabledDates() ?? null!"
       [kjLocale]="kjLocale()"
-      [kjFirstDayOfWeek]="$any(kjFirstDayOfWeek())"
+      [kjFirstDayOfWeek]="kjFirstDayOfWeek()"
       [kjAriaLabel]="kjAriaLabel()"
       [kjDisabled]="kjDisabled()"
     >

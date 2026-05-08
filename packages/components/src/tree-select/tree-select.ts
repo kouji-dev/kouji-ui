@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import {
   KjTreeSelect,
+  KjTreeSelectContent,
   KjTreeSelectNode,
-  KjTreeSelectPanel,
   KjTreeSelectToggle,
   KjTreeSelectTrigger,
   type KjTreeNode,
@@ -186,11 +186,12 @@ export class KjTreeSelectNodeComponent {
       ],
     },
   ],
-  imports: [KjTreeSelectTrigger, KjTreeSelectPanel, KjTreeSelectNodeComponent],
+  imports: [KjTreeSelectTrigger, KjTreeSelectContent, KjTreeSelectNodeComponent],
   template: `
     <button
       type="button"
       kjTreeSelectTrigger
+      #trig="kjTreeSelectTrigger"
       class="kj-tree-select-trigger"
       [attr.aria-label]="ariaLabel() || null"
       [disabled]="disabled() || null"
@@ -198,7 +199,7 @@ export class KjTreeSelectNodeComponent {
       <span class="kj-tree-select-trigger-label">{{ displayLabel() }}</span>
       <span class="kj-tree-select-caret" aria-hidden="true">▾</span>
     </button>
-    <div kjTreeSelectPanel class="kj-tree-select-panel">
+    <kj-tree-select-content [kjFor]="trig" class="kj-tree-select-panel">
       @for (row of flatNodes(); track row.node.value) {
         <kj-tree-select-node
           [value]="row.node.value"
@@ -215,14 +216,13 @@ export class KjTreeSelectNodeComponent {
       @if (flatNodes().length === 0) {
         <div class="kj-tree-select-empty">No options</div>
       }
-    </div>
+    </kj-tree-select-content>
   `,
   styleUrl: './tree-select.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-tree-select',
     '[attr.data-disabled]': "disabled() ? '' : null",
-    '[attr.data-open]': "ts.open() ? '' : null",
     '[attr.data-multi]': "ts.selectionMode() === 'multiple' ? '' : null",
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

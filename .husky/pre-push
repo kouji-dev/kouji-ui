@@ -9,6 +9,13 @@ fi
 
 set -e
 
+# Git sets GIT_DIR / GIT_WORK_TREE for the worktree it's pushing from. Tools
+# downstream (changeset, internal git diff invocations) misbehave when they
+# inherit these — they end up resolving repo state from the worktree's
+# metadata dir instead of via the working directory. Strip them so the
+# downstream tools resolve like a normal interactive shell would.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX
+
 echo "→ lint"
 pnpm lint
 

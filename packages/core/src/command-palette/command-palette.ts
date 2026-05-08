@@ -26,8 +26,9 @@ export interface KjCommandActivateEvent {
  * `[kjCommandGroup]`, `[kjCommandSeparator]`, `[kjCommandEmpty]` for a
  * fully accessible combobox-with-listbox palette.
  *
- * For the modal (Cmd-K) pattern use `[kjCommandPaletteDialog]` which wraps
- * this directive together with `KjDialog`.
+ * For the modal (Cmd-K) pattern use `<kj-command-palette-dialog>` which
+ * composes the overlay primitives (portal, viewport-centered position,
+ * solid backdrop, focus trap, scroll lock) with an `onHotkey` trigger.
  *
  * @doc
  * @doc-example Inline
@@ -72,7 +73,7 @@ export class KjCommandPalette implements KjCommandPaletteContext {
 
   /**
    * Close the host dialog on activation. Default `true`.
-   * Requires the palette to be inside a `[kjCommandPaletteDialog]` or
+   * Requires the palette to be inside a `<kj-command-palette-dialog>` or
    * for the consumer to wire close logic via the `kjActivate` output.
    */
   readonly kjDismissOnActivate = input<boolean, unknown>(true, { transform: booleanAttribute });

@@ -1,7 +1,17 @@
-import { Injectable, TemplateRef, inject, signal } from '@angular/core';
+import { EnvironmentInjector, Injectable, TemplateRef, Type, effect, inject, runInInjectionContext, signal } from '@angular/core';
+import { KjOverlayBuilder } from '../primitives/overlay/builder';
+import { inPlace } from '../primitives/overlay/strategies/mount/in-place';
+import { corner, type KjCornerPosition } from '../primitives/overlay/strategies/position/corner';
+import { polite } from '../primitives/overlay/strategies/live-announcer/polite';
+import { assertive } from '../primitives/overlay/strategies/live-announcer/assertive';
+import { programmatic } from '../primitives/overlay/strategies/trigger-event/programmatic';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
+import { KjToastRef } from './toast.ref';
 
 export type KjToastVariant = 'default' | 'success' | 'destructive' | 'warning';
+
+/** Variant tag accepted by the variant-sugar methods (`success`/`info`/`warn`/`error`). */
+export type KjToastSugarVariant = 'success' | 'info' | 'warn' | 'error';
 
 /**
  * Shape `[kjToastDefaultTemplate]` and per-call templates receive via `ngTemplateOutlet`.
@@ -34,12 +44,20 @@ export interface KjToastOptions<TData = unknown> {
   id?: string;
   /** Optional title rendered above the message. */
   title?: string;
+  /** Plain text message — set when not using a custom template. */
+  message?: string;
   /** Visual / semantic variant. Defaults to `'default'`. */
   variant?: KjToastVariant;
   /** Auto-dismiss delay in ms. `0` = persistent. Defaults to `5000`. */
   duration?: number;
   /** Arbitrary payload exposed to the template via `ctx.data`. */
   data?: TData;
+  /** Override the corner position used for the overlay. Defaults to `'bottom-right'`. */
+  position?: KjCornerPosition;
+  /** Optional component to mount as the toast body. */
+  component?: Type<unknown>;
+  /** Optional template for queue-based rendering through `<kj-toast-viewport>`. */
+  template?: TemplateRef<KjToastTemplateContext<TData>>;
 }
 
 /** Internal queue item — tracked by the service, consumed by `KjToastViewport`. */
@@ -54,24 +72,6 @@ export interface KjToastItem<TData = unknown> {
   readonly template?: TemplateRef<KjToastTemplateContext<TData>>;
 }
 
-/**
- * Programmatic API for toast notifications.
- *
- * Two ways to show a toast:
- * - `show(template, options)` — full template control. Markup, layout, icons, action buttons all owned by the client.
- * - `show(message, options)` — string shorthand. Uses the viewport's `[kjToastDefaultTemplate]`.
- *
- * @example
- * ```ts
- * private readonly toast = inject(KjToastService);
- *
- * save()    { this.toast.success('Saved!'); }
- * undoable() {
- *   this.toast.show(this.undoTpl, { duration: 8000, data: { entityId: 42 } });
- * }
- * ```
- * @category Core/Overlays
- */
 /** Reasons that can hold the auto-dismiss timers in the paused state. Ref-counted. */
 export type KjToastPauseReason = 'hover' | 'focus' | 'manual';
 
@@ -87,70 +87,165 @@ interface KjToastTimer {
   remaining: number;
 }
 
+const VARIANT_FROM_SUGAR: Record<KjToastSugarVariant, KjToastVariant> = {
+  success: 'success',
+  info: 'default',
+  warn: 'warning',
+  error: 'destructive',
+};
+
+/**
+ * Programmatic API for toast notifications.
+ *
+ * Two ways to dispatch a toast:
+ * - `show(opts)` (and the `success`/`info`/`warn`/`error` sugar) — overlay-based.
+ *   Each call creates an overlay via `KjOverlayBuilder`, anchored at the chosen
+ *   corner, returning a `KjToastRef` for programmatic dismissal.
+ * - The legacy queue API (`show(message|template, options)` returning a string id)
+ *   is preserved so consumers using `<kj-toast-viewport>` to render their own
+ *   queue continue to work. Auto-dismiss + pause/resume + max-visible logic
+ *   lives on this service regardless of which entry-point a caller uses.
+ *
+ * @category Core/Overlay
+ */
 @Injectable({ providedIn: 'root' })
 export class KjToastService {
   private readonly strategy = inject(KJ_TOAST_STRATEGY);
+  private readonly builder = inject(KjOverlayBuilder);
+  private readonly env = inject(EnvironmentInjector);
   private readonly _toasts = signal<KjToastItem[]>([]);
   /** Live list of active toasts. Read by `[kjToastViewport]`. */
   readonly toasts = this._toasts.asReadonly();
 
   private readonly timers = new Map<string, KjToastTimer>();
 
+  /** Holds active overlay controllers keyed by toast id so dismiss can close them. */
+  private readonly overlays = new Map<string, { close: () => void }>();
+
   /**
    * Ref-counted pause depth, keyed by reason. A timer is considered paused
-   * while any reason holds a non-zero count. Encoded as a Map so multiple
-   * viewports / `pause('hover')` callers compose without clobbering each
-   * other's state.
+   * while any reason holds a non-zero count.
    */
   private readonly pauseDepth = new Map<KjToastPauseReason, number>();
 
-  /** Show a toast with a custom template. Returns the toast id. */
-  show<T = unknown>(template: TemplateRef<KjToastTemplateContext<T>>, options?: KjToastOptions<T>): string;
+  /**
+   * Overlay-based entry point. Builds an overlay via `KjOverlayBuilder` with
+   * `bodyPortal` mount, `corner` positioning and a polite/assertive live
+   * announcer based on the variant. Returns a `KjToastRef` whose `close()`
+   * dismisses the toast and unwinds the overlay.
+   */
+  show<TData = unknown>(opts: KjToastOptions<TData>): KjToastRef;
   /** Show a toast with a plain text message. The viewport's default template renders it. */
   show(message: string, options?: KjToastOptions): string;
-  show(content: TemplateRef<KjToastTemplateContext> | string, options: KjToastOptions = {}): string {
+  /** Show a toast with a custom template. Returns the toast id. */
+  show<TData = unknown>(template: TemplateRef<KjToastTemplateContext<TData>>, options?: KjToastOptions<TData>): string;
+  show(
+    arg: KjToastOptions | string | TemplateRef<KjToastTemplateContext>,
+    options: KjToastOptions = {},
+  ): KjToastRef | string {
+    if (typeof arg === 'string') {
+      return this.enqueue({ ...options, message: arg });
+    }
+    if (arg instanceof TemplateRef) {
+      return this.enqueue({ ...options, template: arg });
+    }
+    return this.openOverlay(arg);
+  }
+
+  private openOverlay(opts: KjToastOptions): KjToastRef {
+    const id = opts.id ?? crypto.randomUUID();
+    const variant = opts.variant ?? 'default';
+    const handle = this.builder.create({
+      mount: inPlace(),
+      position: corner({ position: opts.position ?? 'bottom-right' }),
+      backdrop: null,
+      focusTrap: null,
+      scrollLock: null,
+      liveAnnouncer: variant === 'destructive' ? assertive() : polite(),
+      trigger: programmatic(),
+      panelRole: variant === 'destructive' ? 'alert' : 'status',
+    });
+
+    if (opts.component) {
+      this.builder.attachComponent(handle, opts.component, { data: opts.data });
+    }
+
+    runInInjectionContext(this.env, () => {
+      let wasOpen = false;
+      const eff = effect(() => {
+        const s = handle.controller.state();
+        if (s === 'open' || s === 'opening') wasOpen = true;
+        if (s === 'closed' && wasOpen) {
+          eff.destroy();
+          queueMicrotask(() => handle.destroy());
+        }
+      });
+    });
+
+    this._toasts.update((ts) => [...ts, {
+      id,
+      variant,
+      duration: opts.duration ?? this.strategy.duration,
+      title: opts.title,
+      message: opts.message,
+      data: opts.data,
+      template: opts.template,
+    }]);
+
+    const dismiss = (toastId: string) => this.dismiss(toastId);
+    const ref = new KjToastRef(id, handle.controller, dismiss);
+    this.overlays.set(id, { close: () => handle.controller.close('programmatic') });
+
+    const duration = opts.duration ?? this.strategy.duration;
+    if (duration > 0) this.startTimer(id, duration);
+    handle.controller.open();
+    return ref;
+  }
+
+  private enqueue(options: KjToastOptions): string {
     const id = options.id ?? crypto.randomUUID();
-    const isTemplate = content instanceof TemplateRef;
     const toast: KjToastItem = {
       id,
       variant: options.variant ?? 'default',
       duration: options.duration ?? this.strategy.duration,
       title: options.title,
       data: options.data,
-      message: isTemplate ? undefined : content,
-      template: isTemplate ? content : undefined,
+      message: options.message,
+      template: options.template,
     };
-    this._toasts.update(ts => [...ts, toast]);
-    if (toast.duration > 0) {
-      this.startTimer(id, toast.duration);
-    }
+    this._toasts.update((ts) => [...ts, toast]);
+    if (toast.duration > 0) this.startTimer(id, toast.duration);
     return id;
   }
 
+  /** Show a success toast via the overlay-based API. */
+  success<TData = unknown>(opts: Omit<KjToastOptions<TData>, 'variant'> = {}): KjToastRef {
+    return this.openOverlay({ ...opts, variant: VARIANT_FROM_SUGAR.success });
+  }
+  /** Show an informational toast via the overlay-based API. */
+  info<TData = unknown>(opts: Omit<KjToastOptions<TData>, 'variant'> = {}): KjToastRef {
+    return this.openOverlay({ ...opts, variant: VARIANT_FROM_SUGAR.info });
+  }
+  /** Show a warning toast via the overlay-based API. */
+  warn<TData = unknown>(opts: Omit<KjToastOptions<TData>, 'variant'> = {}): KjToastRef {
+    return this.openOverlay({ ...opts, variant: VARIANT_FROM_SUGAR.warn });
+  }
+  /** Show an error toast via the overlay-based API. Uses `role="alert"` + assertive announcement. */
+  error<TData = unknown>(opts: Omit<KjToastOptions<TData>, 'variant'> = {}): KjToastRef {
+    return this.openOverlay({ ...opts, variant: VARIANT_FROM_SUGAR.error });
+  }
+
   /**
-   * Pause every in-flight auto-dismiss timer, ref-counted by `reason`. Multiple
-   * `pause('hover')` calls require an equal number of `resume('hover')` calls
-   * before the timer resumes. Independent reasons (hover vs. focus vs. manual)
-   * also stack — a timer is paused while *any* reason holds depth > 0.
-   *
-   * Required by WCAG 2.2.1 (Timing Adjustable, AAA) and 1.4.13 (Content on
-   * Hover or Focus): toasts must remain on screen as long as the user is
-   * interacting with the viewport.
+   * Pause every in-flight auto-dismiss timer, ref-counted by `reason`.
+   * Required by WCAG 2.2.1 (Timing Adjustable, AAA) and 1.4.13.
    */
   pause(reason: KjToastPauseReason): void {
     const next = (this.pauseDepth.get(reason) ?? 0) + 1;
     this.pauseDepth.set(reason, next);
-    // Only act on the *transition* into the paused state. Subsequent pause()
-    // calls just increment the depth.
     if (next === 1 && this.totalPauseDepth() === 1) this.pauseAllTimers();
   }
 
-  /**
-   * Decrement the ref-count for `reason`. When the *total* depth across all
-   * reasons drops to zero, every paused timer is re-armed with its remaining
-   * duration. No-op if depth is already at zero (defensive — guarantees that
-   * an extra `resume` never goes negative).
-   */
+  /** Decrement the ref-count for `reason`; re-arms timers when the total reaches zero. */
   resume(reason: KjToastPauseReason): void {
     const cur = this.pauseDepth.get(reason) ?? 0;
     if (cur === 0) return;
@@ -160,7 +255,7 @@ export class KjToastService {
     if (this.totalPauseDepth() === 0) this.resumeAllTimers();
   }
 
-  /** True while any pause reason is held. Read by tests; useful for diagnostics. */
+  /** True while any pause reason is held. */
   isPaused(): boolean {
     return this.totalPauseDepth() > 0;
   }
@@ -172,8 +267,6 @@ export class KjToastService {
   }
 
   private startTimer(id: string, duration: number): void {
-    // If the service is currently paused, queue the timer in paused state so
-    // the next resume() picks it up alongside everything else.
     if (this.isPaused()) {
       this.timers.set(id, { handle: null, duration, startedAt: 0, remaining: duration });
       return;
@@ -196,10 +289,7 @@ export class KjToastService {
     for (const [id, t] of this.timers) {
       if (t.handle != null) continue;
       const remaining = t.remaining;
-      // Edge case: remaining ≤ 0 means the timer would have fired during the
-      // pause. Dismiss synchronously rather than starting a 0-ms setTimeout.
       if (remaining <= 0) {
-        // Defer the actual dismiss so we don't mutate during iteration.
         queueMicrotask(() => this.dismiss(id));
         continue;
       }
@@ -208,29 +298,17 @@ export class KjToastService {
     }
   }
 
-  /** Show a success toast (string shorthand). */
-  success(message: string, options?: Omit<KjToastOptions, 'variant'>): string {
-    return this.show(message, { ...options, variant: 'success' });
-  }
-  /** Show an error toast (string shorthand). */
-  error(message: string, options?: Omit<KjToastOptions, 'variant'>): string {
-    return this.show(message, { ...options, variant: 'destructive' });
-  }
-  /** Show a warning toast (string shorthand). */
-  warning(message: string, options?: Omit<KjToastOptions, 'variant'>): string {
-    return this.show(message, { ...options, variant: 'warning' });
-  }
-  /** Show an informational toast (string shorthand). */
-  info(message: string, options?: Omit<KjToastOptions, 'variant'>): string {
-    return this.show(message, { ...options, variant: 'default' });
-  }
-
   /** Manually dismiss a toast by id. */
   dismiss(id: string): void {
     const t = this.timers.get(id);
     if (t?.handle != null) clearTimeout(t.handle);
     this.timers.delete(id);
-    this._toasts.update(ts => ts.filter(t => t.id !== id));
+    this._toasts.update((ts) => ts.filter((t) => t.id !== id));
+    const ov = this.overlays.get(id);
+    if (ov) {
+      this.overlays.delete(id);
+      ov.close();
+    }
   }
 
   /** Dismiss every active toast. */
@@ -240,11 +318,12 @@ export class KjToastService {
     }
     this.timers.clear();
     this._toasts.set([]);
+    for (const ov of this.overlays.values()) ov.close();
+    this.overlays.clear();
   }
 
   /**
    * Builds a template context for a queued toast — used by `[kjToastViewport]` when rendering.
-   * `ctx.dismiss` is bound to this service.
    */
   contextFor<T>(toast: KjToastItem<T>): KjToastTemplateContext<T> {
     const ctx: KjToastContext<T> = {

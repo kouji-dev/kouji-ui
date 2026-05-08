@@ -1,7 +1,8 @@
 import {
-  DestroyRef, Directive, ElementRef, TemplateRef,
+  ChangeDetectionStrategy, Component, DestroyRef, Directive, ElementRef, TemplateRef, ViewEncapsulation,
   afterNextRender, booleanAttribute, computed, inject, input, signal,
 } from '@angular/core';
+import { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
 import { KjToastPositionX, KjToastPositionY } from './toast.types';
@@ -38,10 +39,7 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
  *   </div>
  * </ng-template>
  * ```
- * @category Core/Overlays
- * @doc-name toast
- * @doc-description Marks an element as a single toast item — owns `role`/`aria-atomic`, positional CSS custom properties (`--kj-toast-index`, `--kj-toast-before`, `--kj-toast-after`, `--kj-toast-height`), and `data-variant` for theme styling.
- * @doc-is-main
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjToast]',
@@ -166,9 +164,7 @@ export interface KjToastRenderable<TData = unknown> {
  *   }
  * </ol>
  * ```
- * @category Core/Overlays
- * @doc
- * @doc-name toast
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjToastViewport]',
@@ -428,14 +424,13 @@ export class KjToastViewport {
  * ```html
  * <button [kjToastClose]="toast.id" aria-label="Dismiss">×</button>
  * ```
- * @category Core/Overlays
- * @doc
- * @doc-name toast
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjToastClose]',
   standalone: true,
   host: {
+    'class': 'kj-toast-close',
     '(click)': 'dismiss()',
   },
 })
@@ -448,3 +443,21 @@ export class KjToastClose {
     this.svc.dismiss(this.kjToastClose());
   }
 }
+
+/**
+ * Service-launched toast panel. Composes `KjOverlayPanel` as a host directive
+ * so the overlay primitives wire role/state/aria management. The role is
+ * decided by the service via `KJ_OVERLAY_PANEL_ROLE` (`status` or `alert`).
+ *
+ * @category Core/Overlay
+ */
+@Component({
+  selector: 'kj-toast',
+  standalone: true,
+  hostDirectives: [{ directive: KjOverlayPanel }],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-toast' },
+  template: `<ng-content />`,
+})
+export class KjToastPanel {}

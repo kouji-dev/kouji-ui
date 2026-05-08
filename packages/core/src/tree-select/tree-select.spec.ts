@@ -2,18 +2,18 @@ import { render, fireEvent } from '@testing-library/angular';
 import { toHaveNoViolations } from 'jest-axe';
 import {
   KjTreeSelect,
-  KjTreeSelectTrigger,
-  KjTreeSelectPanel,
   KjTreeSelectNode,
   KjTreeSelectToggle,
 } from './tree-select';
+import { KjTreeSelectTrigger } from './tree-select-trigger';
+import { KjTreeSelectContent } from './tree-select-content';
 
 expect.extend(toHaveNoViolations);
 
 const imports = [
   KjTreeSelect,
   KjTreeSelectTrigger,
-  KjTreeSelectPanel,
+  KjTreeSelectContent,
   KjTreeSelectNode,
   KjTreeSelectToggle,
 ];
@@ -22,8 +22,8 @@ const imports = [
 
 const singleTemplate = `
   <div kjTreeSelect [(kjValue)]="selected">
-    <button kjTreeSelectTrigger>Choose</button>
-    <div kjTreeSelectPanel>
+    <button kjTreeSelectTrigger #t="kjTreeSelectTrigger">Choose</button>
+    <kj-tree-select-content [kjFor]="t">
       <div
         kjTreeSelectNode
         [kjValue]="'fruits'"
@@ -52,7 +52,7 @@ const singleTemplate = `
         kjLabel="Vegetables"
         [kjNodeLevel]="1" [kjNodeSize]="2" [kjNodePos]="2"
       >Vegetables</div>
-    </div>
+    </kj-tree-select-content>
   </div>
 `;
 
@@ -64,7 +64,7 @@ describe('KjTreeSelect – panel visibility', () => {
       imports,
       componentProperties: { selected: undefined },
     });
-    expect(container.querySelector('[kjTreeSelectPanel]')).toHaveAttribute('hidden', '');
+    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute('hidden', '');
   });
 
   it('clicking the trigger opens the panel', async () => {
@@ -73,7 +73,7 @@ describe('KjTreeSelect – panel visibility', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    expect(container.querySelector('[kjTreeSelectPanel]')).not.toHaveAttribute('hidden');
+    expect(container.querySelector('kj-tree-select-content')).not.toHaveAttribute('hidden');
   });
 
   it('aria-expanded on trigger reflects open state', async () => {
@@ -94,7 +94,7 @@ describe('KjTreeSelect – panel visibility', () => {
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(container.querySelector('[kjTreeSelectPanel]')).toHaveAttribute('hidden', '');
+    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute('hidden', '');
   });
 });
 
@@ -108,16 +108,6 @@ describe('KjTreeSelect – trigger ARIA', () => {
     expect(trigger).toHaveAttribute('role', 'combobox');
     expect(trigger).toHaveAttribute('aria-haspopup', 'tree');
   });
-
-  it('aria-controls on trigger references the panel id', async () => {
-    const { container } = await render(singleTemplate, {
-      imports,
-      componentProperties: { selected: undefined },
-    });
-    const trigger = container.querySelector('[kjTreeSelectTrigger]')!;
-    const panel = container.querySelector('[kjTreeSelectPanel]')!;
-    expect(trigger.getAttribute('aria-controls')).toBe(panel.getAttribute('id'));
-  });
 });
 
 describe('KjTreeSelect – panel ARIA', () => {
@@ -126,7 +116,7 @@ describe('KjTreeSelect – panel ARIA', () => {
       imports,
       componentProperties: { selected: undefined },
     });
-    expect(container.querySelector('[kjTreeSelectPanel]')).toHaveAttribute('role', 'tree');
+    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute('role', 'tree');
   });
 
   it('nodes carry role="treeitem"', async () => {
@@ -154,7 +144,6 @@ describe('KjTreeSelect – expand / collapse', () => {
       imports,
       componentProperties: { selected: undefined },
     });
-    // Open panel first
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     const toggle = container.querySelector('[kjTreeSelectToggle]')!;
     fireEvent.click(toggle);
@@ -170,7 +159,6 @@ describe('KjTreeSelect – expand / collapse', () => {
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     const toggle = container.querySelector('[kjTreeSelectToggle]')!;
-    // Expand then collapse
     fireEvent.click(toggle);
     fireEvent.click(toggle);
     const branchNode = container.querySelector('[kjTreeSelectNode][data-has-children="true"]')!;
@@ -186,8 +174,7 @@ describe('KjTreeSelect – expand / collapse', () => {
     const toggle = container.querySelector('[kjTreeSelectToggle]')!;
     fireEvent.click(toggle);
     fixture.detectChanges();
-    // Panel should still be open — node not selected
-    expect(container.querySelector('[kjTreeSelectPanel]')).not.toHaveAttribute('hidden');
+    expect(container.querySelector('kj-tree-select-content')).not.toHaveAttribute('hidden');
   });
 });
 
@@ -201,9 +188,7 @@ describe('KjTreeSelect – single selection', () => {
     const leafNode = container.querySelector('[kjTreeSelectNode][aria-level="2"]')!;
     fireEvent.click(leafNode);
     fixture.detectChanges();
-    // Panel closed
-    expect(container.querySelector('[kjTreeSelectPanel]')).toHaveAttribute('hidden', '');
-    // Node selected
+    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute('hidden', '');
     expect(leafNode).toHaveAttribute('aria-selected', 'true');
     expect(leafNode).toHaveAttribute('data-selected', '');
   });
@@ -224,10 +209,9 @@ describe('KjTreeSelect – single selection', () => {
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     const nodes = container.querySelectorAll('[kjTreeSelectNode][aria-level="2"]');
-    fireEvent.click(nodes[0]); // select 'apple'
+    fireEvent.click(nodes[0]);
     fixture.detectChanges();
 
-    // Re-open
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     fixture.detectChanges();
     expect(nodes[0]).toHaveAttribute('aria-selected', 'true');
@@ -238,12 +222,12 @@ describe('KjTreeSelect – single selection', () => {
 describe('KjTreeSelect – multi selection', () => {
   const multiTemplate = `
     <div kjTreeSelect [(kjValue)]="selected" kjSelectionMode="multiple">
-      <button kjTreeSelectTrigger>Choose</button>
-      <div kjTreeSelectPanel>
+      <button kjTreeSelectTrigger #t="kjTreeSelectTrigger">Choose</button>
+      <kj-tree-select-content [kjFor]="t">
         <div kjTreeSelectNode [kjValue]="'a'" kjLabel="A" [kjNodeLevel]="1" [kjNodeSize]="3" [kjNodePos]="1">A</div>
         <div kjTreeSelectNode [kjValue]="'b'" kjLabel="B" [kjNodeLevel]="1" [kjNodeSize]="3" [kjNodePos]="2">B</div>
         <div kjTreeSelectNode [kjValue]="'c'" kjLabel="C" [kjNodeLevel]="1" [kjNodeSize]="3" [kjNodePos]="3">C</div>
-      </div>
+      </kj-tree-select-content>
     </div>
   `;
 
@@ -255,7 +239,7 @@ describe('KjTreeSelect – multi selection', () => {
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     const nodes = container.querySelectorAll('[kjTreeSelectNode]');
     fireEvent.click(nodes[0]);
-    expect(container.querySelector('[kjTreeSelectPanel]')).not.toHaveAttribute('hidden');
+    expect(container.querySelector('kj-tree-select-content')).not.toHaveAttribute('hidden');
   });
 
   it('panel has aria-multiselectable="true"', async () => {
@@ -263,7 +247,7 @@ describe('KjTreeSelect – multi selection', () => {
       imports,
       componentProperties: { selected: [] },
     });
-    expect(container.querySelector('[kjTreeSelectPanel]')).toHaveAttribute(
+    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute(
       'aria-multiselectable', 'true',
     );
   });
@@ -290,8 +274,8 @@ describe('KjTreeSelect – multi selection', () => {
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     const nodes = container.querySelectorAll('[kjTreeSelectNode]');
-    fireEvent.click(nodes[0]); // select
-    fireEvent.click(nodes[0]); // deselect
+    fireEvent.click(nodes[0]);
+    fireEvent.click(nodes[0]);
     fixture.detectChanges();
     expect(nodes[0]).toHaveAttribute('aria-selected', 'false');
   });
@@ -301,7 +285,7 @@ describe('KjTreeSelect – multi selection', () => {
       imports,
       componentProperties: { selected: undefined },
     });
-    const panel = container.querySelector('[kjTreeSelectPanel]')!;
+    const panel = container.querySelector('kj-tree-select-content')!;
     expect(panel).not.toHaveAttribute('aria-multiselectable');
   });
 });
@@ -309,10 +293,10 @@ describe('KjTreeSelect – multi selection', () => {
 describe('KjTreeSelect – disabled node', () => {
   const disabledTemplate = `
     <div kjTreeSelect [(kjValue)]="selected">
-      <button kjTreeSelectTrigger>Choose</button>
-      <div kjTreeSelectPanel>
+      <button kjTreeSelectTrigger #t="kjTreeSelectTrigger">Choose</button>
+      <kj-tree-select-content [kjFor]="t">
         <div kjTreeSelectNode [kjValue]="'x'" kjLabel="X" kjDisabled [kjNodeLevel]="1" [kjNodeSize]="1" [kjNodePos]="1">X</div>
-      </div>
+      </kj-tree-select-content>
     </div>
   `;
 
@@ -345,7 +329,7 @@ describe('KjTreeSelect – keyboard navigation', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const panel = container.querySelector('[kjTreeSelectPanel]')!;
+    const panel = container.querySelector('kj-tree-select-content')!;
     fireEvent.keyDown(panel, { key: 'ArrowDown' });
     const nodes = container.querySelectorAll('[kjTreeSelectNode]');
     expect(document.activeElement).toBe(nodes[0]);

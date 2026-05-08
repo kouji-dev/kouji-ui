@@ -4,7 +4,7 @@ import {
   afterNextRender,
   inject,
 } from '@angular/core';
-import { nextDropdownMenuLabelId } from './dropdown-menu.context';
+import { nextDropdownMenuLabelId } from './dropdown-menu-trigger';
 
 /**
  * A non-interactive heading inside a `[kjDropdownMenu]` panel.
@@ -21,15 +21,14 @@ import { nextDropdownMenuLabelId } from './dropdown-menu.context';
  * ```html
  * <span kjDropdownMenuLabel>Account</span>
  * ```
- * @category Core/Actions
- * @doc
- * @doc-name dropdown-menu
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuLabel]',
   standalone: true,
   exportAs: 'kjDropdownMenuLabel',
   host: {
+    'class': 'kj-dropdown-menu-label',
     'role': 'presentation',
   },
 })

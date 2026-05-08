@@ -21,14 +21,13 @@ import {
  * </ng-template>
  * ```
  *
- * @category Core/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopupMessage]',
   standalone: true,
   host: {
+    'class': 'kj-confirm-popup-message',
     '[attr.id]': 'ctx.messageId',
   },
 })

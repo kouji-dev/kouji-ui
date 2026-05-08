@@ -10,6 +10,19 @@ import {
   signal,
 } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
+import { KjOverlayController } from '../primitives/overlay/controller';
+import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import { KjOverlayPanel } from '../primitives/overlay/panel';
+import {
+  KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
+  KJ_OVERLAY_MOUNT_STRATEGY,
+  KJ_OVERLAY_POSITION_STRATEGY,
+} from '../primitives/overlay/tokens';
+import type { KjSide, KjAlign } from '../primitives/overlay/types';
+import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click';
+import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
+import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
 import {
   KJ_COLOR_PICKER,
   type KjColorFormat,
@@ -33,12 +46,16 @@ let _kjColorPickerIdCounter = 0;
 /**
  * Root color-picker state container.
  *
- * Owns the canonical HSV+alpha state, the open / closed UI flag, and
- * Angular forms integration through composed `KjFormControl`. Provides
- * `KJ_COLOR_PICKER` so every sub-directive (`KjColorPickerTrigger`,
- * `KjColorPickerPanel`, `KjColorPickerArea`, `KjColorPickerHueSlider`,
- * `KjColorPickerAlphaSlider`, `KjColorPickerInput`) reads the same
- * derived signals and writes through the same mutators.
+ * Owns the canonical HSV+alpha state and Angular forms integration through
+ * composed `KjFormControl`. Provides `KJ_COLOR_PICKER` so every sub-directive
+ * (`KjColorPickerTrigger`, `KjColorPickerPanel`, `KjColorPickerArea`,
+ * `KjColorPickerHueSlider`, `KjColorPickerAlphaSlider`,
+ * `KjColorPickerInput`) reads the same derived signals and writes through
+ * the same mutators. The open / closed UI flag and panel positioning are
+ * delegated to the overlay primitives — the controller, the click trigger
+ * strategy, the body-portal mount, and the anchored-to position strategy
+ * are all provided here so the trigger and panel sub-directives share the
+ * same overlay scope.
  *
  * ```html
  * <div kjColorPicker [(ngModel)]="brand" kjFormat="hex" kjShowAlpha>
@@ -67,13 +84,22 @@ let _kjColorPickerIdCounter = 0;
     { directive: KjDisabled, inputs: ['kjDisabled'] },
     KjFormControl,
   ],
-  providers: [{ provide: KJ_COLOR_PICKER, useExisting: KjColorPicker }],
+  providers: [
+    { provide: KJ_COLOR_PICKER, useExisting: KjColorPicker },
+    KjOverlayController,
+    { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onClick() },
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
+    { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
+  ],
   exportAs: 'kjColorPicker',
 })
 export class KjColorPicker implements KjColorPickerContext {
   /** @internal */
   readonly formCtrl = inject(KjFormControl);
   private readonly disabledPrim = inject(KjDisabled);
+  /** @internal */
+  readonly overlay = inject(KjOverlayController);
 
   /** Output format. Determines the shape emitted via `ngModelChange` / `kjCommit`. */
   readonly kjFormat = input<KjColorFormat>('hex');
@@ -93,6 +119,12 @@ export class KjColorPicker implements KjColorPickerContext {
   /** Override the default "Color picker" name on the trigger. */
   readonly kjAriaLabel = input<string | undefined>(undefined);
 
+  /** Side the popup panel is anchored to relative to its trigger. */
+  readonly kjSide = input<KjSide>('bottom');
+
+  /** Alignment of the popup panel along its anchored side. */
+  readonly kjAlign = input<KjAlign>('start');
+
   /** Fires whenever the panel transitions between open and closed. */
   readonly kjOpenChange = output<boolean>();
 
@@ -104,20 +136,21 @@ export class KjColorPicker implements KjColorPickerContext {
   private readonly _saturation = signal(0);
   private readonly _value = signal(0);
   private readonly _alpha = signal(1);
-  private readonly _open = signal(false);
 
   readonly hue = this._hue.asReadonly();
   readonly saturation = this._saturation.asReadonly();
   readonly value = this._value.asReadonly();
   readonly alpha = this._alpha.asReadonly();
-  readonly open = this._open.asReadonly();
+  /** Bridged to the overlay controller's open state. */
+  readonly open = this.overlay.isOpen;
 
   readonly disabled = this.disabledPrim.disabled;
   readonly format = computed(() => this.kjFormat());
   readonly showAlpha = computed(() => this.kjShowAlpha());
   readonly presets = computed(() => this.kjPresets());
 
-  // Stable wiring ids for trigger ↔ panel ↔ ARIA.
+  // Stable wiring ids used by the input / area / labels — the overlay
+  // primitives mint their own ids on the trigger and panel hosts.
   private readonly _id = ++_kjColorPickerIdCounter;
   readonly panelId = signal(`kj-color-picker-panel-${this._id}`).asReadonly();
   readonly triggerId = signal(`kj-color-picker-trigger-${this._id}`).asReadonly();
@@ -151,6 +184,8 @@ export class KjColorPicker implements KjColorPickerContext {
   private _suppressEmit = false;
 
   constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign });
     // External writes (writeValue / setValue) parse into HSV state.
     effect(() => {
       const incoming = this.formCtrl.value();
@@ -171,6 +206,19 @@ export class KjColorPicker implements KjColorPickerContext {
       // Avoid spamming when the value is structurally unchanged.
       if (sameValue(current, next)) return;
       this.formCtrl.notifyChange(next);
+    });
+
+    // Bridge overlay open/close transitions to the consumer-facing
+    // outputs. Only emit when the state genuinely flips (the controller
+    // exposes both open/opening and closed/closing — collapse to a
+    // boolean and dedupe).
+    let lastOpen = this.overlay.isOpen();
+    effect(() => {
+      const isOpen = this.overlay.isOpen();
+      if (isOpen === lastOpen) return;
+      lastOpen = isOpen;
+      this.kjOpenChange.emit(isOpen);
+      if (!isOpen) this.kjCommit.emit(this.currentValue());
     });
   }
 
@@ -221,14 +269,13 @@ export class KjColorPicker implements KjColorPickerContext {
 
   setOpen(open: boolean): void {
     if (this.disabled() && open) return;
-    if (this._open() === open) return;
-    this._open.set(open);
-    this.kjOpenChange.emit(open);
-    if (!open) this.kjCommit.emit(this.currentValue());
+    if (this.overlay.isOpen() === open) return;
+    if (open) this.overlay.open();
+    else this.overlay.close('programmatic');
   }
 
   toggle(): void {
-    this.setOpen(!this._open());
+    this.setOpen(!this.overlay.isOpen());
   }
 
   /** @internal */
@@ -320,8 +367,11 @@ function hslToRgbValue(h: number, s: number, l: number): { r: number; g: number;
 
 /**
  * Trigger button that opens the color-picker panel and renders the
- * current color as its background. Carries `aria-haspopup="dialog"`,
- * `aria-expanded` and `aria-controls` automatically.
+ * current color as its background. Composes `KjOverlayTrigger` for the
+ * shared overlay state machine; the click strategy and panel role are
+ * provided by the root `KjColorPicker` so the trigger and panel share
+ * the same controller instance. `aria-haspopup="dialog"`, `aria-expanded`
+ * and `aria-controls` are wired by the overlay primitive.
  *
  * @category Core/Inputs
  * @doc
@@ -330,18 +380,18 @@ function hslToRgbValue(h: number, s: number, l: number): { r: number; g: number;
 @Directive({
   selector: '[kjColorPickerTrigger]',
   standalone: true,
-  hostDirectives: [KjFocusRing],
+  hostDirectives: [
+    KjFocusRing,
+    { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
+  ],
   host: {
     'type': 'button',
     '[id]': 'ctx.triggerId()',
     '[attr.aria-haspopup]': '"dialog"',
-    '[attr.aria-expanded]': 'ctx.open() ? "true" : "false"',
-    '[attr.aria-controls]': 'ctx.panelId()',
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-disabled]': 'ctx.disabled() ? "true" : null',
     '[attr.data-disabled]': 'ctx.disabled() ? "" : null',
     '[style.--kj-color-picker-current]': 'ctx.hex()',
-    '(click)': 'onClick($event)',
   },
 })
 export class KjColorPickerTrigger {
@@ -353,17 +403,21 @@ export class KjColorPickerTrigger {
   readonly ariaLabel = computed(() =>
     this.root.kjAriaLabel() || `Color picker, current value ${this.ctx.hex()}`);
 
-  /** @internal */
-  onClick(event: Event): void {
-    event.stopPropagation();
-    if (this.ctx.disabled()) return;
-    this.root.toggle();
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  /** The controller of the composed `KjOverlayTrigger`, exposed for sibling `[kjFor]` panels. */
+  get controller() {
+    return this._overlayTrigger.controller;
+  }
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
   }
 }
 
 /**
- * Popup panel container. Visible only when `ctx.open()` is true.
- * Marked `role="dialog"` with the trigger's id as `aria-labelledby`.
+ * Popup panel container. Composes `KjOverlayPanel` for state-driven
+ * mount/position and the standard `role="dialog"` / `[hidden]` wiring;
+ * the mount and position strategies are provided by the root
+ * `KjColorPicker`.
  *
  * @category Core/Inputs
  * @doc
@@ -372,24 +426,19 @@ export class KjColorPickerTrigger {
 @Directive({
   selector: '[kjColorPickerPanel]',
   standalone: true,
+  hostDirectives: [
+    { directive: KjOverlayPanel, inputs: ['kjFor'] },
+  ],
+  providers: [
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
+  ],
   host: {
-    'role': 'dialog',
-    '[id]': 'ctx.panelId()',
-    '[attr.aria-modal]': '"false"',
     '[attr.aria-labelledby]': 'ctx.triggerId()',
-    '[attr.hidden]': '!ctx.open() ? "" : null',
-    '(keydown.escape)': 'onEscape($event)',
   },
 })
 export class KjColorPickerPanel {
   /** @internal */
   readonly ctx = inject(KJ_COLOR_PICKER);
-
-  /** @internal */
-  onEscape(event: Event): void {
-    event.stopPropagation();
-    this.ctx.setOpen(false);
-  }
 }
 
 /**

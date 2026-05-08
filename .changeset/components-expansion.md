@@ -1,6 +1,7 @@
 ---
-'@kouji-ui/components': minor
-'@kouji-ui/themes': minor
+'@kouji-ui/core': patch
+'@kouji-ui/components': patch
+'@kouji-ui/themes': patch
 ---
 
 Expand `@kouji-ui/components` from 5 wrappers to 16, with code+preview docs and daisyUI-style sidebar grouping.

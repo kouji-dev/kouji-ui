@@ -2,10 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
-  model,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -13,9 +11,8 @@ import {
   KjCascadeSelectOption,
   KjCascadeSelectPanel,
   KjCascadeSelectSubPanel,
+  KjCascadeSelectTrigger,
 } from '@kouji-ui/core';
-import { KjSelectTrigger } from '@kouji-ui/core';
-import { KJ_SELECT } from '@kouji-ui/core';
 
 /**
  * Cascade-select root wrapper. Renders a trigger button + caret, the root
@@ -43,26 +40,35 @@ import { KJ_SELECT } from '@kouji-ui/core';
 @Component({
   selector: 'kj-cascade-select',
   standalone: true,
+  // Compose the umbrella KjCascadeSelect directive on the wrapper element.
+  // Forwarding `kjValue`/`kjCascadePath` so the consumer can bind via
+  // `[(value)]`/`[(cascadePath)]` on `<kj-cascade-select>`. The directive
+  // provides `KJ_CASCADE_SELECT` (+ `KJ_SELECT`) at this element so
+  // projected options/sub-panels resolve the same context via DI.
   hostDirectives: [
     {
       directive: KjCascadeSelect,
-      inputs: ['kjCascadePath'],
-      outputs: ['kjCascadePathChange'],
+      inputs: ['kjValue', 'kjCascadePath'],
+      outputs: ['kjValueChange', 'kjCascadePathChange'],
     },
   ],
-  imports: [KjSelectTrigger, KjCascadeSelectPanel],
+  imports: [KjCascadeSelectTrigger, KjCascadeSelectPanel],
   template: `
     <button
       type="button"
-      kjSelectTrigger
+      kjCascadeSelectTrigger
+      #trigger="kjCascadeSelectTrigger"
       class="kj-cascade-trigger"
-      aria-haspopup="tree"
       [disabled]="disabled() || null"
     >
       <span class="kj-cascade-trigger-label">{{ displayLabel() }}</span>
       <span class="kj-cascade-trigger-caret" aria-hidden="true">▾</span>
     </button>
-    <div kjCascadeSelectPanel class="kj-cascade-panel">
+    <div
+      kjCascadeSelectPanel
+      class="kj-cascade-panel"
+      [kjFor]="trigger"
+    >
       <ng-content />
     </div>
   `,
@@ -81,28 +87,12 @@ export class KjCascadeSelectComponent {
   /** Whether the trigger is disabled. */
   readonly disabled = input(false);
 
-  /** Two-way bindable selected leaf value. */
-  readonly kjValue = model<unknown>(undefined);
-
-  private readonly select = inject(KJ_SELECT);
-
-  constructor() {
-    // Sync kjValue model ↔ KjSelect (which is two levels deep via hostDirectives)
-    // Sync outward: when KjSelect commits a leaf, update our kjValue model
-    effect(() => {
-      const v = this.select.value();
-      if (v !== this.kjValue()) this.kjValue.set(v);
-    });
-    // Sync inward: when kjValue is set programmatically, push to KjSelect
-    effect(() => {
-      const v = this.kjValue();
-      if (v !== this.select.value()) this.select.select(v);
-    });
-  }
+  /** @internal — read the composed root directive's value for the label. */
+  private readonly cascade = inject(KjCascadeSelect);
 
   /** @internal */
   readonly displayLabel = computed(() => {
-    const v = this.select.value() as string | null | undefined;
+    const v = this.cascade.value() as string | null | undefined;
     if (v === undefined || v === null || v === '') return this.placeholder();
     return String(v);
   });
@@ -124,17 +114,20 @@ export class KjCascadeSelectComponent {
     },
   ],
   template: `
-    <span class="kj-cascade-option-label"><ng-content /></span>
+    <span class="kj-cascade-option-label">{{ option.kjLabel() }}</span>
     <span class="kj-cascade-option-chevron" aria-hidden="true">›</span>
+    <ng-content />
   `,
   encapsulation: ViewEncapsulation.None,
   host: {
     'class': 'kj-cascade-option',
-    'style': 'display: contents;',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCascadeOptionComponent {}
+export class KjCascadeOptionComponent {
+  /** @internal — read kjLabel from the composed host directive for rendering. */
+  protected readonly option = inject(KjCascadeSelectOption);
+}
 
 /**
  * Sub-panel container for child options of a `<kj-cascade-option>`.

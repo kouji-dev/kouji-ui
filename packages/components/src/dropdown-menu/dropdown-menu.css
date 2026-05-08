@@ -72,8 +72,9 @@
   .kj-dropdown-menu-separator {
     display: block;
     height: 1px;
-    margin: var(--kj-space-xs) 0;
-    background: var(--kj-color-base-300);
+    margin: var(--kj-space-xs) calc(var(--kj-space-xs) * -1);
+    background: color-mix(in oklab, var(--kj-color-base-content) 12%, transparent);
+    border: 0;
   }
 
   .kj-dropdown-menu-label {

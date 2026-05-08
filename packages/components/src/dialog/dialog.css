@@ -19,6 +19,7 @@
     max-width: min(40rem, calc(100vw - 2rem));
     max-height: calc(100vh - 4rem);
     overflow: hidden;
+    padding: var(--kj-space-xl);
   }
   .kj-dialog-header {
     display: flex;

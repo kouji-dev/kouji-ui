@@ -6,8 +6,8 @@ import {
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
   KjConfirmPopupMessageComponent,
-  KjConfirmPopupTriggerComponent,
 } from './confirm-popup';
+import { KjConfirmPopupTrigger } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 
 /**
@@ -20,7 +20,7 @@ import { KjButtonComponent } from '../button/button';
   standalone: true,
   imports: [
     KjConfirmPopupComponent,
-    KjConfirmPopupTriggerComponent,
+    KjConfirmPopupTrigger,
     KjConfirmPopupContentComponent,
     KjConfirmPopupMessageComponent,
     KjConfirmPopupActionComponent,
@@ -36,10 +36,8 @@ import { KjButtonComponent } from '../button/button';
     <kj-confirm-popup
       [kjDestructive]="true"
       (kjResult)="onResult($event)">
-      <kj-confirm-popup-trigger>
-        <kj-button kjVariant="destructive">Delete row</kj-button>
-      </kj-confirm-popup-trigger>
-      <kj-confirm-popup-content>
+      <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="destructive">Delete row</kj-button>
+      <kj-confirm-popup-content [kjFor]="trig">
         <p kjConfirmPopupMessage>Delete this row? This cannot be undone.</p>
         <kj-confirm-popup-actions>
           <kj-confirm-popup-cancel>

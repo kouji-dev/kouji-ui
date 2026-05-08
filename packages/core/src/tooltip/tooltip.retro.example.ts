@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { KjTooltip } from './tooltip';
+import { KjTooltipTrigger, KjTooltipContent } from './tooltip';
 import { KjButton } from '../button/button';
 
 @Component({
   selector: 'kj-example-tooltip-retro',
   standalone: true,
-  imports: [KjTooltip, KjButton],
+  imports: [KjTooltipTrigger, KjTooltipContent, KjButton],
   styleUrls: ['../styles/docs-themes.css'],
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; padding: 5rem 3rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 180px; color: var(--kj-text); }
@@ -31,20 +31,25 @@ import { KjButton } from '../button/button';
       background: transparent; color: var(--kj-text); border: 2px solid transparent; box-shadow: none; opacity: 0.7;
     }
     button[kjButton][data-variant="ghost"]:hover { opacity: 1; background: rgba(0,0,0,0.06); }
-    :global([data-kj-tooltip]) {
+    :global(kj-tooltip-content) {
       background: var(--kj-text); color: var(--kj-bg);
       padding: 0.2rem 0.5rem; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
       white-space: nowrap; pointer-events: none; border: 1px solid var(--kj-border);
       box-shadow: var(--kj-shadow-sm);
     }
-    :global([data-kj-tooltip][hidden]) { display: none; }
+    :global(kj-tooltip-content[hidden]) { display: none; }
   `],
   host: { class: 'kj-theme-retro' },
   template: `
     <div class="row">
-      <button kjButton [kjVariant]="'default'" [kjTooltip]="'Copy to clipboard'">Default</button>
-      <button kjButton [kjVariant]="'link'" [kjTooltip]="'Opens below'" [kjTooltipSide]="'bottom'">Link</button>
-      <button kjButton [kjVariant]="'ghost'" [kjTooltip]="'Opens right'" [kjTooltipSide]="'right'">Ghost</button>
+      <button kjButton [kjVariant]="'default'" kjTooltipTrigger #t1="kjTooltipTrigger">Default</button>
+      <kj-tooltip-content [kjFor]="t1">Copy to clipboard</kj-tooltip-content>
+
+      <button kjButton [kjVariant]="'link'" kjTooltipTrigger #t2="kjTooltipTrigger">Link</button>
+      <kj-tooltip-content [kjFor]="t2" [kjSide]="'bottom'">Opens below</kj-tooltip-content>
+
+      <button kjButton [kjVariant]="'ghost'" kjTooltipTrigger #t3="kjTooltipTrigger">Ghost</button>
+      <kj-tooltip-content [kjFor]="t3" [kjSide]="'right'">Opens right</kj-tooltip-content>
     </div>
   `,
 })

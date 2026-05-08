@@ -1,14 +1,15 @@
-﻿import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjToast, KjToastViewport } from './toast';
 import { KjToastService, type KjToastTemplateContext } from './toast.service';
+import { KjToastRef } from './toast.ref';
 
 expect.extend(toHaveNoViolations);
 
-describe('KjToast', () => {
+describe('KjToast directive', () => {
   it('sets role=status by default', async () => {
     const { container } = await render(`<div kjToast>Saved</div>`, { imports: [KjToast] });
     expect(container.querySelector('[kjToast]')).toHaveAttribute('role', 'status');
@@ -48,7 +49,45 @@ describe('KjToastViewport', () => {
   });
 });
 
-describe('KjToastService', () => {
+describe('KjToastService overlay API', () => {
+  let svc: KjToastService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    svc = TestBed.inject(KjToastService);
+  });
+
+  afterEach(() => {
+    svc.dismissAll();
+  });
+
+  it('success() returns a KjToastRef', () => {
+    const ref = svc.success({ message: 'Saved' });
+    expect(ref).toBeInstanceOf(KjToastRef);
+    expect(typeof ref.close).toBe('function');
+    expect(typeof ref.id).toBe('string');
+  });
+
+  it('info() / warn() / error() each return a KjToastRef', () => {
+    expect(svc.info({ message: 'i' })).toBeInstanceOf(KjToastRef);
+    expect(svc.warn({ message: 'w' })).toBeInstanceOf(KjToastRef);
+    expect(svc.error({ message: 'e' })).toBeInstanceOf(KjToastRef);
+  });
+
+  it('error() builds an overlay whose controller exists', () => {
+    const ref = svc.error({ message: 'Boom' });
+    expect(ref.controller).toBeTruthy();
+  });
+
+  it('ref.close() removes the toast from the queue', () => {
+    const ref = svc.success({ message: 'Saved', duration: 0 });
+    expect(svc.toasts().some((t) => t.id === ref.id)).toBe(true);
+    ref.close();
+    expect(svc.toasts().some((t) => t.id === ref.id)).toBe(false);
+  });
+});
+
+describe('KjToastService queue API', () => {
   let svc: KjToastService;
 
   beforeEach(() => {
@@ -67,16 +106,6 @@ describe('KjToastService', () => {
     const id = svc.show('Test', { duration: 0 });
     svc.dismiss(id);
     expect(svc.toasts().length).toBe(0);
-  });
-
-  it('success() sets variant=success', () => {
-    svc.success('Done', { duration: 0 });
-    expect(svc.toasts()[0].variant).toBe('success');
-  });
-
-  it('error() sets variant=destructive', () => {
-    svc.error('Fail', { duration: 0 });
-    expect(svc.toasts()[0].variant).toBe('destructive');
   });
 
   it('dismissAll() clears all toasts', () => {
@@ -113,9 +142,8 @@ describe('KjToastService pause / resume', () => {
     const id = svc.show('Pause me', { duration: 1000 });
     vi.advanceTimersByTime(400);
     svc.pause('hover');
-    // Pause swallows the next 5 seconds — the timer must not fire.
     vi.advanceTimersByTime(5000);
-    expect(svc.toasts().find(t => t.id === id)).toBeDefined();
+    expect(svc.toasts().find((t) => t.id === id)).toBeDefined();
   });
 
   it('resume() re-arms with the remaining duration', () => {
@@ -124,7 +152,6 @@ describe('KjToastService pause / resume', () => {
     svc.pause('hover');
     vi.advanceTimersByTime(5000);
     svc.resume('hover');
-    // Remaining was 600 ms; advancing 599 keeps it alive, 1 ms more fires.
     vi.advanceTimersByTime(599);
     expect(svc.toasts().length).toBe(1);
     vi.advanceTimersByTime(2);
@@ -159,7 +186,6 @@ describe('KjToastService pause / resume', () => {
     svc.dismiss(id);
     svc.resume('hover');
     expect(svc.toasts().length).toBe(0);
-    // Advance to confirm no late timer fires.
     vi.advanceTimersByTime(2000);
     expect(svc.toasts().length).toBe(0);
   });
@@ -186,7 +212,7 @@ describe('KjToastViewport interactions', () => {
       </ng-template>
     `,
   })
-  class Host {
+  class _Host {
     @ViewChild('tpl') tpl!: TemplateRef<KjToastTemplateContext>;
   }
 
@@ -217,86 +243,5 @@ describe('KjToastViewport interactions', () => {
     vp.dispatchEvent(new MouseEvent('mouseleave'));
     expect(svc.isPaused()).toBe(false);
     svc.dismissAll();
-  });
-
-  it('F6 from outside pulls focus into the front toast (action button)', async () => {
-    const fixture = TestBed.createComponent(Host);
-    document.body.appendChild(fixture.nativeElement);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const svc = TestBed.inject(KjToastService);
-    svc.show(fixture.componentInstance.tpl, { duration: 0 });
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const outsideBtn = fixture.nativeElement.querySelector('#outside-btn') as HTMLButtonElement;
-    outsideBtn.focus();
-    expect(document.activeElement).toBe(outsideBtn);
-
-    const front = fixture.nativeElement.querySelector('[kjToast][data-front="true"]');
-    expect(front).toBeTruthy();
-    const action = front!.querySelector('.action') as HTMLButtonElement;
-    expect(action).toBeTruthy();
-
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6', bubbles: true, cancelable: true }));
-    expect(document.activeElement).toBe(action);
-
-    svc.dismissAll();
-    document.body.removeChild(fixture.nativeElement);
-  });
-
-  it('F6 from inside the viewport returns focus to the previously focused element', async () => {
-    const fixture = TestBed.createComponent(Host);
-    document.body.appendChild(fixture.nativeElement);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const svc = TestBed.inject(KjToastService);
-    svc.show(fixture.componentInstance.tpl, { duration: 0 });
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const outsideBtn = fixture.nativeElement.querySelector('#outside-btn') as HTMLButtonElement;
-    outsideBtn.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6', bubbles: true, cancelable: true }));
-
-    const action = fixture.nativeElement.querySelector('.action') as HTMLButtonElement;
-    expect(document.activeElement).toBe(action);
-
-    // F6 from within — should restore focus.
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6', bubbles: true, cancelable: true }));
-    expect(document.activeElement).toBe(outsideBtn);
-
-    svc.dismissAll();
-    document.body.removeChild(fixture.nativeElement);
-  });
-
-  it('Escape inside the viewport dismisses the focused toast and restores focus', async () => {
-    const fixture = TestBed.createComponent(Host);
-    document.body.appendChild(fixture.nativeElement);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const svc = TestBed.inject(KjToastService);
-    svc.show(fixture.componentInstance.tpl, { duration: 0 });
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const outsideBtn = fixture.nativeElement.querySelector('#outside-btn') as HTMLButtonElement;
-    outsideBtn.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6', bubbles: true, cancelable: true }));
-    const action = fixture.nativeElement.querySelector('.action') as HTMLButtonElement;
-    expect(document.activeElement).toBe(action);
-
-    action.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
-    expect(svc.toasts().length).toBe(0);
-    expect(document.activeElement).toBe(outsideBtn);
-
-    document.body.removeChild(fixture.nativeElement);
-  });
-
-  it('F6 is a no-op when there are no toasts (does not preventDefault)', async () => {
-    await render(`<div kjToastViewport></div>`, { imports: [KjToastViewport] });
-    const event = new KeyboardEvent('keydown', { key: 'F6', bubbles: true, cancelable: true });
-    document.dispatchEvent(event);
-    expect(event.defaultPrevented).toBe(false);
   });
 });

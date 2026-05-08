@@ -17,9 +17,7 @@ import {
  * <button kjConfirmPopupAction>Delete</button>
  * ```
  *
- * @category Core/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopupAction]',

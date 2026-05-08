@@ -38,10 +38,6 @@ import {
  * @doc-example Formatted string output
  *   @doc-file time-picker.formatted.example.ts
  * @category Library/Data input
- * @doc
- * @doc-name time-picker
- * @doc-description The pre-styled kouji time picker. Use `<kj-time-picker>` to render a segmented HH:MM[:SS] spinbutton row with optional AM/PM toggle, 12/24-hour mode, min/max constraints, and two-way binding as a `Date` or `'HH:mm'` string — no raw ARIA wiring required.
- * @doc-is-main
  */
 @Component({
   selector: 'kj-time-picker',
@@ -57,7 +53,7 @@ import {
     <div
       kjTimePicker
       class="kj-time-picker"
-      [kjValue]="$any(kjValue())"
+      [kjValue]="kjValue() ?? null!"
       (kjValueChange)="kjValue.set($event)"
       [kjValueShape]="kjValueShape()"
       [kj12Hour]="kj12Hour()"
@@ -67,13 +63,13 @@ import {
       [kjHourStep]="kjHourStep()"
       [kjMinuteStep]="kjMinuteStep()"
       [kjSecondStep]="kjSecondStep()"
-      [kjMin]="$any(kjMin())"
-      [kjMax]="$any(kjMax())"
+      [kjMin]="kjMin() ?? null!"
+      [kjMax]="kjMax() ?? null!"
       [kjReadonly]="kjReadonly()"
       [kjDisabled]="kjDisabled()"
       [kjInvalid]="kjInvalid()"
       [kjLocale]="kjLocale()"
-      [kjReferenceDate]="$any(kjReferenceDate())"
+      [kjReferenceDate]="kjReferenceDate() ?? null!"
       [attr.data-disabled]="kjDisabled() ? '' : null"
       [attr.aria-label]="kjAriaLabel()"
     >

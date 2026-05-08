@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjButtonComponent } from '../button/button';
+import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 import { KjInputComponent } from '../input/input';
 import {
   KjFormActionsComponent,
@@ -20,31 +21,31 @@ import {
     KjFormComponent,
     KjFormActionsComponent,
     KjFormSummaryComponent,
+    KjFieldComponent,
+    KjFieldLabelComponent,
     KjInputComponent,
     KjButtonComponent,
     ReactiveFormsModule,
   ],
   styles: [`
     :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .field { display: flex; flex-direction: column; gap: 0.25rem; }
-    label { font-size: 0.8125rem; color: var(--kj-color-base-content); }
   `],
   template: `
     <form kj-form [formGroup]="form" (kjSubmit)="onSubmit()">
       <kj-form-summary />
 
-      <div class="field">
-        <label for="name">Full name</label>
+      <kj-field>
+        <kj-field-label>Full name</kj-field-label>
         <kj-input type="text" formControlName="name" />
-      </div>
-      <div class="field">
-        <label for="email">Email</label>
+      </kj-field>
+      <kj-field>
+        <kj-field-label>Email</kj-field-label>
         <kj-input type="email" formControlName="email" />
-      </div>
-      <div class="field">
-        <label for="phone">Phone</label>
+      </kj-field>
+      <kj-field>
+        <kj-field-label>Phone</kj-field-label>
         <kj-input type="tel" formControlName="phone" />
-      </div>
+      </kj-field>
 
       <kj-form-actions>
         <kj-button kjType="submit">Continue</kj-button>

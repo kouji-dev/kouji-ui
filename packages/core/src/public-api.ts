@@ -38,15 +38,11 @@ export * from './tag/index';
 
 // -- Overlay components --
 export * from './dialog/index';
-export * from './alert-dialog/index';
 export * from './drawer/index';
-export * from './bottom-sheet/index';
 export * from './tooltip/index';
 export * from './popover/index';
 export * from './confirm-popup/index';
-export * from './menu/index';
 export * from './dropdown-menu/index';
-export * from './context-menu/index';
 export * from './speed-dial/index';
 export * from './toast/index';
 export * from './command-palette/index';
@@ -60,7 +56,6 @@ export * from './tabs/index';
 export * from './accordion/index';
 export * from './stepper/index';
 export * from './select/index';
-export * from './multi-select/index';
 export * from './combobox/index';
 export * from './cascade-select/index';
 export * from './tree-select/index';

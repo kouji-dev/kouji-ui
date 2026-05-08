@@ -9,3 +9,4 @@ Rules live in `rules/`:
 - [tsdoc.md](rules/tsdoc.md) — TSDoc format, `@doc*` tags, inline comment policy
 - [agent_orchestration.md](rules/agent_orchestration.md) — caveman prompts, parallel vs sequential strategy
 - [docs.md](rules/docs.md) — `apps/docs` must use `@kouji-ui/components`, not raw HTML
+- [worktree.md](rules/worktree.md) — worktree location + merge-back-to-main flow

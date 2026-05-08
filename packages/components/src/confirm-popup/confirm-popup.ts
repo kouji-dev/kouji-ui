@@ -12,6 +12,8 @@ import {
   KjConfirmPopupContent,
   KjConfirmPopupMessage,
   KjConfirmPopupTrigger,
+  KjPopoverContent,
+  type KjOverlayTriggerLike,
 } from '@kouji-ui/core';
 
 /**
@@ -32,11 +34,7 @@ import {
  *   @doc-file confirm-popup.with-message.example.ts
  * @doc-example Placement
  *   @doc-file confirm-popup.placement.example.ts
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
- * @doc-description Pre-styled inline confirmation popup for destructive actions — a floating `alertdialog` anchored to the trigger, with confirm/cancel slots, focus management, and Esc/outside-click dismissal, so you never need to wire a separate modal for simple "are you sure?" flows.
- * @doc-is-main
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup',
@@ -81,9 +79,7 @@ export class KjConfirmPopupComponent {}
  * directive's ARIA wiring (`aria-haspopup="dialog"`, `aria-expanded`,
  * `aria-controls`).
  *
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-trigger',
@@ -110,24 +106,16 @@ export class KjConfirmPopupTriggerComponent {}
  * `role="alertdialog"` and the family's keyboard / outside-click coordination
  * come from the underlying directives.
  *
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-content',
   standalone: true,
-  imports: [KjConfirmPopupContent],
+  imports: [KjPopoverContent, KjConfirmPopupContent],
   template: `
-    <ng-template
-      kjConfirmPopupContent
-      [kjAriaLabel]="kjAriaLabel()"
-      [kjCloseOnEsc]="kjCloseOnEsc()"
-      [kjCloseOnOutsideClick]="kjCloseOnOutsideClick()"
-      [kjPanelClass]="resolvedPanelClass()"
-    >
+    <kj-popover-content [kjFor]="kjFor()" kjConfirmPopupContent [class]="resolvedPanelClass()">
       <ng-content />
-    </ng-template>
+    </kj-popover-content>
   `,
   styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
@@ -138,12 +126,8 @@ export class KjConfirmPopupTriggerComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjConfirmPopupContentComponent {
-  /** Optional fallback aria-label when no message is projected (rare). */
-  readonly kjAriaLabel = input<string>('');
-  /** Esc closes (resolves cancel). Default `true`. */
-  readonly kjCloseOnEsc = input<boolean>(true);
-  /** Outside-click closes (resolves cancel). Default `true`. */
-  readonly kjCloseOnOutsideClick = input<boolean>(true);
+  /** Anchor — the `[kjConfirmPopupTrigger]` template reference. */
+  readonly kjFor = input.required<KjOverlayTriggerLike>();
   /** Optional class hook for the body-level overlay container. */
   readonly kjPanelClass = input<string | string[]>('');
 
@@ -152,7 +136,7 @@ export class KjConfirmPopupContentComponent {
    * styled wrapper CSS lands on the floating box. Consumer-provided classes
    * are concatenated.
    */
-  readonly resolvedPanelClass = computed<string[]>(() => {
+  readonly resolvedPanelClass = computed<string>(() => {
     const out: string[] = ['kj-confirm-popup-content'];
     const c = this.kjPanelClass();
     if (Array.isArray(c)) {
@@ -160,7 +144,7 @@ export class KjConfirmPopupContentComponent {
     } else if (c) {
       out.push(c);
     }
-    return out;
+    return out.join(' ');
   });
 }
 
@@ -170,9 +154,7 @@ export class KjConfirmPopupContentComponent {
  * is wired automatically. Required for accessibility (WAI-ARIA `alertdialog`
  * pattern requires a description).
  *
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-message',
@@ -192,9 +174,7 @@ export class KjConfirmPopupMessageComponent {}
  * adds the `kj-confirm-popup-action` class — pair with `<kj-button>` for
  * the destructive variant when the popup is destructive.
  *
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-action',
@@ -216,9 +196,7 @@ export class KjConfirmPopupActionComponent {}
  * `(kjCancelled)` on the parent `<kj-confirm-popup>`. Receives initial focus
  * by default — WCAG 3.3.4 *Error Prevention*.
  *
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-cancel',
@@ -240,9 +218,7 @@ export class KjConfirmPopupCancelComponent {}
  * semantic comes from the `<kj-confirm-popup-action>` and
  * `<kj-confirm-popup-cancel>` slots inside.
  *
- * @category Library/Actions
- * @doc
- * @doc-name confirm-popup
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-actions',

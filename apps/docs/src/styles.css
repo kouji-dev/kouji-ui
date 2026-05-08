@@ -59,3 +59,32 @@ body {
   .page-with-toc { grid-template-columns: 1fr; }
   .page-with-toc .toc-col { display: none; }
 }
+
+/* ── Overlay system root ────────────────────────────────────────────────
+   Single body-level container that hosts every overlay (dialogs, drawers,
+   popovers, tooltips, dropdowns, toasts). Each overlay lives in its own
+   `.kj-overlay-wrapper` inside this container — sibling order alone
+   resolves stacking among open overlays (last-opened wins) so we don't
+   need a per-overlay z-index ladder.
+   ─────────────────────────────────────────────────────────────────── */
+.kj-overlay-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+.kj-overlay-wrapper {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.kj-overlay-wrapper > * {
+  pointer-events: auto;
+}
+.kj-backdrop,
+.kj-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
+  pointer-events: auto;
+}
