@@ -7,6 +7,7 @@ import {
   model,
 } from '@angular/core';
 import {
+  KjIconDirective,
   KjPagination,
   KjPaginationItem,
   KjPaginationPrevious,
@@ -325,6 +326,7 @@ export class KjPaginationInfoComponent {}
     KjPaginationLastComponent,
     KjPaginationEllipsisComponent,
     KjPaginationInfoComponent,
+    KjIconDirective,
   ],
   template: `
     <kj-pagination
@@ -347,7 +349,7 @@ export class KjPaginationInfoComponent {}
           <kj-pagination-item [kjPage]="token">{{ token }}</kj-pagination-item>
         }
       }
-      <kj-pagination-next>›</kj-pagination-next>
+      <kj-pagination-next><i kjIcon="chevron-right"></i></kj-pagination-next>
       @if (kjShowFirstLast()) {
         <kj-pagination-last>»</kj-pagination-last>
       }

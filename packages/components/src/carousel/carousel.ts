@@ -20,6 +20,7 @@ import {
   KjCarouselPrevious,
   KjCarouselSlide,
   KjCarouselViewport,
+  KjIconDirective,
   KjLiveRegion,
   KjVisuallyHidden,
 } from '@kouji-ui/core';
@@ -211,7 +212,7 @@ export class KjCarouselPreviousComponent {
 @Component({
   selector: 'kj-carousel-next',
   standalone: true,
-  imports: [KjCarouselNext],
+  imports: [KjCarouselNext, KjIconDirective],
   template: `
     <button
       type="button"
@@ -219,7 +220,7 @@ export class KjCarouselPreviousComponent {
       class="kj-carousel-control kj-carousel-next"
       [attr.aria-label]="ariaLabel()"
     >
-      <ng-content>›</ng-content>
+      <ng-content><i kjIcon="chevron-right"></i></ng-content>
     </button>
   `,
   encapsulation: ViewEncapsulation.None,

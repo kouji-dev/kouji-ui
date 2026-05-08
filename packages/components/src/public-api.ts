@@ -24,6 +24,7 @@ export * from './empty-state/index';
 export * from './field/index';
 export * from './file-upload/index';
 export * from './form/index';
+export * from './icon/index';
 export * from './input/index';
 export * from './input-group/index';
 export * from './input-mask/index';

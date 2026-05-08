@@ -12,6 +12,7 @@ import {
   KjCascadeSelectPanel,
   KjCascadeSelectSubPanel,
   KjCascadeSelectTrigger,
+  KjIconDirective,
 } from '@kouji-ui/core';
 
 /**
@@ -107,6 +108,7 @@ export class KjCascadeSelectComponent {
 @Component({
   selector: 'kj-cascade-option',
   standalone: true,
+  imports: [KjIconDirective],
   hostDirectives: [
     {
       directive: KjCascadeSelectOption,
@@ -115,7 +117,7 @@ export class KjCascadeSelectComponent {
   ],
   template: `
     <span class="kj-cascade-option-label">{{ option.kjLabel() }}</span>
-    <span class="kj-cascade-option-chevron" aria-hidden="true">›</span>
+    <i class="kj-cascade-option-chevron" kjIcon="chevron-right"></i>
     <ng-content />
   `,
   encapsulation: ViewEncapsulation.None,

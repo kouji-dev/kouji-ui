@@ -3,7 +3,7 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
+import { KjIconDirective, KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjTag` directive. Renders the visual
@@ -88,13 +88,14 @@ export class KjTagComponent {}
 @Component({
   selector: 'kj-tag-remove',
   standalone: true,
+  imports: [KjIconDirective],
   hostDirectives: [
     {
       directive: KjTagRemove,
       inputs: ['kjTagRemoveLabel'],
     },
   ],
-  template: `<ng-content>×</ng-content>`,
+  template: `<ng-content><i kjIcon="x"></i></ng-content>`,
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-tag-remove',

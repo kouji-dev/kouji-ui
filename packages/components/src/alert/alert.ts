@@ -12,6 +12,7 @@ import {
   KjAlertDismiss,
   KjAlertIcon,
   KjAlertTitle,
+  KjIconDirective,
 } from '@kouji-ui/core';
 import type { KjAlertMode } from '@kouji-ui/core';
 
@@ -185,7 +186,7 @@ export class KjAlertActionsComponent {
 @Component({
   selector: 'kj-alert-dismiss',
   standalone: true,
-  imports: [KjAlertDismiss],
+  imports: [KjAlertDismiss, KjIconDirective],
   template: `<button
     type="button"
     kjAlertDismiss
@@ -193,7 +194,7 @@ export class KjAlertActionsComponent {
     [kjAlertDismissLabel]="kjAlertDismissLabel()"
     [kjAlertDismissVariant]="kjAlertDismissVariant()"
     [kjAlertDismissSize]="kjAlertDismissSize()"
-  ><ng-content>×</ng-content></button>`,
+  ><ng-content><i kjIcon="x"></i></ng-content></button>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,

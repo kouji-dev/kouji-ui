@@ -11,6 +11,7 @@ import {
   KjCalendarDay,
   KjCalendarGrid,
   KjCalendarHeader,
+  KjIconDirective,
 } from '@kouji-ui/core';
 
 /**
@@ -36,7 +37,7 @@ import {
 @Component({
   selector: 'kj-calendar',
   standalone: true,
-  imports: [KjCalendar, KjCalendarHeader, KjCalendarGrid, KjCalendarDay],
+  imports: [KjCalendar, KjCalendarHeader, KjCalendarGrid, KjCalendarDay, KjIconDirective],
   template: `
     <div
       kjCalendar
@@ -66,7 +67,7 @@ import {
           aria-label="Next month"
           [disabled]="hdr.nextDisabled()"
           (click)="hdr.next()"
-        >›</button>
+        ><i kjIcon="chevron-right"></i></button>
       </div>
       <table class="kj-calendar__grid" kjCalendarGrid #g="kjCalendarGrid">
         <thead>
