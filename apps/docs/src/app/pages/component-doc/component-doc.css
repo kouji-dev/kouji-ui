@@ -218,9 +218,10 @@ h1 {
   margin-bottom: var(--kj-space-xl);
 }
 .token-type, .const-type {
-  font-family: var(--kj-font-mono);
   background: var(--kj-color-base-200);
   border: 1px solid var(--kj-color-base-300);
-  padding: 0.2rem 0.5rem;
-  font-size: 0.85rem;
+  color: var(--kj-color-primary);
+  padding: 0.3rem var(--kj-space-md);
+  font-size: 0.875rem;
+  font-family: var(--kj-font-mono);
 }
