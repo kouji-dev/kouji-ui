@@ -10,6 +10,13 @@ export interface KjAnchoredToOpts {
   offset?: Signal<number> | number;
   flip?: boolean;
   shift?: boolean;
+  /**
+   * How to size the panel relative to the trigger:
+   * - `'none'` (default) — panel keeps its intrinsic width.
+   * - `'min'`            — panel min-width matches trigger width (panel can grow but not shrink below).
+   * - `'fixed'`          — panel width matches trigger width exactly.
+   */
+  matchTriggerWidth?: 'none' | 'min' | 'fixed';
 }
 
 export type KjAnchoredToStrategy = KjPositionStrategy & {
@@ -104,7 +111,16 @@ export function anchoredTo(initialOpts: Partial<KjAnchoredToOpts> = {}): KjAncho
     const offset = read<number>(opts.offset ?? 0);
     const flip = opts.flip ?? true;
     const shift = opts.shift ?? true;
+    const matchWidth = opts.matchTriggerWidth ?? 'none';
     const tRect = trigger.getBoundingClientRect();
+
+    // Apply width matching BEFORE measuring panel — affects pRect.
+    if (matchWidth === 'fixed') {
+      panel.style.width = `${tRect.width}px`;
+    } else if (matchWidth === 'min') {
+      panel.style.minWidth = `${tRect.width}px`;
+    }
+
     const pRect = panel.getBoundingClientRect();
     const vw = window.innerWidth, vh = window.innerHeight;
 
@@ -149,6 +165,8 @@ export function anchoredTo(initialOpts: Partial<KjAnchoredToOpts> = {}): KjAncho
     panel.style.position = '';
     panel.style.left = '';
     panel.style.top = '';
+    panel.style.width = '';
+    panel.style.minWidth = '';
     _placement.set(null);
   };
 
