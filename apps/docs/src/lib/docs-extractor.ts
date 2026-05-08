@@ -1,5 +1,5 @@
 import { join, resolve, dirname, sep } from 'node:path';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
 
@@ -193,28 +193,37 @@ function listSourceFiles(srcRoot: string): string[] {
 }
 
 function walk(dir: string, out: string[]): void {
-  let entries: ReturnType<typeof readdirSync>;
+  let names: string[];
   try {
-    entries = readdirSync(dir, { withFileTypes: true });
+    // Use the string-mode overload (no withFileTypes) for stable types across
+    // @types/node versions, then stat each entry explicitly. Marginally more
+    // syscalls but avoids the Dirent<Buffer | string> generic surprise.
+    names = readdirSync(dir, 'utf-8');
   } catch {
     return;
   }
-  for (const entry of entries) {
-    if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
+  for (const name of names) {
+    if (name.startsWith('.') || name === 'node_modules') continue;
+    const full = join(dir, name);
+    let stat: ReturnType<typeof statSync>;
+    try {
+      stat = statSync(full);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
       walk(full, out);
       continue;
     }
-    if (!entry.isFile()) continue;
-    if (!entry.name.endsWith('.ts')) continue;
+    if (!stat.isFile()) continue;
+    if (!name.endsWith('.ts')) continue;
     if (
-      entry.name === 'index.ts' ||
-      entry.name === 'public-api.ts' ||
-      entry.name === 'test-setup.ts' ||
-      entry.name.endsWith('.spec.ts') ||
-      entry.name.endsWith('.example.ts') ||
-      entry.name.endsWith('.d.ts')
+      name === 'index.ts' ||
+      name === 'public-api.ts' ||
+      name === 'test-setup.ts' ||
+      name.endsWith('.spec.ts') ||
+      name.endsWith('.example.ts') ||
+      name.endsWith('.d.ts')
     ) continue;
     out.push(full);
   }
