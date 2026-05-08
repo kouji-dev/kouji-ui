@@ -1,0 +1,152 @@
+<header class="hd">
+  <h2 class="hd__title">Application</h2>
+  <p class="hd__subtitle">Tell us about yourself, then verify your details.</p>
+</header>
+
+<ol class="steps" aria-label="Application progress">
+  @for (s of steps; track s.id) {
+    <li
+      class="steps__item"
+      [class.steps__item--done]="stepStatus(s.id) === 'done'"
+      [class.steps__item--current]="stepStatus(s.id) === 'current'"
+      [attr.aria-current]="stepStatus(s.id) === 'current' ? 'step' : null"
+    >
+      <span class="steps__num" aria-hidden="true">{{ $index + 1 }}</span>
+      <span class="steps__label">{{ s.label }}</span>
+    </li>
+  }
+</ol>
+
+<kj-alert kjVariant="warning" class="warn">
+  <kj-alert-icon>!</kj-alert-icon>
+  <kj-alert-title>Heads up</kj-alert-title>
+  <kj-alert-description>
+    Please double-check fields marked with an asterisk.
+  </kj-alert-description>
+</kj-alert>
+
+<form class="form" autocomplete="off" (submit)="$event.preventDefault()">
+  <fieldset class="section">
+    <legend class="section__legend">Identity</legend>
+
+    <div class="grid-2">
+      <kj-field [kjRequired]="true">
+        <kj-field-label>Full name</kj-field-label>
+        <kj-input type="text" [(ngModel)]="fullName" name="fullName" placeholder="Ada Lovelace" />
+        <kj-field-help>As it appears on your ID.</kj-field-help>
+      </kj-field>
+
+      <kj-field>
+        <kj-field-label>Date of birth</kj-field-label>
+        <kj-date-picker [(kjValue)]="dateOfBirth" kjPlaceholder="YYYY-MM-DD" />
+      </kj-field>
+    </div>
+
+    <div class="grid-2">
+      <kj-field>
+        <kj-field-label>Phone</kj-field-label>
+        <input
+          kjInputMask
+          kjMask="(999) 999-9999"
+          class="masked-input"
+          name="phone"
+          [(ngModel)]="phone"
+          aria-label="Phone number"
+        />
+        <kj-field-help>Format: (###) ###-####</kj-field-help>
+      </kj-field>
+
+      <kj-field>
+        <kj-field-label>Bio</kj-field-label>
+        <kj-textarea
+          [(ngModel)]="bio"
+          name="bio"
+          kjPlaceholder="A short introduction"
+          [kjRows]="4"
+        />
+      </kj-field>
+    </div>
+  </fieldset>
+
+  <fieldset class="section">
+    <legend class="section__legend">Contact</legend>
+
+    <div class="grid-2">
+      <kj-field [kjRequired]="true">
+        <kj-field-label>Email</kj-field-label>
+        <kj-input type="email" [(ngModel)]="email" name="email" placeholder="you@example.com" />
+        <kj-field-help>We'll send a confirmation link.</kj-field-help>
+      </kj-field>
+
+      <kj-field>
+        <kj-field-label>Preferred contact time</kj-field-label>
+        <kj-time-picker [(kjValue)]="contactTime" kjAriaLabel="Preferred contact time" />
+      </kj-field>
+    </div>
+
+    <div class="grid-2">
+      <kj-field>
+        <kj-field-label>Languages spoken</kj-field-label>
+        <kj-multi-select [(value)]="languages" placeholder="Pick languages">
+          <kj-multi-select-option [value]="'en'">English</kj-multi-select-option>
+          <kj-multi-select-option [value]="'es'">Español</kj-multi-select-option>
+          <kj-multi-select-option [value]="'fr'">Français</kj-multi-select-option>
+          <kj-multi-select-option [value]="'de'">Deutsch</kj-multi-select-option>
+          <kj-multi-select-option [value]="'ja'">日本語</kj-multi-select-option>
+        </kj-multi-select>
+      </kj-field>
+
+      <kj-field>
+        <kj-field-label>Annual budget</kj-field-label>
+        <kj-number-input
+          [(kjValue)]="budget"
+          [kjMin]="0"
+          [kjStep]="1000"
+          kjAriaLabel="Annual budget"
+        />
+      </kj-field>
+    </div>
+  </fieldset>
+
+  <fieldset class="section">
+    <legend class="section__legend">Verify</legend>
+    <div class="otp">
+      <label for="big-form-otp" class="otp__label">One-time code</label>
+      <kj-input-otp
+        id="big-form-otp"
+        [kjLength]="6"
+        kjAriaLabel="One-time code"
+        [(ngModel)]="otp"
+        name="otp"
+      />
+      <p class="otp__hint">We sent a 6-digit code to your email.</p>
+    </div>
+  </fieldset>
+
+  <kj-accordion class="legal">
+    <kj-accordion-item value="terms">
+      <kj-accordion-trigger>Terms of service</kj-accordion-trigger>
+      <kj-accordion-content>
+        <p class="legal__text">
+          By submitting this form you agree to our standard terms of service.
+          You retain the right to revoke consent at any time from account
+          settings.
+        </p>
+      </kj-accordion-content>
+    </kj-accordion-item>
+    <kj-accordion-item value="privacy">
+      <kj-accordion-trigger>Privacy policy</kj-accordion-trigger>
+      <kj-accordion-content>
+        <p class="legal__text">
+          We use the data you provide solely to process this application. We
+          do not sell personal data to third parties.
+        </p>
+      </kj-accordion-content>
+    </kj-accordion-item>
+  </kj-accordion>
+
+  <footer class="actions" role="group" aria-label="Form navigation">
+    <kj-button kjVariant="ghost">Back</kj-button>
+    <kj-button kjVariant="default">Continue</kj-button>
+  </footer>
+</form>
