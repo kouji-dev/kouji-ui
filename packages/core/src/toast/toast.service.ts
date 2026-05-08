@@ -1,4 +1,4 @@
-import { Injectable, TemplateRef, Type, inject, signal } from '@angular/core';
+import { EnvironmentInjector, Injectable, TemplateRef, Type, inject, runInInjectionContext, signal } from '@angular/core';
 import { KjOverlayBuilder } from '../primitives/overlay/builder';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { corner, type KjCornerPosition } from '../primitives/overlay/strategies/position/corner';
@@ -112,6 +112,7 @@ const VARIANT_FROM_SUGAR: Record<KjToastSugarVariant, KjToastVariant> = {
 export class KjToastService {
   private readonly strategy = inject(KJ_TOAST_STRATEGY);
   private readonly builder = inject(KjOverlayBuilder);
+  private readonly env = inject(EnvironmentInjector);
   private readonly _toasts = signal<KjToastItem[]>([]);
   /** Live list of active toasts. Read by `[kjToastViewport]`. */
   readonly toasts = this._toasts.asReadonly();
@@ -154,7 +155,7 @@ export class KjToastService {
   private openOverlay(opts: KjToastOptions): KjToastRef {
     const id = opts.id ?? crypto.randomUUID();
     const variant = opts.variant ?? 'default';
-    const ctrl = this.builder.create({
+    const ctrl = runInInjectionContext(this.env, () => this.builder.create({
       mount: bodyPortal(),
       position: corner({ position: opts.position ?? 'bottom-right' }),
       backdrop: null,
@@ -163,10 +164,10 @@ export class KjToastService {
       liveAnnouncer: variant === 'destructive' ? assertive() : polite(),
       trigger: programmatic(),
       panelRole: variant === 'destructive' ? 'alert' : 'status',
-    });
+    }));
 
     if (opts.component) {
-      this.builder.attachComponent(ctrl, opts.component, { data: opts.data });
+      runInInjectionContext(this.env, () => this.builder.attachComponent(ctrl, opts.component!, { data: opts.data }));
     }
 
     this._toasts.update((ts) => [...ts, {

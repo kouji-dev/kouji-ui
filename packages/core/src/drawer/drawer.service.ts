@@ -92,7 +92,7 @@ export class KjDrawerService {
       parent: this.env,
     });
 
-    const ctrl = overlayInjector.get(KjOverlayController);
+    const ctrl = runInInjectionContext(this.env, () => overlayInjector.get(KjOverlayController));
     const ref = new KjDrawerRef<T, R>(ctrl);
 
     // Inject DRAWER_DATA / KjDrawerRef alongside the overlay providers.
