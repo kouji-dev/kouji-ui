@@ -26,15 +26,22 @@ export function assemblePages(items: DocItem[]): AssembledPages {
     }
   }
 
+  // Group by (pkg, pageName). The package layer is a hard separation that
+  // mirrors the sidebar tracks (`headless` vs `components`); items with the
+  // same @doc-name but in different packages are *different* pages.
   const groups = new Map<string, DocItem[]>();
   for (const item of items) {
-    const list = groups.get(item.pageName) ?? [];
+    const key = `${item.pkg}:${item.pageName}`;
+    const list = groups.get(key) ?? [];
     list.push(item);
-    groups.set(item.pageName, list);
+    groups.set(key, list);
   }
 
   const pages: DocPage[] = [];
-  for (const [name, group] of groups.entries()) {
+  for (const [, group] of groups.entries()) {
+    const pkg: SourcePkg = group[0].pkg;
+    const name = group[0].pageName;
+
     const mains = group.filter(i => i.isMain);
     let main: DocItem;
     if (mains.length === 1) {
@@ -44,7 +51,7 @@ export function assemblePages(items: DocItem[]): AssembledPages {
       main = sorted[0];
       warnings.push({
         kind: 'no-main',
-        message: `page '${name}' has no @doc-is-main; falling back to '${main.symbol}'`,
+        message: `page '${pkg}:${name}' has no @doc-is-main; falling back to '${main.symbol}'`,
         pageName: name,
       });
     } else {
@@ -52,17 +59,7 @@ export function assemblePages(items: DocItem[]): AssembledPages {
       main = sorted[0];
       warnings.push({
         kind: 'multi-main',
-        message: `page '${name}' has multiple @doc-is-main items: ${mains.map(i => i.symbol).join(', ')}; using '${main.symbol}'`,
-        pageName: name,
-      });
-    }
-
-    const pkg: SourcePkg = main.pkg;
-    const crossPkg = group.some(i => i.pkg !== pkg);
-    if (crossPkg) {
-      warnings.push({
-        kind: 'cross-package',
-        message: `page '${name}' spans both core and components — using main item's package (${pkg}) for taxonomy`,
+        message: `page '${pkg}:${name}' has multiple @doc-is-main items: ${mains.map(i => i.symbol).join(', ')}; using '${main.symbol}'`,
         pageName: name,
       });
     }

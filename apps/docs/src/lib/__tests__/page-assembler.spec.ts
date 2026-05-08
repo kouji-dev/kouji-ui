@@ -65,14 +65,19 @@ describe('assemblePages', () => {
     expect(warnings.find(w => w.kind === 'multi-main' && w.pageName === 'p')).toBeDefined();
   });
 
-  it('warns when a page spans both core and components', () => {
+  it('separates items into different pages when pkg differs (same @doc-name)', () => {
     const items = [
-      item({ id: '1', symbol: 'A', pageName: 'p', pkg: 'core', isMain: true, sourceOrder: 0 }),
-      item({ id: '2', symbol: 'B', pageName: 'p', pkg: 'components', sourceOrder: 1 }),
+      item({ id: '1', symbol: 'KjButton', pageName: 'button', pkg: 'core', isMain: true, sourceOrder: 0 }),
+      item({ id: '2', symbol: 'KjButtonComponent', pageName: 'button', pkg: 'components', isMain: true, sourceOrder: 1 }),
     ];
     const { pages, warnings } = assemblePages(items);
-    expect(pages[0].pkg).toBe('core'); // taken from main
-    expect(warnings.find(w => w.kind === 'cross-package' && w.pageName === 'p')).toBeDefined();
+    expect(pages).toHaveLength(2);
+    const corePage = pages.find(p => p.pkg === 'core')!;
+    const compPage = pages.find(p => p.pkg === 'components')!;
+    expect(corePage.items.map(i => i.symbol)).toEqual(['KjButton']);
+    expect(compPage.items.map(i => i.symbol)).toEqual(['KjButtonComponent']);
+    // No cross-package warning anymore — pkg is a hard separator now.
+    expect(warnings.filter(w => w.kind === 'cross-package')).toEqual([]);
   });
 
   it('formats the page title from @doc-name (capitalize, dashes -> spaces)', () => {
