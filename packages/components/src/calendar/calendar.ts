@@ -41,10 +41,11 @@ import {
     <div
       kjCalendar
       class="kj-calendar"
-      [(kjValue)]="kjValue"
-      [kjMin]="kjMin()"
-      [kjMax]="kjMax()"
-      [kjDisabledDates]="kjDisabledDates()"
+      [kjValue]="kjValue() ?? null!"
+      (kjValueChange)="kjValue.set($event)"
+      [kjMin]="kjMin() ?? null!"
+      [kjMax]="kjMax() ?? null!"
+      [kjDisabledDates]="kjDisabledDates() ?? null!"
       [kjLocale]="kjLocale()"
       [kjFirstDayOfWeek]="kjFirstDayOfWeek()"
       [kjAriaLabel]="kjAriaLabel()"
