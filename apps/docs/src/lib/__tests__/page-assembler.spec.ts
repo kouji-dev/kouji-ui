@@ -27,7 +27,7 @@ describe('assemblePages', () => {
     expect(pages[0].name).toBe('icon');
     expect(pages[0].mainItemId).toBe('2');
     expect(pages[0].items.map(i => i.id)).toEqual(['2', '1', '3']);
-    expect(pages[0].title).toBe('icon');
+    expect(pages[0].title).toBe('Icon');
     expect(pages[0].description).toBe('main desc');
     expect(warnings).toEqual([]);
   });
@@ -50,7 +50,7 @@ describe('assemblePages', () => {
     ];
     const { pages, warnings } = assemblePages(items);
     expect(pages[0].mainItemId).toBe('2');
-    expect(pages[0].title).toBe('p');
+    expect(pages[0].title).toBe('P');
     expect(pages[0].description).toBe('b desc');
     expect(warnings.find(w => w.kind === 'no-main' && w.pageName === 'p')).toBeDefined();
   });
@@ -73,6 +73,14 @@ describe('assemblePages', () => {
     const { pages, warnings } = assemblePages(items);
     expect(pages[0].pkg).toBe('core'); // taken from main
     expect(warnings.find(w => w.kind === 'cross-package' && w.pageName === 'p')).toBeDefined();
+  });
+
+  it('formats the page title from @doc-name (capitalize, dashes -> spaces)', () => {
+    const items = [
+      item({ id: '1', symbol: 'KjDatePicker', pageName: 'date-picker', isMain: true, sourceOrder: 0 }),
+    ];
+    const { pages } = assemblePages(items);
+    expect(pages[0].title).toBe('Date picker');
   });
 
   it('reports duplicate ids', () => {

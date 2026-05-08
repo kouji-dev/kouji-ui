@@ -77,7 +77,7 @@ export function assemblePages(items: DocItem[]): AssembledPages {
       // @category) — we leave them empty here. The orchestrator's
       // responsibility is documented in docs-extractor.ts.
       categoryPath: [],
-      title: main.pageName,
+      title: formatTitle(main.pageName),
       description: main.description,
       mainItemId: main.id,
       items: sortedItems,
@@ -86,6 +86,11 @@ export function assemblePages(items: DocItem[]): AssembledPages {
 
   pages.sort((a, b) => a.name.localeCompare(b.name));
   return { pages, warnings };
+}
+
+function formatTitle(slug: string): string {
+  const spaced = slug.replace(/[-_]+/g, ' ').trim();
+  return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : '';
 }
 
 function sortItems(list: DocItem[]): DocItem[] {
