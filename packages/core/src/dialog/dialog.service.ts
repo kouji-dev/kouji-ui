@@ -1,4 +1,4 @@
-import { Injectable, Type, inject } from '@angular/core';
+import { EnvironmentInjector, Injectable, Type, inject, runInInjectionContext } from '@angular/core';
 import { KjOverlayBuilder } from '../primitives/overlay/builder';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { viewportCentered } from '../primitives/overlay/strategies/position/viewport-centered';
@@ -20,10 +20,13 @@ export interface KjDialogOpenOptions<D = unknown> {
 @Injectable({ providedIn: 'root' })
 export class KjDialog {
   private readonly builder = inject(KjOverlayBuilder);
+  private readonly env = inject(EnvironmentInjector);
 
   open<T, R = unknown, D = unknown>(component: Type<T>, opts: KjDialogOpenOptions<D> = {}): KjDialogRef<T, R> {
     const alert = !!opts.alert;
-    const ctrl = this.builder.create({
+    // Strategy factories call inject() internally (e.g. htmlOverflow → KjScrollLock).
+    // Wrap in runInInjectionContext so this works from a service method call site.
+    const ctrl = runInInjectionContext(this.env, () => this.builder.create({
       mount: bodyPortal(),
       position: viewportCentered(),
       backdrop: solidBackdrop({
@@ -35,7 +38,7 @@ export class KjDialog {
       liveAnnouncer: alert ? assertive() : silent(),
       trigger: programmatic(),
       panelRole: alert ? 'alertdialog' : 'dialog',
-    });
+    }));
 
     const ref = new KjDialogRef<T, R>(ctrl);
     const cmpRef = this.builder.attachComponent(ctrl, component, {
