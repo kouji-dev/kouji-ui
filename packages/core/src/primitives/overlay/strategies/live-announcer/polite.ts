@@ -3,11 +3,11 @@ import { KjLiveAnnouncerService } from '../../live-announcer';
 import type { KjLiveAnnouncerStrategy } from '../../tokens';
 
 export function polite(): KjLiveAnnouncerStrategy {
-  let svc: KjLiveAnnouncerService | null = null;
+  const svc = inject(KjLiveAnnouncerService);
   return {
-    attach() { svc = inject(KjLiveAnnouncerService); },
+    attach() {},
     onOpen() {}, onClose() {},
-    detach() { svc = null; },
-    announce(msg: string) { svc?.announce(msg, 'polite'); },
+    detach() {},
+    announce(msg: string) { svc.announce(msg, 'polite'); },
   };
 }

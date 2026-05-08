@@ -3,14 +3,14 @@ import { KjScrollLock } from '../../scroll-lock';
 import type { KjScrollLockStrategy } from '../../tokens';
 
 export function htmlOverflow(): KjScrollLockStrategy {
-  let svc: KjScrollLock | null = null;
+  // Capture the service at factory time (must be in an injection context).
+  // attach()/onOpen()/onClose() may run outside injection context.
+  const svc = inject(KjScrollLock);
   let release: (() => void) | null = null;
   return {
-    attach() {
-      svc = inject(KjScrollLock);
-    },
-    onOpen() { release = svc!.acquire(); },
+    attach() {},
+    onOpen() { release = svc.acquire(); },
     onClose() { release?.(); release = null; },
-    detach() { release?.(); release = null; svc = null; },
+    detach() { release?.(); release = null; },
   };
 }
