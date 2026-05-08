@@ -102,6 +102,7 @@
             "styles": [
               "packages/themes/src/index.css",
               "apps/docs/src/styles.css",
+              "packages/core/src/icon/icon.css",
               "packages/components/src/popover/popover.css",
               "packages/components/src/tooltip/tooltip.css",
               "packages/components/src/dropdown-menu/dropdown-menu.css",

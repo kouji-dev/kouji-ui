@@ -38,6 +38,7 @@
     "culori": "^4.0.2",
     "echarts": "^6.0.0",
     "express": "^5.1.0",
+    "lucide-static": "^1.14.0",
     "monaco-editor": "^0.55.1",
     "rxjs": "~7.8.0",
     "ts-morph": "^28.0.0",
