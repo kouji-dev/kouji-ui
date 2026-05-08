@@ -8,6 +8,7 @@ import { ClipboardService } from '../../services/clipboard.service';
 import { FontLoaderService } from '../../services/font-loader.service';
 import { serializeToScopedBlock } from '../../lib/theme/serialize-theme';
 import { CURATED_FONTS } from '../../lib/theme/font-catalog';
+import { ThemeUrlService } from '../../services/theme-url.service';
 
 const STYLE_TAG_ID = 'kj-draft-style';
 
@@ -25,6 +26,7 @@ export class ThemeGeneratorComponent {
   private readonly fontLoader = inject(FontLoaderService);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly url = inject(ThemeUrlService);
 
   protected readonly draft = this.draftService.draft;
   protected readonly toast = signal<string | null>(null);
@@ -57,6 +59,7 @@ export class ThemeGeneratorComponent {
   });
 
   constructor() {
+    this.url.startSync();
     this.destroyRef.onDestroy(() => {
       this.document.getElementById(STYLE_TAG_ID)?.remove();
     });
@@ -84,6 +87,11 @@ export class ThemeGeneratorComponent {
   async copyCss(): Promise<void> {
     const ok = await this.clipboard.copy(this.exportedCss());
     this.flash(ok ? 'CSS copied to clipboard' : 'Copy failed');
+  }
+
+  async copyLink(): Promise<void> {
+    const ok = await this.clipboard.copy(this.url.copyShareLink());
+    this.flash(ok ? 'Link copied' : 'Copy failed');
   }
 
   downloadCss(): void {
