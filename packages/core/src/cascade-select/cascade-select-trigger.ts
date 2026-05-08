@@ -28,7 +28,6 @@ import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click
     { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
   ],
   providers: [
-    KjOverlayController,
     { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onClick() },
     { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'listbox' as const },
   ],

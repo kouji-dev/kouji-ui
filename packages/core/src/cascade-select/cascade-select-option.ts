@@ -1,15 +1,16 @@
 import {
-  afterNextRender,
   booleanAttribute,
   computed,
+  contentChildren,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
   OnDestroy,
-  signal,
 } from '@angular/core';
 import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
+import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
 
 /**
  * Single row inside a `[kjCascadeSelectPanel]` or
@@ -76,11 +77,15 @@ export class KjCascadeSelectOption implements OnDestroy {
   private _levelIndex = 0;
 
   /**
-   * @internal Whether this option is a branch node.
-   * Determined after first render by checking for a [kjCascadeSelectSubPanel]
-   * child in the DOM (avoids @ContentChild limitation on directives).
+   * @internal Sub-panel directives declared as content children. Detected
+   * via `contentChildren` (which follows the declaration tree, so it works
+   * for both `<div kjCascadeSelectOption>` and `<kj-cascade-option>` wrapper
+   * forms). When non-empty, this option is a branch node.
    */
-  readonly isBranch = signal(false);
+  private readonly subPanels = contentChildren(KjCascadeSelectSubPanel, { descendants: false });
+
+  /** @internal Whether this option is a branch node. */
+  readonly isBranch = computed(() => this.subPanels().length > 0);
 
   /** @internal Computed inverse of isBranch for the data-leaf attribute. */
   readonly isLeaf = computed(() => !this.isBranch());
@@ -112,11 +117,12 @@ export class KjCascadeSelectOption implements OnDestroy {
   });
 
   constructor() {
-    afterNextRender(() => {
-      // Determine branch status from the DOM so this works with both projected
-      // markup and programmatic sub-panel insertion.
-      const hasSub = !!this.el.nativeElement.querySelector('[kjCascadeSelectSubPanel]');
-      this.isBranch.set(hasSub);
+    // Bind each declared sub-panel to this option's auto-generated id so
+    // the sub-panel's `open` computed can match against the open list
+    // without the consumer having to wire `kjOwnerOptionId` manually.
+    effect(() => {
+      const panels = this.subPanels();
+      panels.forEach(p => p.setParentOptionId(this._id));
     });
   }
 

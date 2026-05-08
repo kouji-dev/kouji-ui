@@ -48,11 +48,11 @@
   .kj-cascade-panel[hidden] { display: none; }
 
   /* ── Sub-panel ───────────────────────────────────────────────────────── */
+  /* `position: fixed` so the sub-panel escapes the root panel's
+     `overflow: auto`. Coords are written inline by the sub-panel directive
+     based on the parent option's bounding rect. */
   .kj-cascade-sub-panel {
-    position: absolute;
-    top: 0;
-    left: 100%;
-    margin-left: 2px;
+    position: fixed;
     background: var(--kj-color-base-100);
     border: 1px solid var(--kj-color-base-300);
     border-radius: var(--kj-radius-field);
@@ -61,7 +61,7 @@
     min-width: 12rem;
     max-height: 20rem;
     overflow: auto;
-    z-index: 201;
+    z-index: 1001;
   }
   .kj-cascade-sub-panel[hidden] { display: none; }
 

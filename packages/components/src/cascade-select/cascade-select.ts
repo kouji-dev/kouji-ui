@@ -2,14 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
+  inject,
   input,
-  model,
-  output,
-  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  KjCascadeSelect,
   KjCascadeSelectOption,
   KjCascadeSelectPanel,
   KjCascadeSelectSubPanel,
@@ -38,6 +36,18 @@ import {
 @Component({
   selector: 'kj-cascade-select',
   standalone: true,
+  // Compose the umbrella KjCascadeSelect directive on the wrapper element.
+  // Forwarding `kjValue`/`kjCascadePath` so the consumer can bind via
+  // `[(value)]`/`[(cascadePath)]` on `<kj-cascade-select>`. The directive
+  // provides `KJ_CASCADE_SELECT` (+ `KJ_SELECT`) at this element so
+  // projected options/sub-panels resolve the same context via DI.
+  hostDirectives: [
+    {
+      directive: KjCascadeSelect,
+      inputs: ['kjValue', 'kjCascadePath'],
+      outputs: ['kjValueChange', 'kjCascadePathChange'],
+    },
+  ],
   imports: [KjCascadeSelectTrigger, KjCascadeSelectPanel],
   template: `
     <button
@@ -52,13 +62,8 @@ import {
     </button>
     <div
       kjCascadeSelectPanel
-      #panel="kjCascadeSelectPanel"
       class="kj-cascade-panel"
       [kjFor]="trigger"
-      [kjSelectValue]="kjValue()"
-      (kjSelectValueChange)="kjValue.set($event)"
-      [kjCascadePath]="kjCascadePath()"
-      (kjCascadePathChange)="onPathChange($event)"
     >
       <ng-content />
     </div>
@@ -78,36 +83,12 @@ export class KjCascadeSelectComponent {
   /** Whether the trigger is disabled. */
   readonly disabled = input(false);
 
-  /** Two-way bindable selected leaf value. */
-  readonly kjValue = model<unknown>(undefined);
-
-  /** Two-way bindable path of values from root to selected leaf. */
-  readonly kjCascadePath = model<readonly unknown[]>([]);
-
-  /** Emitted when the cascade path changes. */
-  readonly kjCascadePathChange = output<readonly unknown[]>();
-
-  private readonly panel = viewChild<KjCascadeSelectPanel>('panel');
-
-  constructor() {
-    // Mirror outward: when the panel commits a value, sync our model.
-    effect(() => {
-      const p = this.panel();
-      if (!p) return;
-      const v = p.value();
-      if (v !== this.kjValue()) this.kjValue.set(v);
-    });
-  }
-
-  /** @internal */
-  onPathChange(path: readonly unknown[]): void {
-    this.kjCascadePath.set(path);
-    this.kjCascadePathChange.emit(path);
-  }
+  /** @internal — read the composed root directive's value for the label. */
+  private readonly cascade = inject(KjCascadeSelect);
 
   /** @internal */
   readonly displayLabel = computed(() => {
-    const v = this.kjValue() as string | null | undefined;
+    const v = this.cascade.value() as string | null | undefined;
     if (v === undefined || v === null || v === '') return this.placeholder();
     return String(v);
   });
@@ -127,17 +108,20 @@ export class KjCascadeSelectComponent {
     },
   ],
   template: `
-    <span class="kj-cascade-option-label"><ng-content /></span>
+    <span class="kj-cascade-option-label">{{ option.kjLabel() }}</span>
     <span class="kj-cascade-option-chevron" aria-hidden="true">›</span>
+    <ng-content />
   `,
   encapsulation: ViewEncapsulation.None,
   host: {
     'class': 'kj-cascade-option',
-    'style': 'display: contents;',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCascadeOptionComponent {}
+export class KjCascadeOptionComponent {
+  /** @internal — read kjLabel from the composed host directive for rendering. */
+  protected readonly option = inject(KjCascadeSelectOption);
+}
 
 /**
  * Sub-panel container for child options of a `<kj-cascade-option>`.
