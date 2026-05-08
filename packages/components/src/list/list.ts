@@ -57,6 +57,9 @@ import { KjList, KjListItem, type KjListAs, type KjListOrientation } from '@kouj
  * @doc-example With icons and badges
  *   @doc-file list.with-icons.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name list
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-list',
@@ -142,6 +145,8 @@ export class KjListComponent {
  * `tabindex` discipline (e.g. via `KjDisabled` on a button).
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name list
  */
 @Component({
   selector: 'kj-list-item',

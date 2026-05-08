@@ -39,6 +39,9 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
  * @doc-example Auto-submit
  *   @doc-file input-otp.autosubmit.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name input-otp
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input-otp',

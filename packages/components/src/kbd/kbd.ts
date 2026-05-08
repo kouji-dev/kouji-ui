@@ -44,6 +44,9 @@ import { KJ_SIZE_PRESET, KJ_KBD_SIZE_PRESET, KjKbd } from '@kouji-ui/core';
  * @doc-example In a tooltip
  *   @doc-file kbd.in-tooltip.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name kbd
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-kbd',

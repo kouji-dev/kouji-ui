@@ -35,6 +35,9 @@ import { KJ_SELECT } from '@kouji-ui/core';
  * @doc-example Disabled options
  *   @doc-file cascade-select.disabled.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name cascade-select
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-cascade-select',
@@ -107,6 +110,8 @@ export class KjCascadeSelectComponent {
 /**
  * A single option row in a `<kj-cascade-select>`. Renders the option label
  * with an optional selection checkmark and a chevron glyph for branch options.
+ * @doc
+ * @doc-name cascade-select
  */
 @Component({
   selector: 'kj-cascade-option',
@@ -133,6 +138,8 @@ export class KjCascadeOptionComponent {}
 /**
  * Sub-panel container for child options of a `<kj-cascade-option>`.
  * Projects `<kj-cascade-option>` rows for the next level of the hierarchy.
+ * @doc
+ * @doc-name cascade-select
  */
 @Component({
   selector: 'kj-cascade-sub-panel',

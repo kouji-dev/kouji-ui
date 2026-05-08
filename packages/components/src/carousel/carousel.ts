@@ -70,6 +70,9 @@ import type {
  * @doc-example Lazy-loaded images
  *   @doc-file carousel.lazy-load.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-carousel',
@@ -119,6 +122,8 @@ export class KjCarouselComponent implements AfterViewInit {
  * directive (no public inputs).
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-viewport',
@@ -137,6 +142,8 @@ export class KjCarouselViewportComponent {}
  * registration order plus the optional `[label]` shorthand.
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-slide',
@@ -166,6 +173,8 @@ export class KjCarouselSlideComponent {
  * `aria-label` input is required at runtime (dev-mode warn if omitted).
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-previous',
@@ -195,6 +204,8 @@ export class KjCarouselPreviousComponent {
  * `KjCarouselPreviousComponent`.
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-next',
@@ -227,6 +238,8 @@ export class KjCarouselNextComponent {
  * numbered chips.
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-indicators',
@@ -272,6 +285,8 @@ export class KjCarouselIndicatorsComponent {
  * 5000 ms (WCAG 2.2.2).
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-autoplay',
@@ -299,6 +314,8 @@ export class KjCarouselAutoplayComponent {}
  * whenever an autoplay directive is present and its delay > 5000 ms.
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Component({
   selector: 'kj-carousel-pause',

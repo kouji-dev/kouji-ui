@@ -32,6 +32,9 @@ import {
  * @doc-example Prefix and suffix
  *   @doc-file field.with-prefix-suffix.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name field
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-field',
@@ -62,6 +65,8 @@ export class KjFieldComponent {}
 /**
  * Styled wrapper around `KjFieldLabel`.
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-label',
@@ -85,6 +90,8 @@ export class KjFieldLabelComponent {}
 /**
  * Styled wrapper around `KjFieldHelp`.
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-help',
@@ -103,6 +110,8 @@ export class KjFieldHelpComponent {}
 /**
  * Styled wrapper around `KjFieldError`.
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-error',
@@ -134,6 +143,8 @@ export class KjFieldErrorComponent {}
  * </kj-field-group>
  * ```
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-group',

@@ -51,6 +51,9 @@ import {
  *   @doc-file password-input.with-rules.example.ts
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name password-input
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-password-input',

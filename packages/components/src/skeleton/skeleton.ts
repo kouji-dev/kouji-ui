@@ -39,6 +39,9 @@ import { KjSkeleton, type KjSkeletonAnimation, type KjSkeletonShape } from '@kou
  * @doc-example Card
  *   @doc-file skeleton.card.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name skeleton
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-skeleton',

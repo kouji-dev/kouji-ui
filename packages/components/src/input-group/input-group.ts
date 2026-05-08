@@ -35,6 +35,9 @@ import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
  * @doc-example Variants
  *   @doc-file input-group.variants.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name input-group
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input-group',
@@ -78,6 +81,8 @@ export class KjInputGroupComponent {
  *   <input kjInput type="text" placeholder="example.com" />
  * </kj-input-group>
  * ```
+ * @doc
+ * @doc-name input-group
  */
 @Component({
   selector: 'kj-input-group-addon',

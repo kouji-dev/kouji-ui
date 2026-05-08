@@ -43,6 +43,9 @@ import {
  * @doc-example In a form
  *   @doc-file color-picker.in-form.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name color-picker
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-color-picker',

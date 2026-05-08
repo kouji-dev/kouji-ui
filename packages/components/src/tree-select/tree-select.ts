@@ -67,6 +67,9 @@ function flattenTree(
  * nesting level, and the node label.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name tree-select
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tree-select-node',
@@ -158,6 +161,8 @@ export class KjTreeSelectNodeComponent {
  * @doc-example Disabled
  *   @doc-file tree-select.disabled.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name tree-select
  */
 @Component({
   selector: 'kj-tree-select',

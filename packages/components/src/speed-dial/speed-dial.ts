@@ -54,6 +54,9 @@ export type KjSpeedDialPosition =
  * @doc-example Disabled
  *   @doc-file speed-dial.disabled.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-speed-dial',
@@ -92,6 +95,8 @@ export class KjSpeedDialComponent {
  * suppression) plus the speed-dial menu-button ARIA wiring.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Component({
   selector: 'kj-speed-dial-trigger',
@@ -138,6 +143,8 @@ export class KjSpeedDialTriggerComponent {
  * `role="menu"` and is hidden when collapsed.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Component({
   selector: 'kj-speed-dial-actions',
@@ -159,6 +166,8 @@ export class KjSpeedDialActionsComponent {}
  * the dial unless `[kjCloseOnActivate]="false"`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Component({
   selector: 'kj-speed-dial-action',

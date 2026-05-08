@@ -35,6 +35,9 @@ import {
  * @doc-example Async action
  *   @doc-file alert-dialog.async-action.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-alert-dialog',
@@ -55,6 +58,8 @@ export class KjAlertDialogComponent {}
  * backdrop will not dismiss the dialog unless explicitly enabled.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Component({
   selector: 'kj-alert-dialog-overlay',
@@ -78,6 +83,8 @@ export class KjAlertDialogOverlayComponent {}
  * heading id with the context so `aria-labelledby` is wired automatically.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Component({
   selector: 'kj-alert-dialog-title',
@@ -97,6 +104,8 @@ export class KjAlertDialogTitleComponent {}
  * description id with the context for automatic `aria-describedby` wiring.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Component({
   selector: 'kj-alert-dialog-description',
@@ -115,6 +124,8 @@ export class KjAlertDialogDescriptionComponent {}
  * row with consistent spacing. Pure layout — no behaviour.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Component({
   selector: 'kj-alert-dialog-footer',
@@ -137,6 +148,8 @@ export class KjAlertDialogFooterComponent {}
  * provide your own `<kj-button>` (recommended) or any other element.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Component({
   selector: 'kj-alert-dialog-action',
@@ -154,6 +167,8 @@ export class KjAlertDialogActionComponent {}
  * default (WCAG 3.3.4 *Error Prevention*).
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Component({
   selector: 'kj-alert-dialog-cancel',

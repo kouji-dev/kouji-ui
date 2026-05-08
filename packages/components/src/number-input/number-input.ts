@@ -32,6 +32,9 @@ import {
  * @doc-example Currency formatting
  *   @doc-file number-input.currency.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name number-input
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-number-input',

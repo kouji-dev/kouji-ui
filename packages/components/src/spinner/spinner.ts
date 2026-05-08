@@ -46,6 +46,9 @@ import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/
  * @doc-example Inside a button
  *   @doc-file spinner.in-button.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name spinner
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-spinner',

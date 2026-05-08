@@ -13,6 +13,9 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  * @doc-example Inline
  *   @doc-file radio.inline.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name radio
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-radio-group',
@@ -43,6 +46,8 @@ let radioIdCounter = 0;
  * radio because the label's native click-forwarding behaviour fires the
  * directive's click handler. When `disabled` is set, both the dot and the
  * label text dim (see `[data-disabled]` rules in `radio.css`).
+ * @doc
+ * @doc-name radio
  */
 @Component({
   selector: 'kj-radio',

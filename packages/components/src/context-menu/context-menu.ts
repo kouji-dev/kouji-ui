@@ -54,6 +54,9 @@ import {
  * @doc-example Long list
  *   @doc-file context-menu.long-list.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name context-menu
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-context-menu-trigger',

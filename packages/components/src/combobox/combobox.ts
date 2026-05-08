@@ -34,6 +34,9 @@ import {
  * @doc-example With icons
  *   @doc-file combobox.with-icons.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-combobox',
@@ -87,6 +90,8 @@ export class KjComboboxComponent {
  * Single combobox option. Project as a child of `<kj-combobox>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
  */
 @Component({
   selector: 'kj-combobox-option',
@@ -109,6 +114,8 @@ export class KjComboboxOptionComponent {
  * `<kj-combobox>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
  */
 @Component({
   selector: 'kj-combobox-empty',
@@ -138,6 +145,8 @@ export class KjComboboxEmptyComponent {
  * Loading-state slot rendered while `loading=true`. Place inside `<kj-combobox>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
  */
 @Component({
   selector: 'kj-combobox-loading',

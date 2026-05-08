@@ -40,6 +40,9 @@ import {
  * @doc-example Modal vs non-modal
  *   @doc-file drawer.modal-vs-non-modal.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-drawer',
@@ -59,6 +62,8 @@ export class KjDrawerComponent {}
  * automatically.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
  */
 @Component({
   selector: 'kj-drawer-title',
@@ -78,6 +83,8 @@ export class KjDrawerTitleComponent {}
  * `aria-describedby` wiring.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
  */
 @Component({
   selector: 'kj-drawer-description',
@@ -95,6 +102,8 @@ export class KjDrawerDescriptionComponent {}
  * Header band inside the drawer. Optional `align` for title placement.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
  */
 @Component({
   selector: 'kj-drawer-header',
@@ -117,6 +126,8 @@ export class KjDrawerHeaderComponent {
  * `scroll` enables overflow scroll inside the body slot.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
  */
 @Component({
   selector: 'kj-drawer-body',
@@ -140,6 +151,8 @@ export class KjDrawerBodyComponent {
  * Footer / action band. `align` controls action button placement.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
  */
 @Component({
   selector: 'kj-drawer-footer',
@@ -163,6 +176,8 @@ export class KjDrawerFooterComponent {
  * `(kjCloseRequested)` handlers can intervene.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name drawer
  */
 @Component({
   selector: 'kj-drawer-close',

@@ -38,6 +38,9 @@ import { KjProgressBar, KjProgressBarFill } from '@kouji-ui/core';
  * @doc-example With value text
  *   @doc-file progress-bar.with-label.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name progress-bar
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-progress-bar',

@@ -32,6 +32,9 @@ import { KjButton } from '@kouji-ui/core';
  * @doc-example Configured presets
  *   @doc-file button.configured.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name button
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-button',

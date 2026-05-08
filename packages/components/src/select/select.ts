@@ -16,6 +16,9 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  * @doc-example Grouped options
  *   @doc-file select.grouped.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name select
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-select',
@@ -53,7 +56,11 @@ export class KjSelectComponent {
   });
 }
 
-/** Single option row. */
+/**
+ * Single option row.
+ * @doc
+ * @doc-name select
+ */
 @Component({
   selector: 'kj-option',
   standalone: true,

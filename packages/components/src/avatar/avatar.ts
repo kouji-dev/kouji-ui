@@ -18,6 +18,8 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
  * @doc-example Shapes
  *   @doc-file avatar.shapes.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name avatar
  */
 @Component({
   selector: 'kj-avatar',

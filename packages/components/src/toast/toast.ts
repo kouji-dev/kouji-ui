@@ -28,6 +28,8 @@ import type { KjToastVariant } from '@kouji-ui/core';
  *      @doc-file toast.dismissible.example.ts
  *
  * @category Library/Feedback
+ * @doc-name toast
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-toast-viewport',
@@ -57,6 +59,8 @@ export class KjToastViewportComponent {}
 /**
  * Single toast item. Bind `[variant]` from `ctx.variant` and `[id]` from `ctx.id`.
  * Place inside the `<ng-template let-ctx>` you pass to `KjToastService.show()`.
+ * @doc
+ * @doc-name toast
  */
 @Component({
   selector: 'kj-toast',
@@ -86,6 +90,8 @@ export class KjToastComponent {
  * The rendered `<button>` carries a default `aria-label="Dismiss notification"`
  * so icon-only close buttons remain accessible (WCAG 4.1.2). Override via the
  * `ariaLabel` input or by projecting visible text.
+ * @doc
+ * @doc-name toast
  */
 @Component({
   selector: 'kj-toast-close',

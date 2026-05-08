@@ -37,6 +37,9 @@ import { KjButtonGroup, KjButtonGroupOrientation } from '@kouji-ui/core';
  * @doc-example Icon only
  *   @doc-file button-group.icon-only.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name button-group
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-button-group',

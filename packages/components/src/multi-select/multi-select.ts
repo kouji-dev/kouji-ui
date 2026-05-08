@@ -203,6 +203,9 @@ export class KjMultiSelectComponent {
  * preceded by a checkbox-like glyph reflecting `aria-selected`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name multi-select
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-multi-select-option',
@@ -236,6 +239,8 @@ export class KjMultiSelectOptionComponent {
  * `<kj-multi-select>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name multi-select
  */
 @Component({
   selector: 'kj-multi-select-group',

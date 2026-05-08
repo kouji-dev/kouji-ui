@@ -25,6 +25,9 @@ import { KjAvatarComponent } from './avatar';
  * @doc-example List
  *   @doc-file avatar-group.list.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name avatar
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-avatar-group',

@@ -68,6 +68,9 @@ export type KjEmptyStateLevel = 1 | 2 | 3 | 4 | 5 | 6;
  * @doc-example With secondary actions
  *   @doc-file empty-state.with-actions.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name empty-state
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-empty-state',
@@ -124,6 +127,8 @@ export class KjEmptyStateComponent {
  * accessible meaning lives in `<kj-empty-state-title>` and
  * `<kj-empty-state-description>`. Consumers project an `<svg>`, an icon
  * component, or an `<img>`.
+ * @doc
+ * @doc-name empty-state
  */
 @Component({
   selector: 'kj-empty-state-icon',
@@ -143,6 +148,8 @@ export class KjEmptyStateIconComponent {}
  * Pick the level that matches the empty state's depth in the document
  * outline — full-page placements want `1` or `2`; deep card-body
  * placements want `4` or higher.
+ * @doc
+ * @doc-name empty-state
  */
 @Component({
   selector: 'kj-empty-state-title',
@@ -170,6 +177,8 @@ export class KjEmptyStateTitleComponent {
  * Description slot. Renders a `<p>` containing the projected text. May
  * contain inline `<a kjLink>` for "browse all items" / "contact support"
  * style affordances.
+ * @doc
+ * @doc-name empty-state
  */
 @Component({
   selector: 'kj-empty-state-description',
@@ -194,6 +203,8 @@ export class KjEmptyStateDescriptionComponent {}
  *   <a kjLink secondary href="/help">Learn more</a>
  * </kj-empty-state-actions>
  * ```
+ * @doc
+ * @doc-name empty-state
  */
 @Component({
   selector: 'kj-empty-state-actions',

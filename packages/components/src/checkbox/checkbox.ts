@@ -20,6 +20,9 @@ let checkboxIdCounter = 0;
  * @doc-example Disabled
  *   @doc-file checkbox.disabled.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name checkbox
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-checkbox',

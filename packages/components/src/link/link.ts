@@ -32,6 +32,9 @@ import { KjLink } from '@kouji-ui/core';
  * @doc-example In prose
  *   @doc-file link.in-prose.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name link
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-link',

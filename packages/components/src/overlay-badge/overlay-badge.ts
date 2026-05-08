@@ -56,6 +56,9 @@ import {
  * @doc-example With description
  *   @doc-file overlay-badge.described.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name overlay-badge
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-overlay-badge',
@@ -164,6 +167,8 @@ export class KjOverlayBadgeComponent {
  * automatically.
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name overlay-badge
  */
 @Component({
   selector: 'kj-overlay-badge-content',

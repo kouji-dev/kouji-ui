@@ -48,6 +48,9 @@ import type { KjAlertMode } from '@kouji-ui/core';
  * @doc-example Static banner
  *   @doc-file alert.banner.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name alert
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-alert',
@@ -96,6 +99,8 @@ export class KjAlertComponent {
  * up `aria-hidden="true"` and `data-variant` from the parent alert context.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Component({
   selector: 'kj-alert-icon',
@@ -114,6 +119,8 @@ export class KjAlertIconComponent {}
  * SHOULD use `<h3 kjAlertTitle>` when the alert lives in a content region).
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Component({
   selector: 'kj-alert-title',
@@ -130,6 +137,8 @@ export class KjAlertTitleComponent {}
  * Description body for the alert. Wires `aria-describedby` via `KjAlertDescription`.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Component({
   selector: 'kj-alert-description',
@@ -147,6 +156,8 @@ export class KjAlertDescriptionComponent {}
  * with an overridable `aria-label`. Compose `<kj-button>` instances inside.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Component({
   selector: 'kj-alert-actions',
@@ -167,6 +178,8 @@ export class KjAlertActionsComponent {
  * content is `×`; override via projected content. Place inside `<kj-alert>`.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Component({
   selector: 'kj-alert-dismiss',

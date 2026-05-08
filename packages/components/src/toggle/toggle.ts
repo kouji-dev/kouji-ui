@@ -17,6 +17,9 @@ import { KjToggle } from '@kouji-ui/core';
  * @doc-example With label
  *   @doc-file toggle.with-label.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name toggle
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-toggle',

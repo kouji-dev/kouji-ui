@@ -42,6 +42,9 @@ import { Directive } from '@angular/core';
  * @doc-example Truncate (multi-line)
  *   @doc-file typography.truncate.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name typography
+ * @doc-is-main
  */
 @Directive({
   // Selector is intentionally namespaced so it never matches consumer

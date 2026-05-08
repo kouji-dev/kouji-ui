@@ -13,6 +13,9 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  * @doc-example With icon
  *   @doc-file badge.with-icon.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name badge
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-badge',

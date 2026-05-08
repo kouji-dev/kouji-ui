@@ -33,6 +33,9 @@ import {
  * @doc-example Placement
  *   @doc-file confirm-popup.placement.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-confirm-popup',
@@ -78,6 +81,8 @@ export class KjConfirmPopupComponent {}
  * `aria-controls`).
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Component({
   selector: 'kj-confirm-popup-trigger',
@@ -105,6 +110,8 @@ export class KjConfirmPopupTriggerComponent {}
  * come from the underlying directives.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Component({
   selector: 'kj-confirm-popup-content',
@@ -163,6 +170,8 @@ export class KjConfirmPopupContentComponent {
  * pattern requires a description).
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Component({
   selector: 'kj-confirm-popup-message',
@@ -183,6 +192,8 @@ export class KjConfirmPopupMessageComponent {}
  * the destructive variant when the popup is destructive.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Component({
   selector: 'kj-confirm-popup-action',
@@ -205,6 +216,8 @@ export class KjConfirmPopupActionComponent {}
  * by default — WCAG 3.3.4 *Error Prevention*.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Component({
   selector: 'kj-confirm-popup-cancel',
@@ -227,6 +240,8 @@ export class KjConfirmPopupCancelComponent {}
  * `<kj-confirm-popup-cancel>` slots inside.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Component({
   selector: 'kj-confirm-popup-actions',

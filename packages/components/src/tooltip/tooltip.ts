@@ -35,6 +35,9 @@ import {
  * @doc-example Disabled
  *   @doc-file tooltip.disabled.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tooltip',
@@ -81,6 +84,8 @@ export class KjTooltipComponent {}
  * interactive content, use `<kj-popover>` instead.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
  */
 @Component({
   selector: 'kj-tooltip-content',
@@ -110,6 +115,8 @@ export class KjTooltipContentComponent {}
  * `aria-hidden="true"` by the underlying directive.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
  */
 @Component({
   selector: 'kj-tooltip-arrow',
@@ -130,6 +137,8 @@ export class KjTooltipArrowComponent {}
  * children — apply to a toolbar / icon-button cluster.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
  */
 @Component({
   selector: 'kj-tooltip-group',

@@ -34,6 +34,9 @@ import { KjInputMask } from '@kouji-ui/core';
  *   @doc-file input-mask.custom-tokens.example.ts
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name input-mask
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input-mask',

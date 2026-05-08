@@ -79,6 +79,9 @@ function numberWithDefault(def: number) {
  * @doc-example With Field wrapper
  *   @doc-file textarea.with-field.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name textarea
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-textarea',

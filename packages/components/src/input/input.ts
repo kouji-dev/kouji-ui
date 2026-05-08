@@ -25,6 +25,8 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
  *   @doc-file input.example.ts
  *   @doc-file input.color.example.ts
  * @category Library/Data input
+ * @doc-name input
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input',

@@ -38,6 +38,9 @@ import {
  * @doc-example Formatted string output
  *   @doc-file time-picker.formatted.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name time-picker
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-time-picker',

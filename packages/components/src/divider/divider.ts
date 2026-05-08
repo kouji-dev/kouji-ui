@@ -57,6 +57,9 @@ import {
  * @doc-example Structural
  *   @doc-file divider.structural.example.ts
  * @category Library/Layout/Divider
+ * @doc
+ * @doc-name divider
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-divider',
