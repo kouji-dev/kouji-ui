@@ -1,2 +1,4 @@
-﻿export { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from './select';
-export { KJ_SELECT, type KjSelectContext } from './select.context';
+export * from './select-root';
+export * from './select-trigger';
+export * from './select-content';
+export * from './select-option';

@@ -55,7 +55,6 @@ export * from './tabs/index';
 export * from './accordion/index';
 export * from './stepper/index';
 export * from './select/index';
-export * from './multi-select/index';
 export * from './combobox/index';
 export * from './cascade-select/index';
 export * from './tree-select/index';
