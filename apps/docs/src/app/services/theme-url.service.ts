@@ -91,7 +91,7 @@ export class ThemeUrlService {
       try {
         const ds = new DecompressionStream('deflate-raw');
         const writer = ds.writable.getWriter();
-        const wp = writer.write(bytes).catch(() => {});
+        const wp = writer.write(new Uint8Array(bytes)).catch(() => {});
         const cp = writer.close().catch(() => {});
         const reader = ds.readable.getReader();
         const chunks: Uint8Array[] = [];
