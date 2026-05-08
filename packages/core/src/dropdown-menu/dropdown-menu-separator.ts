@@ -16,6 +16,7 @@ import { Directive } from '@angular/core';
   selector: '[kjDropdownMenuSeparator]',
   standalone: true,
   host: {
+    'class': 'kj-dropdown-menu-separator',
     'role': 'separator',
     'aria-orientation': 'horizontal',
     'tabindex': '-1',

@@ -26,6 +26,7 @@ import { KjDropdownMenuLabel } from './dropdown-menu-label';
   selector: '[kjDropdownMenuGroup]',
   standalone: true,
   host: {
+    'class': 'kj-dropdown-menu-group',
     'role': 'group',
     '[attr.aria-labelledby]': 'labelledBy()',
   },

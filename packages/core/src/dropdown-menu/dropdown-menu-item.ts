@@ -37,6 +37,7 @@ import {
   standalone: true,
   hostDirectives: [KjRovingTabindexItemDirective],
   host: {
+    'class': 'kj-dropdown-menu-item',
     'role': 'menuitem',
     '[attr.aria-disabled]': 'kjDisabled() ? "true" : null',
     '[attr.data-disabled]': 'kjDisabled() ? "" : null',

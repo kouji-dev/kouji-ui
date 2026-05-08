@@ -27,6 +27,7 @@ import {
   selector: '[kjConfirmPopupMessage]',
   standalone: true,
   host: {
+    'class': 'kj-confirm-popup-message',
     '[attr.id]': 'ctx.messageId',
   },
 })

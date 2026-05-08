@@ -28,6 +28,7 @@ import { nextDropdownMenuLabelId } from './dropdown-menu-trigger';
   standalone: true,
   exportAs: 'kjDropdownMenuLabel',
   host: {
+    'class': 'kj-dropdown-menu-label',
     'role': 'presentation',
   },
 })

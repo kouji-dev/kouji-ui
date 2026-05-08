@@ -202,6 +202,7 @@ export class KjTreeSelect implements KjTreeSelectContext {
   standalone: true,
   exportAs: 'kjTreeSelectNode',
   host: {
+    'class': 'kj-tree-select-node',
     'role': 'treeitem',
     '[attr.id]': 'id',
     '[attr.tabindex]': 'disabled() ? "-1" : "0"',

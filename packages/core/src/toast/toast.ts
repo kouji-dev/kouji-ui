@@ -430,6 +430,7 @@ export class KjToastViewport {
   selector: '[kjToastClose]',
   standalone: true,
   host: {
+    'class': 'kj-toast-close',
     '(click)': 'dismiss()',
   },
 })

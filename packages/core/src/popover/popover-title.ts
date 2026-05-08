@@ -29,6 +29,7 @@ export function nextPopoverTitleId(): string {
   selector: '[kjPopoverTitle]',
   standalone: true,
   host: {
+    'class': 'kj-popover-title',
     '[attr.id]': 'titleId',
   },
 })

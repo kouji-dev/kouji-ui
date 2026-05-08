@@ -28,6 +28,7 @@ import { KJ_SELECT } from './select-root';
     { directive: KjDisabled, inputs: ['kjDisabled'] },
   ],
   host: {
+    'class': 'kj-option',
     'role': 'option',
     '[attr.tabindex]': '"0"',
     '[attr.aria-selected]': 'selected().toString()',

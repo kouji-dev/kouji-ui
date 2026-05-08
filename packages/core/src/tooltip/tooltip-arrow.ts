@@ -23,6 +23,7 @@ import { Directive } from '@angular/core';
   selector: '[kjTooltipArrow]',
   standalone: true,
   host: {
+    'class': 'kj-tooltip-arrow',
     'aria-hidden': 'true',
     'data-kj-tooltip-arrow': '',
   },

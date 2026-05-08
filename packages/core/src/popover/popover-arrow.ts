@@ -22,6 +22,7 @@ import { Directive } from '@angular/core';
   selector: '[kjPopoverArrow]',
   standalone: true,
   host: {
+    'class': 'kj-popover-arrow',
     'aria-hidden': 'true',
     'data-kj-popover-arrow': '',
   },
