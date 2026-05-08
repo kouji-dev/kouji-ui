@@ -1,0 +1,107 @@
+<header class="hd">
+  <h2 class="hd__title">Settings</h2>
+  <p class="hd__subtitle">Manage your account, preferences, and avatar.</p>
+</header>
+
+<section class="card" aria-labelledby="profile-h">
+  <h3 id="profile-h" class="card__title">Profile</h3>
+  <p class="card__meta">Public information shown on your profile.</p>
+
+  <div class="grid-2">
+    <kj-field>
+      <kj-field-label>Display name</kj-field-label>
+      <kj-input type="text" [(ngModel)]="displayName" placeholder="Your name" />
+    </kj-field>
+
+    <kj-field>
+      <kj-field-label>Email</kj-field-label>
+      <kj-input type="email" [(ngModel)]="email" placeholder="you@example.com" />
+      <kj-field-help>We'll send a confirmation link if you change this.</kj-field-help>
+    </kj-field>
+  </div>
+
+  <kj-field>
+    <kj-field-label>New password</kj-field-label>
+    <kj-password-input kjAutocomplete="new-password" kjPlaceholder="Leave blank to keep current" />
+    <kj-field-help>At least 8 characters with a mix of letters and numbers.</kj-field-help>
+  </kj-field>
+</section>
+
+<section class="card" aria-labelledby="prefs-h">
+  <h3 id="prefs-h" class="card__title">Preferences</h3>
+  <p class="card__meta">Tune the interface to your taste.</p>
+
+  <div class="grid-2">
+    <kj-field>
+      <kj-field-label>Language</kj-field-label>
+      <kj-select [(value)]="language" placeholder="Select a language">
+        <kj-option [value]="'en'">English</kj-option>
+        <kj-option [value]="'es'">Español</kj-option>
+        <kj-option [value]="'fr'">Français</kj-option>
+        <kj-option [value]="'de'">Deutsch</kj-option>
+        <kj-option [value]="'ja'">日本語</kj-option>
+      </kj-select>
+    </kj-field>
+
+    <fieldset class="theme-mode">
+      <legend class="theme-mode__legend">Theme</legend>
+      <kj-radio-group [(value)]="themeMode" ariaLabel="Theme">
+        <kj-radio [value]="'system'">System</kj-radio>
+        <kj-radio [value]="'light'">Light</kj-radio>
+        <kj-radio [value]="'dark'">Dark</kj-radio>
+      </kj-radio-group>
+    </fieldset>
+  </div>
+
+  <div class="density">
+    <div class="density__head">
+      <label for="density-slider" class="density__label">Density</label>
+      <span class="density__value">{{ density() }}</span>
+    </div>
+    <kj-slider
+      [(kjValue)]="density"
+      [kjMin]="0"
+      [kjMax]="2"
+      [kjStep]="1"
+      kjAriaLabel="Density"
+    />
+    <div class="density__scale" aria-hidden="true">
+      <span>Compact</span>
+      <span>Cozy</span>
+      <span>Comfortable</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <kj-field>
+      <kj-field-label>Brand color</kj-field-label>
+      <kj-color-picker [(ngModel)]="brand" />
+      <kj-field-help>Used as your workspace accent.</kj-field-help>
+    </kj-field>
+
+    <div class="toggle-row">
+      <kj-checkbox [(checked)]="emailNotifications">Email notifications</kj-checkbox>
+      <p class="toggle-row__hint">Get product news and weekly digests.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="avatar-h">
+  <h3 id="avatar-h" class="card__title">Avatar</h3>
+  <p class="card__meta">Upload a square image, ideally 256×256 or larger.</p>
+  <kj-file-upload
+    [kjMultiple]="false"
+    kjAccept="image/*"
+    kjDropzoneLabel="Drop an image here, or click to browse"
+    kjDropzoneHint="PNG, JPG, or GIF up to 4 MB"
+    kjTriggerLabel="Choose image"
+  />
+</section>
+
+<footer class="actions" role="group" aria-label="Settings actions">
+  <kj-button kjVariant="destructive">Delete account</kj-button>
+  <div class="actions__right">
+    <kj-button kjVariant="ghost">Cancel</kj-button>
+    <kj-button kjVariant="default">Save changes</kj-button>
+  </div>
+</footer>
