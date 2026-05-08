@@ -34,10 +34,7 @@
 
   /* ── Root panel ──────────────────────────────────────────────────────── */
   .kj-cascade-panel {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
+    box-sizing: border-box;
     background: var(--kj-color-base-100);
     border: 1px solid var(--kj-color-base-300);
     border-radius: var(--kj-radius-field);
