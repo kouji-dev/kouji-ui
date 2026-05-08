@@ -1,5 +1,7 @@
 # Theme Generator Enhancement Implementation Plan
 
+**Status: COMPLETE**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Enhance the docs theme generator with seed-based palette generation, a curated AAA swatch grid, a randomize button, a DaisyUI-style contrast scorecard, hash-URL sharing + JSON/CSS import, and a 5-tab inline preview that exercises the full component library.
@@ -2504,7 +2506,7 @@ git commit -m "test(theme-gen): e2e for swatches, import, preview tabs, scorecar
 
 ### Task 22: Full unit + E2E sweep, accessibility audit, final commit
 
-- [ ] **Step 1: Run full unit suite for the affected files**
+- [x] **Step 1: Run full unit suite for the affected files**
 
 Run:
 ```bash
@@ -2523,12 +2525,12 @@ pnpm exec vitest run \
 ```
 Expected: all PASS.
 
-- [ ] **Step 2: Run E2E**
+- [x] **Step 2: Run E2E**
 
 Run: `pnpm exec playwright test apps/docs/e2e/theme-generator.spec.ts --project=chromium`
 Expected: all PASS.
 
-- [ ] **Step 3: Manual a11y audit**
+- [x] **Step 3: Manual a11y audit**
 
 Open `/theme-generator`. With keyboard only (Tab/Shift-Tab/Arrow/Enter/Escape):
 - Navigate every swatch in the grid (Tab moves between, Enter activates).
@@ -2539,11 +2541,11 @@ Open `/theme-generator`. With keyboard only (Tab/Shift-Tab/Arrow/Enter/Escape):
 
 For any failure: file as a follow-up TODO; do not block the merge unless a blocker (focus loss, keyboard trap).
 
-- [ ] **Step 4: Worst-case URL hash size sanity check**
+- [x] **Step 4: Worst-case URL hash size sanity check**
 
 Run dev server, customize every color, every shape, every font, save. Verify `location.hash` length below 2 KB. Log the actual length in the final commit message.
 
-- [ ] **Step 5: Final commit**
+- [x] **Step 5: Final commit**
 
 ```bash
 git add -A
