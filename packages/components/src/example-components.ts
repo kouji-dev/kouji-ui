@@ -162,6 +162,7 @@ export { KjDialogDefaultExample }      from './dialog/dialog.default.example';
 export { KjDialogWithFormExample }     from './dialog/dialog.with-form.example';
 export { KjDialogScrollableExample }   from './dialog/dialog.scrollable.example';
 export { KjDialogConfirmationExample } from './dialog/dialog.confirmation.example';
+export { KjDialogNestedExample }       from './dialog/dialog.nested.example';
 
 // Drawer
 export { KjDrawerExample }                from './drawer/drawer.example';

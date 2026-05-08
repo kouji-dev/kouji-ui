@@ -1,4 +1,4 @@
-﻿import { Directive, input } from '@angular/core';
+﻿import { Directive, booleanAttribute, input } from '@angular/core';
 
 /**
  * Applies disabled state to any element via ARIA and data attributes.
@@ -20,5 +20,5 @@
 })
 export class KjDisabled {
   /** Whether the element is disabled. Reflects via `aria-disabled` and `data-disabled`. */
-  readonly disabled = input<boolean>(false, { alias: 'kjDisabled' });
+  readonly disabled = input<boolean, unknown>(false, { alias: 'kjDisabled', transform: booleanAttribute });
 }

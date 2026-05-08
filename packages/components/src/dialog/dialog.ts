@@ -23,6 +23,8 @@ export {
  *   @doc-file dialog.scrollable.example.ts
  * @doc-example With form
  *   @doc-file dialog.with-form.example.ts
+ * @doc-example Nested overlays
+ *   @doc-file dialog.nested.example.ts
  * @category Library/Overlay
  */
 @Component({

@@ -61,6 +61,17 @@ export function tabCycle(initialOpts: KjTabCycleOpts = {}): KjTabCycleStrategy {
       if (cfg instanceof HTMLElement) target = cfg;
       else if (typeof cfg === 'function') target = cfg();
       else target = focusables()[0] ?? null;
+      if (!target) {
+        // No focusable children — focus the panel itself so the trigger
+        // doesn't retain focus (WCAG 2.4.3) and so a held Space doesn't
+        // re-fire the trigger's click handler. tabindex=-1 makes the panel
+        // programmatically focusable without entering the tab order.
+        const panel = ctx?.panelEl();
+        if (panel) {
+          if (!panel.hasAttribute('tabindex')) panel.setAttribute('tabindex', '-1');
+          target = panel;
+        }
+      }
       target?.focus();
     },
     restoreFocus() {

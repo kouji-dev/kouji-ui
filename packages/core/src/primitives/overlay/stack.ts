@@ -7,7 +7,7 @@ export interface KjOverlayRegistration {
   closeOnEsc?: boolean;
 }
 
-export interface KjOverlayHandle {
+export interface KjOverlayStackHandle {
   unregister: () => void;
   isTopmost: Signal<boolean>;
 }
@@ -35,7 +35,7 @@ export class KjOverlayStack {
   private readonly _onKeydown = (e: KeyboardEvent) => this.handleKeydown(e);
   private readonly _onPointerDown = (e: PointerEvent) => this.handlePointerDown(e);
 
-  register(id: string, opts: KjOverlayRegistration): KjOverlayHandle {
+  register(id: string, opts: KjOverlayRegistration): KjOverlayStackHandle {
     if (!this.isBrowser) {
       return { unregister: () => {}, isTopmost: computed(() => false) };
     }

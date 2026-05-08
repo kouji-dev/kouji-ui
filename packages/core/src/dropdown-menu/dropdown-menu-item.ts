@@ -2,13 +2,13 @@ import {
   Directive,
   ElementRef,
   afterNextRender,
-  booleanAttribute,
   computed,
   inject,
   input,
   output,
 } from '@angular/core';
 import { KjRovingTabindexItemDirective } from '../a11y/roving-tabindex';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import {
   KJ_DROPDOWN_MENU,
   type KjDropdownMenuContext,
@@ -35,12 +35,13 @@ import {
 @Directive({
   selector: '[kjDropdownMenuItem]',
   standalone: true,
-  hostDirectives: [KjRovingTabindexItemDirective],
+  hostDirectives: [
+    KjRovingTabindexItemDirective,
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
+  ],
   host: {
     'class': 'kj-dropdown-menu-item',
     'role': 'menuitem',
-    '[attr.aria-disabled]': 'kjDisabled() ? "true" : null',
-    '[attr.data-disabled]': 'kjDisabled() ? "" : null',
     '(click)': 'onActivate($event)',
     '(keydown.enter)': 'onKeyActivate($event)',
     '(keydown.space)': 'onKeyActivate($event)',
@@ -50,9 +51,11 @@ export class KjDropdownMenuItem {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   /** Parent menu context. */
   private readonly ctx = inject<KjDropdownMenuContext>(KJ_DROPDOWN_MENU);
+  /** Composed disabled primitive — single source of truth for disabled state. */
+  private readonly disabledPrimitive = inject(KjDisabled, { self: true });
 
-  /** Disables the item. ARIA-disabled, not native. */
-  readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /** Disabled state proxy (reads from composed `KjDisabled`). */
+  protected readonly kjDisabled = computed(() => this.disabledPrimitive.disabled());
 
   /**
    * Whether to close the menu after activation. When `undefined`, inherits

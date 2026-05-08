@@ -1,6 +1,6 @@
 import { EnvironmentInjector, Injectable, TemplateRef, Type, effect, inject, runInInjectionContext, signal } from '@angular/core';
 import { KjOverlayBuilder } from '../primitives/overlay/builder';
-import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
+import { inPlace } from '../primitives/overlay/strategies/mount/in-place';
 import { corner, type KjCornerPosition } from '../primitives/overlay/strategies/position/corner';
 import { polite } from '../primitives/overlay/strategies/live-announcer/polite';
 import { assertive } from '../primitives/overlay/strategies/live-announcer/assertive';
@@ -155,8 +155,8 @@ export class KjToastService {
   private openOverlay(opts: KjToastOptions): KjToastRef {
     const id = opts.id ?? crypto.randomUUID();
     const variant = opts.variant ?? 'default';
-    const ctrl = runInInjectionContext(this.env, () => this.builder.create({
-      mount: bodyPortal(),
+    const handle = this.builder.create({
+      mount: inPlace(),
       position: corner({ position: opts.position ?? 'bottom-right' }),
       backdrop: null,
       focusTrap: null,
@@ -164,26 +164,20 @@ export class KjToastService {
       liveAnnouncer: variant === 'destructive' ? assertive() : polite(),
       trigger: programmatic(),
       panelRole: variant === 'destructive' ? 'alert' : 'status',
-    }));
+    });
 
-    let cmpRef: { destroy: () => void } | null = null;
     if (opts.component) {
-      cmpRef = runInInjectionContext(this.env, () => this.builder.attachComponent(ctrl, opts.component!, { data: opts.data }));
+      this.builder.attachComponent(handle, opts.component, { data: opts.data });
     }
 
     runInInjectionContext(this.env, () => {
       let wasOpen = false;
       const eff = effect(() => {
-        const s = ctrl.state();
+        const s = handle.controller.state();
         if (s === 'open' || s === 'opening') wasOpen = true;
         if (s === 'closed' && wasOpen) {
           eff.destroy();
-          // Run cleanup on next microtask so afterClosed$ subscribers see the
-          // result before the component view is torn down.
-          queueMicrotask(() => {
-            cmpRef?.destroy();
-            ctrl.dispose();
-          });
+          queueMicrotask(() => handle.destroy());
         }
       });
     });
@@ -199,12 +193,12 @@ export class KjToastService {
     }]);
 
     const dismiss = (toastId: string) => this.dismiss(toastId);
-    const ref = new KjToastRef(id, ctrl, dismiss);
-    this.overlays.set(id, { close: () => ctrl.close('programmatic') });
+    const ref = new KjToastRef(id, handle.controller, dismiss);
+    this.overlays.set(id, { close: () => handle.controller.close('programmatic') });
 
     const duration = opts.duration ?? this.strategy.duration;
     if (duration > 0) this.startTimer(id, duration);
-    ctrl.open();
+    handle.controller.open();
     return ref;
   }
 

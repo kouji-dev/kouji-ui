@@ -1,27 +1,14 @@
 import {
-  ApplicationRef,
   EnvironmentInjector,
   Injectable,
   InjectionToken,
-  Injector,
   Type,
-  createComponent,
   effect,
   inject,
   runInInjectionContext,
 } from '@angular/core';
-import { KjOverlayController } from '../primitives/overlay/controller';
-import {
-  KJ_OVERLAY_BACKDROP_STRATEGY,
-  KJ_OVERLAY_FOCUS_TRAP_STRATEGY,
-  KJ_OVERLAY_LIVE_ANNOUNCER_STRATEGY,
-  KJ_OVERLAY_MOUNT_STRATEGY,
-  KJ_OVERLAY_PANEL_ROLE,
-  KJ_OVERLAY_POSITION_STRATEGY,
-  KJ_OVERLAY_SCROLL_LOCK_STRATEGY,
-  KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
-} from '../primitives/overlay/tokens';
-import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
+import { KjOverlayBuilder } from '../primitives/overlay/builder';
+import { inPlace } from '../primitives/overlay/strategies/mount/in-place';
 import { edgeSheet } from '../primitives/overlay/strategies/position/edge-sheet';
 import { solidBackdrop } from '../primitives/overlay/strategies/backdrop/solid';
 import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle';
@@ -47,14 +34,14 @@ export interface KjDrawerOpenOptions<D = unknown> {
 
 /**
  * Programmatic service for opening drawers. Mirrors `KjDialog`. Builds an
- * overlay controller wired to the overlay primitives and renders a component
- * inside a body-portal positioned via `edgeSheet({side})`.
+ * overlay handle wired to the overlay primitives and renders a component
+ * inside the singleton overlay container, positioned via `edgeSheet({side})`.
  *
  * @category Core/Overlays
  */
 @Injectable({ providedIn: 'root' })
 export class KjDrawerService {
-  private readonly appRef = inject(ApplicationRef);
+  private readonly builder = inject(KjOverlayBuilder);
   private readonly env = inject(EnvironmentInjector);
 
   /**
@@ -70,82 +57,43 @@ export class KjDrawerService {
   ): KjDrawerRef<T, R> {
     const side: KjDrawerSide = opts.side ?? 'right';
 
-    // Per-overlay injector so the controller, strategies, and panel-role are
-    // visible to the rendered component's `KjOverlayPanel` host directive.
-    const overlayInjector = Injector.create({
-      providers: [
-        KjOverlayController,
-        { provide: KJ_OVERLAY_MOUNT_STRATEGY,          useFactory: () => bodyPortal() },
-        { provide: KJ_OVERLAY_POSITION_STRATEGY,       useFactory: () => edgeSheet({ side }) },
-        {
-          provide: KJ_OVERLAY_BACKDROP_STRATEGY,
-          useFactory: () => solidBackdrop({
-            inert: true,
-            closeOnClick: opts.closeOnOutside ?? true,
-          }),
-        },
-        { provide: KJ_OVERLAY_FOCUS_TRAP_STRATEGY,     useFactory: () => tabCycle({ returnFocus: true }) },
-        { provide: KJ_OVERLAY_SCROLL_LOCK_STRATEGY,    useFactory: () => htmlOverflow() },
-        { provide: KJ_OVERLAY_LIVE_ANNOUNCER_STRATEGY, useFactory: () => silent() },
-        { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,  useFactory: () => programmatic() },
-        { provide: KJ_OVERLAY_PANEL_ROLE,              useValue: 'dialog' as const },
-      ],
-      parent: this.env,
+    const handle = this.builder.create({
+      mount: inPlace(),
+      position: edgeSheet({ side }),
+      backdrop: solidBackdrop({
+        inert: true,
+        closeOnClick: opts.closeOnOutside ?? true,
+      }),
+      focusTrap: tabCycle({ returnFocus: true }),
+      scrollLock: htmlOverflow(),
+      liveAnnouncer: silent(),
+      trigger: programmatic(),
+      panelRole: 'dialog',
     });
 
-    const ctrl = runInInjectionContext(this.env, () => overlayInjector.get(KjOverlayController));
-    const ref = new KjDrawerRef<T, R>(ctrl);
-
-    // Inject DRAWER_DATA / KjDrawerRef alongside the overlay providers.
-    const componentInjector = Injector.create({
+    const ref = new KjDrawerRef<T, R>(handle.controller);
+    const cmpRef = this.builder.attachComponent(handle, component, {
       providers: [
         { provide: KjDrawerRef, useValue: ref },
         { provide: DRAWER_DATA, useValue: opts.data },
         { provide: DRAWER_SIDE, useValue: side },
         { provide: DRAWER_DRAG, useValue: !!opts.drag },
       ],
-      parent: overlayInjector,
     });
-
-    const cmpRef = runInInjectionContext(overlayInjector, () =>
-      createComponent(component, {
-        environmentInjector: this.env,
-        elementInjector: componentInjector,
-      }),
-    );
-
-    // Render a backdrop element BEFORE the panel so the visual scrim sits
-    // behind the drawer. Click-to-close honours `closeOnOutside`.
-    const backdropEl = document.createElement('div');
-    backdropEl.setAttribute('data-kj-overlay-backdrop', '');
-    backdropEl.className = 'kj-overlay-backdrop';
-    if ((opts.closeOnOutside ?? true)) {
-      backdropEl.addEventListener('click', () => ctrl.close('outside'));
-    }
-    document.body.appendChild(backdropEl);
-
-    this.appRef.attachView(cmpRef.hostView);
-    document.body.appendChild(cmpRef.location.nativeElement);
-
     ref.bindInstance(cmpRef.instance);
+
     runInInjectionContext(this.env, () => {
       let wasOpen = false;
       const eff = effect(() => {
-        const s = ctrl.state();
+        const s = handle.controller.state();
         if (s === 'open' || s === 'opening') wasOpen = true;
         if (s === 'closed' && wasOpen) {
           eff.destroy();
-          // Run cleanup on next microtask so afterClosed$ subscribers see the
-          // result before the component view is torn down.
-          queueMicrotask(() => {
-            cmpRef.destroy();
-            ctrl.dispose();
-            backdropEl.remove();
-          });
+          queueMicrotask(() => handle.destroy());
         }
       });
     });
-    ctrl.open();
+    handle.controller.open();
     return ref;
   }
 }

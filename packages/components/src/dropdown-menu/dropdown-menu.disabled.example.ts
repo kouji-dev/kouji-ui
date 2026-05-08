@@ -11,7 +11,7 @@ import { KjButtonComponent } from '../button/button';
     <kj-button kjDropdownMenuTrigger #t="kjDropdownMenuTrigger">Open</kj-button>
     <kj-dropdown-menu-content [kjFor]="t">
       <button kjDropdownMenuItem>Enabled</button>
-      <button kjDropdownMenuItem disabled>Disabled</button>
+      <button kjDropdownMenuItem kjDisabled>Disabled</button>
     </kj-dropdown-menu-content>
   `,
 })

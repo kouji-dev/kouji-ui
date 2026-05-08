@@ -1,13 +1,11 @@
-import { inject } from '@angular/core';
-import { KjLiveAnnouncerService } from '../../live-announcer';
 import type { KjLiveAnnouncerStrategy } from '../../tokens';
+import { announce } from './_announce';
 
 export function polite(): KjLiveAnnouncerStrategy {
-  const svc = inject(KjLiveAnnouncerService);
   return {
     attach() {},
     onOpen() {}, onClose() {},
     detach() {},
-    announce(msg: string) { svc.announce(msg, 'polite'); },
+    announce(msg: string) { announce(msg, 'polite'); },
   };
 }

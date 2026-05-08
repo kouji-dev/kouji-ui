@@ -60,14 +60,31 @@ body {
   .page-with-toc .toc-col { display: none; }
 }
 
-/* ── Modal overlay backdrop ─────────────────────────────────────────────
-   Rendered by KjOverlayBuilder as a sibling preceding the panel when the
-   controller is configured with a backdrop strategy (e.g. solidBackdrop()).
+/* ── Overlay system root ────────────────────────────────────────────────
+   Single body-level container that hosts every overlay (dialogs, drawers,
+   popovers, tooltips, dropdowns, toasts). Each overlay lives in its own
+   `.kj-overlay-wrapper` inside this container — sibling order alone
+   resolves stacking among open overlays (last-opened wins) so we don't
+   need a per-overlay z-index ladder.
    ─────────────────────────────────────────────────────────────────── */
-.kj-overlay-backdrop {
+.kj-overlay-container {
   position: fixed;
   inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+.kj-overlay-wrapper {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.kj-overlay-wrapper > * {
+  pointer-events: auto;
+}
+.kj-backdrop,
+.kj-overlay-backdrop {
+  position: absolute;
+  inset: 0;
   background: rgb(0 0 0 / 0.5);
-  z-index: 999;
   pointer-events: auto;
 }

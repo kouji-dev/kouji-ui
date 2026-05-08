@@ -7,7 +7,7 @@ import type {
   KjTriggerEventStrategy, KjStrategy,
 } from './tokens';
 import type { KjOverlayState, KjCloseReason } from './types';
-import { KjOverlayStack, type KjOverlayHandle } from './stack';
+import { KjOverlayStack, type KjOverlayStackHandle } from './stack';
 import { KjId } from './id';
 
 export interface KjOverlayStrategies {
@@ -46,8 +46,13 @@ export class KjOverlayController {
     requestClose: (r) => this.close(r),
   };
 
-  private strategies: KjOverlayStrategies | null = null;
-  private stackHandle: KjOverlayHandle | null = null;
+  /**
+   * Public read-only access to the attached strategy bundle. Builder, panel
+   * directive, and tests all need to inspect strategies without reaching
+   * for a private field via casts.
+   */
+  strategies: KjOverlayStrategies | null = null;
+  private stackHandle: KjOverlayStackHandle | null = null;
   private transitionDeadline = 0;
   private rafId = 0;
   private transitionListener: ((e: Event) => void) | null = null;
@@ -66,14 +71,19 @@ export class KjOverlayController {
   open(): void {
     const cur = this._state();
     if (cur === 'open' || cur === 'opening') return;
-    if (cur === 'closing') { this.cancelTransition(); }
+    // Set state before running strategies so a second synchronous `open()`
+    // (e.g. Space → keydown + click → both call toggle) re-enters and
+    // returns at the guard above instead of running the strategy chain twice.
+    if (cur === 'closing') this.cancelTransition();
+    this._state.set('opening');
     this.beginOpen();
   }
 
   close(_reason?: KjCloseReason): void {
     const cur = this._state();
     if (cur === 'closed' || cur === 'closing') return;
-    if (cur === 'opening') { this.cancelTransition(); }
+    if (cur === 'opening') this.cancelTransition();
+    this._state.set('closing');
     this.beginClose();
   }
 
@@ -88,12 +98,6 @@ export class KjOverlayController {
     ];
     for (const strat of order) strat?.detach();
     this.strategies = null;
-
-    // KjOverlayBuilder.attachComponent stashes the rendered backdrop element
-    // here so teardown can remove it from the DOM alongside strategy detach.
-    const backdropEl = (this as unknown as { __backdropEl?: HTMLElement | null }).__backdropEl;
-    if (backdropEl?.parentElement) backdropEl.parentElement.removeChild(backdropEl);
-    (this as unknown as { __backdropEl?: HTMLElement | null }).__backdropEl = null;
   }
 
   private beginOpen(): void {
@@ -106,7 +110,6 @@ export class KjOverlayController {
     s.scrollLock?.onOpen?.();
     this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
     if (this._panel()) this.stack.markContentEl(this.id, this._panel());
-    this._state.set('opening');
     this.runTransition('open', () => {
       this._state.set('open');
       s.focusTrap?.focusFirst();
@@ -116,7 +119,6 @@ export class KjOverlayController {
   private beginClose(): void {
     if (!this.strategies) return;
     const s = this.strategies;
-    this._state.set('closing');
     this.runTransition('close', () => {
       s.focusTrap?.restoreFocus();
       this.stackHandle?.unregister();

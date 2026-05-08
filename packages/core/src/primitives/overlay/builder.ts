@@ -1,5 +1,17 @@
-import { ApplicationRef, ComponentRef, EnvironmentInjector, Injectable, Injector, Type, createComponent, inject } from '@angular/core';
+import {
+  ApplicationRef,
+  ComponentRef,
+  EnvironmentInjector,
+  Injectable,
+  Injector,
+  Type,
+  createComponent,
+  inject,
+} from '@angular/core';
 import { KjOverlayController, type KjOverlayStrategies } from './controller';
+import { KjOverlayWrapper } from './wrapper';
+import { KjBackdrop } from './backdrop';
+import { getOverlayContainer } from './container';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -23,18 +35,47 @@ export interface KjAttachOptions<D = unknown> {
   providers?: Array<{ provide: unknown; useValue?: unknown }>;
 }
 
+/**
+ * Per-overlay handle returned by {@link KjOverlayBuilder.create}. Owns the
+ * controller, the per-overlay element injector, and the wrapper component.
+ * Callers dispose the entire overlay (DOM, child views, strategy detach
+ * chain) by calling {@link destroy} — Angular's component destroy cascade
+ * does the work; no manual ref tracking needed.
+ */
+export class KjOverlayHandle {
+  constructor(
+    readonly controller: KjOverlayController,
+    readonly injector: Injector,
+    readonly config: KjOverlayBuilderConfig,
+    private readonly wrapperRef: ComponentRef<KjOverlayWrapper>,
+  ) {}
+
+  get wrapper(): KjOverlayWrapper { return this.wrapperRef.instance; }
+
+  destroy(): void {
+    if (this.wrapperRef.hostView.destroyed) return;
+    const host = this.wrapperRef.location.nativeElement as HTMLElement;
+    this.wrapperRef.destroy();
+    // createComponent + manual appendChild → manual removal on destroy.
+    host.parentElement?.removeChild(host);
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class KjOverlayBuilder {
   private readonly appRef = inject(ApplicationRef);
   private readonly env    = inject(EnvironmentInjector);
 
-  create(config: KjOverlayBuilderConfig): KjOverlayController {
+  /**
+   * Creates a per-overlay controller + wrapper component. The wrapper is
+   * appended to the singleton `.kj-overlay-container` and is the host for
+   * the backdrop and panel views. Strategies are attached eagerly so the
+   * controller is ready for `open()` immediately after this call returns.
+   */
+  create(config: KjOverlayBuilderConfig): KjOverlayHandle {
     const injector = Injector.create({
       providers: [
         KjOverlayController,
-        // Expose the same strategies via DI so the body component (which
-        // composes KjOverlayPanel via hostDirectives) can inject them
-        // through its element injector.
         { provide: KJ_OVERLAY_MOUNT_STRATEGY,            useValue: config.mount },
         { provide: KJ_OVERLAY_POSITION_STRATEGY,         useValue: config.position },
         { provide: KJ_OVERLAY_BACKDROP_STRATEGY,         useValue: config.backdrop ?? null },
@@ -46,54 +87,47 @@ export class KjOverlayBuilder {
       ],
       parent: this.env,
     });
-    const ctrl = injector.get(KjOverlayController);
-    ctrl.attachStrategies(config);
-    // Stash the per-overlay injector so attachComponent can extend from it
-    // (children of the body component see the strategy tokens too).
-    (ctrl as unknown as { __injector: Injector }).__injector = injector;
-    return ctrl;
+    const controller = injector.get(KjOverlayController);
+    controller.attachStrategies(config);
+
+    const wrapperRef = createComponent(KjOverlayWrapper, {
+      environmentInjector: this.env,
+      elementInjector: injector,
+    });
+    this.appRef.attachView(wrapperRef.hostView);
+    // Sync CD so viewChild() anchors resolve before attachComponent runs.
+    wrapperRef.changeDetectorRef.detectChanges();
+    getOverlayContainer()?.appendChild(wrapperRef.location.nativeElement);
+
+    return new KjOverlayHandle(controller, injector, config, wrapperRef);
   }
 
+  /**
+   * Mounts the user's component into the wrapper's panel slot, plus the
+   * styled `<kj-backdrop>` into the backdrop slot when a backdrop strategy
+   * is configured. Both views are owned by the wrapper component so
+   * `handle.destroy()` tears them down in one cascade.
+   */
   attachComponent<T>(
-    controller: KjOverlayController,
+    handle: KjOverlayHandle,
     component: Type<T>,
     opts: KjAttachOptions = {},
   ): ComponentRef<T> {
-    const strategies = (controller as unknown as { strategies: KjOverlayStrategies }).strategies;
-    const container = strategies.mount.resolveContainer();
-    const backdrop = strategies.backdrop;
+    const wrapper = handle.wrapper;
 
-    // Render a backdrop element as a sibling preceding the panel when the
-    // controller is configured with a backdrop strategy. The strategy itself
-    // is just a config bag — physical DOM rendering is the builder's job.
-    let backdropEl: HTMLElement | null = null;
-    if (backdrop && typeof document !== 'undefined') {
-      backdropEl = document.createElement('div');
-      backdropEl.setAttribute('data-kj-overlay-backdrop', '');
-      backdropEl.className = 'kj-overlay-backdrop';
-      const cfg = backdrop as unknown as { closeOnClick?: boolean };
-      if (cfg.closeOnClick !== false) {
-        backdropEl.addEventListener('click', () => controller.close('outside'));
-      }
-      container.appendChild(backdropEl);
+    if (handle.config.backdrop) {
+      wrapper.backdropAnchor().createComponent(KjBackdrop, { injector: handle.injector });
     }
 
-    const parentInjector =
-      (controller as unknown as { __injector?: Injector }).__injector ?? this.env;
-    const injector = Injector.create({
+    const childInjector = Injector.create({
       providers: opts.providers as never[] ?? [],
-      parent: parentInjector,
+      parent: handle.injector,
     });
-    const ref = createComponent(component, {
-      environmentInjector: this.env,
-      elementInjector: injector,
-      hostElement: container,
-    });
-    this.appRef.attachView(ref.hostView);
-    controller.bindPanel(ref.location.nativeElement);
-
-    // Track the backdrop element on the controller so teardown can remove it.
-    (controller as unknown as { __backdropEl: HTMLElement | null }).__backdropEl = backdropEl;
+    const ref = wrapper.panelAnchor().createComponent(component, { injector: childInjector });
+    // Pointer-events isolation: container is `pointer-events: none` so app
+    // content stays clickable; each panel re-enables.
+    (ref.location.nativeElement as HTMLElement).style.pointerEvents = 'auto';
+    handle.controller.bindPanel(ref.location.nativeElement);
     return ref;
   }
 }
