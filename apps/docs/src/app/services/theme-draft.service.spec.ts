@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ThemeDraftService } from './theme-draft.service';
 import { BUILT_IN_THEMES } from '../lib/theme/built-in-themes';
-import type { ColorSlot } from '../lib/theme/types';
 
 describe('ThemeDraftService', () => {
   let svc: ThemeDraftService;
@@ -93,7 +92,6 @@ describe('ThemeDraftService — palette extensions', () => {
 
   test('rederiveFromPrimary preserves dirty slots by default', () => {
     svc.loadFork('kouji');
-    const before = svc.draft().colors.accent;
     svc.setColor('accent', '#abc123');
     svc.rederiveFromPrimary();
     expect(svc.draft().colors.accent).toBe('#abc123');

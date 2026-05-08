@@ -25,7 +25,7 @@ test('clicking a swatch updates URL hash with #t=', async ({ page }) => {
   await page.goto('/theme-generator');
   const swatch = page.locator('kj-seed-swatch-grid button[data-hex]').first();
   await swatch.waitFor();
-  const hex = (await swatch.getAttribute('data-hex'))!;
+  const _hex = (await swatch.getAttribute('data-hex'))!;
   await swatch.click();
   await expect.poll(() => page.url(), { timeout: 3000 }).toContain('#t=');
   // Reload with the hash and confirm draft persists.
