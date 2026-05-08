@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { deriveFromSeed } from './palette-derive';
+import { deriveFromSeed, randomAccessiblePalette } from './palette-derive';
+import { SEED_SWATCHES } from './seed-swatches';
 
 describe('deriveFromSeed', () => {
   test('returns all 9 color slots', () => {
@@ -40,5 +41,30 @@ describe('deriveFromSeed', () => {
     const a = deriveFromSeed('#3366cc', { mode: 'light' });
     const b = deriveFromSeed('#3366cc', { mode: 'light' });
     expect(a).toEqual(b);
+  });
+});
+
+describe('randomAccessiblePalette', () => {
+  test('returns a 9-slot palette', () => {
+    const out = randomAccessiblePalette({ random: () => 0.5 });
+    expect(Object.keys(out)).toHaveLength(9);
+  });
+
+  test('is deterministic given a fixed RNG', () => {
+    const a = randomAccessiblePalette({ random: () => 0.3 });
+    const b = randomAccessiblePalette({ random: () => 0.3 });
+    expect(a).toEqual(b);
+  });
+
+  test('uses a curated swatch as primary', () => {
+    const out = randomAccessiblePalette({ random: () => 0 });
+    const hexes = SEED_SWATCHES.map(s => s.hex.toLowerCase());
+    expect(hexes).toContain(out.primary.toLowerCase());
+  });
+
+  test('default RNG works (smoke)', () => {
+    const out = randomAccessiblePalette();
+    expect(Object.keys(out)).toHaveLength(9);
+    expect(out.primary).toMatch(/^#[0-9a-f]{6}$/i);
   });
 });

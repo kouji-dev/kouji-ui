@@ -1,5 +1,6 @@
 import { clampChroma, converter, formatHex } from 'culori';
 import { analogous, complementary, triadic } from './harmonies';
+import { SEED_SWATCHES } from './seed-swatches';
 import type { ColorSlot } from './types';
 
 const toOklch = converter('oklch');
@@ -68,4 +69,17 @@ export function deriveFromSeed(seed: string, opts: DeriveOpts): Record<ColorSlot
     warning: semantic(SEMANTIC_HUES.warning),
     destructive: semantic(SEMANTIC_HUES.destructive),
   };
+}
+
+export interface RandomOpts { random?: () => number }
+
+/** Generate a fully-derived palette from a randomly chosen curated AAA seed swatch.
+ * Picks a random harmony and light/dark mode. Inject a deterministic `random` for tests. */
+export function randomAccessiblePalette(opts: RandomOpts = {}): Record<ColorSlot, string> {
+  const rnd = opts.random ?? Math.random;
+  const swatch = SEED_SWATCHES[Math.floor(rnd() * SEED_SWATCHES.length)]!;
+  const harmonies: Harmony[] = ['analogous', 'complementary', 'triadic'];
+  const harmony = harmonies[Math.floor(rnd() * harmonies.length)]!;
+  const mode: 'light' | 'dark' = rnd() < 0.5 ? 'light' : 'dark';
+  return deriveFromSeed(swatch.hex, { mode, harmony });
 }
