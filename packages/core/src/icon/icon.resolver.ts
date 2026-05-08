@@ -15,6 +15,9 @@ import {
  * 3. `KJ_ICON_RESOLVER` (sync default, e.g. URL synthesis)
  *
  * Must be called in an injection context.
+ * @doc
+ * @doc-name icon
+ * @doc-order 4
  */
 export function injectKjIconResolver(): (name: string) => string | null {
   const registry = inject(KJ_ICON_REGISTRY);
