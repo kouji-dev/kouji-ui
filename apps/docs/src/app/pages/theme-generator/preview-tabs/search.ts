@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { KjDrawerTrigger } from '@kouji-ui/core';
+import { KjDrawer, KjDrawerService } from '@kouji-ui/core';
 import {
   KjAvatarComponent,
   KjBreadcrumbComponent,
@@ -10,18 +10,13 @@ import {
   KjBreadcrumbListComponent,
   KjButtonComponent,
   KjCheckboxComponent,
-  KjDrawerBodyComponent,
-  KjDrawerComponent,
-  KjDrawerHeaderComponent,
-  KjDrawerTitleComponent,
   KjEmptyStateComponent,
   KjEmptyStateDescriptionComponent,
   KjEmptyStateIconComponent,
   KjEmptyStateTitleComponent,
   KjInputComponent,
   KjKbdComponent,
-  KjMultiSelectComponent,
-  KjMultiSelectOptionComponent,
+  KjOptionComponent,
   KjPaginationComponent,
   KjPaginationEllipsisComponent,
   KjPaginationItemComponent,
@@ -29,6 +24,7 @@ import {
   KjPaginationPreviousComponent,
   KjRadioComponent,
   KjRadioGroupComponent,
+  KjSelectComponent,
   KjSliderComponent,
   KjTagComponent,
   KjTagListComponent,
@@ -42,12 +38,27 @@ type ViewMode = 'list' | 'grid';
 const ALL_TAGS = ['Engineering', 'Design', 'Ops', 'Research', 'Marketing'] as const;
 const ALL_STATUS = ['Open', 'In review', 'Done', 'Archived'] as const;
 
+// TODO(theme-gen): rebuild mobile drawer with new API — currently a placeholder
+// body that no longer shares state with the parent search filters.
+@Component({
+  selector: 'kj-preview-search-filters-drawer',
+  standalone: true,
+  imports: [KjDrawer, KjButtonComponent],
+  template: `
+    <kj-drawer>
+      <h3 style="margin: 0 0 var(--kj-space-md);">Filters</h3>
+      <p>Filters here.</p>
+      <kj-button kjVariant="ghost">Reset filters</kj-button>
+    </kj-drawer>
+  `,
+})
+export class FiltersDrawerBody {}
+
 @Component({
   selector: 'kj-preview-search',
   standalone: true,
   imports: [
     FormsModule,
-    KjDrawerTrigger,
     KjAvatarComponent,
     KjBreadcrumbComponent,
     KjBreadcrumbCurrentComponent,
@@ -56,18 +67,13 @@ const ALL_STATUS = ['Open', 'In review', 'Done', 'Archived'] as const;
     KjBreadcrumbListComponent,
     KjButtonComponent,
     KjCheckboxComponent,
-    KjDrawerBodyComponent,
-    KjDrawerComponent,
-    KjDrawerHeaderComponent,
-    KjDrawerTitleComponent,
     KjEmptyStateComponent,
     KjEmptyStateDescriptionComponent,
     KjEmptyStateIconComponent,
     KjEmptyStateTitleComponent,
     KjInputComponent,
     KjKbdComponent,
-    KjMultiSelectComponent,
-    KjMultiSelectOptionComponent,
+    KjOptionComponent,
     KjPaginationComponent,
     KjPaginationEllipsisComponent,
     KjPaginationItemComponent,
@@ -75,6 +81,7 @@ const ALL_STATUS = ['Open', 'In review', 'Done', 'Archived'] as const;
     KjPaginationPreviousComponent,
     KjRadioComponent,
     KjRadioGroupComponent,
+    KjSelectComponent,
     KjSliderComponent,
     KjTagComponent,
     KjTagListComponent,
@@ -84,6 +91,8 @@ const ALL_STATUS = ['Open', 'In review', 'Done', 'Archived'] as const;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PreviewSearch {
+  private readonly drawer = inject(KjDrawerService);
+
   protected readonly query = signal('');
   protected readonly page = signal(1);
   protected readonly people = PEOPLE;
@@ -151,5 +160,9 @@ export class PreviewSearch {
     this.selectedTags.set([]);
     this.lastActivity.set(30);
     this.owners.set([]);
+  }
+
+  protected openFilters(): void {
+    this.drawer.open(FiltersDrawerBody);
   }
 }

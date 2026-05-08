@@ -64,23 +64,17 @@
         />
       </label>
 
-      <kj-popover>
-        <kj-popover-trigger>
-          <kj-button kjVariant="ghost" kjAriaLabel="Insert emoji">😊</kj-button>
-        </kj-popover-trigger>
-        <kj-popover-content kjAriaLabel="Pick emoji">
-          <kj-popover-title>Emoji</kj-popover-title>
-          <div class="chat__emoji-grid">
-            @for (e of emojis; track e) {
-              <kj-popover-close>
-                <kj-button kjVariant="ghost" (click)="appendEmoji(e)" [kjAriaLabel]="'Insert ' + e">
-                  {{ e }}
-                </kj-button>
-              </kj-popover-close>
-            }
-          </div>
-        </kj-popover-content>
-      </kj-popover>
+      <kj-button kjVariant="ghost" kjPopoverTrigger #emojiTrigger="kjPopoverTrigger" kjAriaLabel="Insert emoji">😊</kj-button>
+      <kj-popover-content [kjFor]="emojiTrigger">
+        <h3 kjPopoverTitle>Emoji</h3>
+        <div class="chat__emoji-grid">
+          @for (e of emojis; track e) {
+            <kj-button kjPopoverClose kjVariant="ghost" (click)="appendEmoji(e)" [kjAriaLabel]="'Insert ' + e">
+              {{ e }}
+            </kj-button>
+          }
+        </div>
+      </kj-popover-content>
 
       <kj-file-upload
         class="chat__upload"

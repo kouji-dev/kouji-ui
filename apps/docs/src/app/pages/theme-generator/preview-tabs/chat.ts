@@ -1,6 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  KjPopoverClose,
+  KjPopoverContent,
+  KjPopoverTitle,
+  KjPopoverTrigger,
+} from '@kouji-ui/core';
+import {
   KjAvatarComponent,
   KjBadgeComponent,
   KjButtonComponent,
@@ -12,11 +18,6 @@ import {
   KjChatLogComponent,
   KjFileUploadComponent,
   KjInputComponent,
-  KjPopoverCloseComponent,
-  KjPopoverComponent,
-  KjPopoverContentComponent,
-  KjPopoverTitleComponent,
-  KjPopoverTriggerComponent,
 } from '@kouji-ui/components';
 import { CONVERSATIONS, MESSAGES } from './fixtures';
 
@@ -36,11 +37,10 @@ import { CONVERSATIONS, MESSAGES } from './fixtures';
     KjChatLogComponent,
     KjFileUploadComponent,
     KjInputComponent,
-    KjPopoverCloseComponent,
-    KjPopoverComponent,
-    KjPopoverContentComponent,
-    KjPopoverTitleComponent,
-    KjPopoverTriggerComponent,
+    KjPopoverClose,
+    KjPopoverContent,
+    KjPopoverTitle,
+    KjPopoverTrigger,
   ],
   templateUrl: './chat.html',
   styleUrl: './chat.css',

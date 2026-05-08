@@ -87,13 +87,13 @@
     <div class="grid-2">
       <kj-field>
         <kj-field-label>Languages spoken</kj-field-label>
-        <kj-multi-select [(value)]="languages" placeholder="Pick languages">
-          <kj-multi-select-option [value]="'en'">English</kj-multi-select-option>
-          <kj-multi-select-option [value]="'es'">Español</kj-multi-select-option>
-          <kj-multi-select-option [value]="'fr'">Français</kj-multi-select-option>
-          <kj-multi-select-option [value]="'de'">Deutsch</kj-multi-select-option>
-          <kj-multi-select-option [value]="'ja'">日本語</kj-multi-select-option>
-        </kj-multi-select>
+        <kj-select [multiple]="true" [(value)]="languages" placeholder="Pick languages">
+          <kj-option [value]="'en'">English</kj-option>
+          <kj-option [value]="'es'">Español</kj-option>
+          <kj-option [value]="'fr'">Français</kj-option>
+          <kj-option [value]="'de'">Deutsch</kj-option>
+          <kj-option [value]="'ja'">日本語</kj-option>
+        </kj-select>
       </kj-field>
 
       <kj-field>

@@ -25,7 +25,7 @@
         <kj-kbd>K</kj-kbd>
       </span>
     </label>
-    <kj-button class="hd__filters-mobile" kjVariant="secondary" [kjDrawerTrigger]="filtersDrawer">Filters</kj-button>
+    <kj-button class="hd__filters-mobile" kjVariant="secondary" (click)="openFilters()">Filters</kj-button>
   </div>
 
   <kj-tag-list class="chips" aria-label="Active filters">
@@ -89,11 +89,11 @@
 
     <section class="filters__section">
       <h3 class="filters__heading">Owner</h3>
-      <kj-multi-select [(value)]="owners" placeholder="Anyone">
+      <kj-select [multiple]="true" [(value)]="owners" placeholder="Anyone">
         @for (p of people; track p.name) {
-          <kj-multi-select-option [value]="p.name">{{ p.name }}</kj-multi-select-option>
+          <kj-option [value]="p.name">{{ p.name }}</kj-option>
         }
-      </kj-multi-select>
+      </kj-select>
     </section>
 
     <kj-button kjVariant="ghost" (click)="resetFilters()">Reset filters</kj-button>
@@ -171,58 +171,5 @@
   </div>
 </div>
 
-<ng-template #filtersDrawer>
-  <kj-drawer #d="kjDrawerContent">
-    <kj-drawer-header>
-      <kj-drawer-title>Filters</kj-drawer-title>
-      <kj-button kjVariant="ghost" (click)="d.close()" kjAriaLabel="Close filters">×</kj-button>
-    </kj-drawer-header>
-    <kj-drawer-body>
-      <section class="filters__section">
-        <h3 class="filters__heading">Type</h3>
-        <kj-radio-group [(value)]="type" ariaLabel="Result type">
-          <kj-radio [value]="'all'">All</kj-radio>
-          <kj-radio [value]="'people'">People</kj-radio>
-          <kj-radio [value]="'files'">Files</kj-radio>
-          <kj-radio [value]="'projects'">Projects</kj-radio>
-          <kj-radio [value]="'conversations'">Conversations</kj-radio>
-        </kj-radio-group>
-      </section>
-      <section class="filters__section">
-        <h3 class="filters__heading">Status</h3>
-        <div class="filters__stack">
-          <kj-checkbox [(checked)]="statusOpen">Open</kj-checkbox>
-          <kj-checkbox [(checked)]="statusReview">In review</kj-checkbox>
-          <kj-checkbox [(checked)]="statusDone">Done</kj-checkbox>
-          <kj-checkbox [(checked)]="statusArchived">Archived</kj-checkbox>
-        </div>
-      </section>
-      <section class="filters__section">
-        <h3 class="filters__heading">Tags</h3>
-        <div class="filters__chips">
-          @for (t of allTags; track t) {
-            <button
-              type="button"
-              class="chip"
-              [class.chip--on]="isTagSelected(t)"
-              [attr.aria-pressed]="isTagSelected(t)"
-              (click)="toggleTag(t)"
-            >{{ t }}</button>
-          }
-        </div>
-      </section>
-      <section class="filters__section">
-        <h3 class="filters__heading">Last activity</h3>
-        <kj-slider
-          [(kjValue)]="lastActivity"
-          [kjMin]="0"
-          [kjMax]="30"
-          [kjStep]="1"
-          kjAriaLabel="Last activity in days"
-        />
-        <p class="filters__hint">Last {{ lastActivity() }} days</p>
-      </section>
-      <kj-button kjVariant="ghost" (click)="resetFilters()">Reset filters</kj-button>
-    </kj-drawer-body>
-  </kj-drawer>
-</ng-template>
+<!-- TODO(theme-gen): rebuild mobile drawer with new API. The drawer body
+  is now a separate `FiltersDrawerBody` component opened via `KjDrawerService`. -->
