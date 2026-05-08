@@ -35,6 +35,10 @@ function nextPanelId(): string {
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name date-picker
+ * @doc-description Headless date-picker root for kouji-ui. Apply `[kjDatePicker]` to own the selected date, popover open/close state, locale, min/max bounds, and disabled-date predicate — compose with `[kjDatePickerTrigger]` (the text input) and `[kjDatePickerCalendar]` (the popover body) for a fully accessible date-input pattern. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDatePicker]',

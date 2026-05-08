@@ -41,6 +41,10 @@ import { KJ_TAG_CONFIG } from './config';
  * <span kjTag kjTagSelectable [(kjTagSelected)]="on">Toggle</span>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name tag
+ * @doc-description Root tag/chip directive that renders one of four interaction shapes — decorative, removable, selectable, or listbox option — from a single DOM host, driven by inputs and the optional `KjTagList` container context.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTag]',

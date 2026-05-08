@@ -23,6 +23,9 @@ import { KJ_MENU, KjMenuContext } from './menu.context';
  *    @doc-theme default
  *      @doc-file menu.example.ts
  * @category Core/Navigation
+ * @doc-name menu
+ * @doc-description Root menu state container — manages open/close state and provides context to trigger, content, and item directives that together deliver keyboard navigation, typeahead, and outside-click dismissal.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjMenu]',
@@ -43,6 +46,8 @@ export class KjMenu implements KjMenuContext {
  * Automatically sets `aria-haspopup` and `aria-expanded` on the host element.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name menu
  */
 @Directive({
   selector: '[kjMenuTrigger]',
@@ -64,6 +69,8 @@ export class KjMenuTrigger {
  * Click-outside dismissal is handled via a document-level click listener.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name menu
  */
 @Directive({
   selector: '[kjMenuContent]',
@@ -138,6 +145,8 @@ export class KjMenuContent {
  * <button kjMenuItem>Delete</button>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name menu
  */
 @Directive({
   selector: '[kjMenuItem]',
@@ -163,6 +172,8 @@ export class KjMenuItem {
  * <button kjMenuClose>Cancel</button>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name menu
  */
 @Directive({
   selector: '[kjMenuClose]',

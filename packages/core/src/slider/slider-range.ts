@@ -12,6 +12,8 @@ import { fractionForValue } from './slider.geometry';
  * vertical). `aria-hidden="true"` — decoration only.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name slider
  */
 @Directive({
   selector: '[kjSliderRange]',

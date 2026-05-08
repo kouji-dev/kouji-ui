@@ -31,6 +31,8 @@ import {
  *   (mirrors `KjButton`'s a11y stance — ARIA-disabled, not native).
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Directive({
   selector: '[kjDropdownMenuItem]',

@@ -7,6 +7,7 @@ import type { IconLoader, IconResolver } from './icon.types';
  * injection time.
  *
  * Internal — consumers use `provideIcons(...)`.
+ * @internal
  */
 export const KJ_ICON_ENTRIES = new InjectionToken<Record<string, string>>(
   'KJ_ICON_ENTRIES',
@@ -18,6 +19,9 @@ export const KJ_ICON_ENTRIES = new InjectionToken<Record<string, string>>(
  *
  * Stored values are CSS-ready: `url("...")` for svg mode, quoted glyphs for
  * font mode. Adapter authors are responsible for the wrapping.
+ * @doc
+ * @doc-name icon
+ * @doc-order 6
  */
 export const KJ_ICON_REGISTRY = new InjectionToken<
   WritableSignal<Record<string, string>>
@@ -46,6 +50,9 @@ export const KJ_ICON_REGISTRY = new InjectionToken<
  * and no async loader is configured. Returns a CSS-ready string.
  *
  * Default: returns the name unchanged.
+ * @doc
+ * @doc-name icon
+ * @doc-order 7
  */
 export const KJ_ICON_RESOLVER = new InjectionToken<IconResolver>(
   'KJ_ICON_RESOLVER',
@@ -57,6 +64,9 @@ export const KJ_ICON_RESOLVER = new InjectionToken<IconResolver>(
  * the result is written into `KJ_ICON_REGISTRY`. While loading, the
  * directive renders nothing for that name. If unset, the resolver fallback
  * is used instead.
+ * @doc
+ * @doc-name icon
+ * @doc-order 8
  */
 export const KJ_ICON_LOADER = new InjectionToken<IconLoader | null>(
   'KJ_ICON_LOADER',
@@ -71,5 +81,8 @@ export const KJ_ICON_LOADER = new InjectionToken<IconLoader | null>(
  * // or import the file directly:
  * import '@kouji-ui/core/icon/icon.css';
  * ```
+ * @doc
+ * @doc-name icon
+ * @doc-order 9
  */
 export const KJ_ICON_CSS_PATH = '@kouji-ui/core/icon/icon.css' as const;

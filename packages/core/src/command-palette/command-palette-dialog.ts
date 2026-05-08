@@ -26,6 +26,8 @@ import { KjCommandPalette } from './command-palette';
  * </ng-template>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandPaletteDialog]',

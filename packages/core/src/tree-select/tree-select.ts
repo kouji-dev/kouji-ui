@@ -40,6 +40,10 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
+ * @doc-description Root Tree Select container — manages open/close state, selected values, and expanded node IDs in single or multiple selection mode, providing context to trigger, panel, and node directives.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTreeSelect]',
@@ -199,6 +203,8 @@ export class KjTreeSelect implements KjTreeSelectContext {
  * <button kjTreeSelectTrigger>Select category</button>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectTrigger]',
@@ -253,6 +259,8 @@ export class KjTreeSelectTrigger {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectPanel]',
@@ -418,6 +426,8 @@ export class KjTreeSelectPanel {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectNode]',
@@ -509,6 +519,8 @@ export class KjTreeSelectNode {
  * <button kjTreeSelectToggle aria-hidden="true"></button>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectToggle]',

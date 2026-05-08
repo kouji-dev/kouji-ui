@@ -41,6 +41,10 @@ import { KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
  * @doc-example Tag list
  *   @doc-file tag.list.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name tag
+ * @doc-description The pre-styled kouji tag / chip. Use `<kj-tag>` for labelling, add `<kj-tag-remove>` for a removable chip, bind `kjTagSelectable` for a toggle chip, and wrap in `<kj-tag-list>` for group keyboard navigation — all with theme tokens and full ARIA wiring.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tag',
@@ -78,6 +82,8 @@ export class KjTagComponent {}
  * ARIA-disabled, and the focus ring). Auto-derives an
  * `aria-label="Remove {label}"` from the parent tag's projected text;
  * override with `kjTagRemoveLabel`.
+ * @doc
+ * @doc-name tag
  */
 @Component({
   selector: 'kj-tag-remove',
@@ -102,6 +108,8 @@ export class KjTagRemoveComponent {}
  * wiring + roving tabindex via the headless `KjTagList` directive. Standalone
  * tags work without it; wrap chips in `<kj-tag-list>` whenever the group
  * needs a single tab stop and arrow-key navigation.
+ * @doc
+ * @doc-name tag
  */
 @Component({
   selector: 'kj-tag-list',

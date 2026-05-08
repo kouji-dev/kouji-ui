@@ -35,6 +35,10 @@ import {
  * @doc-example Disabled
  *   @doc-file tooltip.disabled.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
+ * @doc-description The pre-styled kouji tooltip. Wrap any trigger in `<kj-tooltip [kjTooltipTriggerFor]="tpl">` and define `<kj-tooltip-content>` in an `<ng-template>` to get a hover/focus-activated floating label with collision-aware positioning, configurable open/close delays, and theme tokens — WCAG 1.4.13 hoverable behaviour included.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tooltip',
@@ -81,6 +85,8 @@ export class KjTooltipComponent {}
  * interactive content, use `<kj-popover>` instead.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
  */
 @Component({
   selector: 'kj-tooltip-content',
@@ -110,6 +116,8 @@ export class KjTooltipContentComponent {}
  * `aria-hidden="true"` by the underlying directive.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
  */
 @Component({
   selector: 'kj-tooltip-arrow',
@@ -130,6 +138,8 @@ export class KjTooltipArrowComponent {}
  * children — apply to a toolbar / icon-button cluster.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name tooltip
  */
 @Component({
   selector: 'kj-tooltip-group',

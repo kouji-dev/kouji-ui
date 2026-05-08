@@ -56,6 +56,9 @@ let _kjColorPickerIdCounter = 0;
  *  @doc-example Default
  *    @doc-file color-picker.example.ts
  * @category Core/Inputs
+ * @doc-name color-picker
+ * @doc-description Headless color-picker root for kouji-ui. Apply `[kjColorPicker]` to own canonical HSV+alpha state, open/close toggle, Angular forms integration, and the `KJ_COLOR_PICKER` context shared by the trigger, panel, saturation area, hue slider, alpha slider, and hex input sub-directives — emit in hex, RGB array, or HSL object. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjColorPicker]',
@@ -321,6 +324,8 @@ function hslToRgbValue(h: number, s: number, l: number): { r: number; g: number;
  * `aria-expanded` and `aria-controls` automatically.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name color-picker
  */
 @Directive({
   selector: '[kjColorPickerTrigger]',
@@ -361,6 +366,8 @@ export class KjColorPickerTrigger {
  * Marked `role="dialog"` with the trigger's id as `aria-labelledby`.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name color-picker
  */
 @Directive({
   selector: '[kjColorPickerPanel]',
@@ -391,6 +398,8 @@ export class KjColorPickerPanel {
  * APG color-picker pattern; full state announced via `aria-valuetext`.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name color-picker
  */
 @Directive({
   selector: '[kjColorPickerArea]',
@@ -488,6 +497,8 @@ export class KjColorPickerArea {
  * stylesheet.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name color-picker
  */
 @Directive({
   selector: 'input[kjColorPickerHueSlider]',
@@ -527,6 +538,8 @@ export class KjColorPickerHueSlider {
  * delegates to a native range input for AT support.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name color-picker
  */
 @Directive({
   selector: 'input[kjColorPickerAlphaSlider]',
@@ -567,6 +580,8 @@ export class KjColorPickerAlphaSlider {
  * 3 / 4 / 6 / 8 hex digits with optional leading hash.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name color-picker
  */
 @Directive({
   selector: 'input[kjColorPickerInput]',

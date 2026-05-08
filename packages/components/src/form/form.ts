@@ -45,6 +45,10 @@ import {
  * @doc-example Compound (multiple groups)
  *   @doc-file form.compound.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name form
+ * @doc-description Pre-styled form host with submit interception, focus-on-first-error, async submitting state, and an optional error summary — attach `kj-form` to a real `<form>` element and keep full control of your `[formGroup]` bindings.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-form, form[kj-form]',
@@ -86,6 +90,8 @@ export class KjFormComponent {}
  * </kj-form-actions>
  * ```
  * @category Library/Data input
+ * @doc
+ * @doc-name form
  */
 @Component({
   selector: 'kj-form-actions',
@@ -126,6 +132,8 @@ export class KjFormActionsComponent {
  * </form>
  * ```
  * @category Library/Data input
+ * @doc
+ * @doc-name form
  */
 @Component({
   selector: 'kj-form-summary',

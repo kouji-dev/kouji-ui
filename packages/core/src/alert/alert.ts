@@ -51,6 +51,10 @@ let _alertIdCounter = 0;
  * </div>
  * ```
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
+ * @doc-description Headless in-flow alert / notification banner for kouji-ui. Apply `[kjAlert]` to any element to get the correct `role`/`aria-live` matrix (assertive, polite, static region, or off) derived automatically from the variant and mode inputs, with dismissal semantics and ARIA label wiring. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAlert]',
@@ -265,6 +269,8 @@ export class KjAlert implements KjAlertContext {
  * when the alert is in a content region.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertTitle]',
@@ -293,6 +299,8 @@ export class KjAlertTitle implements OnDestroy {
  * `aria-describedby`. Same id-registration pattern as `KjAlertTitle`.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertDescription]',
@@ -321,6 +329,8 @@ export class KjAlertDescription implements OnDestroy {
  * the consumer re-typing it.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertIcon]',
@@ -342,6 +352,8 @@ export class KjAlertIcon {
  * actions container as a unit.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertActions]',
@@ -367,6 +379,8 @@ export class KjAlertActions {
  * `kjAlertDismissSize` → `KjButton.kjSize`.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertDismiss]',

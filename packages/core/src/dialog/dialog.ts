@@ -74,6 +74,7 @@ import { KjDialogController } from './dialog.controller';
  *  @doc-example Confirmation
  *    @doc-file dialog.confirm.example.ts
  * @category Core/Overlays
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogTrigger]',
@@ -278,6 +279,10 @@ const DIALOG_FOCUSABLE = [
  * `dlg.close(result?)`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
+ * @doc-description Headless dialog panel for kouji-ui. Apply `[kjDialog]` to the panel element inside a `[kjDialogTrigger]` template to get `role="dialog"`, `aria-modal`, `aria-labelledby`/`aria-describedby` wiring, and an inline Tab focus-trap — the accessible primitive for any modal content. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDialog]',
@@ -344,6 +349,8 @@ export class KjDialog {
  * inline case where the click both starts and ends on the backdrop element.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogOverlay]',
@@ -370,6 +377,8 @@ export class KjDialogOverlay {
  * dialog context so `[kjDialog]` can wire `aria-labelledby` automatically.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogTitle]',
@@ -397,6 +406,8 @@ export class KjDialogTitle {
  * the consequence of the action.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogDescription]',
@@ -423,6 +434,8 @@ export class KjDialogDescription {
  * Optional; consumers can omit it and use raw markup.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogContent]',
@@ -436,6 +449,8 @@ export class KjDialogContent {}
  * stable selector that wrappers can target for footer-button alignment.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogActions]',
@@ -450,6 +465,8 @@ export class KjDialogActions {}
  * `(click)="dlg.close(value)"`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name dialog
  */
 @Directive({
   selector: '[kjDialogClose]',

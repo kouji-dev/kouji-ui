@@ -40,6 +40,10 @@ import {
  * @doc-example Sides
  *   @doc-file dropdown-menu.sides.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name dropdown-menu
+ * @doc-description Pre-styled dropdown menu with keyboard-navigable items, separators, and group labels — pair `<kj-dropdown-menu-trigger>` with an `<ng-template>` panel for a fully accessible flyout menu with arrow-key navigation.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-dropdown-menu-trigger',
@@ -82,6 +86,8 @@ export class KjDropdownMenuTriggerComponent {}
  * on open). Place inside the `<ng-template>` that the trigger references.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Component({
   selector: 'kj-dropdown-menu',
@@ -100,6 +106,8 @@ export class KjDropdownMenuComponent {}
  * AAA contract (focus + Enter/Space activation) comes from the platform.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Component({
   selector: 'kj-dropdown-menu-item',
@@ -129,6 +137,8 @@ export class KjDropdownMenuItemComponent {
  * Styled wrapper around `KjDropdownMenuSeparator`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Component({
   selector: 'kj-dropdown-menu-separator',
@@ -148,6 +158,8 @@ export class KjDropdownMenuSeparatorComponent {}
  * `aria-labelledby`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Component({
   selector: 'kj-dropdown-menu-label',
@@ -167,6 +179,8 @@ export class KjDropdownMenuLabelComponent {}
  * `<kj-dropdown-menu-label>`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Component({
   selector: 'kj-dropdown-menu-group',

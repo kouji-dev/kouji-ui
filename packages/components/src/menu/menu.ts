@@ -13,6 +13,10 @@ import { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from '@kouji-ui/core
  * @doc-example With shortcuts
  *   @doc-file menu.shortcuts.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name menu
+ * @doc-description Pre-styled pop-up menu for trigger-driven navigation or actions — compose `<kj-menu-trigger>`, `<kj-menu-content>`, and `<kj-menu-item>` children inside `<kj-menu>` for a keyboard-navigable flyout with the design system applied.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-menu',
@@ -26,6 +30,10 @@ import { KjMenu, KjMenuTrigger, KjMenuContent, KjMenuItem } from '@kouji-ui/core
 })
 export class KjMenuComponent {}
 
+/**
+ * @doc
+ * @doc-name menu
+ */
 @Component({
   selector: 'kj-menu-trigger',
   standalone: true,
@@ -37,6 +45,10 @@ export class KjMenuComponent {}
 })
 export class KjMenuTriggerComponent {}
 
+/**
+ * @doc
+ * @doc-name menu
+ */
 @Component({
   selector: 'kj-menu-content',
   standalone: true,
@@ -48,7 +60,11 @@ export class KjMenuTriggerComponent {}
 })
 export class KjMenuContentComponent {}
 
-/** Menu item. `KjMenuItem` does not expose `kjDisabled` via hostDirectives, so disabling uses only `[disabled]` + `aria-disabled` (handled by the browser). */
+/**
+ * Menu item. `KjMenuItem` does not expose `kjDisabled` via hostDirectives, so disabling uses only `[disabled]` + `aria-disabled` (handled by the browser).
+ * @doc
+ * @doc-name menu
+ */
 @Component({
   selector: 'kj-menu-item',
   standalone: true,

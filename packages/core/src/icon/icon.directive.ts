@@ -15,6 +15,10 @@ import type { KjIconColor, KjIconSize } from './icon.types';
  * ```
  *
  * @category Core/Icon
+ * @doc
+ * @doc-name icon
+ * @doc-description Renders an icon on its host element via CSS custom properties — owns icon accessibility (decorative vs. meaningful), color tokens, size tokens, and font/SVG mode selection without injecting any markup.
+ * @doc-is-main
  */
 @Directive({
   selector: 'span[kjIcon], i[kjIcon]',

@@ -50,6 +50,10 @@ import {
  * </div>
  * ```
  * @category Core/Feedback
+ * @doc
+ * @doc-name progress-bar
+ * @doc-description Marks an element as an accessible progress bar — owns `role="progressbar"`, the full ARIA value contract, indeterminate mode (`kjValue: null`), and a `--kj-progress-fraction` CSS custom property for theme fills.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjProgressBar]',

@@ -51,6 +51,10 @@ const nextId = (): string => `kj-combobox-${++_idCounter}`;
  * (the value model widens to `T | string | null`).
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name combobox
+ * @doc-description Headless combobox / autocomplete root for kouji-ui. Apply `[kjCombobox]` to own open state, the committed value, the live query, active-descendant tracking, and built-in synchronous filtering — compose with `[kjComboboxInput]`, `[kjComboboxListbox]`, and `[kjComboboxOption]` for the full WAI-ARIA combobox pattern. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCombobox]',
@@ -246,6 +250,8 @@ export class KjCombobox implements KjComboboxContext {
  * without moving.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name combobox
  */
 @Directive({
   selector: 'input[kjComboboxInput]',
@@ -346,6 +352,8 @@ export class KjComboboxInput {
  * via inline absolute positioning.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name combobox
  */
 @Directive({
   selector: '[kjComboboxListbox]',
@@ -368,6 +376,8 @@ export class KjComboboxListbox {
  * the synchronous filter rejects it (the directive sets `hidden` directly).
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name combobox
  */
 @Directive({
   selector: '[kjComboboxOption]',

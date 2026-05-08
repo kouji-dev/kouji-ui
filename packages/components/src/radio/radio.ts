@@ -13,6 +13,10 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  * @doc-example Inline
  *   @doc-file radio.inline.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name radio
+ * @doc-description The pre-styled kouji radio group. Use `<kj-radio-group>` with `<kj-radio>` children to get a fully accessible single-selection control with theme tokens, label forwarding, disabled support, and two-way value binding out of the box.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-radio-group',
@@ -43,6 +47,8 @@ let radioIdCounter = 0;
  * radio because the label's native click-forwarding behaviour fires the
  * directive's click handler. When `disabled` is set, both the dot and the
  * label text dim (see `[data-disabled]` rules in `radio.css`).
+ * @doc
+ * @doc-name radio
  */
 @Component({
   selector: 'kj-radio',

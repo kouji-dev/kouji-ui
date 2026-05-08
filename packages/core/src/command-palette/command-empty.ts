@@ -14,6 +14,8 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
  * </div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandEmpty]',

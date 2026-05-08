@@ -29,6 +29,10 @@ import {
  * @doc-example Disabled item
  *   @doc-file menubar.disabled-item.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name menubar
+ * @doc-description Pre-styled application menubar with horizontal arrow-key navigation, auto-disclosure on adjacent hover, and dropdown sub-menus — wraps the headless `KjMenubar` directive for a native desktop-style menu experience.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-menubar',
@@ -65,6 +69,8 @@ export class KjMenubarComponent {
  * template via `kjDropdownMenuTriggerFor`.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name menubar
  */
 @Component({
   selector: 'kj-menubar-item',

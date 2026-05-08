@@ -44,6 +44,10 @@ import { KJ_SIZE_PRESET, KJ_KBD_SIZE_PRESET, KjKbd } from '@kouji-ui/core';
  * @doc-example In a tooltip
  *   @doc-file kbd.in-tooltip.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name kbd
+ * @doc-description Pre-styled keyboard key label using a native `<kbd>` element for correct screen-reader semantics — supports `xs/sm/md/lg` sizes and an `aria-label` override for symbol glyphs like ⌘ or ⌥ that AT may not pronounce correctly.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-kbd',

@@ -32,6 +32,10 @@ import {
  * @doc-example Default
  *   @doc-file calendar.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name calendar
+ * @doc-description Pre-styled day-grid calendar for single-date selection — locale-aware month/weekday labels via `Intl`, full APG keyboard contract, min/max bounds, and per-date disable predicates, all without a third-party date library.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-calendar',

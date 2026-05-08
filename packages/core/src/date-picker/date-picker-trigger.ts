@@ -18,6 +18,8 @@ import { KJ_DATE_PICKER } from './date-picker.context';
  *    `formControl` / `[(ngModel)]` bindings on the host.
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name date-picker
  */
 @Directive({
   selector: 'input[kjDatePickerTrigger]',

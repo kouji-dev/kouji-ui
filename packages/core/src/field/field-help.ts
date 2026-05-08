@@ -16,6 +16,8 @@ let kjFieldHelpIdCounter = 0;
  * <span kjFieldHelp>Format: name@example.com</span>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name field
  */
 @Directive({
   selector: '[kjFieldHelp]',

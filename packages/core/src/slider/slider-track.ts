@@ -20,6 +20,8 @@ import { KJ_SLIDER } from './slider.context';
  * page scroll on a horizontal slider) while blocking the on-axis drag.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name slider
  */
 @Directive({
   selector: '[kjSliderTrack]',

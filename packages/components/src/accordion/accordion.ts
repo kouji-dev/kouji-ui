@@ -17,6 +17,10 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
  * @doc-example Rich content
  *   @doc-file accordion.rich-content.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name accordion
+ * @doc-description Pre-styled accordion for collapsible content sections — drop in `<kj-accordion>` with `<kj-accordion-item>` children for single or multi-open panels, keyboard navigation, and accessible expand/collapse built in.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-accordion',
@@ -34,7 +38,11 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
 })
 export class KjAccordionComponent {}
 
-/** Click target that toggles the parent item. */
+/**
+ * Click target that toggles the parent item.
+ * @doc
+ * @doc-name accordion
+ */
 @Component({
   selector: 'kj-accordion-trigger',
   standalone: true,
@@ -54,6 +62,8 @@ export class KjAccordionTriggerComponent {
  * When `label` is provided the trigger is rendered internally — users only need
  * to project `<kj-accordion-content>`. When `label` is omitted, project a
  * `<kj-accordion-trigger>` manually for full control.
+ * @doc
+ * @doc-name accordion
  */
 @Component({
   selector: 'kj-accordion-item',
@@ -78,7 +88,11 @@ export class KjAccordionItemComponent {
   readonly disabled = input(false);
 }
 
-/** Body shown when the parent item is expanded. */
+/**
+ * Body shown when the parent item is expanded.
+ * @doc
+ * @doc-name accordion
+ */
 @Component({
   selector: 'kj-accordion-content',
   standalone: true,

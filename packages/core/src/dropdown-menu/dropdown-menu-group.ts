@@ -21,6 +21,8 @@ import { KjDropdownMenuLabel } from './dropdown-menu-label';
  * </div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Directive({
   selector: '[kjDropdownMenuGroup]',

@@ -21,6 +21,8 @@ import {
  * <p>Run <code kjCode>npm install @kouji-ui/core</code> to install.</p>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name typography
  */
 @Directive({
   selector: '[kjCode]',

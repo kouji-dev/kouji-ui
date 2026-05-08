@@ -50,6 +50,10 @@ import {
  * matches the muscle-memory of cancellation flows.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name confirm-popup
+ * @doc-description Headless confirm popup for kouji-ui. Apply `[kjConfirmPopup]` to compose a `KjPopover` with a confirm/cancel resolution contract — inherits collision-aware positioning, Escape close, outside-click dismissal, and focus restoration, while exposing `(kjConfirmed)`, `(kjCancelled)`, and `(kjResult)` outputs for destructive action flows. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjConfirmPopup]',

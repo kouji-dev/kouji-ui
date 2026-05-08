@@ -34,6 +34,10 @@ import { KjInputMask } from '@kouji-ui/core';
  *   @doc-file input-mask.custom-tokens.example.ts
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name input-mask
+ * @doc-description Pre-styled masked text input with slot-char placeholders, configurable token patterns, and masked/unmasked form-value modes — drop in `<kj-input-mask>` with a `kjMask` pattern for phone numbers, dates, credit cards, and custom formats.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input-mask',

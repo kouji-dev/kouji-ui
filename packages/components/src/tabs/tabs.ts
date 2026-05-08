@@ -39,6 +39,10 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
  * @doc-example Controlled
  *   @doc-file tabs.controlled.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name tabs
+ * @doc-description The pre-styled kouji tabs. Compose `<kj-tabs>`, `<kj-tab-list>`, `<kj-tab>`, and `<kj-tab-panel>` to get a roving-tabindex tab strip with theme tokens, default and pill variants, manual or automatic activation, and lazy-then-persistent panel mounting.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tabs',
@@ -74,6 +78,8 @@ export class KjTabsComponent {
  * `<kj-tabs>` and project `<kj-tab>` children.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name tabs
  */
 @Component({
   selector: 'kj-tab-list',
@@ -92,6 +98,8 @@ export class KjTabListComponent {}
  * Project the tab's label as content.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name tabs
  */
 @Component({
   selector: 'kj-tab',
@@ -126,6 +134,8 @@ export class KjTabComponent {
  * deactivations only toggle `hidden`.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name tabs
  */
 @Component({
   selector: 'kj-tab-panel',

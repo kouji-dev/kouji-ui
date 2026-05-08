@@ -54,6 +54,10 @@ export type KjSpeedDialPosition =
  * @doc-example Disabled
  *   @doc-file speed-dial.disabled.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
+ * @doc-description The pre-styled kouji speed dial (FAB). Compose `<kj-speed-dial>`, `<kj-speed-dial-trigger>`, `<kj-speed-dial-actions>`, and `<kj-speed-dial-action>` to get a viewport-anchored floating action button that fans out a cluster of action buttons with theme tokens, directional animation, and full keyboard support.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-speed-dial',
@@ -92,6 +96,8 @@ export class KjSpeedDialComponent {
  * suppression) plus the speed-dial menu-button ARIA wiring.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Component({
   selector: 'kj-speed-dial-trigger',
@@ -138,6 +144,8 @@ export class KjSpeedDialTriggerComponent {
  * `role="menu"` and is hidden when collapsed.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Component({
   selector: 'kj-speed-dial-actions',
@@ -159,6 +167,8 @@ export class KjSpeedDialActionsComponent {}
  * the dial unless `[kjCloseOnActivate]="false"`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Component({
   selector: 'kj-speed-dial-action',

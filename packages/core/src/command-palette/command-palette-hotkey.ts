@@ -20,6 +20,8 @@ import {
  * </div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandPaletteHotkey]',

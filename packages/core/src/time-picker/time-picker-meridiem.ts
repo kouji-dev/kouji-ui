@@ -24,6 +24,8 @@ import { is12Hour } from './time-picker.format';
  * <button type="button" kjTimePickerMeridiem></button>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name time-picker
  */
 @Directive({
   selector: '[kjTimePickerMeridiem]',

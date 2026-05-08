@@ -45,6 +45,10 @@ import { KjCalendarComponent } from '../calendar/calendar';
  * @doc-example Read-only
  *   @doc-file date-picker.readonly.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name date-picker
+ * @doc-description Pre-styled date picker pairing a typed input with a popover calendar — locale-aware formatting via `Intl`, APG combobox+dialog keyboard contract, and outside-click/Esc dismissal, all without a third-party date library.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-date-picker',

@@ -13,6 +13,8 @@ import { KJ_CALENDAR } from './calendar.context';
  * `header.label()` for the caption text.
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name calendar
  */
 @Directive({
   selector: '[kjCalendarHeader]',

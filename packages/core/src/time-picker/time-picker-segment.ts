@@ -29,6 +29,8 @@ type SegmentKind = 'hour' | 'minute' | 'second';
  * Each segment exposes the WAI-ARIA `spinbutton` contract
  * (<https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/>) on its host:
  * `aria-valuemin` / `aria-valuemax` / `aria-valuenow` / `aria-valuetext`.
+ * @doc
+ * @doc-name time-picker
  */
 @Directive({ standalone: true })
 export abstract class KjTimePickerSegmentBase {
@@ -200,6 +202,8 @@ export abstract class KjTimePickerSegmentBase {
  * <input kjTimePickerHours />
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name time-picker
  */
 @Directive({
   selector: '[kjTimePickerHours]',
@@ -237,6 +241,8 @@ export class KjTimePickerHours extends KjTimePickerSegmentBase {
  * <input kjTimePickerMinutes />
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name time-picker
  */
 @Directive({
   selector: '[kjTimePickerMinutes]',
@@ -273,6 +279,8 @@ export class KjTimePickerMinutes extends KjTimePickerSegmentBase {
  * <input kjTimePickerSeconds />
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name time-picker
  */
 @Directive({
   selector: '[kjTimePickerSeconds]',

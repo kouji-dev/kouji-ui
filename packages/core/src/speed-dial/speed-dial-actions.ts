@@ -10,6 +10,8 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
  * its layout / animation off of.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Directive({
   selector: '[kjSpeedDialActions]',

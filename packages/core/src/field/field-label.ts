@@ -11,6 +11,8 @@ import { KJ_FIELD } from './field.context';
  * <label kjFieldLabel>Email</label>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name field
  */
 @Directive({
   selector: '[kjFieldLabel]',

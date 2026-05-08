@@ -5,6 +5,8 @@ import { Directive } from '@angular/core';
  * Sets `role="separator"` and `aria-orientation="horizontal"`.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandSeparator]',

@@ -29,6 +29,10 @@ import {
  * </div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name button-group
+ * @doc-description Headless button-group container for kouji-ui. Apply `[kjButtonGroup]` to group `[kjButton]` children into a visually-joined cluster — it sets `role="group"`, propagates a shared variant/size/disabled default that each child can override, and exposes the orientation via `data-orientation` for CSS. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjButtonGroup]',

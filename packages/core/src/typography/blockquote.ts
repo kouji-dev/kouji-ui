@@ -23,6 +23,10 @@ import {
  * </blockquote>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name typography
+ * @doc-description Applies kouji's blockquote tone to a `<blockquote>` element via `data-tone="blockquote"` — useful when the element lives outside a `kj-prose` container that would otherwise style it automatically.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjBlockquote]',

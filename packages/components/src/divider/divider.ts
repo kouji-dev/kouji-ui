@@ -57,6 +57,10 @@ import {
  * @doc-example Structural
  *   @doc-file divider.structural.example.ts
  * @category Library/Layout/Divider
+ * @doc
+ * @doc-name divider
+ * @doc-description Pre-styled separator line in horizontal or vertical orientation — auto-elects `<hr>` for the rule-only case (semantic separator) or `<div>` when content is projected, with solid/dashed/dotted variants and optional centered label support.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-divider',

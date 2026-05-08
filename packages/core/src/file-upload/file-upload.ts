@@ -97,6 +97,10 @@ export function kjFileMatchesAccept(file: File, accept: string | undefined): boo
  * </div>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
+ * @doc-description Headless file-upload state machine — owns the file list, drag state, and accept/size/count validation, then emits structured events so the consumer controls the actual upload transport.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjFileUpload]',
@@ -420,6 +424,8 @@ export class KjFileUpload implements KjFileUploadContext {
  * <button kjFileUploadTrigger>Choose files</button>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadTrigger]',
@@ -498,6 +504,8 @@ export class KjFileUploadTrigger {
  * </div>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadDropzone]',
@@ -560,6 +568,8 @@ export class KjFileUploadDropzone {
  * </ul>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadList]',
@@ -589,6 +599,8 @@ export class KjFileUploadList {
  * </li>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadItem]',

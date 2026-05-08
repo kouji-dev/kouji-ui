@@ -45,6 +45,9 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *       }
  *    ```
  * @category Core/Inputs
+ * @doc-name checkbox
+ * @doc-description Headless checkbox primitive for kouji-ui. Apply `[kjCheckbox]` to any focusable element to get `role="checkbox"`, `aria-checked` reflection, Space/click toggle, Angular forms integration (`formControl`, `formControlName`, `ngModel`), and the focus-ring primitive — all composable onto custom markup. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCheckbox]',

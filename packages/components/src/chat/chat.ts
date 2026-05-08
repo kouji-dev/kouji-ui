@@ -61,6 +61,10 @@ export type KjChatLogLive = 'polite' | 'off';
  * @doc-example Grouped
  *   @doc-file chat-bubble.grouped.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name chat
+ * @doc-description Pre-styled chat message log with per-bubble variants, sender avatars, read-state footers, and automatic `aria-live="polite"` announcements — compose `<kj-chat>` rows inside `<kj-chat-log>` for an accessible, grouped conversation feed.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-chat-log',
@@ -91,6 +95,8 @@ export class KjChatLogComponent {}
  * deterministic even with the wrapper because the grouping `KjChat`
  * instances live on the visible custom elements that ARE physical DOM
  * siblings inside the log.
+ * @doc
+ * @doc-name chat
  */
 @Component({
   selector: 'kj-chat',
@@ -114,6 +120,8 @@ export class KjChatComponent {}
  * letting the avatar's `<img alt>` re-announce the name causes AT users
  * to hear "Jane Doe, Jane Doe, [message]"). Project a decorative
  * `<kj-avatar>` (or any ornamental marker) inside.
+ * @doc
+ * @doc-name chat
  */
 @Component({
   selector: 'kj-chat-avatar',
@@ -132,6 +140,8 @@ export class KjChatAvatarComponent {}
  * `<ng-content>` slot. Per the analysis the header should contain a
  * `<time datetime="…">` element; the directive does not enforce this — the
  * consumer renders it.
+ * @doc
+ * @doc-name chat
  */
 @Component({
   selector: 'kj-chat-header',
@@ -155,6 +165,8 @@ export class KjChatHeaderComponent {}
  * Variant / size are typed at the wrapper layer for IDE autocomplete; they
  * widen to `string` at the directive layer where they are validated against
  * `KJ_CHAT_BUBBLE_CONFIG` in dev mode.
+ * @doc
+ * @doc-name chat
  */
 @Component({
   selector: 'kj-chat-bubble',
@@ -189,6 +201,8 @@ export class KjChatBubbleComponent {
  * registers it with the parent row for `aria-describedby`, reflects
  * `kjState` to `data-state`, and injects an `aria-label` so the glyph is
  * intelligible to AT.
+ * @doc
+ * @doc-name chat
  */
 @Component({
   selector: 'kj-chat-footer',

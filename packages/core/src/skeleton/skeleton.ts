@@ -26,6 +26,10 @@ export type KjSkeletonAnimation = 'shimmer' | 'pulse' | 'none';
  * <div kjSkeleton kjSkeletonShape="circle" style="width: 40px; height: 40px"></div>
  * ```
  * @category Core/Layout
+ * @doc
+ * @doc-name skeleton
+ * @doc-description Marks an element as a decorative loading placeholder — forces `aria-hidden="true"` so screen readers skip it, and reflects `data-shape` / `data-animation` for theme CSS to render the shimmer or pulse visual.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjSkeleton]',

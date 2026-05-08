@@ -9,6 +9,10 @@
  * <div kjDisabled [kjDisabled]="isLoading()">Content</div>
  * ```
  * @category Core/Primitives
+ * @doc
+ * @doc-name interaction
+ * @doc-description Foundational disabled-state primitive — compose via `hostDirectives` to reflect `aria-disabled` and `data-disabled` onto any element without duplicating the host-binding pattern.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDisabled]',

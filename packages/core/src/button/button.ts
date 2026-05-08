@@ -34,6 +34,9 @@ import { KJ_BUTTON_CONFIG } from './config';
  *  @doc-example Sizes
  *    @doc-file button.sizes.example.ts
  * @category Core/Base
+ * @doc-name button
+ * @doc-is-main
+ * @doc-description The headless button surface for kouji-ui. Layer it onto any native button or anchor to get accessible disabled/loading/pressed semantics, configurable variants and sizes, and theme-driven styling — without coupling your markup to a specific component.
  */
 @Directive({
   selector: '[kjButton]',

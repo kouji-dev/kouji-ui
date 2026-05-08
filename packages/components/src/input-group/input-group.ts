@@ -35,6 +35,10 @@ import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
  * @doc-example Variants
  *   @doc-file input-group.variants.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name input-group
+ * @doc-description Pre-styled input with flanking addons (icons, units, buttons) that collapse into a single bordered control — wrap any `[kjInput]` with `<kj-input-group>` and add `<kj-input-group-addon>` elements for prefix/suffix decoration.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input-group',
@@ -78,6 +82,8 @@ export class KjInputGroupComponent {
  *   <input kjInput type="text" placeholder="example.com" />
  * </kj-input-group>
  * ```
+ * @doc
+ * @doc-name input-group
  */
 @Component({
   selector: 'kj-input-group-addon',

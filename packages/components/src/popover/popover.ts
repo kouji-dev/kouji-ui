@@ -38,6 +38,10 @@ import {
  * @doc-example With form
  *   @doc-file popover.with-form.example.ts
  * @category Library/Feedback
+ * @doc
+ * @doc-name popover
+ * @doc-description The pre-styled kouji popover. Wraps the headless `KjPopover` directive into ready-to-use `<kj-popover>`, `<kj-popover-trigger>`, `<kj-popover-content>`, and helper components — giving you a floating panel with collision-aware positioning, portal mounting, and optional modal mode, all styled with design-system tokens.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-popover',
@@ -85,6 +89,8 @@ export class KjPopoverComponent {}
  * ARIA wiring (`aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`).
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name popover
  */
 @Component({
   selector: 'kj-popover-trigger',
@@ -135,6 +141,8 @@ export class KjPopoverTriggerComponent {}
  * wrapper host.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name popover
  */
 @Component({
   selector: 'kj-popover-content',
@@ -202,6 +210,8 @@ export class KjPopoverContentComponent {
  * tree.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name popover
  */
 @Component({
   selector: 'kj-popover-arrow',
@@ -220,6 +230,8 @@ export class KjPopoverArrowComponent {}
  * it with the popover so `aria-labelledby` on the panel is wired automatically.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name popover
  */
 @Component({
   selector: 'kj-popover-title',
@@ -239,6 +251,8 @@ export class KjPopoverTitleComponent {}
  * `(kjCloseRequested)` handlers can intervene.
  *
  * @category Library/Feedback
+ * @doc
+ * @doc-name popover
  */
 @Component({
   selector: 'kj-popover-close',

@@ -42,6 +42,10 @@ import { Directive } from '@angular/core';
  * @doc-example Truncate (multi-line)
  *   @doc-file typography.truncate.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name typography
+ * @doc-description The kouji typography system. Apply the `kj-prose` CSS class to a container for flow-element styling, or use the `kjLead`, `kjMuted`, `kjCode`, `kjBlockquote`, and `kjTruncate` directives to style individual elements with theme-token type settings — no wrapper components needed.
+ * @doc-is-main
  */
 @Directive({
   // Selector is intentionally namespaced so it never matches consumer

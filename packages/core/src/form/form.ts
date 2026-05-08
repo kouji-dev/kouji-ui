@@ -51,6 +51,10 @@ export type KjAsyncSubmitHandler<T = unknown> = (
  * </form>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name form
+ * @doc-description Coordinator directive for Angular Forms that intercepts submit, validates, focuses the first error, announces async state via `aria-busy`, and emits typed `(kjSubmit)` / `(kjInvalidSubmit)` outputs so hand-rolled submit guards are unnecessary.
+ * @doc-is-main
  */
 @Directive({
   selector: 'form[kjForm]',

@@ -63,6 +63,8 @@ const FOCUSABLE = [
  * `(kjCloseRequested)` on the parent `[kjPopover]` / `[kjPopoverTrigger]`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name popover
  */
 @Directive({
   selector: '[kjPopoverContent]',

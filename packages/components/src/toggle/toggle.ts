@@ -17,6 +17,10 @@ import { KjToggle } from '@kouji-ui/core';
  * @doc-example With label
  *   @doc-file toggle.with-label.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name toggle
+ * @doc-description The pre-styled kouji toggle button. Drop in `<kj-toggle>` with `[(pressed)]` to get a themed `aria-pressed` button with size tokens, disabled support, and an optional accessible label — the simplest way to add a binary on/off affordance.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-toggle',

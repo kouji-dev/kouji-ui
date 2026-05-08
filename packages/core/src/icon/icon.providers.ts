@@ -12,6 +12,9 @@ import {
 /**
  * Register a map of icon names to CSS-ready values. Call multiple times to
  * compose icon sets; later calls win on key collision.
+ * @doc
+ * @doc-name icon
+ * @doc-order 1
  */
 export function provideIcons(
   map: Record<string, string>,
@@ -24,6 +27,9 @@ export function provideIcons(
 /**
  * Override the synchronous fallback resolver used when a name is not in the
  * registry and no async loader is configured.
+ * @doc
+ * @doc-name icon
+ * @doc-order 2
  */
 export function provideIconResolver(fn: IconResolver): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: KJ_ICON_RESOLVER, useValue: fn }]);
@@ -32,6 +38,9 @@ export function provideIconResolver(fn: IconResolver): EnvironmentProviders {
 /**
  * Register an async loader. When present, missing icons are loaded via this
  * function and cached into the registry.
+ * @doc
+ * @doc-name icon
+ * @doc-order 3
  */
 export function provideIconLoader(fn: IconLoader): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: KJ_ICON_LOADER, useValue: fn }]);

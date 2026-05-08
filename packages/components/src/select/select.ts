@@ -16,6 +16,10 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  * @doc-example Grouped options
  *   @doc-file select.grouped.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name select
+ * @doc-description The pre-styled kouji select. Drop in `<kj-select>` with `<kj-option>` children to get a keyboard-navigable dropdown with a styled trigger button, listbox panel, placeholder support, and two-way value binding — all themed with design-system tokens.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-select',
@@ -53,7 +57,11 @@ export class KjSelectComponent {
   });
 }
 
-/** Single option row. */
+/**
+ * Single option row.
+ * @doc
+ * @doc-name select
+ */
 @Component({
   selector: 'kj-option',
   standalone: true,

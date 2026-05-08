@@ -72,6 +72,8 @@ const DRAWER_FOCUSABLE = [
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name drawer
  */
 @Directive({
   selector: '[kjDrawerTrigger]',
@@ -342,6 +344,10 @@ export class KjDrawerTrigger implements KjDrawerContext {
  * place to hang a future programmatic-only state container.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name drawer
+ * @doc-description Headless drawer compound-shape root for kouji-ui. Apply `[kjDrawer]` when the trigger and content live as siblings in the same template — for the trigger-based pattern use `[kjDrawerTrigger]` instead. Both shapes provide `KJ_DRAWER` context to `[kjDrawerContent]`, `[kjDrawerTitle]`, `[kjDrawerDescription]`, and `[kjDrawerClose]`. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDrawer]',
@@ -363,6 +369,8 @@ export class KjDrawer {}
  * `d.close(result?)`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name drawer
  */
 @Directive({
   selector: '[kjDrawerContent]',
@@ -427,6 +435,8 @@ export class KjDrawerContent {
  * automatically.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name drawer
  */
 @Directive({
   selector: '[kjDrawerTitle]',
@@ -453,6 +463,8 @@ export class KjDrawerTitle {
  * automatically.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name drawer
  */
 @Directive({
   selector: '[kjDrawerDescription]',
@@ -478,6 +490,8 @@ export class KjDrawerDescription {
  * `#d="kjDrawerContent"` then `(click)="d.close(value)"`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name drawer
  */
 @Directive({
   selector: '[kjDrawerClose]',

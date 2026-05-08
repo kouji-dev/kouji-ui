@@ -39,6 +39,9 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
  * </ng-template>
  * ```
  * @category Core/Overlays
+ * @doc-name toast
+ * @doc-description Marks an element as a single toast item — owns `role`/`aria-atomic`, positional CSS custom properties (`--kj-toast-index`, `--kj-toast-before`, `--kj-toast-after`, `--kj-toast-height`), and `data-variant` for theme styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjToast]',
@@ -164,6 +167,8 @@ export interface KjToastRenderable<TData = unknown> {
  * </ol>
  * ```
  * @category Core/Overlays
+ * @doc
+ * @doc-name toast
  */
 @Directive({
   selector: '[kjToastViewport]',
@@ -424,6 +429,8 @@ export class KjToastViewport {
  * <button [kjToastClose]="toast.id" aria-label="Dismiss">×</button>
  * ```
  * @category Core/Overlays
+ * @doc
+ * @doc-name toast
  */
 @Directive({
   selector: '[kjToastClose]',

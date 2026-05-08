@@ -19,6 +19,6 @@ export class ServerDocsManifestProvider extends DocsManifestProvider {
   }
 
   getSlugs(): string[] {
-    return this.getManifest().components.map(c => c.slug);
+    return this.getManifest().pages.map(p => p.name);
   }
 }

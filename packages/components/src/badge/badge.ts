@@ -13,6 +13,10 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  * @doc-example With icon
  *   @doc-file badge.with-icon.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name badge
+ * @doc-description Compact pre-styled label for status, counts, or category tags — wraps the headless `KjBadge` directive so you get a ready-to-use `<kj-badge>` with theme variants and size presets applied.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-badge',

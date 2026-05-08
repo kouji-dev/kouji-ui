@@ -11,6 +11,8 @@ let _groupIdCounter = 0;
  * host element is a DOM descendant of this group element.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandGroup]',

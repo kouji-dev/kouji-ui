@@ -24,6 +24,10 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * @doc-example Cover
  *   @doc-file card.cover.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name card
+ * @doc-description Themed surface container for grouping related content — compose `<kj-card-header>`, `<kj-card-content>`, `<kj-card-footer>`, and `<kj-card-cover>` sub-components for structured layouts in any of three visual variants.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-card',
@@ -47,6 +51,8 @@ export class KjCardComponent {
  * `fit` controls `object-fit` on the inner media (`cover` default — fills and
  * crops; `contain` — letterboxes, no crop). Override the height directly with
  * the CSS custom property `--kj-card-cover-height` if the presets don't fit.
+ * @doc
+ * @doc-name card
  */
 @Component({
   selector: 'kj-card-cover',
@@ -65,7 +71,11 @@ export class KjCardCoverComponent {
   readonly fit = input<'cover' | 'contain'>('cover');
 }
 
-/** Header band inside the card. Flexes title/subtitle on the left and an optional extra slot on the right. */
+/**
+ * Header band inside the card. Flexes title/subtitle on the left and an optional extra slot on the right.
+ * @doc
+ * @doc-name card
+ */
 @Component({
   selector: 'kj-card-header',
   standalone: true,
@@ -76,7 +86,11 @@ export class KjCardCoverComponent {
 })
 export class KjCardHeaderComponent {}
 
-/** Card heading. Renders semantically as `<h3>`. */
+/**
+ * Card heading. Renders semantically as `<h3>`.
+ * @doc
+ * @doc-name card
+ */
 @Component({
   selector: 'kj-card-title',
   standalone: true,
@@ -87,7 +101,11 @@ export class KjCardHeaderComponent {}
 })
 export class KjCardTitleComponent {}
 
-/** Card subtitle — smaller, lighter text below the title. */
+/**
+ * Card subtitle — smaller, lighter text below the title.
+ * @doc
+ * @doc-name card
+ */
 @Component({
   selector: 'kj-card-subtitle',
   standalone: true,
@@ -98,7 +116,11 @@ export class KjCardTitleComponent {}
 })
 export class KjCardSubtitleComponent {}
 
-/** Main body slot. `padded` toggles the standard padding (default true). */
+/**
+ * Main body slot. `padded` toggles the standard padding (default true).
+ * @doc
+ * @doc-name card
+ */
 @Component({
   selector: 'kj-card-content',
   standalone: true,
@@ -114,7 +136,11 @@ export class KjCardContentComponent {
   readonly padded = input(true);
 }
 
-/** Footer actions area. `align` controls button placement. */
+/**
+ * Footer actions area. `align` controls button placement.
+ * @doc
+ * @doc-name card
+ */
 @Component({
   selector: 'kj-card-footer',
   standalone: true,

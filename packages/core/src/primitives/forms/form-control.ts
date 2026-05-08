@@ -24,6 +24,10 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
  * }
  * ```
  * @category Core/Primitives
+ * @doc
+ * @doc-name forms
+ * @doc-description Foundational ControlValueAccessor primitive — compose via `hostDirectives` on any form-input directive to wire Angular reactive forms and template-driven forms without repeating CVA boilerplate.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjFormControl]',

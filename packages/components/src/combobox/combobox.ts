@@ -34,6 +34,10 @@ import {
  * @doc-example With icons
  *   @doc-file combobox.with-icons.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
+ * @doc-description Pre-styled autocomplete combobox with built-in case-insensitive filtering, async search support, and free-text mode — project `<kj-combobox-option>` children for the simple case or wire `(queryChange)` for server-driven flows.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-combobox',
@@ -87,6 +91,8 @@ export class KjComboboxComponent {
  * Single combobox option. Project as a child of `<kj-combobox>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
  */
 @Component({
   selector: 'kj-combobox-option',
@@ -109,6 +115,8 @@ export class KjComboboxOptionComponent {
  * `<kj-combobox>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
  */
 @Component({
   selector: 'kj-combobox-empty',
@@ -138,6 +146,8 @@ export class KjComboboxEmptyComponent {
  * Loading-state slot rendered while `loading=true`. Place inside `<kj-combobox>`.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name combobox
  */
 @Component({
   selector: 'kj-combobox-loading',

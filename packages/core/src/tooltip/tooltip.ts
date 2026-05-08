@@ -55,6 +55,9 @@ import type {
  *  @doc-example Placements
  *    @doc-file tooltip.placements.example.ts
  * @category Core/Overlays
+ * @doc-name tooltip
+ * @doc-description Single-attribute tooltip that mounts a plain-text `role="tooltip"` panel on hover/focus, wires `aria-describedby`, strips the native `title`, and handles Escape dismissal and long-press on touch devices.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTooltip]',

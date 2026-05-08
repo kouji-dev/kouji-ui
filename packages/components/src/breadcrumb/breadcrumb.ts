@@ -46,6 +46,10 @@ import {
  * @doc-example Long path
  *   @doc-file breadcrumb.long-path.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
+ * @doc-description Accessible breadcrumb trail with built-in `<nav>` landmark, configurable separator, and overflow ellipsis — compose `<kj-breadcrumb-item>` children for instant hierarchy navigation with no ARIA boilerplate.
+ * @doc-is-main
  */
 @Component({
   selector: 'nav[kj-breadcrumb], kj-breadcrumb',
@@ -76,6 +80,8 @@ export class KjBreadcrumbComponent {
  * root via host-directive composition.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Component({
   selector: 'ol[kj-breadcrumb-list], kj-breadcrumb-list',
@@ -92,6 +98,8 @@ export class KjBreadcrumbListComponent {}
  * Wraps `KjBreadcrumbItem`. Renders a `<li>` host inside the list.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Component({
   selector: 'li[kj-breadcrumb-item], kj-breadcrumb-item',
@@ -113,6 +121,8 @@ export class KjBreadcrumbItemComponent {}
  * `<kj-link>` "directive on inner host" pattern.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Component({
   selector: 'kj-breadcrumb-link',
@@ -171,6 +181,8 @@ export class KjBreadcrumbLinkComponent {
  * host-directive composition.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Component({
   selector: 'span[kj-breadcrumb-current], kj-breadcrumb-current',
@@ -188,6 +200,8 @@ export class KjBreadcrumbCurrentComponent {}
  * icon-based separators (where the auto CSS pseudo-element won't do).
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Component({
   selector: 'li[kj-breadcrumb-separator], kj-breadcrumb-separator',
@@ -204,6 +218,8 @@ export class KjBreadcrumbSeparatorComponent {}
  * Wraps `KjBreadcrumbEllipsis`. Renders an overflow indicator cell.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Component({
   selector: 'kj-breadcrumb-ellipsis',

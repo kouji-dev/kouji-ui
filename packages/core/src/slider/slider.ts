@@ -53,6 +53,10 @@ import { valueFromClientPosition } from './slider.geometry';
  * exposes the dragging / active-thumb state for the wrapper visuals.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name slider
+ * @doc-description Headless root of the slider directive family — owns bounds, orientation, RTL, range-mode coordination (min-distance, swap policy), tick definition, and per-thumb value sugar, publishing `KJ_SLIDER` to descendants.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjSlider]',

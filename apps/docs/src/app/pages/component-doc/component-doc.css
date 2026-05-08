@@ -173,3 +173,64 @@ h1 {
   white-space: pre-wrap;
   margin: 0 0 1.25rem;
 }
+
+.kind-group {
+  margin-top: var(--kj-space-3xl);
+}
+.kind-group-title {
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--kj-color-neutral);
+  margin: 0 0 var(--kj-space-md);
+  font-weight: 500;
+  opacity: 0.7;
+}
+.item-name {
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-primary);
+  padding: 0.3rem var(--kj-space-md);
+  font-size: 0.875rem;
+  font-family: var(--kj-font-mono);
+}
+.item-section {
+  padding: var(--kj-space-xl) 0;
+  scroll-margin-top: 2rem;
+}
+.item-section + .item-section {
+  border-top: 1px dashed var(--kj-color-base-200);
+}
+.item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-xl);
+  margin-bottom: var(--kj-space-lg);
+  flex-wrap: wrap;
+}
+.main-badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  background: var(--kj-color-primary);
+  color: var(--kj-color-primary-content, white);
+}
+.signature {
+  background: var(--kj-color-base-100);
+  border: 1px solid var(--kj-color-base-300);
+  padding: var(--kj-space-md) var(--kj-space-xl);
+  font-family: var(--kj-font-mono);
+  font-size: 0.85rem;
+  overflow-x: auto;
+  margin-bottom: var(--kj-space-xl);
+}
+.token-type, .const-type {
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-primary);
+  padding: 0.3rem var(--kj-space-md);
+  font-size: 0.875rem;
+  font-family: var(--kj-font-mono);
+}

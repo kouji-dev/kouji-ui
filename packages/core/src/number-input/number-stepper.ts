@@ -35,6 +35,8 @@ import { KJ_NUMBER_INPUT, KjNumberInputContext } from './number-input.context';
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name number-input
  */
 @Directive({
   selector: '[kjNumberStepper]',

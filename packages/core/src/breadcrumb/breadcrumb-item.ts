@@ -14,6 +14,8 @@ import { KJ_BREADCRUMB, KjBreadcrumbItemContext } from './breadcrumb.context';
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Directive({
   selector: '[kjBreadcrumbItem]',

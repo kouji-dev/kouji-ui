@@ -24,6 +24,8 @@ import { KJ_CALENDAR } from './calendar.context';
  * day-of-month only (consumer renders `{{ day.dayNumber() }}`).
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name calendar
  */
 @Directive({
   selector: '[kjCalendarDay]',

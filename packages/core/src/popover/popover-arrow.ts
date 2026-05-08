@@ -18,6 +18,8 @@ import { KJ_POPOVER, type KjPopoverContext } from './popover.context';
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name popover
  */
 @Directive({
   selector: '[kjPopoverArrow]',

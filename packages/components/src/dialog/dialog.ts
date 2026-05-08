@@ -37,6 +37,10 @@ import {
  * @doc-example Confirmation
  *   @doc-file dialog.confirmation.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
+ * @doc-description Pre-styled modal dialog with focus trap, scroll lock, focus restore, and cancellable close — compose header, body, and footer sub-components inside `<kj-dialog>` for a fully accessible overlay that works declaratively or programmatically.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-dialog',
@@ -55,6 +59,8 @@ export class KjDialogComponent {}
  * `kjDialogOverlayCloseOnClick` to the underlying `KjDialogOverlay` directive.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
  */
 @Component({
   selector: 'kj-dialog-overlay',
@@ -79,6 +85,8 @@ export class KjDialogOverlayComponent {}
  * automatically.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
  */
 @Component({
   selector: 'kj-dialog-title',
@@ -97,6 +105,8 @@ export class KjDialogTitleComponent {}
  * `aria-describedby` wiring.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
  */
 @Component({
   selector: 'kj-dialog-description',
@@ -113,6 +123,8 @@ export class KjDialogDescriptionComponent {}
  * Header band inside the dialog. Optional `align` for title placement.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
  */
 @Component({
   selector: 'kj-dialog-header',
@@ -138,6 +150,8 @@ export class KjDialogHeaderComponent {
  * additionally style via `[data-kj-dialog-content]`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
  */
 @Component({
   selector: 'kj-dialog-body',
@@ -163,6 +177,8 @@ export class KjDialogBodyComponent {
  * `KjDialogActions` for the structural marker.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name dialog
  */
 @Component({
   selector: 'kj-dialog-footer',

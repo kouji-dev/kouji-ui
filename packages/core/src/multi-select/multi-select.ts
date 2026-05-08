@@ -40,6 +40,10 @@ let _multiSelectIdCounter = 0;
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name multi-select
+ * @doc-description Root multi-select container — holds the selected-value array, open/close state, search query, and max-cap policy, exposing them via `KJ_MULTI_SELECT` so trigger, listbox, and option directives stay in sync.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjMultiSelect]',
@@ -222,6 +226,8 @@ export class KjMultiSelect implements KjMultiSelectContext {
  * and forwards focus into the listbox.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name multi-select
  */
 @Directive({
   selector: 'button[kjMultiSelectTrigger], [kjMultiSelectTrigger]',
@@ -283,6 +289,8 @@ export class KjMultiSelectTrigger {
  * as outside-clicks.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name multi-select
  */
 @Directive({
   selector: '[kjMultiSelectListbox]',
@@ -396,6 +404,8 @@ export class KjMultiSelectListbox {
  * text content does not contain the query (case-insensitive).
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name multi-select
  */
 @Directive({
   selector: '[kjMultiSelectOption]',
@@ -488,6 +498,8 @@ export class KjMultiSelectOption {
  * forwards focus into the option list.
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name multi-select
  */
 @Directive({
   selector: 'input[kjMultiSelectSearch]',
@@ -539,6 +551,8 @@ export class KjMultiSelectSearch {
  * to `kjMultiSelectMax`).
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name multi-select
  */
 @Directive({
   selector: 'button[kjMultiSelectAllToggle]',

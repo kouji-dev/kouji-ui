@@ -40,6 +40,8 @@ import type {
  * `role="tooltip"` — if you need interactive content, use `[kjPopover]`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name tooltip
  */
 @Directive({
   selector: '[kjTooltipContent]',

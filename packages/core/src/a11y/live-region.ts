@@ -13,6 +13,8 @@ export type KjLivePoliteness = 'off' | 'polite' | 'assertive';
  * <button (click)="region.announce('Item saved')">Save</button>
  * ```
  * @category Core/Accessibility
+ * @doc
+ * @doc-name a11y
  */
 @Directive({
   selector: '[kjLiveRegion]',

@@ -28,6 +28,10 @@ import {
  * Marker directive for projecting custom footer content into a
  * `<kj-command-palette>`. When present, the wrapper hides its default
  * keyboard-hint footer and renders the projected content instead.
+ * @doc
+ * @doc-name command-palette
+ * @doc-description A pre-styled modal command palette with fuzzy filtering, keyboard-chord activation, grouped results, and an optional item-template API — drop in `<kj-command-palette>` for an instant Cmd-K style launcher with full keyboard navigation.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCommandPaletteFooter]',
@@ -48,6 +52,8 @@ export class KjCommandPaletteFooter {}
  *   </ng-template>
  * </kj-command-palette>
  * ```
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: 'ng-template[kjCommandPaletteItemTemplate]',
@@ -77,6 +83,8 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
  * @doc-example Fuzzy filter
  *   @doc-file command-palette.fuzzy.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Component({
   selector: 'kj-command-palette',
@@ -236,6 +244,8 @@ export class KjCommandPaletteComponent {
  * Styled command item. Renders a `<button>` with `[kjCommandItem]` applied.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Component({
   selector: 'kj-command-item',
@@ -271,6 +281,8 @@ export class KjCommandItemComponent {
  * Styled command group. Auto-hides when all child items are filtered out.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Component({
   selector: 'kj-command-group',
@@ -298,6 +310,8 @@ export class KjCommandGroupComponent {
  * build a custom palette layout outside `<kj-command-palette>`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Component({
   selector: 'kj-command-input',
@@ -325,6 +339,8 @@ export class KjCommandInputComponent {
  * Styled separator between command groups.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Component({
   selector: 'kj-command-separator',
@@ -342,6 +358,8 @@ export class KjCommandSeparatorComponent {}
  * Styled empty state slot. Shown when no items match the current query.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Component({
   selector: 'kj-command-empty',

@@ -22,6 +22,8 @@ import { KJ_PAGINATION_CONFIG } from './config';
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Directive({
   selector: '[kjPaginationLast]',

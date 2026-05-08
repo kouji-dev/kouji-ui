@@ -28,6 +28,8 @@ import { KJ_BREADCRUMB_CONFIG } from './config';
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name breadcrumb
  */
 @Directive({
   selector: '[kjBreadcrumbEllipsis]',

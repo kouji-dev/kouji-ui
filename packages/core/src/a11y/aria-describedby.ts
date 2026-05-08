@@ -11,6 +11,10 @@
  * <span id="hint-id">Format: DD/MM/YYYY</span>
  * ```
  * @category Core/Accessibility
+ * @doc
+ * @doc-name a11y
+ * @doc-description Headless accessibility primitive for `aria-describedby`. Layer `[kjAriaDescribedBy]` onto any element and pass a single id or an array of ids via `[kjDescribedBy]` — the directive composes and reflects them automatically, removing the attribute when the value is empty.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAriaDescribedBy]',

@@ -57,6 +57,10 @@ import { KjList, KjListItem, type KjListAs, type KjListOrientation } from '@kouj
  * @doc-example With icons and badges
  *   @doc-file list.with-icons.example.ts
  * @category Library/Data display
+ * @doc
+ * @doc-name list
+ * @doc-description Pre-styled list surface for settings panels, sidebar navigation, and data feeds — supports divided rows, hover highlight, arrow-key navigation, and `as="nav"` for a proper `navigation` landmark, all without extra wrapper elements.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-list',
@@ -142,6 +146,8 @@ export class KjListComponent {
  * `tabindex` discipline (e.g. via `KjDisabled` on a button).
  *
  * @category Library/Data display
+ * @doc
+ * @doc-name list
  */
 @Component({
   selector: 'kj-list-item',

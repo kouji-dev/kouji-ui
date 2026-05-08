@@ -6,12 +6,18 @@
  *
  * Used as a fallback when an icon is not in the registry and no async loader
  * is configured.
+ * @doc
+ * @doc-name icon
+ * @doc-order 10
  */
 export type IconResolver = (name: string) => string;
 
 /**
  * Asynchronously resolves an icon name to a CSS-ready value. Result is
  * memoized into the registry so subsequent reads are synchronous.
+ * @doc
+ * @doc-name icon
+ * @doc-order 11
  */
 export type IconLoader = (name: string) => Promise<string>;
 
@@ -19,6 +25,9 @@ export type IconLoader = (name: string) => Promise<string>;
  * Semantic color tokens for `[kjIconColor]`. Maps to
  * `var(--kj-color-icon-{token})`. `'inherit'` is the default and means
  * "use whatever the surrounding text color is" (CSS `currentColor`).
+ * @doc
+ * @doc-name icon
+ * @doc-order 12
  */
 export type KjIconColor =
   | 'inherit'
@@ -32,5 +41,8 @@ export type KjIconColor =
 /**
  * Size tokens for `[kjIconSize]`. Maps to `var(--kj-icon-size-{token})`.
  * Sizes are em-relative so an icon scales with surrounding text by default.
+ * @doc
+ * @doc-name icon
+ * @doc-order 13
  */
 export type KjIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';

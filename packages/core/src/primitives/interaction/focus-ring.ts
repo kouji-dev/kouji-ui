@@ -12,6 +12,8 @@ import { isPlatformBrowser } from '@angular/common';
  * <button kjFocusRing>Focusable button</button>
  * ```
  * @category Core/Primitives
+ * @doc
+ * @doc-name interaction
  */
 @Directive({
   selector: '[kjFocusRing]',

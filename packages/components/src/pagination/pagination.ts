@@ -58,6 +58,10 @@ import {
  * @doc-example With info
  *   @doc-file pagination.with-info.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
+ * @doc-description Pre-styled pagination control with sibling/boundary window ellipsis, ARIA-labelled `<nav>`, and two-way `[(kjPage)]` binding — use `<kj-pagination-default>` for the 80% case or hand-author the layout with the compound component API.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-pagination',
@@ -90,6 +94,8 @@ export class KjPaginationComponent {}
  * `kjSize` inputs. Reflects `aria-current="page"` on the active page.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-item',
@@ -126,6 +132,8 @@ export class KjPaginationItemComponent {
  * when the parent is on page 1 or the dataset is empty.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-previous',
@@ -156,6 +164,8 @@ export class KjPaginationPreviousComponent {
  * the last page or the dataset is empty.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-next',
@@ -186,6 +196,8 @@ export class KjPaginationNextComponent {
  * first page or the dataset is empty.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-first',
@@ -216,6 +228,8 @@ export class KjPaginationFirstComponent {
  * the last page or the dataset is empty.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-last',
@@ -247,6 +261,8 @@ export class KjPaginationLastComponent {
  * ("More pages") is appended at render time.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-ellipsis',
@@ -265,6 +281,8 @@ export class KjPaginationEllipsisComponent {}
  * the directive yields and the projection wins.
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-info',
@@ -292,6 +310,8 @@ export class KjPaginationInfoComponent {}
  * ```
  *
  * @category Library/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Component({
   selector: 'kj-pagination-default',

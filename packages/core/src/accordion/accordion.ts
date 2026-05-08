@@ -54,6 +54,10 @@ function nextSeed(): string {
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
+ * @doc-description Headless accordion root for kouji-ui. Apply `[kjAccordion]` to a container to manage expand/collapse state across any number of `[kjAccordionItem]` children — supporting single or multiple open mode, optional arrow-key roving navigation, and two-way value binding. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAccordion]',
@@ -221,6 +225,8 @@ function arraysEqual(a: readonly string[], b: readonly string[]): boolean {
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
  */
 @Directive({
   selector: '[kjAccordionItem]',
@@ -292,6 +298,8 @@ export class KjAccordionItem implements KjAccordionItemContext {
  * <button kjAccordionTrigger>Section title</button>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
  */
 @Directive({
   selector: '[kjAccordionTrigger]',
@@ -366,6 +374,8 @@ export class KjAccordionTrigger implements OnInit, OnDestroy {
  * <div kjAccordionContent>Panel content</div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
  */
 @Directive({
   selector: '[kjAccordionContent]',

@@ -28,6 +28,8 @@ const KJ_VISUALLY_HIDDEN_STYLE =
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name pagination
  */
 @Directive({
   selector: '[kjPaginationEllipsis]',

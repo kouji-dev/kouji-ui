@@ -19,6 +19,8 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
  * ```
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name speed-dial
  */
 @Directive({
   selector: '[kjSpeedDialTrigger]',

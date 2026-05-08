@@ -42,6 +42,10 @@ import {
  * @doc-example Optional step
  *   @doc-file stepper.optional-step.example.ts
  * @category Library/Navigation
+ * @doc
+ * @doc-name stepper
+ * @doc-description The pre-styled kouji stepper. Compose `<kj-stepper>` with `<kj-step>`, `<kj-step-label>`, and `<kj-step-content>` to render a multi-step wizard with theme tokens, linear or non-linear progression, horizontal/vertical orientation, and built-in Next/Previous/Reset controls.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-stepper',
@@ -76,6 +80,8 @@ export class KjStepperComponent {}
  * disabled / key state down to the headless `KjStep` directive.
  *
  * Project a `<kj-step-label>` and (optionally) a `<kj-step-content>` inside.
+ * @doc
+ * @doc-name stepper
  */
 @Component({
   selector: 'kj-step',
@@ -103,6 +109,8 @@ export class KjStepComponent {}
  * Header / clickable label for a `<kj-step>`. Renders an inner `<button>`
  * carrying `[kjStepLabel]` so APG wizard semantics and roving tabindex
  * stay correct.
+ * @doc
+ * @doc-name stepper
  */
 @Component({
   selector: 'kj-step-label',
@@ -119,6 +127,8 @@ export class KjStepLabelComponent {}
  * Content panel for a `<kj-step>`. Renders an inner `<section>` carrying
  * `[kjStepContent]`; the directive host-binds `[hidden]` / `[inert]` so the
  * panel is visible only when its parent step is active.
+ * @doc
+ * @doc-name stepper
  */
 @Component({
   selector: 'kj-step-content',
@@ -134,6 +144,8 @@ export class KjStepContentComponent {}
 /**
  * Stepper-level *Next* command. Renders a `<button>` with `[kjStepperNext]`,
  * which host-binds `[disabled]` from the parent's `canAdvance()`.
+ * @doc
+ * @doc-name stepper
  */
 @Component({
   selector: 'kj-stepper-next',
@@ -150,6 +162,8 @@ export class KjStepperNextComponent {}
  * Stepper-level *Previous* command. Renders a `<button>` with
  * `[kjStepperPrevious]`, which host-binds `[disabled]` from the parent's
  * `canRetreat()`.
+ * @doc
+ * @doc-name stepper
  */
 @Component({
   selector: 'kj-stepper-previous',
@@ -165,6 +179,8 @@ export class KjStepperPreviousComponent {}
 /**
  * Stepper-level *Reset* command. Renders a `<button>` with `[kjStepperReset]`;
  * never gated.
+ * @doc
+ * @doc-name stepper
  */
 @Component({
   selector: 'kj-stepper-reset',

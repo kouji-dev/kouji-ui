@@ -58,6 +58,8 @@ import {
  * wrapper or `[kjButton]`). It contributes only ARIA + keyboard wiring.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Directive({
   selector: '[kjDropdownMenuTriggerFor]',

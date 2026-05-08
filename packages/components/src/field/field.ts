@@ -32,6 +32,10 @@ import {
  * @doc-example Prefix and suffix
  *   @doc-file field.with-prefix-suffix.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name field
+ * @doc-description Pre-styled form field wrapper that auto-wires label `for=`, `aria-describedby` from help and error messages, and required/invalid/disabled state — drop any `kjField`-aware input inside `<kj-field>` for zero-boilerplate accessible field composition.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-field',
@@ -62,6 +66,8 @@ export class KjFieldComponent {}
 /**
  * Styled wrapper around `KjFieldLabel`.
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-label',
@@ -85,6 +91,8 @@ export class KjFieldLabelComponent {}
 /**
  * Styled wrapper around `KjFieldHelp`.
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-help',
@@ -103,6 +111,8 @@ export class KjFieldHelpComponent {}
 /**
  * Styled wrapper around `KjFieldError`.
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-error',
@@ -134,6 +144,8 @@ export class KjFieldErrorComponent {}
  * </kj-field-group>
  * ```
  * @category Library/Data input
+ * @doc
+ * @doc-name field
  */
 @Component({
   selector: 'kj-field-group',

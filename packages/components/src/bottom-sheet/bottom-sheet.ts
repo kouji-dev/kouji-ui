@@ -40,6 +40,10 @@ import {
  * @doc-example Action sheet
  *   @doc-file bottom-sheet.actions.example.ts
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
+ * @doc-description Pre-styled bottom sheet for mobile-first overlay flows — slides up from the bottom with a draggable handle, focus trap, scroll lock, and snap-point support, all wired by the underlying headless family.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-bottom-sheet',
@@ -58,6 +62,8 @@ export class KjBottomSheetComponent {}
  * `kjBottomSheetOverlayCloseOnClick` to the underlying overlay directive.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-overlay',
@@ -82,6 +88,8 @@ export class KjBottomSheetOverlayComponent {}
  * `aria-labelledby` is wired automatically.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-title',
@@ -99,6 +107,8 @@ export class KjBottomSheetTitleComponent {}
  * for automatic `aria-describedby` wiring.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-description',
@@ -117,6 +127,8 @@ export class KjBottomSheetDescriptionComponent {}
  * gestures and the slider keyboard contract.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-handle',
@@ -136,6 +148,8 @@ export class KjBottomSheetHandleComponent {}
  * Header band inside the bottom sheet. Optional `align` for title placement.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-header',
@@ -158,6 +172,8 @@ export class KjBottomSheetHeaderComponent {
  * `scroll` enables overflow scroll inside the body slot.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-body',
@@ -181,6 +197,8 @@ export class KjBottomSheetBodyComponent {
  * Footer / action band. `align` controls action button placement.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-footer',
@@ -203,6 +221,8 @@ export class KjBottomSheetFooterComponent {
  * `KjBottomSheetClose`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Component({
   selector: 'kj-bottom-sheet-close',

@@ -32,6 +32,10 @@ import {
  * @doc-example Currency formatting
  *   @doc-file number-input.currency.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name number-input
+ * @doc-description Pre-styled numeric input with flanking stepper buttons, locale-aware formatting (decimal, currency, percent, unit), min/max/step constraints, and a two-way bindable `[(kjValue)]` — all in a single `<kj-number-input>` drop-in.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-number-input',

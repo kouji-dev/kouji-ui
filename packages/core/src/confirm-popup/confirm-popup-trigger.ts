@@ -18,6 +18,8 @@ import { KjPopoverTrigger } from '../popover/popover-trigger';
  * popup anchors to *this* element, so positioning hugs the trigger.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Directive({
   selector: '[kjConfirmPopupTrigger], [kjConfirmPopupTriggerFor]',

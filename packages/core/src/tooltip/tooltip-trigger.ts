@@ -63,6 +63,8 @@ import type {
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name tooltip
  */
 @Directive({
   selector: '[kjTooltipTrigger], [kjTooltipTriggerFor]',

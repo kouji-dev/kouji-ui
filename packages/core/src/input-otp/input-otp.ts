@@ -40,6 +40,10 @@ import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name input-otp
+ * @doc-description Headless root for a multi-cell OTP widget — owns the concatenated value, cell auto-advance, paste distribution, character-set filtering, and completion announcement as a single Angular form control.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjInputOtp]',
@@ -291,6 +295,8 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name input-otp
  */
 @Directive({
   selector: 'input[kjInputOtpCell]',

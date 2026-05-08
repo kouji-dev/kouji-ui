@@ -43,6 +43,10 @@ interface KjBreadcrumbItemEntry {
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name breadcrumb
+ * @doc-description Headless breadcrumb root for kouji-ui. Apply `[kjBreadcrumb]` to a `<nav>` to own the landmark `aria-label`, item registration, automatic truncation with `kjMaxItems`, and the ellipsis overflow strategy — compose with `[kjBreadcrumbList]`, `[kjBreadcrumbItem]`, `[kjBreadcrumbLink]`, and `[kjBreadcrumbCurrent]`. Zero styling.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjBreadcrumb]',

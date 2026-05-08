@@ -39,6 +39,10 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
  * @doc-example Auto-submit
  *   @doc-file input-otp.autosubmit.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name input-otp
+ * @doc-description Pre-styled one-time-password input that renders N individual cells with paste distribution, auto-submit, masking, and visual separators — fully `[(ngModel)]` / `[formControl]` compatible, emitting the concatenated code string.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-input-otp',

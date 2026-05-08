@@ -67,6 +67,10 @@ function flattenTree(
  * nesting level, and the node label.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name tree-select
+ * @doc-description The pre-styled kouji tree-select node row. Renders one item in the `<kj-tree-select>` flat-projected tree list, including the expand/collapse toggle, optional multi-select checkbox, and indentation based on nesting level.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tree-select-node',
@@ -158,6 +162,8 @@ export class KjTreeSelectNodeComponent {
  * @doc-example Disabled
  *   @doc-file tree-select.disabled.example.ts
  * @category Library/Data input
+ * @doc
+ * @doc-name tree-select
  */
 @Component({
   selector: 'kj-tree-select',

@@ -75,6 +75,10 @@ const SHEET_FOCUSABLE = [
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
+ * @doc-description Headless bottom-sheet trigger for kouji-ui. Apply `[kjBottomSheetTrigger]` to any button to portal-mount a slide-up sheet with snap-point support, drag-to-dismiss gesture, focus-trap, scroll-lock, and the same cancellable close cycle as `[kjDialogTrigger]` — without any styling opinions.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjBottomSheetTrigger]',
@@ -370,6 +374,8 @@ export class KjBottomSheetTrigger implements KjBottomSheetContext {
  * animation.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Directive({
   selector: '[kjBottomSheetContent]',
@@ -440,6 +446,8 @@ export class KjBottomSheetContent {
  * (per-instance) AND the trigger's `closeOnBackdrop` are `true`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Directive({
   selector: '[kjBottomSheetOverlay]',
@@ -469,6 +477,8 @@ export class KjBottomSheetOverlay {
  * automatically.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Directive({
   selector: '[kjBottomSheetTitle]',
@@ -495,6 +505,8 @@ export class KjBottomSheetTitle {
  * `aria-describedby` automatically.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Directive({
   selector: '[kjBottomSheetDescription]',
@@ -520,6 +532,8 @@ export class KjBottomSheetDescription {
  * `#s="kjBottomSheet"` and call `s.close(value)`.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Directive({
   selector: '[kjBottomSheetClose]',
@@ -548,6 +562,8 @@ export class KjBottomSheetClose {
  * dismiss the sheet.
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name bottom-sheet
  */
 @Directive({
   selector: '[kjBottomSheetHandle]',

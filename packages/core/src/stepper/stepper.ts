@@ -56,6 +56,10 @@ let _stepperUid = 0;
  * </ol>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
+ * @doc-description Root of the Stepper directive family — owns the active-step state machine, linear-mode gating, loop support, and roving-tabindex navigation across step headers using APG wizard semantics.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjStepper]',
@@ -253,6 +257,8 @@ let _stepUid = 0;
  * </li>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
  */
 @Directive({
   selector: '[kjStep]',
@@ -356,6 +362,8 @@ export class KjStep implements KjStepContext {
  * <button kjStepLabel>Profile</button>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
  */
 @Directive({
   selector: '[kjStepLabel]',
@@ -426,6 +434,8 @@ export class KjStepLabel {
  * <section kjStepContent>...</section>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
  */
 @Directive({
   selector: '[kjStepContent]',
@@ -451,6 +461,8 @@ export class KjStepContent {
  *
  * @example `<button kjStepperNext>Continue</button>`
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
  */
 @Directive({
   selector: '[kjStepperNext]',
@@ -480,6 +492,8 @@ export class KjStepperNext {
  *
  * @example `<button kjStepperPrevious>Back</button>`
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
  */
 @Directive({
   selector: '[kjStepperPrevious]',
@@ -509,6 +523,8 @@ export class KjStepperPrevious {
  *
  * @example `<button kjStepperReset>Start over</button>`
  * @category Core/Navigation
+ * @doc
+ * @doc-name stepper
  */
 @Directive({
   selector: '[kjStepperReset]',

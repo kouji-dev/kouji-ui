@@ -38,6 +38,10 @@ interface AddonEntry {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name input-group
+ * @doc-description Coordinates a row of addons flanking a central input — propagates variant, size, and disabled state to children and builds the `aria-labelledby` chain from registered addon ids.
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjInputGroup]',

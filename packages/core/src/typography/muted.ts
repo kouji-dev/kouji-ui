@@ -15,6 +15,8 @@ import { Directive } from '@angular/core';
  * <p kjMuted>Standalone muted paragraph.</p>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name typography
  */
 @Directive({
   selector: '[kjMuted]',
