@@ -175,18 +175,17 @@ h1 {
 }
 
 .kind-group {
-  margin-top: var(--kj-space-2xl);
+  margin-top: var(--kj-space-3xl);
 }
 .kind-group-title {
   font-family: var(--kj-font-mono);
   font-size: 0.7rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--kj-color-primary);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  padding-bottom: var(--kj-space-sm);
-  margin: 0 0 var(--kj-space-lg);
+  color: var(--kj-color-neutral);
+  margin: 0 0 var(--kj-space-md);
   font-weight: 500;
+  opacity: 0.7;
 }
 .item-name {
   background: var(--kj-color-base-200);
@@ -197,9 +196,11 @@ h1 {
   font-family: var(--kj-font-mono);
 }
 .item-section {
-  padding: 2.5rem 0;
-  border-bottom: 1px solid var(--kj-color-base-200);
+  padding: var(--kj-space-xl) 0;
   scroll-margin-top: 2rem;
+}
+.item-section + .item-section {
+  border-top: 1px dashed var(--kj-color-base-200);
 }
 .item-header {
   display: flex;
