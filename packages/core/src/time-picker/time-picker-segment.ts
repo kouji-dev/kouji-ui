@@ -94,6 +94,7 @@ export abstract class KjTimePickerSegmentBase {
     effect(() => {
       const next = this.displayValue();
       const el = this.el.nativeElement;
+      if (typeof document === 'undefined') return;
       if (el && document.activeElement !== el && el.value !== next) {
         el.value = next;
       }
