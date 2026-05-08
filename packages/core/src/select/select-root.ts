@@ -1,4 +1,5 @@
-import { Directive, InjectionToken, model, signal } from '@angular/core';
+import { Directive, InjectionToken, inject, model, signal } from '@angular/core';
+import { KjOverlayController } from '../primitives/overlay/controller';
 
 /**
  * Internal DI token used by child directives (`KjSelectTrigger`,
@@ -10,11 +11,11 @@ import { Directive, InjectionToken, model, signal } from '@angular/core';
 export const KJ_SELECT = new InjectionToken<KjSelect>('KjSelect');
 
 /**
- * Root select container. Owns the selection model (`kjSelectValue`) and acts
- * as the rendezvous between the trigger, the content panel, and individual
- * options. The `kjMultiple` flag (which absorbs the former `multi-select`
- * consumer) lives on `KjSelectTrigger` and is forwarded into this umbrella
- * via `setMultiple()`.
+ * Root select container. Owns the selection model (`kjSelectValue`) and the
+ * shared `KjOverlayController` so the trigger, panel, and individual
+ * options all wire to the same overlay state. The `kjMultiple` flag (which
+ * absorbs the former `multi-select` consumer) lives on `KjSelectTrigger`
+ * and is forwarded into this umbrella via `setMultiple()`.
  *
  * @example
  * ```html
@@ -31,9 +32,15 @@ export const KJ_SELECT = new InjectionToken<KjSelect>('KjSelect');
   selector: '[kjSelect]',
   standalone: true,
   exportAs: 'kjSelect',
-  providers: [{ provide: KJ_SELECT, useExisting: KjSelect }],
+  providers: [
+    { provide: KJ_SELECT, useExisting: KjSelect },
+    KjOverlayController,
+  ],
 })
 export class KjSelect {
+  /** @internal — shared overlay controller; trigger + content + options all see this same instance. */
+  private readonly controller = inject(KjOverlayController);
+
   /** Two-way bindable selected value (single) or values (multi). */
   readonly kjSelectValue = model<unknown>(undefined);
 
@@ -43,17 +50,11 @@ export class KjSelect {
   /** @internal — written by `KjSelectTrigger` to mirror its `kjMultiple` input. */
   readonly _multiple = signal(false);
 
-  /** @internal — written by `KjSelectTrigger` whenever the overlay opens or closes. */
-  readonly _open = signal(false);
-
-  /** @internal — bumped by `select()` in single mode so the trigger can close. */
-  readonly _closeRequest = signal(0);
-
   /** Whether the select is in multi-selection mode. */
   readonly multiple = this._multiple.asReadonly();
 
   /** Whether the listbox is currently open. */
-  readonly open = this._open.asReadonly();
+  readonly open = this.controller.isOpen;
 
   /** Whether `target` is currently selected. */
   isSelected(target: unknown): boolean {
@@ -65,9 +66,9 @@ export class KjSelect {
   }
 
   /**
-   * Single mode: replace the value and request close. Multi mode: toggle
-   * membership in the value array; the panel stays open so additional
-   * options can be picked.
+   * Single mode: replace the value and close the overlay. Multi mode:
+   * toggle membership in the value array; the panel stays open so
+   * additional options can be picked.
    */
   select(target: unknown): { close: boolean } {
     if (this._multiple()) {
@@ -80,7 +81,7 @@ export class KjSelect {
       return { close: false };
     }
     this.kjSelectValue.set(target);
-    this._closeRequest.update(n => n + 1);
+    this.controller.close('programmatic');
     return { close: true };
   }
 }

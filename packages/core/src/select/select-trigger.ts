@@ -4,7 +4,6 @@ import {
   effect,
   inject,
   input,
-  untracked,
 } from '@angular/core';
 import { KjFocusRing } from '../primitives';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
@@ -37,10 +36,12 @@ function listboxClickTrigger(): KjTriggerEventStrategy {
 /**
  * Trigger directive for `KjSelectContent`. Composes the overlay
  * `KjOverlayTrigger` host directive (which wires `aria-expanded`,
- * `aria-controls`, `aria-haspopup`) and exposes the `kjMultiple` variant
- * input that absorbs the former `multi-select` consumer. Mirrors the
- * controller's open state back into the parent `KjSelect` so options can
- * react to it.
+ * `aria-controls`, `aria-haspopup`) and forwards the `kjMultiple` input
+ * onto the umbrella `KjSelect` root.
+ *
+ * The shared `KjOverlayController` is provided by the `KjSelect` root
+ * directive, not here — so option clicks can call `controller.close()`
+ * directly through the same instance the trigger is wired to.
  *
  * @category Core/Inputs
  */
@@ -53,7 +54,6 @@ function listboxClickTrigger(): KjTriggerEventStrategy {
     { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
   ],
   providers: [
-    KjOverlayController,
     {
       provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
       useFactory: () => listboxClickTrigger(),
@@ -62,7 +62,7 @@ function listboxClickTrigger(): KjTriggerEventStrategy {
   ],
 })
 export class KjSelectTrigger {
-  /** @internal */
+  /** @internal — same instance as the one provided on KjSelect root. */
   readonly controller = inject(KjOverlayController);
   private readonly select = inject(KJ_SELECT, { optional: true });
 
@@ -76,24 +76,6 @@ export class KjSelectTrigger {
     // and content can read a single source of truth.
     effect(() => {
       this.select?._multiple.set(this.kjMultiple());
-    });
-    // Mirror controller open state into the parent select so KjOption /
-    // KjSelectContent can react without each owning a controller.
-    effect(() => {
-      this.select?._open.set(this.controller.isOpen());
-    });
-    // React to single-mode close requests originating from option clicks.
-    // Track ONLY `_closeRequest` — reading `isOpen()` inside `untracked`
-    // prevents the effect from re-firing when the controller's state
-    // changes (open → closing → closed → reopen). Without this, the stale
-    // `req=1` value would close every subsequent reopen because the
-    // effect re-fires on isOpen flips.
-    effect(() => {
-      const req = this.select?._closeRequest();
-      if (!req) return;
-      if (untracked(() => this.controller.isOpen())) {
-        this.controller.close('programmatic');
-      }
     });
   }
 
