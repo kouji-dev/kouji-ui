@@ -252,7 +252,7 @@ git commit -m "feat(theme-gen): add deriveFromSeed (9-slot palette from one hex)
 - Create: `apps/docs/src/app/lib/theme/seed-swatches.ts`
 - Test: `apps/docs/src/app/lib/theme/seed-swatches.spec.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // apps/docs/src/app/lib/theme/seed-swatches.spec.ts
@@ -310,7 +310,9 @@ describe('SEED_SWATCHES', () => {
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/seed-swatches.spec.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement `seed-swatches.ts`**
+- [x] **Step 3: Implement `seed-swatches.ts`**
+
+> *Note: simplified from `basePair: { light, dark }` to `lightBase` only. AAA against both white and near-black for the same hex is mathematically impossible; dark-mode swatches will be derived at runtime in Task 4+.*
 
 ```ts
 // apps/docs/src/app/lib/theme/seed-swatches.ts
@@ -378,12 +380,12 @@ export const SEED_SWATCHES: readonly SeedSwatch[] = [
 ] as const;
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/seed-swatches.spec.ts`
 Expected: PASS, 4 tests. If any swatch fails AAA, darken its `hex` (drop OKLCH lightness by ~0.05) and re-run until all pass — the test enforces the curation contract.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/lib/theme/seed-swatches.ts apps/docs/src/app/lib/theme/seed-swatches.spec.ts
