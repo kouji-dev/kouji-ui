@@ -2401,7 +2401,9 @@ git commit -m "feat(theme-gen): preview chat tab"
 **Files:**
 - Modify: `apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts`
 
-- [ ] **Step 1: Add a tab-change broadcaster**
+**Verification (2026-05-08):** No code change needed. Template uses `@switch (active())` over `<kj-preview-*>` components inside the tabpanel — switching tabs destroys/recreates the active panel, which auto-tears-down any overlay attached to the panel's component tree.
+
+- [x] **Step 1: Add a tab-change broadcaster**
 
 Replace `setActive` with:
 
@@ -2415,9 +2417,9 @@ protected setActive(t: Tab): void {
 
 The `@switch` already destroys/recreates the panel content on tab change, which closes overlays automatically. Verify in browser by opening the search tab, opening the filters drawer, then switching tabs — the drawer should not persist.
 
-- [ ] **Step 2: Commit (only if a code change was needed)**
+- [x] **Step 2: Commit (only if a code change was needed)**
 
-If `@switch` already handles it (likely), skip the commit and add a note in the next commit body confirming the verification.
+If `@switch` already handles it (likely), skip the commit and add a note in the next commit body confirming the verification. (Skipped — `@switch` handles teardown.)
 
 ---
 
@@ -2428,7 +2430,7 @@ If `@switch` already handles it (likely), skip the commit and add a note in the 
 **Files:**
 - Modify: `apps/docs/e2e/theme-generator.spec.ts`
 
-- [ ] **Step 1: Add tests**
+- [x] **Step 1: Add tests**
 
 Append to the existing spec:
 
@@ -2484,12 +2486,12 @@ test('contrast scorecard flags a deliberately bad pair', async ({ page }) => {
 });
 ```
 
-- [ ] **Step 2: Run E2E**
+- [x] **Step 2: Run E2E**
 
 Run: `pnpm exec playwright test apps/docs/e2e/theme-generator.spec.ts --project=chromium`
 Expected: PASS. Adjust selectors if `data-token-slot` attribute names differ in the actual sidebar template — add the missing `data-token-slot="<slot>"` attributes to the primary input wrapper as part of this task if needed.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/docs/e2e/theme-generator.spec.ts apps/docs/src/app/components/theme-generator-sidebar/
