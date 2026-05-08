@@ -9,13 +9,14 @@ import { FontLoaderService } from '../../services/font-loader.service';
 import { serializeToScopedBlock } from '../../lib/theme/serialize-theme';
 import { CURATED_FONTS } from '../../lib/theme/font-catalog';
 import { ThemeUrlService } from '../../services/theme-url.service';
+import { ThemeImportDialog } from '../../components/theme-import-dialog/theme-import-dialog';
 
 const STYLE_TAG_ID = 'kj-draft-style';
 
 @Component({
   selector: 'kj-theme-generator',
   standalone: true,
-  imports: [KjButtonComponent, ThemeGeneratorPreviewComponent],
+  imports: [KjButtonComponent, ThemeGeneratorPreviewComponent, ThemeImportDialog],
   templateUrl: './theme-generator.html',
   styleUrl: './theme-generator.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +31,13 @@ export class ThemeGeneratorComponent {
 
   protected readonly draft = this.draftService.draft;
   protected readonly toast = signal<string | null>(null);
+  protected readonly importOpen = signal(false);
+
+  protected openImport(): void { this.importOpen.set(true); }
+  protected onImportClosed(ev: { imported: boolean }): void {
+    this.importOpen.set(false);
+    if (ev.imported) this.flash('Imported');
+  }
 
   /** Validation message for the theme-name input (null = valid). */
   protected readonly nameError = computed<string | null>(() => {

@@ -19,6 +19,7 @@
     <kj-button kjVariant="default" kjSize="sm" [kjDisabled]="saveDisabled()" (click)="save()">Save</kj-button>
     <kj-button kjVariant="outline" kjSize="sm" (click)="copyCss()">Copy CSS</kj-button>
     <kj-button kjVariant="outline" kjSize="sm" (click)="copyLink()" aria-label="Copy share link">Copy link</kj-button>
+    <kj-button kjVariant="outline" kjSize="sm" (click)="openImport()" aria-label="Import theme">Import…</kj-button>
     <kj-button kjVariant="outline" kjSize="sm" (click)="downloadCss()">Download .css</kj-button>
     <kj-button kjVariant="outline" kjSize="sm" (click)="exportJson()">Export JSON</kj-button>
   </div>
@@ -31,3 +32,5 @@
 @if (toast(); as msg) {
   <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
 }
+
+<kj-theme-import-dialog [open]="importOpen()" (closed)="onImportClosed($event)" />
