@@ -51,7 +51,7 @@ function nextSeed(): string {
  * @category Core/Navigation
  * @doc
  * @doc-name tabs
- * @doc-description Root tabs container — owns the active-value model, orientation, activation mode, and tab registration list, providing `KJ_TABS` to tablist, tab, and panel directives for ARIA wiring and selection coordination.
+ * @doc-description Unstyled tabs root with active-value, orientation, and activation mode for tab and panel children.
  * @doc-is-main
  */
 @Directive({

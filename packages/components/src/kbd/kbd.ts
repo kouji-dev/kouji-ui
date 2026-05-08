@@ -46,7 +46,7 @@ import { KJ_SIZE_PRESET, KJ_KBD_SIZE_PRESET, KjKbd } from '@kouji-ui/core';
  * @category Library/Data display
  * @doc
  * @doc-name kbd
- * @doc-description Pre-styled keyboard key label using a native `<kbd>` element for correct screen-reader semantics — supports `xs/sm/md/lg` sizes and an `aria-label` override for symbol glyphs like ⌘ or ⌥ that AT may not pronounce correctly.
+ * @doc-description Themed keyboard key label with size variants and an aria-label override for symbol glyphs.
  * @doc-is-main
  */
 @Component({

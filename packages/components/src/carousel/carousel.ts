@@ -20,6 +20,7 @@ import {
   KjCarouselPrevious,
   KjCarouselSlide,
   KjCarouselViewport,
+  KjIconDirective,
   KjLiveRegion,
   KjVisuallyHidden,
 } from '@kouji-ui/core';
@@ -72,7 +73,7 @@ import type {
  * @category Library/Data display
  * @doc
  * @doc-name carousel
- * @doc-description Pre-styled rotating content region with prev/next controls, dot indicators, optional autoplay, and a built-in live region for screen-reader announcements — slide identity is value-keyed so it two-way binds cleanly with router params or analytics.
+ * @doc-description Themed rotating content region with prev/next controls, indicators, autoplay, and accessible announcements.
  * @doc-is-main
  */
 @Component({
@@ -211,7 +212,7 @@ export class KjCarouselPreviousComponent {
 @Component({
   selector: 'kj-carousel-next',
   standalone: true,
-  imports: [KjCarouselNext],
+  imports: [KjCarouselNext, KjIconDirective],
   template: `
     <button
       type="button"
@@ -219,7 +220,7 @@ export class KjCarouselPreviousComponent {
       class="kj-carousel-control kj-carousel-next"
       [attr.aria-label]="ariaLabel()"
     >
-      <ng-content>›</ng-content>
+      <ng-content><i kjIcon="chevron-right"></i></ng-content>
     </button>
   `,
   encapsulation: ViewEncapsulation.None,

@@ -65,7 +65,7 @@ const KJ_LINK_VISUALLY_HIDDEN_STYLE =
  * @category Core/Navigation
  * @doc
  * @doc-name link
- * @doc-description Enhances a native `<a>` with disabled-link plumbing, external-link `rel` + AT suffix injection, and underline-mode reflection — handling the three things a CSS-only approach cannot deliver.
+ * @doc-description Adds disabled-link, external-link, and underline-mode handling to a native anchor.
  * @doc-is-main
  */
 @Directive({

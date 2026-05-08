@@ -26,7 +26,7 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
  *   @doc-file input.color.example.ts
  * @category Library/Data input
  * @doc-name input
- * @doc-description Pre-styled text input with `[(ngModel)]` and `[formControl]` support — wraps the headless `KjInput` directive so `<kj-input>` delivers a ready-to-use field with invalid/disabled state, theme tokens, and type variants applied.
+ * @doc-description Themed text input with type variants, invalid and disabled state, and Angular forms support.
  * @doc-is-main
  */
 @Component({

@@ -2,6 +2,7 @@ import {
   Component, DestroyRef, ElementRef,
   afterNextRender, effect, inject, input, signal, viewChild,
 } from '@angular/core';
+import { KjSpinnerComponent } from '@kouji-ui/components';
 import { ThemeService } from '../../services/theme.service';
 import { ClipboardService } from '../../services/clipboard.service';
 import { MonacoService } from '../../services/monaco.service';
@@ -9,6 +10,7 @@ import { MonacoService } from '../../services/monaco.service';
 @Component({
   selector: 'kj-code-editor',
   standalone: true,
+  imports: [KjSpinnerComponent],
   templateUrl: './code-editor.html',
   styleUrl: './code-editor.css',
 })
@@ -30,6 +32,9 @@ export class CodeEditorComponent {
   private editor: import('monaco-editor').editor.IStandaloneCodeEditor | null = null;
   private monaco: typeof import('monaco-editor') | null = null;
   private initialized = false;
+
+  /** True until Monaco has finished loading and the editor view is mounted. */
+  readonly loading = signal(true);
 
   constructor() {
     afterNextRender(async () => {
@@ -80,6 +85,7 @@ export class CodeEditorComponent {
     const host = hostEl.nativeElement;
     if (!host.offsetParent && host.offsetHeight === 0) return;
 
+    this.loading.set(true);
     this.monaco = await this.monacoSvc.getMonaco();
 
     const isDark  = this.themeService.isDark();
@@ -141,6 +147,7 @@ export class CodeEditorComponent {
     };
     editor.onDidContentSizeChange(updateHeight);
     updateHeight();
+    this.loading.set(false);
   }
 
   private toMonacoLang(lang: string): string {

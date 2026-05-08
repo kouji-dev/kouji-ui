@@ -1,7 +1,9 @@
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
+import { dirname } from 'node:path';
 import { parseDocTags } from '../doc-tags';
 import { readCategoryTag } from '../extractor-helpers';
+import { getDocFiles, getDocThemes, getDocExamples } from '../examples';
 import type {
   DocItem,
   DocKind,
@@ -37,6 +39,10 @@ export function detectFunctions(file: ParsedFile, pkg: SourcePkg): DocItem[] {
     const def: FunctionDef = { name: symbol, signature, parameters: params, returnType };
     const description = jsDocSummary(fn);
     const docDescription = tags.description ?? undefined;
+    const sourceDir = dirname(filePath);
+    const exampleFiles = getDocFiles(fn, tsSourceFile, sourceDir);
+    const themedExamples = getDocThemes(fn, tsSourceFile, sourceDir);
+    const docExamples = getDocExamples(fn, tsSourceFile, sourceDir);
 
     items.push({
       id: makeItemId(pkg, filePath, symbol),
@@ -52,6 +58,11 @@ export function detectFunctions(file: ParsedFile, pkg: SourcePkg): DocItem[] {
       sourceOrder: sourceOrder++,
       categoryPath: readCategoryTag(fn, pkg),
       function: def,
+      examples: docExamples.length
+        ? docExamples
+        : (Object.keys(themedExamples).length || exampleFiles.length
+            ? [{ label: 'default', themedFiles: Object.keys(themedExamples).length ? themedExamples : { default: exampleFiles } }]
+            : undefined),
     });
   }
 

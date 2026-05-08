@@ -6,8 +6,8 @@ import {
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
   KjConfirmPopupMessageComponent,
-  KjConfirmPopupTriggerComponent,
 } from './confirm-popup';
+import { KjConfirmPopupTrigger } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 
 /**
@@ -21,7 +21,7 @@ import { KjButtonComponent } from '../button/button';
   standalone: true,
   imports: [
     KjConfirmPopupComponent,
-    KjConfirmPopupTriggerComponent,
+    KjConfirmPopupTrigger,
     KjConfirmPopupContentComponent,
     KjConfirmPopupMessageComponent,
     KjConfirmPopupActionComponent,
@@ -36,10 +36,8 @@ import { KjButtonComponent } from '../button/button';
   template: `
     <kj-confirm-popup
       (kjResult)="onResult($event)">
-      <kj-confirm-popup-trigger>
-        <kj-button kjVariant="default">Discard draft</kj-button>
-      </kj-confirm-popup-trigger>
-      <kj-confirm-popup-content>
+      <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="default">Discard draft</kj-button>
+      <kj-confirm-popup-content [kjFor]="trig">
         <p kjConfirmPopupMessage>
           Discard this draft? Your changes since last save will be lost and
           cannot be recovered from this device.

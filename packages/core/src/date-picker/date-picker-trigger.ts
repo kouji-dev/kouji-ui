@@ -3,6 +3,35 @@ import { KjFormControl } from '../primitives/forms/form-control';
 import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import { formatDateShort, parseDate } from '../calendar/date-utils';
 import { KJ_DATE_PICKER } from './date-picker.context';
+import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import type { KjOverlayPanel } from '../primitives/overlay/panel';
+import { KjOverlayController } from '../primitives/overlay/controller';
+import {
+  KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
+  type KjTriggerEventStrategy,
+} from '../primitives/overlay/tokens';
+import type { KjOverlayContext } from '../primitives/overlay/context';
+import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click';
+import { onFocus } from '../primitives/overlay/strategies/trigger-event/on-focus';
+
+/**
+ * Composite trigger-event strategy: opens the calendar on input focus AND on
+ * click of the input (handy for icons inside the input). Mirrors the
+ * `hoverOrFocus` factory used by the tooltip migration.
+ */
+function clickOrFocus(): KjTriggerEventStrategy {
+  const a = onClick();
+  const b = onFocus();
+  return {
+    ariaHasPopup: 'dialog',
+    attach(ctx: KjOverlayContext) { a.attach(ctx); b.attach(ctx); },
+    bindToggle(t) { a.bindToggle(t); b.bindToggle(t); },
+    onOpen()  { a.onOpen?.();  b.onOpen?.();  },
+    onClose() { a.onClose?.(); b.onClose?.(); },
+    detach()  { a.detach();    b.detach();    },
+  };
+}
 
 /**
  * Date Picker trigger directive. Apply to the `<input>` element. Combines:
@@ -10,8 +39,9 @@ import { KJ_DATE_PICKER } from './date-picker.context';
  *    text is overwritten with `Intl.DateTimeFormat`'s short form.
  *  - locale-aware **parse on blur / Enter** — typed text is parsed (ISO,
  *    locale-aware m/d/y or d/m/y) and committed to the picker's value.
- *  - **combobox a11y** — `role="combobox"`, `aria-haspopup="dialog"`,
- *    `aria-expanded`, `aria-controls` — APG combobox+dialog pattern.
+ *  - **combobox a11y** — `role="combobox"`; `aria-haspopup`, `aria-expanded`,
+ *    and `aria-controls` are wired by the composed `KjOverlayTrigger` host
+ *    directive (APG combobox+dialog pattern).
  *  - **keyboard** — `ArrowDown` / `Alt+ArrowDown` opens the popup;
  *    `Escape` closes; `Enter` parses and (if valid) commits.
  *  - **CVA** — composes `KjFormControl` so the input plays with
@@ -23,18 +53,22 @@ import { KJ_DATE_PICKER } from './date-picker.context';
  */
 @Directive({
   selector: 'input[kjDatePickerTrigger]',
+  exportAs: 'kjDatePickerTrigger',
   standalone: true,
   hostDirectives: [
     KjFormControl,
     KjFocusRing,
+    { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
+  ],
+  providers: [
+    KjOverlayController,
+    { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => clickOrFocus() },
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
   ],
   host: {
     'role': 'combobox',
     'autocomplete': 'off',
     'spellcheck': 'false',
-    '[attr.aria-haspopup]': '"dialog"',
-    '[attr.aria-expanded]': 'ctx.open() ? "true" : "false"',
-    '[attr.aria-controls]': 'ctx.panelId',
     '[attr.aria-disabled]': 'ctx.disabled() ? "true" : null',
     '[attr.aria-readonly]': 'ctx.readonly() ? "true" : null',
     '[attr.disabled]': 'ctx.disabled() ? "" : null',
@@ -47,6 +81,8 @@ import { KJ_DATE_PICKER } from './date-picker.context';
 export class KjDatePickerTrigger {
   /** @internal */
   readonly ctx = inject(KJ_DATE_PICKER);
+  /** @internal */
+  readonly controller = inject(KjOverlayController);
   private readonly formCtrl = inject(KjFormControl);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
@@ -74,6 +110,21 @@ export class KjDatePickerTrigger {
       if (this.formCtrl.value() !== v) this.formCtrl.value.set(v);
     });
 
+    // Bridge the root context's `open` (kjOpen model) with the overlay
+    // controller so consumers reading or writing `picker.kjOpen` see the
+    // same source of truth as the primitive.
+    effect(() => {
+      const isOpen = this.controller.isOpen();
+      if (this.ctx.open() !== isOpen) this.ctx.open.set(isOpen);
+    });
+    effect(() => {
+      const want = this.ctx.open();
+      if (want && !this.controller.isOpen()) {
+        if (!this.ctx.disabled() && !this.ctx.readonly()) this.controller.open();
+      } else if (!want && this.controller.isOpen()) {
+        this.controller.close('programmatic');
+      }
+    });
   }
 
   /** @internal */
@@ -91,14 +142,14 @@ export class KjDatePickerTrigger {
 
   /** @internal */
   onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'ArrowDown' && (event.altKey || !this.ctx.open())) {
+    if (event.key === 'ArrowDown' && (event.altKey || !this.controller.isOpen())) {
       event.preventDefault();
-      this.ctx.show();
+      if (!this.ctx.disabled() && !this.ctx.readonly()) this.controller.open();
       return;
     }
-    if (event.key === 'Escape' && this.ctx.open()) {
+    if (event.key === 'Escape' && this.controller.isOpen()) {
       event.preventDefault();
-      this.ctx.hide();
+      this.controller.close('esc');
       return;
     }
     if (event.key === 'Enter') {
@@ -112,8 +163,6 @@ export class KjDatePickerTrigger {
     if (!text.trim()) {
       // Clearing the input clears the value.
       if (this.ctx.value() !== null) {
-        // Use selectDate is wrong (it requires a Date). Go through the
-        // model on the picker by reaching for the public API.
         const picker = this.ctx as { kjValue?: { set(v: Date | null): void } };
         picker.kjValue?.set(null);
       }
@@ -126,6 +175,11 @@ export class KjDatePickerTrigger {
       // Restore previous formatted value.
       this.el.nativeElement.value = this.displayValue();
     }
+  }
+
+  private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  attachPanel(panel: KjOverlayPanel): void {
+    this._overlayTrigger.attachPanel(panel);
   }
 
   private isOutOfBounds(d: Date): boolean {

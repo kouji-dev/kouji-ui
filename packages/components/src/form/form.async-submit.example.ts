@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjButtonComponent } from '../button/button';
+import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 import { KjInputComponent } from '../input/input';
 import {
   KjFormActionsComponent,
@@ -18,14 +19,14 @@ import {
   imports: [
     KjFormComponent,
     KjFormActionsComponent,
+    KjFieldComponent,
+    KjFieldLabelComponent,
     KjInputComponent,
     KjButtonComponent,
     ReactiveFormsModule,
   ],
   styles: [`
     :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .field { display: flex; flex-direction: column; gap: 0.25rem; }
-    label { font-size: 0.8125rem; color: var(--kj-color-base-content); }
     .status { font-size: 0.8125rem; opacity: 0.7; margin-top: 0.5rem; }
   `],
   template: `
@@ -35,14 +36,14 @@ import {
       [kjAsyncSubmit]="submitHandler"
       kjResetOnSuccess
     >
-      <div class="field">
-        <label for="title">Title</label>
+      <kj-field>
+        <kj-field-label>Title</kj-field-label>
         <kj-input type="text" formControlName="title" />
-      </div>
-      <div class="field">
-        <label for="body">Body</label>
+      </kj-field>
+      <kj-field>
+        <kj-field-label>Body</kj-field-label>
         <kj-input type="text" formControlName="body" />
-      </div>
+      </kj-field>
 
       <kj-form-actions>
         <kj-button kjType="submit" [kjLoading]="busy()">Publish</kj-button>

@@ -31,6 +31,10 @@ interface KjBreadcrumbItemEntry {
  * (`nav[kjBreadcrumb]`) keeps the landmark's host element honest — attaching
  * `kjBreadcrumb` to a `<div>` will simply not match.
  *
+ * Compose with `[kjBreadcrumbList]`, `[kjBreadcrumbItem]`, `[kjBreadcrumbLink]`,
+ * and `[kjBreadcrumbCurrent]`. No styling is attached; `kjMaxItems` triggers
+ * the ellipsis overflow strategy.
+ *
  * @example
  * ```html
  * <nav kjBreadcrumb>
@@ -45,7 +49,7 @@ interface KjBreadcrumbItemEntry {
  * @category Core/Navigation
  * @doc
  * @doc-name breadcrumb
- * @doc-description Headless breadcrumb root for kouji-ui. Apply `[kjBreadcrumb]` to a `<nav>` to own the landmark `aria-label`, item registration, automatic truncation with `kjMaxItems`, and the ellipsis overflow strategy — compose with `[kjBreadcrumbList]`, `[kjBreadcrumbItem]`, `[kjBreadcrumbLink]`, and `[kjBreadcrumbCurrent]`. Zero styling.
+ * @doc-description Unstyled breadcrumb root that owns the nav landmark, item registration, and truncation.
  * @doc-is-main
  */
 @Directive({

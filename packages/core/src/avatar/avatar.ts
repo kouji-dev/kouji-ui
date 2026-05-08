@@ -5,11 +5,16 @@ export const KJ_AVATAR = new InjectionToken<KjAvatarContext>('KjAvatar');
 
 /**
  * Container for avatar. Tracks image load state.
+ *
+ * Compose `[kjAvatar]` with `[kjAvatarImage]` and `[kjAvatarFallback]` onto any
+ * elements to toggle visibility between the image and the fallback
+ * automatically when the image fails or is still loading. No styling attached.
+ *
  * @example `<span kjAvatar><img kjAvatarImage src="..." alt="..." /><span kjAvatarFallback>JD</span></span>`
  * @category Core/Data display
  * @doc
  * @doc-name avatar
- * @doc-description Headless avatar container for kouji-ui. Compose `[kjAvatar]`, `[kjAvatarImage]`, and `[kjAvatarFallback]` onto any elements to track image load state and toggle visibility between the image and fallback automatically — without coupling to a specific markup shape. Zero styling.
+ * @doc-description Unstyled avatar container that swaps between an image and a fallback when loading or failing.
  * @doc-is-main
  */
 @Directive({ selector: '[kjAvatar]', standalone: true, providers: [{ provide: KJ_AVATAR, useExisting: KjAvatar }] })

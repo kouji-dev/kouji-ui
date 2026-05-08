@@ -1,58 +1,19 @@
 import { Component } from '@angular/core';
-import {
-  KjTooltipComponent,
-  KjTooltipContentComponent,
-  KjTooltipGroupComponent,
-} from './tooltip';
+import { KjTooltipTrigger, KjTooltipContent, KjTooltipGroup } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 
-/**
- * `<kj-tooltip-group>` coordinates "skip-delay" timing across sibling
- * tooltips. Hover the first button — the tip waits the open delay; move to a
- * neighbour within the skip-delay window and its tip opens instantly. The
- * Radix-style ergonomic for toolbars and icon-button rows.
- */
+// TODO(wrapper-overlay): re-skin tooltip group demo.
 @Component({
   selector: 'kj-tooltip-group-example',
   standalone: true,
-  imports: [
-    KjTooltipComponent,
-    KjTooltipContentComponent,
-    KjTooltipGroupComponent,
-    KjButtonComponent,
-  ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); }
-    kj-tooltip-group { display: inline-flex; gap: var(--kj-space-xs); }
-  `],
+  imports: [KjTooltipTrigger, KjTooltipContent, KjTooltipGroup, KjButtonComponent],
   template: `
-    <kj-tooltip-group>
-      <kj-tooltip [kjTooltipTriggerFor]="boldTip">
-        <kj-button kjVariant="ghost" kjAriaLabel="Bold">B</kj-button>
-      </kj-tooltip>
-      <kj-tooltip [kjTooltipTriggerFor]="italicTip">
-        <kj-button kjVariant="ghost" kjAriaLabel="Italic">I</kj-button>
-      </kj-tooltip>
-      <kj-tooltip [kjTooltipTriggerFor]="underlineTip">
-        <kj-button kjVariant="ghost" kjAriaLabel="Underline">U</kj-button>
-      </kj-tooltip>
-      <kj-tooltip [kjTooltipTriggerFor]="strikeTip">
-        <kj-button kjVariant="ghost" kjAriaLabel="Strikethrough">S</kj-button>
-      </kj-tooltip>
-    </kj-tooltip-group>
-
-    <ng-template #boldTip>
-      <kj-tooltip-content>Bold</kj-tooltip-content>
-    </ng-template>
-    <ng-template #italicTip>
-      <kj-tooltip-content>Italic</kj-tooltip-content>
-    </ng-template>
-    <ng-template #underlineTip>
-      <kj-tooltip-content>Underline</kj-tooltip-content>
-    </ng-template>
-    <ng-template #strikeTip>
-      <kj-tooltip-content>Strikethrough</kj-tooltip-content>
-    </ng-template>
+    <div kjTooltipGroup>
+      <kj-button kjTooltipTrigger #a="kjTooltipTrigger">A</kj-button>
+      <kj-tooltip-content [kjFor]="a">Tip A</kj-tooltip-content>
+      <kj-button kjTooltipTrigger #b="kjTooltipTrigger">B</kj-button>
+      <kj-tooltip-content [kjFor]="b">Tip B</kj-tooltip-content>
+    </div>
   `,
 })
 export class KjTooltipGroupExample {}

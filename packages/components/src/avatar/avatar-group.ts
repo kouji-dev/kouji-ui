@@ -27,7 +27,7 @@ import { KjAvatarComponent } from './avatar';
  * @category Library/Data display
  * @doc
  * @doc-name avatar
- * @doc-description Pre-styled avatar group that stacks avatars with RTL-aware z-order, an automatic overflow chip ("+ N"), and a count-aware accessible label — everything a collaborator facepile needs in a single drop-in component.
+ * @doc-description Themed avatar facepile that stacks avatars with an overflow chip and an accessible count label.
  * @doc-is-main
  */
 @Component({

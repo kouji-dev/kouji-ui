@@ -3,7 +3,7 @@ import {
   Component,
   ViewEncapsulation,
 } from '@angular/core';
-import { KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
+import { KjIconDirective, KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjTag` directive. Renders the visual
@@ -43,7 +43,7 @@ import { KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
  * @category Library/Data display
  * @doc
  * @doc-name tag
- * @doc-description The pre-styled kouji tag / chip. Use `<kj-tag>` for labelling, add `<kj-tag-remove>` for a removable chip, bind `kjTagSelectable` for a toggle chip, and wrap in `<kj-tag-list>` for group keyboard navigation — all with theme tokens and full ARIA wiring.
+ * @doc-description Themed tag or chip with decorative, removable, and selectable variants for filters and labels.
  * @doc-is-main
  */
 @Component({
@@ -88,13 +88,14 @@ export class KjTagComponent {}
 @Component({
   selector: 'kj-tag-remove',
   standalone: true,
+  imports: [KjIconDirective],
   hostDirectives: [
     {
       directive: KjTagRemove,
       inputs: ['kjTagRemoveLabel'],
     },
   ],
-  template: `<ng-content>×</ng-content>`,
+  template: `<ng-content><i kjIcon="x"></i></ng-content>`,
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-tag-remove',

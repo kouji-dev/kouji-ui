@@ -6,7 +6,7 @@ export { KjCommandGroup } from './command-group';
 export { KjCommandSeparator } from './command-separator';
 export { KjCommandEmpty } from './command-empty';
 export { KjCommandPaletteDialog } from './command-palette-dialog';
-export { KjCommandPaletteHotkey } from './command-palette-hotkey';
+export { KjCommandPaletteTrigger } from './command-palette-trigger';
 export {
   KJ_COMMAND_PALETTE,
   type KjCommandPaletteContext,

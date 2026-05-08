@@ -26,7 +26,7 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * @category Library/Data display
  * @doc
  * @doc-name card
- * @doc-description Themed surface container for grouping related content — compose `<kj-card-header>`, `<kj-card-content>`, `<kj-card-footer>`, and `<kj-card-cover>` sub-components for structured layouts in any of three visual variants.
+ * @doc-description Themed surface container for grouping related content with header, footer, and cover sub-components.
  * @doc-is-main
  */
 @Component({

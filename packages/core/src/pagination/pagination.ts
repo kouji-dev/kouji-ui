@@ -57,7 +57,7 @@ import { computePageTokens } from './page-tokens';
  * @category Core/Navigation
  * @doc
  * @doc-name pagination
- * @doc-description Root pagination directive that owns the page-state model, sliding-window page-token algorithm, boundary computeds, and a polite live-region announcement on every page change.
+ * @doc-description Unstyled pagination root that exposes the page model and announces page changes politely.
  * @doc-is-main
  */
 @Directive({

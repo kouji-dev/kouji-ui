@@ -86,7 +86,7 @@ export interface KjListItemContext {
  * @category Core/Data display
  * @doc
  * @doc-name list
- * @doc-description Root list container that owns the container ARIA role, orientation, divider/hover data attributes, and an opt-in roving-tabindex for arrow-key navigation across sidebar-nav use cases.
+ * @doc-description Unstyled list container with role, orientation, and opt-in arrow-key navigation for sidebars.
  * @doc-is-main
  */
 @Directive({

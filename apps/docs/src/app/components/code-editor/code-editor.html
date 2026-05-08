@@ -14,5 +14,12 @@
       </button>
     </div>
   }
-  <div #editorHost class="editor-host"></div>
+  <div class="editor-host-wrap">
+    <div #editorHost class="editor-host"></div>
+    @if (loading()) {
+      <div class="editor-loading" role="status" aria-live="polite">
+        <kj-spinner kjAriaLabel="Loading editor" />
+      </div>
+    }
+  </div>
 </div>

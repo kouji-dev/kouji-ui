@@ -81,7 +81,7 @@ function numberWithDefault(def: number) {
  * @category Library/Data input
  * @doc
  * @doc-name textarea
- * @doc-description The pre-styled kouji textarea. Drop in `<kj-textarea>` with `[(ngModel)]` or reactive forms to get a themed multi-line input with optional auto-resize, a live character counter, variant/size tokens, and invalid/disabled states — all wired to Angular forms out of the box.
+ * @doc-description Themed multi-line text input with optional auto-resize and live character counter.
  * @doc-is-main
  */
 @Component({

@@ -26,8 +26,9 @@ export interface KjCommandActivateEvent {
  * `[kjCommandGroup]`, `[kjCommandSeparator]`, `[kjCommandEmpty]` for a
  * fully accessible combobox-with-listbox palette.
  *
- * For the modal (Cmd-K) pattern use `[kjCommandPaletteDialog]` which wraps
- * this directive together with `KjDialog`.
+ * For the modal (Cmd-K) pattern use `<kj-command-palette-dialog>` which
+ * composes the overlay primitives (portal, viewport-centered position,
+ * solid backdrop, focus trap, scroll lock) with an `onHotkey` trigger.
  *
  * @doc
  * @doc-example Inline
@@ -42,7 +43,7 @@ export interface KjCommandActivateEvent {
  *   @doc-file command-palette.fuzzy.example.ts
  * @category Core/Actions
  * @doc-name command-palette
- * @doc-description Headless command palette root for kouji-ui. Apply `[kjCommandPalette]` to own item registration, pluggable filtering, active-descendant tracking, and activation events — compose with `[kjCommandInput]`, `[kjCommandList]`, `[kjCommandItem]`, `[kjCommandGroup]`, and optionally `[kjCommandPaletteDialog]` for the modal Cmd-K pattern. Zero styling.
+ * @doc-description Unstyled command palette root with item registration, filtering, and activation events.
  * @doc-is-main
  */
 @Directive({
@@ -72,7 +73,7 @@ export class KjCommandPalette implements KjCommandPaletteContext {
 
   /**
    * Close the host dialog on activation. Default `true`.
-   * Requires the palette to be inside a `[kjCommandPaletteDialog]` or
+   * Requires the palette to be inside a `<kj-command-palette-dialog>` or
    * for the consumer to wire close logic via the `kjActivate` output.
    */
   readonly kjDismissOnActivate = input<boolean, unknown>(true, { transform: booleanAttribute });

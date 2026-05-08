@@ -47,7 +47,7 @@ import {
  * @category Library/Data input
  * @doc
  * @doc-name form
- * @doc-description Pre-styled form host with submit interception, focus-on-first-error, async submitting state, and an optional error summary — attach `kj-form` to a real `<form>` element and keep full control of your `[formGroup]` bindings.
+ * @doc-description Themed form host with submit interception, focus-on-first-error, async state, and an optional error summary.
  * @doc-is-main
  */
 @Component({

@@ -1,11 +1,12 @@
 import {
   computed,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
+  signal,
 } from '@angular/core';
-import { KJ_SELECT } from '../select/select.context';
 import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
 
 /**
@@ -35,7 +36,7 @@ import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
     'tabindex': '-1',
     '[id]': 'panelId',
     '[attr.hidden]': '!open() ? "" : null',
-    '[attr.aria-labelledby]': 'kjOwnerOptionId()',
+    '[attr.aria-labelledby]': 'ownerOptionId()',
     '[attr.aria-activedescendant]': 'activeId()',
     '(keydown)': 'onKeydown($event)',
     '(click)': '$event.stopPropagation()',
@@ -43,12 +44,65 @@ import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
 })
 export class KjCascadeSelectSubPanel {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly selectCtx = inject(KJ_SELECT);
   /** @internal */
   readonly ctx = inject(KJ_CASCADE_SELECT);
 
-  /** The id of the option element that owns / opens this sub-panel. */
-  readonly kjOwnerOptionId = input.required<string>();
+  /**
+   * The id of the option element that owns / opens this sub-panel. When
+   * omitted, the parent `KjCascadeSelectOption` (which queries this
+   * directive via `contentChildren` and calls `setParentOptionId`)
+   * supplies its auto-generated id — the typical pattern.
+   */
+  readonly kjOwnerOptionId = input<string | undefined>(undefined);
+
+  /** @internal — set by the parent option when this sub-panel is registered. */
+  private readonly _parentOptionId = signal<string | null>(null);
+
+  /** @internal — resolved owner-option id (input override → parent-bound id). */
+  readonly ownerOptionId = computed(
+    () => this.kjOwnerOptionId() ?? this._parentOptionId() ?? '',
+  );
+
+  /** @internal — called by the parent `KjCascadeSelectOption` from its content-query effect. */
+  setParentOptionId(id: string): void {
+    this._parentOptionId.set(id);
+  }
+
+  constructor() {
+    // Position the sub-panel relative to its parent option whenever it
+    // opens. Uses `position: fixed` (set in CSS) so it escapes the root
+    // panel's `overflow: auto`. Listens for scroll/resize to keep the
+    // anchor accurate.
+    let onResize: (() => void) | null = null;
+    let onScroll: ((e: Event) => void) | null = null;
+
+    const reposition = () => {
+      const id = this._parentOptionId();
+      if (!id || typeof document === 'undefined') return;
+      const optEl = document.getElementById(id);
+      if (!optEl) return;
+      const rect = optEl.getBoundingClientRect();
+      const el = this.el.nativeElement;
+      el.style.top = `${rect.top}px`;
+      el.style.left = `${rect.right + 2}px`;
+    };
+
+    effect(() => {
+      if (typeof window === 'undefined') return;
+      const isOpen = this.open();
+      if (isOpen) {
+        reposition();
+        onResize = reposition;
+        onScroll = () => reposition();
+        window.addEventListener('resize', onResize);
+        window.addEventListener('scroll', onScroll, true);
+      } else {
+        if (onResize) window.removeEventListener('resize', onResize);
+        if (onScroll) window.removeEventListener('scroll', onScroll, true);
+        onResize = onScroll = null;
+      }
+    });
+  }
 
   /** @internal Stable panel id used in aria-owns. */
   readonly panelId = nextCascadeId('kj-cascade-sub-panel');
@@ -58,7 +112,7 @@ export class KjCascadeSelectSubPanel {
 
   /** @internal True when this panel is in the open list. */
   readonly open = computed(() =>
-    this.ctx.openSubPanels().includes(this.kjOwnerOptionId()),
+    this.ctx.openSubPanels().includes(this.ownerOptionId()),
   );
 
   /** @internal */
@@ -106,20 +160,20 @@ export class KjCascadeSelectSubPanel {
       case 'ArrowLeft':
         e.preventDefault();
         e.stopPropagation();
-        this.ctx.closeSubPanel(this.kjOwnerOptionId());
+        this.ctx.closeSubPanel(this.ownerOptionId());
         break;
       case 'Escape':
         e.preventDefault();
         e.stopPropagation();
         if (this._levelIndex <= 1) {
-          this.selectCtx.hide();
+          this.ctx.hide();
           this.ctx.closeAll();
         } else {
-          this.ctx.closeSubPanel(this.kjOwnerOptionId());
+          this.ctx.closeSubPanel(this.ownerOptionId());
         }
         break;
       case 'Tab':
-        this.selectCtx.hide();
+        this.ctx.hide();
         this.ctx.closeAll();
         break;
       default: {

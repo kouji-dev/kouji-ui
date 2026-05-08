@@ -35,7 +35,7 @@ import { KjButton } from '@kouji-ui/core';
  * @doc
  * @doc-name button
  * @doc-is-main
- * @doc-description The pre-styled kouji button. Wraps the headless `kjButton` directive so you get a ready-to-use `<kj-button>` element with theme tokens, variants, sizes, and built-in disabled/loading/pressed states — the same primitive, with the design system applied.
+ * @doc-description Themed button with variants, sizes, and built-in disabled, loading, and pressed states.
  */
 @Component({
   selector: 'kj-button',

@@ -37,7 +37,7 @@ export const KJ_TABLE = new InjectionToken<KjTable<unknown>>('KjTable');
  * @category Core/Data
  * @doc
  * @doc-name table
- * @doc-description Wraps TanStack Angular Table — accepts column definitions and data signal inputs and exposes the full `Table<T>` instance (rows, headers, sorting state) via the `KJ_TABLE` context token and `exportAs`.
+ * @doc-description Builds a TanStack-powered table from column and data inputs and exposes the table instance.
  * @doc-is-main
  */
 @Directive({

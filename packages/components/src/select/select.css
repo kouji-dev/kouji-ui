@@ -19,11 +19,9 @@
   .kj-select[data-disabled] .kj-select-trigger { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 
   .kj-select-content {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin-top: 4px;
+    box-sizing: border-box;
+    min-width: 12rem;
+    width: max-content;
     background: var(--kj-color-base-100);
     border: var(--kj-border) solid var(--kj-color-base-300);
     border-radius: var(--kj-radius-field);

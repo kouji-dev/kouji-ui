@@ -4,6 +4,10 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 /**
  * Adds toggle (press) behavior with Angular forms integration.
  *
+ * Reflects `aria-pressed` and `data-pressed` and integrates with reactive and
+ * template-driven forms so the pressed state participates as a regular form
+ * value alongside other inputs.
+ *
  * @example
  * ```html
  * <button kjToggle [(kjPressed)]="isBold" aria-label="Bold">B</button>
@@ -11,7 +15,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  * @category Core/Inputs
  * @doc
  * @doc-name toggle
- * @doc-description Adds toggle (press/unpress) behaviour to any focusable element — reflects `aria-pressed`, `data-pressed`, and Angular forms integration so the pressed state participates in reactive and template-driven forms.
+ * @doc-description Adds press/unpress toggle behaviour to any focusable element with Angular forms support.
  * @doc-is-main
  */
 @Directive({

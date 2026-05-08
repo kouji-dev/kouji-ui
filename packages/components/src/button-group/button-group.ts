@@ -39,7 +39,7 @@ import { KjButtonGroup, KjButtonGroupOrientation } from '@kouji-ui/core';
  * @category Library/Actions
  * @doc
  * @doc-name button-group
- * @doc-description Pre-styled segmented button cluster that merges adjacent `<kj-button>` children into a visually-joined toolbar — shared variant, size, and disabled state cascade to children while per-button overrides still win.
+ * @doc-description Themed segmented button cluster that joins adjacent buttons into a single toolbar.
  * @doc-is-main
  */
 @Component({

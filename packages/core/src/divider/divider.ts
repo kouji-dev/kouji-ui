@@ -45,7 +45,7 @@ export type KjDividerAlign = 'start' | 'center' | 'end';
  * @category Core/Layout/Divider
  * @doc
  * @doc-name divider
- * @doc-description Headless divider / separator primitive for kouji-ui. Apply `[kjDivider]` to an `<hr>` or `<div>` to reflect orientation, alignment, and variant data attributes that theme CSS reads — decorative by default (`aria-hidden`), structural on opt-in, with with-content detection for label-in-rule layouts. Zero styling.
+ * @doc-description Unstyled divider for separating content with horizontal, vertical, and label-in-rule layouts.
  * @doc-is-main
  */
 @Directive({

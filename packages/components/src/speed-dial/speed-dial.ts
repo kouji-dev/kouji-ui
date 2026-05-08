@@ -56,7 +56,7 @@ export type KjSpeedDialPosition =
  * @category Library/Actions
  * @doc
  * @doc-name speed-dial
- * @doc-description The pre-styled kouji speed dial (FAB). Compose `<kj-speed-dial>`, `<kj-speed-dial-trigger>`, `<kj-speed-dial-actions>`, and `<kj-speed-dial-action>` to get a viewport-anchored floating action button that fans out a cluster of action buttons with theme tokens, directional animation, and full keyboard support.
+ * @doc-description Themed floating action button that fans out a cluster of secondary actions on activation.
  * @doc-is-main
  */
 @Component({

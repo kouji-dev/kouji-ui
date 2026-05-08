@@ -3,66 +3,73 @@ import {
   Directive,
   ElementRef,
   inject,
+  input,
 } from '@angular/core';
-import { KJ_SELECT } from '../select/select.context';
+import { KjOverlayPanel } from '../primitives/overlay/panel';
+import {
+  KJ_OVERLAY_MOUNT_STRATEGY,
+  KJ_OVERLAY_POSITION_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
+} from '../primitives/overlay/tokens';
+import type { KjAlign, KjSide } from '../primitives/overlay/types';
+import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
+import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
 import { KJ_CASCADE_SELECT } from './cascade-select.context';
 
 /**
- * Root panel for a Cascade Select. Apply inside a `[kjCascadeSelect]` host
- * as a sibling to the trigger. Acts as the `role="tree"` container for
- * level-0 options.
+ * Root panel for a Cascade Select. Composes the overlay primitives
+ * (`KjOverlayPanel`, body-portal mount, anchored-to position) and acts as
+ * the `role="tree"` container for level-0 options.
  *
- * Hidden/shown by the parent `KjSelect` open state.
+ * Mirrors the `<kj-select-content>` pattern: this is a thin overlay panel.
+ * Selection / sub-panel state lives on the umbrella `[kjCascadeSelect]`
+ * root directive — descendants read it via `KJ_CASCADE_SELECT`.
  *
- * Keyboard: `ArrowDown`/`ArrowUp` within level 0; `ArrowRight` opens a
- * sub-panel; `Escape` closes the entire chain.
- *
- * @example
- * ```html
- * <div kjCascadeSelectPanel>
- *   <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">…</div>
- * </div>
- * ```
  * @category Core/Data input
  * @doc
  * @doc-name cascade-select
  */
 @Directive({
   selector: '[kjCascadeSelectPanel]',
+  exportAs: 'kjCascadeSelectPanel',
   standalone: true,
+  hostDirectives: [
+    { directive: KjOverlayPanel, inputs: ['kjFor'] },
+  ],
+  providers: [
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'listbox' as const },
+    { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
+  ],
   host: {
     'role': 'tree',
     'aria-orientation': 'horizontal',
     'aria-multiselectable': 'false',
     'tabindex': '-1',
-    '[attr.hidden]': '!open() ? "" : null',
     '[attr.aria-activedescendant]': 'activeId()',
     '(keydown)': 'onKeydown($event)',
-    '(document:click)': 'onDocClick()',
     '(click)': '$event.stopPropagation()',
   },
 })
 export class KjCascadeSelectPanel {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly selectCtx = inject(KJ_SELECT);
-  /** @internal */
-  readonly ctx = inject(KJ_CASCADE_SELECT);
+  /** @internal — root cascade-select context (selection + sub-panel state). */
+  private readonly ctx = inject(KJ_CASCADE_SELECT);
 
-  /** @internal */
-  readonly open = this.selectCtx.open;
+  /** Anchored side relative to the trigger. */
+  readonly kjSide = input<KjSide>('bottom');
+  /** Cross-axis alignment relative to the trigger. */
+  readonly kjAlign = input<KjAlign>('start');
 
-  /** @internal */
+  /** @internal — ARIA active-descendant for level 0 (mirrors root state). */
   readonly activeId = computed(() => this.ctx.getActiveId(0));
 
-  /** @internal */
-  onDocClick(): void {
-    if (this.selectCtx.open()) {
-      this.selectCtx.hide();
-      this.ctx.closeAll();
-    }
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, matchTriggerWidth: 'min' });
   }
 
-  /** @internal */
+  /** @internal — keyboard navigation for level 0. */
   onKeydown(e: KeyboardEvent): void {
     const options = this.getOptions();
     if (!options.length) return;
@@ -92,19 +99,17 @@ export class KjCascadeSelectPanel {
       case 'ArrowRight': {
         e.preventDefault();
         const active = activeId ? options.find(o => o.id === activeId) : options[0];
-        if (active?.ownerOptionId) {
-          this.ctx.openSubPanel(active.ownerOptionId);
-        }
+        if (active?.ownerOptionId) this.ctx.openSubPanel(active.ownerOptionId);
         break;
       }
       case 'Escape':
         e.preventDefault();
         e.stopPropagation();
-        this.selectCtx.hide();
+        this.ctx.hide();
         this.ctx.closeAll();
         break;
       case 'Tab':
-        this.selectCtx.hide();
+        this.ctx.hide();
         this.ctx.closeAll();
         break;
       default: {

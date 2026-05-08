@@ -5,7 +5,8 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  * Select root. Two-way bind via `[(value)]`.
  *
  * Users only need `<kj-select>` and `<kj-option>`. The trigger button and
- * listbox panel are rendered internally.
+ * listbox panel are rendered internally so the consumer markup stays minimal,
+ * with theme tokens, placeholder text, and keyboard navigation already wired.
  *
  * @doc-example Default
  *   @doc-file select.default.example.ts
@@ -18,7 +19,7 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  * @category Library/Data input
  * @doc
  * @doc-name select
- * @doc-description The pre-styled kouji select. Drop in `<kj-select>` with `<kj-option>` children to get a keyboard-navigable dropdown with a styled trigger button, listbox panel, placeholder support, and two-way value binding — all themed with design-system tokens.
+ * @doc-description Themed dropdown select with a trigger button, listbox panel, and keyboard navigation.
  * @doc-is-main
  */
 @Component({
@@ -29,13 +30,13 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
   ],
   imports: [KjSelectTrigger, KjSelectContent],
   template: `
-    <button type="button" kjSelectTrigger class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null">
+    <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
       <span class="kj-select-trigger-caret" aria-hidden="true">▾</span>
     </button>
-    <div kjSelectContent class="kj-select-content">
+    <kj-select-content [kjFor]="trig" class="kj-select-content">
       <ng-content />
-    </div>
+    </kj-select-content>
   `,
   styleUrl: './select.css',
   encapsulation: ViewEncapsulation.None,

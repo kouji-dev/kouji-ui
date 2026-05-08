@@ -20,14 +20,13 @@ import { KjDropdownMenuLabel } from './dropdown-menu-label';
  *   <button kjDropdownMenuItem>Settings</button>
  * </div>
  * ```
- * @category Core/Actions
- * @doc
- * @doc-name dropdown-menu
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuGroup]',
   standalone: true,
   host: {
+    'class': 'kj-dropdown-menu-group',
     'role': 'group',
     '[attr.aria-labelledby]': 'labelledBy()',
   },

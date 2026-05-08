@@ -41,7 +41,7 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
  * @category Library/Navigation
  * @doc
  * @doc-name tabs
- * @doc-description The pre-styled kouji tabs. Compose `<kj-tabs>`, `<kj-tab-list>`, `<kj-tab>`, and `<kj-tab-panel>` to get a roving-tabindex tab strip with theme tokens, default and pill variants, manual or automatic activation, and lazy-then-persistent panel mounting.
+ * @doc-description Themed tab strip with default and pill variants and manual or automatic activation.
  * @doc-is-main
  */
 @Component({

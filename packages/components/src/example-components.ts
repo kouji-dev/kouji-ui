@@ -14,12 +14,6 @@ export { KjAlertDismissibleExample }   from './alert/alert.dismissible.example';
 export { KjAlertWithActionsExample }   from './alert/alert.with-actions.example';
 export { KjAlertBannerExample }        from './alert/alert.banner.example';
 
-// Alert Dialog
-export { KjAlertDialogExample }            from './alert-dialog/alert-dialog.example';
-export { KjAlertDialogDestructiveExample } from './alert-dialog/alert-dialog.destructive.example';
-export { KjAlertDialogWithFormExample }    from './alert-dialog/alert-dialog.with-form.example';
-export { KjAlertDialogAsyncActionExample } from './alert-dialog/alert-dialog.async-action.example';
-
 // Avatar
 export { KjAvatarDefaultExample }   from './avatar/avatar.default.example';
 export { KjAvatarSizesExample }     from './avatar/avatar.sizes.example';
@@ -168,6 +162,7 @@ export { KjDialogDefaultExample }      from './dialog/dialog.default.example';
 export { KjDialogWithFormExample }     from './dialog/dialog.with-form.example';
 export { KjDialogScrollableExample }   from './dialog/dialog.scrollable.example';
 export { KjDialogConfirmationExample } from './dialog/dialog.confirmation.example';
+export { KjDialogNestedExample }       from './dialog/dialog.nested.example';
 
 // Drawer
 export { KjDrawerExample }                from './drawer/drawer.example';
@@ -175,13 +170,6 @@ export { KjDrawerSidesExample }           from './drawer/drawer.sides.example';
 export { KjDrawerWithFormExample }        from './drawer/drawer.with-form.example';
 export { KjDrawerScrollableExample }      from './drawer/drawer.scrollable.example';
 export { KjDrawerModalVsNonModalExample } from './drawer/drawer.modal-vs-non-modal.example';
-
-// Bottom Sheet
-export { KjBottomSheetExample }            from './bottom-sheet/bottom-sheet.example';
-export { KjBottomSheetWithHandleExample }  from './bottom-sheet/bottom-sheet.with-handle.example';
-export { KjBottomSheetScrollableExample }  from './bottom-sheet/bottom-sheet.scrollable.example';
-export { KjBottomSheetWithFormExample }    from './bottom-sheet/bottom-sheet.with-form.example';
-export { KjBottomSheetActionsExample }     from './bottom-sheet/bottom-sheet.actions.example';
 
 // Input
 export { KjInputExample }      from './input/input.example';
@@ -215,24 +203,11 @@ export { KjListNavExample }         from './list/list.nav.example';
 export { KjListInteractiveExample } from './list/list.interactive.example';
 export { KjListWithIconsExample }   from './list/list.with-icons.example';
 
-// Menu
-export { KjMenuDefaultExample }   from './menu/menu.default.example';
-export { KjMenuSubItemsExample }  from './menu/menu.sub-items.example';
-export { KjMenuDisabledExample }  from './menu/menu.disabled.example';
-export { KjMenuShortcutsExample } from './menu/menu.shortcuts.example';
-
 // Menubar
 export { KjMenubarExample }              from './menubar/menubar.example';
 export { KjMenubarWithShortcutsExample } from './menubar/menubar.with-shortcuts.example';
 export { KjMenubarWithSubmenuExample }   from './menubar/menubar.with-submenu.example';
 export { KjMenubarDisabledItemExample }  from './menubar/menubar.disabled-item.example';
-
-// Multi Select
-export { KjMultiSelectExample }              from './multi-select/multi-select.example';
-export { KjMultiSelectWithSearchExample }    from './multi-select/multi-select.with-search.example';
-export { KjMultiSelectMaxItemsExample }      from './multi-select/multi-select.max-items.example';
-export { KjMultiSelectGroupedExample }       from './multi-select/multi-select.grouped.example';
-export { KjMultiSelectWithTagsExample }      from './multi-select/multi-select.with-tags.example';
 
 // Overlay Badge
 export { KjOverlayBadgeExample }          from './overlay-badge/overlay-badge.example';
@@ -336,13 +311,6 @@ export { KjDropdownMenuDisabledExample }      from './dropdown-menu/dropdown-men
 export { KjDropdownMenuWithIconsExample }     from './dropdown-menu/dropdown-menu.with-icons.example';
 export { KjDropdownMenuSidesExample }         from './dropdown-menu/dropdown-menu.sides.example';
 
-// Context Menu
-export { KjContextMenuExample }              from './context-menu/context-menu.example';
-export { KjContextMenuWithIconsExample }     from './context-menu/context-menu.with-icons.example';
-export { KjContextMenuWithShortcutsExample } from './context-menu/context-menu.with-shortcuts.example';
-export { KjContextMenuDisabledItemExample }  from './context-menu/context-menu.disabled-item.example';
-export { KjContextMenuLongListExample }      from './context-menu/context-menu.long-list.example';
-
 // Time Picker
 export { KjTimePickerExample }              from './time-picker/time-picker.example';
 export { KjTimePicker12HourExample }        from './time-picker/time-picker.12-hour.example';
@@ -413,6 +381,9 @@ export { KjCascadeSelectDataDrivenExample }   from './cascade-select/cascade-sel
 export { KjCascadeSelectPathExample }         from './cascade-select/cascade-select.path.example';
 export { KjCascadeSelectFieldExample }        from './cascade-select/cascade-select.field.example';
 export { KjCascadeSelectDisabledExample }     from './cascade-select/cascade-select.disabled.example';
+
+// Icon
+export { KjIconGalleryExample } from './icon/icon.gallery.example';
 
 // Tree Select
 export { KjTreeSelectExample }          from './tree-select/tree-select.example';

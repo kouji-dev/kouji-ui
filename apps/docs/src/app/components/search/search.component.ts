@@ -27,4 +27,11 @@ export class SearchComponent {
   protected onResultClick(result: SearchResult): void {
     this.svc.navigate(result);
   }
+
+  protected onActivate(event: { value: unknown }): void {
+    const value = event.value;
+    if (typeof value !== 'string') return;
+    const match = this.svc.results().find(r => r.slug + ':' + r.matchLabel === value);
+    if (match) this.svc.navigate(match);
+  }
 }

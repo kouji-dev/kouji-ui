@@ -7,6 +7,7 @@ import {
   model,
 } from '@angular/core';
 import {
+  KjIconDirective,
   KjPagination,
   KjPaginationItem,
   KjPaginationPrevious,
@@ -60,7 +61,7 @@ import {
  * @category Library/Navigation
  * @doc
  * @doc-name pagination
- * @doc-description Pre-styled pagination control with sibling/boundary window ellipsis, ARIA-labelled `<nav>`, and two-way `[(kjPage)]` binding — use `<kj-pagination-default>` for the 80% case or hand-author the layout with the compound component API.
+ * @doc-description Themed pagination control with ellipsis windowing, accessible nav, and two-way page binding.
  * @doc-is-main
  */
 @Component({
@@ -325,6 +326,7 @@ export class KjPaginationInfoComponent {}
     KjPaginationLastComponent,
     KjPaginationEllipsisComponent,
     KjPaginationInfoComponent,
+    KjIconDirective,
   ],
   template: `
     <kj-pagination
@@ -347,7 +349,7 @@ export class KjPaginationInfoComponent {}
           <kj-pagination-item [kjPage]="token">{{ token }}</kj-pagination-item>
         }
       }
-      <kj-pagination-next>›</kj-pagination-next>
+      <kj-pagination-next><i kjIcon="chevron-right"></i></kj-pagination-next>
       @if (kjShowFirstLast()) {
         <kj-pagination-last>»</kj-pagination-last>
       }

@@ -45,7 +45,7 @@ import {
  * @category Core/Data display
  * @doc
  * @doc-name overlay-badge
- * @doc-description Anchor-side directive that positions a badge chip over its host element and merges an optional accessible description into the host's existing `aria-describedby` without injecting a wrapper element.
+ * @doc-description Positions a badge chip over its host element with an optional accessible description.
  * @doc-is-main
  */
 @Directive({

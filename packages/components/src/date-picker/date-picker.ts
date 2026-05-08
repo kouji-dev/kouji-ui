@@ -45,10 +45,6 @@ import { KjCalendarComponent } from '../calendar/calendar';
  * @doc-example Read-only
  *   @doc-file date-picker.readonly.example.ts
  * @category Library/Data input
- * @doc
- * @doc-name date-picker
- * @doc-description Pre-styled date picker pairing a typed input with a popover calendar — locale-aware formatting via `Intl`, APG combobox+dialog keyboard contract, and outside-click/Esc dismissal, all without a third-party date library.
- * @doc-is-main
  */
 @Component({
   selector: 'kj-date-picker',
@@ -64,19 +60,20 @@ import { KjCalendarComponent } from '../calendar/calendar';
       kjDatePicker
       class="kj-date-picker"
       #picker="kjDatePicker"
-      [kjValue]="$any(kjValue())"
+      [kjValue]="kjValue() ?? null!"
       (kjValueChange)="kjValue.set($event)"
       [(kjOpen)]="kjOpen"
-      [kjMin]="$any(kjMin())"
-      [kjMax]="$any(kjMax())"
-      [kjDisabledDates]="$any(kjDisabledDates())"
+      [kjMin]="kjMin() ?? null!"
+      [kjMax]="kjMax() ?? null!"
+      [kjDisabledDates]="kjDisabledDates() ?? null!"
       [kjLocale]="kjLocale()"
-      [kjFirstDayOfWeek]="$any(kjFirstDayOfWeek())"
+      [kjFirstDayOfWeek]="kjFirstDayOfWeek() ?? 0"
       [kjReadonly]="kjReadonly()"
       [kjDisabled]="kjDisabled()"
     >
       <input
         kjDatePickerTrigger
+        #trig="kjDatePickerTrigger"
         class="kj-date-picker__input"
         [placeholder]="kjPlaceholder()"
       />
@@ -92,8 +89,8 @@ import { KjCalendarComponent } from '../calendar/calendar';
       >📅</button>
       <div
         kjDatePickerCalendar
+        [kjFor]="trig"
         class="kj-date-picker__panel"
-        [hidden]="!picker.open()"
       >
         <kj-calendar
           [(kjValue)]="kjValue"

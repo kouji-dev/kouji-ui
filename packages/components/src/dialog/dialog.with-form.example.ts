@@ -1,46 +1,48 @@
-import { Component } from '@angular/core';
-import { KjDialogTrigger } from '@kouji-ui/core';
+import { Component, inject } from '@angular/core';
+import { KjDialog, KjDialogService, KjDialogRef } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 import { KjInputComponent } from '../input/input';
-import {
-  KjDialogComponent, KjDialogOverlayComponent,
-  KjDialogHeaderComponent, KjDialogTitleComponent,
-  KjDialogBodyComponent, KjDialogFooterComponent,
-} from './dialog';
+import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
+
+@Component({
+  selector: 'kj-dialog-form-body',
+  standalone: true,
+  imports: [
+    KjDialog,
+    KjButtonComponent,
+    KjInputComponent,
+    KjFieldComponent,
+    KjFieldLabelComponent,
+  ],
+  template: `
+    <kj-dialog>
+      <h2 style="margin: 0 0 var(--kj-space-md);">Edit profile</h2>
+      <kj-field>
+        <kj-field-label>Display name</kj-field-label>
+        <kj-input placeholder="Jane Doe" />
+      </kj-field>
+      <kj-field>
+        <kj-field-label>Email</kj-field-label>
+        <kj-input placeholder="jane@example.com" />
+      </kj-field>
+      <div style="display: flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-lg);">
+        <kj-button kjVariant="ghost" (click)="ref.close()">Cancel</kj-button>
+        <kj-button (click)="ref.close('saved')">Save</kj-button>
+      </div>
+    </kj-dialog>
+  `,
+})
+class FormBody {
+  protected readonly ref = inject(KjDialogRef);
+}
 
 @Component({
   selector: 'kj-dialog-with-form-example',
   standalone: true,
-  imports: [
-    KjDialogTrigger, KjButtonComponent, KjInputComponent,
-    KjDialogComponent, KjDialogOverlayComponent,
-    KjDialogHeaderComponent, KjDialogTitleComponent,
-    KjDialogBodyComponent, KjDialogFooterComponent,
-  ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `
-    <kj-button [kjDialogTrigger]="dlg">New project</kj-button>
-    <ng-template #dlg>
-      <kj-dialog-overlay>
-        <kj-dialog #d="kjDialog">
-          <kj-dialog-header>
-            <kj-dialog-title>New project</kj-dialog-title>
-          </kj-dialog-header>
-          <kj-dialog-body>
-            <form (submit)="$event.preventDefault(); d.close('saved')" style="display:flex;flex-direction:column;gap:1rem;">
-              <div style="display:flex;flex-direction:column;gap:0.25rem;">
-                <span id="dlg-form-project-name">Project name</span>
-                <kj-input type="text" placeholder="My project" />
-              </div>
-            </form>
-          </kj-dialog-body>
-          <kj-dialog-footer>
-            <kj-button kjVariant="ghost" (click)="d.close()">Cancel</kj-button>
-            <kj-button kjType="submit" (click)="d.close('saved')">Save</kj-button>
-          </kj-dialog-footer>
-        </kj-dialog>
-      </kj-dialog-overlay>
-    </ng-template>
-  `,
+  imports: [KjButtonComponent],
+  template: `<kj-button (click)="open()">Open form</kj-button>`,
 })
-export class KjDialogWithFormExample {}
+export class KjDialogWithFormExample {
+  private readonly dialog = inject(KjDialogService);
+  open(): void { this.dialog.open(FormBody); }
+}

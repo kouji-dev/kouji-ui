@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  TemplateRef,
   ViewEncapsulation,
   booleanAttribute,
   input,
@@ -31,7 +30,7 @@ import {
  * @category Library/Navigation
  * @doc
  * @doc-name menubar
- * @doc-description Pre-styled application menubar with horizontal arrow-key navigation, auto-disclosure on adjacent hover, and dropdown sub-menus — wraps the headless `KjMenubar` directive for a native desktop-style menu experience.
+ * @doc-description Themed desktop-style application menubar with arrow-key navigation and dropdown submenus.
  * @doc-is-main
  */
 @Component({
@@ -64,9 +63,12 @@ export class KjMenubarComponent {
 
 /**
  * Styled wrapper around `KjMenubarItem`. Renders a real `<button>` with
- * the `[kjMenubarItem]` directive applied — the directive composes
- * `[kjDropdownMenuTriggerFor]`, so the consumer forwards the popup
- * template via `kjDropdownMenuTriggerFor`.
+ * the `[kjMenubarItem]` directive applied.
+ *
+ * TODO: menubar+dropdown-menu wiring pending overlay-migration follow-up.
+ * In this version, menubar items are plain action buttons without submenu
+ * support. Submenu wiring will be reintroduced via the new dropdown-menu
+ * API (`<kj-dropdown-menu-content [kjFor]="t">` on the panel side).
  *
  * @category Library/Navigation
  * @doc
@@ -81,7 +83,6 @@ export class KjMenubarComponent {
       type="button"
       kjMenubarItem
       class="kj-menubar-item"
-      [kjDropdownMenuTriggerFor]="kjDropdownMenuTriggerFor()"
       [kjDisabled]="kjDisabled()"
     >
       <ng-content />
@@ -93,6 +94,5 @@ export class KjMenubarComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarItemComponent {
-  readonly kjDropdownMenuTriggerFor = input.required<TemplateRef<unknown>>();
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 }

@@ -16,10 +16,12 @@
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0",
     "@angular/cdk": "^21.0.0",
-    "@kouji-ui/core": "*"
+    "@kouji-ui/core": "*",
+    "lucide-static": "^1.14.0"
   },
   "devDependencies": {
-    "@kouji-ui/core": "workspace:*"
+    "@kouji-ui/core": "workspace:*",
+    "lucide-static": "^1.14.0"
   },
   "sideEffects": false,
   "scripts": {

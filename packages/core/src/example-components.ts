@@ -24,9 +24,6 @@ export { PopoverBasicExample } from './popover/popover.example';
 export { PopoverRetroExample } from './popover/popover.retro.example';
 export { PopoverFinanceExample } from './popover/popover.finance.example';
 
-// Menu
-export { MenuBasicExample } from './menu/menu.example';
-
 // Toast
 export { ToastBasicExample } from './toast/toast.example';
 export { ToastRetroExample } from './toast/toast.retro.example';

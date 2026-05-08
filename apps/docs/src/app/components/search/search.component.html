@@ -8,6 +8,7 @@
   kjHotkey="mod+k"
   kjAriaLabel="Search documentation"
   kjPlaceholder="Search components, directives, inputs..."
+  (kjActivate)="onActivate($event)"
 >
   <ng-template kjCommandPaletteItemTemplate let-result>
     <kj-command-item
