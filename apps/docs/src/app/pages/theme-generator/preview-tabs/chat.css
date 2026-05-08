@@ -1,5 +1,7 @@
 :host {
   display: block;
+  height: 100%;
+  margin: -1rem;
   color: var(--kj-color-base-content);
   font-family: var(--kj-font-sans, system-ui, sans-serif);
 }
@@ -20,12 +22,16 @@
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 1rem;
-  min-height: 32rem;
+  height: 100%;
+  min-height: 0;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 @media (max-width: 800px) {
   .chat {
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 12rem) minmax(0, 1fr);
   }
 }
 
@@ -37,6 +43,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-height: 0;
 }
 
 .chat__heading {
@@ -53,6 +60,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .chat__row {
@@ -111,7 +121,7 @@
   border: 1px solid var(--kj-color-base-300);
   border-radius: var(--kj-radius-box, 8px);
   overflow: hidden;
-  min-height: 32rem;
+  min-height: 0;
 }
 
 .chat__thread-hd {
@@ -132,6 +142,7 @@
   flex: 1 1 auto;
   padding: 1rem;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .chat__composer {
