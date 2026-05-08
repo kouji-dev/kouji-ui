@@ -43,6 +43,13 @@ export class ThemeDraftService {
     this.persistDraft();
   }
 
+  /** Replace the entire draft (e.g. from a URL hash or import payload). Clears dirty set. */
+  load(draft: DraftTheme): void {
+    this._draft.set(structuredClone(draft));
+    this._dirty.set(new Set());
+    this.persistDraft();
+  }
+
   loadSaved(name: string): void {
     const found = this.list().find(t => t.name === name);
     if (!found) return;
