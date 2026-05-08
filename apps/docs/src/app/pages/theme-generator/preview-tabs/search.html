@@ -1,0 +1,87 @@
+<header class="hd">
+  <kj-breadcrumb>
+    <kj-breadcrumb-list>
+      <kj-breadcrumb-item>
+        <kj-breadcrumb-link kjHref="/">Home</kj-breadcrumb-link>
+      </kj-breadcrumb-item>
+      <kj-breadcrumb-item>
+        <kj-breadcrumb-current>Search</kj-breadcrumb-current>
+      </kj-breadcrumb-item>
+    </kj-breadcrumb-list>
+  </kj-breadcrumb>
+
+  <h2 class="hd__title">Search</h2>
+
+  <div class="hd__row">
+    <label class="search">
+      <span class="visually-hidden">Search</span>
+      <kj-input
+        type="search"
+        placeholder="Search people, projects, docs…"
+        [(ngModel)]="query"
+      />
+      <span class="search__hint" aria-hidden="true">
+        <kj-kbd>⌘</kj-kbd>
+        <kj-kbd>K</kj-kbd>
+      </span>
+    </label>
+    <kj-button kjVariant="secondary" [kjDrawerTrigger]="filtersDrawer">Filters</kj-button>
+  </div>
+
+  <kj-tag-list class="chips" aria-label="Active filters">
+    @for (c of chips; track c) {
+      <kj-tag>{{ c }}</kj-tag>
+    }
+  </kj-tag-list>
+</header>
+
+@if (results().length === 0) {
+  <kj-empty-state>
+    <kj-empty-state-icon aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    </kj-empty-state-icon>
+    <kj-empty-state-title>No results</kj-empty-state-title>
+    <kj-empty-state-description>Try a different search or clear the filters.</kj-empty-state-description>
+  </kj-empty-state>
+} @else {
+  <ul class="results" aria-label="Search results">
+    @for (p of results(); track p.name) {
+      <li class="results__row">
+        <kj-avatar [content]="p.avatar" [alt]="p.name" />
+        <div class="results__meta">
+          <div class="results__name">{{ p.name }}</div>
+          <div class="results__role">{{ p.role }}</div>
+        </div>
+      </li>
+    }
+  </ul>
+
+  <nav class="pager" aria-label="Pagination">
+    <kj-pagination [(kjPage)]="page" [kjTotalPages]="8" #p="kjPagination">
+      <kj-pagination-previous>‹</kj-pagination-previous>
+      @for (token of p.pages(); track token) {
+        @if (token === 'ellipsis-left' || token === 'ellipsis-right') {
+          <kj-pagination-ellipsis>…</kj-pagination-ellipsis>
+        } @else {
+          <kj-pagination-item [kjPage]="token">{{ token }}</kj-pagination-item>
+        }
+      }
+      <kj-pagination-next>›</kj-pagination-next>
+    </kj-pagination>
+  </nav>
+}
+
+<ng-template #filtersDrawer>
+  <kj-drawer #d="kjDrawerContent">
+    <kj-drawer-header>
+      <kj-drawer-title>Filters</kj-drawer-title>
+      <kj-button kjVariant="ghost" (click)="d.close()" kjAriaLabel="Close filters">×</kj-button>
+    </kj-drawer-header>
+    <kj-drawer-body>
+      <p class="drawer__hint">Refine results by team, status, or date.</p>
+    </kj-drawer-body>
+  </kj-drawer>
+</ng-template>

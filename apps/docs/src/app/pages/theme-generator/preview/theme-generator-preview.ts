@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { PreviewBigForm } from '../preview-tabs/big-form';
 import { PreviewDashboard } from '../preview-tabs/dashboard';
+import { PreviewSearch } from '../preview-tabs/search';
 import { PreviewSettings } from '../preview-tabs/settings';
 
 const TABS = ['dashboard', 'settings', 'big-form', 'search', 'chat'] as const;
@@ -10,7 +11,7 @@ type Tab = typeof TABS[number];
 @Component({
   selector: 'kj-theme-generator-preview',
   standalone: true,
-  imports: [PreviewDashboard, PreviewSettings, PreviewBigForm],
+  imports: [PreviewDashboard, PreviewSettings, PreviewBigForm, PreviewSearch],
   templateUrl: './theme-generator-preview.html',
   styleUrl: './theme-generator-preview.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
