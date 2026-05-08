@@ -23,6 +23,7 @@ import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-t
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-tooltip-content' },
   template: `<ng-content />`,
 })
 export class KjTooltipContent {

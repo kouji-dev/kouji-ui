@@ -456,6 +456,7 @@ export class KjToastClose {
   hostDirectives: [{ directive: KjOverlayPanel }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-toast' },
   template: `<ng-content />`,
 })
 export class KjToastPanel {}

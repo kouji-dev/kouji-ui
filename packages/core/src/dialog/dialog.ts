@@ -18,6 +18,7 @@ import { KjOverlayPanel } from '../primitives/overlay/panel';
   hostDirectives: [{ directive: KjOverlayPanel }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-dialog' },
   template: `<ng-content />`,
 })
 export class KjDialog {

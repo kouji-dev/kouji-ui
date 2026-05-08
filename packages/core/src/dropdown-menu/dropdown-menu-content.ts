@@ -103,6 +103,7 @@ function deferredPosition(): KjDeferredPosition {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-dropdown-menu-content' },
   template: `<ng-content />`,
 })
 export class KjDropdownMenuContent implements KjDropdownMenuContext {

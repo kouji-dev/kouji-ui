@@ -23,6 +23,7 @@ import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle'
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-popover-content' },
   template: `<ng-content />`,
 })
 export class KjPopoverContent {

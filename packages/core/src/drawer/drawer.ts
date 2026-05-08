@@ -30,6 +30,7 @@ const DEFAULT_DISMISS_VELOCITY = 600;
   standalone: true,
   hostDirectives: [{ directive: KjOverlayPanel }],
   host: {
+    'class': 'kj-drawer',
     '[attr.data-kj-side]': 'side',
     '[attr.data-kj-dragging]': 'dragging() ? "" : null',
     '[style.touch-action]': 'dragging() ? "none" : null',
