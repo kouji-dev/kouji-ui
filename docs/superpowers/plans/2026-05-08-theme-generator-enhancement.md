@@ -118,7 +118,7 @@ git commit -m "feat(theme-gen): add color harmony helpers (analogous/complementa
 - Create: `apps/docs/src/app/lib/theme/palette-derive.ts`
 - Test: `apps/docs/src/app/lib/theme/palette-derive.spec.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // apps/docs/src/app/lib/theme/palette-derive.spec.ts
@@ -169,12 +169,12 @@ describe('deriveFromSeed', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/palette-derive.spec.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement `palette-derive.ts`**
+- [x] **Step 3: Implement `palette-derive.ts`**
 
 ```ts
 // apps/docs/src/app/lib/theme/palette-derive.ts
@@ -230,12 +230,12 @@ export function deriveFromSeed(seed: string, opts: DeriveOpts): Record<ColorSlot
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/lib/theme/palette-derive.spec.ts`
 Expected: PASS, 7 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/lib/theme/palette-derive.ts apps/docs/src/app/lib/theme/palette-derive.spec.ts
