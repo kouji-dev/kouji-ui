@@ -11,6 +11,7 @@ import { BUILT_IN_NAMES, type BuiltInName } from '../../lib/theme/built-in-theme
 import { CURATED_FONTS, type CuratedFont } from '../../lib/theme/font-catalog';
 import { deriveFromSeed, randomAccessiblePalette } from '../../lib/theme/palette-derive';
 import { SeedSwatchGrid } from '../seed-swatch-grid/seed-swatch-grid';
+import { ContrastScorecard } from '../contrast-scorecard/contrast-scorecard';
 import type { ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../../lib/theme/types';
 
 const COLOR_SLOTS: readonly ColorSlot[] = [
@@ -37,7 +38,7 @@ function oklchToHex(css: string): string {
 @Component({
   selector: 'kj-theme-generator-sidebar',
   standalone: true,
-  imports: [KjInputComponent, SeedSwatchGrid],
+  imports: [KjInputComponent, SeedSwatchGrid, ContrastScorecard],
   templateUrl: './theme-generator-sidebar.html',
   styleUrl: './theme-generator-sidebar.css',
   host: { '[class.open]': 'toggleService.open()' },

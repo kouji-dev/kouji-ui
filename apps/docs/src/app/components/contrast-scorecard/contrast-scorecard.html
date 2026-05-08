@@ -1,0 +1,25 @@
+<details class="scorecard" open>
+  <summary>
+    <span class="badge badge--aaa" aria-live="polite">AAA {{ report().summary.score }}%</span>
+    <span class="badge badge--aa">AA {{ report().summary.aaPass }}/{{ report().summary.total }}</span>
+  </summary>
+  <ul role="list" class="rows">
+    @for (p of report().pairs; track p.fg + ':' + p.bg) {
+      <li
+        role="listitem"
+        class="row"
+        [class.row--fail]="!p.pass"
+        [attr.aria-label]="ariaForPair(p)"
+        (click)="focusToken(p.bg)"
+        (keydown.enter)="focusToken(p.bg)"
+        tabindex="0"
+      >
+        <span class="chip" [style.background]="p.fgHex" aria-hidden="true"></span>
+        <span class="chip" [style.background]="p.bgHex" aria-hidden="true"></span>
+        <span class="row__label">{{ p.fg }} / {{ p.bg }}</span>
+        <span class="row__ratio">{{ p.ratio.toFixed(2) }}:1</span>
+        <span class="row__verdict">{{ p.pass ? '✓ ' + p.verdict : '✗ FAIL' }}</span>
+      </li>
+    }
+  </ul>
+</details>
