@@ -23,7 +23,10 @@
           data-toc-level="3"
         >
           <div class="item-header">
-            <code class="item-symbol">{{ item.symbol }}</code>
+            @if (item.kind === 'directive' && item.directive) {
+              <code class="directive-selector">{{ item.directive.selector }}</code>
+            }
+            <span class="item-symbol">{{ item.symbol }}</span>
             <span class="item-kind">{{ kindLabel(item.kind) }}</span>
             @if (item.isMain) { <span class="main-badge" title="Main">main</span> }
           </div>
@@ -35,7 +38,6 @@
           @switch (item.kind) {
             @case ('directive') {
               @if (item.directive; as d) {
-                <p><code class="directive-selector">{{ d.selector }}</code></p>
                 @if (d.inputs.length) {
                   <div class="inputs-block">
                     <h4 class="block-title">Inputs</h4>
