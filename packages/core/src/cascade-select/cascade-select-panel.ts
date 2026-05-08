@@ -15,6 +15,7 @@ import type { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
 } from '../primitives/overlay/tokens';
 import type { KjAlign, KjSide } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
@@ -52,6 +53,7 @@ import {
     { directive: KjOverlayPanel, inputs: ['kjFor'] },
   ],
   providers: [
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'listbox' as const },
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
     { provide: KJ_CASCADE_SELECT, useExisting: KjCascadeSelectPanel },

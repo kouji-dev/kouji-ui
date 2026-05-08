@@ -422,6 +422,9 @@ export class KjColorPickerTrigger {
   hostDirectives: [
     { directive: KjOverlayPanel, inputs: ['kjFor'] },
   ],
+  providers: [
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
+  ],
   host: {
     '[attr.aria-labelledby]': 'ctx.triggerId()',
   },

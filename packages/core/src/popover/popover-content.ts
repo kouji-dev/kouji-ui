@@ -4,6 +4,7 @@ import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
   KJ_OVERLAY_FOCUS_TRAP_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
 } from '../primitives/overlay/tokens';
 import type { KjSide, KjAlign } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
@@ -15,6 +16,7 @@ import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle'
   standalone: true,
   hostDirectives: [{ directive: KjOverlayPanel, inputs: ['kjFor'] }],
   providers: [
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
     { provide: KJ_OVERLAY_FOCUS_TRAP_STRATEGY, useFactory: () => tabCycle({ returnFocus: true }) },

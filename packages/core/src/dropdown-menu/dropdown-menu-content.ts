@@ -9,6 +9,7 @@ import { KjOverlayPanel } from '../primitives/overlay/panel';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
+  KJ_OVERLAY_PANEL_ROLE,
 } from '../primitives/overlay/tokens';
 import type {
   KjMountStrategy,
@@ -88,6 +89,7 @@ function deferredPosition(): KjDeferredPosition {
     { directive: KjRovingTabindex, inputs: ['kjRovingOrientation'] },
   ],
   providers: [
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'menu' as const },
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => deferredMount() },
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => deferredPosition() },
   ],
