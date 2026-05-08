@@ -1,4 +1,4 @@
-import { Directive, ElementRef, computed, effect, inject, input } from '@angular/core';
+import { Directive, ElementRef, computed, effect, inject, input, signal } from '@angular/core';
 import { KjId } from './id';
 import { KjOverlayController } from './controller';
 import {
@@ -44,8 +44,13 @@ export class KjOverlayPanel {
    * directive (host-level `providers: [KjOverlayController]`).
    */
   private readonly hostController = inject(KjOverlayController, { optional: true });
-  /** Resolved controller — `kjFor()?.controller` wins over the host one. */
-  controller: KjOverlayController | null = this.hostController;
+  /**
+   * Resolved controller — `kjFor()?.controller` wins over the host one.
+   * Signal-backed so the `state`/`isModal` computeds re-evaluate when the
+   * effect below swaps in the kjFor controller.
+   */
+  private readonly _controller = signal<KjOverlayController | null>(this.hostController);
+  get controller(): KjOverlayController | null { return this._controller(); }
   readonly panelId = this.idSvc.mint('panel');
 
   private readonly mount         = inject(KJ_OVERLAY_MOUNT_STRATEGY);
@@ -69,7 +74,7 @@ export class KjOverlayPanel {
       const t = this.kjFor();
       const c = t?.controller ?? this.hostController;
       if (!c) return;
-      this.controller = c;
+      this._controller.set(c);
       c.bindPanel(this.host.nativeElement);
       c.attachStrategies({
         mount:         this.mount,

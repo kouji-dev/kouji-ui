@@ -87,7 +87,14 @@ export class KjOverlayController {
     this.beginClose();
   }
 
-  toggle(): void { this.isOpen() ? this.close('programmatic') : this.open(); }
+  toggle(): void {
+    // `closed` is the only state that should reopen; `closing` must NOT
+    // re-open (handles the case where outside-click capture fires close,
+    // then the same pointer's click reaches the trigger and calls toggle —
+    // without this guard the overlay flickers closed → open → closed).
+    if (this._state() === 'closed') this.open();
+    else this.close('programmatic');
+  }
 
   dispose(): void {
     if (this._state() !== 'closed') this.close('programmatic');
