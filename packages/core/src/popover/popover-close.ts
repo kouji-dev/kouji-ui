@@ -1,18 +1,16 @@
 import { Directive, inject } from '@angular/core';
-import { KJ_POPOVER, type KjPopoverContext } from './popover.context';
+import { KjOverlayController } from '../primitives/overlay/controller';
 
 /**
- * Convenience close button. Place inside a `[kjPopoverContent]` template.
- * Calls the parent context's `hide('close-button')` on click — the close
- * propagates the `'close-button'` reason through the cancellable
- * `kjCloseRequested` cycle so consumer logic can intervene.
+ * Convenience close button. Place inside a `[kjPopoverContent]` panel.
+ * Calls the overlay controller's `close('programmatic')` on click.
  *
  * @example
  * ```html
- * <ng-template kjPopoverContent>
+ * <kj-popover-content [kjFor]="t">
  *   …
  *   <button kjPopoverClose>Close</button>
- * </ng-template>
+ * </kj-popover-content>
  * ```
  *
  * @category Core/Overlays
@@ -25,10 +23,10 @@ import { KJ_POPOVER, type KjPopoverContext } from './popover.context';
   },
 })
 export class KjPopoverClose {
-  private readonly ctx = inject<KjPopoverContext>(KJ_POPOVER);
+  private readonly controller = inject(KjOverlayController);
 
   protected onClick(event: MouseEvent): void {
     event.stopPropagation();
-    this.ctx.hide('close-button');
+    this.controller.close('programmatic');
   }
 }

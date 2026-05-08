@@ -1,20 +1,19 @@
-import { Directive, inject } from '@angular/core';
-import { KJ_POPOVER, type KjPopoverContext } from './popover.context';
+import { Directive } from '@angular/core';
 
 /**
  * Optional decorative arrow rendered inside `[kjPopoverContent]`.
  *
- * Pure styling hook — has no behaviour. Reflects the parent context's
- * `data-side` for CSS rotation. `aria-hidden="true"` keeps it out of the AT
- * tree (matching the `aria-hidden` host attribute on
- * {@link import('../tooltip/tooltip-arrow').KjTooltipArrow}).
+ * Pure styling hook — has no behaviour. Consumer CSS reads `data-side` from
+ * the parent panel host (set by the position strategy) to position and
+ * rotate the arrow. `aria-hidden="true"` keeps it out of the AT tree
+ * (matches `KjTooltipArrow`).
  *
  * @example
  * ```html
- * <ng-template kjPopoverContent>
+ * <kj-popover-content [kjFor]="t">
  *   <h3 kjPopoverTitle>Profile</h3>
  *   <span kjPopoverArrow></span>
- * </ng-template>
+ * </kj-popover-content>
  * ```
  *
  * @category Core/Overlays
@@ -25,9 +24,6 @@ import { KJ_POPOVER, type KjPopoverContext } from './popover.context';
   host: {
     'aria-hidden': 'true',
     'data-kj-popover-arrow': '',
-    '[attr.data-side]': 'ctx.kjPopoverSide()',
   },
 })
-export class KjPopoverArrow {
-  protected readonly ctx = inject<KjPopoverContext>(KJ_POPOVER);
-}
+export class KjPopoverArrow {}
