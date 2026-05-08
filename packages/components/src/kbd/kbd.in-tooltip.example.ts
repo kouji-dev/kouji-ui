@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
 import { KjKbdComponent } from './kbd';
-import {
-  KjTooltipComponent,
-  KjTooltipContentComponent,
-} from '../tooltip/tooltip';
+import { KjTooltipTrigger, KjTooltipContent } from '../tooltip/tooltip';
 import { KjButtonComponent } from '../button/button';
 
 /**
@@ -16,30 +13,21 @@ import { KjButtonComponent } from '../button/button';
 @Component({
   selector: 'kj-kbd-in-tooltip-example',
   standalone: true,
-  imports: [
-    KjKbdComponent,
-    KjTooltipComponent,
-    KjTooltipContentComponent,
-    KjButtonComponent,
-  ],
+  imports: [KjKbdComponent, KjTooltipTrigger, KjTooltipContent, KjButtonComponent],
   styles: [`
     :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); }
     .kj-kbd-in-tooltip-body { display: inline-flex; align-items: center; gap: var(--kj-space-2xs); }
   `],
   template: `
-    <kj-tooltip [kjTooltipTriggerFor]="tip">
-      <kj-button kjVariant="outline">Save</kj-button>
-    </kj-tooltip>
-    <ng-template #tip>
-      <kj-tooltip-content>
-        <span class="kj-kbd-in-tooltip-body">
-          Save
-          <kj-kbd kjSize="xs">Ctrl</kj-kbd>
-          +
-          <kj-kbd kjSize="xs">S</kj-kbd>
-        </span>
-      </kj-tooltip-content>
-    </ng-template>
+    <kj-button kjTooltipTrigger #t="kjTooltipTrigger" kjVariant="outline">Save</kj-button>
+    <kj-tooltip-content [kjFor]="t">
+      <span class="kj-kbd-in-tooltip-body">
+        Save
+        <kj-kbd kjSize="xs">Ctrl</kj-kbd>
+        +
+        <kj-kbd kjSize="xs">S</kj-kbd>
+      </span>
+    </kj-tooltip-content>
   `,
 })
 export class KjKbdInTooltipExample {}
