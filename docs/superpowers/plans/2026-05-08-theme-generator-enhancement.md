@@ -1742,11 +1742,11 @@ git commit -m "feat(theme-gen): import dialog with JSON and CSS support"
 - Modify: `apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.css`
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/fixtures.ts`
 
-- [ ] **Step 1: Read the current preview component to understand what's there**
+- [x] **Step 1: Read the current preview component to understand what's there**
 
 Run: `cat apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts`
 
-- [ ] **Step 2: Add fixtures**
+- [x] **Step 2: Add fixtures**
 
 ```ts
 // apps/docs/src/app/pages/theme-generator/preview-tabs/fixtures.ts
@@ -1777,7 +1777,7 @@ export const MESSAGES = [
 ];
 ```
 
-- [ ] **Step 3: Replace the preview component with a tabs container**
+- [x] **Step 3: Replace the preview component with a tabs container**
 
 ```ts
 // apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts
@@ -1857,11 +1857,11 @@ export class ThemeGeneratorPreviewComponent {
 .tab-panel { flex: 1; overflow: auto; padding: 1rem; }
 ```
 
-- [ ] **Step 4: Manual smoke**
+- [x] **Step 4: Manual smoke**
 
 Run dev server, open `/theme-generator?preview=dashboard`. Empty panel placeholders should render until tab pages exist (Tasks 15–19).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/preview/ apps/docs/src/app/pages/theme-generator/preview-tabs/fixtures.ts
