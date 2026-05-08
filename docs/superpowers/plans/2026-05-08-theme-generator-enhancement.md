@@ -1359,7 +1359,7 @@ git commit -m "feat(theme-gen): hash-URL encode/decode service (deflate-raw + ba
 - Modify: `apps/docs/src/app/pages/theme-generator/theme-generator.ts`
 - Modify: `apps/docs/src/app/pages/theme-generator/theme-generator.html`
 
-- [ ] **Step 1: Start sync on page init**
+- [x] **Step 1: Start sync on page init**
 
 In `theme-generator.ts`, add:
 
@@ -1382,7 +1382,7 @@ protected async copyLink(): Promise<void> {
 
 (Move the existing constructor body inside the new constructor.)
 
-- [ ] **Step 2: Add Copy-link button**
+- [x] **Step 2: Add Copy-link button**
 
 In `theme-generator.html` find the button row near "Copy CSS" and add:
 
@@ -1390,12 +1390,12 @@ In `theme-generator.html` find the button row near "Copy CSS" and add:
 <kj-button (click)="copyLink()" aria-label="Copy share link">Copy link</kj-button>
 ```
 
-- [ ] **Step 3: Manually verify**
+- [x] **Step 3: Manually verify**
 
 Run: `pnpm exec nx serve docs` (or the project's dev command).
 Open `/theme-generator`. Edit any color → check `location.hash` updates within ~250 ms. Copy link, paste in a new tab → draft restored.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/
