@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { KjDrawer, KjDrawerService, KjDrawerRef } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 import { KjInputComponent } from '../input/input';
