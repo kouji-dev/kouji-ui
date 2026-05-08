@@ -13,7 +13,7 @@ import { KjId } from './id';
 export interface KjOverlayStrategies {
   mount: KjMountStrategy;
   position: KjPositionStrategy;
-  trigger: KjTriggerEventStrategy;
+  trigger?: KjTriggerEventStrategy | null;
   backdrop?: KjBackdropStrategy | null;
   focusTrap?: KjFocusTrapStrategy | null;
   scrollLock?: KjScrollLockStrategy | null;

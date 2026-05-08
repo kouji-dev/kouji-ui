@@ -52,7 +52,9 @@ export class KjOverlayPanel {
   private readonly focusTrap     = inject(KJ_OVERLAY_FOCUS_TRAP_STRATEGY,  { optional: true });
   private readonly scrollLock    = inject(KJ_OVERLAY_SCROLL_LOCK_STRATEGY, { optional: true });
   private readonly liveAnnouncer = inject(KJ_OVERLAY_LIVE_ANNOUNCER_STRATEGY, { optional: true });
-  private readonly trigger       = inject(KJ_OVERLAY_TRIGGER_EVENT_STRATEGY);
+  // Trigger event strategy is provided by the trigger directive (sibling),
+  // not the panel — the trigger directive attaches it to the controller itself.
+  private readonly trigger       = inject(KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, { optional: true });
   private readonly role_         = inject(KJ_OVERLAY_PANEL_ROLE);
 
   readonly kjFor = input<KjOverlayTriggerLike | null>(null);
@@ -72,7 +74,7 @@ export class KjOverlayPanel {
         focusTrap: this.focusTrap ?? null,
         scrollLock: this.scrollLock ?? null,
         liveAnnouncer: this.liveAnnouncer ?? null,
-        trigger: this.trigger,
+        trigger: this.trigger ?? null,
       });
     }
     effect(() => {
@@ -87,7 +89,7 @@ export class KjOverlayPanel {
         focusTrap: this.focusTrap ?? null,
         scrollLock: this.scrollLock ?? null,
         liveAnnouncer: this.liveAnnouncer ?? null,
-        trigger: this.trigger,
+        trigger: this.trigger ?? null,
       });
       t.attachPanel(this);
     });
