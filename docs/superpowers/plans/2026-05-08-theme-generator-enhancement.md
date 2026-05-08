@@ -472,7 +472,7 @@ git commit -m "feat(theme-gen): add randomAccessiblePalette using curated swatch
 - Modify: `apps/docs/src/app/services/theme-draft.service.ts`
 - Modify: `apps/docs/src/app/services/theme-draft.service.spec.ts`
 
-- [ ] **Step 1: Add failing tests**
+- [x] **Step 1: Add failing tests**
 
 Append to `theme-draft.service.spec.ts`:
 
@@ -508,12 +508,12 @@ test('rederiveFromPrimary with overwrite:true ignores dirty slots', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/theme-draft.service.spec.ts`
 Expected: FAIL — `setColors`, `dirtySlots`, `rederiveFromPrimary` undefined.
 
-- [ ] **Step 3: Implement extensions**
+- [x] **Step 3: Implement extensions**
 
 In `theme-draft.service.ts`:
 
@@ -564,12 +564,12 @@ rederiveFromPrimary(opts: { overwriteDirty?: boolean; mode?: 'light' | 'dark' } 
 
 5. In `loadFork`, `loadSaved`, `resetToOriginal`, `importJson`: add `this._dirty.set(new Set());` before `persistDraft()`.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/theme-draft.service.spec.ts`
 Expected: PASS (existing + 4 new).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/services/theme-draft.service.ts apps/docs/src/app/services/theme-draft.service.spec.ts
