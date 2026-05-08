@@ -41,6 +41,8 @@ export interface KjCommandActivateEvent {
  * @doc-example Fuzzy filter
  *   @doc-file command-palette.fuzzy.example.ts
  * @category Core/Actions
+ * @doc-name command-palette
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCommandPalette]',

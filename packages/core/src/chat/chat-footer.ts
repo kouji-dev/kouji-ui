@@ -27,6 +27,8 @@ const STATE_LABEL: Readonly<Record<KjChatState, string>> = {
  * <footer kjChatFooter kjState="read">Read 12:46</footer>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name chat
  */
 @Directive({
   selector: '[kjChatFooter]',

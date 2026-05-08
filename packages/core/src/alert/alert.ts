@@ -51,6 +51,9 @@ let _alertIdCounter = 0;
  * </div>
  * ```
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAlert]',
@@ -265,6 +268,8 @@ export class KjAlert implements KjAlertContext {
  * when the alert is in a content region.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertTitle]',
@@ -293,6 +298,8 @@ export class KjAlertTitle implements OnDestroy {
  * `aria-describedby`. Same id-registration pattern as `KjAlertTitle`.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertDescription]',
@@ -321,6 +328,8 @@ export class KjAlertDescription implements OnDestroy {
  * the consumer re-typing it.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertIcon]',
@@ -342,6 +351,8 @@ export class KjAlertIcon {
  * actions container as a unit.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertActions]',
@@ -367,6 +378,8 @@ export class KjAlertActions {
  * `kjAlertDismissSize` → `KjButton.kjSize`.
  *
  * @category Core/Feedback
+ * @doc
+ * @doc-name alert
  */
 @Directive({
   selector: '[kjAlertDismiss]',

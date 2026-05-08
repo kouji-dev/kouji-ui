@@ -24,6 +24,8 @@ export const KJ_ROVING_TABINDEX = new InjectionToken<KjRovingTabindex>(
  * <button kjRovingTabindexItem>Item</button>
  * ```
  * @category Core/Accessibility
+ * @doc
+ * @doc-name a11y
  */
 @Directive({
   selector: '[kjRovingTabindexItem]',
@@ -51,6 +53,8 @@ export class KjRovingTabindexItemDirective {
  * </div>
  * ```
  * @category Core/Accessibility
+ * @doc
+ * @doc-name a11y
  */
 @Directive({
   selector: '[kjRovingTabindex]',

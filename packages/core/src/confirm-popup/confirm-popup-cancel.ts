@@ -18,6 +18,8 @@ import {
  * ```
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name confirm-popup
  */
 @Directive({
   selector: '[kjConfirmPopupCancel]',

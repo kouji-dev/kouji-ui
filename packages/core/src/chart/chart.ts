@@ -10,6 +10,9 @@ import type { EChartsOption } from 'echarts';
  * <div kjChart [kjChartOption]="chartOption()" kjChartLabel="Monthly revenue" style="height:300px"></div>
  * ```
  * @category Core/Data
+ * @doc
+ * @doc-name chart
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjChart]', standalone: true,

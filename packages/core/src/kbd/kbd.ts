@@ -66,6 +66,9 @@ export const KJ_KBD_SIZE_PRESET: KjSizePreset = {
  * <kbd kjKbd aria-label="Command">⌘</kbd>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name kbd
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjKbd]',

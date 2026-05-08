@@ -17,6 +17,8 @@ import { Directive } from '@angular/core';
  * </span>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name chat
  */
 @Directive({
   selector: '[kjChatAvatar]',

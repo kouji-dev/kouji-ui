@@ -66,6 +66,8 @@ const DEFAULT_ARIA_LABEL_FORMAT: KjAvatarGroupAriaLabelFormat = (v, t, l) =>
  * </span>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name avatar
  */
 @Directive({
   selector: '[kjAvatarGroup]',

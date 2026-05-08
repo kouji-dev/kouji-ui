@@ -43,6 +43,9 @@ import {
  * </button>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name overlay-badge
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjOverlayBadge]',

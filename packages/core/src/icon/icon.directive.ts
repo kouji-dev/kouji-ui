@@ -15,6 +15,9 @@ import type { KjIconColor, KjIconSize } from './icon.types';
  * ```
  *
  * @category Core/Icon
+ * @doc
+ * @doc-name icon
+ * @doc-is-main
  */
 @Directive({
   selector: 'span[kjIcon], i[kjIcon]',

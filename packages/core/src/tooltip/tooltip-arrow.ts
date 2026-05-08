@@ -18,6 +18,8 @@ import { Directive } from '@angular/core';
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name tooltip
  */
 @Directive({
   selector: '[kjTooltipArrow]',

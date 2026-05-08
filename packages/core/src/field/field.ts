@@ -31,6 +31,9 @@ let kjFieldIdCounter = 0;
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name field
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjField]',

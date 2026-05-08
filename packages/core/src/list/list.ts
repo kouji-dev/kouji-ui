@@ -84,6 +84,9 @@ export interface KjListItemContext {
  * ```
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name list
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjList]',
@@ -222,6 +225,8 @@ export class KjList implements KjListContext {
  * ```
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name list
  */
 @Directive({
   selector: '[kjListItem]',

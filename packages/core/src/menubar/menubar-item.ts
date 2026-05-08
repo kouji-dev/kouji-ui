@@ -48,6 +48,8 @@ import type { KjMenubarItemContext } from './menubar.context';
  * trigger's contract for disabled buttons.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name menubar
  */
 @Directive({
   selector: '[kjMenubarItem]',

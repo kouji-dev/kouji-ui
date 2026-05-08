@@ -66,6 +66,8 @@ export type KjTextareaAutoresize = 'off' | 'auto';
  * @doc
  *  @doc-file textarea.example.ts
  * @category Core/Inputs
+ * @doc-name textarea
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTextarea]',

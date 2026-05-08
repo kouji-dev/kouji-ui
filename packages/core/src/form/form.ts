@@ -51,6 +51,9 @@ export type KjAsyncSubmitHandler<T = unknown> = (
  * </form>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name form
+ * @doc-is-main
  */
 @Directive({
   selector: 'form[kjForm]',

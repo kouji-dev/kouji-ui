@@ -40,6 +40,9 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTreeSelect]',
@@ -199,6 +202,8 @@ export class KjTreeSelect implements KjTreeSelectContext {
  * <button kjTreeSelectTrigger>Select category</button>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectTrigger]',
@@ -253,6 +258,8 @@ export class KjTreeSelectTrigger {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectPanel]',
@@ -418,6 +425,8 @@ export class KjTreeSelectPanel {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectNode]',
@@ -509,6 +518,8 @@ export class KjTreeSelectNode {
  * <button kjTreeSelectToggle aria-hidden="true"></button>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name tree-select
  */
 @Directive({
   selector: '[kjTreeSelectToggle]',

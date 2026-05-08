@@ -15,6 +15,8 @@ import { KJ_CHAT, nextChatHeaderId } from './chat.context';
  * <header kjChatHeader>Alice <time datetime="…">12:46</time></header>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name chat
  */
 @Directive({
   selector: '[kjChatHeader]',

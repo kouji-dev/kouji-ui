@@ -12,6 +12,8 @@ import { KJ_DATE_PICKER } from './date-picker.context';
  * to keep the headless surface consumer-driven.
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name date-picker
  */
 @Directive({
   selector: '[kjDatePickerCalendar]',

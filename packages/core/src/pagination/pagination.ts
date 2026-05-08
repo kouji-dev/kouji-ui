@@ -55,6 +55,9 @@ import { computePageTokens } from './page-tokens';
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name pagination
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjPagination]',

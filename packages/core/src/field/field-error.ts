@@ -17,6 +17,8 @@ let kjFieldErrorIdCounter = 0;
  * <span kjFieldError>Please enter a valid email.</span>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name field
  */
 @Directive({
   selector: '[kjFieldError]',

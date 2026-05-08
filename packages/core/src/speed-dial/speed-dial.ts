@@ -37,6 +37,9 @@ import {
  * ```
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name speed-dial
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjSpeedDial]',

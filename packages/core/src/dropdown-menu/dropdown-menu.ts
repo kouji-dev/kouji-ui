@@ -49,6 +49,9 @@ const ITEM_SELECTOR =
  *   `[kjDropdownMenuItem]` directive which composes `[kjRovingTabindexItem]`.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name dropdown-menu
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDropdownMenu]',

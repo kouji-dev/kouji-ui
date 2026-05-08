@@ -24,6 +24,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
  * }
  * ```
  * @category Core/Primitives
+ * @doc
+ * @doc-name forms
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjFormControl]',

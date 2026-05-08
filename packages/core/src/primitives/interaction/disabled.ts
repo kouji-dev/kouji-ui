@@ -9,6 +9,9 @@
  * <div kjDisabled [kjDisabled]="isLoading()">Content</div>
  * ```
  * @category Core/Primitives
+ * @doc
+ * @doc-name interaction
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDisabled]',

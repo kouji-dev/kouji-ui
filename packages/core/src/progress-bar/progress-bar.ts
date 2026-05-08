@@ -50,6 +50,9 @@ import {
  * </div>
  * ```
  * @category Core/Feedback
+ * @doc
+ * @doc-name progress-bar
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjProgressBar]',

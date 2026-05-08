@@ -28,6 +28,8 @@ import {
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name tooltip
  */
 @Directive({
   selector: '[kjTooltipGroup]',

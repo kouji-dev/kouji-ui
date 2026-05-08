@@ -55,6 +55,8 @@ import {
  * listens explicitly for Enter / Space (WCAG 2.1.1 *Keyboard*).
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name popover
  */
 @Directive({
   selector: '[kjPopoverTrigger], [kjPopoverTriggerFor]',

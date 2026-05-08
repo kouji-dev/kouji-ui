@@ -23,6 +23,9 @@ import {
  * </blockquote>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name typography
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjBlockquote]',

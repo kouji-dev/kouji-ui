@@ -53,6 +53,9 @@ import { valueFromClientPosition } from './slider.geometry';
  * exposes the dragging / active-thumb state for the wrapper visuals.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name slider
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjSlider]',

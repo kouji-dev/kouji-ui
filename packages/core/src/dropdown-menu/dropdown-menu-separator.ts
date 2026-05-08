@@ -11,6 +11,8 @@ import { Directive } from '@angular/core';
  * <div kjDropdownMenuSeparator></div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Directive({
   selector: '[kjDropdownMenuSeparator]',

@@ -11,6 +11,9 @@
  * <span id="hint-id">Format: DD/MM/YYYY</span>
  * ```
  * @category Core/Accessibility
+ * @doc
+ * @doc-name a11y
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAriaDescribedBy]',

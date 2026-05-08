@@ -34,6 +34,8 @@ import { KJ_BUTTON_CONFIG } from './config';
  *  @doc-example Sizes
  *    @doc-file button.sizes.example.ts
  * @category Core/Base
+ * @doc-name button
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjButton]',

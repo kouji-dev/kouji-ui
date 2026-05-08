@@ -19,6 +19,8 @@ import {
  * <p kjLead>Atlas helps engineering teams plan quarterly roadmaps.</p>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name typography
  */
 @Directive({
   selector: '[kjLead]',

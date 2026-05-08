@@ -26,6 +26,9 @@ export type KjSkeletonAnimation = 'shimmer' | 'pulse' | 'none';
  * <div kjSkeleton kjSkeletonShape="circle" style="width: 40px; height: 40px"></div>
  * ```
  * @category Core/Layout
+ * @doc
+ * @doc-name skeleton
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjSkeleton]',

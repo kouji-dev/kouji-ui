@@ -39,6 +39,8 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
  * </ng-template>
  * ```
  * @category Core/Overlays
+ * @doc-name toast
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjToast]',
@@ -164,6 +166,8 @@ export interface KjToastRenderable<TData = unknown> {
  * </ol>
  * ```
  * @category Core/Overlays
+ * @doc
+ * @doc-name toast
  */
 @Directive({
   selector: '[kjToastViewport]',
@@ -424,6 +428,8 @@ export class KjToastViewport {
  * <button [kjToastClose]="toast.id" aria-label="Dismiss">×</button>
  * ```
  * @category Core/Overlays
+ * @doc
+ * @doc-name toast
  */
 @Directive({
   selector: '[kjToastClose]',

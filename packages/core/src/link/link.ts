@@ -63,6 +63,9 @@ const KJ_LINK_VISUALLY_HIDDEN_STYLE =
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name link
+ * @doc-is-main
  */
 @Directive({
   selector: 'a[kjLink], [kjLink]',

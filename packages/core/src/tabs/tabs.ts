@@ -49,6 +49,9 @@ function nextSeed(): string {
  * </div>
  * ```
  * @category Core/Navigation
+ * @doc
+ * @doc-name tabs
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTabs]',
@@ -178,6 +181,8 @@ export class KjTabs implements KjTabsContext {
  * on the exposed input.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name tabs
  */
 @Directive({
   selector: '[kjTabList]',
@@ -229,6 +234,8 @@ export class KjTabList implements OnInit, OnDestroy {
  * `kjClosable` is true.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name tabs
  */
 @Directive({
   selector: '[kjTab]',
@@ -314,6 +321,8 @@ export class KjTab implements OnInit, OnDestroy {
  * lazy-then-persistent mount posture from the analysis.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name tabs
  */
 @Directive({
   selector: '[kjTabPanel]',

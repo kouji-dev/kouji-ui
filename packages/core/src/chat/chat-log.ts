@@ -19,6 +19,8 @@ import { KJ_CHAT_LOG, type KjChatLogContext } from './chat.context';
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name chat
  */
 @Directive({
   selector: '[kjChatLog]',

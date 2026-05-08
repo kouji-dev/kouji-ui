@@ -23,6 +23,8 @@ import {
  * ```
  *
  * @category Core/Overlays
+ * @doc
+ * @doc-name popover
  */
 @Directive({
   selector: '[kjPopoverTitle]',

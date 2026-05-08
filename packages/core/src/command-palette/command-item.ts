@@ -27,6 +27,8 @@ import { KJ_COMMAND_PALETTE, nextCommandItemId } from './command-palette.context
  * </div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandItem]',

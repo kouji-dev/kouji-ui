@@ -40,6 +40,9 @@ import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name input-otp
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjInputOtp]',
@@ -291,6 +294,8 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name input-otp
  */
 @Directive({
   selector: 'input[kjInputOtpCell]',

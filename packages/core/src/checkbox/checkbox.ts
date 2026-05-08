@@ -45,6 +45,8 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *       }
  *    ```
  * @category Core/Inputs
+ * @doc-name checkbox
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCheckbox]',

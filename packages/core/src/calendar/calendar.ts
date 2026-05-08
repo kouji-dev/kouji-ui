@@ -51,6 +51,9 @@ function nextCaptionId(): string {
  * `aria-disabled="true"` and can't receive focus.
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name calendar
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCalendar]',

@@ -50,6 +50,9 @@ import {
  * matches the muscle-memory of cancellation flows.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name confirm-popup
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjConfirmPopup]',

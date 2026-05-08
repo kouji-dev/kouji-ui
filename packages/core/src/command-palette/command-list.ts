@@ -7,6 +7,8 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
  * used by `[kjCommandInput]`'s `aria-controls`.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: '[kjCommandList]',

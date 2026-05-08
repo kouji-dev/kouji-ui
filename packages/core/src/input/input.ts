@@ -46,6 +46,8 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *       }
  *    ```
  * @category Core/Inputs
+ * @doc-name input
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjInput]',

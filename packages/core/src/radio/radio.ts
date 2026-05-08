@@ -11,6 +11,8 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name radio
  */
 @Directive({
   selector: '[kjRadioGroup]', standalone: true,
@@ -27,6 +29,9 @@ export class KjRadioGroup implements KjRadioContext {
  * Individual radio button within a `[kjRadioGroup]`. Includes CVA for forms integration.
  * @example `<div kjRadio [kjRadioValue]="'a'" tabindex="0">Option A</div>`
  * @category Core/Inputs
+ * @doc
+ * @doc-name radio
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjRadio]', standalone: true,

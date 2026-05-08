@@ -61,6 +61,9 @@ import {
  * `aria-label="Application"`.
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name menubar
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjMenubar]',

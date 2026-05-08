@@ -29,6 +29,9 @@ import {
  * </div>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name button-group
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjButtonGroup]',

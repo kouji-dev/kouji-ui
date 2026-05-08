@@ -35,6 +35,9 @@ export const KJ_TABLE = new InjectionToken<KjTable<unknown>>('KjTable');
  * </table>
  * ```
  * @category Core/Data
+ * @doc
+ * @doc-name table
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTable]',
@@ -81,6 +84,8 @@ export type KjSortDirection = 'asc' | 'desc';
  * <th kjTableHeader [kjHeader]="header" scope="col">Name</th>
  * ```
  * @category Core/Data
+ * @doc
+ * @doc-name table
  */
 @Directive({
   selector: '[kjTableHeader]',

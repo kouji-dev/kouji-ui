@@ -97,6 +97,9 @@ export function kjFileMatchesAccept(file: File, accept: string | undefined): boo
  * </div>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjFileUpload]',
@@ -420,6 +423,8 @@ export class KjFileUpload implements KjFileUploadContext {
  * <button kjFileUploadTrigger>Choose files</button>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadTrigger]',
@@ -498,6 +503,8 @@ export class KjFileUploadTrigger {
  * </div>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadDropzone]',
@@ -560,6 +567,8 @@ export class KjFileUploadDropzone {
  * </ul>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadList]',
@@ -589,6 +598,8 @@ export class KjFileUploadList {
  * </li>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name file-upload
  */
 @Directive({
   selector: '[kjFileUploadItem]',

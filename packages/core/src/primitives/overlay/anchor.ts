@@ -70,6 +70,9 @@ let _anchorIdCounter = 0;
  * >...</div>
  * ```
  * @category Core/Primitives
+ * @doc
+ * @doc-name overlay
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAnchor]',

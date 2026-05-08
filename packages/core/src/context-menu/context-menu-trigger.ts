@@ -84,6 +84,9 @@ export type KjContextMenuAnchorModeInput = 'auto' | KjContextMenuAnchorMode;
  * focusable and was the opener.
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name context-menu
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjContextMenuFor]',

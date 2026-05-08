@@ -32,6 +32,9 @@ import { KJ_SPINNER_CONFIG, KjSpinnerAnimation } from './config';
  * <span kjSpinner kjAnimation="dots" kjAriaLabel="Sending"></span>
  * ```
  * @category Core/Feedback
+ * @doc
+ * @doc-name spinner
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjSpinner]',

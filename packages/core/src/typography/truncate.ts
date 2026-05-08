@@ -34,6 +34,8 @@ import {
  * <p kjTruncate title="Custom tooltip">Consumer title wins.</p>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name typography
  */
 @Directive({
   selector: '[kjTruncate]',

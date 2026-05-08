@@ -43,6 +43,9 @@ interface KjBreadcrumbItemEntry {
  * ```
  *
  * @category Core/Navigation
+ * @doc
+ * @doc-name breadcrumb
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjBreadcrumb]',

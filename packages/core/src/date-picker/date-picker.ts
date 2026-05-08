@@ -35,6 +35,9 @@ function nextPanelId(): string {
  * ```
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name date-picker
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDatePicker]',

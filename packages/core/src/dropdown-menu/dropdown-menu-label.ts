@@ -22,6 +22,8 @@ import { nextDropdownMenuLabelId } from './dropdown-menu.context';
  * <span kjDropdownMenuLabel>Account</span>
  * ```
  * @category Core/Actions
+ * @doc
+ * @doc-name dropdown-menu
  */
 @Directive({
   selector: '[kjDropdownMenuLabel]',

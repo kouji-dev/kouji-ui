@@ -43,6 +43,9 @@ export type KjDividerAlign = 'start' | 'center' | 'end';
  * <div kjDivider [kjStructural]="true">OR</div>
  * ```
  * @category Core/Layout/Divider
+ * @doc
+ * @doc-name divider
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjDivider]',

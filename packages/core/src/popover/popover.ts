@@ -55,6 +55,8 @@ import {
  *    @doc-theme finance
  *      @doc-file popover.finance.example.ts
  * @category Core/Overlays
+ * @doc-name popover
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjPopover]',

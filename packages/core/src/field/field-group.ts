@@ -23,6 +23,8 @@ import { KJ_FIELD } from './field.context';
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name field
  */
 @Directive({
   selector: '[kjFieldGroup]',

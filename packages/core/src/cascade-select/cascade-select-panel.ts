@@ -24,6 +24,8 @@ import { KJ_CASCADE_SELECT } from './cascade-select.context';
  * </div>
  * ```
  * @category Core/Data input
+ * @doc
+ * @doc-name cascade-select
  */
 @Directive({
   selector: '[kjCascadeSelectPanel]',

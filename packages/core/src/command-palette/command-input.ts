@@ -19,6 +19,8 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
  * - `Escape` — first press clears query; second press propagates to dialog
  *
  * @category Core/Actions
+ * @doc
+ * @doc-name command-palette
  */
 @Directive({
   selector: 'input[kjCommandInput]',

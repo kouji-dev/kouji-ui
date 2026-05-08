@@ -71,6 +71,9 @@ function prefersReducedMotion(): boolean {
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjCarousel]',
@@ -413,6 +416,8 @@ export class KjCarousel implements KjCarouselContext {
  * navigation through the projected slide content.
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselViewport]',
@@ -527,6 +532,8 @@ export class KjCarouselViewport implements OnInit, OnDestroy {
  * `controlPattern="tabs"` mode.
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselSlide]',
@@ -610,6 +617,8 @@ export class KjCarouselSlide implements KjCarouselSlideContext, OnInit, OnDestro
  * work without extra wiring.
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselPrevious]',
@@ -646,6 +655,8 @@ export class KjCarouselPrevious {
  * Next-slide control. Symmetric counterpart of `KjCarouselPrevious`.
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselNext]',
@@ -686,6 +697,8 @@ export class KjCarouselNext {
  * read the active control pattern.
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselIndicators]',
@@ -733,6 +746,8 @@ export class KjCarouselIndicators implements KjCarouselIndicatorsContext, OnInit
  * (tabs mode).
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselIndicator]',
@@ -814,6 +829,8 @@ export class KjCarouselIndicator {
  * present in the same composition.
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselAutoplay]',
@@ -874,6 +891,8 @@ export class KjCarouselAutoplay implements OnInit, OnDestroy {
  * meaningless).
  *
  * @category Core/Data display
+ * @doc
+ * @doc-name carousel
  */
 @Directive({
   selector: '[kjCarouselPauseToggle]',

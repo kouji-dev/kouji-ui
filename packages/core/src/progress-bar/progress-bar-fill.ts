@@ -21,6 +21,8 @@ import { KJ_PROGRESS_BAR } from './progress-bar.context';
  * </div>
  * ```
  * @category Core/Feedback
+ * @doc
+ * @doc-name progress-bar
  */
 @Directive({
   selector: '[kjProgressBarFill]',

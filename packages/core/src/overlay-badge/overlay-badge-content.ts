@@ -33,6 +33,8 @@ import { KJ_OVERLAY_BADGE } from './overlay-badge.context';
  * </button>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name overlay-badge
  */
 @Directive({
   selector: '[kjOverlayBadgeContent]',

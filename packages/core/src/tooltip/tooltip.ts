@@ -55,6 +55,8 @@ import type {
  *  @doc-example Placements
  *    @doc-file tooltip.placements.example.ts
  * @category Core/Overlays
+ * @doc-name tooltip
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTooltip]',

@@ -57,6 +57,8 @@ let nextId = 0;
  *  @doc-example Currency formatting
  *    @doc-file number-input.currency.example.ts
  * @category Core/Inputs
+ * @doc-name number-input
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjNumberInput]',

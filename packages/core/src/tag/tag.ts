@@ -41,6 +41,9 @@ import { KJ_TAG_CONFIG } from './config';
  * <span kjTag kjTagSelectable [(kjTagSelected)]="on">Toggle</span>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name tag
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTag]',

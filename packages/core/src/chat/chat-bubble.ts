@@ -21,6 +21,8 @@ import { KJ_CHAT_BUBBLE_CONFIG } from './config';
  * <p kjChatBubble kjVariant="primary" kjSize="md">Reply text</p>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name chat
  */
 @Directive({
   selector: '[kjChatBubble]',

@@ -88,6 +88,7 @@ const ALERT_DIALOG_FOCUSABLE = [
  *  @doc-example Async action
  *    @doc-file alert-dialog.async-action.example.ts
  * @category Library/Actions
+ * @doc-name alert-dialog
  */
 @Directive({
   selector: '[kjAlertDialogTrigger]',
@@ -306,6 +307,9 @@ export class KjAlertDialogTrigger implements KjAlertDialogContext {
  * the WAI-ARIA Alert Dialog Pattern requires a description.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAlertDialog]',
@@ -385,6 +389,8 @@ export class KjAlertDialog {
  * usage is non-destructive enough to allow it.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Directive({
   selector: '[kjAlertDialogOverlay]',
@@ -411,6 +417,8 @@ export class KjAlertDialogOverlay {
  * the context so `[kjAlertDialog]` wires `aria-labelledby` automatically.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Directive({
   selector: '[kjAlertDialogTitle]',
@@ -435,6 +443,8 @@ export class KjAlertDialogTitle {
  * Registers a stable id with the context for `aria-describedby`.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Directive({
   selector: '[kjAlertDialogDescription]',
@@ -459,6 +469,8 @@ export class KjAlertDialogDescription {
  * panel is in destructive mode.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Directive({
   selector: '[kjAlertDialogAction]',
@@ -491,6 +503,8 @@ export class KjAlertDialogAction {
  * pattern.
  *
  * @category Library/Actions
+ * @doc
+ * @doc-name alert-dialog
  */
 @Directive({
   selector: '[kjAlertDialogCancel]',

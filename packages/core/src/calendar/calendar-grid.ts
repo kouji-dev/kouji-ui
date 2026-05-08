@@ -13,6 +13,8 @@ import { KJ_CALENDAR } from './calendar.context';
  * map.
  *
  * @category Core/Data input
+ * @doc
+ * @doc-name calendar
  */
 @Directive({
   selector: '[kjCalendarGrid]',

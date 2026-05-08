@@ -42,6 +42,9 @@ import { KJ_INPUT_MASK_TOKENS } from './input-mask.tokens';
  * ```
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name input-mask
+ * @doc-is-main
  */
 @Directive({
   selector: 'input[kjInputMask]',

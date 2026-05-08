@@ -38,6 +38,9 @@ interface AddonEntry {
  * </div>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name input-group
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjInputGroup]',

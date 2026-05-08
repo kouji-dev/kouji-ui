@@ -49,6 +49,9 @@ const CHAT_ROW_REGISTRY = new WeakMap<Element, KjChat>();
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name chat
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjChat]',

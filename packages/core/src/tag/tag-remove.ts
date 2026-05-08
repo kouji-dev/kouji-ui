@@ -21,6 +21,8 @@ import { KJ_TAG } from './tag.context';
  * </span>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name tag
  */
 @Directive({
   selector: '[kjTagRemove]',

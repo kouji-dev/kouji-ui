@@ -34,6 +34,8 @@ let _nextId = 0;
  * <span kjInputGroupAddon kjPosition="end">.00</span>
  * ```
  * @category Core/Inputs
+ * @doc
+ * @doc-name input-group
  */
 @Directive({
   selector: '[kjInputGroupAddon]',

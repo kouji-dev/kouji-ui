@@ -54,6 +54,9 @@ function nextSeed(): string {
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjAccordion]',
@@ -221,6 +224,8 @@ function arraysEqual(a: readonly string[], b: readonly string[]): boolean {
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
  */
 @Directive({
   selector: '[kjAccordionItem]',
@@ -292,6 +297,8 @@ export class KjAccordionItem implements KjAccordionItemContext {
  * <button kjAccordionTrigger>Section title</button>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
  */
 @Directive({
   selector: '[kjAccordionTrigger]',
@@ -366,6 +373,8 @@ export class KjAccordionTrigger implements OnInit, OnDestroy {
  * <div kjAccordionContent>Panel content</div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name accordion
  */
 @Directive({
   selector: '[kjAccordionContent]',

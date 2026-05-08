@@ -20,6 +20,8 @@ import { KJ_TAG_LIST, KjTagListContext, KjTagListRole } from './tag.context';
  * </div>
  * ```
  * @category Core/Data display
+ * @doc
+ * @doc-name tag
  */
 @Directive({
   selector: '[kjTagList]',

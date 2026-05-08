@@ -47,6 +47,9 @@ import {
  * ```
  *
  * @category Core/Inputs
+ * @doc
+ * @doc-name time-picker
+ * @doc-is-main
  */
 @Directive({
   selector: '[kjTimePicker]',

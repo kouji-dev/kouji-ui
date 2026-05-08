@@ -35,6 +35,8 @@ let nextId = 0;
  * `hostDirectives`. Effective disabled is the OR of root + per-thumb.
  *
  * @category Library/Data input
+ * @doc
+ * @doc-name slider
  */
 @Directive({
   selector: '[kjSliderThumb]',
