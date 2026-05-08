@@ -4,6 +4,7 @@ import {
   effect,
   inject,
   input,
+  untracked,
 } from '@angular/core';
 import { KjFocusRing } from '../primitives';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
@@ -82,9 +83,15 @@ export class KjSelectTrigger {
       this.select?._open.set(this.controller.isOpen());
     });
     // React to single-mode close requests originating from option clicks.
+    // Track ONLY `_closeRequest` — reading `isOpen()` inside `untracked`
+    // prevents the effect from re-firing when the controller's state
+    // changes (open → closing → closed → reopen). Without this, the stale
+    // `req=1` value would close every subsequent reopen because the
+    // effect re-fires on isOpen flips.
     effect(() => {
       const req = this.select?._closeRequest();
-      if (req && this.controller.isOpen()) {
+      if (!req) return;
+      if (untracked(() => this.controller.isOpen())) {
         this.controller.close('programmatic');
       }
     });
