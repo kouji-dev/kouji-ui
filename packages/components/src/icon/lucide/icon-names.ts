@@ -1,20 +1,18 @@
-import iconNodes from 'lucide-static/icon-nodes.json';
+// Re-generate via:
+//   node scripts/generate-lucide-icon-names.mjs
+// (script reads the installed lucide-static/icon-nodes.json keys and writes
+// this file). We embed the list as a static const instead of importing the
+// JSON at runtime so SSR / Vite ESM resolvers don't have to resolve a JSON
+// path inside the lucide-static package at request time.
 
-type IconNodes = Record<string, unknown>;
+import { LUCIDE_ICON_NAMES_RAW } from './icon-names.generated';
+
+/** Kebab-case Lucide icon name. */
+export type LucideIconName = string;
 
 /**
- * Kebab-case Lucide icon name (mirrors the keys in `lucide-static/icon-nodes.json`).
+ * All Lucide icon kebab-case names, sorted alphabetically. Generated from
+ * `lucide-static/icon-nodes.json`. Useful for galleries, autocomplete, or
+ * batch eager registration via {@link provideLucideIcons}.
  */
-export type LucideIconName = keyof typeof iconNodes & string;
-
-/**
- * All Lucide icon kebab-case names, sorted alphabetically. Derived at compile
- * time from `lucide-static/icon-nodes.json` so the list stays in sync with
- * whatever version of `lucide-static` is resolved in `node_modules`.
- *
- * Useful for galleries, autocomplete, or batch eager registration via
- * {@link provideLucideIcons}.
- */
-export const LUCIDE_ICON_NAMES: readonly LucideIconName[] = (
-  Object.keys(iconNodes as IconNodes) as LucideIconName[]
-).sort((a, b) => a.localeCompare(b));
+export const LUCIDE_ICON_NAMES: readonly LucideIconName[] = LUCIDE_ICON_NAMES_RAW;

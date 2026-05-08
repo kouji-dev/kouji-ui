@@ -8,6 +8,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { KjIconDirective } from '@kouji-ui/core';
 import { KjInputComponent } from '../input/input';
+import { KjButtonComponent } from '../button/button';
 import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
 
 /**
@@ -20,7 +21,7 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
 @Component({
   selector: 'kj-icon-gallery-example',
   standalone: true,
-  imports: [FormsModule, KjIconDirective, KjInputComponent],
+  imports: [FormsModule, KjIconDirective, KjInputComponent, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styles: [`
@@ -147,15 +148,15 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
       >
         @for (name of filtered(); track name) {
           <li>
-            <button
-              type="button"
+            <kj-button
+              kjVariant="ghost"
               class="gallery-tile"
               [attr.aria-label]="'Copy icon snippet for ' + name"
               (click)="copy(name)"
             >
               <i [kjIcon]="name"></i>
               <span class="name">{{ name }}</span>
-            </button>
+            </kj-button>
           </li>
         }
       </ul>

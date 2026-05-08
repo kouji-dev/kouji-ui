@@ -2,7 +2,7 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideLucideIcons, provideLucideLoader } from '@kouji-ui/components';
+import { provideLucideIcons } from '@kouji-ui/components';
 import { routes } from './app.routes';
 import { DocsManifestProvider } from './services/docs-manifest.provider';
 import { BrowserDocsManifestProvider } from './services/docs-manifest.browser';
@@ -13,8 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
-    provideLucideIcons(['chevron-right', 'x', 'command', 'check']),
-    provideLucideLoader(),
+    provideLucideIcons(),
     { provide: DocsManifestProvider, useClass: BrowserDocsManifestProvider },
   ],
 };

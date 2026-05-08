@@ -382,6 +382,9 @@ export { KjCascadeSelectPathExample }         from './cascade-select/cascade-sel
 export { KjCascadeSelectFieldExample }        from './cascade-select/cascade-select.field.example';
 export { KjCascadeSelectDisabledExample }     from './cascade-select/cascade-select.disabled.example';
 
+// Icon
+export { KjIconGalleryExample } from './icon/icon.gallery.example';
+
 // Tree Select
 export { KjTreeSelectExample }          from './tree-select/tree-select.example';
 export { KjTreeSelectMultiExample }     from './tree-select/tree-select.multi.example';
