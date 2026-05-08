@@ -2086,7 +2086,7 @@ git commit -m "feat(theme-gen): preview settings tab"
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/big-form.css`
 - Modify: `theme-generator-preview.ts`.
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 // big-form.ts
@@ -2163,11 +2163,11 @@ legend { padding: 0 0.5rem; font-weight: 600; }
 .actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
 ```
 
-- [ ] **Step 2: Wire and verify**
+- [x] **Step 2: Wire and verify**
 
 Add `PreviewBigFormComponent` to preview imports. Verify in browser.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/preview-tabs/big-form.* apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts
