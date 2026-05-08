@@ -186,12 +186,6 @@ h1 {
   margin-bottom: var(--kj-space-lg);
   flex-wrap: wrap;
 }
-.item-symbol {
-  font-family: var(--kj-font-mono);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--kj-color-base-content);
-}
 .item-kind {
   font-size: 0.65rem;
   letter-spacing: 0.15em;

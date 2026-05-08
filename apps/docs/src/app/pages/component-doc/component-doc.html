@@ -26,7 +26,6 @@
             @if (item.kind === 'directive' && item.directive) {
               <code class="directive-selector">{{ item.directive.selector }}</code>
             }
-            <span class="item-symbol">{{ item.symbol }}</span>
             <span class="item-kind">{{ kindLabel(item.kind) }}</span>
             @if (item.isMain) { <span class="main-badge" title="Main">main</span> }
           </div>
