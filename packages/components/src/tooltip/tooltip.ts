@@ -37,6 +37,7 @@ import {
  * @category Library/Feedback
  * @doc
  * @doc-name tooltip
+ * @doc-description The pre-styled kouji tooltip. Wrap any trigger in `<kj-tooltip [kjTooltipTriggerFor]="tpl">` and define `<kj-tooltip-content>` in an `<ng-template>` to get a hover/focus-activated floating label with collision-aware positioning, configurable open/close delays, and theme tokens — WCAG 1.4.13 hoverable behaviour included.
  * @doc-is-main
  */
 @Component({

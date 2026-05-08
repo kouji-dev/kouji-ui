@@ -77,6 +77,7 @@ const SHEET_FOCUSABLE = [
  * @category Core/Overlays
  * @doc
  * @doc-name bottom-sheet
+ * @doc-description Headless bottom-sheet trigger for kouji-ui. Apply `[kjBottomSheetTrigger]` to any button to portal-mount a slide-up sheet with snap-point support, drag-to-dismiss gesture, focus-trap, scroll-lock, and the same cancellable close cycle as `[kjDialogTrigger]` — without any styling opinions.
  * @doc-is-main
  */
 @Directive({

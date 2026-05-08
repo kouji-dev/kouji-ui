@@ -57,6 +57,7 @@ let _kjColorPickerIdCounter = 0;
  *    @doc-file color-picker.example.ts
  * @category Core/Inputs
  * @doc-name color-picker
+ * @doc-description Headless color-picker root for kouji-ui. Apply `[kjColorPicker]` to own canonical HSV+alpha state, open/close toggle, Angular forms integration, and the `KJ_COLOR_PICKER` context shared by the trigger, panel, saturation area, hue slider, alpha slider, and hex input sub-directives — emit in hex, RGB array, or HSL object. Zero styling.
  * @doc-is-main
  */
 @Directive({

@@ -40,6 +40,7 @@ import { KjProgressBar, KjProgressBarFill } from '@kouji-ui/core';
  * @category Library/Feedback
  * @doc
  * @doc-name progress-bar
+ * @doc-description The pre-styled kouji progress bar. Drop in `<kj-progress-bar>` to display determinate or indeterminate progress with theme tokens, configurable variants and sizes, and WCAG-compliant ARIA wiring — no manual markup required.
  * @doc-is-main
  */
 @Component({

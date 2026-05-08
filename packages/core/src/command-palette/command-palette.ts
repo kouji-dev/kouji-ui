@@ -42,6 +42,7 @@ export interface KjCommandActivateEvent {
  *   @doc-file command-palette.fuzzy.example.ts
  * @category Core/Actions
  * @doc-name command-palette
+ * @doc-description Headless command palette root for kouji-ui. Apply `[kjCommandPalette]` to own item registration, pluggable filtering, active-descendant tracking, and activation events — compose with `[kjCommandInput]`, `[kjCommandList]`, `[kjCommandItem]`, `[kjCommandGroup]`, and optionally `[kjCommandPaletteDialog]` for the modal Cmd-K pattern. Zero styling.
  * @doc-is-main
  */
 @Directive({

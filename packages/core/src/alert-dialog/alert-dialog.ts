@@ -309,6 +309,7 @@ export class KjAlertDialogTrigger implements KjAlertDialogContext {
  * @category Library/Actions
  * @doc
  * @doc-name alert-dialog
+ * @doc-description Headless alert-dialog panel for kouji-ui. Apply `[kjAlertDialog]` to the panel element inside a `[kjAlertDialogTrigger]` template to get `role="alertdialog"`, `aria-modal`, `aria-labelledby`/`aria-describedby` wiring, and an inline focus-trap — the accessible primitive for destructive confirmation flows. Zero styling.
  * @doc-is-main
  */
 @Directive({

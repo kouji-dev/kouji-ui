@@ -29,6 +29,7 @@ import type { KjToastVariant } from '@kouji-ui/core';
  *
  * @category Library/Feedback
  * @doc-name toast
+ * @doc-description The pre-styled kouji toast system. Mount `<kj-toast-viewport>` once in your app shell and call `KjToastService.show(template)` to queue themed notifications — use `<kj-toast>` and `<kj-toast-close>` in the template for the visual shell and dismissal wiring.
  * @doc-is-main
  */
 @Component({

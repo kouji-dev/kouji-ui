@@ -56,6 +56,7 @@ function nextSeed(): string {
  * @category Core/Data display
  * @doc
  * @doc-name accordion
+ * @doc-description Headless accordion root for kouji-ui. Apply `[kjAccordion]` to a container to manage expand/collapse state across any number of `[kjAccordionItem]` children — supporting single or multiple open mode, optional arrow-key roving navigation, and two-way value binding. Zero styling.
  * @doc-is-main
  */
 @Directive({

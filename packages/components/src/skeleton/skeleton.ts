@@ -41,6 +41,7 @@ import { KjSkeleton, type KjSkeletonAnimation, type KjSkeletonShape } from '@kou
  * @category Library/Feedback
  * @doc
  * @doc-name skeleton
+ * @doc-description The pre-styled kouji skeleton loader. Use `<kj-skeleton>` with a `kjSkeletonShape` preset — rectangle, circle, text, or multi-line text-block — to paint themed shimmer or pulse placeholders while content loads, respecting `prefers-reduced-motion` automatically.
  * @doc-is-main
  */
 @Component({

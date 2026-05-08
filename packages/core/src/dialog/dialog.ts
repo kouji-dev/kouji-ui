@@ -281,6 +281,7 @@ const DIALOG_FOCUSABLE = [
  * @category Core/Overlays
  * @doc
  * @doc-name dialog
+ * @doc-description Headless dialog panel for kouji-ui. Apply `[kjDialog]` to the panel element inside a `[kjDialogTrigger]` template to get `role="dialog"`, `aria-modal`, `aria-labelledby`/`aria-describedby` wiring, and an inline Tab focus-trap — the accessible primitive for any modal content. Zero styling.
  * @doc-is-main
  */
 @Directive({

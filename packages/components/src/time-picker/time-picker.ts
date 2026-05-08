@@ -40,6 +40,7 @@ import {
  * @category Library/Data input
  * @doc
  * @doc-name time-picker
+ * @doc-description The pre-styled kouji time picker. Use `<kj-time-picker>` to render a segmented HH:MM[:SS] spinbutton row with optional AM/PM toggle, 12/24-hour mode, min/max constraints, and two-way binding as a `Date` or `'HH:mm'` string — no raw ARIA wiring required.
  * @doc-is-main
  */
 @Component({

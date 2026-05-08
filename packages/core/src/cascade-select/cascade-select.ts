@@ -42,6 +42,7 @@ import {
  * @category Core/Data input
  * @doc
  * @doc-name cascade-select
+ * @doc-description Headless cascade-select root for kouji-ui. Apply `[kjCascadeSelect]` alongside `[kjSelect]` to add hierarchical sub-panel chain management on top of the flat select primitive — hover-delay sub-panel open/close, path tracking via `kjCascadePath`, and level-change events. Zero styling.
  * @doc-is-main
  */
 @Directive({

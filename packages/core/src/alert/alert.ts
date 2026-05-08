@@ -53,6 +53,7 @@ let _alertIdCounter = 0;
  * @category Core/Feedback
  * @doc
  * @doc-name alert
+ * @doc-description Headless in-flow alert / notification banner for kouji-ui. Apply `[kjAlert]` to any element to get the correct `role`/`aria-live` matrix (assertive, polite, static region, or off) derived automatically from the variant and mode inputs, with dismissal semantics and ARIA label wiring. Zero styling.
  * @doc-is-main
  */
 @Directive({

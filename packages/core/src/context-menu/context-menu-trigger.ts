@@ -86,6 +86,7 @@ export type KjContextMenuAnchorModeInput = 'auto' | KjContextMenuAnchorMode;
  * @category Core/Actions
  * @doc
  * @doc-name context-menu
+ * @doc-description Headless context-menu trigger for kouji-ui. Apply `[kjContextMenuFor]` to any focusable element to open a `[kjDropdownMenu]` panel on right-click, long-press (touch), or Shift+F10 / ContextMenu key — anchored at the pointer point or the host's bounding rect with focus restoration and scroll-close support. Zero styling.
  * @doc-is-main
  */
 @Directive({

@@ -53,6 +53,7 @@ function nextCaptionId(): string {
  * @category Core/Data input
  * @doc
  * @doc-name calendar
+ * @doc-description Headless calendar root for kouji-ui. Apply `[kjCalendar]` to a container to manage date selection, locale-aware first-day-of-week, min/max bounds, custom disabled-date predicates, and the full APG keyboard-navigation contract (arrow keys, Page Up/Down, Home/End) — compose with `KjCalendarHeader`, `KjCalendarGrid`, and `KjCalendarDay`. Zero styling.
  * @doc-is-main
  */
 @Directive({

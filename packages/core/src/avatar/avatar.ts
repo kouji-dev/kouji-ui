@@ -9,6 +9,7 @@ export const KJ_AVATAR = new InjectionToken<KjAvatarContext>('KjAvatar');
  * @category Core/Data display
  * @doc
  * @doc-name avatar
+ * @doc-description Headless avatar container for kouji-ui. Compose `[kjAvatar]`, `[kjAvatarImage]`, and `[kjAvatarFallback]` onto any elements to track image load state and toggle visibility between the image and fallback automatically — without coupling to a specific markup shape. Zero styling.
  * @doc-is-main
  */
 @Directive({ selector: '[kjAvatar]', standalone: true, providers: [{ provide: KJ_AVATAR, useExisting: KjAvatar }] })

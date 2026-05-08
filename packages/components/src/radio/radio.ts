@@ -15,6 +15,7 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  * @category Library/Data input
  * @doc
  * @doc-name radio
+ * @doc-description The pre-styled kouji radio group. Use `<kj-radio-group>` with `<kj-radio>` children to get a fully accessible single-selection control with theme tokens, label forwarding, disabled support, and two-way value binding out of the box.
  * @doc-is-main
  */
 @Component({

@@ -40,6 +40,7 @@ import {
  * @category Library/Feedback
  * @doc
  * @doc-name popover
+ * @doc-description The pre-styled kouji popover. Wraps the headless `KjPopover` directive into ready-to-use `<kj-popover>`, `<kj-popover-trigger>`, `<kj-popover-content>`, and helper components — giving you a floating panel with collision-aware positioning, portal mounting, and optional modal mode, all styled with design-system tokens.
  * @doc-is-main
  */
 @Component({

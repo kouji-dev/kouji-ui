@@ -346,6 +346,7 @@ export class KjDrawerTrigger implements KjDrawerContext {
  * @category Core/Overlays
  * @doc
  * @doc-name drawer
+ * @doc-description Headless drawer compound-shape root for kouji-ui. Apply `[kjDrawer]` when the trigger and content live as siblings in the same template — for the trigger-based pattern use `[kjDrawerTrigger]` instead. Both shapes provide `KJ_DRAWER` context to `[kjDrawerContent]`, `[kjDrawerTitle]`, `[kjDrawerDescription]`, and `[kjDrawerClose]`. Zero styling.
  * @doc-is-main
  */
 @Directive({
