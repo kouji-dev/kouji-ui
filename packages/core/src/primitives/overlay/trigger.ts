@@ -6,6 +6,7 @@ import type { KjOverlayPanel } from './panel';
 @Directive({
   selector: '[kjOverlayTrigger]',
   exportAs: 'kjOverlayTrigger',
+  providers: [KjOverlayController],
   host: {
     '[attr.aria-haspopup]':  'ariaHasPopup() ?? null',
     '[attr.aria-expanded]':  'isOpen()',
