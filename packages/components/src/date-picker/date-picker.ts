@@ -73,6 +73,7 @@ import { KjCalendarComponent } from '../calendar/calendar';
     >
       <input
         kjDatePickerTrigger
+        #trig="kjDatePickerTrigger"
         class="kj-date-picker__input"
         [placeholder]="kjPlaceholder()"
       />
@@ -88,8 +89,8 @@ import { KjCalendarComponent } from '../calendar/calendar';
       >📅</button>
       <div
         kjDatePickerCalendar
+        [kjFor]="trig"
         class="kj-date-picker__panel"
-        [hidden]="!picker.open()"
       >
         <kj-calendar
           [(kjValue)]="kjValue"
