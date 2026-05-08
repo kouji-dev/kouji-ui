@@ -55,10 +55,8 @@ import {
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const cmp = inject(KjCascadeSelectPanel, { self: true });
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: cmp.kjSide,
           align: cmp.kjAlign,
         });

@@ -6,7 +6,6 @@ import {
   input,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -50,7 +49,6 @@ import { KjDropdownMenuTrigger } from './dropdown-menu-trigger';
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const cmp = inject(KjDropdownMenuContent, { self: true });
         const trigDir = inject(KjDropdownMenuTrigger, { optional: true });
         if (cmp.kjMount() === 'inline') return inPlaceSibling();
@@ -58,7 +56,6 @@ import { KjDropdownMenuTrigger } from './dropdown-menu-trigger';
           return pointAt({ x: trigDir.kjPointX, y: trigDir.kjPointY });
         }
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: cmp.kjSide,
           align: cmp.kjAlign,
         });

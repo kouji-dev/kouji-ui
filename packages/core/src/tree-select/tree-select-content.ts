@@ -44,10 +44,8 @@ import { KJ_TREE_SELECT } from './tree-select.context';
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const cmp = inject(KjTreeSelectContent, { self: true });
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: cmp.kjSide,
           align: cmp.kjAlign,
           offset: cmp.kjOffset,

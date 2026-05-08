@@ -4,7 +4,7 @@ import type { KjPositionStrategy } from '../../tokens';
 import type { KjSide, KjAlign, KjPlacement } from '../../types';
 
 export interface KjAnchoredToOpts {
-  trigger: Signal<HTMLElement | null>;
+  trigger?: Signal<HTMLElement | null>;
   side: Signal<KjSide> | KjSide;
   align: Signal<KjAlign> | KjAlign;
   offset?: Signal<number> | number;
@@ -55,7 +55,7 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
 
   const applyCss = () => {
     if (!ctx?.platform.isBrowser) return;
-    const trigger = opts.trigger();
+    const trigger = opts.trigger ? opts.trigger() : ctx.triggerEl();
     const panel = ctx.panelEl();
     if (!trigger || !panel) return;
 
@@ -95,7 +95,7 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
 
   const applyManual = () => {
     if (!ctx?.platform.isBrowser) return;
-    const trigger = opts.trigger();
+    const trigger = opts.trigger ? opts.trigger() : ctx.triggerEl();
     const panel = ctx.panelEl();
     if (!trigger || !panel) return;
 
@@ -167,7 +167,7 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
       onScroll = () => applyManual();
       window.addEventListener('resize', onResize);
       window.addEventListener('scroll', onScroll, true);
-      const trigger = opts.trigger();
+      const trigger = opts.trigger ? opts.trigger() : ctx.triggerEl();
       const panel = ctx.panelEl();
       if (typeof ResizeObserver !== 'undefined' && trigger && panel) {
         resizeObserver = new ResizeObserver(() => applyManual());

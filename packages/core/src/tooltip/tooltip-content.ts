@@ -1,7 +1,6 @@
 // tooltip-content.ts
 import { Component, ChangeDetectionStrategy, ViewEncapsulation, inject, input } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -21,10 +20,8 @@ import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-t
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const cmp = inject(KjTooltipContent, { self: true });
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: cmp.kjSide,
           align: cmp.kjAlign,
           offset: cmp.kjOffset,

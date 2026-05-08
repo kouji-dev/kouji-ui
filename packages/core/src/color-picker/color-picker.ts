@@ -90,10 +90,8 @@ let _kjColorPickerIdCounter = 0;
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const root = inject(KjColorPicker, { self: true });
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: root.kjSide,
           align: root.kjAlign,
         });

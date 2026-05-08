@@ -9,7 +9,6 @@ import {
   signal,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -38,10 +37,8 @@ import { KJ_SELECT } from './select-root';
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const cmp = inject(KjSelectContent, { self: true });
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: cmp.kjSide,
           align: cmp.kjAlign,
           offset: cmp.kjOffset,

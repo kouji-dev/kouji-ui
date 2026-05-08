@@ -1,7 +1,6 @@
 import { Directive, inject, input } from '@angular/core';
 import { KJ_DATE_PICKER } from './date-picker.context';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
   KJ_OVERLAY_POSITION_STRATEGY,
@@ -39,10 +38,8 @@ import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle'
     {
       provide: KJ_OVERLAY_POSITION_STRATEGY,
       useFactory: () => {
-        const ctrl = inject(KjOverlayController);
         const cmp = inject(KjDatePickerCalendar, { self: true });
         return anchoredTo({
-          trigger: ctrl.triggerEl,
           side: cmp.kjSide,
           align: cmp.kjAlign,
           offset: cmp.kjOffset,
