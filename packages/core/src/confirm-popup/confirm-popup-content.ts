@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { KjOverlayController } from '../primitives/overlay/controller';
+import { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjPopoverContent } from '../popover/popover-content';
 import {
   KJ_CONFIRM_POPUP,
@@ -50,7 +51,10 @@ export class KjConfirmPopupContent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ctx = inject<KjConfirmPopupContext>(KJ_CONFIRM_POPUP);
-  private readonly controller = inject(KjOverlayController);
+  private readonly _panel = inject(KjOverlayPanel, { optional: true });
+  private get controller(): KjOverlayController | null {
+    return this._panel?.controller ?? null;
+  }
   /** Optional reference — present when the host is `<kj-popover-content>`. */
   private readonly popoverContent = inject(KjPopoverContent, { self: true, optional: true });
 
@@ -77,7 +81,7 @@ export class KjConfirmPopupContent {
   }
 
   private findPanel(): HTMLElement | null {
-    return this.controller.panelEl();
+    return this.controller?.panelEl() ?? null;
   }
 
   private promoteRole(): void {

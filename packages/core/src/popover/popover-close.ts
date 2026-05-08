@@ -1,5 +1,6 @@
 import { Directive, inject } from '@angular/core';
 import { KjOverlayController } from '../primitives/overlay/controller';
+import { KjOverlayPanel } from '../primitives/overlay/panel';
 
 /**
  * Convenience close button. Place inside a `[kjPopoverContent]` panel.
@@ -23,10 +24,13 @@ import { KjOverlayController } from '../primitives/overlay/controller';
   },
 })
 export class KjPopoverClose {
-  private readonly controller = inject(KjOverlayController);
+  private readonly _panel = inject(KjOverlayPanel, { optional: true });
+  private get controller(): KjOverlayController | null {
+    return this._panel?.controller ?? null;
+  }
 
   protected onClick(event: MouseEvent): void {
     event.stopPropagation();
-    this.controller.close('programmatic');
+    this.controller?.close('programmatic');
   }
 }

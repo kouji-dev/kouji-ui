@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { KjOverlayController } from './controller';
+import { KjOverlayPanel } from './panel';
 import { KJ_OVERLAY_BACKDROP_STRATEGY } from './tokens';
 
 @Component({
@@ -14,12 +15,15 @@ import { KJ_OVERLAY_BACKDROP_STRATEGY } from './tokens';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjBackdrop {
-  private readonly controller = inject(KjOverlayController);
+  private readonly _panel = inject(KjOverlayPanel, { optional: true });
+  private get controller(): KjOverlayController | null {
+    return this._panel?.controller ?? null;
+  }
   private readonly strategy   = inject(KJ_OVERLAY_BACKDROP_STRATEGY)!;
-  readonly state = this.controller.state;
+  readonly state = computed(() => this._panel?.controller?.state() ?? 'closed');
   readonly klass = computed(() => (this.strategy as { className?: string }).className ?? 'kj-backdrop');
 
   onClick(_e: MouseEvent) {
-    if (this.strategy.closeOnClick) this.controller.close('outside');
+    if (this.strategy.closeOnClick) this.controller?.close('outside');
   }
 }
