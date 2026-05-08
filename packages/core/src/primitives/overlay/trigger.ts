@@ -6,7 +6,12 @@ import type { KjOverlayPanel } from './panel';
 @Directive({
   selector: '[kjOverlayTrigger]',
   exportAs: 'kjOverlayTrigger',
-  providers: [KjOverlayController],
+  // NOTE: do NOT provide KjOverlayController here. Consumer trigger directives
+  // (e.g. KjSelectTrigger, KjTreeSelectTrigger) provide it on their host
+  // element so the SAME instance is visible to both KjOverlayTrigger and any
+  // sibling KjOverlayPanel via [kjFor]. For "controller-on-root" patterns
+  // (e.g. KjColorPicker), the root directive provides it and ALL descendants
+  // share one instance.
   host: {
     '[attr.aria-haspopup]':  'ariaHasPopup() ?? null',
     '[attr.aria-expanded]':  'isOpen()',
