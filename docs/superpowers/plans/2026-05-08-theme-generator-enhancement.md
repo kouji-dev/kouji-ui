@@ -1035,7 +1035,7 @@ git commit -m "feat(theme-gen): contrast scoring service (WCAG AAA/AA verdicts p
 - Create: `apps/docs/src/app/components/contrast-scorecard/contrast-scorecard.css`
 - Create: `apps/docs/src/app/components/contrast-scorecard/contrast-scorecard.spec.ts`
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```ts
 // contrast-scorecard.spec.ts
@@ -1065,12 +1065,12 @@ describe('ContrastScorecardComponent', () => {
 });
 ```
 
-- [ ] **Step 2: Run test**
+- [x] **Step 2: Run test**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/contrast-scorecard/contrast-scorecard.spec.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // contrast-scorecard.ts
@@ -1153,7 +1153,7 @@ export class ContrastScorecardComponent {
 .row__verdict--fail { color: var(--kj-destructive); font-weight: 600; }
 ```
 
-- [ ] **Step 4: Mount the scorecard in the sidebar**
+- [x] **Step 4: Mount the scorecard in the sidebar**
 
 In `theme-generator-sidebar.ts`, add to imports:
 ```ts
@@ -1166,12 +1166,12 @@ Add to `imports: [...]`. In `theme-generator-sidebar.html`, append at the bottom
 <kj-contrast-scorecard />
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/components/contrast-scorecard/contrast-scorecard.spec.ts`
 Expected: PASS.
 
-- [ ] **Step 6: Accessibility review + commit**
+- [x] **Step 6: Accessibility review + commit**
 
 Note: "Accessibility: ✓ aria-live polite on score; ✗-icon plus FAIL text (no color-only); 44px row height; role=list/listitem with descriptive aria-label."
 
