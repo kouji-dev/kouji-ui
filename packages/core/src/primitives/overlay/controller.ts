@@ -70,33 +70,31 @@ export class KjOverlayController {
 
   open(): void {
     const cur = this._state();
-    if (cur === 'open' || cur === 'opening') return;
-    // Set state before running strategies so a second synchronous `open()`
-    // (e.g. Space → keydown + click → both call toggle) re-enters and
-    // returns at the guard above instead of running the strategy chain twice.
+    if (cur === 'open' || cur === 'opening') { this.log('open(): IGNORED', cur); return; }
     if (cur === 'closing') this.cancelTransition();
+    this.log('open()', cur, '→ opening');
     this._state.set('opening');
     this.beginOpen();
   }
 
-  close(_reason?: KjCloseReason): void {
+  close(reason?: KjCloseReason): void {
     const cur = this._state();
-    if (cur === 'closed' || cur === 'closing') return;
+    if (cur === 'closed' || cur === 'closing') { this.log('close(): IGNORED', cur, reason); return; }
     if (cur === 'opening') this.cancelTransition();
+    this.log('close()', cur, '→ closing', reason ? `(${reason})` : '');
     this._state.set('closing');
     this.beginClose();
   }
 
   toggle(): void {
-    // `closed` is the only state that should reopen; `closing` must NOT
-    // re-open (handles the case where outside-click capture fires close,
-    // then the same pointer's click reaches the trigger and calls toggle —
-    // without this guard the overlay flickers closed → open → closed).
-    if (this._state() === 'closed') this.open();
+    const s = this._state();
+    this.log('toggle()', s);
+    if (s === 'closed') this.open();
     else this.close('programmatic');
   }
 
   dispose(): void {
+    this.log('dispose()', this._state());
     if (this._state() !== 'closed') this.close('programmatic');
     if (!this.strategies) return;
     const s = this.strategies;
@@ -105,6 +103,14 @@ export class KjOverlayController {
     ];
     for (const strat of order) strat?.detach();
     this.strategies = null;
+  }
+
+  /** @internal — toggle this to true to dump overlay state logs to the console. */
+  private static readonly DEBUG = false;
+  private log(...args: unknown[]): void {
+    if (!KjOverlayController.DEBUG) return;
+    // eslint-disable-next-line no-console
+    console.log(`[overlay ${this.id}]`, ...args);
   }
 
   private beginOpen(): void {
@@ -118,6 +124,7 @@ export class KjOverlayController {
     this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
     if (this._panel()) this.stack.markContentEl(this.id, this._panel());
     this.runTransition('open', () => {
+      this.log('  → open');
       this._state.set('open');
       s.focusTrap?.focusFirst();
     });
@@ -132,8 +139,19 @@ export class KjOverlayController {
       this.stackHandle = null;
       s.scrollLock?.onClose?.();
       s.backdrop?.onClose?.();
+      // Hide the panel at the DOM level BEFORE strategy cleanup so the
+      // brief moment between (a) position.onClose clearing inline styles
+      // (the panel becomes statically positioned, full-width) and
+      // mount.onClose moving it back to its inline DOM position, and
+      // (b) Angular CD applying `[hidden]` from the closed state, does
+      // not paint a frame with the panel at its default flow position.
+      // The host binding `[attr.hidden]: state() === 'closed' ? "" : null`
+      // will re-affirm this value via CD, so it stays consistent.
+      const panel = this._panel();
+      if (panel) panel.setAttribute('hidden', '');
       s.position.onClose?.();
       s.mount.onClose?.();
+      this.log('  → closed');
       this._state.set('closed');
     });
   }

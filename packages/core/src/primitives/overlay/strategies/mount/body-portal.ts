@@ -37,6 +37,7 @@ export function bodyPortal(): KjMountStrategy {
       originalParent = panel.parentElement;
       originalNextSibling = panel.nextSibling;
       w.appendChild(panel);
+      console.log('[body-portal] onOpen → panel moved to wrapper');
     },
     onClose() {
       if (!ctx?.platform.isBrowser) return;
@@ -50,15 +51,15 @@ export function bodyPortal(): KjMountStrategy {
       }
       originalParent = null;
       originalNextSibling = null;
-      // Tear the wrapper down on each close so declarative overlays don't
-      // leak between cycles (their controller never disposes).
       if (wrapper?.parentElement) wrapper.parentElement.removeChild(wrapper);
       wrapper = null;
+      console.log('[body-portal] onClose → panel restored, wrapper removed');
     },
     detach() {
       if (wrapper?.parentElement) wrapper.parentElement.removeChild(wrapper);
       wrapper = null;
       ctx = null;
+      console.log('[body-portal] detach');
     },
     resolveContainer() { return ensureWrapper() ?? document.body; },
   };
