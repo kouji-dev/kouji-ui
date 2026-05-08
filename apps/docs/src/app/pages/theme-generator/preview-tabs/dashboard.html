@@ -28,32 +28,81 @@
 
 <kj-divider />
 
-<section class="grid-2">
-  <article class="card">
-    <h3 class="card__title">Onboarding progress</h3>
-    <p class="card__meta">Step 3 of 4 &middot; 65%</p>
-    <kj-progress-bar [kjValue]="65" kjAriaLabel="Onboarding progress" />
-    <ol class="steps" aria-label="Onboarding steps">
-      <li class="steps__item steps__item--done">Account</li>
-      <li class="steps__item steps__item--done">Workspace</li>
-      <li class="steps__item steps__item--current" aria-current="step">Invite</li>
-      <li class="steps__item">Done</li>
+<section class="grid" aria-label="Workspace widgets">
+  <article class="card area-timeline" aria-label="Activity timeline">
+    <h3 class="card__title">Activity</h3>
+    <ol class="timeline" role="list">
+      @for (e of timeline; track $index) {
+        <li class="timeline__row">
+          <span class="timeline__dot" [attr.data-tone]="e.tone" aria-hidden="true">{{ e.icon }}</span>
+          <div class="timeline__meta">
+            <div class="timeline__title">{{ e.title }}</div>
+            <div class="timeline__when">{{ e.when }}</div>
+          </div>
+        </li>
+      }
     </ol>
   </article>
 
-  <article class="card">
-    <h3 class="card__title">Team</h3>
-    <ul class="people">
-      @for (p of people; track p.name) {
-        <li class="people__row">
-          <kj-avatar [content]="p.avatar" [alt]="p.name" />
-          <div class="people__meta">
-            <div class="people__name">{{ p.name }}</div>
-            <div class="people__role">{{ p.role }}</div>
-          </div>
-          <kj-badge variant="outline">active</kj-badge>
-        </li>
+  <article class="card area-chart" aria-label="Weekly engagement">
+    <h3 class="card__title">Weekly engagement</h3>
+    <p class="card__meta">Sessions, last 7 days</p>
+    <svg class="chart" viewBox="0 0 280 140" role="img" aria-label="Weekly engagement bar chart">
+      @for (b of chart; track b.label; let i = $index) {
+        <rect
+          class="chart__bar"
+          [attr.x]="10 + i * 38"
+          [attr.y]="120 - (b.value * 110 / chartMax)"
+          [attr.width]="28"
+          [attr.height]="b.value * 110 / chartMax"
+          [attr.rx]="4"
+        />
+        <text
+          class="chart__label"
+          [attr.x]="10 + i * 38 + 14"
+          [attr.y]="135"
+          text-anchor="middle"
+        >{{ b.label }}</text>
       }
-    </ul>
+    </svg>
+  </article>
+
+  <article class="card area-table" aria-label="Project status">
+    <h3 class="card__title">Project status</h3>
+    <table class="ptable">
+      <thead>
+        <tr>
+          <th scope="col">Project</th>
+          <th scope="col">Owner</th>
+          <th scope="col">Progress</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of projects; track row.name) {
+          <tr>
+            <td class="ptable__name">{{ row.name }}</td>
+            <td>{{ row.owner }}</td>
+            <td class="ptable__progress">
+              <kj-progress-bar [kjValue]="row.progress" [kjAriaLabel]="row.name + ' progress'" />
+              <span class="ptable__pct">{{ row.progress }}%</span>
+            </td>
+            <td>
+              <span class="status" [attr.data-tone]="statusTone(row.status)">{{ row.status }}</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card area-actions" aria-label="Quick actions">
+    <h3 class="card__title">Quick actions</h3>
+    <div class="qactions">
+      <kj-button kjVariant="default">Invite teammate</kj-button>
+      <kj-button kjVariant="secondary">Create project</kj-button>
+      <kj-button kjVariant="secondary">Run report</kj-button>
+      <kj-button kjVariant="ghost">Open settings</kj-button>
+    </div>
   </article>
 </section>
