@@ -44,6 +44,7 @@ async function fetchLucideSvg(name: string): Promise<string> {
  * provideLucideIcons(),
  * ```
  *
+ * @category Library/Icon
  * @doc
  * @doc-name icon
  * @doc-description Wires Lucide as the on-demand icon resolver — any kebab-case Lucide name renders via lazy per-icon import.
