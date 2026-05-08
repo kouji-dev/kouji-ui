@@ -7,6 +7,7 @@ See [RULES.md](./RULES.md) for an index of all rules. Detailed rules live in [`r
 - [`rules/accessibility.md`](./rules/accessibility.md) — WCAG 2.1 AAA, keyboard contracts, ARIA
 - [`rules/tsdoc.md`](./rules/tsdoc.md) — TSDoc format, `@doc*` tags, themed example design references, inline comment policy
 - [`rules/agent_orchestration.md`](./rules/agent_orchestration.md) — agent strategy
+- [`rules/worktree.md`](./rules/worktree.md) — worktree location + merge-back-to-main flow
 
 ## Accessibility Verification After Every Directive/Component Change
 
@@ -53,8 +54,6 @@ The same rule applies to **file names**: name files after what they contain or d
 
 Spec and test files follow the same base name as the file they test: `table.spec.ts` not `table.directive.spec.ts`.
 
-## Worktree Location
+## Worktree Workflow
 
-Always create git worktrees inside the repo at `.worktrees/<name>` (e.g. `C:/Users/narut/Desktop/projects/kouji/.worktrees/overlay-impl`). Never create worktrees as siblings of the repo (e.g. `Desktop/projects/kouji-foo`) — keeping them inside the repo lets the user monitor them in the IDE alongside the main checkout.
-
-The `.worktrees/` directory is git-ignored (see `.gitignore`).
+See [`rules/worktree.md`](./rules/worktree.md) for worktree location and the merge-back-to-main flow (changeset → branch off main → squash-merge → rebase-on-main updates → PR).
