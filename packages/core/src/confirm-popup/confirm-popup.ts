@@ -6,11 +6,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { KjPopover } from '../popover/popover';
-import {
-  KJ_POPOVER,
-  type KjPopoverContext,
-} from '../popover/popover.context';
+import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_CONFIRM_POPUP,
   type KjConfirmPopupContext,
@@ -21,33 +17,16 @@ import {
 /**
  * Root state container for the confirm popup family.
  *
- * Composes the headless `KjPopover` directive via `hostDirectives` to inherit
- * the entire transport layer: anchor positioning (flip / shift), outside-click
- * dismissal, Escape close, focus restoration, and portal mount. Layers a
- * confirm/cancel resolution contract on top so consumer button slots can
- * resolve the popup with `true` or `false` semantics.
+ * Layers a confirm/cancel resolution contract on top of an overlay controller
+ * so consumer button slots can resolve the popup with `true` or `false`
+ * semantics. Pair with `[kjConfirmPopupTrigger]` (which composes
+ * `[kjPopoverTrigger]`) on the same element so popover wiring lives in the
+ * same injector.
  *
- * Place on whatever element naturally groups the trigger and content (the
- * popover wrapper). The directive is transparent — it sets no host attributes
- * of its own; semantics live on the projected `[kjConfirmPopupContent]` panel
- * (`role="alertdialog"`, `aria-modal="false"`).
- *
- * **Compound shape:**
- *
- * ```html
- * <div kjConfirmPopup [kjDestructive]="true" (kjConfirmed)="onDelete()">
- *   <button kjConfirmPopupTrigger>Delete row</button>
- *   <ng-template kjConfirmPopupContent>
- *     <p kjConfirmPopupMessage>Delete this row?</p>
- *     <button kjConfirmPopupCancel>Cancel</button>
- *     <button kjConfirmPopupAction>Delete</button>
- *   </ng-template>
- * </div>
- * ```
- *
- * The popup defaults to anchor placement above the trigger so the
- * pointer's natural travel doesn't accidentally land on the confirm button —
- * matches the muscle-memory of cancellation flows.
+ * **Note (overlay primitives migration):** This wrapper now reads the
+ * controller's open state directly. The previous `KJ_POPOVER` context was
+ * removed; ARIA promotion to `alertdialog` happens in
+ * `[kjConfirmPopupContent]`.
  *
  * @category Core/Actions
  */
@@ -55,18 +34,13 @@ import {
   selector: '[kjConfirmPopup]',
   standalone: true,
   exportAs: 'kjConfirmPopup',
-  // Compose the popover directive so consumers only have to place a single
-  // attribute on the host. Popover-positioning inputs (`kjPopoverSide`,
-  // `kjPopoverAlign`, …) remain accessible via the underlying `[kjPopover]`
-  // host directive — consumers bind them on the same element naturally.
-  hostDirectives: [KjPopover],
   providers: [
     { provide: KJ_CONFIRM_POPUP, useExisting: KjConfirmPopup },
   ],
 })
 export class KjConfirmPopup implements KjConfirmPopupContext {
-  /** The underlying popover context — sourced via element-injector. */
-  private readonly popover = inject<KjPopoverContext>(KJ_POPOVER, { self: true });
+  /** The overlay controller provided by the trigger directive on the same element. */
+  private readonly controller = inject(KjOverlayController, { optional: true });
 
   /** When `true`, the confirm action renders with destructive intent. */
   readonly kjDestructive = input<boolean, unknown>(false, {
@@ -87,8 +61,11 @@ export class KjConfirmPopup implements KjConfirmPopupContext {
 
   // ── KjConfirmPopupContext ──────────────────────────────────────────
 
-  /** Open state forwarded from the underlying popover. */
-  readonly open = this.popover.open;
+  /** Open state forwarded from the underlying controller. */
+  readonly open = (() => {
+    const ctrl = this.controller;
+    return ctrl ? ctrl.isOpen : (() => false) as never;
+  })();
 
   /** Whether the confirm action should render destructively. */
   readonly destructive = this.kjDestructive;
@@ -99,24 +76,13 @@ export class KjConfirmPopup implements KjConfirmPopupContext {
   /** Stable id used for the panel's `aria-describedby`. */
   readonly messageId = nextConfirmPopupMessageId();
 
-  /**
-   * Tracks whether the current open cycle has been resolved by an explicit
-   * confirm / cancel button click. Reset on each open. Distinguishes
-   * button-driven closes (already emitted) from implicit closes via Escape /
-   * outside-click (which we surface as cancel here).
-   */
   private resolved = false;
-
-  /** Last emitted open state — gates the implicit-close cancel emission. */
   private wasOpen = false;
 
   constructor() {
-    // Bridge the popover's open signal into the confirm-popup resolution
-    // contract. When the popup closes implicitly (Escape, outside-click,
-    // close-button), no explicit resolve has been recorded — emit the
-    // cancel side of the contract.
+    // Bridge the controller's open signal into the resolution contract.
     effect(() => {
-      const isOpen = this.popover.open();
+      const isOpen = this.controller?.isOpen() ?? false;
       if (isOpen && !this.wasOpen) {
         this.resolved = false;
       }
@@ -129,19 +95,15 @@ export class KjConfirmPopup implements KjConfirmPopupContext {
     });
   }
 
-  // ── Resolution ──────────────────────────────────────────────────────
-
   /**
    * Close the popup with the given result. `true` confirms, `false` cancels.
-   * Bypasses the cancellable popover close cycle — confirm/cancel button
-   * clicks always resolve.
    */
   close(result: boolean): void {
-    if (!this.popover.open()) return;
+    if (!this.controller || !this.controller.isOpen()) return;
     this.resolved = true;
     if (result) this.kjConfirmed.emit();
     else this.kjCancelled.emit();
     this.kjResult.emit(result);
-    this.popover.hide('programmatic');
+    this.controller.close('programmatic');
   }
 }
