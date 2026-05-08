@@ -5,7 +5,6 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { KJ_SELECT } from '../select/select.context';
 import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
 
 /**
@@ -41,7 +40,6 @@ import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
 })
 export class KjCascadeSelectSubPanel {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly selectCtx = inject(KJ_SELECT);
   /** @internal */
   readonly ctx = inject(KJ_CASCADE_SELECT);
 
@@ -110,14 +108,14 @@ export class KjCascadeSelectSubPanel {
         e.preventDefault();
         e.stopPropagation();
         if (this._levelIndex <= 1) {
-          this.selectCtx.hide();
+          this.ctx.hide();
           this.ctx.closeAll();
         } else {
           this.ctx.closeSubPanel(this.kjOwnerOptionId());
         }
         break;
       case 'Tab':
-        this.selectCtx.hide();
+        this.ctx.hide();
         this.ctx.closeAll();
         break;
       default: {

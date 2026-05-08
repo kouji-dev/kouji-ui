@@ -58,6 +58,9 @@ export interface KjCascadeSelectContext<T = unknown> {
   /** Close all sub-panels (called when the root select closes). */
   closeAll(): void;
 
+  /** Close the root cascade panel. */
+  hide(): void;
+
   /**
    * Set the active-descendant option id at the given level.
    * `null` clears the active descendant at that level.

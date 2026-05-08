@@ -59,7 +59,7 @@ import { KJ_TREE_SELECT } from './tree-select.context';
     '[attr.aria-multiselectable]':
       'ctx?.selectionMode() === "multiple" ? "true" : null',
     '(keydown)': 'onKeydown($event)',
-    '(document:keydown.escape)': 'controller.close("escape")',
+    '(document:keydown.escape)': 'controller.close("esc")',
     '(document:click)': 'onDocClick($event)',
     '(click)': '$event.stopPropagation()',
   },
@@ -173,7 +173,7 @@ export class KjTreeSelectContent {
       }
       case 'Escape':
         event.preventDefault();
-        this.controller.close('escape');
+        this.controller.close('esc');
         break;
       default: {
         const char = event.key.length === 1 ? event.key.toLowerCase() : null;

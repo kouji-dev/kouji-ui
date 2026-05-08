@@ -18,7 +18,7 @@ import {
 import type { KjAlign, KjSide } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
-import { KJ_SELECT, type KjSelectContext } from '../select/select.context';
+import { KJ_SELECT } from '../select/select-root';
 import {
   KJ_CASCADE_SELECT,
   type KjCascadeSelectContext,
@@ -79,7 +79,7 @@ import {
   },
 })
 export class KjCascadeSelectPanel
-  implements KjCascadeSelectContext, KjSelectContext
+  implements KjCascadeSelectContext
 {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly controller = inject(KjOverlayController);

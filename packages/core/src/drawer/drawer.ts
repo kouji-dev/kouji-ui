@@ -8,7 +8,8 @@ import {
   inject,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
-import { DRAWER_DRAG, DRAWER_SIDE, KjDrawerRef, type KjDrawerSide } from './drawer.service';
+import { DRAWER_DRAG, DRAWER_SIDE, type KjDrawerSide } from './drawer.service';
+import { KjDrawerRef } from './drawer.ref';
 
 /** Downward drag fraction past which release dismisses (bottom side). */
 const DEFAULT_DISMISS_THRESHOLD = 0.4;
