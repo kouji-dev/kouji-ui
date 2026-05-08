@@ -114,6 +114,16 @@ export class KjDrawerService {
       }),
     );
 
+    // Render a backdrop element BEFORE the panel so the visual scrim sits
+    // behind the drawer. Click-to-close honours `closeOnOutside`.
+    const backdropEl = document.createElement('div');
+    backdropEl.setAttribute('data-kj-overlay-backdrop', '');
+    backdropEl.className = 'kj-overlay-backdrop';
+    if ((opts.closeOnOutside ?? true)) {
+      backdropEl.addEventListener('click', () => ctrl.close('outside'));
+    }
+    document.body.appendChild(backdropEl);
+
     this.appRef.attachView(cmpRef.hostView);
     document.body.appendChild(cmpRef.location.nativeElement);
 
@@ -130,6 +140,7 @@ export class KjDrawerService {
           queueMicrotask(() => {
             cmpRef.destroy();
             ctrl.dispose();
+            backdropEl.remove();
           });
         }
       });
