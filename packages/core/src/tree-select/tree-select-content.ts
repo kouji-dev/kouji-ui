@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  Injector,
   ViewEncapsulation,
   computed,
   inject,
@@ -67,10 +68,17 @@ import { KJ_TREE_SELECT } from './tree-select.context';
 })
 export class KjTreeSelectContent {
   private readonly el = inject(ElementRef<HTMLElement>);
-  private readonly _panel = inject(KjOverlayPanel, { self: true });
+  private readonly _injector = inject(Injector);
+  private _panelCache: KjOverlayPanel | null | undefined = undefined;
+  private get _panel(): KjOverlayPanel | null {
+    if (this._panelCache === undefined) {
+      this._panelCache = this._injector.get(KjOverlayPanel, null);
+    }
+    return this._panelCache;
+  }
   /** @internal */
   get controller(): KjOverlayController | null {
-    return this._panel.controller;
+    return this._panel?.controller ?? null;
   }
   /** @internal */
   readonly ctx = inject(KJ_TREE_SELECT, { optional: true });

@@ -3,6 +3,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  Injector,
   inject,
   input,
   model,
@@ -80,10 +81,17 @@ export class KjCascadeSelectPanel
   implements KjCascadeSelectContext
 {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly _panel = inject(KjOverlayPanel, { self: true });
+  private readonly _injector = inject(Injector);
+  private _panelCache: KjOverlayPanel | null | undefined = undefined;
+  private get _panel(): KjOverlayPanel | null {
+    if (this._panelCache === undefined) {
+      this._panelCache = this._injector.get(KjOverlayPanel, null);
+    }
+    return this._panelCache;
+  }
   /** @internal */
   get controller(): KjOverlayController | null {
-    return this._panel.controller;
+    return this._panel?.controller ?? null;
   }
 
   // ── Overlay placement inputs ──────────────────────────────────────────
