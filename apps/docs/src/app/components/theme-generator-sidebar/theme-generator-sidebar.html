@@ -36,6 +36,19 @@
     <div class="generator-controls" role="region" aria-label="Theme controls">
       <details open>
         <summary>Colors</summary>
+        <kj-seed-swatch-grid
+          [activeHex]="activeSeed()"
+          (seedPicked)="onSeedPicked($event)"
+        />
+
+        <div class="palette-actions">
+          <button type="button" data-action="randomize" (click)="randomize()" aria-label="Randomize palette">
+            🎲 Randomize
+          </button>
+          <button type="button" data-action="rederive" (click)="rederive()" aria-label="Re-derive secondary, accent, neutral, and semantic colors from primary">
+            Re-derive from primary
+          </button>
+        </div>
         @for (slot of derivedSlots; track slot) {
           <div class="control-row">
             <span class="control-label">{{ slot }}</span>

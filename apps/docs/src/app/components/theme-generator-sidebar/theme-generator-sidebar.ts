@@ -9,6 +9,8 @@ import { FontLoaderService } from '../../services/font-loader.service';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 import { BUILT_IN_NAMES, type BuiltInName } from '../../lib/theme/built-in-themes';
 import { CURATED_FONTS, type CuratedFont } from '../../lib/theme/font-catalog';
+import { deriveFromSeed, randomAccessiblePalette } from '../../lib/theme/palette-derive';
+import { SeedSwatchGrid } from '../seed-swatch-grid/seed-swatch-grid';
 import type { ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../../lib/theme/types';
 
 const COLOR_SLOTS: readonly ColorSlot[] = [
@@ -35,7 +37,7 @@ function oklchToHex(css: string): string {
 @Component({
   selector: 'kj-theme-generator-sidebar',
   standalone: true,
-  imports: [KjInputComponent],
+  imports: [KjInputComponent, SeedSwatchGrid],
   templateUrl: './theme-generator-sidebar.html',
   styleUrl: './theme-generator-sidebar.css',
   host: { '[class.open]': 'toggleService.open()' },
@@ -82,6 +84,25 @@ export class ThemeGeneratorSidebarComponent {
   protected onForkBuiltIn(name: BuiltInName): void { this.draftService.loadFork(name); }
   protected onLoadSaved(name: string): void { this.draftService.loadSaved(name); }
   protected onNewTheme(): void { this.draftService.loadFork('light'); this.draftService.setName(''); }
+
+  // ── Col B — seed grid / palette actions ───────────────────────────────
+  protected readonly activeSeed = computed<string | null>(() => {
+    if (this.draftService.dirtySlots().size > 0) return null;
+    return this.draft().colors.primary;
+  });
+
+  protected onSeedPicked(hex: string): void {
+    const derived = deriveFromSeed(hex, { mode: 'light' });
+    this.draftService.setColors(derived);
+  }
+
+  protected randomize(): void {
+    this.draftService.setColors(randomAccessiblePalette());
+  }
+
+  protected rederive(): void {
+    this.draftService.rederiveFromPrimary();
+  }
 
   // ── Col B — color handlers ────────────────────────────────────────────
   protected hexFor(slot: ColorSlot): string {

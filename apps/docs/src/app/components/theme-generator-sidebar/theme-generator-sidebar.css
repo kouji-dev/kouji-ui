@@ -161,3 +161,11 @@
   .col-a { width: 100%; }
   .col-b { width: 100%; border-left: 0; border-top: 1px solid var(--kj-color-base-300); max-height: none; }
 }
+
+.palette-actions { display: flex; gap: 0.5rem; margin-block: 0.5rem; flex-wrap: wrap; }
+.palette-actions button {
+  min-height: 44px; padding: 0 0.75rem;
+  border-radius: var(--kj-radius-field, 6px); border: 1px solid var(--kj-base-300);
+  background: var(--kj-base-200); color: var(--kj-base-content); cursor: pointer;
+}
+.palette-actions button:focus-visible { outline: 2px solid var(--kj-primary); outline-offset: 2px; }

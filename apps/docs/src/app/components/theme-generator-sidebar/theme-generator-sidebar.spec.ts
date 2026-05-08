@@ -1,7 +1,8 @@
+import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ThemeGeneratorSidebarComponent } from './theme-generator-sidebar';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { DocsManifestProvider } from '../../services/docs-manifest.provider';
@@ -60,11 +61,14 @@ class StubDraftService {
   list = () => [];
   setName = vi.fn();
   setColor = vi.fn();
+  setColors = vi.fn();
   setContentOverride = vi.fn();
   setShape = vi.fn();
   setFont = vi.fn();
   setMotion = vi.fn();
+  rederiveFromPrimary = vi.fn();
   draft = () => STUB_DRAFT;
+  dirtySlots = () => new Set<string>();
   resolvedTokens = () => STUB_RESOLVED;
 }
 
@@ -91,5 +95,54 @@ describe('ThemeGeneratorSidebarComponent — Col A', () => {
     });
     await userEvent.click(screen.getByRole('button', { name: /^retro$/i }));
     expect(stub.loadFork).toHaveBeenCalledWith('retro');
+  });
+});
+
+describe('ThemeGeneratorSidebarComponent — Col B palette actions', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: DocsManifestProvider, useClass: StubManifestProvider },
+        SidebarToggleService,
+      ],
+    });
+  });
+
+  test('clicking a swatch sets all 9 colors', async () => {
+    const fixture = TestBed.createComponent(ThemeGeneratorSidebarComponent);
+    fixture.detectChanges();
+    const draft = TestBed.inject(ThemeDraftService);
+    const swatch = fixture.nativeElement.querySelector('kj-seed-swatch-grid button[data-hex]') as HTMLButtonElement;
+    expect(swatch).toBeTruthy();
+    const hex = swatch.dataset['hex']!;
+    swatch.click();
+    fixture.detectChanges();
+    expect(draft.draft().colors.primary.toLowerCase()).toBe(hex.toLowerCase());
+    expect(draft.dirtySlots().size).toBe(0);
+  });
+
+  test('randomize replaces all 9 colors and clears dirty', () => {
+    const fixture = TestBed.createComponent(ThemeGeneratorSidebarComponent);
+    fixture.detectChanges();
+    const draft = TestBed.inject(ThemeDraftService);
+    draft.setColor('primary', '#abcdef');
+    expect(draft.dirtySlots().size).toBe(1);
+    (fixture.nativeElement.querySelector('[data-action="randomize"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(draft.dirtySlots().size).toBe(0);
+  });
+
+  test('rederive preserves dirty accent', () => {
+    const fixture = TestBed.createComponent(ThemeGeneratorSidebarComponent);
+    fixture.detectChanges();
+    const draft = TestBed.inject(ThemeDraftService);
+    draft.loadFork('kouji');
+    draft.setColor('accent', '#abc123');
+    (fixture.nativeElement.querySelector('[data-action="rederive"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(draft.draft().colors.accent).toBe('#abc123');
   });
 });
