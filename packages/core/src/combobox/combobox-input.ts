@@ -1,7 +1,6 @@
 import {
   afterNextRender,
   Directive,
-  effect,
   ElementRef,
   inject,
 } from '@angular/core';
@@ -42,7 +41,6 @@ import { KJ_COMBOBOX } from './combobox.context';
     { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
   ],
   providers: [
-    KjOverlayController,
     { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onFocusOrInput() },
     { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'listbox' as const },
   ],
@@ -67,23 +65,6 @@ export class KjComboboxInput {
   readonly controller = inject(KjOverlayController);
 
   constructor() {
-    // Wire the controller into the root combobox so its state mutations
-    // (show/hide/move/select) drive the overlay primitive.
-    if ('attachController' in this.ctx) {
-      (this.ctx as { attachController(c: KjOverlayController): void }).attachController(
-        this.controller,
-      );
-    }
-
-    // Mirror controller open state into the root context so option/filter
-    // logic (which reads `ctx.open()`) stays reactive.
-    effect(() => {
-      const isOpen = this.controller.isOpen();
-      if ('setOpenState' in this.ctx) {
-        (this.ctx as { setOpenState(v: boolean): void }).setOpenState(isOpen);
-      }
-    });
-
     afterNextRender(() => {
       this.ctx.setInputElement(this.el.nativeElement);
     });

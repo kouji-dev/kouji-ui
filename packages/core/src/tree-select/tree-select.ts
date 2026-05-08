@@ -47,11 +47,14 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
 @Directive({
   selector: '[kjTreeSelect]',
   standalone: true,
-  providers: [{ provide: KJ_TREE_SELECT, useExisting: KjTreeSelect }],
+  providers: [
+    { provide: KJ_TREE_SELECT, useExisting: KjTreeSelect },
+    KjOverlayController,
+  ],
 })
 export class KjTreeSelect implements KjTreeSelectContext {
-  /** @internal — optional overlay controller for closing on single select. */
-  private readonly controller = inject(KjOverlayController, { optional: true });
+  /** @internal — shared overlay controller; trigger + content + nodes all see this same instance. */
+  private readonly controller = inject(KjOverlayController);
 
   /** Tree node data. Each node may carry children, forming a hierarchy. */
   readonly kjNodes = input<readonly KjTreeNode[]>([]);
@@ -118,7 +121,7 @@ export class KjTreeSelect implements KjTreeSelectContext {
     if (this.kjSelectionMode() === 'single') {
       this.kjValue.set(value);
       this._selectedValues.set([value]);
-      this.controller?.close('programmatic');
+      this.controller.close('programmatic');
     } else {
       const current = this._selectedValues();
       const idx = current.indexOf(value);

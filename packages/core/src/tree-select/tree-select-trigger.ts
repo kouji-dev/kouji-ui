@@ -47,7 +47,6 @@ function treeClickTrigger(): KjTriggerEventStrategy {
     { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
   ],
   providers: [
-    KjOverlayController,
     {
       provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
       useFactory: () => treeClickTrigger(),

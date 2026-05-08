@@ -3,13 +3,14 @@ import {
   computed,
   Directive,
   effect,
+  inject,
   input,
   model,
   output,
   signal,
 } from '@angular/core';
 import { KjDisabled } from '../primitives';
-import type { KjOverlayController } from '../primitives/overlay/controller';
+import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_COMBOBOX,
   type KjComboboxContext,
@@ -47,7 +48,10 @@ const nextId = (): string => `kj-combobox-${++_idCounter}`;
   standalone: true,
   exportAs: 'kjCombobox',
   hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
-  providers: [{ provide: KJ_COMBOBOX, useExisting: KjCombobox }],
+  providers: [
+    { provide: KJ_COMBOBOX, useExisting: KjCombobox },
+    KjOverlayController,
+  ],
   host: {
     '[attr.data-state]': "open() ? 'open' : 'closed'",
   },
@@ -82,14 +86,13 @@ export class KjCombobox implements KjComboboxContext {
 
   // ── Internal state ──────────────────────────────────────────────────
 
-  private readonly _open = signal(false);
   private readonly _activeId = signal<string | null>(null);
   private readonly _inputEl = signal<HTMLElement | null>(null);
   private readonly _options = signal<readonly KjComboboxOptionRegistration[]>([]);
   private readonly _visibleIds = signal<readonly string[]>([]);
 
-  /** @internal — overlay controller wired by `KjComboboxInput`. */
-  private _controller: KjOverlayController | null = null;
+  /** @internal — shared overlay controller; input + listbox + options all see this same instance. */
+  private readonly controller = inject(KjOverlayController);
 
   /** Stable id used by the listbox / aria-controls. */
   readonly listboxId = nextId();
@@ -98,7 +101,7 @@ export class KjCombobox implements KjComboboxContext {
 
   readonly value = this.kjValue.asReadonly();
   readonly query = this.kjQuery.asReadonly();
-  readonly open = this._open.asReadonly();
+  readonly open = this.controller.isOpen;
   readonly loading = this.kjLoading;
   readonly allowFreeText = this.kjFreeText;
   readonly shouldFilter = this.kjShouldFilter;
@@ -154,45 +157,35 @@ export class KjCombobox implements KjComboboxContext {
     });
   }
 
-  /** @internal — called by `KjComboboxInput` to attach the overlay controller. */
-  attachController(controller: KjOverlayController): void {
-    this._controller = controller;
-  }
-
-  /** @internal — called by `KjComboboxInput` (via effect) to mirror controller state. */
-  setOpenState(open: boolean): void {
-    if (this._open() !== open) this._open.set(open);
-  }
-
   // ── KjComboboxContext mutations ─────────────────────────────────────
 
   setQuery(value: string): void {
     if (this.kjQuery() !== value) this.kjQuery.set(value);
-    this._controller?.open();
+    this.controller.open();
   }
 
   select(value: unknown): void {
     this.kjValue.set(value);
-    this._controller?.close('programmatic');
+    this.controller.close('programmatic');
     this.kjCommit.emit(value);
   }
 
   show(): void {
-    this._controller?.open();
+    this.controller.open();
   }
 
   hide(): void {
-    this._controller?.close('programmatic');
+    this.controller.close('programmatic');
   }
 
   toggle(): void {
-    this._controller?.toggle();
+    this.controller.toggle();
   }
 
   move(delta: 1 | -1): void {
     const visible = this._visibleIds();
     if (!visible.length) return;
-    if (!this._open()) this._controller?.open();
+    if (!this.controller.isOpen()) this.controller.open();
     const current = this._activeId();
     const idx = current ? visible.indexOf(current) : -1;
     let next = idx + delta;
