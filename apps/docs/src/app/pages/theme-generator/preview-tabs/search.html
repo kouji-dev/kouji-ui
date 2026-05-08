@@ -25,7 +25,7 @@
         <kj-kbd>K</kj-kbd>
       </span>
     </label>
-    <kj-button kjVariant="secondary" [kjDrawerTrigger]="filtersDrawer">Filters</kj-button>
+    <kj-button class="hd__filters-mobile" kjVariant="secondary" [kjDrawerTrigger]="filtersDrawer">Filters</kj-button>
   </div>
 
   <kj-tag-list class="chips" aria-label="Active filters">
@@ -35,44 +35,139 @@
   </kj-tag-list>
 </header>
 
-@if (results().length === 0) {
-  <kj-empty-state>
-    <kj-empty-state-icon aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-    </kj-empty-state-icon>
-    <kj-empty-state-title>No results</kj-empty-state-title>
-    <kj-empty-state-description>Try a different search or clear the filters.</kj-empty-state-description>
-  </kj-empty-state>
-} @else {
-  <ul class="results" aria-label="Search results">
-    @for (p of results(); track p.name) {
-      <li class="results__row">
-        <kj-avatar [content]="p.avatar" [alt]="p.name" />
-        <div class="results__meta">
-          <div class="results__name">{{ p.name }}</div>
-          <div class="results__role">{{ p.role }}</div>
-        </div>
-      </li>
-    }
-  </ul>
+<div class="layout">
+  <aside class="filters" aria-label="Filters">
+    <section class="filters__section">
+      <h3 class="filters__heading">Type</h3>
+      <kj-radio-group [(value)]="type" ariaLabel="Result type">
+        <kj-radio [value]="'all'">All</kj-radio>
+        <kj-radio [value]="'people'">People</kj-radio>
+        <kj-radio [value]="'files'">Files</kj-radio>
+        <kj-radio [value]="'projects'">Projects</kj-radio>
+        <kj-radio [value]="'conversations'">Conversations</kj-radio>
+      </kj-radio-group>
+    </section>
 
-  <nav class="pager" aria-label="Pagination">
-    <kj-pagination [(kjPage)]="page" [kjTotalPages]="8" #p="kjPagination">
-      <kj-pagination-previous>‹</kj-pagination-previous>
-      @for (token of p.pages(); track token) {
-        @if (token === 'ellipsis-left' || token === 'ellipsis-right') {
-          <kj-pagination-ellipsis>…</kj-pagination-ellipsis>
-        } @else {
-          <kj-pagination-item [kjPage]="token">{{ token }}</kj-pagination-item>
+    <section class="filters__section">
+      <h3 class="filters__heading">Status</h3>
+      <div class="filters__stack">
+        <kj-checkbox [(checked)]="statusOpen">Open</kj-checkbox>
+        <kj-checkbox [(checked)]="statusReview">In review</kj-checkbox>
+        <kj-checkbox [(checked)]="statusDone">Done</kj-checkbox>
+        <kj-checkbox [(checked)]="statusArchived">Archived</kj-checkbox>
+      </div>
+    </section>
+
+    <section class="filters__section">
+      <h3 class="filters__heading">Tags</h3>
+      <div class="filters__chips">
+        @for (t of allTags; track t) {
+          <button
+            type="button"
+            class="chip"
+            [class.chip--on]="isTagSelected(t)"
+            [attr.aria-pressed]="isTagSelected(t)"
+            (click)="toggleTag(t)"
+          >{{ t }}</button>
         }
-      }
-      <kj-pagination-next>›</kj-pagination-next>
-    </kj-pagination>
-  </nav>
-}
+      </div>
+    </section>
+
+    <section class="filters__section">
+      <h3 class="filters__heading">Last activity</h3>
+      <kj-slider
+        [(kjValue)]="lastActivity"
+        [kjMin]="0"
+        [kjMax]="30"
+        [kjStep]="1"
+        kjAriaLabel="Last activity in days"
+      />
+      <p class="filters__hint">Last {{ lastActivity() }} days</p>
+    </section>
+
+    <section class="filters__section">
+      <h3 class="filters__heading">Owner</h3>
+      <kj-multi-select [(value)]="owners" placeholder="Anyone">
+        @for (p of people; track p.name) {
+          <kj-multi-select-option [value]="p.name">{{ p.name }}</kj-multi-select-option>
+        }
+      </kj-multi-select>
+    </section>
+
+    <kj-button kjVariant="ghost" (click)="resetFilters()">Reset filters</kj-button>
+  </aside>
+
+  <div class="results-pane">
+    <div class="toolbar">
+      <label class="toolbar__sort">
+        <span class="toolbar__sort-label">Sort</span>
+        <select class="toolbar__select" [ngModel]="sort()" (ngModelChange)="sort.set($event)" name="sort">
+          <option value="recent">Recent</option>
+          <option value="alpha">Alphabetical</option>
+          <option value="views">Most viewed</option>
+        </select>
+      </label>
+
+      <div class="toolbar__view" role="group" aria-label="View mode">
+        <button
+          type="button"
+          class="toolbar__view-btn"
+          [class.toolbar__view-btn--on]="view() === 'list'"
+          [attr.aria-pressed]="view() === 'list'"
+          (click)="view.set('list')"
+          aria-label="List view"
+        >☰</button>
+        <button
+          type="button"
+          class="toolbar__view-btn"
+          [class.toolbar__view-btn--on]="view() === 'grid'"
+          [attr.aria-pressed]="view() === 'grid'"
+          (click)="view.set('grid')"
+          aria-label="Grid view"
+        >▦</button>
+      </div>
+    </div>
+
+    @if (results().length === 0) {
+      <kj-empty-state>
+        <kj-empty-state-icon aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        </kj-empty-state-icon>
+        <kj-empty-state-title>No results</kj-empty-state-title>
+        <kj-empty-state-description>Try a different search or clear the filters.</kj-empty-state-description>
+      </kj-empty-state>
+    } @else {
+      <ul class="results" [attr.data-view]="view()" aria-label="Search results">
+        @for (p of results(); track p.name) {
+          <li class="results__row">
+            <kj-avatar [content]="p.avatar" [alt]="p.name" />
+            <div class="results__meta">
+              <div class="results__name">{{ p.name }}</div>
+              <div class="results__role">{{ p.role }}</div>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <nav class="pager" aria-label="Pagination">
+        <kj-pagination [(kjPage)]="page" [kjTotalPages]="8" #p="kjPagination">
+          <kj-pagination-previous>‹</kj-pagination-previous>
+          @for (token of p.pages(); track token) {
+            @if (token === 'ellipsis-left' || token === 'ellipsis-right') {
+              <kj-pagination-ellipsis>…</kj-pagination-ellipsis>
+            } @else {
+              <kj-pagination-item [kjPage]="token">{{ token }}</kj-pagination-item>
+            }
+          }
+          <kj-pagination-next>›</kj-pagination-next>
+        </kj-pagination>
+      </nav>
+    }
+  </div>
+</div>
 
 <ng-template #filtersDrawer>
   <kj-drawer #d="kjDrawerContent">
@@ -81,7 +176,51 @@
       <kj-button kjVariant="ghost" (click)="d.close()" kjAriaLabel="Close filters">×</kj-button>
     </kj-drawer-header>
     <kj-drawer-body>
-      <p class="drawer__hint">Refine results by team, status, or date.</p>
+      <section class="filters__section">
+        <h3 class="filters__heading">Type</h3>
+        <kj-radio-group [(value)]="type" ariaLabel="Result type">
+          <kj-radio [value]="'all'">All</kj-radio>
+          <kj-radio [value]="'people'">People</kj-radio>
+          <kj-radio [value]="'files'">Files</kj-radio>
+          <kj-radio [value]="'projects'">Projects</kj-radio>
+          <kj-radio [value]="'conversations'">Conversations</kj-radio>
+        </kj-radio-group>
+      </section>
+      <section class="filters__section">
+        <h3 class="filters__heading">Status</h3>
+        <div class="filters__stack">
+          <kj-checkbox [(checked)]="statusOpen">Open</kj-checkbox>
+          <kj-checkbox [(checked)]="statusReview">In review</kj-checkbox>
+          <kj-checkbox [(checked)]="statusDone">Done</kj-checkbox>
+          <kj-checkbox [(checked)]="statusArchived">Archived</kj-checkbox>
+        </div>
+      </section>
+      <section class="filters__section">
+        <h3 class="filters__heading">Tags</h3>
+        <div class="filters__chips">
+          @for (t of allTags; track t) {
+            <button
+              type="button"
+              class="chip"
+              [class.chip--on]="isTagSelected(t)"
+              [attr.aria-pressed]="isTagSelected(t)"
+              (click)="toggleTag(t)"
+            >{{ t }}</button>
+          }
+        </div>
+      </section>
+      <section class="filters__section">
+        <h3 class="filters__heading">Last activity</h3>
+        <kj-slider
+          [(kjValue)]="lastActivity"
+          [kjMin]="0"
+          [kjMax]="30"
+          [kjStep]="1"
+          kjAriaLabel="Last activity in days"
+        />
+        <p class="filters__hint">Last {{ lastActivity() }} days</p>
+      </section>
+      <kj-button kjVariant="ghost" (click)="resetFilters()">Reset filters</kj-button>
     </kj-drawer-body>
   </kj-drawer>
 </ng-template>
