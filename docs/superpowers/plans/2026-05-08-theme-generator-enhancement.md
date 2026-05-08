@@ -1982,7 +1982,7 @@ git add apps/docs/src/app/pages/theme-generator/preview-tabs/dashboard.* apps/do
 git commit -m "feat(theme-gen): preview dashboard tab"
 ```
 
-### Task 16: Settings tab
+### Task 16: Settings tab ✅
 
 **Files:**
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/settings.ts`
@@ -1990,7 +1990,7 @@ git commit -m "feat(theme-gen): preview dashboard tab"
 - Create: `apps/docs/src/app/pages/theme-generator/preview-tabs/settings.css`
 - Modify: `theme-generator-preview.ts`.
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 // settings.ts
@@ -2067,11 +2067,11 @@ export class PreviewSettingsComponent {
 .spacer { flex: 1; }
 ```
 
-- [ ] **Step 2: Wire and verify**
+- [x] **Step 2: Wire and verify**
 
 Add `PreviewSettingsComponent` to preview imports. Open `/theme-generator?preview=settings`. Adjust component inputs to match real APIs as needed.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/docs/src/app/pages/theme-generator/preview-tabs/settings.* apps/docs/src/app/pages/theme-generator/preview/theme-generator-preview.ts
