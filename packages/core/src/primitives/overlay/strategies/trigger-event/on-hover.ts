@@ -1,7 +1,23 @@
+import { isSignal, type Signal } from '@angular/core';
 import type { KjOverlayContext } from '../../context';
 import type { KjTriggerEventStrategy } from '../../tokens';
 
-export interface KjOnHoverOpts { openDelay?: number; closeDelay?: number; }
+type Reactive<T> = T | Signal<T> | (() => T);
+const read = <T>(v: Reactive<T> | undefined, fallback: T): T => {
+  if (v === undefined) return fallback;
+  if (isSignal(v)) return v();
+  if (typeof v === 'function') return (v as () => T)();
+  return v;
+};
+
+export interface KjOnHoverOpts {
+  openDelay?: Reactive<number>;
+  closeDelay?: Reactive<number>;
+}
+
+export type KjOnHoverStrategy = KjTriggerEventStrategy & {
+  configure(opts: Partial<KjOnHoverOpts>): void;
+};
 
 /**
  * Returns the effective hover-listening target. `pointerenter`/`pointerleave`
@@ -24,16 +40,14 @@ const effectiveHoverTarget = (el: HTMLElement): HTMLElement => {
   return el;
 };
 
-export function onHover(opts: KjOnHoverOpts = {}): KjTriggerEventStrategy {
+export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStrategy {
+  let opts: Partial<KjOnHoverOpts> = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;
   let toggle: (() => void) | null = null;
   let openTimer = 0, closeTimer = 0;
   let onEnter: ((e: Event) => void) | null = null;
   let onLeave: ((e: Event) => void) | null = null;
   let listenTarget: HTMLElement | null = null;
-
-  const openDelay = opts.openDelay ?? 0;
-  const closeDelay = opts.closeDelay ?? 0;
 
   const wire = () => {
     if (!ctx?.platform.isBrowser) return;
@@ -43,12 +57,12 @@ export function onHover(opts: KjOnHoverOpts = {}): KjTriggerEventStrategy {
     onEnter = () => {
       if (closeTimer) { clearTimeout(closeTimer); closeTimer = 0; }
       if (ctx?.isOpen()) return;
-      openTimer = setTimeout(() => { toggle?.(); openTimer = 0; }, openDelay) as unknown as number;
+      openTimer = setTimeout(() => { toggle?.(); openTimer = 0; }, read(opts.openDelay, 0)) as unknown as number;
     };
     onLeave = () => {
       if (openTimer) { clearTimeout(openTimer); openTimer = 0; }
       if (!ctx?.isOpen()) return;
-      closeTimer = setTimeout(() => { toggle?.(); closeTimer = 0; }, closeDelay) as unknown as number;
+      closeTimer = setTimeout(() => { toggle?.(); closeTimer = 0; }, read(opts.closeDelay, 0)) as unknown as number;
     };
     listenTarget.addEventListener('pointerenter', onEnter);
     listenTarget.addEventListener('pointerleave', onLeave);
@@ -67,5 +81,6 @@ export function onHover(opts: KjOnHoverOpts = {}): KjTriggerEventStrategy {
       onEnter = onLeave = null; listenTarget = null; openTimer = closeTimer = 0;
       toggle = null; ctx = null;
     },
+    configure(newOpts) { opts = { ...opts, ...newOpts }; },
   };
 }

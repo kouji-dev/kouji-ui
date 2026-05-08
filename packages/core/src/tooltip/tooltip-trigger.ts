@@ -6,7 +6,7 @@ import {
   KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
   KJ_OVERLAY_PANEL_ROLE,
 } from '../primitives/overlay/tokens';
-import { onHover } from '../primitives/overlay/strategies/trigger-event/on-hover';
+import { onHover, type KjOnHoverStrategy } from '../primitives/overlay/strategies/trigger-event/on-hover';
 
 @Directive({
   selector: '[kjTooltipTrigger]',
@@ -28,7 +28,13 @@ export class KjTooltipTrigger {
   readonly kjOpenDelay  = input<number, unknown>(200, { transform: (v) => Number(v) || 200 });
   readonly kjCloseDelay = input<number, unknown>(0,   { transform: (v) => Number(v) || 0 });
   readonly kjDisabled   = input(false, { transform: booleanAttribute });
-  // Delays are captured at provider construction time. Reactive update is a follow-up.
+
+  constructor() {
+    const strat = inject(KJ_OVERLAY_TRIGGER_EVENT_STRATEGY) as KjOnHoverStrategy;
+    if ('configure' in strat) {
+      strat.configure({ openDelay: this.kjOpenDelay, closeDelay: this.kjCloseDelay });
+    }
+  }
 
   private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
   /** The controller of the composed `KjOverlayTrigger`, exposed for sibling `[kjFor]` panels. */
