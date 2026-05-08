@@ -103,7 +103,6 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
         role="dialog"
         aria-modal="true"
         [attr.aria-label]="kjAriaLabel()"
-        [attr.aria-hidden]="!kjOpen()"
         (keydown.escape)="close()"
       >
         <div class="kj-command-palette__input-wrapper">
