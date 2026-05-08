@@ -25,10 +25,10 @@ describe('harmonies', () => {
     expect(hueDelta(SEED, out)).toBeCloseTo(60, 0);
   });
 
-  test('hueShift preserves lightness and chroma within tolerance', () => {
+  test('hueShift preserves lightness, chroma stays ≤ source after gamut mapping', () => {
     const out = hueShift(SEED, 120);
     expect(lightness(out)).toBeCloseTo(lightness(SEED), 2);
-    expect(chroma(out)).toBeCloseTo(chroma(SEED), 2);
+    expect(chroma(out)).toBeLessThanOrEqual(chroma(SEED) + 0.001);
   });
 
   test('analogous shifts hue by ~30 degrees', () => {
@@ -36,7 +36,7 @@ describe('harmonies', () => {
   });
 
   test('complementary shifts hue by ~180 degrees', () => {
-    expect(hueDelta(SEED, complementary(SEED))).toBeCloseTo(180, -2);
+    expect(hueDelta(SEED, complementary(SEED))).toBeCloseTo(180, 0);
   });
 
   test('triadic shifts hue by ~120 degrees', () => {
