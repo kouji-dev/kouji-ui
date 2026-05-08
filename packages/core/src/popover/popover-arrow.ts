@@ -16,7 +16,7 @@ import { Directive } from '@angular/core';
  * </kj-popover-content>
  * ```
  *
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjPopoverArrow]',

@@ -5,6 +5,7 @@ import { KjInputComponent } from '../input/input';
 import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 
 @Component({
+  selector: 'kj-drawer-form-body',
   standalone: true,
   imports: [
     KjDrawer,

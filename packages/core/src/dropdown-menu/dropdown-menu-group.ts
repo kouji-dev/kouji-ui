@@ -20,7 +20,7 @@ import { KjDropdownMenuLabel } from './dropdown-menu-label';
  *   <button kjDropdownMenuItem>Settings</button>
  * </div>
  * ```
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuGroup]',

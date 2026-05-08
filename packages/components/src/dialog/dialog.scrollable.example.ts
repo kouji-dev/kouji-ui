@@ -4,6 +4,7 @@ import { KjButtonComponent } from '../button/button';
 
 // TODO(wrapper-overlay): re-skin scrollable demo.
 @Component({
+  selector: 'kj-dialog-scrollable-body',
   standalone: true,
   imports: [KjDialog],
   template: `<kj-dialog><h2>Long content</h2><div style="max-height:60vh; overflow:auto"><p>Lorem ipsum…</p></div></kj-dialog>`,

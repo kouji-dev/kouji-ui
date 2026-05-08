@@ -4,6 +4,7 @@ import { KjButtonComponent } from '../button/button';
 
 // TODO(wrapper-overlay): modal toggling needs revisit on overlay primitives.
 @Component({
+  selector: 'kj-drawer-modal-body',
   standalone: true,
   imports: [KjDrawer],
   template: `<kj-drawer><h2>Drawer</h2></kj-drawer>`,

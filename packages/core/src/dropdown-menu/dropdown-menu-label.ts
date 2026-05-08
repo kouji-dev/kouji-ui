@@ -21,7 +21,7 @@ import { nextDropdownMenuLabelId } from './dropdown-menu-trigger';
  * ```html
  * <span kjDropdownMenuLabel>Account</span>
  * ```
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuLabel]',

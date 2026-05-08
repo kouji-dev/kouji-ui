@@ -86,7 +86,7 @@ function deferredPosition(): KjDeferredPosition {
  *
  * Sets `role="menu"` via the panel role token (provided by the trigger).
  *
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Component({
   selector: 'kj-dropdown-menu-content',

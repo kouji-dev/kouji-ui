@@ -4,6 +4,7 @@ import { KjButtonComponent } from '../button/button';
 
 // TODO(wrapper-overlay): re-skin scrollable drawer.
 @Component({
+  selector: 'kj-drawer-scrollable-body',
   standalone: true,
   imports: [KjDrawer],
   template: `<kj-drawer><h2>Long</h2><div style="overflow:auto; max-height:60vh"><p>Lorem ipsum…</p></div></kj-drawer>`,

@@ -10,7 +10,7 @@ import { KjOverlayPanel } from '../primitives/overlay/panel';
  * is exposed for declarative (non-service) usage where consumers wire their
  * own providers.
  *
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Component({
   selector: 'kj-dialog',

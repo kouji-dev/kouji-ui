@@ -4,6 +4,7 @@ import { KjButtonComponent } from '../button/button';
 
 // TODO(wrapper-overlay): re-skin sides demo.
 @Component({
+  selector: 'kj-drawer-sides-body',
   standalone: true,
   imports: [KjDrawer],
   template: `<kj-drawer><h2>Drawer</h2></kj-drawer>`,

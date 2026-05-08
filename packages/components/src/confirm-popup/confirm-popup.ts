@@ -34,7 +34,7 @@ import {
  *   @doc-file confirm-popup.with-message.example.ts
  * @doc-example Placement
  *   @doc-file confirm-popup.placement.example.ts
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup',
@@ -79,7 +79,7 @@ export class KjConfirmPopupComponent {}
  * directive's ARIA wiring (`aria-haspopup="dialog"`, `aria-expanded`,
  * `aria-controls`).
  *
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-trigger',
@@ -106,7 +106,7 @@ export class KjConfirmPopupTriggerComponent {}
  * `role="alertdialog"` and the family's keyboard / outside-click coordination
  * come from the underlying directives.
  *
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-content',
@@ -154,7 +154,7 @@ export class KjConfirmPopupContentComponent {
  * is wired automatically. Required for accessibility (WAI-ARIA `alertdialog`
  * pattern requires a description).
  *
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-message',
@@ -174,7 +174,7 @@ export class KjConfirmPopupMessageComponent {}
  * adds the `kj-confirm-popup-action` class — pair with `<kj-button>` for
  * the destructive variant when the popup is destructive.
  *
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-action',
@@ -196,7 +196,7 @@ export class KjConfirmPopupActionComponent {}
  * `(kjCancelled)` on the parent `<kj-confirm-popup>`. Receives initial focus
  * by default — WCAG 3.3.4 *Error Prevention*.
  *
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-cancel',
@@ -218,7 +218,7 @@ export class KjConfirmPopupCancelComponent {}
  * semantic comes from the `<kj-confirm-popup-action>` and
  * `<kj-confirm-popup-cancel>` slots inside.
  *
- * @category Library/Actions
+ * @category Library/Overlay
  */
 @Component({
   selector: 'kj-confirm-popup-actions',

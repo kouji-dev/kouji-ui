@@ -28,7 +28,7 @@ import {
  * removed; ARIA promotion to `alertdialog` happens in
  * `[kjConfirmPopupContent]`.
  *
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopup]',

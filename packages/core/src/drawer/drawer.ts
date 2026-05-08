@@ -23,7 +23,7 @@ const DEFAULT_DISMISS_VELOCITY = 600;
  * `KjDrawer.open({ drag: true, side: 'bottom' })`, pointer-down on the host
  * starts a drag that calls `ref.close()` once the threshold is crossed.
  *
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Component({
   selector: 'kj-drawer',

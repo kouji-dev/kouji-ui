@@ -17,7 +17,7 @@ import {
  * <button kjConfirmPopupCancel>Cancel</button>
  * ```
  *
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopupCancel]',

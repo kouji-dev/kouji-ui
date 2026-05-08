@@ -39,7 +39,7 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
  *   </div>
  * </ng-template>
  * ```
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjToast]',
@@ -164,7 +164,7 @@ export interface KjToastRenderable<TData = unknown> {
  *   }
  * </ol>
  * ```
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjToastViewport]',
@@ -424,7 +424,7 @@ export class KjToastViewport {
  * ```html
  * <button [kjToastClose]="toast.id" aria-label="Dismiss">×</button>
  * ```
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjToastClose]',
@@ -449,7 +449,7 @@ export class KjToastClose {
  * so the overlay primitives wire role/state/aria management. The role is
  * decided by the service via `KJ_OVERLAY_PANEL_ROLE` (`status` or `alert`).
  *
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Component({
   selector: 'kj-toast',

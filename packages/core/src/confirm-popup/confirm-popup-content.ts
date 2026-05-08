@@ -40,7 +40,7 @@ import {
  * </kj-popover-content>
  * ```
  *
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopupContent]',

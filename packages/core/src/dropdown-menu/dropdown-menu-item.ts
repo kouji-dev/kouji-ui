@@ -30,7 +30,7 @@ import {
  *   and suppressed before any consumer template-bound listener fires
  *   (mirrors `KjButton`'s a11y stance — ARIA-disabled, not native).
  *
- * @category Core/Actions
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuItem]',

@@ -4,6 +4,7 @@ import { KjButtonComponent } from '../button/button';
 
 // TODO(wrapper-overlay): re-skin once styled wrapper layer lands.
 @Component({
+  selector: 'kj-dialog-confirmation-body',
   standalone: true,
   imports: [KjDialog],
   template: `<kj-dialog [kjAlert]="true"><h2>Confirm</h2><p>Are you sure?</p></kj-dialog>`,

@@ -13,6 +13,7 @@ import {
 import { KjButtonComponent } from '../button/button';
 
 @Component({
+  selector: 'kj-dialog-nested-outer-body',
   standalone: true,
   imports: [
     KjDialog,
@@ -51,6 +52,7 @@ class OuterBody {
 }
 
 @Component({
+  selector: 'kj-dialog-nested-inner-body',
   standalone: true,
   imports: [KjDialog, KjButtonComponent],
   template: `

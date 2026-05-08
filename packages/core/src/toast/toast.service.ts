@@ -106,7 +106,7 @@ const VARIANT_FROM_SUGAR: Record<KjToastSugarVariant, KjToastVariant> = {
  *   queue continue to work. Auto-dismiss + pause/resume + max-visible logic
  *   lives on this service regardless of which entry-point a caller uses.
  *
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Injectable({ providedIn: 'root' })
 export class KjToastService {

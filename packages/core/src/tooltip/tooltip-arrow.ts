@@ -17,7 +17,7 @@ import { Directive } from '@angular/core';
  * </ng-template>
  * ```
  *
- * @category Core/Overlays
+ * @category Core/Overlay
  */
 @Directive({
   selector: '[kjTooltipArrow]',
