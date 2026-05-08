@@ -17,17 +17,7 @@ import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-t
   ],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjTooltipContent, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-          offset: cmp.kjOffset,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -37,4 +27,9 @@ export class KjTooltipContent {
   readonly kjSide   = input<KjSide>('top');
   readonly kjAlign  = input<KjAlign>('center');
   readonly kjOffset = input<number, unknown>(8, { transform: (v) => Number(v) || 8 });
+
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+  }
 }

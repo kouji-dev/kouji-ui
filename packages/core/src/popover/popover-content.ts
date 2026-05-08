@@ -9,7 +9,6 @@ import type { KjSide, KjAlign } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
 import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle';
-import { noTrap } from '../primitives/overlay/strategies/focus-trap/no-trap';
 
 @Component({
   selector: 'kj-popover-content',
@@ -17,24 +16,8 @@ import { noTrap } from '../primitives/overlay/strategies/focus-trap/no-trap';
   hostDirectives: [{ directive: KjOverlayPanel, inputs: ['kjFor'] }],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjPopoverContent, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-          offset: cmp.kjOffset,
-        });
-      },
-    },
-    {
-      provide: KJ_OVERLAY_FOCUS_TRAP_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjPopoverContent, { self: true });
-        return cmp.kjTrap() ? tabCycle({ returnFocus: true }) : noTrap();
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
+    { provide: KJ_OVERLAY_FOCUS_TRAP_STRATEGY, useFactory: () => tabCycle({ returnFocus: true }) },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -45,4 +28,11 @@ export class KjPopoverContent {
   readonly kjAlign  = input<KjAlign>('center');
   readonly kjOffset = input<number, unknown>(8, { transform: (v) => Number(v) || 8 });
   readonly kjTrap   = input(false, { transform: booleanAttribute });
+
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+    const trap = inject(KJ_OVERLAY_FOCUS_TRAP_STRATEGY) as ReturnType<typeof tabCycle>;
+    trap.configure({ enabled: () => this.kjTrap() });
+  }
 }

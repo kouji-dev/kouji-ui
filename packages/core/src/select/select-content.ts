@@ -34,17 +34,7 @@ import { KJ_SELECT } from './select-root';
   ],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjSelectContent, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-          offset: cmp.kjOffset,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
   ],
   host: {
     '[attr.aria-multiselectable]': 'select?.multiple() ? "true" : null',
@@ -65,6 +55,11 @@ export class KjSelectContent {
   readonly kjOffset = input<number, unknown>(4, {
     transform: v => Number(v) || 4,
   });
+
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+  }
 
   private readonly _activeIndex = signal(-1);
 

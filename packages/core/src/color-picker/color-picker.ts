@@ -87,16 +87,7 @@ let _kjColorPickerIdCounter = 0;
     { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onClick() },
     { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const root = inject(KjColorPicker, { self: true });
-        return anchoredTo({
-          side: root.kjSide,
-          align: root.kjAlign,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
   ],
   exportAs: 'kjColorPicker',
 })
@@ -190,6 +181,8 @@ export class KjColorPicker implements KjColorPickerContext {
   private _suppressEmit = false;
 
   constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign });
     // External writes (writeValue / setValue) parse into HSV state.
     effect(() => {
       const incoming = this.formCtrl.value();

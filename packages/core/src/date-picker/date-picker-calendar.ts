@@ -35,17 +35,7 @@ import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle'
   ],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjDatePickerCalendar, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-          offset: cmp.kjOffset,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
     {
       provide: KJ_OVERLAY_FOCUS_TRAP_STRATEGY,
       useFactory: () => tabCycle({ returnFocus: true }),
@@ -63,4 +53,9 @@ export class KjDatePickerCalendar {
   readonly kjSide   = input<KjSide>('bottom');
   readonly kjAlign  = input<KjAlign>('start');
   readonly kjOffset = input<number, unknown>(4, { transform: (v) => Number(v) || 4 });
+
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+  }
 }

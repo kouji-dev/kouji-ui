@@ -42,17 +42,7 @@ import { KJ_TREE_SELECT } from './tree-select.context';
   ],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjTreeSelectContent, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-          offset: cmp.kjOffset,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
   ],
   host: {
     '[attr.aria-multiselectable]':
@@ -88,6 +78,11 @@ export class KjTreeSelectContent {
   readonly kjOffset = input<number, unknown>(4, {
     transform: v => Number(v) || 4,
   });
+
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+  }
 
   private readonly _activeIndex = signal(-1);
 

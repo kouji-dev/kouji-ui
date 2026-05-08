@@ -24,17 +24,7 @@ import { KJ_COMBOBOX } from './combobox.context';
   hostDirectives: [{ directive: KjOverlayPanel, inputs: ['kjFor'] }],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjComboboxListbox, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-          offset: cmp.kjOffset,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
   ],
   host: {
     '(mousedown)': '$event.preventDefault()',
@@ -49,4 +39,9 @@ export class KjComboboxListbox {
   readonly kjOffset = input<number, unknown>(4, {
     transform: v => Number(v) || 4,
   });
+
+  constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+  }
 }

@@ -53,16 +53,7 @@ import {
   ],
   providers: [
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
-    {
-      provide: KJ_OVERLAY_POSITION_STRATEGY,
-      useFactory: () => {
-        const cmp = inject(KjCascadeSelectPanel, { self: true });
-        return anchoredTo({
-          side: cmp.kjSide,
-          align: cmp.kjAlign,
-        });
-      },
-    },
+    { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
     { provide: KJ_CASCADE_SELECT, useExisting: KjCascadeSelectPanel },
     { provide: KJ_SELECT, useExisting: KjCascadeSelectPanel },
   ],
@@ -181,6 +172,8 @@ export class KjCascadeSelectPanel
   readonly activeId = computed(() => this.getActiveId(0));
 
   constructor() {
+    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
+    pos.configure({ side: this.kjSide, align: this.kjAlign });
     // When the root panel closes, flush all sub-panels.
     effect(() => {
       if (!this.controller?.isOpen()) {

@@ -6,12 +6,23 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 export interface KjTabCycleOpts {
   initialFocus?: 'auto' | 'first' | HTMLElement | (() => HTMLElement | null);
   returnFocus?: boolean;
+  enabled?: boolean | (() => boolean);
 }
 
-export function tabCycle(opts: KjTabCycleOpts = {}): KjFocusTrapStrategy {
+export type KjTabCycleStrategy = KjFocusTrapStrategy & {
+  configure(opts: Partial<KjTabCycleOpts>): void;
+};
+
+export function tabCycle(initialOpts: KjTabCycleOpts = {}): KjTabCycleStrategy {
+  let opts: KjTabCycleOpts = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;
   let returnTarget: HTMLElement | null = null;
   let keyListener: ((e: KeyboardEvent) => void) | null = null;
+  const isEnabled = (): boolean => {
+    const e = opts.enabled;
+    if (e === undefined) return true;
+    return typeof e === 'function' ? e() : e;
+  };
 
   const focusables = (): HTMLElement[] => {
     const panel = ctx?.panelEl();
@@ -22,6 +33,7 @@ export function tabCycle(opts: KjTabCycleOpts = {}): KjFocusTrapStrategy {
   return {
     attach(c) { ctx = c; },
     onOpen() {
+      if (!isEnabled()) return;
       if (!ctx?.platform.isBrowser) return;
       const panel = ctx.panelEl();
       if (!panel) return;
@@ -43,6 +55,7 @@ export function tabCycle(opts: KjTabCycleOpts = {}): KjFocusTrapStrategy {
     },
     detach() { ctx = null; returnTarget = null; },
     focusFirst() {
+      if (!isEnabled()) return;
       const cfg = opts.initialFocus ?? 'first';
       let target: HTMLElement | null = null;
       if (cfg instanceof HTMLElement) target = cfg;
@@ -51,7 +64,11 @@ export function tabCycle(opts: KjTabCycleOpts = {}): KjFocusTrapStrategy {
       target?.focus();
     },
     restoreFocus() {
+      if (!isEnabled()) return;
       if (opts.returnFocus !== false) returnTarget?.focus();
+    },
+    configure(newOpts: Partial<KjTabCycleOpts>) {
+      opts = { ...opts, ...newOpts };
     },
   };
 }

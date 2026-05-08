@@ -12,6 +12,10 @@ export interface KjAnchoredToOpts {
   shift?: boolean;
 }
 
+export type KjAnchoredToStrategy = KjPositionStrategy & {
+  configure(opts: Partial<KjAnchoredToOpts>): void;
+};
+
 const read = <T>(v: Signal<T> | T): T => isSignal(v) ? v() : v;
 
 let _anchorIdCounter = 0;
@@ -39,7 +43,8 @@ const positionAreaFor = (side: KjSide, align: KjAlign): string => {
   return `${side} ${cross}`;
 };
 
-export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
+export function anchoredTo(initialOpts: Partial<KjAnchoredToOpts> = {}): KjAnchoredToStrategy {
+  let opts: Partial<KjAnchoredToOpts> = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;
   let onResize: (() => void) | null = null;
   let onScroll: (() => void) | null = null;
@@ -47,11 +52,9 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
   let useCssAnchor: boolean | null = null;
   let anchorIdent: string | null = null;
   let cssTrigger: HTMLElement | null = null;
+  let isOpen = false;
   const _placement = signal<KjPlacement | null>(null);
   const placement = computed(() => _placement());
-
-  const flip = opts.flip ?? true;
-  const shift = opts.shift ?? true;
 
   const applyCss = () => {
     if (!ctx?.platform.isBrowser) return;
@@ -59,9 +62,9 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
     const panel = ctx.panelEl();
     if (!trigger || !panel) return;
 
-    const side = read(opts.side);
-    const align = read(opts.align);
-    const offset = read(opts.offset ?? 0);
+    const side = read<KjSide>(opts.side ?? 'bottom');
+    const align = read<KjAlign>(opts.align ?? 'center');
+    const offset = read<number>(opts.offset ?? 0);
 
     if (!anchorIdent) anchorIdent = `--kj-anchor-${++_anchorIdCounter}`;
     trigger.style.setProperty('anchor-name', anchorIdent);
@@ -99,9 +102,11 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
     const panel = ctx.panelEl();
     if (!trigger || !panel) return;
 
-    const side = read(opts.side);
-    const align = read(opts.align);
-    const offset = read(opts.offset ?? 0);
+    const side = read<KjSide>(opts.side ?? 'bottom');
+    const align = read<KjAlign>(opts.align ?? 'center');
+    const offset = read<number>(opts.offset ?? 0);
+    const flip = opts.flip ?? true;
+    const shift = opts.shift ?? true;
     const tRect = trigger.getBoundingClientRect();
     const pRect = panel.getBoundingClientRect();
     const vw = window.innerWidth, vh = window.innerHeight;
@@ -150,10 +155,16 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
     _placement.set(null);
   };
 
+  const apply = () => {
+    if (useCssAnchor) applyCss();
+    else applyManual();
+  };
+
   return {
     placement,
     attach(c) { ctx = c; },
     onOpen() {
+      isOpen = true;
       if (useCssAnchor === null) {
         useCssAnchor = ctx?.platform.isBrowser ? supportsCssAnchor() : false;
       }
@@ -176,6 +187,7 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
       }
     },
     onClose() {
+      isOpen = false;
       if (useCssAnchor) {
         clearCss();
         return;
@@ -192,5 +204,9 @@ export function anchoredTo(opts: KjAnchoredToOpts): KjPositionStrategy {
       applyManual();
     },
     detach() { ctx = null; },
+    configure(newOpts: Partial<KjAnchoredToOpts>) {
+      opts = { ...opts, ...newOpts };
+      if (isOpen) apply();
+    },
   };
 }
