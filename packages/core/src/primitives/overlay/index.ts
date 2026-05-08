@@ -12,3 +12,13 @@ export { KjOverlayService, KjOverlayRef } from './overlay';
 export type { KjOverlayRegistration as KjOverlayServiceRegistration } from './overlay';
 export { KjAnchor } from './anchor';
 export type { KjAnchorSide, KjAnchorAlign, KjAnchorPlacement } from './anchor';
+
+export { KjOverlayController } from './controller';
+export type { KjOverlayStrategies } from './controller';
+export { KjOverlayBuilder } from './builder';
+export type { KjOverlayBuilderConfig, KjAttachOptions } from './builder';
+export { KjOverlayTrigger } from './trigger';
+export { KjOverlayPanel } from './panel';
+export { KjFocusTrap } from './focus-trap';
+export { KjBackdrop } from './backdrop';
+export * from './strategies/index';
