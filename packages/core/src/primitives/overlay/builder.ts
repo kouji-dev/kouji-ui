@@ -59,7 +59,25 @@ export class KjOverlayBuilder {
     component: Type<T>,
     opts: KjAttachOptions = {},
   ): ComponentRef<T> {
-    const container = controller['strategies']!.mount.resolveContainer();
+    const strategies = (controller as unknown as { strategies: KjOverlayStrategies }).strategies;
+    const container = strategies.mount.resolveContainer();
+    const backdrop = strategies.backdrop;
+
+    // Render a backdrop element as a sibling preceding the panel when the
+    // controller is configured with a backdrop strategy. The strategy itself
+    // is just a config bag — physical DOM rendering is the builder's job.
+    let backdropEl: HTMLElement | null = null;
+    if (backdrop && typeof document !== 'undefined') {
+      backdropEl = document.createElement('div');
+      backdropEl.setAttribute('data-kj-overlay-backdrop', '');
+      backdropEl.className = 'kj-overlay-backdrop';
+      const cfg = backdrop as unknown as { closeOnClick?: boolean };
+      if (cfg.closeOnClick !== false) {
+        backdropEl.addEventListener('click', () => controller.close('outside'));
+      }
+      container.appendChild(backdropEl);
+    }
+
     const parentInjector =
       (controller as unknown as { __injector?: Injector }).__injector ?? this.env;
     const injector = Injector.create({
@@ -73,6 +91,9 @@ export class KjOverlayBuilder {
     });
     this.appRef.attachView(ref.hostView);
     controller.bindPanel(ref.location.nativeElement);
+
+    // Track the backdrop element on the controller so teardown can remove it.
+    (controller as unknown as { __backdropEl: HTMLElement | null }).__backdropEl = backdropEl;
     return ref;
   }
 }

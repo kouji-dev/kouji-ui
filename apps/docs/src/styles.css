@@ -59,3 +59,15 @@ body {
   .page-with-toc { grid-template-columns: 1fr; }
   .page-with-toc .toc-col { display: none; }
 }
+
+/* ── Modal overlay backdrop ─────────────────────────────────────────────
+   Rendered by KjOverlayBuilder as a sibling preceding the panel when the
+   controller is configured with a backdrop strategy (e.g. solidBackdrop()).
+   ─────────────────────────────────────────────────────────────────── */
+.kj-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
+  z-index: 999;
+  pointer-events: auto;
+}

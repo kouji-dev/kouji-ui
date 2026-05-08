@@ -88,6 +88,12 @@ export class KjOverlayController {
     ];
     for (const strat of order) strat?.detach();
     this.strategies = null;
+
+    // KjOverlayBuilder.attachComponent stashes the rendered backdrop element
+    // here so teardown can remove it from the DOM alongside strategy detach.
+    const backdropEl = (this as unknown as { __backdropEl?: HTMLElement | null }).__backdropEl;
+    if (backdropEl?.parentElement) backdropEl.parentElement.removeChild(backdropEl);
+    (this as unknown as { __backdropEl?: HTMLElement | null }).__backdropEl = null;
   }
 
   private beginOpen(): void {

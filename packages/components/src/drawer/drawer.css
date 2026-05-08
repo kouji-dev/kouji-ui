@@ -15,6 +15,7 @@
     overflow: hidden;
     z-index: 1000;
     box-sizing: border-box;
+    padding: var(--kj-space-lg);
   }
 
   .kj-drawer[data-kj-side="right"] {
