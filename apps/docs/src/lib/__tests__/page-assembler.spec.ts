@@ -27,7 +27,7 @@ describe('assemblePages', () => {
     expect(pages[0].name).toBe('icon');
     expect(pages[0].mainItemId).toBe('2');
     expect(pages[0].items.map(i => i.id)).toEqual(['2', '1', '3']);
-    expect(pages[0].title).toBe('KjIcon');
+    expect(pages[0].title).toBe('icon');
     expect(pages[0].description).toBe('main desc');
     expect(warnings).toEqual([]);
   });
@@ -50,7 +50,7 @@ describe('assemblePages', () => {
     ];
     const { pages, warnings } = assemblePages(items);
     expect(pages[0].mainItemId).toBe('2');
-    expect(pages[0].title).toBe('B');
+    expect(pages[0].title).toBe('p');
     expect(pages[0].description).toBe('b desc');
     expect(warnings.find(w => w.kind === 'no-main' && w.pageName === 'p')).toBeDefined();
   });

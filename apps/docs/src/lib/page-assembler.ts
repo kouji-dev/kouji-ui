@@ -77,7 +77,7 @@ export function assemblePages(items: DocItem[]): AssembledPages {
       // @category) — we leave them empty here. The orchestrator's
       // responsibility is documented in docs-extractor.ts.
       categoryPath: [],
-      title: main.symbol,
+      title: main.pageName,
       description: main.description,
       mainItemId: main.id,
       items: sortedItems,
