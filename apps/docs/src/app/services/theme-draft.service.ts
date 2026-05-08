@@ -3,6 +3,7 @@ import { BUILT_IN_THEMES, BUILT_IN_NAMES, type BuiltInName } from '../lib/theme/
 import { deriveTokens } from '../lib/theme/derive-tokens';
 import { serializeToScopedBlock } from '../lib/theme/serialize-theme';
 import { DraftThemeSchema } from '../lib/theme/import-schema';
+import { deriveFromSeed } from '../lib/theme/palette-derive';
 import type { DraftTheme, ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../lib/theme/types';
 
 const STORAGE_KEY = 'kj-custom-themes';
@@ -29,12 +30,16 @@ export class ThemeDraftService {
   private readonly _draft = signal<DraftTheme>(this.readDraft() ?? structuredClone(BLANK_DRAFT));
   readonly draft = this._draft.asReadonly();
 
+  private readonly _dirty = signal<Set<ColorSlot>>(new Set());
+  readonly dirtySlots = this._dirty.asReadonly();
+
   readonly resolvedTokens = computed(() => deriveTokens(this._draft()));
   readonly css = computed(() => serializeToScopedBlock('custom-draft', this.resolvedTokens()));
 
   loadFork(name: BuiltInName): void {
     const src = BUILT_IN_THEMES[name];
     this._draft.set({ ...structuredClone(src), name: `${name}-fork` });
+    this._dirty.set(new Set());
     this.persistDraft();
   }
 
@@ -43,6 +48,7 @@ export class ThemeDraftService {
     if (!found) return;
     const { savedAt: _omit, ...rest } = found;
     this._draft.set(structuredClone(rest));
+    this._dirty.set(new Set());
     this.persistDraft();
   }
 
@@ -53,6 +59,32 @@ export class ThemeDraftService {
 
   setColor(slot: ColorSlot, value: string): void {
     this._draft.update(d => ({ ...d, colors: { ...d.colors, [slot]: value } }));
+    this._dirty.update(s => { const n = new Set(s); n.add(slot); return n; });
+    this.persistDraft();
+  }
+
+  setColors(colors: Record<ColorSlot, string>): void {
+    this._draft.update(d => ({ ...d, colors: { ...colors } }));
+    this._dirty.set(new Set());
+    this.persistDraft();
+  }
+
+  /** Re-derive secondary/accent/neutral/semantic from current `primary`.
+   * Slots the user has manually edited (in `dirtySlots`) are preserved unless
+   * `overwriteDirty: true`. */
+  rederiveFromPrimary(opts: { overwriteDirty?: boolean; mode?: 'light' | 'dark' } = {}): void {
+    const seed = this._draft().colors.primary;
+    const derived = deriveFromSeed(seed, { mode: opts.mode ?? 'light' });
+    if (opts.overwriteDirty) {
+      this.setColors(derived);
+      return;
+    }
+    const dirty = this._dirty();
+    const next = { ...this._draft().colors };
+    for (const slot of Object.keys(derived) as ColorSlot[]) {
+      if (!dirty.has(slot)) next[slot] = derived[slot];
+    }
+    this._draft.update(d => ({ ...d, colors: next }));
     this.persistDraft();
   }
 
@@ -99,6 +131,7 @@ export class ThemeDraftService {
     this.write(env);
     if (this._draft().name === name) {
       this._draft.set(structuredClone(BLANK_DRAFT));
+      this._dirty.set(new Set());
       this.persistDraft();
     }
   }
@@ -115,6 +148,7 @@ export class ThemeDraftService {
     const result = DraftThemeSchema.safeParse(parsed);
     if (!result.success) return { ok: false, reason: 'Invalid theme shape' };
     this._draft.set(result.data as DraftTheme);
+    this._dirty.set(new Set());
     this.persistDraft();
     return { ok: true };
   }
@@ -132,6 +166,7 @@ export class ThemeDraftService {
       return;
     }
     this._draft.set(structuredClone(BLANK_DRAFT));
+    this._dirty.set(new Set());
     this.persistDraft();
   }
 
