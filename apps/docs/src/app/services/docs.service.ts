@@ -3,78 +3,29 @@ import { HttpClient } from '@angular/common/http';
 import { map, of } from 'rxjs';
 import { DocsManifestProvider } from './docs-manifest.provider';
 
-export interface InputDef {
-  name: string;
-  type: string;
-  required: boolean;
-  isModel: boolean;
-  description: string;
-  defaultValue?: string;
-}
+export type {
+  SourcePkg,
+  DocKind,
+  InputDef,
+  ModelDef,
+  OutputDef,
+  DirectiveDef,
+  ServiceDef,
+  FunctionParam,
+  FunctionDef,
+  TokenDef,
+  TypeAliasDef,
+  ConstDef,
+  ExampleFile,
+  DocExample,
+  DocItem,
+  DocPage,
+  ExtractorWarningKind,
+  ExtractorWarning,
+  DocsManifest,
+} from '../../lib/docs-extractor.types';
 
-export interface ExampleFile {
-  lang: 'ts' | 'html' | 'css';
-  filename: string;
-  content: string;
-  exportName?: string;
-}
-
-export interface DocExample {
-  label: string;
-  themedFiles: Record<string, ExampleFile[]>;
-}
-
-export type ModelDef = InputDef;
-
-export interface OutputDef {
-  name: string;
-  type: string;
-  description: string;
-}
-
-export interface DirectiveDef {
-  className: string;
-  selector: string;
-  exportAs?: string;
-  categoryPath: string[];
-  description: string;
-  inputs: InputDef[];
-  outputs: OutputDef[];
-  models: ModelDef[];
-  examples: string[];
-  exampleFiles: ExampleFile[];
-  themedExamples: Record<string, ExampleFile[]>;
-  docExamples: DocExample[];
-  required?: boolean;
-}
-
-export interface TokenDef {
-  name: string;
-  description: string;
-}
-
-export interface TypeAliasDef {
-  name: string;
-  type: string;
-  description: string;
-}
-
-export interface ComponentDoc {
-  name: string;
-  slug: string;
-  /** Source package — 'core' for headless directives, 'components' for styled wrappers. */
-  pkg: 'core' | 'components';
-  /**
-   * Rendered category path, package-prefixed. First segment is `Core` or
-   * `Library` (derived from the file's source package by the extractor),
-   * remaining segments come from the directive's `@category` JSDoc tag.
-   */
-  categoryPath: string[];
-  description: string;
-  directives: DirectiveDef[];
-  tokens: TokenDef[];
-  typeAliases: TypeAliasDef[];
-}
+import type { DocPage, DocsManifest } from '../../lib/docs-extractor.types';
 
 export interface SidebarNode {
   label: string;
@@ -98,11 +49,6 @@ export interface DocsTrack {
   tree: SidebarNode[];
 }
 
-export interface DocsManifest {
-  generatedAt: string;
-  components: ComponentDoc[];
-}
-
 /**
  * Provides access to docs metadata.
  *
@@ -118,13 +64,13 @@ export class DocsService {
   private readonly provider = inject(DocsManifestProvider);
 
   private _manifest: DocsManifest | null = null;
-  readonly components = signal<ComponentDoc[]>([]);
+  readonly pages = signal<DocPage[]>([]);
 
   constructor() {
     const manifest = this.provider.getManifest();
     if (manifest) {
       this._manifest = manifest;
-      this.components.set(manifest.components);
+      this.pages.set(manifest.pages);
     }
   }
 
@@ -146,29 +92,26 @@ export class DocsService {
     return this.http.get<DocsManifest>('/api/docs/manifest').pipe(
       map(manifest => {
         this._manifest = manifest;
-        this.components.set(manifest.components);
+        this.pages.set(manifest.pages);
         return manifest;
       })
     );
   }
 
-  /** Returns all CORE component slugs — used in `getPrerenderParams()` for /docs/headless/:slug. */
+  /** Returns all CORE page names — used in `getPrerenderParams()` for /docs/headless/:slug. */
   getSlugs(): string[] {
-    return (this._manifest?.components ?? [])
-      .filter(c => c.pkg === 'core')
-      .map(c => c.slug);
+    return (this._manifest?.pages ?? [])
+      .filter(p => p.pkg === 'core')
+      .map(p => p.name);
   }
 
   /**
-   * Get a component by slug — optionally scoped to a package so the same
-   * slug (e.g. 'button') in both packages doesn't collide.
+   * Get a page by name — optionally scoped to a package so the same
+   * name (e.g. 'button') in both packages doesn't collide.
    */
-  getComponent(slug: string, pkg?: 'core' | 'components'): ComponentDoc | null {
-    const components = this._manifest?.components ?? [];
-    const matches = components.filter(c => c.slug === slug);
-    if (!matches.length) return null;
-    if (pkg) return matches.find(c => c.pkg === pkg) ?? null;
-    return matches[0] ?? null;
+  getPage(name: string, pkg?: 'core' | 'components'): DocPage | null {
+    const list = this.pages();
+    return list.find(p => p.name === name && (!pkg || p.pkg === pkg)) ?? null;
   }
 
   /** Builds a 3-level nested category tree: Package > Category > Component */
@@ -182,13 +125,13 @@ export class DocsService {
   }
 
   private buildTreeForPackage(pkg: 'core' | 'components'): SidebarNode[] {
-    const components = (this._manifest?.components ?? []).filter(c => c.pkg === pkg);
+    const pages = (this._manifest?.pages ?? []).filter(p => p.pkg === pkg);
     const tree: Record<string, Record<string, SidebarNode[]>> = {};
 
-    for (const comp of components) {
-      const path = comp.categoryPath;
+    for (const page of pages) {
+      const path = page.categoryPath;
       // Derive the category label shown in the sidebar:
-      // - 'Core/Navigation/Accordion' → 'Navigation' (drop package prefix + redundant comp name)
+      // - 'Core/Navigation/Accordion' → 'Navigation' (drop package prefix + redundant page name)
       // - 'Core/Base'                 → 'Base'        (drop package prefix)
       // - 'Core'                      → 'Core'        (single segment — show as-is)
       // - (empty)                     → 'Others'
@@ -203,7 +146,7 @@ export class DocsService {
 
       if (!tree['root']) tree['root'] = {};
       if (!tree['root'][cat]) tree['root'][cat] = [];
-      tree['root'][cat].push({ label: comp.name, slug: comp.slug, children: [] });
+      tree['root'][cat].push({ label: page.name, slug: page.name, children: [] });
     }
 
     return Object.entries(tree['root'] ?? {}).map(([cat, items]) => ({
@@ -215,9 +158,9 @@ export class DocsService {
 
   /** Slug list for the styled components track — used by the route prerenderer. */
   getStyledComponentSlugs(): string[] {
-    return (this._manifest?.components ?? [])
-      .filter(c => c.pkg === 'components')
-      .map(c => c.slug);
+    return (this._manifest?.pages ?? [])
+      .filter(p => p.pkg === 'components')
+      .map(p => p.name);
   }
 
   /**
