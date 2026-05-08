@@ -175,7 +175,7 @@ export class KjCascadeSelectPanel
 
   constructor() {
     const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
-    pos.configure({ side: this.kjSide, align: this.kjAlign });
+    pos.configure({ side: this.kjSide, align: this.kjAlign, matchTriggerWidth: 'min' });
     // When the root panel closes, flush all sub-panels.
     effect(() => {
       if (!this.controller?.isOpen()) {

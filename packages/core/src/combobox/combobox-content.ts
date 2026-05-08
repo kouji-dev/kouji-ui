@@ -44,6 +44,6 @@ export class KjComboboxListbox {
 
   constructor() {
     const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
-    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset, matchTriggerWidth: 'min' });
   }
 }
