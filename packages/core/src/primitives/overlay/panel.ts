@@ -13,11 +13,12 @@ import {
 } from './tokens';
 /**
  * Trigger-like contract accepted by `KjOverlayPanel.kjFor`. Any directive
- * that exposes an `attachPanel(panel)` method satisfies this — including
- * `KjOverlayTrigger` itself and consumer trigger directives that compose it
- * via `hostDirectives`.
+ * that exposes an `attachPanel(panel)` method and a `controller` reference
+ * satisfies this — including `KjOverlayTrigger` itself and consumer trigger
+ * directives that compose it via `hostDirectives`.
  */
 export interface KjOverlayTriggerLike {
+  readonly controller: KjOverlayController;
   attachPanel(panel: KjOverlayPanel): void;
 }
 
@@ -35,7 +36,14 @@ export interface KjOverlayTriggerLike {
 export class KjOverlayPanel {
   readonly host    = inject(ElementRef<HTMLElement>);
   private readonly idSvc      = inject(KjId);
-  private readonly controller = inject(KjOverlayController);
+  /**
+   * Optional fallback controller injected from the same element/host. Used
+   * only when `[kjFor]` is not provided (legacy host-directive usage and
+   * tests that wire the controller at the host level).
+   */
+  private readonly fallbackController = inject(KjOverlayController, { optional: true });
+  /** Resolved controller — preferred from `kjFor()`, else the fallback. */
+  controller: KjOverlayController | null = this.fallbackController;
   readonly panelId  = this.idSvc.mint('panel');
 
   private readonly mount         = inject(KJ_OVERLAY_MOUNT_STRATEGY);
@@ -50,22 +58,38 @@ export class KjOverlayPanel {
   readonly kjFor = input<KjOverlayTriggerLike | null>(null);
   readonly role    = computed(() => this.role_);
   readonly isModal = computed(() => !!this.backdrop?.inertSiblings);
-  readonly state   = computed(() => this.controller.state());
+  readonly state   = computed(() => this.controller?.state() ?? 'closed');
 
   constructor() {
-    this.controller.bindPanel(this.host.nativeElement);
-    this.controller.attachStrategies({
-      mount: this.mount,
-      position: this.position,
-      backdrop: this.backdrop ?? null,
-      focusTrap: this.focusTrap ?? null,
-      scrollLock: this.scrollLock ?? null,
-      liveAnnouncer: this.liveAnnouncer ?? null,
-      trigger: this.trigger,
-    });
+    // If a fallback controller is available at the host level, wire it up
+    // immediately so legacy host-directive consumers work without [kjFor].
+    if (this.fallbackController) {
+      this.fallbackController.bindPanel(this.host.nativeElement);
+      this.fallbackController.attachStrategies({
+        mount: this.mount,
+        position: this.position,
+        backdrop: this.backdrop ?? null,
+        focusTrap: this.focusTrap ?? null,
+        scrollLock: this.scrollLock ?? null,
+        liveAnnouncer: this.liveAnnouncer ?? null,
+        trigger: this.trigger,
+      });
+    }
     effect(() => {
       const t = this.kjFor();
-      if (t) t.attachPanel(this);
+      if (!t) return;
+      this.controller = t.controller;
+      this.controller.bindPanel(this.host.nativeElement);
+      this.controller.attachStrategies({
+        mount: this.mount,
+        position: this.position,
+        backdrop: this.backdrop ?? null,
+        focusTrap: this.focusTrap ?? null,
+        scrollLock: this.scrollLock ?? null,
+        liveAnnouncer: this.liveAnnouncer ?? null,
+        trigger: this.trigger,
+      });
+      t.attachPanel(this);
     });
   }
 }

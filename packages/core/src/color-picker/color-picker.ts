@@ -408,6 +408,10 @@ export class KjColorPickerTrigger {
     this.root.kjAriaLabel() || `Color picker, current value ${this.ctx.hex()}`);
 
   private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  /** The controller of the composed `KjOverlayTrigger`, exposed for sibling `[kjFor]` panels. */
+  get controller() {
+    return this._overlayTrigger.controller;
+  }
   attachPanel(panel: KjOverlayPanel): void {
     this._overlayTrigger.attachPanel(panel);
   }

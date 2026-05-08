@@ -25,13 +25,13 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
   ],
   imports: [KjSelectTrigger, KjSelectContent],
   template: `
-    <button type="button" kjSelectTrigger class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null">
+    <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
       <span class="kj-select-trigger-caret" aria-hidden="true">▾</span>
     </button>
-    <div kjSelectContent class="kj-select-content">
+    <kj-select-content [kjFor]="trig" class="kj-select-content">
       <ng-content />
-    </div>
+    </kj-select-content>
   `,
   styleUrl: './select.css',
   encapsulation: ViewEncapsulation.None,

@@ -94,7 +94,8 @@ export function nextDropdownMenuLabelId(): string {
   },
 })
 export class KjDropdownMenuTrigger implements KjDropdownMenuContext {
-  private readonly controller = inject(KjOverlayController);
+  /** Public — read by sibling `[kjFor]` panels. */
+  readonly controller = inject(KjOverlayController);
 
   /** Trigger event kind. */
   readonly kjTrigger = input<KjDropdownMenuTriggerKind>('click');

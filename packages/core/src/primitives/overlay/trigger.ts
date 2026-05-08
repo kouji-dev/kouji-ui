@@ -15,7 +15,13 @@ import type { KjOverlayPanel } from './panel';
 })
 export class KjOverlayTrigger {
   private readonly host       = inject(ElementRef<HTMLElement>);
-  private readonly controller = inject(KjOverlayController);
+  /**
+   * The overlay controller for this trigger's scope. Exposed publicly so
+   * sibling `KjOverlayPanel` directives wired via `[kjFor]` can read it
+   * from their element injector (which would otherwise not see this
+   * directive's providers).
+   */
+  readonly controller = inject(KjOverlayController);
   private readonly triggerStrategy = inject(KJ_OVERLAY_TRIGGER_EVENT_STRATEGY);
 
   readonly kjOpen = model<boolean>(false);

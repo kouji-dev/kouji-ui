@@ -62,7 +62,8 @@ export class KjComboboxInput {
   /** @internal */
   readonly ctx = inject(KJ_COMBOBOX);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
-  private readonly controller = inject(KjOverlayController);
+  /** @internal — public so sibling `[kjFor]` panels can read it. */
+  readonly controller = inject(KjOverlayController);
 
   constructor() {
     // Wire the controller into the root combobox so its state mutations

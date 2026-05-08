@@ -35,6 +35,10 @@ import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click
 })
 export class KjCascadeSelectTrigger {
   private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });
+  /** The controller of the composed `KjOverlayTrigger`, exposed for sibling `[kjFor]` panels. */
+  get controller(): KjOverlayController {
+    return this._overlayTrigger.controller;
+  }
   attachPanel(panel: KjOverlayPanel): void {
     this._overlayTrigger.attachPanel(panel);
   }
