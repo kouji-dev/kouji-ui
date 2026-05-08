@@ -1,22 +1,23 @@
-<nav role="tablist" aria-label="Preview pages" class="tab-strip">
-  @for (t of tabs; track t) {
-    <button
-      type="button"
-      role="tab"
-      [attr.aria-selected]="active() === t"
-      [attr.tabindex]="active() === t ? 0 : -1"
-      [class.tab--active]="active() === t"
-      (click)="setActive(t)"
-    >{{ t }}</button>
-  }
-</nav>
+<kj-tabs class="preview-tabs" [value]="active()" (valueChange)="setActive($event)">
+  <kj-tab-list>
+    @for (t of tabs; track t) {
+      <kj-tab [value]="t">{{ t }}</kj-tab>
+    }
+  </kj-tab-list>
 
-<section role="tabpanel" tabindex="0" class="tab-panel" [attr.aria-label]="active() + ' preview'">
-  @switch (active()) {
-    @case ('dashboard') { <kj-preview-dashboard /> }
-    @case ('settings')  { <kj-preview-settings /> }
-    @case ('big-form')  { <kj-preview-big-form /> }
-    @case ('search')    { <kj-preview-search /> }
-    @case ('chat')      { <kj-preview-chat /> }
-  }
-</section>
+  <kj-tab-panel [value]="'dashboard'">
+    <kj-preview-dashboard />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'settings'">
+    <kj-preview-settings />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'big-form'">
+    <kj-preview-big-form />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'search'">
+    <kj-preview-search />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'chat'">
+    <kj-preview-chat />
+  </kj-tab-panel>
+</kj-tabs>

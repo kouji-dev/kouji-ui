@@ -1,5 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import {
+  KjTabsComponent,
+  KjTabListComponent,
+  KjTabComponent,
+  KjTabPanelComponent,
+} from '@kouji-ui/components';
 import { PreviewBigForm } from '../preview-tabs/big-form';
 import { PreviewChat } from '../preview-tabs/chat';
 import { PreviewDashboard } from '../preview-tabs/dashboard';
@@ -12,7 +18,17 @@ type Tab = typeof TABS[number];
 @Component({
   selector: 'kj-theme-generator-preview',
   standalone: true,
-  imports: [PreviewDashboard, PreviewSettings, PreviewBigForm, PreviewSearch, PreviewChat],
+  imports: [
+    KjTabsComponent,
+    KjTabListComponent,
+    KjTabComponent,
+    KjTabPanelComponent,
+    PreviewDashboard,
+    PreviewSettings,
+    PreviewBigForm,
+    PreviewSearch,
+    PreviewChat,
+  ],
   templateUrl: './theme-generator-preview.html',
   styleUrl: './theme-generator-preview.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,8 +45,9 @@ export class ThemeGeneratorPreviewComponent {
     return (TABS as readonly string[]).includes(q ?? '') ? (q as Tab) : 'dashboard';
   }
 
-  protected setActive(t: Tab): void {
-    this.active.set(t);
+  protected setActive(t: string): void {
+    if (!(TABS as readonly string[]).includes(t)) return;
+    this.active.set(t as Tab);
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { preview: t },

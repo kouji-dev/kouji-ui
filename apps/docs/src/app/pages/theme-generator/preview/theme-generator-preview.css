@@ -1,19 +1,6 @@
 :host { display: flex; flex-direction: column; height: 100%; }
-.tab-strip {
-  display: flex; gap: 0.25rem;
-  border-bottom: 1px solid var(--kj-color-base-300);
-  padding: 0.5rem;
+.preview-tabs { display: flex; flex-direction: column; height: 100%; }
+.preview-tabs kj-tab-panel {
+  flex: 1; overflow: auto; padding: 1rem;
 }
-.tab-strip button {
-  min-height: 44px; padding: 0.5rem 0.75rem;
-  border: 1px solid transparent; background: transparent;
-  color: var(--kj-color-base-content); cursor: pointer;
-  border-radius: var(--kj-radius-field, 6px); text-transform: capitalize;
-}
-.tab-strip button:focus-visible {
-  outline: 2px solid var(--kj-color-primary); outline-offset: 2px;
-}
-.tab-strip .tab--active {
-  background: var(--kj-color-primary); color: var(--kj-color-primary-content);
-}
-.tab-panel { flex: 1; overflow: auto; padding: 1rem; }
+.preview-tabs kj-tab { text-transform: capitalize; }
