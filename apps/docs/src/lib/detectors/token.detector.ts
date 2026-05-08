@@ -31,7 +31,8 @@ export function detectTokens(
     const symbol = decl.name.text;
     const newExpr = findNewInjectionToken(decl.initializer);
     const typeArg = newExpr?.typeArguments?.[0]?.getText(tsSourceFile) ?? 'unknown';
-    const description = tags.description ?? jsDocSummary(stmt);
+    const description = jsDocSummary(stmt);
+    const docDescription = tags.description ?? undefined;
 
     items.push({
       id: makeItemId(pkg, morphFile.getFilePath(), symbol),
@@ -41,6 +42,7 @@ export function detectTokens(
       pkg,
       filePath: morphFile.getFilePath(),
       description,
+      docDescription,
       isMain: tags.isMain,
       order: tags.order,
       sourceOrder: sourceOrder++,

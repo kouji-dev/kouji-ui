@@ -81,7 +81,7 @@ export function extractDocsManifest(rootDir?: string): DocsManifest {
 
   // Decorate pages with categoryPath from the main item.
   for (const page of pages) {
-    const main = page.items.find(i => i.id === page.mainItemId);
+    const main = page.definitions.find(i => i.id === page.mainItemId);
     if (main) page.categoryPath = main.categoryPath;
   }
 

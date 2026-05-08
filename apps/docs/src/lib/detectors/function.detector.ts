@@ -42,7 +42,8 @@ export function detectFunctions(
       .join(', ')}): ${returnType}`;
 
     const def: FunctionDef = { name: symbol, signature, parameters: params, returnType };
-    const description = tags.description ?? jsDocSummary(fn);
+    const description = jsDocSummary(fn);
+    const docDescription = tags.description ?? undefined;
 
     items.push({
       id: makeItemId(pkg, morphFile.getFilePath(), symbol),
@@ -52,6 +53,7 @@ export function detectFunctions(
       pkg,
       filePath: morphFile.getFilePath(),
       description,
+      docDescription,
       isMain: tags.isMain,
       order: tags.order,
       sourceOrder: sourceOrder++,

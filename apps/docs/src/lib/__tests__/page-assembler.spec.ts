@@ -26,7 +26,7 @@ describe('assemblePages', () => {
     expect(pages).toHaveLength(1);
     expect(pages[0].name).toBe('icon');
     expect(pages[0].mainItemId).toBe('2');
-    expect(pages[0].items.map(i => i.id)).toEqual(['2', '1', '3']);
+    expect(pages[0].definitions.map(i => i.id)).toEqual(['2', '1', '3']);
     expect(pages[0].title).toBe('Icon');
     expect(pages[0].description).toBe('main desc');
     expect(warnings).toEqual([]);
@@ -40,7 +40,7 @@ describe('assemblePages', () => {
       item({ id: 'c', symbol: 'C', pageName: 'p', sourceOrder: 3 }),
     ];
     const { pages } = assemblePages(items);
-    expect(pages[0].items.map(i => i.id)).toEqual(['main', 'a', 'b', 'c']);
+    expect(pages[0].definitions.map(i => i.id)).toEqual(['main', 'a', 'b', 'c']);
   });
 
   it('warns and falls back when no item is @doc-is-main', () => {
@@ -74,8 +74,8 @@ describe('assemblePages', () => {
     expect(pages).toHaveLength(2);
     const corePage = pages.find(p => p.pkg === 'core')!;
     const compPage = pages.find(p => p.pkg === 'components')!;
-    expect(corePage.items.map(i => i.symbol)).toEqual(['KjButton']);
-    expect(compPage.items.map(i => i.symbol)).toEqual(['KjButtonComponent']);
+    expect(corePage.definitions.map(i => i.symbol)).toEqual(['KjButton']);
+    expect(compPage.definitions.map(i => i.symbol)).toEqual(['KjButtonComponent']);
     // No cross-package warning anymore — pkg is a hard separator now.
     expect(warnings.filter(w => w.kind === 'cross-package')).toEqual([]);
   });
@@ -86,6 +86,42 @@ describe('assemblePages', () => {
     ];
     const { pages } = assemblePages(items);
     expect(pages[0].title).toBe('Date picker');
+  });
+
+  it('uses @doc-description from main when present', () => {
+    const items = [
+      item({ id: '1', symbol: 'M', pageName: 'p', isMain: true, description: 'tsdoc', docDescription: 'main-desc' }),
+      item({ id: '2', symbol: 'X', pageName: 'p' }),
+    ];
+    const { pages } = assemblePages(items);
+    expect(pages[0].description).toBe('main-desc');
+  });
+
+  it('falls back to any items @doc-description when main has none', () => {
+    const items = [
+      item({ id: '1', symbol: 'M', pageName: 'p', isMain: true, description: 'main tsdoc', sourceOrder: 0 }),
+      item({ id: '2', symbol: 'X', pageName: 'p', docDescription: 'from non-main', sourceOrder: 1 }),
+    ];
+    const { pages } = assemblePages(items);
+    expect(pages[0].description).toBe('from non-main');
+  });
+
+  it('falls back to mains tsDoc summary when no @doc-description anywhere', () => {
+    const items = [
+      item({ id: '1', symbol: 'M', pageName: 'p', isMain: true, description: 'main tsdoc' }),
+    ];
+    const { pages } = assemblePages(items);
+    expect(pages[0].description).toBe('main tsdoc');
+  });
+
+  it('flattens examples across all definitions in render order', () => {
+    const items = [
+      item({ id: '1', symbol: 'M', pageName: 'p', isMain: true, sourceOrder: 0, examples: [{ label: 'a', themedFiles: {} }] }),
+      item({ id: '2', symbol: 'X', pageName: 'p', sourceOrder: 1, examples: [{ label: 'b', themedFiles: {} }, { label: 'c', themedFiles: {} }] }),
+    ];
+    const { pages } = assemblePages(items);
+    expect(pages[0].examples.map(e => e.example.label)).toEqual(['a', 'b', 'c']);
+    expect(pages[0].examples.map(e => e.itemSymbol)).toEqual(['M', 'X', 'X']);
   });
 
   it('reports duplicate ids', () => {

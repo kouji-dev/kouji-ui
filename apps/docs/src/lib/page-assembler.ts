@@ -3,6 +3,7 @@ import type {
   DocItem,
   DocPage,
   ExtractorWarning,
+  PageExample,
   SourcePkg,
 } from './docs-extractor.types';
 
@@ -65,19 +66,37 @@ export function assemblePages(items: DocItem[]): AssembledPages {
     }
 
     const sortedRest = sortItems(group.filter(i => i.id !== main.id));
-    const sortedItems = [main, ...sortedRest];
+    const definitions = [main, ...sortedRest];
+
+    // Page description: prefer the main item's @doc-description, otherwise
+    // any item's @doc-description (in render order), otherwise the main
+    // item's tsDoc summary. This lets authors put the page description on
+    // any item that makes sense, not just the main one.
+    const description =
+      main.docDescription ??
+      definitions.find(d => d.docDescription)?.docDescription ??
+      main.description;
+
+    // Flatten examples across all definitions for a page-level Examples
+    // section. Each example carries back its source item's id+symbol so the
+    // page can group/anchor as needed.
+    const examples: PageExample[] = [];
+    for (const def of definitions) {
+      for (const ex of def.examples ?? []) {
+        examples.push({ itemId: def.id, itemSymbol: def.symbol, example: ex });
+      }
+    }
 
     pages.push({
       name,
       pkg,
-      // categoryPath/title get populated by the orchestrator (it knows
-      // @category) — we leave them empty here. The orchestrator's
-      // responsibility is documented in docs-extractor.ts.
+      // categoryPath gets populated by the orchestrator (it knows @category).
       categoryPath: [],
       title: formatTitle(main.pageName),
-      description: main.description,
+      description,
       mainItemId: main.id,
-      items: sortedItems,
+      definitions,
+      examples,
     });
   }
 

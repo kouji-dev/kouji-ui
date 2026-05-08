@@ -42,12 +42,11 @@ export class ComponentDocComponent {
 
   private readonly pageToc = viewChild(PageTocDirective);
 
-  protected readonly hasExamples = computed(() =>
-    (this.page()?.items ?? []).some(i => (i.examples?.length ?? 0) > 0)
-  );
+  /** Definitions in render order (assembler already pinned the main first). */
+  protected readonly definitions = computed(() => this.page()?.definitions ?? []);
 
-  /** Items in render order (assembler already pinned the main first). */
-  protected readonly items = computed(() => this.page()?.items ?? []);
+  /** Flattened examples list (sourced from definitions). */
+  protected readonly pageExamples = computed(() => this.page()?.examples ?? []);
 
   protected readonly inputColumns: DocsTableColumn[] = [
     { key: 'name',         header: 'Name'        },

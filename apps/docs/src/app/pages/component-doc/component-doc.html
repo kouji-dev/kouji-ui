@@ -15,7 +15,7 @@
              data-toc-level="2">
       <h2 class="section-title">Definitions</h2>
 
-      @for (item of items(); track item.id) {
+      @for (item of definitions(); track item.id) {
         <section
           class="item-section"
           [id]="item.symbol"
@@ -119,28 +119,26 @@
       }
     </section>
 
-    @if (hasExamples()) {
+    @if (pageExamples().length) {
       <section class="examples-section"
                id="examples"
                data-toc-entry="Examples"
                data-toc-level="2">
         <h2 class="section-title">Examples</h2>
 
-        @for (item of items(); track item.id) {
-          @for (docEx of (item.examples ?? []); track docEx.label; let i = $index) {
-            <div
-              class="example-section"
-              [id]="item.symbol + '-ex-' + i"
-              [attr.data-toc-entry]="docEx.label"
-              data-toc-level="3"
-            >
-              <div class="example-label">{{ docEx.label }}</div>
-              <kj-code-preview
-                [docExamples]="[docEx]"
-                [componentName]="p.title"
-              />
-            </div>
-          }
+        @for (entry of pageExamples(); track entry.itemId + ':' + entry.example.label; let i = $index) {
+          <div
+            class="example-section"
+            [id]="entry.itemSymbol + '-ex-' + i"
+            [attr.data-toc-entry]="entry.example.label"
+            data-toc-level="3"
+          >
+            <div class="example-label">{{ entry.example.label }}</div>
+            <kj-code-preview
+              [docExamples]="[entry.example]"
+              [componentName]="p.title"
+            />
+          </div>
         }
       </section>
     }

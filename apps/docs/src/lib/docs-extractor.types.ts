@@ -100,7 +100,14 @@ export interface DocItem {
   kind: DocKind;
   pkg: SourcePkg;
   filePath: string;
+  /** tsDoc summary block — shown in the Definitions section for this item. */
   description: string;
+  /**
+   * Value of `@doc-description` if present. Only meaningful on the main item:
+   * the page assembler copies it into `DocPage.description` (page header).
+   * Other items leave it undefined.
+   */
+  docDescription?: string;
   isMain: boolean;
   order: number | null;
   /** Source-file occurrence index, used as deterministic tiebreaker. */
@@ -115,14 +122,35 @@ export interface DocItem {
   examples?: DocExample[];
 }
 
+/**
+ * One entry in a page's flattened example list. The example originates on a
+ * specific definition (`itemId`/`itemSymbol`), but the page-level layout
+ * renders all examples together in an Examples section.
+ */
+export interface PageExample {
+  itemId: string;
+  itemSymbol: string;
+  example: DocExample;
+}
+
 export interface DocPage {
+  /** @doc-name slug (e.g. 'date-picker'). Used as URL segment. */
   name: string;
   pkg: SourcePkg;
   categoryPath: string[];
+  /** Display title — `name` formatted (`date-picker` → `Date picker`). */
   title: string;
+  /**
+   * Page description. Sourced from the first non-empty `@doc-description` on
+   * any item of the page (main item preferred); falls back to the main
+   * item's tsDoc summary.
+   */
   description: string;
   mainItemId: string;
-  items: DocItem[];
+  /** Items that make up the page's Definitions section (sorted, main first). */
+  definitions: DocItem[];
+  /** Flattened examples across all definitions, in definition order. */
+  examples: PageExample[];
 }
 
 export type ExtractorWarningKind =

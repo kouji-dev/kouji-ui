@@ -26,7 +26,8 @@ export function detectTypeAliases(
 
     const symbol = decl.name.text;
     const type = decl.type.getText(tsSourceFile);
-    const description = tags.description ?? jsDocSummary(decl);
+    const description = jsDocSummary(decl);
+    const docDescription = tags.description ?? undefined;
 
     items.push({
       id: makeItemId(pkg, morphFile.getFilePath(), symbol),
@@ -36,6 +37,7 @@ export function detectTypeAliases(
       pkg,
       filePath: morphFile.getFilePath(),
       description,
+      docDescription,
       isMain: tags.isMain,
       order: tags.order,
       sourceOrder: sourceOrder++,

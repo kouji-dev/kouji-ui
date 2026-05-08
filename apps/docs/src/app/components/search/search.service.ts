@@ -56,7 +56,7 @@ export class SearchService {
         });
       }
 
-      for (const item of page.items) {
+      for (const item of page.definitions) {
         if (item.kind !== 'directive') continue;
         const dir = item.directive;
         if (!dir) continue;

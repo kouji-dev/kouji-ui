@@ -12,13 +12,13 @@ describe('docs-extractor v2', () => {
     const manifest = extractDocsManifest(FIXTURE_ROOT);
     const publicPage = manifest.pages.find(p => p.name === 'public');
     expect(publicPage).toBeDefined();
-    const main = publicPage!.items.find(i => i.id === publicPage!.mainItemId);
+    const main = publicPage!.definitions.find(i => i.id === publicPage!.mainItemId);
     expect(main?.symbol).toBe('PublicDirective');
   });
 
   it('does not include the @internal directive', () => {
     const manifest = extractDocsManifest(FIXTURE_ROOT);
-    const allSymbols = manifest.pages.flatMap(p => p.items.map(i => i.symbol));
+    const allSymbols = manifest.pages.flatMap(p => p.definitions.map(i => i.symbol));
     expect(allSymbols).toContain('PublicDirective');
     expect(allSymbols).not.toContain('InternalDirective');
   });
@@ -27,18 +27,18 @@ describe('docs-extractor v2', () => {
     const manifest = extractDocsManifest(FIXTURE_ROOT);
     const page = manifest.pages.find(p => p.name === 'function-page');
     expect(page).toBeDefined();
-    const kinds = page!.items.map(i => i.kind);
+    const kinds = page!.definitions.map(i => i.kind);
     expect(kinds).toContain('provider-fn');
     expect(kinds).toContain('inject-fn');
     expect(kinds).toContain('function');
-    expect(page!.items[0].id).toBe(page!.mainItemId);
+    expect(page!.definitions[0].id).toBe(page!.mainItemId);
   });
 
   it('emits a service page', () => {
     const manifest = extractDocsManifest(FIXTURE_ROOT);
     const page = manifest.pages.find(p => p.name === 'svc-page');
     expect(page).toBeDefined();
-    const main = page!.items.find(i => i.id === page!.mainItemId);
+    const main = page!.definitions.find(i => i.id === page!.mainItemId);
     expect(main?.kind).toBe('service');
     expect(main?.service?.methods.map(m => m.name)).toContain('register');
   });
@@ -47,7 +47,7 @@ describe('docs-extractor v2', () => {
     const manifest = extractDocsManifest(FIXTURE_ROOT);
     const page = manifest.pages.find(p => p.name === 'const-page');
     expect(page).toBeDefined();
-    const main = page!.items.find(i => i.id === page!.mainItemId);
+    const main = page!.definitions.find(i => i.id === page!.mainItemId);
     expect(main?.kind).toBe('const');
   });
 
@@ -55,7 +55,7 @@ describe('docs-extractor v2', () => {
     const manifest = extractDocsManifest(FIXTURE_ROOT);
     const consumer = manifest.pages
       .find(p => p.name === 'consumer')
-      ?.items.find(i => i.directive?.className === 'ConsumerDirective');
+      ?.definitions.find(i => i.directive?.className === 'ConsumerDirective');
     expect(consumer).toBeDefined();
     const forwarded = consumer!.directive!.inputs.find(i => i.name === 'kjVariantLike');
     expect(forwarded?.type).toBe('string');

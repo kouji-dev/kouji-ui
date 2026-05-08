@@ -53,7 +53,8 @@ export function detectDirectives(
 
     const exportAs = extractDecoratorProp(decoratorArg, 'exportAs');
     const sourceDir = dirname(morphFile.getFilePath());
-    const description = tags.description ?? getJsDocDescription(cls);
+    const description = getJsDocDescription(cls);
+    const docDescription = tags.description ?? undefined;
     const ownInputs = extractInputs(cls, tsSourceFile, morphFile);
     const hdInputs = extractHostDirectiveInputs(decoratorArg);
     const allInputs = [...ownInputs, ...hdInputs];
@@ -74,6 +75,7 @@ export function detectDirectives(
       pkg,
       filePath: morphFile.getFilePath(),
       description,
+      docDescription,
       isMain: tags.isMain,
       order: tags.order,
       sourceOrder: sourceOrder++,
