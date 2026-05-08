@@ -21,13 +21,10 @@ const read = <T>(v: Signal<T> | T): T => isSignal(v) ? v() : v;
 let _anchorIdCounter = 0;
 
 const supportsCssAnchor = (): boolean => {
-  try {
-    return typeof CSS !== 'undefined'
-      && typeof CSS.supports === 'function'
-      && CSS.supports('anchor-name', '--kj');
-  } catch {
-    return false;
-  }
+  // Disabled — CSS Anchor Positioning + position-area produces inconsistent
+  // results across browser versions (Chrome flips/inflates inset unexpectedly
+  // with span-* keywords). Manual math fallback is the canonical path.
+  return false;
 };
 
 const positionAreaFor = (side: KjSide, align: KjAlign): string => {
