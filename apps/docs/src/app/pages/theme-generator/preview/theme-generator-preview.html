@@ -13,7 +13,7 @@
 
 <section role="tabpanel" tabindex="0" class="tab-panel" [attr.aria-label]="active() + ' preview'">
   @switch (active()) {
-    @case ('dashboard') { <p>Dashboard tab — populated in Task 15.</p> }
+    @case ('dashboard') { <kj-preview-dashboard /> }
     @case ('settings')  { <p>Settings tab — populated in Task 16.</p> }
     @case ('big-form')  { <p>Big form tab — populated in Task 17.</p> }
     @case ('search')    { <p>Search tab — populated in Task 18.</p> }

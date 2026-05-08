@@ -1,0 +1,59 @@
+<header class="hd">
+  <h2 class="hd__title">Dashboard</h2>
+  <div class="hd__actions">
+    <kj-button kjVariant="default">New report</kj-button>
+    <kj-button kjVariant="secondary">Export</kj-button>
+  </div>
+</header>
+
+<kj-alert kjVariant="info">
+  <kj-alert-icon>i</kj-alert-icon>
+  <kj-alert-title>Overnight jobs complete</kj-alert-title>
+  <kj-alert-description>2 scheduled jobs ran successfully overnight.</kj-alert-description>
+</kj-alert>
+
+<section class="kpis" aria-label="Key performance indicators">
+  @for (k of kpi; track k.label) {
+    <article class="kpi">
+      <div class="kpi__label">{{ k.label }}</div>
+      <div class="kpi__value">{{ k.value }}</div>
+      <span
+        class="kpi__delta"
+        [class.kpi__delta--up]="isPositive(k.delta)"
+        [class.kpi__delta--down]="!isPositive(k.delta)"
+      >{{ k.delta }}</span>
+    </article>
+  }
+</section>
+
+<kj-divider />
+
+<section class="grid-2">
+  <article class="card">
+    <h3 class="card__title">Onboarding progress</h3>
+    <p class="card__meta">Step 3 of 4 &middot; 65%</p>
+    <kj-progress-bar [kjValue]="65" kjAriaLabel="Onboarding progress" />
+    <ol class="steps" aria-label="Onboarding steps">
+      <li class="steps__item steps__item--done">Account</li>
+      <li class="steps__item steps__item--done">Workspace</li>
+      <li class="steps__item steps__item--current" aria-current="step">Invite</li>
+      <li class="steps__item">Done</li>
+    </ol>
+  </article>
+
+  <article class="card">
+    <h3 class="card__title">Team</h3>
+    <ul class="people">
+      @for (p of people; track p.name) {
+        <li class="people__row">
+          <kj-avatar [content]="p.avatar" [alt]="p.name" />
+          <div class="people__meta">
+            <div class="people__name">{{ p.name }}</div>
+            <div class="people__role">{{ p.role }}</div>
+          </div>
+          <kj-badge variant="outline">active</kj-badge>
+        </li>
+      }
+    </ul>
+  </article>
+</section>
