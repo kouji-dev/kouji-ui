@@ -15,106 +15,118 @@
              data-toc-level="2">
       <h2 class="section-title">Definitions</h2>
 
-      @for (item of definitions(); track item.id) {
+      @for (group of definitionGroups(); track group.kind) {
         <section
-          class="item-section"
-          [id]="item.symbol"
-          [attr.data-toc-entry]="item.symbol"
+          class="kind-group"
+          [id]="'group-' + group.kind"
+          [attr.data-toc-entry]="groupLabel(group.kind)"
           data-toc-level="3"
         >
-          <div class="item-header">
-            @if (item.kind === 'directive' && item.directive) {
-              <code class="directive-selector">{{ item.directive.selector }}</code>
-            }
-            <span class="item-kind">{{ kindLabel(item.kind) }}</span>
-            @if (item.isMain) { <span class="main-badge" title="Main">main</span> }
-          </div>
+          <h3 class="kind-group-title">{{ groupLabel(group.kind) }}</h3>
 
-          @if (item.description) {
-            <p class="desc">{{ item.description }}</p>
-          }
+          @for (item of group.items; track item.id) {
+            <section
+              class="item-section"
+              [id]="item.symbol"
+              [attr.data-toc-entry]="item.symbol"
+              data-toc-level="4"
+            >
+              <div class="item-header">
+                @if (item.kind === 'directive' && item.directive) {
+                  <code class="directive-selector">{{ item.directive.selector }}</code>
+                } @else {
+                  <code class="item-name">{{ item.symbol }}</code>
+                }
+                @if (item.isMain) { <span class="main-badge" title="Main">main</span> }
+              </div>
 
-          @switch (item.kind) {
-            @case ('directive') {
-              @if (item.directive; as d) {
-                @if (d.inputs.length) {
-                  <div class="inputs-block">
-                    <h4 class="block-title">Inputs</h4>
-                    <app-docs-table [columns]="inputColumns" [rows]="$any(d.inputs)" label="Inputs" />
-                  </div>
+              @if (item.description) {
+                <p class="desc">{{ item.description }}</p>
+              }
+
+              @switch (item.kind) {
+                @case ('directive') {
+                  @if (item.directive; as d) {
+                    @if (d.inputs.length) {
+                      <div class="inputs-block">
+                        <h4 class="block-title">Inputs</h4>
+                        <app-docs-table [columns]="inputColumns" [rows]="$any(d.inputs)" label="Inputs" />
+                      </div>
+                    }
+                    @if (d.models.length) {
+                      <div class="inputs-block">
+                        <h4 class="block-title">Models</h4>
+                        <app-docs-table [columns]="modelColumns" [rows]="$any(d.models)" label="Models" />
+                      </div>
+                    }
+                    @if (d.outputs.length) {
+                      <div class="inputs-block">
+                        <h4 class="block-title">Outputs</h4>
+                        <app-docs-table [columns]="outputColumns" [rows]="$any(d.outputs)" label="Outputs" />
+                      </div>
+                    }
+                  }
                 }
-                @if (d.models.length) {
-                  <div class="inputs-block">
-                    <h4 class="block-title">Models</h4>
-                    <app-docs-table [columns]="modelColumns" [rows]="$any(d.models)" label="Models" />
-                  </div>
+                @case ('service') {
+                  @if (item.service; as s) {
+                    @if (s.methods.length) {
+                      <div class="inputs-block">
+                        <h4 class="block-title">Methods</h4>
+                        <app-docs-table [columns]="methodColumns" [rows]="$any(s.methods)" label="Methods" />
+                      </div>
+                    }
+                    @if (s.properties.length) {
+                      <div class="inputs-block">
+                        <h4 class="block-title">Properties</h4>
+                        <app-docs-table [columns]="propertyColumns" [rows]="$any(s.properties)" label="Properties" />
+                      </div>
+                    }
+                  }
                 }
-                @if (d.outputs.length) {
-                  <div class="inputs-block">
-                    <h4 class="block-title">Outputs</h4>
-                    <app-docs-table [columns]="outputColumns" [rows]="$any(d.outputs)" label="Outputs" />
-                  </div>
+                @case ('provider-fn') {
+                  @if (item.function; as f) {
+                    <pre class="signature"><code>{{ f.signature }}</code></pre>
+                    @if (f.parameters.length) {
+                      <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
+                    }
+                  }
+                }
+                @case ('inject-fn') {
+                  @if (item.function; as f) {
+                    <pre class="signature"><code>{{ f.signature }}</code></pre>
+                    @if (f.parameters.length) {
+                      <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
+                    }
+                  }
+                }
+                @case ('function') {
+                  @if (item.function; as f) {
+                    <pre class="signature"><code>{{ f.signature }}</code></pre>
+                    @if (f.parameters.length) {
+                      <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
+                    }
+                  }
+                }
+                @case ('token') {
+                  @if (item.token; as t) {
+                    <p>Type: <code class="token-type">{{ t.type }}</code></p>
+                  }
+                }
+                @case ('type-alias') {
+                  @if (item.typeAlias; as t) {
+                    <pre class="signature"><code>{{ t.type }}</code></pre>
+                  }
+                }
+                @case ('const') {
+                  @if (item.const; as c) {
+                    <p>Type: <code class="const-type">{{ c.type }}</code></p>
+                    @if (c.literalValue) {
+                      <pre class="signature"><code>{{ c.literalValue }}</code></pre>
+                    }
+                  }
                 }
               }
-            }
-            @case ('service') {
-              @if (item.service; as s) {
-                @if (s.methods.length) {
-                  <div class="inputs-block">
-                    <h4 class="block-title">Methods</h4>
-                    <app-docs-table [columns]="methodColumns" [rows]="$any(s.methods)" label="Methods" />
-                  </div>
-                }
-                @if (s.properties.length) {
-                  <div class="inputs-block">
-                    <h4 class="block-title">Properties</h4>
-                    <app-docs-table [columns]="propertyColumns" [rows]="$any(s.properties)" label="Properties" />
-                  </div>
-                }
-              }
-            }
-            @case ('provider-fn') {
-              @if (item.function; as f) {
-                <pre class="signature"><code>{{ f.signature }}</code></pre>
-                @if (f.parameters.length) {
-                  <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
-                }
-              }
-            }
-            @case ('inject-fn') {
-              @if (item.function; as f) {
-                <pre class="signature"><code>{{ f.signature }}</code></pre>
-                @if (f.parameters.length) {
-                  <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
-                }
-              }
-            }
-            @case ('function') {
-              @if (item.function; as f) {
-                <pre class="signature"><code>{{ f.signature }}</code></pre>
-                @if (f.parameters.length) {
-                  <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
-                }
-              }
-            }
-            @case ('token') {
-              @if (item.token; as t) {
-                <p><code class="token-type">{{ t.type }}</code></p>
-              }
-            }
-            @case ('type-alias') {
-              @if (item.typeAlias; as t) {
-                <pre class="signature"><code>{{ t.type }}</code></pre>
-              }
-            }
-            @case ('const') {
-              @if (item.const; as c) {
-                <p><code class="const-type">{{ c.type }}</code></p>
-                @if (c.literalValue) {
-                  <pre class="signature"><code>{{ c.literalValue }}</code></pre>
-                }
-              }
-            }
+            </section>
           }
         </section>
       }

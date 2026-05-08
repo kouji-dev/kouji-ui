@@ -87,13 +87,44 @@ export class ComponentDocComponent {
       case 'directive':   return 'Directive';
       case 'service':     return 'Service';
       case 'provider-fn': return 'Provider';
-      case 'inject-fn':   return 'Inject helper';
+      case 'inject-fn':   return 'Injector';
       case 'function':    return 'Function';
       case 'token':       return 'Injection token';
       case 'type-alias':  return 'Type';
       case 'const':       return 'Constant';
     }
   }
+
+  /** Section heading per kind (uppercase plural). */
+  protected groupLabel(kind: DocItem['kind']): string {
+    switch (kind) {
+      case 'directive':   return 'Directives';
+      case 'service':     return 'Services';
+      case 'provider-fn': return 'Providers';
+      case 'inject-fn':   return 'Injectors';
+      case 'function':    return 'Functions';
+      case 'token':       return 'Injection tokens';
+      case 'type-alias':  return 'Types';
+      case 'const':       return 'Constants';
+    }
+  }
+
+  /**
+   * Definitions grouped by kind in a fixed order so the page sections always
+   * appear in the same sequence regardless of source-file ordering. Each
+   * group preserves the assembler's intra-kind sort.
+   */
+  protected readonly definitionGroups = computed(() => {
+    const order: DocItem['kind'][] = [
+      'directive', 'service',
+      'provider-fn', 'inject-fn', 'function',
+      'token', 'const', 'type-alias',
+    ];
+    const defs = this.definitions();
+    return order
+      .map(kind => ({ kind, items: defs.filter(d => d.kind === kind) }))
+      .filter(g => g.items.length > 0);
+  });
 
   constructor() {
     toObservable(this.page).pipe(

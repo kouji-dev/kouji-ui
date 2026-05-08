@@ -174,6 +174,28 @@ h1 {
   margin: 0 0 1.25rem;
 }
 
+.kind-group {
+  margin-top: var(--kj-space-2xl);
+}
+.kind-group-title {
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--kj-color-primary);
+  border-bottom: 1px solid var(--kj-color-base-300);
+  padding-bottom: var(--kj-space-sm);
+  margin: 0 0 var(--kj-space-lg);
+  font-weight: 500;
+}
+.item-name {
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: var(--kj-color-primary);
+  padding: 0.3rem var(--kj-space-md);
+  font-size: 0.875rem;
+  font-family: var(--kj-font-mono);
+}
 .item-section {
   padding: 2.5rem 0;
   border-bottom: 1px solid var(--kj-color-base-200);
@@ -185,14 +207,6 @@ h1 {
   gap: var(--kj-space-xl);
   margin-bottom: var(--kj-space-lg);
   flex-wrap: wrap;
-}
-.item-kind {
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--kj-color-neutral);
-  border: 1px solid var(--kj-color-base-300);
-  padding: 0.2rem 0.5rem;
 }
 .main-badge {
   font-size: 0.65rem;
