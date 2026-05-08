@@ -2,6 +2,7 @@ import { JsonPipe } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjButtonComponent } from '../button/button';
+import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 import { KjInputComponent } from '../input/input';
 import {
   KjFormActionsComponent,
@@ -19,6 +20,8 @@ import {
   imports: [
     KjFormComponent,
     KjFormActionsComponent,
+    KjFieldComponent,
+    KjFieldLabelComponent,
     KjInputComponent,
     KjButtonComponent,
     ReactiveFormsModule,
@@ -26,20 +29,18 @@ import {
   ],
   styles: [`
     :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .field { display: flex; flex-direction: column; gap: 0.25rem; }
-    label { font-size: 0.8125rem; color: var(--kj-color-base-content); }
     .submitted { font-size: 0.8125rem; opacity: 0.7; margin-top: 0.5rem; }
   `],
   template: `
     <form kj-form [formGroup]="form" (kjSubmit)="onSubmit($event)">
-      <div class="field">
-        <label for="email">Email</label>
+      <kj-field>
+        <kj-field-label>Email</kj-field-label>
         <kj-input type="email" formControlName="email" placeholder="you@example.com" />
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
+      </kj-field>
+      <kj-field>
+        <kj-field-label>Password</kj-field-label>
         <kj-input type="password" formControlName="password" />
-      </div>
+      </kj-field>
       <kj-form-actions>
         <kj-button kjType="submit">Sign in</kj-button>
       </kj-form-actions>
