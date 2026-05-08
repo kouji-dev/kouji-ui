@@ -24,6 +24,7 @@ import { KJ_MENU, KjMenuContext } from './menu.context';
  *      @doc-file menu.example.ts
  * @category Core/Navigation
  * @doc-name menu
+ * @doc-description Root menu state container — manages open/close state and provides context to trigger, content, and item directives that together deliver keyboard navigation, typeahead, and outside-click dismissal.
  * @doc-is-main
  */
 @Directive({

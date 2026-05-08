@@ -34,6 +34,7 @@ import { KJ_SPINNER_CONFIG, KjSpinnerAnimation } from './config';
  * @category Core/Feedback
  * @doc
  * @doc-name spinner
+ * @doc-description Marks an element as an indeterminate loading indicator — owns `role="status"`, a default `aria-label="Loading"`, and `prefers-reduced-motion` reflection, leaving the visual glyph entirely to theme CSS.
  * @doc-is-main
  */
 @Directive({

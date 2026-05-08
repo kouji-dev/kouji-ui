@@ -70,6 +70,7 @@ const DEFAULT_STRENGTH_LABELS: Record<KjPasswordScore, KjPasswordScoreLabel> = {
  * @category Core/Inputs
  * @doc
  * @doc-name password-input
+ * @doc-description Enhances a native `<input>` for password entry — adds reveal toggle, optional strength meter scoring, and Caps Lock detection, composing `KjInput` so all forms integration applies unchanged.
  * @doc-is-main
  */
 @Directive({

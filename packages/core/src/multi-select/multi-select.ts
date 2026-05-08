@@ -42,6 +42,7 @@ let _multiSelectIdCounter = 0;
  * @category Core/Inputs
  * @doc
  * @doc-name multi-select
+ * @doc-description Root multi-select container — holds the selected-value array, open/close state, search query, and max-cap policy, exposing them via `KJ_MULTI_SELECT` so trigger, listbox, and option directives stay in sync.
  * @doc-is-main
  */
 @Directive({

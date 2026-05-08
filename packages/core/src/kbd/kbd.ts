@@ -68,6 +68,7 @@ export const KJ_KBD_SIZE_PRESET: KjSizePreset = {
  * @category Core/Data display
  * @doc
  * @doc-name kbd
+ * @doc-description Marks an element as a keyboard-key visual, composing `KjSize` for the only configurable axis and relying on the native `<kbd>` element's semantics — non-interactive and styling-free by design.
  * @doc-is-main
  */
 @Directive({

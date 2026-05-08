@@ -56,6 +56,7 @@ import {
  *      @doc-file popover.finance.example.ts
  * @category Core/Overlays
  * @doc-name popover
+ * @doc-description Root popover state container — provides the `KJ_POPOVER` context to trigger, content, and close directives and owns the `kjOpen` model along with cancellable open/close lifecycle outputs.
  * @doc-is-main
  */
 @Directive({

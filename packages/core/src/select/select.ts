@@ -27,6 +27,7 @@ import { KJ_SELECT } from './select.context';
  * @category Core/Inputs
  * @doc
  * @doc-name select
+ * @doc-description Root select container that manages selected-value and open/close state, providing context to trigger, listbox, and option directives that together deliver keyboard navigation and accessible single-selection.
  * @doc-is-main
  */
 @Directive({

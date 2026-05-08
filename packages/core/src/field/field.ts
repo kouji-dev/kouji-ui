@@ -33,6 +33,7 @@ let kjFieldIdCounter = 0;
  * @category Core/Inputs
  * @doc
  * @doc-name field
+ * @doc-description Groups a labelled form control with its help text and error messages, wiring accessible ids, `aria-describedby`, `aria-invalid`, and required/disabled propagation so child directives stay in sync automatically.
  * @doc-is-main
  */
 @Directive({

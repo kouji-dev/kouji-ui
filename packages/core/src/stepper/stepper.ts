@@ -58,6 +58,7 @@ let _stepperUid = 0;
  * @category Core/Navigation
  * @doc
  * @doc-name stepper
+ * @doc-description Root of the Stepper directive family — owns the active-step state machine, linear-mode gating, loop support, and roving-tabindex navigation across step headers using APG wizard semantics.
  * @doc-is-main
  */
 @Directive({

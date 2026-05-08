@@ -44,6 +44,7 @@ import { KJ_INPUT_MASK_TOKENS } from './input-mask.tokens';
  * @category Core/Inputs
  * @doc
  * @doc-name input-mask
+ * @doc-description Applies a fixed-format mask to a native `<input>`, managing caret placement, character filtering, and partial-fill validation while bridging Angular reactive forms and template-driven forms via `KjInput`.
  * @doc-is-main
  */
 @Directive({

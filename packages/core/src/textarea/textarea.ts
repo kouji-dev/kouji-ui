@@ -67,6 +67,7 @@ export type KjTextareaAutoresize = 'off' | 'auto';
  *  @doc-file textarea.example.ts
  * @category Core/Inputs
  * @doc-name textarea
+ * @doc-description Enhances a native `<textarea>` with Angular forms integration, theme presets, focus ring, optional auto-resize geometry, and threshold-based character-counter announcements for screen readers.
  * @doc-is-main
  */
 @Directive({

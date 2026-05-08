@@ -42,6 +42,7 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
  * @category Core/Inputs
  * @doc
  * @doc-name tree-select
+ * @doc-description Root Tree Select container — manages open/close state, selected values, and expanded node IDs in single or multiple selection mode, providing context to trigger, panel, and node directives.
  * @doc-is-main
  */
 @Directive({

@@ -51,6 +51,7 @@ const ITEM_SELECTOR =
  * @category Core/Actions
  * @doc
  * @doc-name dropdown-menu
+ * @doc-description A portal-mounted menu panel with keyboard navigation, type-ahead, and accessible focus management — attach to any trigger via `[kjDropdownMenuTriggerFor]` to get a fully ARIA-compliant `role="menu"` overlay.
  * @doc-is-main
  */
 @Directive({

@@ -47,6 +47,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *    ```
  * @category Core/Inputs
  * @doc-name input
+ * @doc-description Enhances a native `<input>` with Angular forms integration (CVA), ARIA invalid/disabled state, and a focus ring — the foundational text-entry primitive that other input directives compose.
  * @doc-is-main
  */
 @Directive({

@@ -11,6 +11,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  * @category Core/Inputs
  * @doc
  * @doc-name toggle
+ * @doc-description Adds toggle (press/unpress) behaviour to any focusable element — reflects `aria-pressed`, `data-pressed`, and Angular forms integration so the pressed state participates in reactive and template-driven forms.
  * @doc-is-main
  */
 @Directive({

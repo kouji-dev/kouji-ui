@@ -72,6 +72,7 @@ let _anchorIdCounter = 0;
  * @category Core/Primitives
  * @doc
  * @doc-name overlay
+ * @doc-description Connected-positioning primitive for floating elements — prefers CSS Anchor Positioning when supported and falls back to manual `getBoundingClientRect` math, exposing the resolved placement via the `placement` signal.
  * @doc-is-main
  */
 @Directive({

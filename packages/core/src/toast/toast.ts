@@ -40,6 +40,7 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
  * ```
  * @category Core/Overlays
  * @doc-name toast
+ * @doc-description Marks an element as a single toast item — owns `role`/`aria-atomic`, positional CSS custom properties (`--kj-toast-index`, `--kj-toast-before`, `--kj-toast-after`, `--kj-toast-height`), and `data-variant` for theme styling.
  * @doc-is-main
  */
 @Directive({
