@@ -862,7 +862,7 @@ git commit -m "feat(theme-gen): wire seed grid, randomize, re-derive into sideba
 - Create: `apps/docs/src/app/services/contrast-score.service.ts`
 - Test: `apps/docs/src/app/services/contrast-score.service.spec.ts`
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```ts
 // contrast-score.service.spec.ts
@@ -912,12 +912,12 @@ describe('ContrastScoreService', () => {
 });
 ```
 
-- [ ] **Step 2: Run test**
+- [x] **Step 2: Run test**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/contrast-score.service.spec.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // contrast-score.service.ts
@@ -1015,12 +1015,12 @@ export class ContrastScoreService {
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `pnpm exec vitest run apps/docs/src/app/services/contrast-score.service.spec.ts`
 Expected: PASS, 4 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/docs/src/app/services/contrast-score.service.ts apps/docs/src/app/services/contrast-score.service.spec.ts
