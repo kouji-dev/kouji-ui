@@ -33,7 +33,7 @@ let _nextId = 0;
  * <input kjInput type="text" placeholder="Amount" />
  * <span kjInputGroupAddon kjPosition="end">.00</span>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name input-group
  */

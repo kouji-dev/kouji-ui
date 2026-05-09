@@ -25,7 +25,7 @@ interface StackEntry {
  *
  * SSR-safe: every DOM access guarded by isPlatformBrowser.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-stack
  * @doc-is-main

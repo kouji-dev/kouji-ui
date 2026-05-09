@@ -24,7 +24,7 @@ import type { KjMenubarItemContext } from './menubar.context';
  * during the primitives migration. The wrapper now exposes minimal
  * registration / focus hooks; richer popup orchestration is a follow-up.
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name menubar
  */

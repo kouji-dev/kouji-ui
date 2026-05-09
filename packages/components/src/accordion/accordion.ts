@@ -16,7 +16,7 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
  *   @doc-file accordion.disabled.example.ts
  * @doc-example Rich content
  *   @doc-file accordion.rich-content.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name accordion
  * @doc-description Themed accordion for collapsible content sections with single or multi-open panels and keyboard navigation.

@@ -12,7 +12,7 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  *   @doc-file badge.sizes.example.ts
  * @doc-example With icon
  *   @doc-file badge.with-icon.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name badge
  * @doc-description Themed inline label for status, counts, or category tags with variant and size presets.

@@ -19,7 +19,7 @@ import {
   extractDecoratorProp,
   getJsDocDescription,
   getRequired,
-  readCategoryTag,
+  readDocCategoryTag,
 } from '../extractor-helpers';
 import { makeItemId } from './ids';
 
@@ -55,7 +55,7 @@ export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
     const models: ModelDef[] = allInputs.filter(i => i.isModel);
     const outputs: OutputDef[] = extractOutputs(cls, tsSourceFile);
     const required = getRequired(cls);
-    const categoryPath = readCategoryTag(cls, pkg);
+    const categoryPath = readDocCategoryTag(cls);
     const exampleFiles = getDocFiles(cls, tsSourceFile, sourceDir);
     const themedExamples = getDocThemes(cls, tsSourceFile, sourceDir);
     const docExamples = getDocExamples(cls, tsSourceFile, sourceDir);

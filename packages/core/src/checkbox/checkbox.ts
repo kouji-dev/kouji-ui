@@ -1,4 +1,4 @@
-﻿import { Directive, inject, model } from '@angular/core';
+import { Directive, inject, model } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 
 /**
@@ -48,7 +48,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *         newsletter = signal(true);
  *       }
  *    ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc-name checkbox
  * @doc-description Adds accessible checkbox behaviour and Angular forms support to any element you bring.
  * @doc-is-main

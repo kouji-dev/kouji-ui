@@ -66,7 +66,7 @@ function flattenTree(
  * expand/collapse toggle, a checkbox in multi mode, indentation based on
  * nesting level, and the node label.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name tree-select
  * @doc-description Themed tree-select row with expand toggle, optional multi-select checkbox, and indentation.
@@ -161,7 +161,7 @@ export class KjTreeSelectNodeComponent {
  *   @doc-file tree-select.field.example.ts
  * @doc-example Disabled
  *   @doc-file tree-select.disabled.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name tree-select
  */

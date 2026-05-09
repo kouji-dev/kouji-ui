@@ -28,7 +28,7 @@ import {
  *   <button kjButton>Delete</button>
  * </div>
  * ```
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name button-group
  * @doc-description Unstyled button group that shares variant, size, and disabled defaults across child buttons.

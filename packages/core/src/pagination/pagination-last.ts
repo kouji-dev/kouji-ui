@@ -21,7 +21,7 @@ import { KJ_PAGINATION_CONFIG } from './config';
  * <button kjButton kjPaginationLast>»</button>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name pagination
  */

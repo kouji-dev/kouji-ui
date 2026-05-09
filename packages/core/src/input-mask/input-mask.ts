@@ -41,7 +41,7 @@ import { KJ_INPUT_MASK_TOKENS } from './input-mask.tokens';
  * <input kjInputMask kjMask="(999) 999-9999" [(ngModel)]="phone" />
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name input-mask
  * @doc-description Applies a fixed-format mask to a native input with caret handling and partial-fill validation.

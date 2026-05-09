@@ -25,7 +25,7 @@ import { KJ_PAGINATION_CONFIG } from './config';
  * <span kjPaginationInfo></span>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name pagination
  */

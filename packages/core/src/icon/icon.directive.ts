@@ -14,7 +14,7 @@ import type { KjIconColor, KjIconSize } from './icon.types';
  * <span [kjIcon]="'check'" [kjIconColor]="'success'" [kjIconSize]="'lg'"></span>
  * ```
  *
- * @category Core/Icon
+ * @doc-category Core/Icon
  * @doc
  * @doc-example Gallery
  *   @doc-file ../../../components/src/icon/icon.gallery.example.ts

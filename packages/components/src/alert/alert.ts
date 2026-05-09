@@ -48,7 +48,7 @@ import type { KjAlertMode } from '@kouji-ui/core';
  *   @doc-file alert.with-actions.example.ts
  * @doc-example Static banner
  *   @doc-file alert.banner.example.ts
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name alert
  * @doc-description Themed in-flow notification with severity variants, optional dismiss button, and action slots.
@@ -100,7 +100,7 @@ export class KjAlertComponent {
  * Decorative icon slot inside `<kj-alert>`. Wraps `KjAlertIcon` so it picks
  * up `aria-hidden="true"` and `data-variant` from the parent alert context.
  *
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name alert
  */
@@ -120,7 +120,7 @@ export class KjAlertIconComponent {}
  * the wrapper defaults to a `<strong>`-styled element via CSS, but consumers
  * SHOULD use `<h3 kjAlertTitle>` when the alert lives in a content region).
  *
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name alert
  */
@@ -138,7 +138,7 @@ export class KjAlertTitleComponent {}
 /**
  * Description body for the alert. Wires `aria-describedby` via `KjAlertDescription`.
  *
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name alert
  */
@@ -157,7 +157,7 @@ export class KjAlertDescriptionComponent {}
  * Container for action buttons (Retry, View details, …). Sets `role="group"`
  * with an overridable `aria-label`. Compose `<kj-button>` instances inside.
  *
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name alert
  */
@@ -179,7 +179,7 @@ export class KjAlertActionsComponent {
  * picks up the full `KjButton` chrome (focus ring, ARIA-disabled). Default
  * content is `×`; override via projected content. Place inside `<kj-alert>`.
  *
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name alert
  */

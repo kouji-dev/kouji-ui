@@ -18,7 +18,7 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
  * - `Enter` — activate active item
  * - `Escape` — first press clears query; second press propagates to dialog
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name command-palette
  */

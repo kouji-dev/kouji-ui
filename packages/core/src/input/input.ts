@@ -1,4 +1,4 @@
-﻿import { Directive, ElementRef, effect, inject, input } from '@angular/core';
+import { Directive, ElementRef, effect, inject, input } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 
 /**
@@ -45,7 +45,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *         emailCtrl = new FormControl('', [Validators.email, Validators.required]);
  *       }
  *    ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc-name input
  * @doc-description Adds Angular forms integration, invalid and disabled state, and a focus ring to a native input.
  * @doc-is-main

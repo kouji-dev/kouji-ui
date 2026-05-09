@@ -3,7 +3,7 @@
 
 import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
-import type { SourcePkg, InputDef, OutputDef } from './docs-extractor.types';
+import type { InputDef, OutputDef } from './docs-extractor.types';
 
 // ── ts-query selectors ────────────────────────────────────────────────────────
 
@@ -265,21 +265,16 @@ export function unwrapSignalType(type: string): string {
   return m ? m[1].trim() : cleaned;
 }
 
-// ── Category tag ──────────────────────────────────────────────────────────────
+// ── @doc-category tag ───────────────────────────────────────────────────────────
 
-export function readCategoryTag(node: ts.Node, pkg: SourcePkg): string[] {
-  const tag = ts.getJSDocTags(node).find(t => t.tagName.text === 'category');
+/**
+ * Reads `@doc-category Path/Like/This` — passthrough segments only (no package prefix).
+ */
+export function readDocCategoryTag(node: ts.Node): string[] {
+  const tag = ts.getJSDocTags(node).find(t => t.tagName.text === 'doc-category');
   if (!tag) return [];
   const raw = typeof tag.comment === 'string'
     ? tag.comment
     : ts.getTextOfJSDocComment(tag.comment) ?? '';
-  const segments = raw.trim().split('/').map(s => s.trim()).filter(Boolean);
-  if (!segments.length) return [];
-  const prefix = pkg === 'core' ? 'Core' : 'Library';
-  // If the tag already starts with the package label (any casing), normalise and return as-is.
-  if (segments[0].toLowerCase() === prefix.toLowerCase()) {
-    segments[0] = prefix;
-    return segments;
-  }
-  return [prefix, ...segments];
+  return raw.trim().split('/').map(s => s.trim()).filter(Boolean);
 }

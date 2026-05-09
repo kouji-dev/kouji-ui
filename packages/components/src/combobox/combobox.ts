@@ -33,7 +33,7 @@ import {
  *   @doc-file combobox.empty-state.example.ts
  * @doc-example With icons
  *   @doc-file combobox.with-icons.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name combobox
  * @doc-description Themed autocomplete combobox with built-in filtering, async search support, and free-text mode.
@@ -91,7 +91,7 @@ export class KjComboboxComponent {
 /**
  * Single combobox option. Project as a child of `<kj-combobox>`.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name combobox
  */
@@ -115,7 +115,7 @@ export class KjComboboxOptionComponent {
  * Empty-state slot rendered when no options match the query. Place inside
  * `<kj-combobox>`.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name combobox
  */
@@ -146,7 +146,7 @@ export class KjComboboxEmptyComponent {
 /**
  * Loading-state slot rendered while `loading=true`. Place inside `<kj-combobox>`.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name combobox
  */

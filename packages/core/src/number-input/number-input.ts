@@ -56,7 +56,7 @@ let nextId = 0;
  *    @doc-file number-input.decimal.example.ts
  *  @doc-example Currency formatting
  *    @doc-file number-input.currency.example.ts
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc-name number-input
  * @doc-description Adds numeric spinbutton behaviour to a native input with min, max, step, and locale formatting.
  * @doc-is-main

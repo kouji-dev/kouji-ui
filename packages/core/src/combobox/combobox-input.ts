@@ -28,7 +28,7 @@ import { KJ_COMBOBOX } from './combobox.context';
  * - Enter: commit active option (or free-text query).
  * - Escape / Tab: close the listbox.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: 'input[kjComboboxInput]',

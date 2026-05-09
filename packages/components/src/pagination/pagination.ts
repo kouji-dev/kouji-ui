@@ -58,7 +58,7 @@ import {
  *   @doc-file pagination.compact.example.ts
  * @doc-example With info
  *   @doc-file pagination.with-info.example.ts
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  * @doc-description Themed pagination control with ellipsis windowing, accessible nav, and two-way page binding.
@@ -94,7 +94,7 @@ export class KjPaginationComponent {}
  * forwards the required `kjPage` plus optional `kjDisabled` / `kjVariant` /
  * `kjSize` inputs. Reflects `aria-current="page"` on the active page.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -132,7 +132,7 @@ export class KjPaginationItemComponent {
  * Boundary control that retreats one page. Disabled (via `aria-disabled`)
  * when the parent is on page 1 or the dataset is empty.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -164,7 +164,7 @@ export class KjPaginationPreviousComponent {
  * Boundary control that advances one page. Disabled when the parent is on
  * the last page or the dataset is empty.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -196,7 +196,7 @@ export class KjPaginationNextComponent {
  * Boundary control that jumps to page 1. Disabled when already on the
  * first page or the dataset is empty.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -228,7 +228,7 @@ export class KjPaginationFirstComponent {
  * Boundary control that jumps to the last page. Disabled when already on
  * the last page or the dataset is empty.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -261,7 +261,7 @@ export class KjPaginationLastComponent {
  * the visible glyph is decorative, an AT-readable visually-hidden label
  * ("More pages") is appended at render time.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -281,7 +281,7 @@ export class KjPaginationEllipsisComponent {}
  * Wraps `KjPaginationInfo`; when the consumer projects their own content
  * the directive yields and the projection wins.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */
@@ -310,7 +310,7 @@ export class KjPaginationInfoComponent {}
  * <kj-pagination-default [(kjPage)]="page" [kjTotalPages]="10" />
  * ```
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name pagination
  */

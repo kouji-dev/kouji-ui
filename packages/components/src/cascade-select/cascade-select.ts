@@ -32,7 +32,7 @@ import {
  *   @doc-file cascade-select.field.example.ts
  * @doc-example Disabled options
  *   @doc-file cascade-select.disabled.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name cascade-select
  * @doc-description Themed hierarchical select for multi-level option trees with hover or arrow-key sub-panel navigation.

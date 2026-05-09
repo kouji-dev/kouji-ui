@@ -1,4 +1,4 @@
-﻿import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, computed, inject, input } from '@angular/core';
 import { KJ_FORM_FIELD, KjFormFieldContext } from './form-field.context';
 
 /**
@@ -11,7 +11,7 @@ import { KJ_FORM_FIELD, KjFormFieldContext } from './form-field.context';
  *   <span kjFormError>Name is required</span>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name form
  */
@@ -28,7 +28,7 @@ export class KjFormField implements KjFormFieldContext {
 
 /**
  * Label element within a form field.
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name form
  */
@@ -41,7 +41,7 @@ export class KjFormLabel { readonly ctx = inject(KJ_FORM_FIELD); }
 /**
  * Error message element. Visible only when field is invalid.
  * @example `<span kjFormError>Email is invalid</span>`
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name form
  */

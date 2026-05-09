@@ -46,7 +46,7 @@ import {
  * </div>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name time-picker
  * @doc-description Unstyled time-picker root that holds the time-of-day model and shares state with segment inputs.

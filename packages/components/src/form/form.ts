@@ -44,7 +44,7 @@ import {
  *   @doc-file form.async-submit.example.ts
  * @doc-example Compound (multiple groups)
  *   @doc-file form.compound.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name form
  * @doc-description Themed form host with submit interception, focus-on-first-error, async state, and an optional error summary.
@@ -89,7 +89,7 @@ export class KjFormComponent {}
  *   <kj-button kjType="submit">Save</kj-button>
  * </kj-form-actions>
  * ```
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name form
  */
@@ -131,7 +131,7 @@ export class KjFormActionsComponent {
  *   <kj-form-actions><kj-button kjType="submit">Save</kj-button></kj-form-actions>
  * </form>
  * ```
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name form
  */

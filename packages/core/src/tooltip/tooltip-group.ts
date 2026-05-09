@@ -17,7 +17,7 @@ import { Directive, output } from '@angular/core';
  * </div>
  * ```
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjTooltipGroup]',

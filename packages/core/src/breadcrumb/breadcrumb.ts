@@ -46,7 +46,7 @@ interface KjBreadcrumbItemEntry {
  * </nav>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  * @doc-description Unstyled breadcrumb root that owns the nav landmark, item registration, and truncation.

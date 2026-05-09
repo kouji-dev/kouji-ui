@@ -37,7 +37,7 @@ import { programmatic } from '../primitives/overlay/strategies/trigger-event/pro
  *
  * The host element gets `aria-label="Command palette"` and `role="dialog"`.
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name command-palette
  */

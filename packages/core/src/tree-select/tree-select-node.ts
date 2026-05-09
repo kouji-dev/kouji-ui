@@ -27,7 +27,7 @@ import { KJ_TREE_SELECT } from './tree-select.context';
  *   <span>{{ node.label }}</span>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name tree-select
  * @doc-description Renders one tree node with accessible treeitem semantics and selection click/keyboard handling.
@@ -112,7 +112,7 @@ export class KjTreeSelectNode {
  * ```html
  * <button kjTreeSelectToggle aria-hidden="true"></button>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjTreeSelectToggle]',

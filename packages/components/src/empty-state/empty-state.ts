@@ -67,7 +67,7 @@ export type KjEmptyStateLevel = 1 | 2 | 3 | 4 | 5 | 6;
  *   @doc-file empty-state.sizes.example.ts
  * @doc-example With secondary actions
  *   @doc-file empty-state.with-actions.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name empty-state
  * @doc-description Themed placeholder surface for no-data, no-results, or error scenarios with title, description, and actions.

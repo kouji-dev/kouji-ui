@@ -55,7 +55,7 @@ import {
  *   @doc-file overlay-badge.on-avatar.example.ts
  * @doc-example With description
  *   @doc-file overlay-badge.described.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name overlay-badge
  * @doc-description Themed positioned badge for notification counts or status dots over avatars, icons, and tabs.
@@ -167,7 +167,7 @@ export class KjOverlayBadgeComponent {
  * For the common case, prefer `<kj-overlay-badge>` which renders this slot
  * automatically.
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name overlay-badge
  */

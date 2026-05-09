@@ -1,4 +1,4 @@
-﻿import { Directive, DestroyRef, ElementRef, inject, input, afterNextRender, afterEveryRender } from '@angular/core';
+import { Directive, DestroyRef, ElementRef, inject, input, afterNextRender, afterEveryRender } from '@angular/core';
 import type { EChartsOption } from 'echarts';
 
 /**
@@ -9,7 +9,7 @@ import type { EChartsOption } from 'echarts';
  * ```html
  * <div kjChart [kjChartOption]="chartOption()" kjChartLabel="Monthly revenue" style="height:300px"></div>
  * ```
- * @category Core/Data
+ * @doc-category Core/Data
  * @doc
  * @doc-name chart
  * @doc-description Renders a reactive ECharts chart on any sized element with an accessible label.

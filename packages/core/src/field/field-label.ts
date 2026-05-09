@@ -10,7 +10,7 @@ import { KJ_FIELD } from './field.context';
  * ```html
  * <label kjFieldLabel>Email</label>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name field
  */

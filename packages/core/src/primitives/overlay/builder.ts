@@ -42,7 +42,7 @@ export interface KjAttachOptions<D = unknown> {
  * chain) by calling {@link destroy} — Angular's component destroy cascade
  * does the work; no manual ref tracking needed.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-handle
  * @doc-description Disposable handle for a single open overlay with controller, injector, and destroy access.
@@ -73,7 +73,7 @@ export class KjOverlayHandle {
  * {@link KjOverlayHandle} for service-launched overlays (dialog, drawer,
  * toast, etc.).
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-builder
  * @doc-is-main

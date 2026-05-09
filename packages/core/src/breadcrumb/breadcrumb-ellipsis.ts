@@ -27,7 +27,7 @@ import { KJ_BREADCRUMB_CONFIG } from './config';
  * <li kjBreadcrumbItem><span kjBreadcrumbEllipsis>…</span></li>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  */

@@ -47,7 +47,7 @@ function clickOrFocus(): KjTriggerEventStrategy {
  *  - **CVA** — composes `KjFormControl` so the input plays with
  *    `formControl` / `[(ngModel)]` bindings on the host.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name date-picker
  */

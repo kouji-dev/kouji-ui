@@ -60,7 +60,7 @@ export type KjChatLogLive = 'polite' | 'off';
  *   @doc-file chat-bubble.with-state.example.ts
  * @doc-example Grouped
  *   @doc-file chat-bubble.grouped.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name chat
  * @doc-description Themed chat message log with bubble variants, avatars, and accessible inbound-message announcements.

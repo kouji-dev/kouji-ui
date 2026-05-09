@@ -40,7 +40,7 @@ import { KjIconDirective, KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
  *   @doc-file tag.selectable.example.ts
  * @doc-example Tag list
  *   @doc-file tag.list.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name tag
  * @doc-description Themed tag or chip with decorative, removable, and selectable variants for filters and labels.

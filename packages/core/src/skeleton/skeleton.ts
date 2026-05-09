@@ -25,7 +25,7 @@ export type KjSkeletonAnimation = 'shimmer' | 'pulse' | 'none';
  * <span kjSkeleton kjSkeletonShape="text" style="width: 12rem"></span>
  * <div kjSkeleton kjSkeletonShape="circle" style="width: 40px; height: 40px"></div>
  * ```
- * @category Core/Layout
+ * @doc-category Core/Layout
  * @doc
  * @doc-name skeleton
  * @doc-description Marks an element as a decorative loading placeholder hidden from screen readers.

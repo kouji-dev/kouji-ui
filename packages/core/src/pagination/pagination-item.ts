@@ -20,7 +20,7 @@ import { KJ_PAGINATION_CONFIG } from './config';
  * <button kjButton kjPaginationItem [kjPage]="3">3</button>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name pagination
  */

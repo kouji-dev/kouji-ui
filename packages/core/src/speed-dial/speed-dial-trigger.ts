@@ -18,7 +18,7 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
  * </div>
  * ```
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name speed-dial
  */

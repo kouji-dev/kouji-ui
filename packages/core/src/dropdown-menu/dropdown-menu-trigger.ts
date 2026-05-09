@@ -64,7 +64,7 @@ export function nextDropdownMenuLabelId(): string {
  * Wires `aria-haspopup="menu"`, `aria-expanded`, `aria-controls` via the
  * underlying `KjOverlayTrigger` host directive.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuTrigger]',

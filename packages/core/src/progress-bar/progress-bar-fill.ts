@@ -20,7 +20,7 @@ import { KJ_PROGRESS_BAR } from './progress-bar.context';
  *   <div kjProgressBarFill></div>
  * </div>
  * ```
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name progress-bar
  */

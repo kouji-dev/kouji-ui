@@ -28,7 +28,7 @@ export type KjDirection = 'ltr' | 'rtl';
  * private readonly dir = inject(KjDirectionality);
  * readonly isRtl = computed(() => this.dir.current() === 'rtl');
  * ```
- * @category Core/Primitives
+ * @doc-category Core/Primitives
  */
 @Injectable({ providedIn: 'root' })
 export class KjDirectionality {

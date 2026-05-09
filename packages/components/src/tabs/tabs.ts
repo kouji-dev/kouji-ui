@@ -38,7 +38,7 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
  *   @doc-file tabs.disabled.example.ts
  * @doc-example Controlled
  *   @doc-file tabs.controlled.example.ts
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name tabs
  * @doc-description Themed tab strip with default and pill variants and manual or automatic activation.
@@ -77,7 +77,7 @@ export class KjTabsComponent {
  * underlying directive) and the roving-tabindex behaviour. Place inside a
  * `<kj-tabs>` and project `<kj-tab>` children.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name tabs
  */
@@ -97,7 +97,7 @@ export class KjTabListComponent {}
  * the required `value` and optional `disabled` inputs to the directive.
  * Project the tab's label as content.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name tabs
  */
@@ -133,7 +133,7 @@ export class KjTabComponent {
  * content is created on first activation and kept thereafter — subsequent
  * deactivations only toggle `hidden`.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name tabs
  */

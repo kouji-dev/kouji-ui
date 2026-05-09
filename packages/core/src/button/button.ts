@@ -33,7 +33,7 @@ import { KJ_BUTTON_CONFIG } from './config';
  *      @doc-file button.finance.example.ts
  *  @doc-example Sizes
  *    @doc-file button.sizes.example.ts
- * @category Core/Base
+ * @doc-category Core/Base
  * @doc-name button
  * @doc-is-main
  * @doc-description Adds accessible disabled, loading, and pressed semantics to any native button or anchor.

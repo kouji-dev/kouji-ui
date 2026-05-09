@@ -44,7 +44,7 @@ import { KjCalendarComponent } from '../calendar/calendar';
  *   @doc-file date-picker.locale.example.ts
  * @doc-example Read-only
  *   @doc-file date-picker.readonly.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  */
 @Component({
   selector: 'kj-date-picker',

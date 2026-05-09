@@ -202,7 +202,7 @@ export abstract class KjTimePickerSegmentBase {
  * ```html
  * <input kjTimePickerHours />
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name time-picker
  */
@@ -241,7 +241,7 @@ export class KjTimePickerHours extends KjTimePickerSegmentBase {
  * ```html
  * <input kjTimePickerMinutes />
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name time-picker
  */
@@ -279,7 +279,7 @@ export class KjTimePickerMinutes extends KjTimePickerSegmentBase {
  * ```html
  * <input kjTimePickerSeconds />
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name time-picker
  */

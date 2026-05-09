@@ -32,7 +32,7 @@ export {
  *   @doc-file popover.cancellable.example.ts
  * @doc-example With form
  *   @doc-file popover.with-form.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-popover',

@@ -19,7 +19,7 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
  * <li kjBreadcrumbSeparator><svg>…chevron…</svg></li>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  */

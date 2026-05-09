@@ -45,7 +45,7 @@ import {
  *   @doc-file breadcrumb.custom-separator.example.ts
  * @doc-example Long path
  *   @doc-file breadcrumb.long-path.example.ts
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  * @doc-description Themed breadcrumb trail with a nav landmark, configurable separator, and overflow ellipsis.
@@ -79,7 +79,7 @@ export class KjBreadcrumbComponent {
  * Wraps `KjBreadcrumbList`. Renders an `<ol>` host inside the breadcrumb
  * root via host-directive composition.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  */
@@ -97,7 +97,7 @@ export class KjBreadcrumbListComponent {}
 /**
  * Wraps `KjBreadcrumbItem`. Renders a `<li>` host inside the list.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  */
@@ -120,7 +120,7 @@ export class KjBreadcrumbItemComponent {}
  * external/disabled plumbing land on the actual hyperlink — mirrors the
  * `<kj-link>` "directive on inner host" pattern.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  */
@@ -180,7 +180,7 @@ export class KjBreadcrumbLinkComponent {
  * `aria-current="page"` (selector restriction on the directive) via
  * host-directive composition.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  */
@@ -199,7 +199,7 @@ export class KjBreadcrumbCurrentComponent {}
  * Wraps `KjBreadcrumbSeparator`. Renders a `<li>` separator cell for
  * icon-based separators (where the auto CSS pseudo-element won't do).
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  */
@@ -217,7 +217,7 @@ export class KjBreadcrumbSeparatorComponent {}
 /**
  * Wraps `KjBreadcrumbEllipsis`. Renders an overflow indicator cell.
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb
  */

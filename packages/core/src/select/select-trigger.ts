@@ -43,7 +43,7 @@ function listboxClickTrigger(): KjTriggerEventStrategy {
  * directive, not here — so option clicks can call `controller.close()`
  * directly through the same instance the trigger is wired to.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjSelectTrigger]',

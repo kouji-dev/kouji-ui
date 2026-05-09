@@ -22,7 +22,7 @@ import {
  *   "kouji-ui shipped on the day they said it would."
  * </blockquote>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name typography
  * @doc-description Styles a standalone blockquote outside a prose container with the kouji quotation tone.

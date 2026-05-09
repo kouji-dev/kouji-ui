@@ -42,7 +42,7 @@ import {
  *   @doc-file color-picker.hex-input.example.ts
  * @doc-example In a form
  *   @doc-file color-picker.in-form.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name color-picker
  * @doc-description Themed color picker with saturation canvas, hue and alpha sliders, hex input, and preset swatches.

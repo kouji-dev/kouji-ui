@@ -83,7 +83,7 @@ export interface KjListItemContext {
  * </nav>
  * ```
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name list
  * @doc-description Unstyled list container with role, orientation, and opt-in arrow-key navigation for sidebars.
@@ -225,7 +225,7 @@ export class KjList implements KjListContext {
  * </li>
  * ```
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name list
  */

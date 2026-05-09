@@ -39,7 +39,7 @@ import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
  * </div>
  * ```
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name input-otp
  * @doc-description Unstyled multi-cell one-time-password root that exposes the whole widget as a single form control.
@@ -294,7 +294,7 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
  * <input kjInputOtpCell [kjIndex]="i" />
  * ```
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name input-otp
  */

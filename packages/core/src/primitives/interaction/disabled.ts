@@ -1,4 +1,4 @@
-﻿import { Directive, booleanAttribute, input } from '@angular/core';
+import { Directive, booleanAttribute, input } from '@angular/core';
 
 /**
  * Applies disabled state to any element via ARIA and data attributes.
@@ -11,7 +11,7 @@
  * ```html
  * <div kjDisabled [kjDisabled]="isLoading()">Content</div>
  * ```
- * @category Core/Primitives
+ * @doc-category Core/Primitives
  * @doc
  * @doc-name interaction
  * @doc-description Adds accessible disabled state to any element you compose it onto.

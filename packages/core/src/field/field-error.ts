@@ -16,7 +16,7 @@ let kjFieldErrorIdCounter = 0;
  * ```html
  * <span kjFieldError>Please enter a valid email.</span>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name field
  */

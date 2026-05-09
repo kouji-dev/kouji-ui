@@ -10,7 +10,7 @@ import { Directive } from '@angular/core';
  * ```html
  * <div kjDropdownMenuSeparator></div>
  * ```
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjDropdownMenuSeparator]',

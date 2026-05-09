@@ -45,7 +45,7 @@ import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/
  *   @doc-file spinner.animations.example.ts
  * @doc-example Inside a button
  *   @doc-file spinner.in-button.example.ts
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name spinner
  * @doc-description Themed indeterminate loading spinner with variant, size, and animation glyph options.

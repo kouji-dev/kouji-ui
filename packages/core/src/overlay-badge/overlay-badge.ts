@@ -42,7 +42,7 @@ import {
  *   <span kjOverlayBadgeContent>4</span>
  * </button>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name overlay-badge
  * @doc-description Positions a badge chip over its host element with an optional accessible description.

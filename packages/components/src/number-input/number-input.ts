@@ -31,7 +31,7 @@ import {
  *   @doc-file number-input.decimal.example.ts
  * @doc-example Currency formatting
  *   @doc-file number-input.currency.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name number-input
  * @doc-description Themed numeric input with stepper buttons, locale formatting, and min/max/step constraints.

@@ -16,7 +16,7 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  *   @doc-file radio.disabled.example.ts
  * @doc-example Inline
  *   @doc-file radio.inline.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name radio
  * @doc-description Themed radio group for accessible single-selection forms input with label forwarding.

@@ -25,7 +25,7 @@ import { KJ_CASCADE_SELECT } from './cascade-select.context';
  * Selection / sub-panel state lives on the umbrella `[kjCascadeSelect]`
  * root directive — descendants read it via `KJ_CASCADE_SELECT`.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name cascade-select
  */

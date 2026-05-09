@@ -72,7 +72,7 @@ let _kjColorPickerIdCounter = 0;
  * @doc
  *  @doc-example Default
  *    @doc-file color-picker.example.ts
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc-name color-picker
  * @doc-description Unstyled color-picker root that owns HSV+alpha state and emits hex, RGB, or HSL values.
  * @doc-is-main
@@ -373,7 +373,7 @@ function hslToRgbValue(h: number, s: number, l: number): { r: number; g: number;
  * the same controller instance. `aria-haspopup="dialog"`, `aria-expanded`
  * and `aria-controls` are wired by the overlay primitive.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name color-picker
  */
@@ -419,7 +419,7 @@ export class KjColorPickerTrigger {
  * the mount and position strategies are provided by the root
  * `KjColorPicker`.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name color-picker
  */
@@ -446,7 +446,7 @@ export class KjColorPickerPanel {
  * arrow keys step ±1% (Shift = ±10%). Single `role="slider"` per the
  * APG color-picker pattern; full state announced via `aria-valuetext`.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name color-picker
  */
@@ -545,7 +545,7 @@ export class KjColorPickerArea {
  * for free; the visual track gradient is rendered via the wrapper
  * stylesheet.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name color-picker
  */
@@ -586,7 +586,7 @@ export class KjColorPickerHueSlider {
  * is true; otherwise the wrapper hides it. Like the hue slider it
  * delegates to a native range input for AT support.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name color-picker
  */
@@ -628,7 +628,7 @@ export class KjColorPickerAlphaSlider {
  * canonical value on parse failure. Pattern attribute restricts to
  * 3 / 4 / 6 / 8 hex digits with optional leading hash.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name color-picker
  */

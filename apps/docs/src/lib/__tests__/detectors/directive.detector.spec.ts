@@ -25,7 +25,7 @@ describe('detectDirectives', () => {
        * @doc
        * @doc-name icon
        * @doc-is-main
-       * @category Core/Layout/Icon
+       * @doc-category Core/Layout/Icon
        */
       @Directive({ selector: '[kjIcon]', standalone: true })
       export class KjIconDirective {}

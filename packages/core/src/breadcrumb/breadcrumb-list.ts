@@ -16,7 +16,7 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
  * <ol kjBreadcrumbList>…</ol>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  */

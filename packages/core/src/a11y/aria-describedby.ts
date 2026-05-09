@@ -1,4 +1,4 @@
-﻿import { Directive, computed, input } from '@angular/core';
+import { Directive, computed, input } from '@angular/core';
 
 /**
  * Wires `aria-describedby` to one or more element IDs.
@@ -10,7 +10,7 @@
  * <input kjAriaDescribedBy [kjDescribedBy]="['hint-id', errorId()]" />
  * <span id="hint-id">Format: DD/MM/YYYY</span>
  * ```
- * @category Core/Accessibility
+ * @doc-category Core/Accessibility
  * @doc
  * @doc-name a11y
  * @doc-description Wires `aria-describedby` from a single id or an array of ids onto any element.

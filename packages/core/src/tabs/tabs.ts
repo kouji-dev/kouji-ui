@@ -48,7 +48,7 @@ function nextSeed(): string {
  *   <div kjTabPanel kjPanelValue="billing">…</div>
  * </div>
  * ```
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name tabs
  * @doc-description Unstyled tabs root with active-value, orientation, and activation mode for tab and panel children.
@@ -181,7 +181,7 @@ export class KjTabs implements KjTabsContext {
  * roving primitive through its `kjRovingOrientation` input via a host binding
  * on the exposed input.
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name tabs
  */
@@ -234,7 +234,7 @@ export class KjTabList implements OnInit, OnDestroy {
  * honoured, required in manual mode); Delete fires `kjClose` when
  * `kjClosable` is true.
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name tabs
  */
@@ -321,7 +321,7 @@ export class KjTab implements OnInit, OnDestroy {
  * projected content with `@if (panel.mounted())` to implement the
  * lazy-then-persistent mount posture from the analysis.
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name tabs
  */

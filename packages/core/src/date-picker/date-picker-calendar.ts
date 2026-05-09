@@ -25,7 +25,7 @@ import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle'
  * <div kjDatePickerCalendar [kjFor]="t"></div>
  * ```
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name date-picker
  */

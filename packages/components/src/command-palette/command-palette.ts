@@ -82,7 +82,7 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
  *   @doc-file command-palette.async.example.ts
  * @doc-example Fuzzy filter
  *   @doc-file command-palette.fuzzy.example.ts
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  */
@@ -242,7 +242,7 @@ export class KjCommandPaletteComponent {
 /**
  * Styled command item. Renders a `<button>` with `[kjCommandItem]` applied.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  */
@@ -279,7 +279,7 @@ export class KjCommandItemComponent {
 /**
  * Styled command group. Auto-hides when all child items are filtered out.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  */
@@ -308,7 +308,7 @@ export class KjCommandGroupComponent {
  * the combobox ARIA wiring from `[kjCommandInput]`. Useful when consumers
  * build a custom palette layout outside `<kj-command-palette>`.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  */
@@ -337,7 +337,7 @@ export class KjCommandInputComponent {
 /**
  * Styled separator between command groups.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  */
@@ -356,7 +356,7 @@ export class KjCommandSeparatorComponent {}
 /**
  * Styled empty state slot. Shown when no items match the current query.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  */

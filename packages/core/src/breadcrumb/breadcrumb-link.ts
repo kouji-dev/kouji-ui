@@ -21,7 +21,7 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
  * <a kjBreadcrumbLink href="/library">Library</a>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  */
