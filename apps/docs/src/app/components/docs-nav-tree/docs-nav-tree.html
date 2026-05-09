@@ -14,6 +14,7 @@
           type="button"
           class="docs-nav-tree__folder-toggle"
           role="treeitem"
+          aria-selected="false"
           [attr.id]="'docs-nav-folder-' + entry.id"
           [attr.aria-expanded]="isExpanded(entry.id)"
           [attr.aria-controls]="'docs-nav-group-' + entry.id"
@@ -49,6 +50,7 @@
           routerLinkActive="docs-nav-tree__link--active"
           [routerLinkActiveOptions]="{ exact: true }"
           ariaCurrentWhenActive="page"
+          [attr.aria-selected]="leafSelected(entry.routerLink)"
         >
           {{ entry.label }}
         </a>
