@@ -47,7 +47,10 @@ function deferredMount(): KjDeferredMount {
     onClose() { opened = false; delegate?.onClose?.(); },
     detach() { delegate?.detach(); ctx = null; attached = false; },
     resolveContainer() {
-      return delegate?.resolveContainer() ?? document.body;
+      const from = delegate?.resolveContainer();
+      if (from) return from;
+      if (typeof document === 'undefined') return null as unknown as HTMLElement;
+      return document.body;
     },
     setDelegate(d) {
       delegate = d;

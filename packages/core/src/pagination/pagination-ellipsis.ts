@@ -45,6 +45,8 @@ export class KjPaginationEllipsis {
 
   constructor() {
     afterNextRender(() => {
+      if (typeof document === 'undefined') return;
+
       const host = this.el.nativeElement;
 
       // Wrap any existing visible glyph children in a `aria-hidden="true"`

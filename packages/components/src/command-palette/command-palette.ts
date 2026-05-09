@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,6 +6,7 @@ import {
   Directive,
   TemplateRef,
   ViewEncapsulation,
+  PLATFORM_ID,
   afterNextRender,
   booleanAttribute,
   contentChild,
@@ -182,9 +183,11 @@ export class KjCommandPaletteComponent {
   protected readonly customFooter = contentChild(KjCommandPaletteFooter);
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
     afterNextRender(() => {
+      if (!isPlatformBrowser(this.platformId)) return;
       const handler = (e: KeyboardEvent) => {
         const chord = this.kjHotkey();
         if (chord && this.matchesHotkey(e, chord)) {
@@ -199,6 +202,7 @@ export class KjCommandPaletteComponent {
     // Focus the search input when the palette opens.
     effect(() => {
       if (!this.kjOpen()) return;
+      if (!isPlatformBrowser(this.platformId)) return;
       queueMicrotask(() => {
         document.querySelector<HTMLInputElement>('.kj-command-palette__dialog .kj-command-palette__input')?.focus();
       });

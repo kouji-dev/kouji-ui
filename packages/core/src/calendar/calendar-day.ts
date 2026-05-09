@@ -1,6 +1,8 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   Directive,
   ElementRef,
+  PLATFORM_ID,
   computed,
   effect,
   inject,
@@ -50,6 +52,7 @@ import { KJ_CALENDAR } from './calendar.context';
 export class KjCalendarDay {
   private readonly ctx = inject(KJ_CALENDAR);
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   /** The date this cell represents. */
   readonly kjDate = input.required<Date>();
@@ -77,6 +80,7 @@ export class KjCalendarDay {
   constructor() {
     // Whenever this cell becomes the focused one, request focus.
     effect(() => {
+      if (!isPlatformBrowser(this.platformId)) return;
       if (this.isFocused() && document.activeElement !== this.el.nativeElement) {
         // Defer so the DOM has the new tabindex.
         queueMicrotask(() => {

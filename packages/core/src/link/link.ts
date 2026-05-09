@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   Directive,
   ElementRef,
@@ -87,6 +88,7 @@ const KJ_LINK_VISUALLY_HIDDEN_STYLE =
 })
 export class KjLink {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly document = inject(DOCUMENT);
 
   /**
    * Disables the link. Forwarded to `KjDisabled` (which reflects
@@ -195,19 +197,18 @@ export class KjLink {
     // The effect itself is created in injection context (constructor); its
     // first run happens after the first change-detection pass, by which
     // point the host element has been attached to the DOM in browser
-    // contexts. SSR contexts skip the DOM mutation by guarding on
-    // `typeof document` — host bindings carry the `data-external` /
-    // `rel` story for SSR.
+    // contexts. Use injected DOCUMENT — prerender VMs may have no global `document`.
     effect(() => {
       const external = this.isExternal();
-      if (typeof document === 'undefined') return;
+      const doc = this.document;
+      if (!doc.createElement) return;
 
       const node = this.el.nativeElement;
       const consumerOwnsName = node.hasAttribute('aria-label');
 
       if (external && !consumerOwnsName) {
         if (!this.suffixSpan) {
-          const span = document.createElement('span');
+          const span = doc.createElement('span');
           span.className = KJ_LINK_EXTERNAL_SUFFIX_CLASS;
           span.setAttribute('style', KJ_LINK_VISUALLY_HIDDEN_STYLE);
           // Leading space so AT reads "Documentation (opens in new tab)"

@@ -58,6 +58,11 @@ export function bodyPortal(): KjMountStrategy {
       wrapper = null;
       ctx = null;
     },
-    resolveContainer() { return ensureWrapper() ?? document.body; },
+    resolveContainer() {
+      const w = ensureWrapper();
+      if (w) return w;
+      if (typeof document === 'undefined') return null as unknown as HTMLElement;
+      return document.body;
+    },
   };
 }

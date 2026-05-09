@@ -11,7 +11,10 @@ export function inPlace(): KjMountStrategy {
     detach() { ctx = null; },
     resolveContainer() {
       const panel = ctx?.panelEl();
-      return panel?.parentElement ?? document.body;
+      const parent = panel?.parentElement;
+      if (parent) return parent;
+      if (typeof document === 'undefined') return null as unknown as HTMLElement;
+      return document.body;
     },
   };
 }

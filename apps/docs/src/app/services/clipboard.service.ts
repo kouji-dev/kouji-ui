@@ -1,10 +1,15 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 
 /** Shared clipboard utility for copying code snippets in the docs. */
 @Injectable({ providedIn: 'root' })
 export class ClipboardService {
+  private readonly platformId = inject(PLATFORM_ID);
+
   /** Copies text to the clipboard. Returns true on success. */
   async copy(text: string): Promise<boolean> {
+    if (!isPlatformBrowser(this.platformId)) return false;
+
     if (navigator?.clipboard) {
       try {
         await navigator.clipboard.writeText(text);

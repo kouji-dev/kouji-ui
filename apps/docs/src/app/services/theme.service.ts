@@ -1,4 +1,5 @@
-import { Injectable, afterNextRender, computed, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID, afterNextRender, computed, inject, signal } from '@angular/core';
 
 /**
  * Theme name. Add new theme names here as @kouji-ui/themes ships more themes.
@@ -26,6 +27,8 @@ export const THEME_SCHEME: Record<Theme, 'light' | 'dark'> = {
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
+  private readonly platformId = inject(PLATFORM_ID);
+
   readonly theme = signal<Theme>('kouji');
   /** Reactive: 'light' or 'dark' for the active theme. */
   readonly scheme = computed(() => THEME_SCHEME[this.theme()]);
@@ -62,6 +65,7 @@ export class ThemeService {
 
   private apply(t: Theme): void {
     this.theme.set(t);
+    if (!isPlatformBrowser(this.platformId)) return;
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('kj-theme', t);
   }
