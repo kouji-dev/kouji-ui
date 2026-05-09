@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { KjBadgeComponent } from '@kouji-ui/components';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { ContrastScoreService, type PairResult } from '../../services/contrast-score.service';
 
@@ -7,6 +8,7 @@ import { ContrastScoreService, type PairResult } from '../../services/contrast-s
 @Component({
   selector: 'kj-contrast-scorecard',
   standalone: true,
+  imports: [KjBadgeComponent],
   templateUrl: './contrast-scorecard.html',
   styleUrl: './contrast-scorecard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

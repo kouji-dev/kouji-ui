@@ -80,6 +80,18 @@
                 opacity var(--kj-transition);
   }
 
+  /* One projected link/button: move row padding onto it so the clickable box
+     matches the full row (padding on the host sat outside the hit target).
+     Use `nth-child(1 of …)` / `nth-last-child(1 of …)` so whitespace text
+     nodes between the host and the control do not break `:only-child`. */
+  .kj-list-item:has(
+    > :where(a, button):nth-child(1 of :where(a, button)):nth-last-child(1 of :where(a, button))
+  ) {
+    padding: 0;
+    align-items: stretch;
+    min-height: 0;
+  }
+
   /* Divided rows — between-row border via `:not(:last-child)` so the final
      row stays clean. The `data-divided` mirror lives on the root. */
   .kj-list[data-divided] .kj-list-item {
@@ -120,10 +132,9 @@
     pointer-events: none;
   }
 
-  /* Projected anchors fill the row so the click target meets WCAG 2.5.5
-     without consumers wiring widths manually. Themes are free to override. */
+  /* Shared styles for interactive children */
   .kj-list-item > :where(a, button) {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--kj-space-sm);
     color: inherit;
@@ -134,6 +145,19 @@
     font: inherit;
     cursor: pointer;
   }
+
+  .kj-list-item:has(
+    > :where(a, button):nth-child(1 of :where(a, button)):nth-last-child(1 of :where(a, button))
+  )
+    > :where(a, button) {
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-width: 0;
+    min-height: var(--kj-list-row-min-h);
+    padding: var(--kj-list-row-padding-y) var(--kj-list-row-padding-x);
+    box-sizing: border-box;
+  }
+
   .kj-list-item > :where(a, button):focus-visible {
     outline: 2px solid var(--kj-color-primary);
     outline-offset: 2px;

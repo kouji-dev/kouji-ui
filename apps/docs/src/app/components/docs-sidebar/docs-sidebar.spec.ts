@@ -12,7 +12,9 @@ import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 class StubPage {}
 
 class StubManifestProvider {
-  getManifest() { return null; }
+  getManifest() {
+    return null;
+  }
 }
 
 const stubRoutes = [
@@ -20,6 +22,8 @@ const stubRoutes = [
   { path: 'docs/getting-started', component: StubPage },
   { path: 'docs/headless', component: StubPage },
   { path: 'docs/components', component: StubPage },
+  { path: 'docs/headless/:slug', component: StubPage },
+  { path: 'docs/components/:slug', component: StubPage },
 ];
 
 const baseProviders = [
@@ -30,38 +34,30 @@ const baseProviders = [
   SidebarToggleService,
 ];
 
-describe('DocsSidebarComponent — Column A', () => {
-  test('renders all three top-level rows', async () => {
+describe('DocsSidebarComponent', () => {
+  test('renders Getting Started and browse heading inside Documentation sections nav', async () => {
     await render(DocsSidebarComponent, { providers: baseProviders });
+    const nav = screen.getByRole('navigation', { name: /documentation sections/i });
+    expect(nav).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /getting started/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^headless$/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^components$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^headless$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^components$/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/browse by category/i)).toBeInTheDocument();
   });
 
-  test('marks Headless as active when URL matches', async () => {
-    const { fixture } = await render(DocsSidebarComponent, { providers: baseProviders });
-    const router = fixture.debugElement.injector.get(Router);
-    await router.navigateByUrl('/docs/headless');
-    fixture.detectChanges();
-    expect(screen.getByRole('link', { name: /^headless$/i })).toHaveAttribute('aria-current', 'page');
-  });
-});
-
-describe('DocsSidebarComponent — Column B', () => {
-  test('Col B is hidden on /docs/getting-started', async () => {
+  test('marks Getting Started with aria-current when URL matches', async () => {
     const { fixture } = await render(DocsSidebarComponent, { providers: baseProviders });
     const router = fixture.debugElement.injector.get(Router);
     await router.navigateByUrl('/docs/getting-started');
     fixture.detectChanges();
-    expect(screen.queryByLabelText(/headless items/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/components items/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /getting started/i })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 
-  test('Col B opens for /docs/headless with appropriate aria-label', async () => {
-    const { fixture } = await render(DocsSidebarComponent, { providers: baseProviders });
-    const router = fixture.debugElement.injector.get(Router);
-    await router.navigateByUrl('/docs/headless');
-    fixture.detectChanges();
-    expect(screen.getByRole('navigation', { name: /headless items/i })).toBeInTheDocument();
+  test('exposes unified category tree', async () => {
+    await render(DocsSidebarComponent, { providers: baseProviders });
+    expect(screen.getByRole('tree', { name: /browse by category/i })).toBeInTheDocument();
   });
 });

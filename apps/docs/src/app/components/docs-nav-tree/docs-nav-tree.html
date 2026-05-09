@@ -1,0 +1,58 @@
+<ul
+  class="docs-nav-tree"
+  [class.docs-nav-tree--nested]="depth() > 0"
+  [attr.role]="depth() === 0 ? 'tree' : 'group'"
+  [attr.aria-labelledby]="depth() === 0 ? labelledBy() : null"
+  [attr.aria-label]="
+    depth() === 0 && !labelledBy() ? 'Browse by category' : null
+  "
+>
+  @for (entry of entries(); track entry.id) {
+    @if (entry.kind === 'folder') {
+      <li class="docs-nav-tree__item docs-nav-tree__item--folder" role="none">
+        <button
+          type="button"
+          class="docs-nav-tree__folder-toggle"
+          role="treeitem"
+          [attr.id]="'docs-nav-folder-' + entry.id"
+          [attr.aria-expanded]="isExpanded(entry.id)"
+          [attr.aria-controls]="'docs-nav-group-' + entry.id"
+          (click)="onToggleFolder(entry.id)"
+        >
+          <span class="docs-nav-tree__chevron" aria-hidden="true">{{
+            isExpanded(entry.id) ? '▼' : '▶'
+          }}</span>
+          <span class="docs-nav-tree__folder-label">{{ entry.label }}</span>
+        </button>
+        @if (isExpanded(entry.id)) {
+          <div
+            class="docs-nav-tree__group"
+            role="group"
+            [attr.id]="'docs-nav-group-' + entry.id"
+            [attr.aria-labelledby]="'docs-nav-folder-' + entry.id"
+          >
+            <app-docs-nav-tree
+              [entries]="entry.children"
+              [depth]="depth() + 1"
+              [expandedIds]="expandedIds()"
+              (toggleFolder)="toggleFolder.emit($event)"
+            />
+          </div>
+        }
+      </li>
+    } @else {
+      <li class="docs-nav-tree__item docs-nav-tree__item--leaf" role="none">
+        <a
+          class="docs-nav-tree__link"
+          role="treeitem"
+          [routerLink]="entry.routerLink"
+          routerLinkActive="docs-nav-tree__link--active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+        >
+          {{ entry.label }}
+        </a>
+      </li>
+    }
+  }
+</ul>

@@ -32,7 +32,7 @@ describe('ContrastScorecard', () => {
     expect(fixture.nativeElement.textContent).toMatch(/FAIL|✗/);
   });
 
-  test('summary shows AAA score percent', () => {
+  test('header badges show AAA score percent', () => {
     const fixture = TestBed.createComponent(ContrastScorecard);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toMatch(/AAA \d+%/);

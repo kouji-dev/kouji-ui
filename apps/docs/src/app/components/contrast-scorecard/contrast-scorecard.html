@@ -1,8 +1,8 @@
-<details class="scorecard" open>
-  <summary>
-    <span class="badge badge--aaa" aria-live="polite">AAA {{ report().summary.score }}%</span>
-    <span class="badge badge--aa">AA {{ report().summary.aaPass }}/{{ report().summary.total }}</span>
-  </summary>
+<section class="scorecard" aria-label="Contrast scorecard">
+  <div class="scorecard__badges" aria-live="polite">
+    <kj-badge variant="default" size="sm">AAA {{ report().summary.score }}%</kj-badge>
+    <kj-badge variant="secondary" size="sm">AA {{ report().summary.aaPass }}/{{ report().summary.total }}</kj-badge>
+  </div>
   <ul role="list" class="rows">
     @for (p of report().pairs; track p.fg + ':' + p.bg) {
       <li
@@ -22,4 +22,4 @@
       </li>
     }
   </ul>
-</details>
+</section>
