@@ -8,7 +8,7 @@ import {
   type ThemePalettePayload,
 } from '../../../services/theme-palette-dialog-context';
 import { hexToOklch, oklchToHex } from '../../../lib/theme/theme-color-utils';
-import type { ColorSlot, ContentSlot } from '../../../lib/theme/types';
+import type { ContentSlot } from '../../../lib/theme/types';
 
 @Component({
   selector: 'kj-theme-palette-dialog-body',
