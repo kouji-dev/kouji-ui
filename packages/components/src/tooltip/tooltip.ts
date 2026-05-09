@@ -24,6 +24,7 @@ export {
  * for declarative use. The wrapper itself renders only projected content — its
  * purpose is to host the documentation tags for the tooltip suite.
  *
+ * @doc
  * @doc-name Tooltip
  * @doc-is-main
  * @doc-example Default
