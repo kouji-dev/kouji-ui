@@ -1,23 +1,23 @@
-import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
-import { DocsService, SidebarNode } from '../../services/docs.service';
+import { folderIdsForPage } from '../../lib/build-docs-nav-tree';
+import { DocsService } from '../../services/docs.service';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
-
-export type DocsSection = 'getting-started' | 'headless' | 'components' | null;
-
-interface ColARow {
-  id: Exclude<DocsSection, null>;
-  label: string;
-  href: string;
-  hasChildren: boolean;
-}
+import { DocsNavTreeComponent } from '../docs-nav-tree/docs-nav-tree';
 
 @Component({
   selector: 'kj-docs-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, DocsNavTreeComponent],
   templateUrl: './docs-sidebar.html',
   styleUrl: './docs-sidebar.css',
   host: { '[class.open]': 'toggleService.open()' },
@@ -30,36 +30,14 @@ export class DocsSidebarComponent {
   private readonly url = signal<string>(this.router.url);
   protected readonly toggleService = inject(SidebarToggleService);
 
-  protected readonly rows: ColARow[] = [
-    { id: 'getting-started', label: 'Getting Started', href: '/docs/getting-started', hasChildren: false },
-    { id: 'headless',        label: 'Headless',        href: '/docs/headless',        hasChildren: true  },
-    { id: 'components',      label: 'Components',      href: '/docs/components',      hasChildren: true  },
-  ];
+  /** Folder ids the user has expanded (plus ancestors of the active doc). */
+  protected readonly expandedFolderIds = signal<ReadonlySet<string>>(new Set());
 
-  protected readonly activeSection = computed<DocsSection>(() => {
-    const u = this.url();
-    if (u.startsWith('/docs/getting-started')) return 'getting-started';
-    if (u.startsWith('/docs/headless')) return 'headless';
-    if (u.startsWith('/docs/components')) return 'components';
-    return null;
-  });
+  protected readonly navTree = computed(() => this.docs.unifiedNavTree());
 
-  /** Column B is rendered when an active section has children. (Markup added in Task 4.) */
-  protected readonly colBOpen = computed(() => {
-    const s = this.activeSection();
-    return s === 'headless' || s === 'components';
-  });
-
-  protected readonly colBTree = computed<SidebarNode[]>(() => {
-    const s = this.activeSection();
-    if (s !== 'headless' && s !== 'components') return [];
-    // Touch the pages signal so this computed re-runs once the manifest
-    // finishes loading on a deep-link first paint (dev / non-prerendered).
-    // `getTracks()` reads from a plain field on the service, not a signal.
-    this.docs.pages();
-    const track = this.docs.getTracks().find(t => t.id === s);
-    return track?.tree ?? [];
-  });
+  protected readonly gettingStartedActive = computed(() =>
+    this.url().startsWith('/docs/getting-started'),
+  );
 
   constructor() {
     this.router.events
@@ -71,7 +49,28 @@ export class DocsSidebarComponent {
       .subscribe(() => {
         this.url.set(this.router.url);
         this.toggleService.close();
+        this.expandAncestorsForCurrentUrl();
       });
-    this.docs.loadManifest().subscribe();
+    this.docs.loadManifest().subscribe(() => this.expandAncestorsForCurrentUrl());
+  }
+
+  protected onToggleFolder(id: string): void {
+    this.expandedFolderIds.update(cur => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  /** Ensures category folders leading to the active doc page stay expanded. */
+  private expandAncestorsForCurrentUrl(): void {
+    const page = this.docs.getPageFromDocUrl(this.router.url);
+    const needed = folderIdsForPage(page);
+    this.expandedFolderIds.update(cur => {
+      const next = new Set(cur);
+      for (const id of needed) next.add(id);
+      return next;
+    });
   }
 }

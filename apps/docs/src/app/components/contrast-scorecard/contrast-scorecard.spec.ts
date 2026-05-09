@@ -32,9 +32,11 @@ describe('ContrastScorecard', () => {
     expect(fixture.nativeElement.textContent).toMatch(/FAIL|✗/);
   });
 
-  test('embeds AAA contrast section heading', () => {
+  test('shows AAA contrast heading and summary badges', () => {
     const fixture = TestBed.createComponent(ContrastScorecard);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toMatch(/Contrast \(AAA/);
+    const text = fixture.nativeElement.textContent ?? '';
+    expect(text).toMatch(/Contrast \(AAA/);
+    expect(text).toMatch(/AAA\s+\d+%/);
   });
 });

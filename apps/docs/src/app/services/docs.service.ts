@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, of } from 'rxjs';
 import { DocsManifestProvider } from './docs-manifest.provider';
@@ -26,6 +26,9 @@ export type {
 } from '../../lib/docs-extractor.types';
 
 import type { DocPage, DocsManifest } from '../../lib/docs-extractor.types';
+import { buildUnifiedDocsNavTree } from '../lib/build-docs-nav-tree';
+
+export type { DocsNavEntry } from '../lib/build-docs-nav-tree';
 
 export interface SidebarNode {
   label: string;
@@ -70,6 +73,9 @@ export class DocsService {
 
   private _manifest: DocsManifest | null = null;
   readonly pages = signal<DocPage[]>([]);
+
+  /** Single sidebar tree: folders from `@doc-category` paths; leaves link to doc routes. */
+  readonly unifiedNavTree = computed(() => buildUnifiedDocsNavTree(this.pages()));
 
   constructor() {
     const manifest = this.provider.getManifest();
@@ -117,6 +123,17 @@ export class DocsService {
   getPage(name: string, pkg?: 'core' | 'components'): DocPage | null {
     const list = this.pages();
     return list.find(p => p.name === name && (!pkg || p.pkg === pkg)) ?? null;
+  }
+
+  /**
+   * Resolves the manifest page for a docs doc URL (`/docs/headless/:slug` or
+   * `/docs/components/:slug`). Other URLs return null.
+   */
+  getPageFromDocUrl(url: string): DocPage | null {
+    const m = url.match(/^\/docs\/(headless|components)\/([^/?#]+)/);
+    if (!m) return null;
+    const pkg = m[1] === 'headless' ? 'core' : 'components';
+    return this.getPage(m[2], pkg);
   }
 
   /** Builds a 3-level nested category tree: Package > Category > Component */

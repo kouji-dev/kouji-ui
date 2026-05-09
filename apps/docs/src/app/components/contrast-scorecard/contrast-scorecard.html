@@ -1,4 +1,9 @@
 <section class="scorecard" aria-label="Contrast scorecard details">
+  <div class="scorecard__badges" aria-live="polite">
+    <kj-badge variant="default" size="sm">AAA {{ aaaPercent() }}%</kj-badge>
+    <kj-badge variant="secondary" size="sm">Non-text {{ report().summary.nonTextPass }}/{{ report().summary.nonTextTotal }}</kj-badge>
+  </div>
+
   <h3 class="group-heading">Contrast (AAA 7:1)</h3>
   <ul role="list" class="rows">
     @for (e of report().contrastEdges; track e.id) {

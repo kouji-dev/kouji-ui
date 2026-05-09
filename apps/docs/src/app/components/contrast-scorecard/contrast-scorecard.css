@@ -6,6 +6,15 @@
 :host-context(.a11y-panel) .scorecard {
   border-top: none;
 }
+
+.scorecard__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 44px;
+}
+
 .rows {
   list-style: none;
   margin: 4px 0 0;
