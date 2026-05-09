@@ -1,6 +1,8 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   Directive,
   ElementRef,
+  PLATFORM_ID,
   booleanAttribute,
   computed,
   effect,
@@ -36,6 +38,8 @@ type SegmentKind = 'hour' | 'minute' | 'second';
 export abstract class KjTimePickerSegmentBase {
   protected abstract readonly kind: SegmentKind;
   protected readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly doc = inject(DOCUMENT);
   /** @internal */
   readonly ctx = inject<KjTimePickerContext>(KJ_TIME_PICKER);
 
@@ -92,10 +96,10 @@ export abstract class KjTimePickerSegmentBase {
   constructor() {
     // Reflect numeric model to the input's text content.
     effect(() => {
+      if (!isPlatformBrowser(this.platformId)) return;
       const next = this.displayValue();
       const el = this.el.nativeElement;
-      if (typeof document === 'undefined') return;
-      if (el && document.activeElement !== el && el.value !== next) {
+      if (el && this.doc.activeElement !== el && el.value !== next) {
         el.value = next;
       }
     });
