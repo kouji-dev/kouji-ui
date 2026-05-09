@@ -1,4 +1,4 @@
-﻿import {
+import {
   Directive,
   ElementRef,
   InjectionToken,
@@ -23,7 +23,7 @@ export const KJ_ROVING_TABINDEX = new InjectionToken<KjRovingTabindex>(
  * ```html
  * <button kjRovingTabindexItem>Item</button>
  * ```
- * @category Core/Accessibility
+ * @doc-category Core/Accessibility
  * @doc
  * @doc-name a11y
  */
@@ -52,7 +52,7 @@ export class KjRovingTabindexItemDirective {
  *   <button kjRovingTabindexItem>Italic</button>
  * </div>
  * ```
- * @category Core/Accessibility
+ * @doc-category Core/Accessibility
  * @doc
  * @doc-name a11y
  */

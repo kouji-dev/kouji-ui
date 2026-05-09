@@ -53,7 +53,7 @@ function nextSeed(): string {
  *   </div>
  * </div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name accordion
  * @doc-description Unstyled accordion root that manages expand/collapse state across child accordion items.
@@ -224,7 +224,7 @@ function arraysEqual(a: readonly string[], b: readonly string[]): boolean {
  *   <div kjAccordionContent>Content</div>
  * </div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name accordion
  */
@@ -297,7 +297,7 @@ export class KjAccordionItem implements KjAccordionItemContext {
  * ```html
  * <button kjAccordionTrigger>Section title</button>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name accordion
  */
@@ -373,7 +373,7 @@ export class KjAccordionTrigger implements OnInit, OnDestroy {
  * ```html
  * <div kjAccordionContent>Panel content</div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name accordion
  */

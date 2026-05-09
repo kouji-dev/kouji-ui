@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import { parseDocTags } from '../doc-tags';
-import { readCategoryTag } from '../extractor-helpers';
+import { readDocCategoryTag } from '../extractor-helpers';
 import type { DocItem, ServiceDef, SourcePkg } from '../docs-extractor.types';
 import type { ParsedFile } from '../parsed-file';
 import { makeItemId } from './ids';
@@ -64,7 +64,7 @@ export function detectServices(file: ParsedFile, pkg: SourcePkg): DocItem[] {
       isMain: tags.isMain,
       order: tags.order,
       sourceOrder: sourceOrder++,
-      categoryPath: readCategoryTag(cls, pkg),
+      categoryPath: readDocCategoryTag(cls),
       service: def,
     });
   }

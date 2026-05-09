@@ -24,7 +24,7 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
  * @doc
  *   @doc-file input.example.ts
  *   @doc-file input.color.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc-name input
  * @doc-description Themed text input with type variants, invalid and disabled state, and Angular forms support.
  * @doc-is-main

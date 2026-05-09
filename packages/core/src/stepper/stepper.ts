@@ -55,7 +55,7 @@ let _stepperUid = 0;
  *   <button kjStepperNext>Continue</button>
  * </ol>
  * ```
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  * @doc-description Unstyled multi-step wizard root with active-step state, linear-mode gating, and keyboard navigation.
@@ -256,7 +256,7 @@ let _stepUid = 0;
  *   <section kjStepContent>...</section>
  * </li>
  * ```
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  */
@@ -361,7 +361,7 @@ export class KjStep implements KjStepContext {
  * ```html
  * <button kjStepLabel>Profile</button>
  * ```
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  */
@@ -433,7 +433,7 @@ export class KjStepLabel {
  * ```html
  * <section kjStepContent>...</section>
  * ```
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  */
@@ -460,7 +460,7 @@ export class KjStepContent {
  * `[disabled]` from the parent's `canAdvance()`, and dispatches `next()` on click.
  *
  * @example `<button kjStepperNext>Continue</button>`
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  */
@@ -491,7 +491,7 @@ export class KjStepperNext {
  * `[disabled]` from the parent's `canRetreat()`, and dispatches `previous()` on click.
  *
  * @example `<button kjStepperPrevious>Back</button>`
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  */
@@ -522,7 +522,7 @@ export class KjStepperPrevious {
  * `reset()` on click; never gated.
  *
  * @example `<button kjStepperReset>Start over</button>`
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name stepper
  */

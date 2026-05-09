@@ -23,7 +23,7 @@ import { KJ_PAGINATION_CONFIG } from './config';
  * <button kjButton kjPaginationPrevious>Previous</button>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name pagination
  */

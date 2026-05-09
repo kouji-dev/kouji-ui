@@ -1,4 +1,4 @@
-﻿import {
+import {
   ColumnDef,
   RowData,
   SortingState,
@@ -34,7 +34,7 @@ export const KJ_TABLE = new InjectionToken<KjTable<unknown>>('KjTable');
  *   </thead>
  * </table>
  * ```
- * @category Core/Data
+ * @doc-category Core/Data
  * @doc
  * @doc-name table
  * @doc-description Builds a TanStack-powered table from column and data inputs and exposes the table instance.
@@ -84,7 +84,7 @@ export type KjSortDirection = 'asc' | 'desc';
  * ```html
  * <th kjTableHeader [kjHeader]="header" scope="col">Name</th>
  * ```
- * @category Core/Data
+ * @doc-category Core/Data
  * @doc
  * @doc-name table
  */

@@ -34,7 +34,7 @@ import {
  * </div>
  * ```
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name cascade-select
  * @doc-is-main

@@ -25,7 +25,7 @@ export {
  *   @doc-file dialog.with-form.example.ts
  * @doc-example Nested overlays
  *   @doc-file dialog.nested.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-dialog-shell',

@@ -54,7 +54,7 @@ import { computePageTokens } from './page-tokens';
  * </nav>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name pagination
  * @doc-description Unstyled pagination root that exposes the page model and announces page changes politely.

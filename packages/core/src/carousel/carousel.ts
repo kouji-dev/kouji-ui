@@ -70,7 +70,7 @@ function prefersReducedMotion(): boolean {
  *   <div kjCarouselIndicators></div>
  * </div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  * @doc-description Unstyled carousel root that owns slide state, autoplay, loop semantics, and ARIA announcements.
@@ -416,7 +416,7 @@ export class KjCarousel implements KjCarouselContext {
  * focusable scroll container conflicts with screen-reader virtual-cursor
  * navigation through the projected slide content.
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -532,7 +532,7 @@ export class KjCarouselViewport implements OnInit, OnDestroy {
  * `role="tabpanel"` when the parent indicator group is in
  * `controlPattern="tabs"` mode.
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -617,7 +617,7 @@ export class KjCarouselSlide implements KjCarouselSlideContext, OnInit, OnDestro
  * Apply to a real `<button>` so Enter / Space, focus, and disabled semantics
  * work without extra wiring.
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -655,7 +655,7 @@ export class KjCarouselPrevious {
 /**
  * Next-slide control. Symmetric counterpart of `KjCarouselPrevious`.
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -697,7 +697,7 @@ export class KjCarouselNext {
  * `KJ_CAROUSEL_INDICATORS` to descendants so individual indicator items can
  * read the active control pattern.
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -746,7 +746,7 @@ export class KjCarouselIndicators implements KjCarouselIndicatorsContext, OnInit
  * the active state via `aria-current` (buttons mode) or `aria-selected`
  * (tabs mode).
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -829,7 +829,7 @@ export class KjCarouselIndicator {
  * Per WCAG 2.2.2 a delay greater than 5000 ms requires a pause control to be
  * present in the same composition.
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */
@@ -891,7 +891,7 @@ export class KjCarouselAutoplay implements OnInit, OnDestroy {
  * matches the host is auto-disabled (autoplay never starts, so the toggle is
  * meaningless).
  *
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name carousel
  */

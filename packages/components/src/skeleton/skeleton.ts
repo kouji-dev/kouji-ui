@@ -38,7 +38,7 @@ import { KjSkeleton, type KjSkeletonAnimation, type KjSkeletonShape } from '@kou
  *   @doc-file skeleton.animations.example.ts
  * @doc-example Card
  *   @doc-file skeleton.card.example.ts
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name skeleton
  * @doc-description Themed loading placeholder with rectangle, circle, text, and text-block shapes.

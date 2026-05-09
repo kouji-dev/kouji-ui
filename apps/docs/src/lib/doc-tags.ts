@@ -19,7 +19,7 @@ const KNOWN_DOC_TAGS = new Set([
   'doc-file',
   'doc-example',
   'doc-themes',
-  'category',
+  'doc-category',
   'internal',
   'example',
   'deprecated',

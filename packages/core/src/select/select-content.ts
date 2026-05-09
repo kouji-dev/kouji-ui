@@ -25,7 +25,7 @@ import { KJ_SELECT } from './select-root';
  * (Arrow / Home / End / Enter / Space / type-ahead). Reflects the parent
  * `KjSelect.multiple` flag as `aria-multiselectable`.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Component({
   selector: 'kj-select-content',

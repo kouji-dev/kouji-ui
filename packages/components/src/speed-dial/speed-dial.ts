@@ -53,7 +53,7 @@ export type KjSpeedDialPosition =
  *   @doc-file speed-dial.with-tooltips.example.ts
  * @doc-example Disabled
  *   @doc-file speed-dial.disabled.example.ts
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name speed-dial
  * @doc-description Themed floating action button that fans out a cluster of secondary actions on activation.
@@ -95,7 +95,7 @@ export class KjSpeedDialComponent {
  * the kouji button presets (variant, size, focus ring, capture-phase disabled
  * suppression) plus the speed-dial menu-button ARIA wiring.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name speed-dial
  */
@@ -143,7 +143,7 @@ export class KjSpeedDialTriggerComponent {
  * `<kj-speed-dial-action>` children inside it. The container itself carries
  * `role="menu"` and is hidden when collapsed.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name speed-dial
  */
@@ -166,7 +166,7 @@ export class KjSpeedDialActionsComponent {}
  * the kouji button presets and `role="menuitem"`. Activating an action closes
  * the dial unless `[kjCloseOnActivate]="false"`.
  *
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name speed-dial
  */

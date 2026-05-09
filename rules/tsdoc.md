@@ -11,7 +11,7 @@ Structure:
 2. Optional second sentence for nuance
 3. `@example` with minimal HTML snippet
 4. `@doc` block with `@doc-example` / `@doc-file` / `@doc-theme` tags
-5. `@category` path
+5. `@doc-category` path
 
 ## Custom tags
 
@@ -24,7 +24,7 @@ Structure:
 | `@doc-example <Label>` | Named preview tab |
 | `@doc-theme <name>` | Theme variant (`default`, `retro`, `finance`) |
 | `@doc-file <filename>` | Example component file (relative to directive folder) |
-| `@category <path>` | Sidebar path e.g. `Core/Base/Button` |
+| `@doc-category <path>` | Full sidebar path e.g. `Headless/Base/Button` — passthrough, no automatic prefix |
 
 ## `@doc-description` rule
 
@@ -32,10 +32,10 @@ Structure:
 
 - Concise. Short. Plain English. ≤ 120 characters.
 - Lead with what the symbol *is for* (the user's goal), not how it's implemented.
-- No internal jargon ("strategies bundle", "rAF orchestration", "DI token surface"). Those belong in the prose body of the TSDoc above `@category`.
+- No internal jargon ("strategies bundle", "rAF orchestration", "DI token surface"). Those belong in the prose body of the TSDoc above `@doc-category`.
 - One sentence, no bullet lists, no markdown.
 
-The longer prose **above** the `@category` block is where you put the nuance — collaborators, internals, edge cases, examples. `@doc-description` is the one-line page summary the docs site shows in lists, search, and page headers; the prose is the page body.
+The longer prose **above** the `@doc-category` block is where you put the nuance — collaborators, internals, edge cases, examples. `@doc-description` is the one-line page summary the docs site shows in lists, search, and page headers; the prose is the page body.
 
 ```ts
 /**
@@ -47,7 +47,7 @@ The longer prose **above** the `@category` block is where you put the nuance —
  * @example
  * <span [kjIcon]="'check'"></span>
  *
- * @category Core/Icon
+ * @doc-category Core/Icon
  * @doc
  * @doc-name icon
  * @doc-is-main

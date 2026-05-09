@@ -16,7 +16,7 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  *   @doc-file select.disabled.example.ts
  * @doc-example Grouped options
  *   @doc-file select.grouped.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name select
  * @doc-description Themed dropdown select with a trigger button, listbox panel, and keyboard navigation.

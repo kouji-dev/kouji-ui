@@ -41,7 +41,7 @@ const nextId = (): string => `kj-combobox-${++_idCounter}`;
  * </div>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjCombobox]',

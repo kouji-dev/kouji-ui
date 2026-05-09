@@ -19,7 +19,7 @@ import { KJ_SELECT } from './select-root';
  * ```html
  * <div kjOption [kjOptionValue]="'apple'">Apple</div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjOption]',

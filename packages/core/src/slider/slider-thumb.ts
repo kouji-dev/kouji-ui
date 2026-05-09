@@ -34,7 +34,7 @@ let nextId = 0;
  * Composes `KjDisabled`, `KjFocusRing`, and `KjFormControl` via
  * `hostDirectives`. Effective disabled is the OR of root + per-thumb.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name slider
  */

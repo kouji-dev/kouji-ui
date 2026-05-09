@@ -20,7 +20,7 @@ import { KJ_CHAT_BUBBLE_CONFIG } from './config';
  * ```html
  * <p kjChatBubble kjVariant="primary" kjSize="md">Reply text</p>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name chat
  */

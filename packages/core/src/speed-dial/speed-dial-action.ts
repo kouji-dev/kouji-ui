@@ -14,7 +14,7 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
  * <button kjButton kjSpeedDialAction aria-label="Edit" (click)="edit()">E</button>
  * ```
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name speed-dial
  */

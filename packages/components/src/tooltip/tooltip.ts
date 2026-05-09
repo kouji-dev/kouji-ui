@@ -32,7 +32,7 @@ export {
  *   @doc-file tooltip.disabled.example.ts
  * @doc-example Grouped
  *   @doc-file tooltip.group.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-tooltip',

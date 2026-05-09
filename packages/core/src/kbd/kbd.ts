@@ -65,7 +65,7 @@ export const KJ_KBD_SIZE_PRESET: KjSizePreset = {
  * <kbd kjKbd kjSize="xs">⌘</kbd>
  * <kbd kjKbd aria-label="Command">⌘</kbd>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name kbd
  * @doc-description Marks a kbd element as a keyboard-key visual with a configurable size.

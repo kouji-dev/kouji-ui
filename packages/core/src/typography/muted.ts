@@ -14,7 +14,7 @@ import { Directive } from '@angular/core';
  * <p>Primary text. <small kjMuted>Secondary info.</small></p>
  * <p kjMuted>Standalone muted paragraph.</p>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name typography
  */

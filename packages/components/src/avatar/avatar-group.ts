@@ -24,7 +24,7 @@ import { KjAvatarComponent } from './avatar';
  *   @doc-file avatar-group.shapes.example.ts
  * @doc-example List
  *   @doc-file avatar-group.list.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name avatar
  * @doc-description Themed avatar facepile that stacks avatars with an overflow chip and an accessible count label.

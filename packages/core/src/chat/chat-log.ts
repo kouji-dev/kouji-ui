@@ -18,7 +18,7 @@ import { KJ_CHAT_LOG, type KjChatLogContext } from './chat.context';
  *   <div kjChat kjSide="end"   kjChatAuthor="me">…</div>
  * </div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name chat
  */

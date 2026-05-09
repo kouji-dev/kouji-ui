@@ -40,7 +40,7 @@ import { KJ_TAG_CONFIG } from './config';
  *
  * <span kjTag kjTagSelectable [(kjTagSelected)]="on">Toggle</span>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name tag
  * @doc-description Unstyled tag or chip with decorative, removable, selectable, or listbox option modes.

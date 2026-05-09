@@ -4,7 +4,7 @@ import { InjectionToken, type Signal, type WritableSignal } from '@angular/core'
  * Shared context for the Date Picker family. Implemented by `KjDatePicker`
  * (root) and consumed by `KjDatePickerTrigger` and `KjDatePickerCalendar`.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  */
 export interface KjDatePickerContext {
   /** Current value; `null` when empty. */

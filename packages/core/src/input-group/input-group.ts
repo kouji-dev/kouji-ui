@@ -37,7 +37,7 @@ interface AddonEntry {
  *   <span kjInputGroupAddon kjPosition="end">.00</span>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name input-group
  * @doc-description Groups an input with prefix and suffix addons that share variant, size, and disabled state.

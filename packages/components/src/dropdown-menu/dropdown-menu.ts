@@ -45,7 +45,7 @@ export {
  *   @doc-file dropdown-menu.shortcuts.example.ts
  * @doc-example Disabled
  *   @doc-file dropdown-menu.disabled.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-dropdown-menu',

@@ -36,7 +36,7 @@ import {
  * </div>
  * ```
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name speed-dial
  * @doc-description Unstyled speed dial root that owns open state and fan-out direction for trigger and action children.

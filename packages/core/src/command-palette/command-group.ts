@@ -10,7 +10,7 @@ let _groupIdCounter = 0;
  * Groups detect child membership by checking whether each registered item's
  * host element is a DOM descendant of this group element.
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name command-palette
  */

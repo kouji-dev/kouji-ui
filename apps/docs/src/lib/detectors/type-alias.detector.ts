@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import { parseDocTags } from '../doc-tags';
-import { readCategoryTag } from '../extractor-helpers';
+import { readDocCategoryTag } from '../extractor-helpers';
 import type { DocItem, SourcePkg } from '../docs-extractor.types';
 import type { ParsedFile } from '../parsed-file';
 import { makeItemId } from './ids';
@@ -35,7 +35,7 @@ export function detectTypeAliases(file: ParsedFile, pkg: SourcePkg): DocItem[] {
       isMain: tags.isMain,
       order: tags.order,
       sourceOrder: sourceOrder++,
-      categoryPath: readCategoryTag(decl, pkg),
+      categoryPath: readDocCategoryTag(decl),
       typeAlias: { name: symbol, type, description },
     });
   }

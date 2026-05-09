@@ -40,7 +40,7 @@ import {
  *   @doc-file slider.vertical.example.ts
  * @doc-example Formatted value (Intl.NumberFormat)
  *   @doc-file slider.formatted.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  */
 @Component({
   selector: 'kj-slider',

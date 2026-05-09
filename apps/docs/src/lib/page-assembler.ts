@@ -90,7 +90,7 @@ export function assemblePages(items: DocItem[]): AssembledPages {
     pages.push({
       name,
       pkg,
-      // categoryPath gets populated by the orchestrator (it knows @category).
+      // categoryPath gets populated by the orchestrator (it knows @doc-category).
       categoryPath: [],
       title: formatTitle(main.pageName),
       description,

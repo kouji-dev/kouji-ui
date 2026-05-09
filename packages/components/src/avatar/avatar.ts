@@ -17,7 +17,7 @@ import { KjAvatar, KjAvatarImage, KjAvatarFallback } from '@kouji-ui/core';
  *   @doc-file avatar.initials.example.ts
  * @doc-example Shapes
  *   @doc-file avatar.shapes.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name avatar
  */

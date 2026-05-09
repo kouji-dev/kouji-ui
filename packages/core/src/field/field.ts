@@ -30,7 +30,7 @@ let kjFieldIdCounter = 0;
  *   <span kjFieldError>Enter a valid email.</span>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name field
  * @doc-description Groups a form control with its label, help, and error messages and keeps their accessibility wiring in sync.

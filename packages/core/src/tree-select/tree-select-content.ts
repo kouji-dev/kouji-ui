@@ -32,7 +32,7 @@ import { KJ_TREE_SELECT } from './tree-select.context';
  * remain unchanged — this component only orchestrates the overlay surface
  * and panel-level keyboard ergonomics.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Component({
   selector: 'kj-tree-select-content',

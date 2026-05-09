@@ -70,7 +70,7 @@ function buildLucideRegistry(): Record<string, string> {
  *
  * @doc-example Gallery
  *   @doc-file ../icon.gallery.example.ts
- * @category Library/Icon
+ * @doc-category Library/Icon
  * @doc
  * @doc-name icon
  * @doc-is-main

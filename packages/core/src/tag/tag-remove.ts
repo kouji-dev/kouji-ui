@@ -20,7 +20,7 @@ import { KJ_TAG } from './tag.context';
  *   <button kjTagRemove>×</button>
  * </span>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name tag
  */

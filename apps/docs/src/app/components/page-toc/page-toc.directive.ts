@@ -26,7 +26,7 @@ export const PAGE_TOC = new InjectionToken<PageTocDirective>('PageToc');
  *   <h2 id="overview">Overview</h2>
  * </main>
  * ```
- * @category Core/Utilities/PageToc
+ * @doc-category Core/Utilities/PageToc
  */
 @Directive({
   selector: '[kjPageToc]',

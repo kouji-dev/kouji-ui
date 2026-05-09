@@ -67,7 +67,7 @@ const DEFAULT_STRENGTH_LABELS: Record<KjPasswordScore, KjPasswordScoreLabel> = {
  * <p kjPasswordCapsLockWarning>Caps Lock is on.</p>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name password-input
  * @doc-description Adds password-entry features (reveal toggle, strength scoring, Caps Lock detection) to a native input.
@@ -241,7 +241,7 @@ export class KjPasswordInput implements KjPasswordInputContext {
  * </button>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name password-input
  */
@@ -320,7 +320,7 @@ export class KjPasswordToggle {
  * <div kjPasswordStrength></div>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name password-input
  */
@@ -382,7 +382,7 @@ export class KjPasswordStrength {
  * <p kjPasswordCapsLockWarning>Caps Lock is on.</p>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name password-input
  */
@@ -430,7 +430,7 @@ const NOOP_DEREGISTER = (): void => undefined;
  * </div>
  * ```
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name password-input
  */

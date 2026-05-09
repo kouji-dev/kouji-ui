@@ -31,7 +31,7 @@ import {
  *   @doc-file field.disabled.example.ts
  * @doc-example Prefix and suffix
  *   @doc-file field.with-prefix-suffix.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name field
  * @doc-description Themed form field wrapper that auto-wires label, help, error, and required/invalid/disabled state.
@@ -65,7 +65,7 @@ export class KjFieldComponent {}
 
 /**
  * Styled wrapper around `KjFieldLabel`.
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name field
  */
@@ -90,7 +90,7 @@ export class KjFieldLabelComponent {}
 
 /**
  * Styled wrapper around `KjFieldHelp`.
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name field
  */
@@ -110,7 +110,7 @@ export class KjFieldHelpComponent {}
 
 /**
  * Styled wrapper around `KjFieldError`.
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name field
  */
@@ -143,7 +143,7 @@ export class KjFieldErrorComponent {}
  *   <span suffix>USD</span>
  * </kj-field-group>
  * ```
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name field
  */

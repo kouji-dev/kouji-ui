@@ -96,7 +96,7 @@ export function kjFileMatchesAccept(file: File, accept: string | undefined): boo
  *   </ul>
  * </div>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name file-upload
  * @doc-description Manages file selection, drag state, and validation while you control the upload transport.
@@ -423,7 +423,7 @@ export class KjFileUpload implements KjFileUploadContext {
  * ```html
  * <button kjFileUploadTrigger>Choose files</button>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name file-upload
  */
@@ -503,7 +503,7 @@ export class KjFileUploadTrigger {
  *   Drag files here, or click to browse
  * </div>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name file-upload
  */
@@ -567,7 +567,7 @@ export class KjFileUploadDropzone {
  *   }
  * </ul>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name file-upload
  */
@@ -598,7 +598,7 @@ export class KjFileUploadList {
  *   <button (click)="item.remove()">Remove</button>
  * </li>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name file-upload
  */

@@ -8,7 +8,7 @@ import type { KjOverlayController } from '../primitives/overlay/controller';
  * Use `close(result?)` to dismiss the drawer programmatically. Subscribe to
  * `afterClosed$` for the close result, or await the `result` promise.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 export class KjDrawerRef<T, R = unknown> {
   private _instance: T | null = null;

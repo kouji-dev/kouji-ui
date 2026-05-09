@@ -6,7 +6,7 @@ import { InjectionToken, type Signal, type WritableSignal } from '@angular/core'
  * via DI. Headless directives never read each other's inputs directly — they
  * always go through this context.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  */
 export interface KjCalendarContext {
   /** Locale BCP-47 tag (e.g. `'en-US'`, `'fr-FR'`). Drives weekday and month names. */

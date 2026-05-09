@@ -36,7 +36,7 @@ function treeClickTrigger(): KjTriggerEventStrategy {
  * ```html
  * <button kjTreeSelectTrigger>Select category</button>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjTreeSelectTrigger]',

@@ -62,7 +62,7 @@ const KJ_LINK_VISUALLY_HIDDEN_STYLE =
  * <a kjLink [kjDisabled]="!ready()" routerLink="/billing">Manage billing</a>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name link
  * @doc-description Adds disabled-link, external-link, and underline-mode handling to a native anchor.

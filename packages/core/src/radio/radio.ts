@@ -1,4 +1,4 @@
-﻿import { Directive, computed, inject, input, model } from '@angular/core';
+import { Directive, computed, inject, input, model } from '@angular/core';
 import { KJ_RADIO_GROUP, KjRadioContext } from './radio.context';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 
@@ -10,7 +10,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  *   <div kjRadio [kjRadioValue]="'s'" tabindex="0">Small</div>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name radio
  */
@@ -33,7 +33,7 @@ export class KjRadioGroup implements KjRadioContext {
  * participates in reactive and template-driven forms.
  *
  * @example `<div kjRadio [kjRadioValue]="'a'" tabindex="0">Option A</div>`
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name radio
  * @doc-description Individual radio button within a radio group with accessible activation and forms support.

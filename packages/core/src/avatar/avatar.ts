@@ -1,4 +1,4 @@
-﻿import { Directive, InjectionToken, inject, signal } from '@angular/core';
+import { Directive, InjectionToken, inject, signal } from '@angular/core';
 
 export interface KjAvatarContext { imageLoaded: ReturnType<typeof signal<boolean>>; }
 export const KJ_AVATAR = new InjectionToken<KjAvatarContext>('KjAvatar');
@@ -11,7 +11,7 @@ export const KJ_AVATAR = new InjectionToken<KjAvatarContext>('KjAvatar');
  * automatically when the image fails or is still loading. No styling attached.
  *
  * @example `<span kjAvatar><img kjAvatarImage src="..." alt="..." /><span kjAvatarFallback>JD</span></span>`
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name avatar
  * @doc-description Unstyled avatar container that swaps between an image and a fallback when loading or failing.
@@ -22,7 +22,7 @@ export class KjAvatar implements KjAvatarContext { readonly imageLoaded = signal
 
 /**
  * Image element within a `[kjAvatar]` container.
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name avatar
  */
@@ -31,7 +31,7 @@ export class KjAvatarImage { readonly ctx = inject(KJ_AVATAR); }
 
 /**
  * Fallback shown when image is unavailable.
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name avatar
  */

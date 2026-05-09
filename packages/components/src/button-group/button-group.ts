@@ -36,7 +36,7 @@ import { KjButtonGroup, KjButtonGroupOrientation } from '@kouji-ui/core';
  *   @doc-file button-group.toggle.example.ts
  * @doc-example Icon only
  *   @doc-file button-group.icon-only.example.ts
- * @category Library/Actions
+ * @doc-category Library/Actions
  * @doc
  * @doc-name button-group
  * @doc-description Themed segmented button cluster that joins adjacent buttons into a single toolbar.

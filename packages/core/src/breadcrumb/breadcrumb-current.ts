@@ -13,7 +13,7 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
  * <span kjBreadcrumbCurrent>Data</span>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  */

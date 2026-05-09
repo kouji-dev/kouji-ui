@@ -37,7 +37,7 @@ export interface KjDrawerOpenOptions<D = unknown> {
  * overlay handle wired to the overlay primitives and renders a component
  * inside the singleton overlay container, positioned via `edgeSheet({side})`.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Injectable({ providedIn: 'root' })
 export class KjDrawerService {

@@ -28,7 +28,7 @@ import { onHotkey } from '../primitives/overlay/strategies/trigger-event/on-hotk
  * </kj-command-palette-dialog>
  * ```
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  */
 @Directive({
   selector: '[kjCommandPaletteTrigger]',

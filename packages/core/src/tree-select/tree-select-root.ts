@@ -40,7 +40,7 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
  *   <kj-tree-select-content [kjFor]="t"></kj-tree-select-content>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name tree-select
  * @doc-is-main

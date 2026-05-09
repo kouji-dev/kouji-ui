@@ -25,7 +25,7 @@ export interface KjOverlayStrategies {
  * orchestration. Strategies (mount/position/backdrop/focus-trap/scroll-lock/
  * trigger-event) attach to it; the panel + trigger directives bind to it via DI.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-controller
  * @doc-is-main

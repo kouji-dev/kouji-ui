@@ -13,7 +13,7 @@ import { KJ_BREADCRUMB, KjBreadcrumbItemContext } from './breadcrumb.context';
  * <li kjBreadcrumbItem>…</li>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name breadcrumb
  */

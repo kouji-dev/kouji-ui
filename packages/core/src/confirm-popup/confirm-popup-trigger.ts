@@ -9,7 +9,7 @@ import type { KjOverlayController } from '../primitives/overlay/controller';
  * `hostDirectives` for the trigger contract — `aria-haspopup`,
  * `aria-expanded`, `aria-controls`, click toggling.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopupTrigger]',

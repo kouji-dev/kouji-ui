@@ -34,7 +34,7 @@ import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
  *   @doc-file input-group.url.example.ts
  * @doc-example Variants
  *   @doc-file input-group.variants.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name input-group
  * @doc-description Themed input with prefix and suffix addons such as icons, units, or buttons.

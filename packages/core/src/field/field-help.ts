@@ -15,7 +15,7 @@ let kjFieldHelpIdCounter = 0;
  * ```html
  * <span kjFieldHelp>Format: name@example.com</span>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name field
  */

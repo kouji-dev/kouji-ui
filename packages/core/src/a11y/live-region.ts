@@ -1,4 +1,4 @@
-﻿import { Directive, ElementRef, inject, input } from '@angular/core';
+import { Directive, ElementRef, inject, input } from '@angular/core';
 
 /** Politeness setting for ARIA live regions. */
 export type KjLivePoliteness = 'off' | 'polite' | 'assertive';
@@ -12,7 +12,7 @@ export type KjLivePoliteness = 'off' | 'polite' | 'assertive';
  * <div kjLiveRegion [kjPoliteness]="'polite'" #region="kjLiveRegion"></div>
  * <button (click)="region.announce('Item saved')">Save</button>
  * ```
- * @category Core/Accessibility
+ * @doc-category Core/Accessibility
  * @doc
  * @doc-name a11y
  */

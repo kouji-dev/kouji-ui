@@ -37,7 +37,7 @@ import { KjProgressBar, KjProgressBarFill } from '@kouji-ui/core';
  *   @doc-file progress-bar.sizes.example.ts
  * @doc-example With value text
  *   @doc-file progress-bar.with-label.example.ts
- * @category Library/Feedback
+ * @doc-category Library/Feedback
  * @doc
  * @doc-name progress-bar
  * @doc-description Themed determinate or indeterminate progress bar with variant and size tokens.

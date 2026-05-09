@@ -13,7 +13,7 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
  *   <button kjCommandItem>…</button>
  * </div>
  * ```
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name command-palette
  */

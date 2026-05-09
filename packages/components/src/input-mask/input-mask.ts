@@ -33,7 +33,7 @@ import { KjInputMask } from '@kouji-ui/core';
  * @doc-example Custom tokens
  *   @doc-file input-mask.custom-tokens.example.ts
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name input-mask
  * @doc-description Themed masked text input for phone numbers, dates, credit cards, and custom formats.

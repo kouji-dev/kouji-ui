@@ -19,7 +19,7 @@ import { KJ_SLIDER } from './slider.context';
  * Sets `touch-action` to allow page scroll on the cross axis (e.g. vertical
  * page scroll on a horizontal slider) while blocking the on-axis drag.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name slider
  */

@@ -8,7 +8,7 @@ import type { KjOverlayPanel } from './panel';
  * `aria-expanded`, `aria-controls`, the trigger-event strategy, and the
  * two-way `kjOpen` model that mirrors the controller's open state.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-trigger
  * @doc-is-main
