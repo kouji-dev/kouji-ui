@@ -7,6 +7,7 @@ import {
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { KJ_COMMAND_PALETTE, type KjCommandItemRegistration, type KjCommandPaletteContext, nextCommandListId } from './command-palette.context';
 import { type KjCommandFilter, kjSubstringFilter } from './command-palette.filters';
@@ -123,18 +124,32 @@ export class KjCommandPalette implements KjCommandPaletteContext {
   });
 
   constructor() {
-    // When query changes, auto-activate the first visible item
+    // When the query (or auto-first mode) changes, jump to the first visible item.
+    // Do not subscribe to `visibleItems` itself: async result updates would re-run
+    // this effect and reset keyboard navigation (arrow selection).
     effect(() => {
-      this.kjQuery(); // track
-      if (this.kjAutoActivateFirst()) {
-        // Run after filter stabilises
+      this.kjQuery();
+      const autoFirst = this.kjAutoActivateFirst();
+      if (!autoFirst) return;
+      untracked(() => {
         const visible = this.visibleItems();
         if (visible.length > 0) {
-          this.kjValue.set(visible[0].value);
+          this.kjValue.set(visible[0].resolveValue());
         } else {
           this.kjValue.set(null);
         }
-      }
+      });
+    });
+
+    // When items register asynchronously (same query), pick the first row once nothing is highlighted yet.
+    effect(() => {
+      const visible = this.visibleItems();
+      const active = this.kjValue();
+      const autoFirst = this.kjAutoActivateFirst();
+      if (!autoFirst || visible.length === 0 || active !== null) return;
+      untracked(() => {
+        this.kjValue.set(visible[0].resolveValue());
+      });
     });
   }
 
@@ -153,7 +168,7 @@ export class KjCommandPalette implements KjCommandPaletteContext {
   }
 
   activate(value: unknown): void {
-    const item = this._items().find(i => i.value === value);
+    const item = this._items().find(i => i.resolveValue() === value);
     if (item?.disabled()) return;
 
     this.kjValue.set(value);
@@ -163,20 +178,24 @@ export class KjCommandPalette implements KjCommandPaletteContext {
   moveActive(delta: number): void {
     const visible = this.visibleItems();
     if (!visible.length) return;
-    const currentIndex = visible.findIndex(i => i.value === this.kjValue());
+    const currentIndex = visible.findIndex(i => i.resolveValue() === this.kjValue());
     let nextIndex: number;
     if (currentIndex < 0) {
       nextIndex = delta > 0 ? 0 : visible.length - 1;
     } else {
       nextIndex = (currentIndex + delta + visible.length) % visible.length;
     }
-    this.kjValue.set(visible[nextIndex].value);
+    this.kjValue.set(visible[nextIndex].resolveValue());
   }
 
   setActiveTo(target: 'first' | 'last'): void {
     const visible = this.visibleItems();
     if (!visible.length) return;
-    this.kjValue.set(target === 'first' ? visible[0].value : visible[visible.length - 1].value);
+    this.kjValue.set(
+      target === 'first'
+        ? visible[0].resolveValue()
+        : visible[visible.length - 1].resolveValue(),
+    );
   }
 
   setActiveValue(value: unknown): void {

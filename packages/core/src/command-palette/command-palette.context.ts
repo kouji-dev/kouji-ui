@@ -7,8 +7,11 @@ import { InjectionToken, type Signal, type WritableSignal } from '@angular/core'
 export interface KjCommandItemRegistration {
   /** Auto-generated stable id (`kj-command-item-{n}`). */
   readonly id: string;
-  /** Value emitted on activation. Falls back to `el.textContent` if undefined. */
-  readonly value: unknown;
+  /**
+   * Current activation value (matches `[kjValue]` / label fallback).
+   * Callable so it stays correct when inputs update after registration.
+   */
+  readonly resolveValue: () => unknown;
   /** Whether the item is disabled. */
   readonly disabled: Signal<boolean>;
   /** The host element. */

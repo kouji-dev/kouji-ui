@@ -86,7 +86,7 @@ export class KjCommandItem implements OnInit {
    */
   readonly isHidden = computed(() => {
     const val = this.effectiveValue();
-    return !this.ctx.visibleItems().some(i => i.value === val);
+    return !this.ctx.visibleItems().some(i => i.resolveValue() === val);
   });
 
   /** The effective value: `kjValue()` if set, otherwise `el.textContent`. */
@@ -98,7 +98,7 @@ export class KjCommandItem implements OnInit {
   ngOnInit(): void {
     this.ctx.registerItem({
       id: this.id,
-      value: this.effectiveValue(),
+      resolveValue: () => this.effectiveValue(),
       disabled: this.kjDisabled,
       el: this.el.nativeElement,
       haystacks: this.haystacks,
@@ -108,7 +108,7 @@ export class KjCommandItem implements OnInit {
     this.destroyRef.onDestroy(() => {
       this.ctx.unregisterItem({
         id: this.id,
-        value: this.effectiveValue(),
+        resolveValue: () => this.effectiveValue(),
         disabled: this.kjDisabled,
         el: this.el.nativeElement,
         haystacks: this.haystacks,

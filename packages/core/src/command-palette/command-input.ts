@@ -46,7 +46,7 @@ export class KjCommandInput {
   /** The id of the currently active item, used for `aria-activedescendant`. */
   readonly activeItemId = computed(() => {
     const activeVal = this.ctx.activeValue();
-    const item = this.ctx.visibleItems().find(i => i.value === activeVal);
+    const item = this.ctx.visibleItems().find(i => i.resolveValue() === activeVal);
     return item?.id ?? null;
   });
 

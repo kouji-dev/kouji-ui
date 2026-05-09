@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
@@ -111,6 +111,35 @@ describe('KjCommandPalette — moveActive', () => {
     const options = getAllByRole('option');
     fireEvent.keyDown(input, { key: 'ArrowUp' });
     expect(options[options.length - 1]).toHaveAttribute('data-active');
+  });
+
+  it('does not reset highlight when items change without a query change (async results)', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: `
+        <div kjCommandPalette>
+          <input kjCommandInput type="search" placeholder="Search…" />
+          <div kjCommandList>
+            @for (id of ids(); track id) {
+              <button type="button" kjCommandItem [kjValue]="id">{{ id }}</button>
+            }
+          </div>
+        </div>
+      `,
+    })
+    class DynamicItemsHost {
+      readonly ids = signal(['a', 'b']);
+    }
+    const { getByRole, getAllByRole, fixture } = await render(DynamicItemsHost);
+    const input = getByRole('combobox');
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    expect(getAllByRole('option')[1]).toHaveAttribute('data-active');
+
+    fixture.componentInstance.ids.set(['a', 'b', 'c']);
+    fixture.detectChanges();
+
+    expect(getAllByRole('option')[1]).toHaveAttribute('data-active');
   });
 
   it('End key jumps to last item', async () => {
