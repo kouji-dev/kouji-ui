@@ -1,4 +1,4 @@
-﻿import { Directive, DestroyRef, ElementRef, afterNextRender, inject, input } from '@angular/core';
+import { Directive, DestroyRef, ElementRef, afterNextRender, inject, input } from '@angular/core';
 import { PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -18,7 +18,7 @@ const FOCUSABLE = [
  *   <button>Action</button>
  * </div>
  * ```
- * @category Core/Accessibility
+ * @doc-category Core/Accessibility
  * @doc
  * @doc-name a11y
  */

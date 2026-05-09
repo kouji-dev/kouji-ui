@@ -33,6 +33,11 @@ export interface SidebarNode {
   children: SidebarNode[];
 }
 
+/** Plain sidebar tree (single-column nav). Not tied to package tracks. */
+export type DocsNavEntry =
+  | { kind: 'folder'; id: string; label: string; children: DocsNavEntry[] }
+  | { kind: 'leaf'; id: string; label: string; routerLink: string[] };
+
 /**
  * A docs track — a top-level grouping in the sidebar that drills into a tree.
  * `id` is the URL segment (matches `/docs/<id>/<slug>` routes); `packageName`

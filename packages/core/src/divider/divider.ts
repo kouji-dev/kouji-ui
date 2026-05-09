@@ -42,7 +42,7 @@ export type KjDividerAlign = 'start' | 'center' | 'end';
  * <hr kjDivider [kjStructural]="true" kjOrientation="vertical" />
  * <div kjDivider [kjStructural]="true">OR</div>
  * ```
- * @category Core/Layout/Divider
+ * @doc-category Core/Layout/Divider
  * @doc
  * @doc-name divider
  * @doc-description Unstyled divider for separating content with horizontal, vertical, and label-in-rule layouts.

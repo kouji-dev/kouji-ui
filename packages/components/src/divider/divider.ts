@@ -56,7 +56,7 @@ import {
  *   @doc-file divider.sizes.example.ts
  * @doc-example Structural
  *   @doc-file divider.structural.example.ts
- * @category Library/Layout/Divider
+ * @doc-category Library/Layout/Divider
  * @doc
  * @doc-name divider
  * @doc-description Themed horizontal or vertical separator line with solid, dashed, or dotted variants and optional label.

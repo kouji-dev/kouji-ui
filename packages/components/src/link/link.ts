@@ -31,7 +31,7 @@ import { KjLink } from '@kouji-ui/core';
  *   @doc-file link.disabled.example.ts
  * @doc-example In prose
  *   @doc-file link.in-prose.example.ts
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name link
  * @doc-description Themed hyperlink with variant, size, underline mode, external-link handling, and disabled semantics.

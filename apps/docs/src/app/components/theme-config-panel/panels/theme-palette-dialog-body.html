@@ -1,0 +1,40 @@
+<div class="palette-dialog">
+  <header class="palette-dialog__header">
+    <div class="palette-dialog__title-row">
+      <h2 class="palette-dialog__title" id="palette-dialog-title">{{ title() }}</h2>
+      <output class="palette-dialog__hex" for="palette-fine-color" aria-live="polite">{{ fineHex() }}</output>
+    </div>
+    <p id="palette-dialog-hint" class="palette-dialog__hint">
+      Nine hue rows; each row spreads 10 shades left (lighter) to right (darker). Custom color below.
+    </p>
+  </header>
+
+  <div class="palette-dialog__body">
+    <section class="palette-dialog__presets" aria-labelledby="palette-presets-heading">
+      <div class="palette-dialog__presets-head">
+        <h3 id="palette-presets-heading" class="palette-dialog__presets-title">Presets</h3>
+      </div>
+      <kj-seed-swatch-grid
+        layout="palette"
+        [activeHex]="activeSeedHex()"
+        (seedPicked)="onSeedPicked($event)"
+      />
+    </section>
+  </div>
+
+  <footer class="palette-dialog__footer">
+    <div class="palette-dialog__fine">
+      <label class="palette-dialog__fine-label" for="palette-fine-color">Custom</label>
+      <kj-input
+        id="palette-fine-color"
+        type="color"
+        [value]="fineHex()"
+        (input)="onFineInput($event)"
+        [attr.aria-label]="'Custom color, current ' + fineHex()"
+      />
+    </div>
+    <div class="palette-dialog__actions">
+      <kj-button kjVariant="default" kjSize="sm" type="button" (click)="done()">Done</kj-button>
+    </div>
+  </footer>
+</div>

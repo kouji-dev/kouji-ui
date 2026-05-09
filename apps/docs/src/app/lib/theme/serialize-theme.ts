@@ -45,5 +45,8 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   // motion
   lines.push(`--kj-transition: ${t.motion.transition};`);
 
+  lines.push(`--kj-text-body: ${t.typography.bodyRem};`);
+  lines.push(`--kj-text-small: ${t.typography.smallRem};`);
+
   return `[data-theme="${name}"] {\n  ${lines.join('\n  ')}\n}`;
 }

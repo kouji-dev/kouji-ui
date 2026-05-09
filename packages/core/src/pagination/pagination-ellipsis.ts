@@ -27,7 +27,7 @@ const KJ_VISUALLY_HIDDEN_STYLE =
  * <span kjPaginationEllipsis>…</span>
  * ```
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name pagination
  */

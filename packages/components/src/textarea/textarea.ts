@@ -78,7 +78,7 @@ function numberWithDefault(def: number) {
  *   @doc-file textarea.no-resize.example.ts
  * @doc-example With Field wrapper
  *   @doc-file textarea.with-field.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name textarea
  * @doc-description Themed multi-line text input with optional auto-resize and live character counter.

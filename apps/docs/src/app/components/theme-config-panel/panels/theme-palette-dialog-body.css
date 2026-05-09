@@ -1,0 +1,115 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: min(96vw, 44rem);
+  max-width: min(96vw, 52rem);
+  /* Size to content; only scroll if the viewport is shorter than the dialog. */
+  max-height: min(94vh, calc(100vh - 2rem));
+  min-height: 0;
+  padding: 0;
+  background: var(--kj-color-base-100);
+  color: var(--kj-color-base-content);
+  border-radius: var(--kj-radius-box);
+  border: 1px solid var(--kj-color-base-300);
+  box-shadow: var(--kj-shadow-lg);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.palette-dialog {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.palette-dialog__header {
+  flex-shrink: 0;
+  padding: var(--kj-space-sm) var(--kj-space-lg) var(--kj-space-sm);
+  border-bottom: 1px solid var(--kj-color-base-300);
+  background: color-mix(in oklch, var(--kj-color-base-200) 35%, var(--kj-color-base-100));
+}
+
+.palette-dialog__title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kj-space-md);
+  flex-wrap: wrap;
+}
+
+.palette-dialog__title {
+  margin: 0;
+  font: var(--kj-text-lg) var(--kj-font-sans);
+  font-weight: 600;
+}
+
+.palette-dialog__hex {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-color-base-200);
+  border: 1px solid var(--kj-color-base-300);
+  color: color-mix(in oklch, var(--kj-color-base-content) 88%, transparent);
+}
+
+.palette-dialog__hint {
+  margin: var(--kj-space-sm) 0 0;
+  font: var(--kj-text-xs) var(--kj-font-sans);
+  color: color-mix(in oklch, var(--kj-color-base-content) 62%, transparent);
+  line-height: 1.45;
+}
+
+.palette-dialog__body {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: visible;
+  padding: var(--kj-space-sm) var(--kj-space-lg);
+}
+
+.palette-dialog__presets {
+  margin: 0;
+}
+
+.palette-dialog__presets-head {
+  margin-bottom: var(--kj-space-xs);
+}
+
+.palette-dialog__presets-title {
+  margin: 0;
+  font: var(--kj-text-sm) var(--kj-font-sans);
+  font-weight: 600;
+  color: var(--kj-color-base-content);
+}
+
+.palette-dialog__footer {
+  flex-shrink: 0;
+  padding: var(--kj-space-sm) var(--kj-space-lg) var(--kj-space-md);
+  border-top: 1px solid var(--kj-color-base-300);
+  background: var(--kj-color-base-100);
+}
+
+.palette-dialog__fine {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  margin-bottom: var(--kj-space-md);
+}
+
+.palette-dialog__fine-label {
+  flex: 0 0 auto;
+  font: var(--kj-text-sm) var(--kj-font-sans);
+  font-weight: 500;
+  color: color-mix(in oklch, var(--kj-color-base-content) 78%, transparent);
+}
+
+.palette-dialog__fine kj-input {
+  flex: 0 0 auto;
+}
+
+.palette-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+}

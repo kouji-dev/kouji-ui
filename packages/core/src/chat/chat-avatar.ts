@@ -16,7 +16,7 @@ import { Directive } from '@angular/core';
  *   <span kjAvatar>…</span>
  * </span>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name chat
  */

@@ -26,7 +26,7 @@ export const KJ_SELECT = new InjectionToken<KjSelect>('KjSelect');
  *   </kj-select-content>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjSelect]',

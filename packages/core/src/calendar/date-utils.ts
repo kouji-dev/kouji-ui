@@ -5,7 +5,7 @@
  * time zone (matching the user's runtime). Day-precision throughout —
  * comparisons strip the time portion via {@link startOfDay}.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  */
 
 /** Returns a new `Date` set to `00:00:00.000` in local time. */

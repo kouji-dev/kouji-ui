@@ -50,7 +50,7 @@ export type KjAsyncSubmitHandler<T = unknown> = (
  *   <button type="submit">Sign in</button>
  * </form>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name form
  * @doc-description Coordinates form submit with validation, first-error focus, and async submitting state.

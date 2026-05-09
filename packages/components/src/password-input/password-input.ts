@@ -50,7 +50,7 @@ import {
  * @doc-example With validation rules
  *   @doc-file password-input.with-rules.example.ts
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name password-input
  * @doc-description Themed password input with show/hide toggle, optional strength meter, and Caps Lock warning.

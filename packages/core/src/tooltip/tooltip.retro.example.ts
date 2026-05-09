@@ -37,7 +37,6 @@ import { KjButton } from '../button/button';
       white-space: nowrap; pointer-events: none; border: 1px solid var(--kj-border);
       box-shadow: var(--kj-shadow-sm);
     }
-    :global(kj-tooltip-content[hidden]) { display: none; }
   `],
   host: { class: 'kj-theme-retro' },
   template: `

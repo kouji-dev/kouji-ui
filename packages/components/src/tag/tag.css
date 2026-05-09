@@ -64,10 +64,17 @@
     --kj-tag-border-color: transparent;
   }
 
-  /* ── Sizes ───────────────────────────────────────────────────────── */
+  /* ── Sizes (strict ladder: xs < sm < default/md < lg) ───────────── */
+  .kj-tag[data-size="xs"] {
+    --kj-tag-padding-x: 0.1875rem;
+    --kj-tag-padding-y: 0.03125rem;
+    --kj-tag-font-size: 0.5625rem; /* 9px — dense/meta chips only */
+    --kj-tag-gap: 0.125rem;
+  }
   .kj-tag[data-size="sm"] {
     --kj-tag-padding-x: 0.375rem;
-    --kj-tag-font-size: 0.6875rem;
+    --kj-tag-padding-y: 0.125rem;
+    --kj-tag-font-size: 0.6875rem; /* 11px — step above xs */
   }
   .kj-tag[data-size="lg"] {
     --kj-tag-padding-x: var(--kj-space-md);

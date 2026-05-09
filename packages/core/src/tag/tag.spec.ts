@@ -79,10 +79,10 @@ describe('KjTag', () => {
 
   it('forwards kjSize to KjSize via host directive composition', async () => {
     const { container } = await render(
-      `<span kjTag [kjSize]="'sm'">x</span>`,
+      `<span kjTag [kjSize]="'xs'">x</span>`,
       { imports },
     );
-    expect(container.querySelector('span')).toHaveAttribute('data-size', 'sm');
+    expect(container.querySelector('span')).toHaveAttribute('data-size', 'xs');
   });
 
   it('forwards kjTagDisabled to KjDisabled and reflects aria-disabled', async () => {

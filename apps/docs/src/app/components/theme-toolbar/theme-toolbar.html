@@ -1,0 +1,63 @@
+<header class="toolbar">
+  <div class="name-wrap">
+    <input
+      class="name"
+      type="text"
+      placeholder="theme-name"
+      [value]="draft().name"
+      [attr.aria-invalid]="nameError() !== null"
+      aria-describedby="toolbar-name-helper"
+      aria-label="Theme name"
+      (input)="onNameChange($event)"
+    />
+    <span id="toolbar-name-helper" class="name-helper" [class.error]="nameError() !== null">
+      {{ nameError() ?? 'kebab-case, max 32 chars' }}
+    </span>
+  </div>
+
+  <div class="palette">
+    <kj-button kjVariant="outline" kjSize="sm" type="button" (click)="shuffleColors()" aria-label="Shuffle colors only">
+      Shuffle colors
+    </kj-button>
+    <kj-button kjVariant="outline" kjSize="sm" type="button" (click)="shuffleTheme()" aria-label="Shuffle colors and shape">
+      Shuffle theme
+    </kj-button>
+    <kj-button
+      kjVariant="ghost"
+      kjSize="sm"
+      type="button"
+      (click)="rederive()"
+      aria-label="Re-derive secondary, accent, neutral, and semantic colors from primary"
+    >
+      Sync primary
+    </kj-button>
+  </div>
+
+  <div class="actions">
+    <kj-button kjVariant="ghost" kjSize="sm" type="button" (click)="reset()">Reset</kj-button>
+    <kj-button kjVariant="default" kjSize="sm" type="button" [kjDisabled]="saveDisabled()" (click)="save()">Save</kj-button>
+
+    <kj-button
+      kjVariant="outline"
+      kjSize="sm"
+      type="button"
+      kjDropdownMenuTrigger
+      #themeMoreMenu="kjDropdownMenuTrigger"
+      aria-label="More theme actions: copy, import, export"
+    >
+      More
+    </kj-button>
+    <kj-dropdown-menu-content [kjFor]="themeMoreMenu">
+      <button type="button" kjDropdownMenuItem (click)="copyCss()">Copy CSS</button>
+      <button type="button" kjDropdownMenuItem (click)="copyLink()">Copy share link</button>
+      <hr kjDropdownMenuSeparator />
+      <button type="button" kjDropdownMenuItem (click)="requestImport.emit()">Import…</button>
+      <button type="button" kjDropdownMenuItem (click)="downloadCss()">Download .css</button>
+      <button type="button" kjDropdownMenuItem (click)="exportJson()">Export JSON</button>
+    </kj-dropdown-menu-content>
+  </div>
+</header>
+
+@if (toast(); as msg) {
+  <div class="toolbar-toast" role="status" aria-live="polite">{{ msg }}</div>
+}

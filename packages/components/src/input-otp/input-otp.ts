@@ -38,7 +38,7 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
  *   @doc-file input-otp.separator.example.ts
  * @doc-example Auto-submit
  *   @doc-file input-otp.autosubmit.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name input-otp
  * @doc-description Themed OTP input with N cells, paste distribution, auto-submit, masking, and visual separators.

@@ -28,7 +28,7 @@ export interface KjOverlayTriggerLike {
  * resolves the panel role/aria-modal, and binds DOM state attributes
  * (`data-state`, `hidden`, `id`) for transition styling.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-panel
  * @doc-is-main

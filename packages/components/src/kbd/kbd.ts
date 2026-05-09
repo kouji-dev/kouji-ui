@@ -43,7 +43,7 @@ import { KJ_SIZE_PRESET, KJ_KBD_SIZE_PRESET, KjKbd } from '@kouji-ui/core';
  *   @doc-file kbd.sizes.example.ts
  * @doc-example In a tooltip
  *   @doc-file kbd.in-tooltip.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name kbd
  * @doc-description Themed keyboard key label with size variants and an aria-label override for symbol glyphs.

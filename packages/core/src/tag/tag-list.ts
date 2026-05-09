@@ -19,7 +19,7 @@ import { KJ_TAG_LIST, KjTagListContext, KjTagListRole } from './tag.context';
  *   <span kjTag kjTagSelectable>Two</span>
  * </div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name tag
  */

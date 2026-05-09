@@ -36,7 +36,7 @@ function nextPanelId(): string {
  * </div>
  * ```
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name date-picker
  * @doc-description Unstyled date-picker root that owns the selected date, popover state, locale, and bounds.

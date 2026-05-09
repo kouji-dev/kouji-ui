@@ -18,7 +18,7 @@ import { KjOverlayController } from './controller';
  *
  * Internal: not exported as part of the public API surface.
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-wrapper
  * @doc-is-main

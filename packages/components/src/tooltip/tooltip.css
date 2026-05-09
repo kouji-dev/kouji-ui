@@ -29,7 +29,13 @@
     word-wrap: break-word;
   }
 
-  .kj-tooltip-content[hidden] { display: none; }
+  /* Closed: KjOverlayPanel sets `hidden` when state is closed — keep portaled panel out of layout.
+     Load this stylesheet globally when using KjTooltipTrigger + kj-tooltip-content from core
+     (see packages/core tooltip finance example; avoid duplicating `[hidden]` in app CSS). */
+  /* Must win over any app-level tooltip overrides (e.g. encapsulation + extra classes). */
+  .kj-tooltip-content[hidden] {
+    display: none !important;
+  }
 
   /* Arrow positioning relative to the content's resolved data-side. */
   .kj-tooltip-arrow {

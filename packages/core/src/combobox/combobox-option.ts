@@ -18,7 +18,7 @@ const nextOptionId = (): string => `kj-combobox-option-${++_idCounter}`;
  * value to the combobox; hovering moves the active descendant. Hidden when
  * the synchronous filter rejects it.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjComboboxOption]',

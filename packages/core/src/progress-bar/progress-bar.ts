@@ -49,7 +49,7 @@ import {
  *   <div kjProgressBarFill></div>
  * </div>
  * ```
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name progress-bar
  * @doc-description Marks an element as an accessible progress bar with determinate or indeterminate value.

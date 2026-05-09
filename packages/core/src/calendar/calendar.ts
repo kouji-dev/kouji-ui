@@ -50,7 +50,7 @@ function nextCaptionId(): string {
  * lands on the next *selectable* day. Cells outside `kjMin` / `kjMax` carry
  * `aria-disabled="true"` and can't receive focus.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name calendar
  * @doc-description Unstyled calendar root for date selection with locale, bounds, and full keyboard navigation.

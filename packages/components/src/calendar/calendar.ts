@@ -32,7 +32,7 @@ import {
  *
  * @doc-example Default
  *   @doc-file calendar.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  */
 @Component({
   selector: 'kj-calendar',

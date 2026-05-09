@@ -1,0 +1,57 @@
+<nav class="rail" aria-labelledby="theme-rail-heading">
+  <p class="rail-label" id="theme-rail-heading">Themes</p>
+
+  <p class="rail-group" id="rail-heading-built-in">Built-in</p>
+  <kj-list
+    [divided]="true"
+    [hoverable]="true"
+    [arrowNavigation]="true"
+    [ariaLabelledby]="'rail-heading-built-in'"
+  >
+    @for (name of builtIns; track name) {
+      <kj-list-item [active]="activeBase() === name">
+        <button
+          type="button"
+          [attr.aria-current]="activeBase() === name ? 'true' : null"
+          (click)="onForkBuiltIn(name)"
+        >
+          <span class="swatch" [attr.data-theme]="name" aria-hidden="true"></span>
+          <span class="theme-name">{{ name }}</span>
+        </button>
+      </kj-list-item>
+    }
+  </kj-list>
+
+  @if (mySaved().length > 0) {
+    <p class="rail-group" id="rail-heading-saved">My themes</p>
+    <kj-list
+      [divided]="true"
+      [hoverable]="true"
+      [arrowNavigation]="true"
+      [ariaLabelledby]="'rail-heading-saved'"
+    >
+      @for (name of mySaved(); track name) {
+        <kj-list-item [active]="currentName() === name">
+          <button
+            type="button"
+            [attr.aria-current]="currentName() === name ? 'true' : null"
+            (click)="onLoadSaved(name)"
+          >
+            <span class="swatch saved" aria-hidden="true"></span>
+            <span class="theme-name">{{ name }}</span>
+          </button>
+        </kj-list-item>
+      }
+    </kj-list>
+  }
+
+  <kj-button
+    kjVariant="outline"
+    kjSize="sm"
+    type="button"
+    aria-label="New theme — start from light preset"
+    (click)="onNewTheme()"
+  >
+    New theme
+  </kj-button>
+</nav>

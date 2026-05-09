@@ -23,7 +23,7 @@ import { KJ_CALENDAR } from './calendar.context';
  * (`"Tuesday, April 15, 2025"`) for SR clarity. Visible text is the
  * day-of-month only (consumer renders `{{ day.dayNumber() }}`).
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name calendar
  */

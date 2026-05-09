@@ -23,7 +23,7 @@ export function nextPopoverTitleId(): string {
  * </kj-popover-content>
  * ```
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjPopoverTitle]',

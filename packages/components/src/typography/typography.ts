@@ -41,7 +41,7 @@ import { Directive } from '@angular/core';
  *   @doc-file typography.blockquote.example.ts
  * @doc-example Truncate (multi-line)
  *   @doc-file typography.truncate.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name typography
  * @doc-description Themed typography system for prose containers and individual lead, muted, code, quote, and truncate text.

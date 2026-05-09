@@ -52,7 +52,7 @@ import { valueFromClientPosition } from './slider.geometry';
  * each thumb's `aria-valuemin/max` to the partner-thumb position, and
  * exposes the dragging / active-thumb state for the wrapper visuals.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name slider
  * @doc-description Unstyled slider root for single or range value selection with bounds, orientation, RTL, and ticks.

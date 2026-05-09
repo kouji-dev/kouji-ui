@@ -25,7 +25,7 @@ let nextId = 0;
  *   …
  * </form>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name form
  */

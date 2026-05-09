@@ -1,16 +1,6 @@
-/**
- * Curated seed swatches for the theme generator.
- *
- * Each swatch represents a PRIMARY color tuned for **light mode**. The
- * curation contract enforces WCAG AAA (>= 7:1 contrast ratio) only against
- * the `lightBase` (white). Dark-mode variants are derived at runtime in a
- * later task by lightening the seed in OKLCH space.
- *
- * Curation contract:
- *  - hex must pass AAA on `lightBase` (white).
- *  - Coverage spans all nine hue families.
- *  - Total entries >= 30.
- */
+import { clampChroma, converter, formatHex } from 'culori';
+
+const toRgb = converter('rgb');
 
 export const HUE_FAMILIES = [
   'red',
@@ -26,74 +16,168 @@ export const HUE_FAMILIES = [
 
 export type HueFamily = (typeof HUE_FAMILIES)[number];
 
-/**
- * A single curated seed swatch.
- *
- * @property hex - Foreground color in `#rrggbb` form. Must pass AAA on `lightBase`.
- * @property name - Human-readable label shown in the picker UI.
- * @property hueFamily - Coarse hue bucket used for grouping the picker.
- * @property lightBase - The light-mode base-100 this swatch was curated against for AAA primary contrast.
- */
-export interface SeedSwatch {
-  hex: string;
-  name: string;
-  hueFamily: HueFamily;
-  /** The light-mode base-100 this swatch was curated against for AAA primary contrast. */
-  lightBase: string;
-}
+/** Column labels only (no per-swatch names). `yellow` reads as amber/gold in OKLCH ramps. */
+export const HUE_FAMILY_LABELS: Record<HueFamily, string> = {
+  red: 'Red',
+  orange: 'Orange',
+  yellow: 'Amber',
+  green: 'Green',
+  teal: 'Teal',
+  blue: 'Blue',
+  purple: 'Purple',
+  pink: 'Pink',
+  neutral: 'Neutral',
+};
+
+/** Daisy-style shade depth per hue column (including neutrals). */
+export const SEED_SHADE_COUNT = 10;
 
 const LIGHT_BASE = '#ffffff';
 
+const L_MAX = 0.93;
+const L_MIN = 0.14;
+
+/** OKLCH hue angles (°). Neutral column uses chroma 0 (hue unused). */
+const HUE_ANGLE_DEG: Record<Exclude<HueFamily, 'neutral'>, number> = {
+  red: 27,
+  orange: 48,
+  yellow: 82,
+  green: 142,
+  teal: 175,
+  blue: 252,
+  purple: 292,
+  pink: 328,
+};
+
+/** Peak chroma before envelope (yellow stays softer). */
+const CHROMA_PEAK: Record<Exclude<HueFamily, 'neutral'>, number> = {
+  red: 0.2,
+  orange: 0.18,
+  yellow: 0.11,
+  green: 0.17,
+  teal: 0.15,
+  blue: 0.19,
+  purple: 0.18,
+  pink: 0.18,
+};
+
+/** One OKLCH triple before gamut clamp / hex conversion. */
+export interface OklchShadeSpec {
+  readonly l: number;
+  readonly c: number;
+  /** Hue in degrees (meaningful when `c` > 0). */
+  readonly h: number;
+}
+
 /**
- * Curated primary-color seeds. Each entry passes WCAG AAA (>= 7:1) when used as
- * `primary` against its `lightBase`. Dark-mode variants are derived at runtime.
+ * Abstract seed matrix column — **no display colors**, only OKLCH parameters.
+ * Index 0 = lightest (left when rendered as a horizontal ramp), last = darkest (right).
  */
-export const SEED_SWATCHES: readonly SeedSwatch[] = [
-  // red
-  { hex: '#a30000', name: 'Crimson', hueFamily: 'red', lightBase: LIGHT_BASE },
-  { hex: '#991b1b', name: 'Rose', hueFamily: 'red', lightBase: LIGHT_BASE },
-  { hex: '#9f1239', name: 'Wine', hueFamily: 'red', lightBase: LIGHT_BASE },
+export interface SeedHueColumnSpec {
+  hueFamily: HueFamily;
+  shades: readonly OklchShadeSpec[];
+}
 
-  // orange
-  { hex: '#9a3412', name: 'Rust', hueFamily: 'orange', lightBase: LIGHT_BASE },
-  { hex: '#7c2d12', name: 'Umber', hueFamily: 'orange', lightBase: LIGHT_BASE },
+/**
+ * Resolved column for UI: gamut-clamped **sRGB hex** swatches (optional pipeline step).
+ */
+export interface SeedHueColumn {
+  hueFamily: HueFamily;
+  shades: readonly string[];
+}
 
-  // yellow
-  { hex: '#713f12', name: 'Olive', hueFamily: 'yellow', lightBase: LIGHT_BASE },
-  { hex: '#78350f', name: 'Honey', hueFamily: 'yellow', lightBase: LIGHT_BASE },
-  { hex: '#794200', name: 'Mustard', hueFamily: 'yellow', lightBase: LIGHT_BASE },
+export interface SeedSwatch {
+  hex: string;
+  hueFamily: HueFamily;
+}
 
-  // green
-  { hex: '#166534', name: 'Forest', hueFamily: 'green', lightBase: LIGHT_BASE },
-  { hex: '#14532d', name: 'Pine', hueFamily: 'green', lightBase: LIGHT_BASE },
-  { hex: '#365314', name: 'Moss', hueFamily: 'green', lightBase: LIGHT_BASE },
-  { hex: '#065f46', name: 'Emerald', hueFamily: 'green', lightBase: LIGHT_BASE },
+function oklchToHex(l: number, c: number, h: number): string {
+  return formatHex(clampChroma({ mode: 'oklch', l, c, h }, 'oklch')) ?? '#000000';
+}
 
-  // teal
-  { hex: '#115e59', name: 'Teal', hueFamily: 'teal', lightBase: LIGHT_BASE },
-  { hex: '#155e75', name: 'Lagoon', hueFamily: 'teal', lightBase: LIGHT_BASE },
-  { hex: '#00607b', name: 'Cyan Deep', hueFamily: 'teal', lightBase: LIGHT_BASE },
+function chromaAt(hueFamily: HueFamily, stepT: number): number {
+  if (hueFamily === 'neutral') return 0;
+  const peak = CHROMA_PEAK[hueFamily];
+  return peak * (0.22 + 0.78 * Math.sin(Math.PI * stepT));
+}
 
-  // blue
-  { hex: '#1e40af', name: 'Royal', hueFamily: 'blue', lightBase: LIGHT_BASE },
-  { hex: '#1e3a8a', name: 'Navy', hueFamily: 'blue', lightBase: LIGHT_BASE },
-  { hex: '#1847d1', name: 'Cobalt', hueFamily: 'blue', lightBase: LIGHT_BASE },
-  { hex: '#0c4a6e', name: 'Steel', hueFamily: 'blue', lightBase: LIGHT_BASE },
+function relLum(hex: string): number {
+  const c = toRgb(hex);
+  if (!c) return 0;
+  const lin = (x: number) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+  return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+}
 
-  // purple
-  { hex: '#5b21b6', name: 'Violet', hueFamily: 'purple', lightBase: LIGHT_BASE },
-  { hex: '#6d28d9', name: 'Iris', hueFamily: 'purple', lightBase: LIGHT_BASE },
-  { hex: '#581c87', name: 'Plum', hueFamily: 'purple', lightBase: LIGHT_BASE },
-  { hex: '#4c1d95', name: 'Indigo', hueFamily: 'purple', lightBase: LIGHT_BASE },
+function contrastRatio(fg: string, bg: string): number {
+  const la = relLum(fg);
+  const lb = relLum(bg);
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
 
-  // pink
-  { hex: '#9d174d', name: 'Magenta', hueFamily: 'pink', lightBase: LIGHT_BASE },
-  { hex: '#831843', name: 'Mulberry', hueFamily: 'pink', lightBase: LIGHT_BASE },
-  { hex: '#86198f', name: 'Fuchsia', hueFamily: 'pink', lightBase: LIGHT_BASE },
+function buildHueColumnSpecs(hueFamily: HueFamily): readonly OklchShadeSpec[] {
+  const shades: OklchShadeSpec[] = [];
+  const n = SEED_SHADE_COUNT;
+  for (let i = 0; i < n; i++) {
+    const stepT = n <= 1 ? 0 : i / (n - 1);
+    const l = L_MAX + (L_MIN - L_MAX) * stepT;
+    if (hueFamily === 'neutral') {
+      shades.push({ l, c: 0, h: 0 });
+    } else {
+      const h = HUE_ANGLE_DEG[hueFamily];
+      const c = chromaAt(hueFamily, stepT);
+      shades.push({ l, c, h });
+    }
+  }
+  return shades;
+}
 
-  // neutral
-  { hex: '#1f2937', name: 'Slate', hueFamily: 'neutral', lightBase: LIGHT_BASE },
-  { hex: '#27272a', name: 'Graphite', hueFamily: 'neutral', lightBase: LIGHT_BASE },
-  { hex: '#262626', name: 'Charcoal', hueFamily: 'neutral', lightBase: LIGHT_BASE },
-  { hex: '#1c1917', name: 'Espresso', hueFamily: 'neutral', lightBase: LIGHT_BASE },
-] as const;
+/**
+ * Daisy-style matrix: columns = hue families, steps = {@link SEED_SHADE_COUNT}.
+ * Returns **only OKLCH parameters** — no hex / RGB until {@link resolveSeedSwatchMatrixToHex}.
+ */
+export function buildSeedSwatchMatrix(): readonly SeedHueColumnSpec[] {
+  return HUE_FAMILIES.map(hueFamily => ({
+    hueFamily,
+    shades: buildHueColumnSpecs(hueFamily),
+  }));
+}
+
+/** Gamut-clamp specs to sRGB and produce `#rrggbb` strings for painting / contrast checks. */
+export function resolveSeedSwatchMatrixToHex(
+  matrix: readonly SeedHueColumnSpec[],
+): readonly SeedHueColumn[] {
+  return matrix.map(col => ({
+    hueFamily: col.hueFamily,
+    shades: col.shades.map(s => oklchToHex(s.l, s.c, col.hueFamily === 'neutral' ? 0 : s.h)),
+  }));
+}
+
+export function flattenSeedSwatchMatrix(
+  matrix: readonly SeedHueColumn[] = resolveSeedSwatchMatrixToHex(buildSeedSwatchMatrix()),
+): readonly SeedSwatch[] {
+  const out: SeedSwatch[] = [];
+  for (const col of matrix) {
+    for (const hex of col.shades) {
+      out.push({ hex, hueFamily: col.hueFamily });
+    }
+  }
+  return out;
+}
+
+/** Flattened resolved matrix (length = 9 × 10). */
+export const SEED_SWATCHES: readonly SeedSwatch[] = flattenSeedSwatchMatrix();
+
+export function seedSwatchesForAccessiblePrimary(): readonly SeedSwatch[] {
+  return SEED_SWATCHES.filter(s => contrastRatio(s.hex, LIGHT_BASE) >= 7);
+}
+
+export function pickInspiringSeedHex(random: () => number = Math.random): string {
+  const matrix = resolveSeedSwatchMatrixToHex(buildSeedSwatchMatrix());
+  const famIdx = Math.floor(random() * HUE_FAMILIES.length) % HUE_FAMILIES.length;
+  const family = HUE_FAMILIES[famIdx];
+  const column = matrix.find(c => c.hueFamily === family)!;
+  const aaa = column.shades.filter(h => contrastRatio(h, LIGHT_BASE) >= 7);
+  const pool = aaa.length > 0 ? aaa : column.shades.slice(-4);
+  return pool[Math.floor(random() * pool.length)]!;
+}

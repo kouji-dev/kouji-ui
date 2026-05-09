@@ -48,37 +48,31 @@
   </a>
 
   <div class="kj-navbar-theme">
-    <button
-      type="button"
+    <kj-button
+      kjVariant="ghost"
       class="kj-navbar-theme-trigger"
-      [attr.aria-label]="'Current theme: ' + currentTheme() + '. Click to change.'"
-      aria-haspopup="listbox"
-      [attr.aria-expanded]="pickerOpen()"
-      (click)="togglePicker()"
+      kjDropdownMenuTrigger
+      #themeMenu="kjDropdownMenuTrigger"
+      [kjAriaLabel]="'Current theme: ' + currentTheme() + '. Choose theme.'"
     >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="5"/>
         <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
       </svg>
       <span>{{ currentTheme() }}</span>
-    </button>
-    @defer (when isBrowser) {
-      @if (pickerOpen()) {
-        <ul class="kj-navbar-theme-list" role="listbox" aria-label="Theme">
-          @for (t of themes; track t) {
-            <li
-              role="option"
-              tabindex="0"
-              class="kj-navbar-theme-option"
-              [class.active]="t === currentTheme()"
-              [attr.aria-selected]="t === currentTheme()"
-              (click)="selectTheme(t)"
-              (keydown.enter)="selectTheme(t)"
-              (keydown.space)="$event.preventDefault(); selectTheme(t)"
-            >{{ t }}</li>
-          }
-        </ul>
+    </kj-button>
+    <kj-dropdown-menu-content [kjFor]="themeMenu" [kjSide]="'bottom'" [kjAlign]="'end'">
+      @for (t of themes; track t) {
+        <button
+          type="button"
+          kjDropdownMenuItem
+          class="kj-navbar-theme-item"
+          [class.kj-navbar-theme-item--active]="t === currentTheme()"
+          (kjSelect)="selectTheme(t)"
+        >
+          {{ t }}
+        </button>
       }
-    }
+    </kj-dropdown-menu-content>
   </div>
 </nav>

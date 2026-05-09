@@ -1,7 +1,7 @@
 import { clampChroma, converter, formatHex } from 'culori';
 import { analogous, complementary, triadic } from './harmonies';
-import { SEED_SWATCHES } from './seed-swatches';
-import type { ColorSlot } from './types';
+import { pickInspiringSeedHex } from './seed-swatches';
+import type { ColorSlot, ShapeKey } from './types';
 
 const toOklch = converter('oklch');
 
@@ -71,15 +71,42 @@ export function deriveFromSeed(seed: string, opts: DeriveOpts): Record<ColorSlot
   };
 }
 
-export interface RandomOpts { random?: () => number }
+export interface RandomOpts {
+  random?: () => number;
+}
 
-/** Generate a fully-derived palette from a randomly chosen curated AAA seed swatch.
- * Picks a random harmony and light/dark mode. Inject a deterministic `random` for tests. */
+/** Generate a fully-derived palette from a randomly chosen curated AAA seed (weighted by hue family),
+ * random harmony, and light/dark mode. Inject a deterministic `random` for tests. */
 export function randomAccessiblePalette(opts: RandomOpts = {}): Record<ColorSlot, string> {
   const rnd = opts.random ?? Math.random;
-  const swatch = SEED_SWATCHES[Math.floor(rnd() * SEED_SWATCHES.length)]!;
+  const hex = pickInspiringSeedHex(rnd);
   const harmonies: Harmony[] = ['analogous', 'complementary', 'triadic'];
   const harmony = harmonies[Math.floor(rnd() * harmonies.length)]!;
   const mode: 'light' | 'dark' = rnd() < 0.5 ? 'light' : 'dark';
-  return deriveFromSeed(swatch.hex, { mode, harmony });
+  return deriveFromSeed(hex, { mode, harmony });
+}
+
+/** Matches theme-config corner preset tiers for radius-box / radius-field. */
+const RADIUS_STEP = [0, 4, 8, 16, 24];
+const BORDER_OPTS = [0, 1, 2, 4];
+const DEPTH_OPTS = [0, 1, 2];
+const MOTION_OPTS = ['0s', '0.12s ease', '0.2s ease', '0.4s ease'] as const;
+
+/** Random shape snapshot for “shuffle theme” (DaisyUI-style radii / border roulette). */
+export function randomShapeSnapshot(random: () => number = Math.random): Record<ShapeKey, number> {
+  const pick = <T>(arr: readonly T[]): T => arr[Math.floor(random() * arr.length)]!;
+  const radiusBox = pick(RADIUS_STEP);
+  const radiusField = pick(RADIUS_STEP);
+  return {
+    radiusBox,
+    radiusField,
+    radiusSelector: radiusField,
+    border: pick(BORDER_OPTS),
+    depth: pick(DEPTH_OPTS),
+  };
+}
+
+/** Random transition duration preset (pairs with {@link randomShapeSnapshot}). */
+export function randomMotionTransition(random: () => number = Math.random): string {
+  return MOTION_OPTS[Math.floor(random() * MOTION_OPTS.length)]!;
 }

@@ -23,7 +23,7 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  *   @doc-file card.full.example.ts
  * @doc-example Cover
  *   @doc-file card.cover.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name card
  * @doc-description Themed surface container for grouping related content with header, footer, and cover sub-components.

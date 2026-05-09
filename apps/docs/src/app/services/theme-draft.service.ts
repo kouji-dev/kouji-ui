@@ -3,8 +3,13 @@ import { BUILT_IN_THEMES, BUILT_IN_NAMES, type BuiltInName } from '../lib/theme/
 import { deriveTokens } from '../lib/theme/derive-tokens';
 import { serializeToScopedBlock } from '../lib/theme/serialize-theme';
 import { DraftThemeSchema } from '../lib/theme/import-schema';
-import { deriveFromSeed } from '../lib/theme/palette-derive';
-import type { DraftTheme, ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey } from '../lib/theme/types';
+import {
+  deriveFromSeed,
+  randomAccessiblePalette,
+  randomMotionTransition,
+  randomShapeSnapshot,
+} from '../lib/theme/palette-derive';
+import type { DraftTheme, ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey, TypographyKey } from '../lib/theme/types';
 
 const STORAGE_KEY = 'kj-custom-themes';
 const DRAFT_KEY   = 'kj-draft-current';
@@ -20,9 +25,10 @@ const BLANK_DRAFT: DraftTheme = {
   name: '',
   colors: { ...BUILT_IN_THEMES.light.colors },
   contentOverrides: {},
-  shape:  { ...BUILT_IN_THEMES.light.shape },
-  type:   { ...BUILT_IN_THEMES.light.type },
-  motion: { ...BUILT_IN_THEMES.light.motion },
+  shape:      { ...BUILT_IN_THEMES.light.shape },
+  type:       { ...BUILT_IN_THEMES.light.type },
+  typography: { ...BUILT_IN_THEMES.light.typography },
+  motion:     { ...BUILT_IN_THEMES.light.motion },
 };
 
 @Injectable({ providedIn: 'root' })
@@ -76,6 +82,27 @@ export class ThemeDraftService {
     this.persistDraft();
   }
 
+  /** Random curated palette (weighted hue family). Optionally shuffle radii, border, depth, and motion — DaisyUI-style “surprise theme”.
+   * Clears all manual surface/content overrides so every shuffle is a full reset. */
+  applyRandomInspiration(opts: { includeShape?: boolean; random?: () => number } = {}): void {
+    const rnd = opts.random ?? Math.random;
+    const palette = randomAccessiblePalette({ random: rnd });
+    this._draft.update(d => {
+      const next: DraftTheme = {
+        ...d,
+        colors: palette,
+        contentOverrides: {},
+      };
+      if (opts.includeShape) {
+        next.shape = { ...d.shape, ...randomShapeSnapshot(rnd) };
+        next.motion = { transition: randomMotionTransition(rnd) };
+      }
+      return next;
+    });
+    this._dirty.set(new Set());
+    this.persistDraft();
+  }
+
   /** Re-derive secondary/accent/neutral/semantic from current `primary`.
    * Slots the user has manually edited (in `dirtySlots`) are preserved unless
    * `overwriteDirty: true`. */
@@ -105,7 +132,13 @@ export class ThemeDraftService {
   }
 
   setShape(key: ShapeKey, value: number): void {
-    this._draft.update(d => ({ ...d, shape: { ...d.shape, [key]: value } }));
+    this._draft.update(d => {
+      const shape = { ...d.shape, [key]: value };
+      if (key === 'radiusField') {
+        shape.radiusSelector = value;
+      }
+      return { ...d, shape };
+    });
     this.persistDraft();
   }
 
@@ -116,6 +149,11 @@ export class ThemeDraftService {
 
   setMotion(key: MotionKey, value: string): void {
     this._draft.update(d => ({ ...d, motion: { ...d.motion, [key]: value } }));
+    this.persistDraft();
+  }
+
+  setTypography(key: TypographyKey, value: number): void {
+    this._draft.update(d => ({ ...d, typography: { ...d.typography, [key]: value } }));
     this.persistDraft();
   }
 
@@ -195,7 +233,13 @@ export class ThemeDraftService {
     if (typeof localStorage === 'undefined') return null;
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
-    try { return JSON.parse(raw) as DraftTheme; } catch { return null; }
+    try {
+      const parsed = JSON.parse(raw) as DraftTheme;
+      return {
+        ...parsed,
+        typography: parsed.typography ?? { ...BUILT_IN_THEMES.light.typography },
+      };
+    } catch { return null; }
   }
   private persistDraft(): void {
     if (typeof localStorage === 'undefined') return;

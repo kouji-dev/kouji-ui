@@ -65,7 +65,7 @@ export type KjTextareaAutoresize = 'off' | 'auto';
  *
  * @doc
  *  @doc-file textarea.example.ts
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc-name textarea
  * @doc-description Adds forms integration, focus ring, and optional auto-resize and character-count announcements to a textarea.
  * @doc-is-main

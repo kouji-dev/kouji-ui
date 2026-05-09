@@ -15,6 +15,7 @@ const DRAFT: DraftTheme = {
   contentOverrides: {},
   shape:  { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 },
   type:   { fontSans: 'Inter, system-ui', fontMono: 'JetBrains Mono', fontDisplay: 'Syne' },
+  typography: { bodyRem: 1, smallRem: 0.875 },
   motion: { transition: '0.2s ease' },
 };
 
@@ -40,6 +41,7 @@ describe('serializeToScopedBlock', () => {
       '--kj-border', '--kj-depth',
       '--kj-font-sans', '--kj-font-mono', '--kj-font-display',
       '--kj-transition',
+      '--kj-text-body', '--kj-text-small',
     ];
     for (const t of required) expect(css).toContain(t);
   });

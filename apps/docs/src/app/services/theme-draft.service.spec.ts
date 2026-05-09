@@ -109,4 +109,13 @@ describe('ThemeDraftService — palette extensions', () => {
     svc.loadFork('kouji');
     expect(svc.dirtySlots().size).toBe(0);
   });
+
+  test('applyRandomInspiration replaces palette and clears content overrides', () => {
+    svc.loadFork('kouji');
+    svc.setContentOverride('base-200', 'oklch(92% 0.02 0)');
+    expect(svc.draft().contentOverrides['base-200']).toBeDefined();
+    svc.applyRandomInspiration();
+    expect(svc.draft().contentOverrides).toEqual({});
+    expect(svc.dirtySlots().size).toBe(0);
+  });
 });

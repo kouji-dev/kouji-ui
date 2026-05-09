@@ -14,6 +14,12 @@ export {
 } from '@kouji-ui/core';
 
 /**
+ * Tooltip surface styles: `tooltip.css` in this folder. Apps that compose
+ * `KjTooltipTrigger` + `kj-tooltip-content` from `@kouji-ui/core` (without this
+ * wrapper) must load `packages/components/src/tooltip/tooltip.css` globally
+ * (see docs `angular.json` styles) so `.kj-tooltip-content[hidden]{display:none}`
+ * and theme tokens apply — same contract as the finance tooltip example.
+ *
  * Hover/focus tooltip. Compose `[kjTooltipTrigger]` + `<kj-tooltip-content [kjFor]="t">`
  * for declarative use. The wrapper itself renders only projected content — its
  * purpose is to host the documentation tags for the tooltip suite.
@@ -32,7 +38,7 @@ export {
  *   @doc-file tooltip.disabled.example.ts
  * @doc-example Grouped
  *   @doc-file tooltip.group.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-tooltip',

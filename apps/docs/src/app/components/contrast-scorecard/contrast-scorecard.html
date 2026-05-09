@@ -1,25 +1,54 @@
-<details class="scorecard" open>
-  <summary>
-    <span class="badge badge--aaa" aria-live="polite">AAA {{ report().summary.score }}%</span>
-    <span class="badge badge--aa">AA {{ report().summary.aaPass }}/{{ report().summary.total }}</span>
-  </summary>
+<section class="scorecard" aria-label="Contrast scorecard details">
+  <h3 class="group-heading">Contrast (AAA 7:1)</h3>
   <ul role="list" class="rows">
-    @for (p of report().pairs; track p.fg + ':' + p.bg) {
-      <li
-        role="listitem"
-        class="row"
-        [class.row--fail]="!p.pass"
-        [attr.aria-label]="ariaForPair(p)"
-        (click)="focusToken(p.bg)"
-        (keydown.enter)="focusToken(p.bg)"
-        tabindex="0"
-      >
-        <span class="chip" [style.background]="p.fgHex" aria-hidden="true"></span>
-        <span class="chip" [style.background]="p.bgHex" aria-hidden="true"></span>
-        <span class="row__label">{{ p.fg }} / {{ p.bg }}</span>
-        <span class="row__ratio">{{ p.ratio.toFixed(2) }}:1</span>
-        <span class="row__verdict">{{ p.pass ? '✓ ' + p.verdict : '✗ FAIL' }}</span>
+    @for (e of report().contrastEdges; track e.id) {
+      <li role="listitem"
+          class="row"
+          [class.row--fail]="!e.pass"
+          [attr.aria-label]="ariaForEdge(e)"
+          (click)="focusToken(e.bgToken)"
+          (keydown.enter)="focusToken(e.bgToken)"
+          tabindex="0">
+        <span class="chip" [style.background]="e.fgHex" aria-hidden="true"></span>
+        <span class="chip" [style.background]="e.bgHex" aria-hidden="true"></span>
+        <span class="row__label">{{ e.fgToken }} / {{ e.bgToken }}</span>
+        <span class="row__ratio">{{ e.ratio.toFixed(2) }}:1</span>
+        <span class="row__verdict">{{ e.pass ? '✓ ' + e.verdict : '✗ ' + e.verdict }}</span>
       </li>
     }
   </ul>
-</details>
+
+  <h3 class="group-heading">Non-text (3:1)</h3>
+  <ul role="list" class="rows">
+    @for (e of report().nonTextEdges; track e.id) {
+      <li role="listitem"
+          class="row"
+          [class.row--fail]="!e.pass"
+          [attr.aria-label]="ariaForEdge(e)"
+          (click)="focusToken(e.bgToken)"
+          (keydown.enter)="focusToken(e.bgToken)"
+          tabindex="0">
+        <span class="chip" [style.background]="e.fgHex" aria-hidden="true"></span>
+        <span class="chip" [style.background]="e.bgHex" aria-hidden="true"></span>
+        <span class="row__label">{{ e.fgToken }} / {{ e.bgToken }}</span>
+        <span class="row__ratio">{{ e.ratio.toFixed(2) }}:1</span>
+        <span class="row__verdict">{{ e.pass ? '✓' : '✗' }}</span>
+      </li>
+    }
+  </ul>
+
+  <h3 class="group-heading">Typography</h3>
+  <ul role="list" class="rows">
+    @for (c of report().typographyChecks; track c.id) {
+      <li role="listitem"
+          class="row row--type"
+          [class.row--fail]="!c.pass"
+          [attr.aria-label]="ariaForTypography(c)"
+          tabindex="0">
+        <span class="row__label">{{ c.id }}</span>
+        <span class="row__verdict">{{ c.pass ? '✓' : '⚠' }}</span>
+        <span class="row__message">{{ c.message }}</span>
+      </li>
+    }
+  </ul>
+</section>

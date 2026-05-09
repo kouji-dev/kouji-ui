@@ -14,7 +14,7 @@ import { KjOverlayPanel } from '../primitives/overlay/panel';
  * </kj-popover-content>
  * ```
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjPopoverClose]',

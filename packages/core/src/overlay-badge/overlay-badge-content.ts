@@ -32,7 +32,7 @@ import { KJ_OVERLAY_BADGE } from './overlay-badge.context';
  *   <span kjOverlayBadgeContent>4</span>
  * </button>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name overlay-badge
  */

@@ -1,4 +1,4 @@
-﻿import { Directive, inject, model } from '@angular/core';
+import { Directive, inject, model } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 
 /**
@@ -12,7 +12,7 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
  * ```html
  * <button kjToggle [(kjPressed)]="isBold" aria-label="Bold">B</button>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name toggle
  * @doc-description Adds press/unpress toggle behaviour to any focusable element with Angular forms support.

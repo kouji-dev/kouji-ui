@@ -56,7 +56,7 @@ import { KjList, KjListItem, type KjListAs, type KjListOrientation } from '@kouj
  *   @doc-file list.interactive.example.ts
  * @doc-example With icons and badges
  *   @doc-file list.with-icons.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name list
  * @doc-description Themed list surface for settings panels, sidebar navigation, and data feeds.
@@ -145,7 +145,7 @@ export class KjListComponent {
  * `data-disabled`, and the projected child wires its own `aria-disabled` /
  * `tabindex` discipline (e.g. via `KjDisabled` on a button).
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name list
  */

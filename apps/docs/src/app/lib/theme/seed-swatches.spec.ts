@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import { converter } from 'culori';
-import { SEED_SWATCHES, HUE_FAMILIES } from './seed-swatches';
+import {
+  buildSeedSwatchMatrix,
+  flattenSeedSwatchMatrix,
+  HUE_FAMILIES,
+  resolveSeedSwatchMatrixToHex,
+  SEED_SHADE_COUNT,
+  SEED_SWATCHES,
+  seedSwatchesForAccessiblePrimary,
+} from './seed-swatches';
 
 const toRgb = converter('rgb');
 
@@ -17,33 +25,63 @@ function ratio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-describe('SEED_SWATCHES', () => {
-  test('contains at least 30 swatches', () => {
-    expect(SEED_SWATCHES.length).toBeGreaterThanOrEqual(30);
+const LIGHT_BASE = '#ffffff';
+
+describe('buildSeedSwatchMatrix', () => {
+  test('returns OKLCH specs only — no hex strings', () => {
+    const m = buildSeedSwatchMatrix();
+    expect(m).toHaveLength(HUE_FAMILIES.length);
+    for (const col of m) {
+      expect(col.shades).toHaveLength(SEED_SHADE_COUNT);
+      for (const s of col.shades) {
+        expect(s.l).toBeGreaterThanOrEqual(0);
+        expect(s.l).toBeLessThanOrEqual(1);
+        expect(s.c).toBeGreaterThanOrEqual(0);
+        expect(s.h).toBeGreaterThanOrEqual(0);
+      }
+    }
   });
 
-  test('every entry has hex, name, hueFamily, lightBase', () => {
+  test('each hue ramp is light to dark by index (L non-increasing)', () => {
+    for (const col of buildSeedSwatchMatrix()) {
+      for (let i = 0; i < col.shades.length - 1; i++) {
+        expect(col.shades[i].l).toBeGreaterThanOrEqual(col.shades[i + 1].l);
+      }
+    }
+  });
+});
+
+describe('resolveSeedSwatchMatrixToHex', () => {
+  test('produces valid hex swatches', () => {
+    const resolved = resolveSeedSwatchMatrixToHex(buildSeedSwatchMatrix());
+    expect(resolved).toHaveLength(HUE_FAMILIES.length);
+    for (const col of resolved) {
+      expect(col.shades).toHaveLength(SEED_SHADE_COUNT);
+      for (const hex of col.shades) {
+        expect(hex).toMatch(/^#[0-9a-f]{6}$/i);
+      }
+    }
+  });
+});
+
+describe('SEED_SWATCHES', () => {
+  test('flattened matrix size', () => {
+    expect(SEED_SWATCHES.length).toBe(HUE_FAMILIES.length * SEED_SHADE_COUNT);
+    expect(flattenSeedSwatchMatrix().length).toBe(SEED_SWATCHES.length);
+  });
+
+  test('every entry has hex and hueFamily', () => {
     for (const s of SEED_SWATCHES) {
       expect(s.hex).toMatch(/^#[0-9a-f]{6}$/i);
-      expect(s.name).toBeTruthy();
       expect(HUE_FAMILIES).toContain(s.hueFamily);
-      expect(s.lightBase).toMatch(/^#[0-9a-f]{6}$/i);
     }
   });
 
-  test('every hue family has at least one swatch', () => {
-    for (const fam of HUE_FAMILIES) {
-      expect(
-        SEED_SWATCHES.some((s) => s.hueFamily === fam),
-        `family ${fam} has no swatch`,
-      ).toBe(true);
-    }
-  });
-
-  test('every swatch passes WCAG AAA (>= 7:1) on its lightBase', () => {
-    for (const s of SEED_SWATCHES) {
-      const r = ratio(s.hex, s.lightBase);
-      expect(r, `${s.name} ${s.hex} on ${s.lightBase}`).toBeGreaterThanOrEqual(7);
+  test('accessible-primary subset is non-empty and passes AAA on white', () => {
+    const acc = seedSwatchesForAccessiblePrimary();
+    expect(acc.length).toBeGreaterThan(0);
+    for (const s of acc) {
+      expect(ratio(s.hex, LIGHT_BASE)).toBeGreaterThanOrEqual(7);
     }
   });
 });

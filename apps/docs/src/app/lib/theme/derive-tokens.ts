@@ -63,11 +63,16 @@ export function deriveTokens(draft: DraftTheme): ResolvedTokens {
     shape: {
       radiusBox:      `${draft.shape.radiusBox}px`,
       radiusField:    `${draft.shape.radiusField}px`,
-      radiusSelector: `${draft.shape.radiusSelector}px`,
+      /** Selector chrome follows field radius (no separate editor control). */
+      radiusSelector: `${draft.shape.radiusField}px`,
       border:         `${draft.shape.border}px`,
       depth:          `${draft.shape.depth}`,
     },
     type:   draft.type,
+    typography: {
+      bodyRem:  `${draft.typography.bodyRem}rem`,
+      smallRem: `${draft.typography.smallRem}rem`,
+    },
     motion: draft.motion,
   };
 }

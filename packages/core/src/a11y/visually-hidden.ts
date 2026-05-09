@@ -1,4 +1,4 @@
-﻿import { Directive } from '@angular/core';
+import { Directive } from '@angular/core';
 
 /**
  * Visually hides an element while keeping it accessible to screen readers.
@@ -11,7 +11,7 @@
  *   <span kjVisuallyHidden>Close dialog</span>
  * </button>
  * ```
- * @category Core/Accessibility
+ * @doc-category Core/Accessibility
  * @doc
  * @doc-name a11y
  */

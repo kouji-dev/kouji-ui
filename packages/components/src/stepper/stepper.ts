@@ -41,7 +41,7 @@ import {
  *   @doc-file stepper.with-error.example.ts
  * @doc-example Optional step
  *   @doc-file stepper.optional-step.example.ts
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name stepper
  * @doc-description Themed multi-step wizard with linear or non-linear progression and built-in navigation controls.

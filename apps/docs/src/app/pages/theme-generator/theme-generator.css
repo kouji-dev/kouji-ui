@@ -3,60 +3,63 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  position: relative;
 }
 
-.generator-bar {
-  flex-shrink: 0;
+/* Preview (center) + config tabs (right rail), matching layout spec */
+.generator-body {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  gap: var(--kj-space-md);
-  padding: var(--kj-space-md) var(--kj-space-xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-100);
-}
-.generator-name-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 0 0 280px;
-}
-.generator-name {
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
-  border-radius: var(--kj-radius-field);
-  color: var(--kj-color-base-content);
-  padding: var(--kj-space-xs) var(--kj-space-sm);
-  font: var(--kj-text-sm) var(--kj-font-mono);
-}
-.generator-name[aria-invalid="true"] {
-  border-color: var(--kj-color-destructive);
-}
-.generator-name-helper {
-  font: var(--kj-text-xs) var(--kj-font-mono);
-  color: var(--kj-color-neutral);
-}
-.generator-name-helper.error {
-  color: var(--kj-color-destructive);
-}
-.generator-actions {
-  margin-left: auto;
-  display: flex;
-  gap: var(--kj-space-xs);
+  flex-direction: row;
+  overflow: hidden;
 }
 
 .generator-preview {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--kj-space-2xl);
+  padding: var(--kj-space-xl);
   background: var(--kj-color-base-100);
   color: var(--kj-color-base-content);
+}
+
+.generator-config {
+  flex: 0 0 clamp(260px, 28vw, 360px);
+  width: clamp(260px, 28vw, 360px);
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--kj-color-base-300);
+  background: var(--kj-color-base-100);
+}
+
+.generator-config > kj-theme-config-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .generator-body {
+    flex-direction: column;
+  }
+
+  .generator-config {
+    flex: 0 1 min(45vh, 420px);
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--kj-color-base-300);
+  }
 }
 
 .generator-toast {
   position: absolute;
   bottom: var(--kj-space-lg);
   right: var(--kj-space-lg);
+  z-index: 2;
   background: var(--kj-color-base-300);
   color: var(--kj-color-base-content);
   padding: var(--kj-space-sm) var(--kj-space-md);

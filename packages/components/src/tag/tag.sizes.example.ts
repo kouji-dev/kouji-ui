@@ -7,6 +7,7 @@ import { KjTagComponent } from './tag';
   imports: [KjTagComponent],
   styles: [`:host { display: flex; gap: 0.5rem; align-items: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
+    <kj-tag kjSize="xs">Extra small</kj-tag>
     <kj-tag kjSize="sm">Small</kj-tag>
     <kj-tag kjSize="md">Medium</kj-tag>
     <kj-tag kjSize="lg">Large</kj-tag>

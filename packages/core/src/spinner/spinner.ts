@@ -31,7 +31,7 @@ import { KJ_SPINNER_CONFIG, KjSpinnerAnimation } from './config';
  * <span kjSpinner></span>
  * <span kjSpinner kjAnimation="dots" kjAriaLabel="Sending"></span>
  * ```
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name spinner
  * @doc-description Marks an element as an indeterminate loading indicator with the right accessibility role and label.

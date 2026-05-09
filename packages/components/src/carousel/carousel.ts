@@ -70,7 +70,7 @@ import type {
  *   @doc-file carousel.tabs-pattern.example.ts
  * @doc-example Lazy-loaded images
  *   @doc-file carousel.lazy-load.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  * @doc-description Themed rotating content region with prev/next controls, indicators, autoplay, and accessible announcements.
@@ -123,7 +123,7 @@ export class KjCarouselComponent implements AfterViewInit {
  * the slides scroll-snap into, and forwards through to the underlying
  * directive (no public inputs).
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */
@@ -143,7 +143,7 @@ export class KjCarouselViewportComponent {}
  * directive's `aria-label="N of M[: label]"` is computed from its index in
  * registration order plus the optional `[label]` shorthand.
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */
@@ -174,7 +174,7 @@ export class KjCarouselSlideComponent {
  * Enter / Space activation, focus, and disabled semantics work for free; the
  * `aria-label` input is required at runtime (dev-mode warn if omitted).
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */
@@ -205,7 +205,7 @@ export class KjCarouselPreviousComponent {
  * Styled wrapper around `KjCarouselNext`. Symmetric counterpart of
  * `KjCarouselPreviousComponent`.
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */
@@ -239,7 +239,7 @@ export class KjCarouselNextComponent {
  * projected children alone — letting consumers swap dots for thumbnails or
  * numbered chips.
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */
@@ -286,7 +286,7 @@ export class KjCarouselIndicatorsComponent {
  * behaviour; pair with `<kj-carousel-pause>` whenever the delay exceeds
  * 5000 ms (WCAG 2.2.2).
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */
@@ -315,7 +315,7 @@ export class KjCarouselAutoplayComponent {}
  * with `aria-pressed` reflecting the carousel's `paused` signal. Required
  * whenever an autoplay directive is present and its delay > 5000 ms.
  *
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name carousel
  */

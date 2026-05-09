@@ -11,7 +11,7 @@ import { fractionForValue } from './slider.geometry';
  * to `inset-inline-start` / `inline-size` (or block equivalents for
  * vertical). `aria-hidden="true"` — decoration only.
  *
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name slider
  */

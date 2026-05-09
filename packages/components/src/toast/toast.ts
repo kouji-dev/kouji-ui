@@ -24,7 +24,7 @@ import type { KjToastVariant } from '@kouji-ui/core';
  *   @doc-file toast.with-action.example.ts
  * @doc-example Dismissible
  *   @doc-file toast.dismissible.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-toast-wrapper',

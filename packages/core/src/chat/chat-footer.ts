@@ -26,7 +26,7 @@ const STATE_LABEL: Readonly<Record<KjChatState, string>> = {
  * ```html
  * <footer kjChatFooter kjState="read">Read 12:46</footer>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name chat
  */

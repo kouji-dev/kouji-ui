@@ -26,7 +26,7 @@ export {
  *   @doc-file drawer.scrollable.example.ts
  * @doc-example With form
  *   @doc-file drawer.with-form.example.ts
- * @category Library/Overlay
+ * @doc-category Library/Overlay
  */
 @Component({
   selector: 'kj-drawer-shell',

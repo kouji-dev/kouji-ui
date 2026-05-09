@@ -53,7 +53,7 @@ import {
  *   @doc-file file-upload.with-progress.example.ts
  * @doc-example Image preview
  *   @doc-file file-upload.image-preview.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  */
 @Component({
   selector: 'kj-file-upload',

@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest';
-import { deriveFromSeed, randomAccessiblePalette } from './palette-derive';
+import {
+  deriveFromSeed,
+  randomAccessiblePalette,
+  randomMotionTransition,
+  randomShapeSnapshot,
+} from './palette-derive';
+import { pickInspiringSeedHex } from './seed-swatches';
 import { SEED_SWATCHES } from './seed-swatches';
 
 describe('deriveFromSeed', () => {
@@ -66,5 +72,33 @@ describe('randomAccessiblePalette', () => {
     const out = randomAccessiblePalette();
     expect(Object.keys(out)).toHaveLength(9);
     expect(out.primary).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+});
+
+describe('pickInspiringSeedHex', () => {
+  test('returns a hex from the curated list', () => {
+    const hex = pickInspiringSeedHex(() => 0);
+    const hexes = SEED_SWATCHES.map(s => s.hex.toLowerCase());
+    expect(hexes).toContain(hex.toLowerCase());
+  });
+
+  test('deterministic when RNG is fixed', () => {
+    const a = pickInspiringSeedHex(() => 0.42);
+    const b = pickInspiringSeedHex(() => 0.42);
+    expect(a).toBe(b);
+  });
+});
+
+describe('randomShapeSnapshot', () => {
+  test('returns shape keys within allowed sets', () => {
+    const s = randomShapeSnapshot(() => 0.5);
+    expect([0, 4, 8, 12, 16, 20, 24, 32]).toContain(s.radiusBox);
+    expect([0, 1, 2, 4]).toContain(s.border);
+    expect([0, 1, 2]).toContain(s.depth);
+  });
+
+  test('deterministic RNG', () => {
+    expect(randomShapeSnapshot(() => 0.2)).toEqual(randomShapeSnapshot(() => 0.2));
+    expect(randomMotionTransition(() => 0.2)).toEqual(randomMotionTransition(() => 0.2));
   });
 });

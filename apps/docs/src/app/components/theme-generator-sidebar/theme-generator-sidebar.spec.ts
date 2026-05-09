@@ -31,6 +31,7 @@ const STUB_DRAFT: DraftTheme = {
   contentOverrides: {},
   shape: { radiusBox: 8, radiusField: 4, radiusSelector: 999, border: 1, depth: 1 },
   type: { fontSans: 'system-ui, sans-serif', fontMono: 'monospace', fontDisplay: 'system-ui, sans-serif' },
+  typography: { bodyRem: 1, smallRem: 0.875 },
   motion: { transition: '0.2s ease' },
 };
 
@@ -52,6 +53,7 @@ const STUB_RESOLVED: ResolvedTokens = {
   },
   shape: { radiusBox: '8px', radiusField: '4px', radiusSelector: '999px', border: '1px', depth: '1' },
   type: { fontSans: 'system-ui, sans-serif', fontMono: 'monospace', fontDisplay: 'system-ui, sans-serif' },
+  typography: { bodyRem: '1rem', smallRem: '0.875rem' },
   motion: { transition: '0.2s ease' },
 };
 

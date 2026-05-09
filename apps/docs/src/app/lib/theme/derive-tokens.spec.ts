@@ -65,6 +65,7 @@ function MOCK_DRAFT(): DraftTheme {
     contentOverrides: {},
     shape:  { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 },
     type:   { fontSans: 'system-ui', fontMono: 'monospace', fontDisplay: 'system-ui' },
+    typography: { bodyRem: 1, smallRem: 0.875 },
     motion: { transition: '0.2s ease' },
   };
 }

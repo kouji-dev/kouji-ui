@@ -115,12 +115,6 @@
           <span class="control-value">{{ draft().shape.radiusField }}px</span>
         </label>
         <label class="control-row">
-          <span class="control-label">radius-selector</span>
-          <input type="range" min="0" max="32" [value]="draft().shape.radiusSelector"
-                 (input)="onShape('radiusSelector', +$any($event.target).value)" />
-          <span class="control-value">{{ draft().shape.radiusSelector }}px</span>
-        </label>
-        <label class="control-row">
           <span class="control-label">border</span>
           <select [value]="draft().shape.border"
                   (change)="onShape('border', +$any($event.target).value)">

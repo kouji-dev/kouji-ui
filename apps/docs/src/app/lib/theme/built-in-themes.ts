@@ -10,6 +10,7 @@ const SHARED_TYPE = {
   fontDisplay: "'Syne', system-ui, sans-serif",
 };
 const SHARED_SHAPE = { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 };
+const SHARED_TYPOGRAPHY = { bodyRem: 1, smallRem: 0.875 };
 const FAST = { transition: '0.12s ease' };
 
 /**
@@ -20,6 +21,7 @@ const FAST = { transition: '0.12s ease' };
 export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   light: {
     name: 'light', shape: SHARED_SHAPE, type: SHARED_TYPE, motion: FAST,
+    typography: SHARED_TYPOGRAPHY,
     contentOverrides: {},
     colors: {
       'base-100':    'oklch(98% 0 0)',
@@ -36,6 +38,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
 
   dark: {
     name: 'dark', shape: SHARED_SHAPE, type: SHARED_TYPE, motion: FAST,
+    typography: SHARED_TYPOGRAPHY,
     contentOverrides: {},
     colors: {
       'base-100':    'oklch(15% 0 0)',
@@ -55,6 +58,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
     shape: { radiusBox: 0, radiusField: 0, radiusSelector: 0, border: 1, depth: 0 },
     type: { fontSans: "'JetBrains Mono', monospace", fontMono: "'JetBrains Mono', monospace", fontDisplay: "'Syne', system-ui, sans-serif" },
     motion: FAST,
+    typography: SHARED_TYPOGRAPHY,
     contentOverrides: {
       'base-content':       'oklch(94% 0.01 80)',
       'primary-content':    'oklch(8% 0 0)',
@@ -77,6 +81,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
     name: 'retro',
     shape: { radiusBox: 8, radiusField: 8, radiusSelector: 8, border: 1, depth: 1 },
     type: SHARED_TYPE, motion: { transition: '0.2s ease' },
+    typography: SHARED_TYPOGRAPHY,
     contentOverrides: {},
     colors: {
       'base-100':    'oklch(91% 0.04 80)',
@@ -96,6 +101,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
     shape: { radiusBox: 0, radiusField: 0, radiusSelector: 0, border: 2, depth: 0 },
     type: { fontSans: "'JetBrains Mono', monospace", fontMono: "'JetBrains Mono', monospace", fontDisplay: "'JetBrains Mono', monospace" },
     motion: FAST,
+    typography: SHARED_TYPOGRAPHY,
     contentOverrides: {
       'primary-content':    'oklch(95% 0.18 100)',
       'accent-content':     'oklch(95% 0.18 100)',
@@ -118,6 +124,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
     name: 'corporate',
     shape: { radiusBox: 4, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 },
     type: SHARED_TYPE, motion: FAST,
+    typography: SHARED_TYPOGRAPHY,
     contentOverrides: {},
     colors: {
       'base-100':    'oklch(100% 0 0)',

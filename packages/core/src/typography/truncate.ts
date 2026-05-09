@@ -33,7 +33,7 @@ import {
  * <p [kjTruncate]="3">Three-line clamp for a card description.</p>
  * <p kjTruncate title="Custom tooltip">Consumer title wins.</p>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name typography
  */

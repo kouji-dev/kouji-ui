@@ -26,7 +26,7 @@ import { KJ_COMMAND_PALETTE, nextCommandItemId } from './command-palette.context
  *   </div>
  * </div>
  * ```
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name command-palette
  */

@@ -16,7 +16,7 @@ import { KjToggle } from '@kouji-ui/core';
  *   @doc-file toggle.disabled.example.ts
  * @doc-example With label
  *   @doc-file toggle.with-label.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name toggle
  * @doc-description Themed press/unpress toggle button for binary on/off controls.

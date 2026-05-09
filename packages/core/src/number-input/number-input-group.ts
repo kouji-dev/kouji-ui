@@ -22,7 +22,7 @@ import { KJ_NUMBER_INPUT, KjNumberInputContext } from './number-input.context';
  *   <button kjNumberStepper kjStep="up" aria-label="Increase">+</button>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name number-input
  */

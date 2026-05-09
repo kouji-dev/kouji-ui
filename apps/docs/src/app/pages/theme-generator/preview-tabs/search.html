@@ -13,25 +13,41 @@
   <h2 class="hd__title">Search</h2>
 
   <div class="hd__row">
-    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-    <label class="search">
-      <span class="visually-hidden">Search</span>
+    <kj-input-group role="search" aria-label="Search">
+      <kj-input-group-addon aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </kj-input-group-addon>
       <kj-input
         type="search"
         placeholder="Search people, projects, docs…"
         [(ngModel)]="query"
       />
-      <span class="search__hint" aria-hidden="true">
+      <kj-input-group-addon kjPosition="end" aria-hidden="true">
         <kj-kbd>⌘</kj-kbd>
         <kj-kbd>K</kj-kbd>
-      </span>
-    </label>
+      </kj-input-group-addon>
+    </kj-input-group>
     <kj-button class="hd__filters-mobile" kjVariant="secondary" (click)="openFilters()">Filters</kj-button>
   </div>
 
   <kj-tag-list class="chips" aria-label="Active filters">
     @for (c of chips; track c.label) {
-      <kj-tag [kjVariant]="c.variant">{{ c.label }}</kj-tag>
+      <kj-tag [kjVariant]="c.variant" kjSize="xs">{{ c.label }}</kj-tag>
     }
   </kj-tag-list>
 </header>

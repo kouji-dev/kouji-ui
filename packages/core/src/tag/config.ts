@@ -25,7 +25,7 @@ export const KJ_TAG_DEFAULTS: KjTagConfig = {
     'outline',
     'ghost',
   ],
-  sizes: ['sm', 'md', 'lg'],
+  sizes: ['xs', 'sm', 'md', 'lg'],
   defaults: { variant: 'default', size: 'md' },
 };
 

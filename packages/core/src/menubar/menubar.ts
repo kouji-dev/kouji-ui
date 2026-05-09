@@ -60,7 +60,7 @@ import {
  * is present. The recommended name for a canonical app menubar is
  * `aria-label="Application"`.
  *
- * @category Core/Navigation
+ * @doc-category Core/Navigation
  * @doc
  * @doc-name menubar
  * @doc-description Unstyled application menubar with horizontal arrow-key navigation and hover disclosure across menus.

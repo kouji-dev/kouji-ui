@@ -18,7 +18,7 @@ import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click
  * <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger">Pick a city</button>
  * <div kjCascadeSelectPanel [kjFor]="t">…</div>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  */
 @Directive({
   selector: '[kjCascadeSelectTrigger]',

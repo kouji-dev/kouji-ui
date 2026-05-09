@@ -24,7 +24,7 @@ import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
  *   </div>
  * </div>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name cascade-select
  */

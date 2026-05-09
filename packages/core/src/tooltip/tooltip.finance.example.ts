@@ -7,6 +7,8 @@ import { KjButton } from '../button/button';
   standalone: true,
   imports: [KjTooltipTrigger, KjTooltipContent, KjButton],
   styleUrls: ['../styles/docs-themes.css'],
+  /* Closed-state `display:none` for portaled `kj-tooltip-content` comes from
+   * `packages/components/src/tooltip/tooltip.css` (docs app global styles) — not repeated here. */
   styles: [`
     :host { display: flex; align-items: center; justify-content: center; padding: 5rem 3rem; background: var(--kj-bg); font-family: var(--kj-font); min-height: 180px; color: var(--kj-text); }
     .row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: center; }
@@ -26,7 +28,6 @@ import { KjButton } from '../button/button';
       padding: 0.3rem 0.625rem; font-size: 0.75rem; border-radius: var(--kj-radius-sm);
       white-space: nowrap; pointer-events: none; box-shadow: var(--kj-shadow-sm);
     }
-    :global(kj-tooltip-content[hidden]) { display: none; }
   `],
   host: { class: 'kj-theme-finance' },
   template: `

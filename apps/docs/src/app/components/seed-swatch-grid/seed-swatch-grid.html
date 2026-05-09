@@ -1,19 +1,28 @@
-@for (group of grouped(); track group.family) {
-  <section class="swatch-group" [attr.data-family]="group.family" [attr.aria-label]="group.family + ' seeds'">
-    <h4 class="swatch-group__label">{{ group.family }}</h4>
-    <div class="swatch-row">
-      @for (s of group.items; track s.hex) {
-        <button
-          type="button"
-          class="swatch"
-          [class.swatch--active]="isActive(s.hex)"
-          [attr.data-hex]="s.hex"
-          [attr.aria-pressed]="isActive(s.hex)"
-          [attr.aria-label]="s.name + ' (' + s.hex + ')'"
-          [style.background]="s.hex"
-          (click)="pick(s.hex)"
-        ></button>
-      }
-    </div>
-  </section>
-}
+<div
+  class="seed-grid"
+  [class.seed-grid--palette]="layout() === 'palette'"
+  [class.seed-grid--strip]="layout() === 'strip'"
+>
+  <div class="hue-matrix" role="group" aria-label="Preset colors by hue row, lighter on the left">
+    @for (col of columns(); track col.hueFamily) {
+      <div class="hue-row" [attr.data-family]="col.hueFamily">
+        <p class="hue-row__label">{{ familyLabel(col.hueFamily) }}</p>
+        <div class="hue-row__ramp">
+          @for (hex of col.shades; track hex) {
+            <button
+              type="button"
+              class="swatch"
+              [class.swatch--active]="isActive(hex)"
+              [attr.data-hex]="hex"
+              [attr.aria-pressed]="isActive(hex)"
+              [attr.title]="hex"
+              [attr.aria-label]="'Select color ' + hex"
+              [style.background-color]="hex"
+              (click)="pick(hex)"
+            ></button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

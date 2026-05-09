@@ -88,3 +88,10 @@ body {
   background: rgb(0 0 0 / 0.5);
   pointer-events: auto;
 }
+
+/* Navbar theme dropdown — menu panel is portaled to body (outside navbar host). */
+.kj-dropdown-menu .kj-navbar-theme-item--active {
+  background: color-mix(in oklch, var(--kj-color-primary) 14%, transparent);
+  color: var(--kj-color-primary);
+  font-weight: 500;
+}

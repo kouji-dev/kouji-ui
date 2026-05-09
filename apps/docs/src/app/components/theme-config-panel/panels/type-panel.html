@@ -1,0 +1,66 @@
+<section class="type-panel" aria-label="Type">
+  <h3 class="group-heading">Fonts</h3>
+  <kj-tag-list
+    class="typography-strip"
+    kjTagListRole="group"
+    aria-label="Typography size policy checks"
+  >
+    @for (c of scoreReport().typographyChecks; track c.id) {
+      <kj-tag
+        [kjVariant]="tagVariantForTypography(c)"
+        kjSize="xs"
+        [attr.title]="c.message"
+      >
+        {{ c.id }} {{ c.pass ? '✓' : '⚠' }}
+      </kj-tag>
+    }
+  </kj-tag-list>
+
+  <div class="control-row control-row--with-meta" role="group" aria-labelledby="type-font-sans-label">
+    <span class="control-label" id="type-font-sans-label">font-sans</span>
+    <div class="control-row__field">
+      <kj-select
+        [value]="fontIdFor('fontSans')"
+        (valueChange)="onFont('fontSans', $event)"
+        placeholder="font-sans"
+      >
+        @for (f of fonts; track f.id) {
+          <kj-option [value]="f.id">{{ f.family }}</kj-option>
+        }
+      </kj-select>
+    </div>
+    <span class="type-meta" title="Family choice does not change rem-based typography checks above">Contrast n/a</span>
+  </div>
+
+  <div class="control-row control-row--with-meta" role="group" aria-labelledby="type-font-mono-label">
+    <span class="control-label" id="type-font-mono-label">font-mono</span>
+    <div class="control-row__field">
+      <kj-select
+        [value]="fontIdFor('fontMono')"
+        (valueChange)="onFont('fontMono', $event)"
+        placeholder="font-mono"
+      >
+        @for (f of fonts; track f.id) {
+          <kj-option [value]="f.id">{{ f.family }}</kj-option>
+        }
+      </kj-select>
+    </div>
+    <span class="type-meta" title="Family choice does not change rem-based typography checks above">Contrast n/a</span>
+  </div>
+
+  <div class="control-row control-row--with-meta" role="group" aria-labelledby="type-font-display-label">
+    <span class="control-label" id="type-font-display-label">font-display</span>
+    <div class="control-row__field">
+      <kj-select
+        [value]="fontIdFor('fontDisplay')"
+        (valueChange)="onFont('fontDisplay', $event)"
+        placeholder="font-display"
+      >
+        @for (f of fonts; track f.id) {
+          <kj-option [value]="f.id">{{ f.family }}</kj-option>
+        }
+      </kj-select>
+    </div>
+    <span class="type-meta" title="Family choice does not change rem-based typography checks above">Contrast n/a</span>
+  </div>
+</section>

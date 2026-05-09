@@ -15,9 +15,12 @@ test('clicking a built-in theme loads it (active state changes)', async ({ page 
   await expect(retroBtn).toHaveClass(/active/);
 });
 
-test('Col B token editor visible alongside main preview', async ({ page }) => {
+test('config panel shows accessibility column with contrast scorecard', async ({ page }) => {
   await page.goto('/theme-generator');
-  await expect(page.locator('.col-b').first()).toBeVisible();
+  await expect(page.locator('kj-theme-config-panel')).toBeVisible();
+  await expect(page.getByRole('region', { name: /theme tokens and accessibility/i })).toBeVisible();
+  await page.getByText('Full contrast breakdown').click();
+  await expect(page.locator('kj-contrast-scorecard')).toBeVisible();
   await expect(page.locator('main.tg-main')).toBeVisible();
 });
 
@@ -47,10 +50,12 @@ test('all five preview tabs render without console errors', async ({ page }) => 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('contrast scorecard is visible and shows AAA score', async ({ page }) => {
+test('accessibility summary shows AAA pass total at top of configurator', async ({ page }) => {
   await page.goto('/theme-generator');
+  await expect(page.locator('kj-a11y-panel')).toBeVisible();
+  await expect(page.locator('.a11y-summary')).toContainText(/AAA \d+\/\d+/);
+  await page.getByText('Full contrast breakdown').click();
   await expect(page.locator('kj-contrast-scorecard')).toBeVisible();
-  await expect(page.locator('kj-contrast-scorecard')).toContainText(/AAA \d+%/);
 });
 
 test('import dialog opens and applies a JSON theme', async ({ page }) => {

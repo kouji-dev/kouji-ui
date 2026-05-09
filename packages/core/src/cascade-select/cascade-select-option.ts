@@ -31,7 +31,7 @@ import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
  *   <div kjCascadeSelectSubPanel [kjOwnerOptionId]="el.id">…</div>
  * </div>
  * ```
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name cascade-select
  */

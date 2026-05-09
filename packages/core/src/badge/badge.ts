@@ -1,4 +1,4 @@
-﻿import { Directive, input } from '@angular/core';
+import { Directive, input } from '@angular/core';
 
 export type KjBadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
 
@@ -10,7 +10,7 @@ export type KjBadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
  * `outline` without adding any wrapper markup. No styling is attached.
  *
  * @example `<span kjBadge [kjBadgeVariant]="'destructive'">Critical</span>`
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name badge
  * @doc-description Marks an inline element as a badge with a variant data attribute that theme CSS picks up.

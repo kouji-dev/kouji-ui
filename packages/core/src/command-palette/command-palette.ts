@@ -41,7 +41,7 @@ export interface KjCommandActivateEvent {
  *   @doc-file command-palette.async.example.ts
  * @doc-example Fuzzy filter
  *   @doc-file command-palette.fuzzy.example.ts
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc-name command-palette
  * @doc-description Unstyled command palette root with item registration, filtering, and activation events.
  * @doc-is-main

@@ -9,7 +9,7 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
  * `data-direction`, `data-expanded` and `aria-hidden` for the wrapper to key
  * its layout / animation off of.
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name speed-dial
  */

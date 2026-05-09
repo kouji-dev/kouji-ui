@@ -1,4 +1,4 @@
-﻿import { Directive, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
+import { Directive, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
 import { PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -11,7 +11,7 @@ import { isPlatformBrowser } from '@angular/common';
  * ```html
  * <button kjFocusRing>Focusable button</button>
  * ```
- * @category Core/Primitives
+ * @doc-category Core/Primitives
  * @doc
  * @doc-name interaction
  */

@@ -34,6 +34,15 @@
     --kj-badge-border-color: var(--kj-color-neutral);
   }
 
-  .kj-badge[data-size="sm"] { --kj-badge-padding-x: 0.375rem; --kj-badge-font-size: 0.6875rem; }
+  .kj-badge[data-size="xs"] {
+    --kj-badge-padding-x: 0.1875rem;
+    --kj-badge-padding-y: 0.03125rem;
+    --kj-badge-font-size: 0.5625rem;
+  }
+  .kj-badge[data-size="sm"] {
+    --kj-badge-padding-x: 0.375rem;
+    --kj-badge-padding-y: 0.125rem;
+    --kj-badge-font-size: 0.6875rem;
+  }
   .kj-badge[data-size="lg"] { --kj-badge-padding-x: var(--kj-space-md); --kj-badge-font-size: 0.875rem; }
 }

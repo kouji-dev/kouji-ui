@@ -18,7 +18,6 @@ import { KjButton } from '../button/button';
       padding: 0.25rem 0.625rem; font-size: 0.75rem;
       white-space: nowrap; pointer-events: none; transition: var(--kj-transition);
     }
-    :global(kj-tooltip-content[hidden]) { display: none; }
   `],
   template: `
     <div class="grid">

@@ -21,7 +21,7 @@ import {
  * </ng-template>
  * ```
  *
- * @category Core/Overlay
+ * @doc-category Core/Overlay
  */
 @Directive({
   selector: '[kjConfirmPopupMessage]',

@@ -12,7 +12,7 @@ import { KJ_CALENDAR } from './calendar.context';
  * `(click)="header.prev()"` and `(click)="header.next()"` and read
  * `header.label()` for the caption text.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name calendar
  */

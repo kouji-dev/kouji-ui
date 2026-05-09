@@ -48,7 +48,7 @@ const CHAT_ROW_REGISTRY = new WeakMap<Element, KjChat>();
  *   <footer kjChatFooter kjState="read">Read 12:46</footer>
  * </div>
  * ```
- * @category Core/Data display
+ * @doc-category Core/Data display
  * @doc
  * @doc-name chat
  * @doc-description Unstyled chat row with side, sender grouping, and ARIA wiring for message log semantics.

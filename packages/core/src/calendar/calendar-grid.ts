@@ -12,7 +12,7 @@ import { KJ_CALENDAR } from './calendar.context';
  * implements the APG keyboard contract — see `KjCalendar` for the full key
  * map.
  *
- * @category Core/Data input
+ * @doc-category Core/Data input
  * @doc
  * @doc-name calendar
  */

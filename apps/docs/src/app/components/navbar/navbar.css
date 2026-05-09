@@ -80,50 +80,20 @@
 }
 .kj-navbar-icon:hover { background: var(--kj-color-base-200); }
 
-.kj-navbar-theme { position: relative; }
-.kj-navbar-theme-trigger {
+.kj-navbar-theme {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 10px;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--kj-color-base-content);
-  font-size: 12px;
-  cursor: pointer;
 }
-.kj-navbar-theme-trigger:hover { background: var(--kj-color-base-200); border-color: var(--kj-color-base-300); }
 
-.kj-navbar-theme-list {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 180px;
-  max-height: 320px;
-  overflow-y: auto;
-  background: var(--kj-color-base-100);
-  border: 1px solid var(--kj-color-base-300);
-  border-radius: 8px;
-  padding: 4px;
-  margin: 0;
-  list-style: none;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-  z-index: 60;
-}
-.kj-navbar-theme-option {
-  padding: 6px 10px;
-  border-radius: 4px;
+/* Trigger is `kj-button.kj-navbar-theme-trigger` — ghost + dropdown menu trigger */
+.kj-navbar-theme-trigger {
+  height: 32px;
+  padding-inline: 10px;
   font-size: 12px;
-  cursor: pointer;
-  color: var(--kj-color-base-content);
 }
-.kj-navbar-theme-option:hover { background: var(--kj-color-base-200); }
-.kj-navbar-theme-option.active {
-  background: color-mix(in oklch, var(--kj-color-primary) 14%, transparent);
-  color: var(--kj-color-primary);
-  font-weight: 500;
+
+.kj-navbar-theme-trigger ::ng-deep .kj-button {
+  gap: 6px;
 }
 
 .kj-navbar-burger {

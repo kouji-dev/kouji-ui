@@ -19,7 +19,7 @@ let checkboxIdCounter = 0;
  *   @doc-file checkbox.indeterminate.example.ts
  * @doc-example Disabled
  *   @doc-file checkbox.disabled.example.ts
- * @category Library/Data input
+ * @doc-category Library/Data input
  * @doc
  * @doc-name checkbox
  * @doc-description Themed checkbox with label, indeterminate state, and size variants for use in forms.

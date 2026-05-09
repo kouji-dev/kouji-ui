@@ -17,7 +17,7 @@ import { KJ_COMBOBOX } from './combobox.context';
  * `anchoredTo()` strategy. `role="listbox"` and the `[hidden]` attribute are
  * driven by `KjOverlayPanel`.
  *
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  */
 @Directive({
   selector: '[kjComboboxListbox]',

@@ -50,7 +50,7 @@ let _alertIdCounter = 0;
  *   <button kjAlertDismiss>×</button>
  * </div>
  * ```
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name alert
  * @doc-description Unstyled in-flow alert that picks the right ARIA live-region role for its severity.
@@ -268,7 +268,7 @@ export class KjAlert implements KjAlertContext {
  * `aria-labelledby`. Apply to a heading element (`<h3 kjAlertTitle>`)
  * when the alert is in a content region.
  *
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name alert
  */
@@ -298,7 +298,7 @@ export class KjAlertTitle implements OnDestroy {
  * `${alertId}-description`, registers with `KJ_ALERT` for
  * `aria-describedby`. Same id-registration pattern as `KjAlertTitle`.
  *
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name alert
  */
@@ -328,7 +328,7 @@ export class KjAlertDescription implements OnDestroy {
  * resolved variant as `data-variant` so themes can swap glyphs without
  * the consumer re-typing it.
  *
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name alert
  */
@@ -351,7 +351,7 @@ export class KjAlertIcon {
  * `aria-label="Alert actions"` so AT users can skip past the
  * actions container as a unit.
  *
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name alert
  */
@@ -378,7 +378,7 @@ export class KjAlertActions {
  * `kjAlertDismissVariant` → `KjButton.kjVariant`,
  * `kjAlertDismissSize` → `KjButton.kjSize`.
  *
- * @category Core/Feedback
+ * @doc-category Core/Feedback
  * @doc
  * @doc-name alert
  */

@@ -1,0 +1,135 @@
+<section class="shape-motion-panel" aria-label="Shape & motion">
+  <h3 class="group-heading">Shape</h3>
+
+  <div class="control-row control-row--with-meta control-row--corner-presets">
+    <span class="control-label" id="shape-radius-box-label">radius-box</span>
+    <div class="corner-presets" role="radiogroup" aria-labelledby="shape-radius-box-label">
+      @for (p of radiusPresets; track p.value; let i = $index) {
+        <button
+          type="button"
+          class="corner-preset"
+          [id]="'kj-radius-box-preset-' + i"
+          role="radio"
+          [attr.aria-checked]="draft().shape.radiusBox === p.value"
+          [attr.aria-label]="p.label + ', ' + p.hint"
+          [attr.title]="p.hint"
+          [class.corner-preset--selected]="draft().shape.radiusBox === p.value"
+          (click)="onShape('radiusBox', p.value)"
+          (keydown)="onRadiusPresetKeydown($event, i, 'radiusBox')"
+        >
+          <span class="corner-preset__preview" aria-hidden="true">
+            <span
+              class="corner-preset__swatch"
+              [style.border-bottom-right-radius.px]="p.value"
+            ></span>
+          </span>
+        </button>
+      }
+    </div>
+    <span class="control-value">{{ draft().shape.radiusBox }}px</span>
+    <span class="shape-meta" title="Corner radius does not change WCAG color contrast">Contrast n/a</span>
+  </div>
+
+  <div class="control-row control-row--with-meta control-row--corner-presets">
+    <span class="control-label" id="shape-radius-field-label">radius-field</span>
+    <div class="corner-presets" role="radiogroup" aria-labelledby="shape-radius-field-label">
+      @for (p of radiusPresets; track p.value; let i = $index) {
+        <button
+          type="button"
+          class="corner-preset"
+          [id]="'kj-radius-field-preset-' + i"
+          role="radio"
+          [attr.aria-checked]="draft().shape.radiusField === p.value"
+          [attr.aria-label]="p.label + ', ' + p.hint"
+          [attr.title]="p.hint"
+          [class.corner-preset--selected]="draft().shape.radiusField === p.value"
+          (click)="onShape('radiusField', p.value)"
+          (keydown)="onRadiusPresetKeydown($event, i, 'radiusField')"
+        >
+          <span class="corner-preset__preview" aria-hidden="true">
+            <span
+              class="corner-preset__swatch"
+              [style.border-bottom-right-radius.px]="p.value"
+            ></span>
+          </span>
+        </button>
+      }
+    </div>
+    <span class="control-value">{{ draft().shape.radiusField }}px</span>
+    <span class="shape-meta" title="Corner radius does not change WCAG color contrast">Contrast n/a</span>
+  </div>
+
+  <div class="control-row control-row--with-meta control-row--corner-presets">
+    <span class="control-label" id="shape-border-label">border</span>
+    <div class="corner-presets" role="radiogroup" aria-labelledby="shape-border-label">
+      @for (p of borderWidthPresets; track p.value; let i = $index) {
+        <button
+          type="button"
+          class="corner-preset"
+          [id]="'kj-border-width-preset-' + i"
+          role="radio"
+          [attr.aria-checked]="draft().shape.border === p.value"
+          [attr.aria-label]="p.label + ', ' + p.hint"
+          [attr.title]="p.hint"
+          [class.corner-preset--selected]="draft().shape.border === p.value"
+          (click)="onShape('border', p.value)"
+          (keydown)="onBorderWidthPresetKeydown($event, i)"
+        >
+          <span class="corner-preset__preview corner-preset__preview--line" aria-hidden="true">
+            <span
+              class="corner-preset__line"
+              [class.corner-preset__line--none]="p.value === 0"
+              [style.height.px]="p.value > 0 ? p.value : null"
+            ></span>
+          </span>
+        </button>
+      }
+    </div>
+    <span class="control-value">{{ draft().shape.border }}px</span>
+    <span
+      class="shape-meta shape-meta--edges"
+      role="group"
+      aria-label="Non-text UI contrast for borders and surfaces"
+    >
+      @for (e of scoreReport().nonTextEdges; track e.id) {
+        <kj-tag [kjVariant]="tagVariantForEdge(e)" kjSize="xs" [attr.title]="e.message">
+          UI {{ e.ratio.toFixed(2) }}:1
+        </kj-tag>
+      }
+    </span>
+  </div>
+
+  <div class="control-row control-row--with-meta" role="group" aria-labelledby="shape-depth-label">
+    <span class="control-label" id="shape-depth-label">depth</span>
+    <div class="control-row__field">
+      <kj-select
+        [value]="draft().shape.depth"
+        (valueChange)="onDepthSelect($event)"
+        placeholder="depth"
+      >
+        <kj-option [value]="0">0</kj-option>
+        <kj-option [value]="1">1</kj-option>
+        <kj-option [value]="2">2</kj-option>
+      </kj-select>
+    </div>
+    <span class="shape-meta" title="Shadow depth does not change WCAG color contrast">Contrast n/a</span>
+  </div>
+
+  <h3 class="group-heading">Motion</h3>
+  <div class="control-row control-row--with-meta" role="group" aria-labelledby="shape-motion-transition-label">
+    <span class="control-label" id="shape-motion-transition-label">transition</span>
+    <div class="control-row__field">
+      <kj-select
+        [value]="draft().motion.transition"
+        (valueChange)="onMotionSelect('transition', $event)"
+        placeholder="transition"
+      >
+        <kj-option [value]="'0s'">none</kj-option>
+        <kj-option [value]="'0.12s ease'">fast</kj-option>
+        <kj-option [value]="'0.2s ease'">base</kj-option>
+        <kj-option [value]="'0.4s ease'">slow</kj-option>
+      </kj-select>
+    </div>
+    <span class="shape-meta" title="Motion timing does not change WCAG color contrast">Contrast n/a</span>
+  </div>
+</section>

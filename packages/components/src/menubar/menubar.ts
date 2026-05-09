@@ -27,7 +27,7 @@ import {
  *   @doc-file menubar.with-submenu.example.ts
  * @doc-example Disabled item
  *   @doc-file menubar.disabled-item.example.ts
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name menubar
  * @doc-description Themed desktop-style application menubar with arrow-key navigation and dropdown submenus.
@@ -70,7 +70,7 @@ export class KjMenubarComponent {
  * support. Submenu wiring will be reintroduced via the new dropdown-menu
  * API (`<kj-dropdown-menu-content [kjFor]="t">` on the panel side).
  *
- * @category Library/Navigation
+ * @doc-category Library/Navigation
  * @doc
  * @doc-name menubar
  */

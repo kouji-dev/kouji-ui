@@ -6,7 +6,7 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
  * that wraps `[kjCommandItem]`s. Sets `role="listbox"` and wires the id
  * used by `[kjCommandInput]`'s `aria-controls`.
  *
- * @category Core/Actions
+ * @doc-category Core/Actions
  * @doc
  * @doc-name command-palette
  */

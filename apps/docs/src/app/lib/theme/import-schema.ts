@@ -19,6 +19,11 @@ const contentsObj = z.object(
   Object.fromEntries(CONTENT_SLOTS.map(s => [s, z.string().optional()])) as Record<typeof CONTENT_SLOTS[number], z.ZodOptional<z.ZodString>>,
 );
 
+const typographyObj = z.object({
+  bodyRem:  z.number().positive().default(1),
+  smallRem: z.number().positive().default(0.875),
+});
+
 export const DraftThemeSchema = z.object({
   name: z.string().max(32),
   colors: colorsObj,
@@ -30,8 +35,9 @@ export const DraftThemeSchema = z.object({
     border: z.number(),
     depth: z.number(),
   }),
-  type:   z.object({ fontSans: z.string(), fontMono: z.string(), fontDisplay: z.string() }),
-  motion: z.object({ transition: z.string() }),
+  type:       z.object({ fontSans: z.string(), fontMono: z.string(), fontDisplay: z.string() }),
+  typography: typographyObj.optional().default({ bodyRem: 1, smallRem: 0.875 }),
+  motion:     z.object({ transition: z.string() }),
 });
 
 export type ParsedDraft = z.infer<typeof DraftThemeSchema>;

@@ -22,7 +22,7 @@ import { KJ_FIELD } from './field.context';
  *   </div>
  * </div>
  * ```
- * @category Core/Inputs
+ * @doc-category Core/Inputs
  * @doc
  * @doc-name field
  */

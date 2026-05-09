@@ -32,9 +32,9 @@ describe('ContrastScorecard', () => {
     expect(fixture.nativeElement.textContent).toMatch(/FAIL|✗/);
   });
 
-  test('summary shows AAA score percent', () => {
+  test('embeds AAA contrast section heading', () => {
     const fixture = TestBed.createComponent(ContrastScorecard);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toMatch(/AAA \d+%/);
+    expect(fixture.nativeElement.textContent).toMatch(/Contrast \(AAA/);
   });
 });

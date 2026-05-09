@@ -1,5 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { SEED_SWATCHES, HUE_FAMILIES, type SeedSwatch, type HueFamily } from '../../lib/theme/seed-swatches';
+import {
+  buildSeedSwatchMatrix,
+  HUE_FAMILY_LABELS,
+  resolveSeedSwatchMatrixToHex,
+  type HueFamily,
+  type SeedHueColumn,
+} from '../../lib/theme/seed-swatches';
 
 @Component({
   selector: 'kj-seed-swatch-grid',
@@ -8,18 +14,18 @@ import { SEED_SWATCHES, HUE_FAMILIES, type SeedSwatch, type HueFamily } from '..
   styleUrl: './seed-swatch-grid.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-/** Curated seed-color picker grid grouped by hue family. Emits the chosen hex on click; the active swatch is signalled via `aria-pressed`. */
+/**
+ * Dynamic Daisy-style matrix: {@link buildSeedSwatchMatrix} (OKLCH specs) →
+ * {@link resolveSeedSwatchMatrixToHex} for display. Each **column** is one hue,
+ * **10 shades per row** spread horizontally (light left → dark right). Swatches are hex-only in the UI.
+ */
 export class SeedSwatchGrid {
-  /** Hex of the currently selected seed (e.g. the draft's `primary`); compared case-insensitively. `null` clears any active ring. */
   readonly activeHex = input<string | null>(null);
-  /** Emits the swatch's hex when the user clicks one. */
+  readonly layout = input<'strip' | 'palette'>('strip');
   readonly seedPicked = output<string>();
 
-  protected readonly grouped = computed<{ family: HueFamily; items: readonly SeedSwatch[] }[]>(() =>
-    HUE_FAMILIES.map(family => ({
-      family,
-      items: SEED_SWATCHES.filter(s => s.hueFamily === family),
-    })).filter(g => g.items.length > 0),
+  protected readonly columns = computed<readonly SeedHueColumn[]>(() =>
+    resolveSeedSwatchMatrixToHex(buildSeedSwatchMatrix()),
   );
 
   protected isActive(hex: string): boolean {
@@ -28,5 +34,9 @@ export class SeedSwatchGrid {
 
   protected pick(hex: string): void {
     this.seedPicked.emit(hex);
+  }
+
+  protected familyLabel(family: HueFamily): string {
+    return HUE_FAMILY_LABELS[family];
   }
 }

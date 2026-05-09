@@ -1,4 +1,4 @@
-﻿import { Directive, forwardRef, signal } from '@angular/core';
+import { Directive, forwardRef, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 /**
@@ -23,7 +23,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
  *   readonly formCtrl = inject(KjFormControl);
  * }
  * ```
- * @category Core/Primitives
+ * @doc-category Core/Primitives
  * @doc
  * @doc-name forms
  * @doc-description Wires any input directive into Angular reactive and template-driven forms.

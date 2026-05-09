@@ -1,8 +1,12 @@
-import { Component, ChangeDetectionStrategy, computed, DestroyRef, PLATFORM_ID, inject, signal } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, ChangeDetectionStrategy, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
+import {
+  KjDropdownMenuContent,
+  KjDropdownMenuItem,
+  KjDropdownMenuTrigger,
+} from '@kouji-ui/core';
 import { KjButtonComponent } from '@kouji-ui/components';
 import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
@@ -12,7 +16,14 @@ import corePackage from '../../../../../../packages/core/package.json';
 @Component({
   selector: 'kj-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, KjButtonComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    KjButtonComponent,
+    KjDropdownMenuTrigger,
+    KjDropdownMenuContent,
+    KjDropdownMenuItem,
+  ],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,10 +36,8 @@ export class NavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly url = signal<string>(this.router.url);
 
-  protected readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   protected readonly themes = AVAILABLE_THEMES;
   protected readonly currentTheme = this.themeService.theme;
-  protected readonly pickerOpen = signal(false);
 
   protected readonly version = corePackage.version;
   protected readonly githubUrl = 'https://github.com/kouji-dev/kouji-ui';
@@ -49,9 +58,13 @@ export class NavbarComponent {
       .subscribe(() => this.url.set(this.router.url));
   }
 
-  protected openSearch(): void { this.search.open(); }
-  protected togglePicker(): void { this.pickerOpen.update(v => !v); }
-  private closePicker(): void { this.pickerOpen.set(false); }
-  protected selectTheme(t: Theme): void { this.themeService.set(t); this.closePicker(); }
-  protected toggleSidebar(): void { this.sidebarToggle.toggle(); }
+  protected openSearch(): void {
+    this.search.open();
+  }
+  protected selectTheme(t: Theme): void {
+    this.themeService.set(t);
+  }
+  protected toggleSidebar(): void {
+    this.sidebarToggle.toggle();
+  }
 }

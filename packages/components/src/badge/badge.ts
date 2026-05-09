@@ -12,7 +12,7 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  *   @doc-file badge.sizes.example.ts
  * @doc-example With icon
  *   @doc-file badge.with-icon.example.ts
- * @category Library/Data display
+ * @doc-category Library/Data display
  * @doc
  * @doc-name badge
  * @doc-description Themed inline label for status, counts, or category tags with variant and size presets.
@@ -39,5 +39,5 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
 })
 export class KjBadgeComponent {
   readonly variant = input<KjBadgeVariant>('default');
-  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly size = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 }
