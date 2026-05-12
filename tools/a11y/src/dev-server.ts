@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createConnection } from 'node:net';
 
-const HOST = '127.0.0.1';
+const HOST = 'localhost';
 const PORT = 4200;
 const READY_TIMEOUT_MS = 120_000;
 const POLL_INTERVAL_MS = 500;
