@@ -1,0 +1,22 @@
+{
+  "name": "@kouji-ui/a11y",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/run.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.59.1",
+    "lighthouse": "^12.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.19",
+    "@vitest/coverage-v8": "^4.1.5",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.5"
+  }
+}

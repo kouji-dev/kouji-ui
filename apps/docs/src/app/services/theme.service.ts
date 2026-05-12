@@ -36,9 +36,17 @@ export class ThemeService {
 
   constructor() {
     afterNextRender(() => {
-      const stored = localStorage.getItem('kj-theme') as Theme | null;
-      if (stored && (AVAILABLE_THEMES as readonly string[]).includes(stored)) {
-        this.apply(stored);
+      const fromUrl = new URLSearchParams(window.location.search).get('theme');
+      const fromStorage = localStorage.getItem('kj-theme');
+      const isValid = (t: string | null): t is Theme =>
+        !!t && (AVAILABLE_THEMES as readonly string[]).includes(t);
+
+      if (isValid(fromUrl)) {
+        // URL param wins but does NOT persist — used by automated a11y runs
+        // and shareable theme preview links.
+        this.applyTransient(fromUrl);
+      } else if (isValid(fromStorage)) {
+        this.apply(fromStorage);
       } else {
         // First-visit default = kouji (the brand identity).
         this.apply('kouji');
@@ -64,9 +72,15 @@ export class ThemeService {
   }
 
   private apply(t: Theme): void {
+    this.applyTransient(t);
+    if (!isPlatformBrowser(this.platformId)) return;
+    localStorage.setItem('kj-theme', t);
+  }
+
+  /** Apply a theme to the DOM + signal without persisting to localStorage. */
+  private applyTransient(t: Theme): void {
     this.theme.set(t);
     if (!isPlatformBrowser(this.platformId)) return;
     document.documentElement.setAttribute('data-theme', t);
-    localStorage.setItem('kj-theme', t);
   }
 }
