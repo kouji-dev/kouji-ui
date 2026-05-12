@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "theme": "light",
+  "page": "/theme-generator",
+  "url": "http://localhost:4200/theme-generator?theme=light",
+  "timestamp": "2026-05-12T22:52:21.084Z",
+  "axe": {
+    "violationsByImpact": {
+      "critical": 0,
+      "serious": 1,
+      "moderate": 1,
+      "minor": 0
+    },
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              ".active"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.8 (foreground color: #0071df, background color: #dae8f5, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#0071df",
+            "bg": "#dae8f5",
+            "ratio": 3.8,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".kj-navbar-version"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.08 (foreground color: #0071df, background color: #eeeeee, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#0071df",
+            "bg": "#eeeeee",
+            "ratio": 4.08,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".hd__actions > kj-button[kjvariant=\"default\"] > .kj-button[data-variant=\"default\"][kjbutton=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #effaff, background color: #0071df, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#effaff",
+            "bg": "#0071df",
+            "ratio": 4.46,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".hd__actions > kj-button[kjvariant=\"secondary\"] > .kj-button[data-variant=\"secondary\"][kjbutton=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #effaff, background color: #0071df, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#effaff",
+            "bg": "#0071df",
+            "ratio": 4.46,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "#kj-alert-1-title"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #0088f2, background color: #f8f8f8, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#0088f2",
+            "bg": "#f8f8f8",
+            "ratio": 3.4,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".kpi:nth-child(1) > .kpi__delta--up.kpi__delta[_ngcontent-ng-c657365986=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.83 (foreground color: #45ba50, background color: #cde2cf, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#45ba50",
+            "bg": "#cde2cf",
+            "ratio": 1.83,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".kpi:nth-child(2) > .kpi__delta--up.kpi__delta[_ngcontent-ng-c657365986=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.83 (foreground color: #45ba50, background color: #cde2cf, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#45ba50",
+            "bg": "#cde2cf",
+            "ratio": 1.83,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".kpi__delta--down"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.58 (foreground color: #f1364e, background color: #eccacf, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#f1364e",
+            "bg": "#eccacf",
+            "ratio": 2.58,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".kpi:nth-child(4) > .kpi__delta--up.kpi__delta[_ngcontent-ng-c657365986=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.83 (foreground color: #45ba50, background color: #cde2cf, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#45ba50",
+            "bg": "#cde2cf",
+            "ratio": 1.83,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "kj-tag[kjvariant=\"info\"][data-variant=\"info\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #f8f8f8, background color: #0088f2, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#f8f8f8",
+            "bg": "#0088f2",
+            "ratio": 3.4,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "button[aria-label=\"Edit base-100 canvas color\"] > .color-chip__mark[_ngcontent-ng-c4178927257=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.69 (foreground color: #ffffff, background color: #858585, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#ffffff",
+            "bg": "#858585",
+            "ratio": 3.69,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "button[aria-label=\"Edit base-200 derived shade\"] > .color-chip__mark[_ngcontent-ng-c4178927257=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.05 (foreground color: #ffffff, background color: #7e7e7e, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#ffffff",
+            "bg": "#7e7e7e",
+            "ratio": 4.05,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "button[aria-label=\"Edit base-300 derived shade\"] > .color-chip__mark[_ngcontent-ng-c4178927257=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.47 (foreground color: #ffffff, background color: #777777, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#ffffff",
+            "bg": "#777777",
+            "ratio": 4.47,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "button[aria-label=\"Edit primary text color\"] > .color-chip__mark[_ngcontent-ng-c4178927257=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.69 (foreground color: #ffffff, background color: #808689, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#ffffff",
+            "bg": "#808689",
+            "ratio": 3.69,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "button[aria-label=\"Edit neutral text color\"] > .color-chip__mark[_ngcontent-ng-c4178927257=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #ffffff, background color: #898285, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#ffffff",
+            "bg": "#898285",
+            "ratio": 3.75,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "div[aria-labelledby=\"type-font-sans-label\"] > .type-meta[_ngcontent-ng-c347213319=\"\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.27 (foreground color: #767676, background color: #f8f8f8, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#767676",
+            "bg": "#f8f8f8",
+            "ratio": 4.27,
+            "expected": "4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "page-has-heading-one",
+        "impact": "moderate",
+        "help": "Page should contain a level-one heading",
+        "nodes": [
+          {
+            "target": [
+              "html"
+            ],
+            "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
+          }
+        ]
+      }
+    ],
+    "passes": 48
+  },
+  "fonts": {
+    "samples": [
+      {
+        "selector": "body",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "h2",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 24,
+        "lineHeight": 36,
+        "weight": 700
+      },
+      {
+        "selector": "h3",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 17,
+        "lineHeight": 25.5,
+        "weight": 700
+      },
+      {
+        "selector": "button",
+        "fontFamily": "Arial",
+        "fontSize": 13.3333,
+        "lineHeight": 15.999959999999998,
+        "weight": 400
+      },
+      {
+        "selector": "a",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "p",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 10,
+        "lineHeight": 12,
+        "weight": 400
+      },
+      {
+        "selector": "[role=\"status\"]",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 14,
+        "lineHeight": 20.3,
+        "weight": 400
+      }
+    ],
+    "warnings": [
+      {
+        "selector": "h2",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      },
+      {
+        "selector": "h3",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      },
+      {
+        "selector": "p",
+        "issue": "fontSize 10px below 12px minimum (WCAG 1.4.4)"
+      },
+      {
+        "selector": "[role=\"status\"]",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      }
+    ]
+  },
+  "lighthouse": {
+    "scores": {
+      "performance": 25
+    },
+    "metrics": {
+      "FCP": 12599,
+      "LCP": 65401,
+      "CLS": 0,
+      "TBT": 4304,
+      "SI": 21940
+    }
+  }
+}
