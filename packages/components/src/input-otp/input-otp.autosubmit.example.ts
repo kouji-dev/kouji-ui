@@ -11,28 +11,31 @@ import { KjInputOtpComponent } from './input-otp';
   selector: 'kj-input-otp-autosubmit-example',
   standalone: true,
   imports: [KjInputOtpComponent, FormsModule],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--kj-space-lg);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
-    .success {
-      font-size: var(--kj-text-sm);
-      color: #22c55e;
-      font-family: var(--kj-font-mono);
-      min-height: 1.5rem;
-    }
-    .hint {
-      font-size: var(--kj-text-xs);
-      color: var(--kj-color-neutral);
-      min-height: 1.5rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kj-space-lg);
+      }
+      label {
+        font-size: var(--kj-text-sm);
+        color: var(--kj-color-base-content);
+      }
+      .success {
+        font-size: var(--kj-text-sm);
+        color: #22c55e;
+        font-family: var(--kj-font-mono);
+        min-height: 1.5rem;
+      }
+      .hint {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-color-neutral);
+        min-height: 1.5rem;
+      }
+    `,
+  ],
   template: `
     <label for="input-otp-autosubmit">Enter code to verify</label>
     <kj-input-otp
@@ -44,9 +47,7 @@ import { KjInputOtpComponent } from './input-otp';
       (kjComplete)="onComplete($event)"
     />
     @if (submitted()) {
-      <span class="success" role="status">
-        Code {{ submittedCode() }} accepted!
-      </span>
+      <span class="success" role="status"> Code {{ submittedCode() }} accepted! </span>
     } @else {
       <span class="hint">Fill all 6 digits to auto-submit</span>
     }

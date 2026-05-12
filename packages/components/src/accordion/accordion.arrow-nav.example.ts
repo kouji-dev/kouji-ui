@@ -14,7 +14,13 @@ import {
   selector: 'kj-accordion-arrow-nav-example',
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-accordion arrowNavigation type="multiple">
       <kj-accordion-item value="filters" label="Filters">

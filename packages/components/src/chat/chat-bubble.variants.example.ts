@@ -14,15 +14,14 @@ import {
 @Component({
   selector: 'kj-chat-bubble-variants-example',
   standalone: true,
-  imports: [
-    KjChatLogComponent,
-    KjChatComponent,
-    KjChatHeaderComponent,
-    KjChatBubbleComponent,
+  imports: [KjChatLogComponent, KjChatComponent, KjChatHeaderComponent, KjChatBubbleComponent],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
   template: `
     <kj-chat-log kjChatLogLabel="Variants demo">
       <kj-chat kjSide="start">

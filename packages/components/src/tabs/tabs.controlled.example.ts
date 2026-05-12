@@ -1,10 +1,5 @@
 import { Component, signal } from '@angular/core';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from './tabs';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from './tabs';
 import { KjButtonComponent } from '../button/button';
 
 /**
@@ -15,16 +10,36 @@ import { KjButtonComponent } from '../button/button';
 @Component({
   selector: 'kj-tabs-controlled-example',
   standalone: true,
-  imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent, KjButtonComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .toolbar { display: flex; gap: var(--kj-space-sm); margin-bottom: var(--kj-space-lg); }
-  `],
+  imports: [
+    KjTabsComponent,
+    KjTabListComponent,
+    KjTabComponent,
+    KjTabPanelComponent,
+    KjButtonComponent,
+  ],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .toolbar {
+        display: flex;
+        gap: var(--kj-space-sm);
+        margin-bottom: var(--kj-space-lg);
+      }
+    `,
+  ],
   template: `
     <div class="toolbar">
-      <kj-button kjVariant="outline" kjSize="sm" (click)="active.set('overview')">Go to Overview</kj-button>
-      <kj-button kjVariant="outline" kjSize="sm" (click)="active.set('settings')">Go to Settings</kj-button>
-      <kj-button kjVariant="outline" kjSize="sm" (click)="active.set('about')">Go to About</kj-button>
+      <kj-button kjVariant="outline" kjSize="sm" (click)="active.set('overview')"
+        >Go to Overview</kj-button
+      >
+      <kj-button kjVariant="outline" kjSize="sm" (click)="active.set('settings')"
+        >Go to Settings</kj-button
+      >
+      <kj-button kjVariant="outline" kjSize="sm" (click)="active.set('about')"
+        >Go to About</kj-button
+      >
     </div>
     <kj-tabs [(value)]="active">
       <kj-tab-list>

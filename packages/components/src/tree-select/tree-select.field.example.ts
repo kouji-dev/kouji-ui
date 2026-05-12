@@ -1,9 +1,5 @@
 import { Component, signal } from '@angular/core';
-import {
-  KjFieldComponent,
-  KjFieldHelpComponent,
-  KjFieldLabelComponent,
-} from '../field/field';
+import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '../field/field';
 import { KjTreeSelectComponent } from './tree-select';
 import type { KjTreeNode } from '@kouji-ui/core';
 
@@ -15,15 +11,19 @@ import type { KjTreeNode } from '@kouji-ui/core';
 @Component({
   selector: 'kj-tree-select-field-example',
   standalone: true,
-  imports: [
-    KjFieldComponent,
-    KjFieldLabelComponent,
-    KjFieldHelpComponent,
-    KjTreeSelectComponent,
-  ],
+  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjTreeSelectComponent],
   styles: [
-    `:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); max-width: 400px; }`,
-    `.kj-tree-select { width: 100%; }`,
+    `
+      :host {
+        display: block;
+        max-width: 400px;
+      }
+    `,
+    `
+      .kj-tree-select {
+        width: 100%;
+      }
+    `,
   ],
   template: `
     <kj-field>

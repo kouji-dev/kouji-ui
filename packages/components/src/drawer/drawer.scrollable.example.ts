@@ -7,7 +7,10 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-drawer-scrollable-body',
   standalone: true,
   imports: [KjDrawer],
-  template: `<kj-drawer><h2>Long</h2><div style="overflow:auto; max-height:60vh"><p>Lorem ipsum…</p></div></kj-drawer>`,
+  template: `<kj-drawer
+    ><h2>Long</h2>
+    <div style="overflow:auto; max-height:60vh"><p>Lorem ipsum…</p></div></kj-drawer
+  >`,
 })
 class Body {}
 
@@ -19,5 +22,7 @@ class Body {}
 })
 export class KjDrawerScrollableExample {
   private readonly drawer = inject(KjDrawerService);
-  open(): void { this.drawer.open(Body); }
+  open(): void {
+    this.drawer.open(Body);
+  }
 }

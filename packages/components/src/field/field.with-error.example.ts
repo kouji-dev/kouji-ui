@@ -27,8 +27,6 @@ import {
     `
       :host {
         display: block;
-        padding: var(--kj-space-xl);
-        background: var(--kj-color-base-200);
         max-width: 400px;
       }
       .kj-input {

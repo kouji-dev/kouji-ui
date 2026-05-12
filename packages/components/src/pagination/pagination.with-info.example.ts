@@ -24,10 +24,17 @@ import {
     KjPaginationEllipsisComponent,
     KjPaginationInfoComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    kj-pagination { width: 100%; justify-content: space-between; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      kj-pagination {
+        width: 100%;
+        justify-content: space-between;
+      }
+    `,
+  ],
   template: `
     <kj-pagination [(kjPage)]="page" [kjTotalPages]="10" #p="kjPagination">
       <kj-pagination-previous>Previous</kj-pagination-previous>

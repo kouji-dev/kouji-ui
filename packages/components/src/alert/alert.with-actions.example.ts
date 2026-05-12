@@ -26,7 +26,13 @@ import {
     KjAlertDismissComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-alert kjVariant="error">
       <kj-alert-icon>!</kj-alert-icon>
@@ -41,6 +47,10 @@ import {
   `,
 })
 export class KjAlertWithActionsExample {
-  onRetry(): void { /* example: trigger retry */ }
-  onDetails(): void { /* example: open details */ }
+  onRetry(): void {
+    /* example: trigger retry */
+  }
+  onDetails(): void {
+    /* example: open details */
+  }
 }

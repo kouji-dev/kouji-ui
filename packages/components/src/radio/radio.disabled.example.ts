@@ -5,7 +5,13 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-disabled-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-radio-group [(value)]="choice" ariaLabel="Choice">
       <kj-radio [value]="'a'">Option A</kj-radio>
@@ -14,4 +20,6 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
     </kj-radio-group>
   `,
 })
-export class KjRadioDisabledExample { readonly choice = signal<'a'|'b'|'c'>('a'); }
+export class KjRadioDisabledExample {
+  readonly choice = signal<'a' | 'b' | 'c'>('a');
+}

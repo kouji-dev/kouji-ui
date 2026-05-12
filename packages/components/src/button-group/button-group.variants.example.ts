@@ -13,9 +13,15 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-button-group-variants-example',
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
   template: `
     <kj-button-group kjVariant="outline" kjAriaLabel="Outline group">
       <kj-button kjVariant="outline">Day</kj-button>

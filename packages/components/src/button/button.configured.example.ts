@@ -13,9 +13,25 @@ import { KjButtonComponent } from './button';
     }),
   ],
   styles: [
-    `:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); display: flex; gap: var(--kj-space-md); }`,
-    `.kj-button[data-variant='brand']    { --kj-button-bg: var(--kj-color-primary);   --kj-button-fg: var(--kj-color-primary-content); }`,
-    `.kj-button[data-variant='warning']  { --kj-button-bg: var(--kj-color-warning);   --kj-button-fg: var(--kj-color-warning-content); }`,
+    `
+      :host {
+        display: block;
+        display: flex;
+        gap: var(--kj-space-md);
+      }
+    `,
+    `
+      .kj-button[data-variant='brand'] {
+        --kj-button-bg: var(--kj-color-primary);
+        --kj-button-fg: var(--kj-color-primary-content);
+      }
+    `,
+    `
+      .kj-button[data-variant='warning'] {
+        --kj-button-bg: var(--kj-color-warning);
+        --kj-button-fg: var(--kj-color-warning-content);
+      }
+    `,
   ],
   template: `
     <kj-button>Default (now 'brand')</kj-button>

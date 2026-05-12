@@ -10,11 +10,22 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
   selector: 'kj-input-group-url-example',
   standalone: true,
   imports: [KjInputGroupComponent, KjInputGroupAddonComponent, KjInputComponent, FormsModule],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-input-group>
       <kj-input-group-addon [kjAriaHidden]="true">https://</kj-input-group-addon>
-      <kj-input type="text" placeholder="your-site" [(ngModel)]="slug" aria-label="Website domain name" />
+      <kj-input
+        type="text"
+        placeholder="your-site"
+        [(ngModel)]="slug"
+        aria-label="Website domain name"
+      />
       <kj-input-group-addon [kjAriaHidden]="true">.com</kj-input-group-addon>
     </kj-input-group>
   `,

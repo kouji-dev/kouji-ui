@@ -9,15 +9,21 @@ import { KjInputComponent } from './input';
   selector: 'kj-input-color-example',
   standalone: true,
   imports: [KjInputComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center;
-            padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    code { font: var(--kj-text-sm)/1 var(--kj-font-mono); color: var(--kj-color-neutral); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      code {
+        font: var(--kj-text-sm)/1 var(--kj-font-mono);
+        color: var(--kj-color-neutral);
+      }
+    `,
+  ],
   template: `
-    <kj-input
-      type="color"
-      (input)="hex.set($any($event.target).value)" />
+    <kj-input type="color" (input)="hex.set($any($event.target).value)" />
     <code>{{ hex() }}</code>
   `,
 })

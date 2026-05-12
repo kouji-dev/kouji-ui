@@ -20,15 +20,15 @@ import {
     KjAlertTitleComponent,
     KjAlertDescriptionComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
   template: `
     <kj-alert kjVariant="info">
       <kj-alert-icon>i</kj-alert-icon>
@@ -51,7 +51,9 @@ import {
     <kj-alert kjVariant="error">
       <kj-alert-icon>✕</kj-alert-icon>
       <kj-alert-title>Could not save</kj-alert-title>
-      <kj-alert-description>Network request timed out. Resolves to assertive automatically.</kj-alert-description>
+      <kj-alert-description
+        >Network request timed out. Resolves to assertive automatically.</kj-alert-description
+      >
     </kj-alert>
 
     <kj-alert kjVariant="neutral">

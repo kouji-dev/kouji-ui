@@ -5,7 +5,13 @@ import { KjButtonComponent } from './button';
   selector: 'kj-button-pressed-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-button kjVariant="outline" [(kjPressed)]="on">
       {{ on() ? 'Bold ON' : 'Bold OFF' }}

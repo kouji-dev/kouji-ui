@@ -4,10 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { KjButtonComponent } from '../button/button';
 import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 import { KjInputComponent } from '../input/input';
-import {
-  KjFormActionsComponent,
-  KjFormComponent,
-} from './form';
+import { KjFormActionsComponent, KjFormComponent } from './form';
 
 /**
  * Default `<form kj-form>` usage — a small login form with email + password.
@@ -27,10 +24,18 @@ import {
     ReactiveFormsModule,
     JsonPipe,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .submitted { font-size: 0.8125rem; opacity: 0.7; margin-top: 0.5rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .submitted {
+        font-size: 0.8125rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+      }
+    `,
+  ],
   template: `
     <form kj-form [formGroup]="form" (kjSubmit)="onSubmit($event)">
       <kj-field>

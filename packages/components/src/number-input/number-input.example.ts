@@ -9,10 +9,14 @@ import { KjNumberInputComponent } from './number-input';
   selector: 'kj-number-input-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `
-    <kj-number-input [(kjValue)]="qty" kjAriaLabel="Quantity" />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  template: ` <kj-number-input [(kjValue)]="qty" kjAriaLabel="Quantity" /> `,
 })
 export class KjNumberInputExample {
   readonly qty = signal<number>(3);

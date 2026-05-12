@@ -9,11 +9,13 @@ import { KjProgressBarComponent } from './progress-bar';
   selector: 'kj-progress-bar-example',
   standalone: true,
   imports: [KjProgressBarComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
-  template: `
-    <kj-progress-bar [kjValue]="50" kjAriaLabel="Upload progress" />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  template: ` <kj-progress-bar [kjValue]="50" kjAriaLabel="Upload progress" /> `,
 })
 export class KjProgressBarExample {}

@@ -10,15 +10,20 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'kj-typography-example',
   standalone: true,
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <article class="kj-prose">
       <h1>Roadmap planning, in plain prose</h1>
       <h2>Why a prose container</h2>
       <p>
-        The <code>kj-prose</code> class restyles every descendant flow element
-        according to the kouji type system, so authored content reads cleanly
-        without per-element wiring.
+        The <code>kj-prose</code> class restyles every descendant flow element according to the
+        kouji type system, so authored content reads cleanly without per-element wiring.
       </p>
       <h3>What it covers</h3>
       <ul>
@@ -27,8 +32,8 @@ import { Component } from '@angular/core';
         <li>Blockquotes, inline code, anchors</li>
       </ul>
       <blockquote>
-        Good prose styling stays out of the way until you need it — and then
-        it does the right thing without per-paragraph configuration.
+        Good prose styling stays out of the way until you need it — and then it does the right thing
+        without per-paragraph configuration.
       </blockquote>
     </article>
   `,

@@ -5,9 +5,16 @@ import { KjButtonComponent } from './button';
   selector: 'kj-button-sizes-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-sm); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-sm);
+        align-items: center;
+        flex-wrap: wrap;
+      }
+    `,
+  ],
   template: `
     <kj-button kjSize="sm">Small</kj-button>
     <kj-button kjSize="md">Medium</kj-button>

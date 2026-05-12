@@ -11,11 +11,22 @@ import { KjSliderComponent } from './slider';
   selector: 'kj-slider-range-example',
   standalone: true,
   imports: [KjSliderComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); }
-    .value { font: 0.875rem var(--kj-font-mono, monospace); color: var(--kj-color-base-content); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+      }
+      .value {
+        font: 0.875rem var(--kj-font-mono, monospace);
+        color: var(--kj-color-base-content);
+      }
+    `,
+  ],
   template: `
     <div class="row">
       <kj-slider

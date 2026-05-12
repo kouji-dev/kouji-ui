@@ -33,13 +33,29 @@ const ALL_RESULTS: SearchResult[] = [
     KjCommandPaletteItemTemplate,
     KjButtonComponent,
   ],
-  styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 16rem; }
-  .activated { font-family: var(--kj-font-mono); font-size: 0.75rem; color: var(--kj-color-neutral); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        align-items: flex-start;
+        min-height: 16rem;
+      }
+      .activated {
+        font-family: var(--kj-font-mono);
+        font-size: 0.75rem;
+        color: var(--kj-color-neutral);
+      }
+    `,
+  ],
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">Search Angular docs…</kj-button>
 
     @if (lastActivated()) {
-      <p class="activated">Activated: <strong>{{ lastActivated() }}</strong></p>
+      <p class="activated">
+        Activated: <strong>{{ lastActivated() }}</strong>
+      </p>
     }
 
     <kj-command-palette
@@ -73,9 +89,7 @@ export class KjCommandPaletteAsyncExample {
       this.loading.set(true);
       this.results.set([]);
       this.searchTimer = setTimeout(() => {
-        const filtered = ALL_RESULTS.filter(r =>
-          r.label.toLowerCase().includes(q.toLowerCase())
-        );
+        const filtered = ALL_RESULTS.filter((r) => r.label.toLowerCase().includes(q.toLowerCase()));
         this.results.set(filtered);
         this.loading.set(false);
       }, 300);

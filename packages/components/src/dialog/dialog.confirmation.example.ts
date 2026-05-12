@@ -7,7 +7,10 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-dialog-confirmation-body',
   standalone: true,
   imports: [KjDialog],
-  template: `<kj-dialog [kjAlert]="true"><h2>Confirm</h2><p>Are you sure?</p></kj-dialog>`,
+  template: `<kj-dialog [kjAlert]="true"
+    ><h2>Confirm</h2>
+    <p>Are you sure?</p></kj-dialog
+  >`,
 })
 class ConfirmationBody {}
 
@@ -19,5 +22,7 @@ class ConfirmationBody {}
 })
 export class KjDialogConfirmationExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(ConfirmationBody, { alert: true }); }
+  open(): void {
+    this.dialog.open(ConfirmationBody, { alert: true });
+  }
 }

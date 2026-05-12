@@ -24,5 +24,7 @@ class Body {}
 })
 export class KjDrawerSidesExample {
   private readonly drawer = inject(KjDrawerService);
-  open(side: KjDrawerSide): void { this.drawer.open(Body, { side }); }
+  open(side: KjDrawerSide): void {
+    this.drawer.open(Body, { side });
+  }
 }

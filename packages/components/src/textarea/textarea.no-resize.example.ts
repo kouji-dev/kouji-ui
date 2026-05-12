@@ -9,9 +9,13 @@ import { KjTextareaComponent } from './textarea';
   selector: 'kj-textarea-no-resize-example',
   standalone: true,
   imports: [KjTextareaComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-textarea
       [kjRows]="3"

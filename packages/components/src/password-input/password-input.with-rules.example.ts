@@ -11,16 +11,43 @@ import { KjPasswordInputComponent } from './password-input';
   selector: 'kj-password-input-with-rules-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 380px; }
-    label { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); }
-    .rules { list-style: none; padding: 0; margin: var(--kj-space-xs) 0 0; display: grid; gap: 0.25rem; font-size: var(--kj-text-xs); }
-    .rules li { color: var(--kj-color-neutral); }
-    .rules li[data-pass="true"] { color: var(--kj-color-success, #059669); }
-    .rules li::before { content: "○ "; }
-    .rules li[data-pass="true"]::before { content: "✓ "; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+        max-width: 380px;
+      }
+      label {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-color-neutral);
+      }
+      .rules {
+        list-style: none;
+        padding: 0;
+        margin: var(--kj-space-xs) 0 0;
+        display: grid;
+        gap: 0.25rem;
+        font-size: var(--kj-text-xs);
+      }
+      .rules li {
+        color: var(--kj-color-neutral);
+      }
+      .rules li[data-pass='true'] {
+        color: var(--kj-color-success, #059669);
+      }
+      .rules li::before {
+        content: '○ ';
+      }
+      .rules li[data-pass='true']::before {
+        content: '✓ ';
+      }
+    `,
+  ],
   template: `
     <div class="row">
       <label for="signup-pw">Create a password</label>
@@ -29,7 +56,8 @@ import { KjPasswordInputComponent } from './password-input';
         kjPlaceholder="At least 8 characters"
         [kjShowStrength]="true"
         [kjShowCapsLockWarning]="true"
-        [(kjValue)]="value" />
+        [(kjValue)]="value"
+      />
 
       <ul class="rules" aria-label="Password requirements">
         <li [attr.data-pass]="hasMinLength()">8+ characters</li>

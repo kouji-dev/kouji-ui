@@ -9,13 +9,15 @@ import { KjPasswordInputComponent } from './password-input';
   selector: 'kj-password-input-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
-    <kj-password-input
-      kjAutocomplete="current-password"
-      kjPlaceholder="Enter your password" />
+    <kj-password-input kjAutocomplete="current-password" kjPlaceholder="Enter your password" />
   `,
 })
 export class KjPasswordInputExample {}

@@ -9,11 +9,22 @@ import { KjNumberInputComponent } from './number-input';
   selector: 'kj-number-input-with-stepper-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .row { display: flex; gap: var(--kj-space-md); align-items: center; }
-    label { font: 0.875rem var(--kj-font-sans); color: var(--kj-color-base-content); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      label {
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-color-base-content);
+      }
+    `,
+  ],
   template: `
     <div class="row">
       <label for="number-input-servings">Servings</label>

@@ -24,97 +24,98 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
   imports: [FormsModule, KjIconDirective, KjInputComponent, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styles: [`
-    kj-icon-gallery-example {
-      display: block;
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    kj-icon-gallery-example .gallery-header {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-sm);
-      margin-bottom: var(--kj-space-lg);
-    }
-    kj-icon-gallery-example .gallery-title {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: var(--kj-space-md);
-      flex-wrap: wrap;
-    }
-    kj-icon-gallery-example .gallery-title h3 {
-      margin: 0;
-      font-size: var(--kj-font-size-lg, 1.125rem);
-      font-weight: 600;
-      color: var(--kj-color-text-primary, currentColor);
-    }
-    kj-icon-gallery-example .gallery-count {
-      font-size: var(--kj-font-size-sm, 0.875rem);
-      color: var(--kj-color-text-muted, currentColor);
-      font-variant-numeric: tabular-nums;
-    }
-    kj-icon-gallery-example .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: var(--kj-space-md);
-    }
-    kj-icon-gallery-example .gallery-tile {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--kj-space-xs);
-      min-height: 88px;
-      padding: var(--kj-space-md);
-      border: 1px solid var(--kj-color-border, rgba(0, 0, 0, 0.12));
-      border-radius: var(--kj-radius-md, 8px);
-      background: var(--kj-color-base-100, transparent);
-      color: inherit;
-      font: inherit;
-      cursor: pointer;
-      transition: background-color 120ms ease, border-color 120ms ease;
-    }
-    kj-icon-gallery-example .gallery-tile:hover,
-    kj-icon-gallery-example .gallery-tile:focus-visible {
-      background: var(--kj-color-base-300, rgba(0, 0, 0, 0.04));
-      border-color: var(--kj-color-border-strong, rgba(0, 0, 0, 0.24));
-      outline: none;
-    }
-    kj-icon-gallery-example .gallery-tile:focus-visible {
-      box-shadow: 0 0 0 2px var(--kj-color-focus-ring, #5b8def);
-    }
-    kj-icon-gallery-example .gallery-tile i.kj-icon {
-      font-size: 24px;
-    }
-    kj-icon-gallery-example .gallery-tile .name {
-      font-size: 11px;
-      letter-spacing: 0.04em;
-      text-transform: lowercase;
-      color: var(--kj-color-text-muted, currentColor);
-      word-break: break-all;
-      text-align: center;
-      line-height: 1.2;
-    }
-    kj-icon-gallery-example .gallery-empty {
-      padding: var(--kj-space-xl);
-      text-align: center;
-      color: var(--kj-color-text-muted, currentColor);
-      border: 1px dashed var(--kj-color-border, rgba(0, 0, 0, 0.12));
-      border-radius: var(--kj-radius-md, 8px);
-    }
-    kj-icon-gallery-example .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-  `],
+  styles: [
+    `
+      kj-icon-gallery-example {
+        display: block;
+      }
+      kj-icon-gallery-example .gallery-header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+        margin-bottom: var(--kj-space-lg);
+      }
+      kj-icon-gallery-example .gallery-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--kj-space-md);
+        flex-wrap: wrap;
+      }
+      kj-icon-gallery-example .gallery-title h3 {
+        margin: 0;
+        font-size: var(--kj-font-size-lg, 1.125rem);
+        font-weight: 600;
+        color: var(--kj-color-text-primary, currentColor);
+      }
+      kj-icon-gallery-example .gallery-count {
+        font-size: var(--kj-font-size-sm, 0.875rem);
+        color: var(--kj-color-text-muted, currentColor);
+        font-variant-numeric: tabular-nums;
+      }
+      kj-icon-gallery-example .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: var(--kj-space-md);
+      }
+      kj-icon-gallery-example .gallery-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--kj-space-xs);
+        min-height: 88px;
+        padding: var(--kj-space-md);
+        border: 1px solid var(--kj-color-border, rgba(0, 0, 0, 0.12));
+        border-radius: var(--kj-radius-md, 8px);
+        background: var(--kj-color-base-100, transparent);
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        transition:
+          background-color 120ms ease,
+          border-color 120ms ease;
+      }
+      kj-icon-gallery-example .gallery-tile:hover,
+      kj-icon-gallery-example .gallery-tile:focus-visible {
+        background: var(--kj-color-base-300, rgba(0, 0, 0, 0.04));
+        border-color: var(--kj-color-border-strong, rgba(0, 0, 0, 0.24));
+        outline: none;
+      }
+      kj-icon-gallery-example .gallery-tile:focus-visible {
+        box-shadow: 0 0 0 2px var(--kj-color-focus-ring, #5b8def);
+      }
+      kj-icon-gallery-example .gallery-tile i.kj-icon {
+        font-size: 24px;
+      }
+      kj-icon-gallery-example .gallery-tile .name {
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: lowercase;
+        color: var(--kj-color-text-muted, currentColor);
+        word-break: break-all;
+        text-align: center;
+        line-height: 1.2;
+      }
+      kj-icon-gallery-example .gallery-empty {
+        text-align: center;
+        color: var(--kj-color-text-muted, currentColor);
+        border: 1px dashed var(--kj-color-border, rgba(0, 0, 0, 0.12));
+        border-radius: var(--kj-radius-md, 8px);
+      }
+      kj-icon-gallery-example .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    `,
+  ],
   template: `
     <header class="gallery-header">
       <div class="gallery-title">
@@ -123,9 +124,7 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
           {{ filtered().length }} of {{ total }} shown
         </span>
       </div>
-      <label class="visually-hidden" for="kj-icon-gallery-search">
-        Search icons by name
-      </label>
+      <label class="visually-hidden" for="kj-icon-gallery-search"> Search icons by name </label>
       <kj-input
         id="kj-icon-gallery-search"
         type="search"
@@ -137,15 +136,9 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
     </header>
 
     @if (filtered().length === 0) {
-      <p class="gallery-empty" role="status">
-        No icons match &ldquo;{{ query() }}&rdquo;.
-      </p>
+      <p class="gallery-empty" role="status">No icons match &ldquo;{{ query() }}&rdquo;.</p>
     } @else {
-      <ul
-        class="gallery-grid"
-        role="list"
-        aria-labelledby="kj-icon-gallery-heading"
-      >
+      <ul class="gallery-grid" role="list" aria-labelledby="kj-icon-gallery-heading">
         @for (name of filtered(); track name) {
           <li>
             <kj-button

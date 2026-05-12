@@ -48,7 +48,9 @@ import { KjButtonComponent } from '../button/button';
 class OuterBody {
   protected readonly ref = inject(KjDialogRef);
   private readonly dialog = inject(KjDialogService);
-  protected openInner(): void { this.dialog.open(InnerBody); }
+  protected openInner(): void {
+    this.dialog.open(InnerBody);
+  }
 }
 
 @Component({
@@ -75,5 +77,7 @@ class InnerBody {
 })
 export class KjDialogNestedExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(OuterBody); }
+  open(): void {
+    this.dialog.open(OuterBody);
+  }
 }

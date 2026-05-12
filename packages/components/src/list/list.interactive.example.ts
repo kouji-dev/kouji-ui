@@ -11,15 +11,19 @@ import { KjListComponent, KjListItemComponent } from './list';
   selector: 'kj-list-interactive-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .kj-list-interactive-status {
-      margin-top: var(--kj-space-md);
-      font: 0.875rem / 1.4 var(--kj-font-sans);
-      color: var(--kj-color-base-content);
-      opacity: 0.75;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .kj-list-interactive-status {
+        margin-top: var(--kj-space-md);
+        font: 0.875rem / 1.4 var(--kj-font-sans);
+        color: var(--kj-color-base-content);
+        opacity: 0.75;
+      }
+    `,
+  ],
   template: `
     <kj-list ariaLabel="Recent contacts" [divided]="true" [hoverable]="true">
       @for (contact of contacts; track contact) {
@@ -28,13 +32,16 @@ import { KjListComponent, KjListItemComponent } from './list';
         </kj-list-item>
       }
     </kj-list>
-    <p class="kj-list-interactive-status">
-      Selected: {{ selected() ?? '(none)' }}
-    </p>
+    <p class="kj-list-interactive-status">Selected: {{ selected() ?? '(none)' }}</p>
   `,
 })
 export class KjListInteractiveExample {
-  protected readonly contacts = ['Ada Lovelace', 'Grace Hopper', 'Alan Turing', 'Katherine Johnson'];
+  protected readonly contacts = [
+    'Ada Lovelace',
+    'Grace Hopper',
+    'Alan Turing',
+    'Katherine Johnson',
+  ];
   protected readonly selected = signal<string | null>(null);
 
   protected select(name: string): void {

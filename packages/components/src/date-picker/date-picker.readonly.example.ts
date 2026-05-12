@@ -14,12 +14,15 @@ import { KjDatePickerComponent } from './date-picker';
   selector: 'kj-date-picker-readonly-example',
   standalone: true,
   imports: [KjDatePickerComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-color-base-200, #f3f3f3); min-height: 12rem; }
-  `],
-  template: `
-    <kj-date-picker [(kjValue)]="when" [kjReadonly]="true" />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 12rem;
+      }
+    `,
+  ],
+  template: ` <kj-date-picker [(kjValue)]="when" [kjReadonly]="true" /> `,
 })
 export class KjDatePickerReadonlyExample {
   readonly when = signal<Date>(new Date());

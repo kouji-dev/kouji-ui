@@ -11,9 +11,13 @@ import { KjSkeletonComponent } from './skeleton';
   selector: 'kj-skeleton-example',
   standalone: true,
   imports: [KjSkeletonComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `<kj-skeleton kjWidth="16rem" kjHeight="1.5rem" />`,
 })
 export class KjSkeletonExample {}

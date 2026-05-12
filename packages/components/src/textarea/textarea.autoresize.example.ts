@@ -9,18 +9,18 @@ import { KjTextareaComponent } from './textarea';
   selector: 'kj-textarea-autoresize-example',
   standalone: true,
   imports: [KjTextareaComponent],
-  styles: [`
-    :host {
-      display: grid;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    label {
-      font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
-      color: var(--kj-color-neutral);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: grid;
+        gap: var(--kj-space-md);
+      }
+      label {
+        font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
+        color: var(--kj-color-neutral);
+      }
+    `,
+  ],
   template: `
     <div>
       <label for="bio">Auto-resize (2–8 rows)</label>

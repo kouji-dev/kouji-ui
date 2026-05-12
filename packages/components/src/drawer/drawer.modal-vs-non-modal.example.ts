@@ -19,5 +19,7 @@ class Body {}
 })
 export class KjDrawerModalVsNonModalExample {
   private readonly drawer = inject(KjDrawerService);
-  open(): void { this.drawer.open(Body); }
+  open(): void {
+    this.drawer.open(Body);
+  }
 }

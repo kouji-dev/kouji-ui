@@ -5,22 +5,27 @@ import { KjLinkComponent } from './link';
   selector: 'kj-link-external-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
   template: `
     <p>
       Auto-detected from <code>target="_blank"</code>:
       <kj-link kjHref="https://example.com" kjTarget="_blank" kjUnderline="always">
-        example.com
-      </kj-link>.
+        example.com </kj-link
+      >.
     </p>
     <p>
-      Explicit <code>kjExternal</code> for cross-origin URLs without
-      <code>target="_blank"</code>:
+      Explicit <code>kjExternal</code> for cross-origin URLs without <code>target="_blank"</code>:
       <kj-link kjHref="https://docs.example.com" [kjExternal]="true" kjUnderline="always">
-        Docs
-      </kj-link>.
+        Docs </kj-link
+      >.
     </p>
   `,
 })

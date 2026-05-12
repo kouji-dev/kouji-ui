@@ -85,11 +85,19 @@
   color: var(--kj-color-neutral);
 }
 
+/* Live demo canvas: padding + surface live here so *.example.ts files stay focused on the component. */
 .preview-frame {
-  background: var(--kj-color-base-100);
+  padding: var(--kj-space-xl);
+  background: var(--kj-color-base-200);
   border-bottom: 1px solid var(--kj-color-base-300);
   position: relative;
   overflow: visible;
+}
+
+/* Match docs-themes.css tokens when Retro / Finance tabs are active */
+.preview-frame.kj-theme-retro,
+.preview-frame.kj-theme-finance {
+  background: var(--kj-bg);
 }
 
 .strip-spacer { flex: 1; }

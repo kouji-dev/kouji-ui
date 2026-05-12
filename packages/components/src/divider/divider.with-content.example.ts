@@ -11,9 +11,15 @@ import { KjDividerComponent } from './divider';
   selector: 'kj-divider-with-content-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+      }
+    `,
+  ],
   template: `
     <div>
       <p>Sign in with your password.</p>

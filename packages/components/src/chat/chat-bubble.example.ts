@@ -27,10 +27,16 @@ import {
     KjChatFooterComponent,
     KjAvatarComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    kj-chat-log { max-height: 22rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      kj-chat-log {
+        max-height: 22rem;
+      }
+    `,
+  ],
   template: `
     <kj-chat-log kjChatLogLabel="Conversation with Alice">
       <kj-chat kjSide="start" kjChatAuthor="alice">

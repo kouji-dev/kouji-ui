@@ -23,12 +23,7 @@ export type { KjToastPositionX, KjToastPositionY } from './toast.types';
  *
  * @doc
  *  @doc-example Basic
- *    @doc-theme default
- *      @doc-file toast.example.ts
- *    @doc-theme retro
- *      @doc-file toast.retro.example.ts
- *    @doc-theme finance
- *      @doc-file toast.finance.example.ts
+ *    @doc-file toast.example.ts
  *
  * @example
  * ```html

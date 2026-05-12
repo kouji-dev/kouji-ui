@@ -19,7 +19,13 @@ import {
     KjAlertTitleComponent,
     KjAlertDescriptionComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-alert kjVariant="info">
       <kj-alert-icon>i</kj-alert-icon>

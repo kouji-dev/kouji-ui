@@ -7,7 +7,10 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-dialog-default-body',
   standalone: true,
   imports: [KjDialog],
-  template: `<kj-dialog><h2>Hello</h2><p>Dialog body</p></kj-dialog>`,
+  template: `<kj-dialog
+    ><h2>Hello</h2>
+    <p>Dialog body</p></kj-dialog
+  >`,
 })
 class DialogBody {}
 
@@ -19,5 +22,7 @@ class DialogBody {}
 })
 export class KjDialogDefaultExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(DialogBody); }
+  open(): void {
+    this.dialog.open(DialogBody);
+  }
 }

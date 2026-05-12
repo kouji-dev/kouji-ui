@@ -14,18 +14,26 @@ import { KjTruncate } from '@kouji-ui/core';
   selector: 'kj-typography-truncate-example',
   standalone: true,
   imports: [KjTruncate],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .card { max-width: 28rem; padding: var(--kj-space-md); background: var(--kj-color-base-100); border-radius: var(--kj-radius-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .card {
+        max-width: 28rem;
+        padding: var(--kj-space-md);
+        background: var(--kj-color-base-100);
+        border-radius: var(--kj-radius-md);
+      }
+    `,
+  ],
   template: `
     <article class="card">
       <h3>Atlas — quarterly planning</h3>
       <p [kjTruncate]="2">
-        Atlas helps engineering teams plan quarterly roadmaps with shared
-        context, calibrated estimates, and a clean handoff to delivery — so
-        every team starts the quarter aligned on what is shipping, what is
-        deferred, and why.
+        Atlas helps engineering teams plan quarterly roadmaps with shared context, calibrated
+        estimates, and a clean handoff to delivery — so every team starts the quarter aligned on
+        what is shipping, what is deferred, and why.
       </p>
     </article>
   `,

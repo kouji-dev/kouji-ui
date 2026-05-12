@@ -13,9 +13,15 @@ import { KjSpinnerComponent } from './spinner';
   selector: 'kj-spinner-in-button-example',
   standalone: true,
   imports: [KjButtonComponent, KjSpinnerComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+    `,
+  ],
   template: `
     <kj-button (click)="run()" [kjDisabled]="busy()">
       @if (busy()) {

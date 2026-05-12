@@ -16,15 +16,14 @@ import {
 @Component({
   selector: 'kj-chat-bubble-with-state-example',
   standalone: true,
-  imports: [
-    KjChatLogComponent,
-    KjChatComponent,
-    KjChatBubbleComponent,
-    KjChatFooterComponent,
+  imports: [KjChatLogComponent, KjChatComponent, KjChatBubbleComponent, KjChatFooterComponent],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
   template: `
     <kj-chat-log kjChatLogLabel="Read receipts">
       <kj-chat kjSide="end">

@@ -13,11 +13,24 @@ import { KjDividerComponent } from './divider';
   selector: 'kj-divider-structural-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    section { display: flex; flex-direction: column; gap: var(--kj-space-xs); }
-    ul { margin: 0; padding-inline-start: var(--kj-space-lg); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xs);
+      }
+      ul {
+        margin: 0;
+        padding-inline-start: var(--kj-space-lg);
+      }
+    `,
+  ],
   template: `
     <section>
       <p>Account preferences — tune how your profile is presented.</p>

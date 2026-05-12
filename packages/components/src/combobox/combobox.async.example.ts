@@ -33,14 +33,21 @@ const ALL_USERS = [
     KjComboboxLoadingComponent,
     KjComboboxEmptyComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-combobox
       [(value)]="user"
       [(query)]="query"
       [shouldFilter]="false"
       [loading]="loading()"
-      placeholder="Search users…">
+      placeholder="Search users…"
+    >
       @for (u of results(); track u.id) {
         <kj-combobox-option [value]="u.name">{{ u.name }}</kj-combobox-option>
       }
@@ -69,7 +76,7 @@ export class KjComboboxAsyncExample {
       this.loading.set(true);
       this.timer = setTimeout(() => {
         const needle = q.toLowerCase();
-        this.results.set(ALL_USERS.filter(u => u.name.toLowerCase().includes(needle)));
+        this.results.set(ALL_USERS.filter((u) => u.name.toLowerCase().includes(needle)));
         this.loading.set(false);
       }, 250);
     });

@@ -13,47 +13,51 @@ import { KjListComponent, KjListItemComponent } from './list';
   selector: 'kj-list-with-icons-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .kj-list-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1.5rem;
-      height: 1.5rem;
-      font-size: 1rem;
-      color: var(--kj-color-base-content);
-      opacity: 0.7;
-    }
-    .kj-list-body {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.125rem;
-    }
-    .kj-list-title {
-      font: 0.875rem / 1.4 var(--kj-font-sans);
-      font-weight: 600;
-      color: var(--kj-color-base-content);
-    }
-    .kj-list-subtitle {
-      font: 0.75rem / 1.3 var(--kj-font-sans);
-      color: var(--kj-color-base-content);
-      opacity: 0.65;
-    }
-    .kj-list-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 1.5rem;
-      padding: 0 var(--kj-space-sm);
-      height: 1.5rem;
-      border-radius: 9999px;
-      background: var(--kj-color-primary);
-      color: var(--kj-color-primary-content);
-      font: 600 0.75rem / 1 var(--kj-font-sans);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .kj-list-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 1rem;
+        color: var(--kj-color-base-content);
+        opacity: 0.7;
+      }
+      .kj-list-body {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+      }
+      .kj-list-title {
+        font: 0.875rem / 1.4 var(--kj-font-sans);
+        font-weight: 600;
+        color: var(--kj-color-base-content);
+      }
+      .kj-list-subtitle {
+        font: 0.75rem / 1.3 var(--kj-font-sans);
+        color: var(--kj-color-base-content);
+        opacity: 0.65;
+      }
+      .kj-list-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.5rem;
+        padding: 0 var(--kj-space-sm);
+        height: 1.5rem;
+        border-radius: 9999px;
+        background: var(--kj-color-primary);
+        color: var(--kj-color-primary-content);
+        font: 600 0.75rem / 1 var(--kj-font-sans);
+      }
+    `,
+  ],
   template: `
     <kj-list ariaLabel="Inbox" [divided]="true" [hoverable]="true">
       <kj-list-item>

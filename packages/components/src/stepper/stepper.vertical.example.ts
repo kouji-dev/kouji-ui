@@ -23,10 +23,18 @@ import {
     KjStepperNextComponent,
     KjStepperPreviousComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .actions { display: flex; gap: var(--kj-space-sm); margin-top: var(--kj-space-lg); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .actions {
+        display: flex;
+        gap: var(--kj-space-sm);
+        margin-top: var(--kj-space-lg);
+      }
+    `,
+  ],
   template: `
     <kj-stepper [(kjActiveStep)]="active" kjOrientation="vertical">
       <kj-step [kjStepCompleted]="active() > 0">

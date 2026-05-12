@@ -26,9 +26,13 @@ import {
     KjChatBubbleComponent,
     KjAvatarComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-chat-log kjChatLogLabel="Grouped messages">
       <kj-chat kjSide="start" kjChatAuthor="alice">

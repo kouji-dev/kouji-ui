@@ -5,10 +5,18 @@ import { KjToggleComponent } from './toggle';
   selector: 'kj-toggle-with-label-example',
   standalone: true,
   imports: [KjToggleComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .row { display: inline-flex; align-items: center; gap: var(--kj-space-sm); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--kj-space-sm);
+      }
+    `,
+  ],
   template: `
     <div class="row">
       <kj-toggle [(pressed)]="dark" ariaLabel="Dark mode"></kj-toggle>
@@ -16,4 +24,6 @@ import { KjToggleComponent } from './toggle';
     </div>
   `,
 })
-export class KjToggleWithLabelExample { readonly dark = signal(false); }
+export class KjToggleWithLabelExample {
+  readonly dark = signal(false);
+}

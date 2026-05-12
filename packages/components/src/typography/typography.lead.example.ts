@@ -12,17 +12,23 @@ import { KjLead } from '@kouji-ui/core';
   selector: 'kj-typography-lead-example',
   standalone: true,
   imports: [KjLead],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <article>
       <h1>Atlas — quarterly roadmap planning</h1>
       <p kjLead>
-        Atlas helps engineering teams plan quarterly roadmaps with shared
-        context, calibrated estimates, and a clean handoff to delivery.
+        Atlas helps engineering teams plan quarterly roadmaps with shared context, calibrated
+        estimates, and a clean handoff to delivery.
       </p>
       <p>
-        The lead paragraph anchors the section's tone; the body paragraphs
-        below carry the supporting detail at the regular reading size.
+        The lead paragraph anchors the section's tone; the body paragraphs below carry the
+        supporting detail at the regular reading size.
       </p>
     </article>
   `,

@@ -11,7 +11,13 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
   selector: 'kj-overlay-badge-dot-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-overlay-badge [kjDot]="true" kjVariant="destructive" kjDescription="New activity">
       <kj-button kjVariant="secondary">Inbox</kj-button>

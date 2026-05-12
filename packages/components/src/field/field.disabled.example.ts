@@ -1,10 +1,6 @@
 import { Component } from '@angular/core';
 import { KjAriaDescribedBy } from '@kouji-ui/core';
-import {
-  KjFieldComponent,
-  KjFieldHelpComponent,
-  KjFieldLabelComponent,
-} from './field';
+import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from './field';
 
 /**
  * Disabled field. The wrapper dims the whole row and forwards the disabled
@@ -13,18 +9,11 @@ import {
 @Component({
   selector: 'kj-field-disabled-example',
   standalone: true,
-  imports: [
-    KjFieldComponent,
-    KjFieldLabelComponent,
-    KjFieldHelpComponent,
-    KjAriaDescribedBy,
-  ],
+  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjAriaDescribedBy],
   styles: [
     `
       :host {
         display: block;
-        padding: var(--kj-space-xl);
-        background: var(--kj-color-base-200);
         max-width: 400px;
       }
       .kj-input {

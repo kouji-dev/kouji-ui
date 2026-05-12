@@ -9,10 +9,14 @@ import { KjTimePickerComponent } from './time-picker';
   selector: 'kj-time-picker-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
-  template: `
-    <kj-time-picker [(kjValue)]="time" kjAriaLabel="Departure time" />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  template: ` <kj-time-picker [(kjValue)]="time" kjAriaLabel="Departure time" /> `,
 })
 export class KjTimePickerExample {
   readonly time = signal<Date | string>(new Date(2024, 0, 1, 9, 30, 0));

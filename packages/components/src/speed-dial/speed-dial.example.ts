@@ -22,16 +22,16 @@ import {
     KjSpeedDialActionsComponent,
     KjSpeedDialActionComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-      padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
-      min-height: 18rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        min-height: 18rem;
+      }
+    `,
+  ],
   template: `
     <kj-speed-dial kjDirection="up" kjPosition="static">
       <kj-speed-dial-trigger kjAriaLabel="Open quick actions">+</kj-speed-dial-trigger>

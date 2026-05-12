@@ -24,16 +24,16 @@ import {
     KjAlertDismissComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-      min-height: 10rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        min-height: 10rem;
+      }
+    `,
+  ],
   template: `
     @if (visible()) {
       <kj-alert kjVariant="success" (kjAlertDismissed)="visible.set(false)">

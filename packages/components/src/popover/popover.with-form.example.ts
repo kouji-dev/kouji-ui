@@ -25,7 +25,9 @@ import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
         <kj-field-label>Display name</kj-field-label>
         <kj-input placeholder="Jane Doe" />
       </kj-field>
-      <div style="display: flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-md);">
+      <div
+        style="display: flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-md);"
+      >
         <kj-button kjPopoverClose kjVariant="ghost">Cancel</kj-button>
         <kj-button kjPopoverClose>Save</kj-button>
       </div>

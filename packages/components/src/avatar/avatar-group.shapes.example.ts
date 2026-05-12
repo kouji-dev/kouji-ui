@@ -12,9 +12,15 @@ import { KjAvatarComponent } from './avatar';
   selector: 'kj-avatar-group-shapes-example',
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
   template: `
     <kj-avatar-group kjShape="circle" kjAriaLabel="circle collaborators">
       <kj-avatar content="AL" alt="Ada Lovelace" />

@@ -9,14 +9,13 @@ import { KjTextareaComponent } from './textarea';
   selector: 'kj-textarea-example',
   standalone: true,
   imports: [KjTextareaComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
-  template: `
-    <kj-textarea
-      [kjRows]="4"
-      kjPlaceholder="Tell us about yourself…"
-    ></kj-textarea>
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  template: ` <kj-textarea [kjRows]="4" kjPlaceholder="Tell us about yourself…"></kj-textarea> `,
 })
 export class KjTextareaExample {}

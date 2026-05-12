@@ -24,15 +24,6 @@ import { KJ_BUTTON_CONFIG } from './config';
  * <button kjButton [kjVariant]="'destructive'" [kjSize]="'sm'" [kjLoading]="busy()">Delete</button>
  * ```
  * @doc
- *  @doc-example Variants
- *    @doc-theme default
- *      @doc-file button.example.ts
- *    @doc-theme retro
- *      @doc-file button.retro.example.ts
- *    @doc-theme finance
- *      @doc-file button.finance.example.ts
- *  @doc-example Sizes
- *    @doc-file button.sizes.example.ts
  * @doc-category Core/Base
  * @doc-name button
  * @doc-is-main

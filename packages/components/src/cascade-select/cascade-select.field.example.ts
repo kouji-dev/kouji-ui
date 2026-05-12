@@ -14,13 +14,26 @@ import {
   selector: 'kj-cascade-select-field-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <div style="display: flex; flex-direction: column; gap: 0.25rem; max-width: 20rem;">
-      <label for="cascade-delivery-location" style="font-size: 0.875rem; font-weight: 500; color: var(--kj-color-base-content);">
+      <label
+        for="cascade-delivery-location"
+        style="font-size: 0.875rem; font-weight: 500; color: var(--kj-color-base-content);"
+      >
         Delivery location
       </label>
-      <kj-cascade-select id="cascade-delivery-location" [(kjValue)]="location" placeholder="Select a city">
+      <kj-cascade-select
+        id="cascade-delivery-location"
+        [(kjValue)]="location"
+        placeholder="Select a city"
+      >
         <kj-cascade-option [kjValue]="'us'" kjLabel="United States">
           <kj-cascade-sub-panel kjOwnerOptionId="field-us">
             <kj-cascade-option [kjValue]="'ca'" kjLabel="California">

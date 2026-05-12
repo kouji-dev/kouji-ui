@@ -11,13 +11,16 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
   selector: 'kj-overlay-badge-on-avatar-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjAvatarComponent],
-  styles: [`:host { display: flex; gap: var(--kj-space-xl); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-xl);
+      }
+    `,
+  ],
   template: `
-    <kj-overlay-badge
-      [kjDot]="true"
-      kjPosition="bottom-end"
-      kjDescription="Online"
-    >
+    <kj-overlay-badge [kjDot]="true" kjPosition="bottom-end" kjDescription="Online">
       <kj-avatar content="AB" alt="Alex Brown" />
     </kj-overlay-badge>
 

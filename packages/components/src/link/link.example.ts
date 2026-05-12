@@ -9,11 +9,16 @@ import { KjLinkComponent } from './link';
   selector: 'kj-link-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <p>
-      Visit <kj-link kjHref="/about">our about page</kj-link> for more
-      information about kouji-ui.
+      Visit <kj-link kjHref="/about">our about page</kj-link> for more information about kouji-ui.
     </p>
   `,
 })

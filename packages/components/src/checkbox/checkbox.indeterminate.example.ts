@@ -5,7 +5,15 @@ import { KjCheckboxComponent } from './checkbox';
   selector: 'kj-checkbox-indeterminate-example',
   standalone: true,
   imports: [KjCheckboxComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `<kj-checkbox [(checked)]="value" [indeterminate]="true">Mixed selection</kj-checkbox>`,
 })
-export class KjCheckboxIndeterminateExample { readonly value = signal(false); }
+export class KjCheckboxIndeterminateExample {
+  readonly value = signal(false);
+}

@@ -12,12 +12,15 @@ import { KjMuted } from '@kouji-ui/core';
   selector: 'kj-typography-muted-example',
   standalone: true,
   imports: [KjMuted],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
-    <p>
-      Last updated <span kjMuted>3 minutes ago</span> by
-      <span kjMuted>Jamie Cole</span>.
-    </p>
+    <p>Last updated <span kjMuted>3 minutes ago</span> by <span kjMuted>Jamie Cole</span>.</p>
   `,
 })
 export class KjTypographyMutedExample {}

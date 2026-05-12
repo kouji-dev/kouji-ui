@@ -10,11 +10,23 @@ import { KjPasswordInputComponent } from './password-input';
   selector: 'kj-password-input-strength-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 360px; }
-    label { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+        max-width: 360px;
+      }
+      label {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-color-neutral);
+      }
+    `,
+  ],
   template: `
     <div class="row">
       <label for="signup-pw">Choose a password</label>
@@ -22,7 +34,8 @@ import { KjPasswordInputComponent } from './password-input';
         kjAutocomplete="new-password"
         kjPlaceholder="Mix letters, numbers, symbols"
         [kjShowStrength]="true"
-        [(kjValue)]="value" />
+        [(kjValue)]="value"
+      />
     </div>
   `,
 })

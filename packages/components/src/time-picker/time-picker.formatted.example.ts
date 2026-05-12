@@ -10,16 +10,19 @@ import { KjTimePickerComponent } from './time-picker';
   selector: 'kj-time-picker-formatted-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    pre { margin-top: var(--kj-space-md); font: 0.875rem var(--kj-font-mono, ui-monospace); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      pre {
+        margin-top: var(--kj-space-md);
+        font: 0.875rem var(--kj-font-mono, ui-monospace);
+      }
+    `,
+  ],
   template: `
-    <kj-time-picker
-      [(kjValue)]="time"
-      kjValueShape="string"
-      kjAriaLabel="Reminder time"
-    />
+    <kj-time-picker [(kjValue)]="time" kjValueShape="string" kjAriaLabel="Reminder time" />
     <pre>Stored: {{ time() }}</pre>
   `,
 })

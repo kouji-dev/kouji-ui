@@ -17,22 +17,39 @@ import { KjSkeletonComponent } from './skeleton';
   selector: 'kj-skeleton-card-example',
   standalone: true,
   imports: [KjSkeletonComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .card {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-lg);
-      background: var(--kj-color-base-100);
-      border: 1px solid var(--kj-color-border, var(--kj-color-base-300));
-      border-radius: var(--kj-radius-box, 0.75rem);
-      max-width: 24rem;
-    }
-    .header { display: flex; align-items: center; gap: var(--kj-space-md); }
-    .title-stack { display: flex; flex-direction: column; gap: var(--kj-space-xs, 0.25rem); flex: 1 1 0; }
-    .body { display: flex; flex-direction: column; gap: var(--kj-space-sm); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        padding: var(--kj-space-lg);
+        background: var(--kj-color-base-100);
+        border: 1px solid var(--kj-color-border, var(--kj-color-base-300));
+        border-radius: var(--kj-radius-box, 0.75rem);
+        max-width: 24rem;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        gap: var(--kj-space-md);
+      }
+      .title-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xs, 0.25rem);
+        flex: 1 1 0;
+      }
+      .body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+      }
+    `,
+  ],
   template: `
     <section class="card" aria-busy="true" aria-label="Loading card content">
       <div class="header">

@@ -14,10 +14,18 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-kbd-in-tooltip-example',
   standalone: true,
   imports: [KjKbdComponent, KjTooltipTrigger, KjTooltipContent, KjButtonComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); }
-    .kj-kbd-in-tooltip-body { display: inline-flex; align-items: center; gap: var(--kj-space-2xs); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .kj-kbd-in-tooltip-body {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--kj-space-2xs);
+      }
+    `,
+  ],
   template: `
     <kj-button kjTooltipTrigger #t="kjTooltipTrigger" kjVariant="outline">Save</kj-button>
     <kj-tooltip-content [kjFor]="t">

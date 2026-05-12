@@ -5,14 +5,18 @@ import { KjLinkComponent } from './link';
   selector: 'kj-link-disabled-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-lg); flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-lg);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
   template: `
     <kj-link kjHref="/active" kjUnderline="always">Active link</kj-link>
-    <kj-link kjHref="/disabled" [kjDisabled]="true" kjUnderline="always">
-      Disabled link
-    </kj-link>
+    <kj-link kjHref="/disabled" [kjDisabled]="true" kjUnderline="always"> Disabled link </kj-link>
   `,
 })
 export class KjLinkDisabledExample {}

@@ -11,9 +11,13 @@ import { KjProgressBarComponent } from './progress-bar';
   selector: 'kj-progress-bar-with-label-example',
   standalone: true,
   imports: [KjProgressBarComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-progress-bar
       [kjValue]="60"

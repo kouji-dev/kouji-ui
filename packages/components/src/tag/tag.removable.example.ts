@@ -11,7 +11,15 @@ import { KjTagComponent, KjTagRemoveComponent } from './tag';
   selector: 'kj-tag-removable-example',
   standalone: true,
   imports: [KjTagComponent, KjTagRemoveComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    `,
+  ],
   template: `
     @for (tag of tags(); track tag) {
       <kj-tag kjVariant="secondary" (kjTagRemoved)="remove(tag)">
@@ -25,6 +33,6 @@ export class KjTagRemovableExample {
   protected readonly tags = signal(['Acme Corp', 'Globex', 'Initech', 'Umbrella']);
 
   protected remove(tag: string): void {
-    this.tags.update(list => list.filter(t => t !== tag));
+    this.tags.update((list) => list.filter((t) => t !== tag));
   }
 }

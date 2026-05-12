@@ -29,18 +29,29 @@ import { KjButtonComponent } from '../button/button';
     KjConfirmPopupActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); min-height: 14rem; }
-    .kj-confirm-popup-example__status { margin-top: var(--kj-space-md); color: var(--kj-color-base-content); opacity: 0.85; font-size: 0.875rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 14rem;
+      }
+      .kj-confirm-popup-example__status {
+        margin-top: var(--kj-space-md);
+        color: var(--kj-color-base-content);
+        opacity: 0.85;
+        font-size: 0.875rem;
+      }
+    `,
+  ],
   template: `
-    <kj-confirm-popup
-      (kjResult)="onResult($event)">
-      <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="default">Discard draft</kj-button>
+    <kj-confirm-popup (kjResult)="onResult($event)">
+      <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="default"
+        >Discard draft</kj-button
+      >
       <kj-confirm-popup-content [kjFor]="trig">
         <p kjConfirmPopupMessage>
-          Discard this draft? Your changes since last save will be lost and
-          cannot be recovered from this device.
+          Discard this draft? Your changes since last save will be lost and cannot be recovered from
+          this device.
         </p>
         <kj-confirm-popup-actions>
           <kj-confirm-popup-cancel>

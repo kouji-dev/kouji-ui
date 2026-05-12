@@ -1,16 +1,27 @@
 import { Component } from '@angular/core';
 import {
-  KjAccordionComponent, KjAccordionItemComponent,
-  KjAccordionTriggerComponent, KjAccordionContentComponent,
+  KjAccordionComponent,
+  KjAccordionItemComponent,
+  KjAccordionTriggerComponent,
+  KjAccordionContentComponent,
 } from './accordion';
 
 @Component({
   selector: 'kj-accordion-disabled-example',
   standalone: true,
   imports: [
-    KjAccordionComponent, KjAccordionItemComponent, KjAccordionTriggerComponent, KjAccordionContentComponent,
+    KjAccordionComponent,
+    KjAccordionItemComponent,
+    KjAccordionTriggerComponent,
+    KjAccordionContentComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-accordion>
       <kj-accordion-item value="a">

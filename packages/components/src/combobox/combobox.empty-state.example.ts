@@ -13,12 +13,14 @@ import {
 @Component({
   selector: 'kj-combobox-empty-state-example',
   standalone: true,
-  imports: [
-    KjComboboxComponent,
-    KjComboboxOptionComponent,
-    KjComboboxEmptyComponent,
+  imports: [KjComboboxComponent, KjComboboxOptionComponent, KjComboboxEmptyComponent],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
   template: `
     <kj-combobox [(value)]="fruit" placeholder="Try typing 'xyz'…">
       <kj-combobox-option [value]="'apple'">Apple</kj-combobox-option>

@@ -1,10 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { kjFuzzyFilter } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
-import {
-  KjCommandPaletteComponent,
-  KjCommandItemComponent,
-} from './command-palette';
+import { KjCommandPaletteComponent, KjCommandItemComponent } from './command-palette';
 
 /**
  * Modal command palette with a custom fuzzy filter — type abbreviations
@@ -15,8 +12,23 @@ import {
   selector: 'kj-command-palette-fuzzy-example',
   standalone: true,
   imports: [KjCommandPaletteComponent, KjCommandItemComponent, KjButtonComponent],
-  styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 18rem; }
-  .hint { margin: 0; font-family: var(--kj-font-mono); font-size: 0.75rem; color: var(--kj-color-neutral); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        align-items: flex-start;
+        min-height: 18rem;
+      }
+      .hint {
+        margin: 0;
+        font-family: var(--kj-font-mono);
+        font-size: 0.75rem;
+        color: var(--kj-color-neutral);
+      }
+    `,
+  ],
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">Open fuzzy palette</kj-button>
     <p class="hint">Try typing: <code>gth</code>, <code>tth</code>, <code>ofil</code></p>

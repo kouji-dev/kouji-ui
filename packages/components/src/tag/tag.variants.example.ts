@@ -5,7 +5,15 @@ import { KjTagComponent } from './tag';
   selector: 'kj-tag-variants-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    `,
+  ],
   template: `
     <kj-tag kjVariant="default">Default</kj-tag>
     <kj-tag kjVariant="secondary">Secondary</kj-tag>

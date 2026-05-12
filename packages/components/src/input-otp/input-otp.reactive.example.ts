@@ -10,23 +10,26 @@ import { KjInputOtpComponent } from './input-otp';
   selector: 'kj-input-otp-reactive-example',
   standalone: true,
   imports: [KjInputOtpComponent, ReactiveFormsModule],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--kj-space-lg);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
-    .error {
-      font-size: var(--kj-text-xs);
-      color: var(--kj-color-destructive);
-      font-family: var(--kj-font-mono);
-      min-height: 1.25rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kj-space-lg);
+      }
+      label {
+        font-size: var(--kj-text-sm);
+        color: var(--kj-color-base-content);
+      }
+      .error {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-color-destructive);
+        font-family: var(--kj-font-mono);
+        min-height: 1.25rem;
+      }
+    `,
+  ],
   template: `
     <label for="input-otp-reactive">Enter your 6-digit code</label>
     <kj-input-otp
@@ -38,8 +41,11 @@ import { KjInputOtpComponent } from './input-otp';
     />
     @if (ctrl.invalid && ctrl.touched) {
       <span class="error" role="alert">
-        @if (ctrl.hasError('required')) { Code is required. }
-        @else if (ctrl.hasError('minlength')) { Please enter all 6 digits. }
+        @if (ctrl.hasError('required')) {
+          Code is required.
+        } @else if (ctrl.hasError('minlength')) {
+          Please enter all 6 digits.
+        }
       </span>
     } @else {
       <span class="error"></span>
@@ -47,8 +53,5 @@ import { KjInputOtpComponent } from './input-otp';
   `,
 })
 export class KjInputOtpReactiveExample {
-  readonly ctrl = new FormControl('', [
-    Validators.required,
-    Validators.minLength(6),
-  ]);
+  readonly ctrl = new FormControl('', [Validators.required, Validators.minLength(6)]);
 }

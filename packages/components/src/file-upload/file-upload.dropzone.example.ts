@@ -10,10 +10,16 @@ import { KjFileUploadComponent } from './file-upload';
   selector: 'kj-file-upload-dropzone-example',
   standalone: true,
   imports: [KjFileUploadComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .kj-file-upload__dropzone { min-height: 14rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .kj-file-upload__dropzone {
+        min-height: 14rem;
+      }
+    `,
+  ],
   template: `
     <kj-file-upload
       kjAccept=".pdf,.txt,.md"

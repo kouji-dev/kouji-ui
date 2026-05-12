@@ -9,24 +9,27 @@ import { KjInputOtpComponent } from './input-otp';
   selector: 'kj-input-otp-example',
   standalone: true,
   imports: [KjInputOtpComponent, FormsModule],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--kj-space-lg);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
-    .value {
-      font-family: var(--kj-font-mono);
-      font-size: var(--kj-text-sm);
-      color: var(--kj-color-neutral);
-      letter-spacing: 0.15em;
-      min-height: 1.25rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kj-space-lg);
+      }
+      label {
+        font-size: var(--kj-text-sm);
+        color: var(--kj-color-base-content);
+      }
+      .value {
+        font-family: var(--kj-font-mono);
+        font-size: var(--kj-text-sm);
+        color: var(--kj-color-neutral);
+        letter-spacing: 0.15em;
+        min-height: 1.25rem;
+      }
+    `,
+  ],
   template: `
     <label for="input-otp-default">Verification code</label>
     <kj-input-otp

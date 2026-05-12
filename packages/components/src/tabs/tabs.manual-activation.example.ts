@@ -1,10 +1,5 @@
 import { Component } from '@angular/core';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from './tabs';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from './tabs';
 
 /**
  * Manual activation example — focus moves with arrow keys but Enter or Space
@@ -15,7 +10,13 @@ import {
   selector: 'kj-tabs-manual-activation-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-tabs activationMode="manual">
       <kj-tab-list>

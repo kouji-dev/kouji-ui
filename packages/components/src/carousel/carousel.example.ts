@@ -21,10 +21,20 @@ import {
     KjCarouselPreviousComponent,
     KjCarouselNextComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .slide { display: grid; place-items: center; min-height: 12rem; font-weight: 600; font-size: 1.125rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .slide {
+        display: grid;
+        place-items: center;
+        min-height: 12rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    `,
+  ],
   template: `
     <kj-carousel label="Featured destinations">
       <kj-carousel-previous aria-label="Previous slide" />

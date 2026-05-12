@@ -25,20 +25,36 @@ import { KjButtonComponent } from '../button/button';
     KjEmptyStateActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    a { color: var(--kj-color-primary, #2563eb); text-decoration: underline; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      a {
+        color: var(--kj-color-primary, #2563eb);
+        text-decoration: underline;
+      }
+    `,
+  ],
   template: `
     <kj-empty-state>
       <kj-empty-state-icon>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M12 2v20" />
           <path d="M2 12h20" />
         </svg>
       </kj-empty-state-icon>
       <kj-empty-state-title>Start a new workspace</kj-empty-state-title>
-      <kj-empty-state-description>Workspaces let you separate clients, products, or environments.</kj-empty-state-description>
+      <kj-empty-state-description
+        >Workspaces let you separate clients, products, or environments.</kj-empty-state-description
+      >
       <kj-empty-state-actions kjHasSecondary>
         <kj-button kjVariant="primary">Create workspace</kj-button>
         <kj-button kjVariant="ghost">Import existing</kj-button>

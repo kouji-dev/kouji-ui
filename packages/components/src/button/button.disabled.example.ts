@@ -5,9 +5,15 @@ import { KjButtonComponent } from './button';
   selector: 'kj-button-disabled-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-sm); flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-sm);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
   template: `
     <kj-button [kjDisabled]="true">Default</kj-button>
     <kj-button kjVariant="destructive" [kjDisabled]="true">Destructive</kj-button>

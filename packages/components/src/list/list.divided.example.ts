@@ -11,7 +11,13 @@ import { KjListComponent, KjListItemComponent } from './list';
   selector: 'kj-list-divided-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-list ariaLabel="Recent files" [divided]="true">
       <kj-list-item>Q4 financial report.pdf</kj-list-item>

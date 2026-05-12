@@ -9,15 +9,15 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
   selector: 'kj-input-group-variants-example',
   standalone: true,
   imports: [KjInputGroupComponent, KjInputGroupAddonComponent, KjInputComponent],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
   template: `
     <kj-input-group>
       <kj-input-group-addon [kjAriaHidden]="true">$</kj-input-group-addon>

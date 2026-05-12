@@ -11,9 +11,13 @@ import { KjTextareaComponent } from './textarea';
   selector: 'kj-textarea-character-count-example',
   standalone: true,
   imports: [KjTextareaComponent, ReactiveFormsModule],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-textarea
       [kjRows]="4"

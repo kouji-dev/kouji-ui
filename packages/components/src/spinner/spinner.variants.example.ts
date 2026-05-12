@@ -11,16 +11,23 @@ import { KjSpinnerComponent } from './spinner';
   selector: 'kj-spinner-variants-example',
   standalone: true,
   imports: [KjSpinnerComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-lg); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-lg);
+        align-items: center;
+        flex-wrap: wrap;
+      }
+    `,
+  ],
   template: `
     <kj-spinner kjVariant="neutral" kjAriaLabel="Loading (neutral)" />
     <kj-spinner kjVariant="primary" kjAriaLabel="Loading (primary)" />
     <kj-spinner kjVariant="success" kjAriaLabel="Loading (success)" />
     <kj-spinner kjVariant="warning" kjAriaLabel="Loading (warning)" />
-    <kj-spinner kjVariant="error"   kjAriaLabel="Loading (error)" />
-    <kj-spinner kjVariant="info"    kjAriaLabel="Loading (info)" />
+    <kj-spinner kjVariant="error" kjAriaLabel="Loading (error)" />
+    <kj-spinner kjVariant="info" kjAriaLabel="Loading (info)" />
   `,
 })
 export class KjSpinnerVariantsExample {}

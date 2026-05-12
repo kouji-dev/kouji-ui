@@ -10,7 +10,13 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-button-group-vertical-example',
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <kj-button-group kjOrientation="vertical" kjAriaLabel="View options">
       <kj-button kjVariant="outline">Top</kj-button>

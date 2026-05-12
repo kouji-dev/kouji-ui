@@ -12,10 +12,18 @@ import { KjAvatarComponent } from './avatar';
   selector: 'kj-avatar-group-list-example',
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    a { display: inline-flex; text-decoration: none; color: inherit; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      a {
+        display: inline-flex;
+        text-decoration: none;
+        color: inherit;
+      }
+    `,
+  ],
   template: `
     <kj-avatar-group kjRole="list" kjAriaLabel="teammates">
       <a role="listitem" href="#ada" aria-label="Ada Lovelace">

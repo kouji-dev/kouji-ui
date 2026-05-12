@@ -11,7 +11,13 @@ import { KjKbdComponent } from './kbd';
   selector: 'kj-kbd-combo-example',
   standalone: true,
   imports: [KjKbdComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `<p><kj-kbd>Ctrl</kj-kbd> + <kj-kbd>K</kj-kbd></p>`,
 })
 export class KjKbdComboExample {}

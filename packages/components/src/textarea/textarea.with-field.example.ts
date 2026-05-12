@@ -19,28 +19,32 @@ import { KjTextareaComponent } from './textarea';
     KjFieldHelp,
     KjFieldError,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    [kjField] { display: grid; gap: var(--kj-space-xs); max-width: 480px; }
-    [kjFieldLabel] {
-      font: var(--kj-text-sm)/1.2 var(--kj-font-sans);
-      color: var(--kj-color-base-content);
-    }
-    [kjFieldHelp] {
-      font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
-      color: var(--kj-color-neutral);
-    }
-    [kjFieldError] {
-      font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
-      color: var(--kj-color-destructive);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      [kjField] {
+        display: grid;
+        gap: var(--kj-space-xs);
+        max-width: 480px;
+      }
+      [kjFieldLabel] {
+        font: var(--kj-text-sm)/1.2 var(--kj-font-sans);
+        color: var(--kj-color-base-content);
+      }
+      [kjFieldHelp] {
+        font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
+        color: var(--kj-color-neutral);
+      }
+      [kjFieldError] {
+        font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
+        color: var(--kj-color-destructive);
+      }
+    `,
+  ],
   template: `
-    <div
-      kjField
-      [kjRequired]="true"
-      [kjInvalid]="bio.touched && bio.invalid"
-    >
+    <div kjField [kjRequired]="true" [kjInvalid]="bio.touched && bio.invalid">
       <label for="textarea-bio" kjFieldLabel>Bio</label>
       <kj-textarea
         id="textarea-bio"

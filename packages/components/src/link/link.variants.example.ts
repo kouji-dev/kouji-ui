@@ -5,9 +5,15 @@ import { KjLinkComponent } from './link';
   selector: 'kj-link-variants-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-lg); flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-lg);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
   template: `
     <kj-link kjHref="/x" kjVariant="primary" kjUnderline="always">Primary</kj-link>
     <kj-link kjHref="/x" kjVariant="secondary" kjUnderline="always">Secondary</kj-link>
