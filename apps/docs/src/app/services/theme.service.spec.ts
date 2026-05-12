@@ -60,7 +60,7 @@ describe('ThemeService URL priority', () => {
   it('does not persist URL theme to localStorage', async () => {
     setLocationSearch('?theme=retro');
     TestBed.configureTestingModule({});
-    const svc = TestBed.inject(ThemeService);
+    TestBed.inject(ThemeService);
     await new Promise((r) => setTimeout(r, 0));
     expect(localStorage.getItem('kj-theme')).toBeNull();
   });
