@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { writePageReport, writeSummary } from './report-writer';
-import type { PageReport, SummaryReport } from './types';
+import { writePageReport, writeSummary } from './report-writer.js';
+import type { PageReport, SummaryReport } from './types.js';
 
 describe('report-writer', () => {
   let dir: string;

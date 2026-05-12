@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildPageReport, buildSummary } from './aggregator';
-import type { AxeResult, FontsResult, LighthouseResult, PageReport } from './types';
+import { buildPageReport, buildSummary } from './aggregator.js';
+import type { AxeResult, FontsResult, LighthouseResult, PageReport } from './types.js';
 
 const axe: AxeResult = {
   violationsByImpact: { critical: 0, serious: 1, moderate: 0, minor: 0 },

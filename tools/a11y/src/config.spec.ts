@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   THEMES, PAGES, OUTPUT_DIR,
   validateThemeFilter, validatePageFilter,
-} from './config';
+} from './config.js';
 
 describe('config', () => {
   it('lists six themes', () => {
