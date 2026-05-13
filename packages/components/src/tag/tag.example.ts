@@ -9,7 +9,7 @@ import { KjTagComponent } from './tag';
   selector: 'kj-tag-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `<kj-tag>New</kj-tag>`,
 })
 export class KjTagExample {}

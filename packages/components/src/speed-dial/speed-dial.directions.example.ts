@@ -27,7 +27,7 @@ import {
       grid-template-columns: repeat(2, 1fr);
       gap: var(--kj-space-2xl);
       padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
       min-height: 22rem;
     }
     .kj-speed-dial-directions__cell {
@@ -35,7 +35,7 @@ import {
       align-items: center;
       justify-content: center;
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-100);
+      background: var(--kj-bg-body);
       border-radius: var(--kj-radius-box);
       min-height: 8rem;
     }

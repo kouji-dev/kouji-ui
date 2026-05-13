@@ -12,9 +12,9 @@ import { KjSpinnerComponent } from './spinner';
   standalone: true,
   imports: [KjSpinnerComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-xl); align-items: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; gap: var(--kj-space-xl); align-items: center; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     figure { display: flex; flex-direction: column; align-items: center; gap: var(--kj-space-sm); margin: 0; }
-    figcaption { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
+    figcaption { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
   `],
   template: `
     <figure>

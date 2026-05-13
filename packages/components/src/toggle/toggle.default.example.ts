@@ -5,7 +5,7 @@ import { KjToggleComponent } from './toggle';
   selector: 'kj-toggle-default-example',
   standalone: true,
   imports: [KjToggleComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `<kj-toggle [(pressed)]="bold" ariaLabel="Bold">B</kj-toggle>`,
 })
 export class KjToggleDefaultExample { readonly bold = signal(false); }

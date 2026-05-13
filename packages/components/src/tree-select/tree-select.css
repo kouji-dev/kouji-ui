@@ -14,9 +14,9 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--kj-space-sm);
-    background: var(--kj-color-base-100);
-    color: var(--kj-color-base-content);
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    background: var(--kj-bg-body);
+    color: var(--kj-fg-default);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
     padding: var(--kj-space-sm) var(--kj-space-md);
     font: 0.875rem var(--kj-font-sans);
@@ -24,7 +24,7 @@
     text-align: left;
   }
   .kj-tree-select-trigger:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: 2px;
   }
   .kj-tree-select[data-disabled] .kj-tree-select-trigger {
@@ -42,12 +42,12 @@
   /* Placeholder styling — when nothing is selected the label matches placeholder color */
   .kj-tree-select[data-empty] .kj-tree-select-trigger-label,
   .kj-tree-select:not([data-has-value]) .kj-tree-select-trigger-label {
-    color: color-mix(in oklab, var(--kj-color-base-content) 55%, transparent);
+    color: color-mix(in oklab, var(--kj-fg-default) 55%, transparent);
   }
 
   .kj-tree-select-caret {
     flex-shrink: 0;
-    color: color-mix(in oklab, var(--kj-color-base-content) 60%, transparent);
+    color: color-mix(in oklab, var(--kj-fg-default) 60%, transparent);
     font-size: 0.75rem;
     transition: transform var(--kj-transition, 150ms ease);
   }
@@ -60,10 +60,10 @@
     box-sizing: border-box;
     min-width: 14rem;
     width: max-content;
-    background: var(--kj-color-base-100);
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    background: var(--kj-bg-elevated);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+    box-shadow: var(--kj-shadow-md, 0 8px 24px rgb(0 0 0 / 0.12));
     padding: 4px;
     max-height: 18rem;
     overflow: auto;
@@ -75,7 +75,7 @@
 
   .kj-tree-select-empty {
     padding: var(--kj-space-sm) var(--kj-space-md);
-    color: color-mix(in oklab, var(--kj-color-base-content) 55%, transparent);
+    color: color-mix(in oklab, var(--kj-fg-default) 55%, transparent);
     font: 0.875rem var(--kj-font-sans);
   }
 
@@ -86,7 +86,7 @@
     gap: var(--kj-space-xs);
     border-radius: var(--kj-radius-selector);
     cursor: pointer;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     font: 0.875rem var(--kj-font-sans);
     min-height: 2.25rem; /* WCAG 2.5.5 — 36px is acceptable within a scrollable list */
     outline: none;
@@ -95,19 +95,19 @@
     padding-inline-end: var(--kj-space-md);
   }
   .kj-tree-select-node:hover {
-    background: var(--kj-color-base-200);
+    background: var(--kj-bg-surface);
   }
   .kj-tree-select-node:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: -2px;
-    background: var(--kj-color-base-200);
+    background: var(--kj-bg-surface);
   }
   .kj-tree-select-node[data-selected] {
-    background: color-mix(in oklab, var(--kj-color-primary) 12%, transparent);
-    color: var(--kj-color-primary);
+    background: color-mix(in oklab, var(--kj-bg-primary) 12%, transparent);
+    color: var(--kj-fg-primary);
   }
   .kj-tree-select-node[data-selected]:hover {
-    background: color-mix(in oklab, var(--kj-color-primary) 18%, transparent);
+    background: color-mix(in oklab, var(--kj-bg-primary) 18%, transparent);
   }
   .kj-tree-select-node[aria-disabled='true'] {
     opacity: 0.45;
@@ -132,11 +132,11 @@
     border: 0;
     padding: 0;
     cursor: pointer;
-    color: color-mix(in oklab, var(--kj-color-base-content) 60%, transparent);
+    color: color-mix(in oklab, var(--kj-fg-default) 60%, transparent);
     border-radius: var(--kj-radius-selector);
   }
   .kj-tree-select-toggle:hover {
-    background: color-mix(in oklab, var(--kj-color-base-content) 10%, transparent);
+    background: color-mix(in oklab, var(--kj-fg-default) 10%, transparent);
   }
 
   .kj-tree-select-toggle-icon {
@@ -174,7 +174,7 @@
     flex-shrink: 0;
     width: 1rem;
     height: 1rem;
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: var(--kj-radius-selector);
     display: inline-flex;
     align-items: center;
@@ -182,9 +182,9 @@
     font-size: 0.75rem;
   }
   .kj-tree-select-node[aria-selected='true'] .kj-tree-select-checkbox {
-    background: var(--kj-color-primary);
-    border-color: var(--kj-color-primary);
-    color: var(--kj-color-primary-content);
+    background: var(--kj-bg-primary);
+    border-color: var(--kj-bg-primary);
+    color: var(--kj-fg-on-primary);
   }
   .kj-tree-select-node[aria-selected='true'] .kj-tree-select-checkbox::before {
     content: '✓';

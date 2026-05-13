@@ -12,7 +12,7 @@ import { KjSkeletonComponent } from './skeleton';
   standalone: true,
   imports: [KjSkeletonComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
   `],
   template: `<kj-skeleton kjWidth="16rem" kjHeight="1.5rem" />`,
 })

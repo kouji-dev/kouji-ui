@@ -11,7 +11,7 @@ import { KjTagComponent, KjTagRemoveComponent } from './tag';
   selector: 'kj-tag-removable-example',
   standalone: true,
   imports: [KjTagComponent, KjTagRemoveComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     @for (tag of tags(); track tag) {
       <kj-tag kjVariant="secondary" (kjTagRemoved)="remove(tag)">

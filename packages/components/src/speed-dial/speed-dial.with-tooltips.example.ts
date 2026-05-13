@@ -30,7 +30,7 @@ import { KjTooltipTrigger, KjTooltipContent } from '../tooltip/tooltip';
       justify-content: flex-end;
       align-items: flex-end;
       padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
       min-height: 18rem;
     }
   `],

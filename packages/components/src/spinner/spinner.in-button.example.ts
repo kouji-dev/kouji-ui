@@ -14,7 +14,7 @@ import { KjSpinnerComponent } from './spinner';
   standalone: true,
   imports: [KjButtonComponent, KjSpinnerComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; gap: var(--kj-space-md); align-items: center; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
   `],
   template: `
     <kj-button (click)="run()" [kjDisabled]="busy()">

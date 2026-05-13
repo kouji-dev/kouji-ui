@@ -17,7 +17,7 @@ import { KjButtonComponent } from '../button/button';
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent, KjButtonComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     .toolbar { display: flex; gap: var(--kj-space-sm); margin-bottom: var(--kj-space-lg); }
   `],
   template: `

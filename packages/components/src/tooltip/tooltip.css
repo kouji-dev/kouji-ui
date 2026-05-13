@@ -2,14 +2,14 @@
   /* The wrapper hosts use display: contents — they don't add a box. */
 
   .kj-tooltip-content {
-    --kj-tooltip-bg:           var(--kj-color-base-content);
-    --kj-tooltip-fg:           var(--kj-color-base-100);
+    --kj-tooltip-bg:           var(--kj-fg-default);
+    --kj-tooltip-fg:           var(--kj-bg-body);
     --kj-tooltip-border-color: transparent;
     --kj-tooltip-radius:       var(--kj-radius-selector);
     --kj-tooltip-padding-x:    var(--kj-space-md);
     --kj-tooltip-padding-y:    var(--kj-space-xs);
     --kj-tooltip-font-size:    0.8125rem;
-    --kj-tooltip-shadow:       0 4px 12px rgb(0 0 0 / 0.18);
+    --kj-tooltip-shadow:       var(--kj-shadow-md, 0 4px 12px rgb(0 0 0 / 0.18));
     --kj-tooltip-arrow-size:   6px;
 
     /* Layout — the directive applies position: fixed and writes top/left. */

@@ -10,7 +10,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'kj-typography-example',
   standalone: true,
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <article class="kj-prose">
       <h1>Roadmap planning, in plain prose</h1>

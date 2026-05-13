@@ -10,15 +10,15 @@
 @layer kj.component {
   .kj-slider {
     --kj-slider-track-thickness:    0.375rem;        /* 6px */
-    --kj-slider-track-bg:           var(--kj-color-base-300);
-    --kj-slider-fill-bg:            var(--kj-color-primary);
+    --kj-slider-track-bg:           var(--kj-bg-field);
+    --kj-slider-fill-bg:            var(--kj-bg-primary);
     --kj-slider-thumb-size:         1.25rem;         /* 20px visual */
     --kj-slider-thumb-hit:          2.75rem;         /* 44px touch — WCAG 2.5.5 */
-    --kj-slider-thumb-bg:           var(--kj-color-primary);
-    --kj-slider-thumb-fg:           var(--kj-color-primary-content);
-    --kj-slider-thumb-border:       2px solid var(--kj-color-base-100);
+    --kj-slider-thumb-bg:           var(--kj-bg-primary);
+    --kj-slider-thumb-fg:           var(--kj-fg-on-primary);
+    --kj-slider-thumb-border:       2px solid var(--kj-bg-body);
     --kj-slider-tick-size:          0.25rem;         /* 4px */
-    --kj-slider-tick-bg:            var(--kj-color-base-content);
+    --kj-slider-tick-bg:            var(--kj-fg-default);
     --kj-slider-radius:             999px;
     --kj-slider-vertical-length:    12rem;            /* 192px default */
 
@@ -105,7 +105,7 @@
   .kj-slider__thumb[data-dragging] { cursor: grabbing; transform: scale(1.1); }
 
   .kj-slider__thumb[data-focus-visible] {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: 3px;
   }
 

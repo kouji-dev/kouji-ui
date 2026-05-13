@@ -9,7 +9,7 @@ import { KjTimePickerComponent } from './time-picker';
   selector: 'kj-time-picker-with-seconds-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-time-picker
       [(kjValue)]="time"

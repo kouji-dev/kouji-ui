@@ -6,7 +6,7 @@ import { KjToggleComponent } from './toggle';
   standalone: true,
   imports: [KjToggleComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     .row { display: inline-flex; align-items: center; gap: var(--kj-space-sm); }
   `],
   template: `

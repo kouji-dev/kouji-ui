@@ -8,9 +8,9 @@
 @layer kj.component {
   .kj-textarea {
     /* component knobs — themes/users can override any of these */
-    --kj-textarea-bg:               var(--kj-color-base-100);
-    --kj-textarea-fg:               var(--kj-color-base-content);
-    --kj-textarea-border-color:     var(--kj-color-base-300);
+    --kj-textarea-bg:               var(--kj-bg-body);
+    --kj-textarea-fg:               var(--kj-fg-default);
+    --kj-textarea-border-color:     var(--kj-border-default);
     --kj-textarea-border-style:     solid;
     --kj-textarea-border-width:     var(--kj-border);
     --kj-textarea-radius:           var(--kj-radius-field);
@@ -19,7 +19,7 @@
     --kj-textarea-font:             var(--kj-font-sans);
     --kj-textarea-font-size:        var(--kj-text-sm);
     --kj-textarea-line-height:      1.5;
-    --kj-textarea-placeholder-fg:   var(--kj-color-neutral);
+    --kj-textarea-placeholder-fg:   var(--kj-fg-muted);
     --kj-textarea-min-height:       2.75rem; /* WCAG 2.5.5 touch target floor */
 
     display: block;
@@ -42,13 +42,13 @@
   }
 
   .kj-textarea:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: 2px;
-    --kj-textarea-border-color: var(--kj-color-primary);
+    --kj-textarea-border-color: var(--kj-bg-primary);
   }
 
   .kj-textarea[aria-invalid='true'] {
-    --kj-textarea-border-color: var(--kj-color-destructive);
+    --kj-textarea-border-color: var(--kj-bg-danger);
   }
 
   .kj-textarea[aria-disabled='true'],
@@ -59,11 +59,11 @@
 
   /* ── Variants ─────────────────────────────────────────────── */
   .kj-textarea[data-variant='filled'] {
-    --kj-textarea-bg: var(--kj-color-base-200);
+    --kj-textarea-bg: var(--kj-bg-surface);
     --kj-textarea-border-color: transparent;
   }
   .kj-textarea[data-variant='filled']:focus-visible {
-    --kj-textarea-border-color: var(--kj-color-primary);
+    --kj-textarea-border-color: var(--kj-bg-primary);
   }
 
   /* ── Sizes ────────────────────────────────────────────────── */
@@ -91,14 +91,14 @@
   .kj-textarea__counter {
     margin-top: var(--kj-space-xs, 0.25rem);
     font: var(--kj-text-xs, 0.75rem) / 1.2 var(--kj-font-mono, var(--kj-font-sans));
-    color: var(--kj-color-neutral);
+    color: var(--kj-fg-muted);
     text-align: end;
   }
   .kj-textarea__counter[data-state='warn'] {
-    color: var(--kj-color-warning, var(--kj-color-neutral));
+    color: var(--kj-fg-warning, var(--kj-fg-muted));
   }
   .kj-textarea__counter[data-state='limit'] {
-    color: var(--kj-color-destructive);
+    color: var(--kj-fg-danger);
   }
 
   /* Live region: visually hidden but readable to AT. Mirrors the

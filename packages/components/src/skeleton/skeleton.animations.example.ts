@@ -12,9 +12,9 @@ import { KjSkeletonComponent } from './skeleton';
   standalone: true,
   imports: [KjSkeletonComponent],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     .row { display: flex; align-items: center; gap: var(--kj-space-md); }
-    .label { min-width: 5rem; font-size: 0.75rem; color: var(--kj-color-base-content); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; }
+    .label { min-width: 5rem; font-size: 0.75rem; color: var(--kj-fg-default); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; }
   `],
   template: `
     <div class="row">

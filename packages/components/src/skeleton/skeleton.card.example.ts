@@ -18,14 +18,14 @@ import { KjSkeletonComponent } from './skeleton';
   standalone: true,
   imports: [KjSkeletonComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     .card {
       display: flex;
       flex-direction: column;
       gap: var(--kj-space-md);
       padding: var(--kj-space-lg);
-      background: var(--kj-color-base-100);
-      border: 1px solid var(--kj-color-border, var(--kj-color-base-300));
+      background: var(--kj-bg-body);
+      border: 1px solid var(--kj-color-border, var(--kj-border-default));
       border-radius: var(--kj-radius-box, 0.75rem);
       max-width: 24rem;
     }

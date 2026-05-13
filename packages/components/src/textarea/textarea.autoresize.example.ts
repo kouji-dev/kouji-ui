@@ -14,11 +14,11 @@ import { KjTextareaComponent } from './textarea';
       display: grid;
       gap: var(--kj-space-md);
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
     label {
       font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
-      color: var(--kj-color-neutral);
+      color: var(--kj-fg-muted);
     }
   `],
   template: `

@@ -1,9 +1,9 @@
 @layer kj.component {
   .kj-toggle {
-    --kj-toggle-bg:           var(--kj-color-base-200);
-    --kj-toggle-bg-pressed:   var(--kj-color-primary);
-    --kj-toggle-fg:           var(--kj-color-base-content);
-    --kj-toggle-fg-pressed:   var(--kj-color-primary-content);
+    --kj-toggle-bg:           var(--kj-bg-surface);
+    --kj-toggle-bg-pressed:   var(--kj-bg-primary);
+    --kj-toggle-fg:           var(--kj-fg-default);
+    --kj-toggle-fg-pressed:   var(--kj-fg-on-primary);
     --kj-toggle-radius:       var(--kj-radius-field);
     --kj-toggle-padding-x:    var(--kj-space-md);
     --kj-toggle-padding-y:    var(--kj-space-sm);
@@ -39,6 +39,6 @@
   }
 
   .kj-toggle:hover { background: color-mix(in oklab, var(--kj-toggle-bg) 88%, black); }
-  .kj-toggle:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-toggle:focus-visible { outline: 2px solid var(--kj-bg-primary); outline-offset: 2px; }
   .kj-toggle[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 }
