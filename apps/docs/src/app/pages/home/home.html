@@ -1,114 +1,298 @@
-<div class="noise">
-<main class="page">
+<main class="kj-home" kjAriaLabelledBy [kjLabelledBy]="'home-hero-title'">
 
-  <!-- Hero -->
-  <section class="hero" kjAriaLabelledBy [kjLabelledBy]="'hero-title'">
-    <span class="hero-tag">Angular 21 · Headless · WCAG AAA</span>
-    <h1 id="hero-title" class="hero-title">Build<br/><em>without</em><br/>limits.</h1>
-    <div class="hero-sub">
-      <p class="hero-desc">
-        A headless Angular UI library built on signals and CDK primitives.
-        Zero CSS in the core. Full accessibility. Your styles, your rules.
+  <!-- ── Hero ─────────────────────────────────────────────────────── -->
+  <section class="kj-home__hero">
+    <div class="kj-home__hero-grid" aria-hidden="true"></div>
+    <div class="kj-home__container">
+
+      <div class="kj-home__hero-meta">
+        <span class="kj-home__pill" aria-label="Active theme">
+          theme · {{ themePosition() }}
+        </span>
+        <span class="kj-home__hero-note">{{ themeNote() }}</span>
+        <span class="kj-home__hero-hint" aria-hidden="true">
+          ← / → to cycle
+        </span>
+      </div>
+
+      <h1 id="home-hero-title" class="kj-home__wordmark" [attr.data-theme-key]="currentTheme()">
+        <span kjVisuallyHidden>kouji</span>
+        @for (g of wordmarkGlyphs; track g.char; let i = $index) {
+          <span
+            class="kj-home__glyph"
+            [class.kj-home__glyph--accent]="g.accent"
+            [style.animation-delay.ms]="i * 40"
+            aria-hidden="true"
+          >{{ g.char }}</span>
+        }
+      </h1>
+
+      <p class="kj-home__tagline">
+        themeable angular components that
+        <mark class="kj-home__marker">don't fight you</mark>.
+        accessibility-first, ssr-ready, thirteen themes out of the box.
       </p>
-      <div class="hero-actions">
-        <a routerLink="/docs/getting-started" class="hero-cta">
-          <kj-button kjVariant="default" kjSize="xl">Get started <span>→</span></kj-button>
+
+      <p class="kj-home__sub">
+        $ pnpm add &#64;kouji-ui/core — and you're 13 vibes in 1 install away from done.
+      </p>
+
+      <div class="kj-home__cta-row">
+        <a routerLink="/docs/getting-started" class="kj-home__cta-link">
+          <kj-button kjVariant="default" kjSize="lg">get started <span aria-hidden="true">→</span></kj-button>
         </a>
-        <a routerLink="/theme-generator" class="hero-cta hero-cta-secondary">
-          <kj-button kjVariant="outline" kjSize="xl">Try theme generator</kj-button>
+        <a routerLink="/docs" class="kj-home__cta-link">
+          <kj-button kjVariant="outline" kjSize="lg">read docs</kj-button>
         </a>
-        <a href="https://github.com" target="_blank" rel="noopener" class="btn-secondary">
-          View on GitHub <span>↗</span>
-        </a>
+        <kj-button kjVariant="ghost" kjSize="lg" (click)="shuffleTheme()" kjAriaLabel="Shuffle to a random theme">
+          <span aria-hidden="true">⟳</span> surprise me
+        </kj-button>
       </div>
+
+      <!-- Theme switcher / swatch grid -->
+      <div class="kj-home__switcher" id="themes" role="group" aria-labelledby="switcher-head">
+        <div class="kj-home__switcher-head" id="switcher-head">
+          <span>// pick a theme · the whole page morphs</span>
+          <span>{{ themes.length }} themes</span>
+        </div>
+        <div class="kj-home__switcher-grid">
+          @for (t of themes; track t.id; let i = $index) {
+            <button
+              type="button"
+              class="kj-home__chip"
+              [class.kj-home__chip--active]="currentTheme() === t.id"
+              [attr.aria-pressed]="currentTheme() === t.id"
+              [attr.aria-label]="'Activate theme ' + t.id + ' — ' + t.note"
+              [title]="t.note"
+              (click)="selectTheme(t.id)"
+            >
+              <span class="kj-home__swatch" [style.background]="t.swatch" aria-hidden="true"></span>
+              <span class="kj-home__chip-name">{{ t.id }}</span>
+              <span class="kj-home__chip-num" aria-hidden="true">{{ i < 9 ? '0' + (i + 1) : (i + 1) }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- Stats -->
-  <section class="stats" kjAriaLabelledBy [kjLabelledBy]="'stats-heading'">
+  <!-- ── Marquee tape ─────────────────────────────────────────────── -->
+  <div class="kj-home__tape" aria-label="Library features">
+    <div class="kj-home__tape-track" aria-hidden="false">
+      @for (item of marqueeTrack; track $index) {
+        <span class="kj-home__tape-item">
+          {{ item }}<span class="kj-home__tape-sep" aria-hidden="true">✦</span>
+        </span>
+      }
+    </div>
+    <div class="kj-home__tape-track" aria-hidden="true">
+      @for (item of marqueeTrack; track $index) {
+        <span class="kj-home__tape-item">
+          {{ item }}<span class="kj-home__tape-sep" aria-hidden="true">✦</span>
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- ── Stats ────────────────────────────────────────────────────── -->
+  <section class="kj-home__stats" kjAriaLabelledBy [kjLabelledBy]="'stats-heading'">
     <h2 id="stats-heading" kjVisuallyHidden>At a glance</h2>
-    <div class="stat">
-      <div class="stat-num">{{ angularMajor }}</div>
-      <div class="stat-label">Angular version</div>
+    <div class="kj-home__stat">
+      <div class="kj-home__stat-num">{{ componentCount() }}</div>
+      <div class="kj-home__stat-label">components</div>
     </div>
-    <div class="stat">
-      <div class="stat-num">{{ componentCount() }}</div>
-      <div class="stat-label">Components</div>
+    <div class="kj-home__stat">
+      <div class="kj-home__stat-num">{{ themes.length }}</div>
+      <div class="kj-home__stat-label">themes</div>
     </div>
-    <div class="stat">
-      <div class="stat-num">AAA</div>
-      <div class="stat-label">WCAG compliance</div>
+    <div class="kj-home__stat">
+      <div class="kj-home__stat-num">{{ angularMajor }}</div>
+      <div class="kj-home__stat-label">angular major</div>
     </div>
-    <div class="stat">
-      <div class="stat-num">0</div>
-      <div class="stat-label">CSS in core</div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section class="features" kjAriaLabelledBy [kjLabelledBy]="'features-heading'">
-    <h2 id="features-heading" class="section-label">Why kouji</h2>
-    <div class="features-grid">
-      <div class="feature">
-        <span class="feature-icon">◈</span>
-        <h3 class="feature-title">Directive-first</h3>
-        <p class="feature-desc">Everything in core is a directive. Compose behaviors via hostDirectives. No components, no templates, no opinions.</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">⚡</span>
-        <h3 class="feature-title">Signals everywhere</h3>
-        <p class="feature-desc">Built for Angular 21. Signal inputs, signal contexts, afterNextRender. No RxJS, no lifecycle interfaces.</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">♿</span>
-        <h3 class="feature-title">WCAG 2.1 AAA</h3>
-        <p class="feature-desc">Every component targets AAA compliance. Full keyboard nav, ARIA patterns, focus management, live regions.</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">◎</span>
-        <h3 class="feature-title">CDK-powered</h3>
-        <p class="feature-desc">Wraps Angular CDK primitives for overlays, menus, listbox, accordion. Battle-tested patterns, not reinvented.</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">∅</span>
-        <h3 class="feature-title">Zero-CSS core</h3>
-        <p class="feature-desc">The core has no styles. Bring Tailwind, CSS modules, vanilla CSS, or anything else. The impl package ships Tailwind v4.</p>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">⊞</span>
-        <h3 class="feature-title">TanStack + ECharts</h3>
-        <p class="feature-desc">Complex data components powered by TanStack Table for data grids and Apache ECharts for charts.</p>
-      </div>
+    <div class="kj-home__stat">
+      <div class="kj-home__stat-num">AAA</div>
+      <div class="kj-home__stat-label">wcag target</div>
     </div>
   </section>
 
-  <!-- Install -->
-  <section class="install" kjAriaLabelledBy [kjLabelledBy]="'install-heading'">
-    <div>
-      <h2 id="install-heading" class="install-title">Start in<br/>seconds.</h2>
-      <p class="install-sub">Install the headless core and style it however<br/>you want — Tailwind, CSS, modules, anything.</p>
-    </div>
-    <div class="code-block">
-      <div class="code-block-header">
-        <span class="code-block-title">Installation</span>
+  <!-- ── Showcase ─────────────────────────────────────────────────── -->
+  <section class="kj-home__showcase" id="components" kjAriaLabelledBy [kjLabelledBy]="'showcase-heading'">
+    <div class="kj-home__container">
+      <div class="kj-home__showcase-head">
+        <div>
+          <div class="kj-home__eyebrow">// 02 — components</div>
+          <h2 id="showcase-heading" class="kj-home__section-title">live, themed, real.</h2>
+        </div>
+        <kj-tabs [(value)]="showcaseTab" variant="pills" class="kj-home__showcase-tabs">
+          <kj-tab-list>
+            <kj-tab value="preview">preview</kj-tab>
+            <kj-tab value="code">code</kj-tab>
+            <kj-tab value="props">props</kj-tab>
+          </kj-tab-list>
+          <kj-tab-panel value="preview"></kj-tab-panel>
+          <kj-tab-panel value="code"></kj-tab-panel>
+          <kj-tab-panel value="props"></kj-tab-panel>
+        </kj-tabs>
       </div>
-      <div class="code-lines">
-        <div class="code-line">
-          <span class="prompt">$</span>
-          <span>pnpm add </span>
-          <span class="pkg">&#64;kouji-ui/core &#64;angular/cdk</span>
+
+      <div class="kj-home__showcase-grid">
+        <!-- Buttons -->
+        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-7">
+          <span class="kj-home__card-label">kj-button</span>
+          <h3 class="kj-home__demo-title">buttons</h3>
+          <p class="kj-home__demo-desc">three variants. theme-aware shadows. springy hover.</p>
+          <div class="kj-home__demo-row">
+            <kj-button kjVariant="default">primary</kj-button>
+            <kj-button kjVariant="secondary">secondary</kj-button>
+            <kj-button kjVariant="outline">outline</kj-button>
+            <kj-button kjVariant="ghost">ghost</kj-button>
+            <kj-button kjVariant="default" kjAriaLabel="Forward"><span aria-hidden="true">→</span></kj-button>
+          </div>
+        </kj-card>
+
+        <!-- Inputs -->
+        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-5">
+          <span class="kj-home__card-label">kj-input</span>
+          <h3 class="kj-home__demo-title">inputs</h3>
+          <div class="kj-home__demo-stack">
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+            <label class="kj-home__field">
+              <span class="kj-home__field-label">display name</span>
+              <kj-input type="text" placeholder="kosuke" [(ngModel)]="demoName" />
+            </label>
+            <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+            <label class="kj-home__field">
+              <span class="kj-home__field-label">email</span>
+              <kj-input type="email" placeholder="you@studio.jp" [(ngModel)]="demoEmail" />
+            </label>
+          </div>
+        </kj-card>
+
+        <!-- Toggles -->
+        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-4">
+          <span class="kj-home__card-label">kj-toggle</span>
+          <h3 class="kj-home__demo-title">toggles</h3>
+          <div class="kj-home__demo-stack">
+            <div class="kj-home__toggle-row">
+              <kj-toggle [(pressed)]="notify" ariaLabel="Email notifications">
+                {{ notify() ? 'on' : 'off' }}
+              </kj-toggle>
+              <span class="kj-home__toggle-label">email notifications</span>
+            </div>
+            <div class="kj-home__toggle-row">
+              <kj-toggle [(pressed)]="sound" ariaLabel="Sound effects">
+                {{ sound() ? 'on' : 'off' }}
+              </kj-toggle>
+              <span class="kj-home__toggle-label">sound effects</span>
+            </div>
+            <div class="kj-home__toggle-row">
+              <kj-toggle [(pressed)]="autosave" ariaLabel="Autosave drafts">
+                {{ autosave() ? 'on' : 'off' }}
+              </kj-toggle>
+              <span class="kj-home__toggle-label">autosave drafts</span>
+            </div>
+          </div>
+        </kj-card>
+
+        <!-- Tags + progress -->
+        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-4">
+          <span class="kj-home__card-label">kj-tag</span>
+          <h3 class="kj-home__demo-title">tags + progress</h3>
+          <div class="kj-home__demo-row">
+            <kj-tag kjVariant="success">online</kj-tag>
+            <kj-tag kjVariant="default">new</kj-tag>
+            <kj-tag kjVariant="secondary">v0.4</kj-tag>
+            <kj-tag kjVariant="info">beta</kj-tag>
+            <kj-tag kjVariant="outline">live</kj-tag>
+          </div>
+          <div class="kj-home__progress-block">
+            <div class="kj-home__progress-label" id="demo-progress-label">
+              progress · {{ progress() }}%
+            </div>
+            <kj-progress-bar
+              [kjValue]="progress()"
+              kjVariant="primary"
+              kjSize="sm"
+              kjAriaLabelledby="demo-progress-label"
+            />
+          </div>
+        </kj-card>
+
+        <!-- Composition card -->
+        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-4">
+          <span class="kj-home__card-label">kj-card</span>
+          <h3 class="kj-home__demo-title">composition</h3>
+          <p class="kj-home__demo-desc">cards inherit edges, radius and shadow from the active theme. no overrides.</p>
+          <div class="kj-home__demo-row">
+            <kj-badge variant="default">autosaved</kj-badge>
+            <kj-badge variant="secondary">synced</kj-badge>
+          </div>
+          <div class="kj-home__demo-row">
+            <kj-button kjVariant="default">open <span aria-hidden="true">→</span></kj-button>
+          </div>
+        </kj-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Install ──────────────────────────────────────────────────── -->
+  <section class="kj-home__install" id="install" kjAriaLabelledBy [kjLabelledBy]="'install-heading'">
+    <div class="kj-home__container">
+      <div class="kj-home__eyebrow">// 03 — install</div>
+      <h2 id="install-heading" class="kj-home__section-title kj-home__section-title--space">
+        one command. done.
+      </h2>
+
+      <div class="kj-home__install-block">
+        <div class="kj-home__terminal" role="region" aria-label="Install command">
+          <kj-button
+            kjVariant="outline"
+            kjSize="sm"
+            class="kj-home__copy"
+            (click)="onCopy()"
+            [kjAriaLabel]="copied() ? 'Copied install command' : 'Copy install command'"
+          >
+            {{ copied() ? 'copied ✓' : 'copy' }}
+          </kj-button>
+          <div><span class="kj-home__term-comment"># 1. install the library</span></div>
+          <div><span class="kj-home__term-prompt">$</span> {{ installCmd }}</div>
+          <div>&nbsp;</div>
+          <div><span class="kj-home__term-comment"># 2. import what you need</span></div>
+          <div><span class="kj-home__term-prompt">›</span> import &#123; KjButtonComponent, KjCardComponent &#125; from '&#64;kouji-ui/components';</div>
+          <div>&nbsp;</div>
+          <div><span class="kj-home__term-comment"># 3. pick a theme (or build your own)</span></div>
+          <div><span class="kj-home__term-prompt">›</span> &lt;html data-theme="sakura"&gt;</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer>
-    <span class="footer-logo">kouji</span>
-    <span class="footer-copy">MIT License · Built with Angular 21</span>
+  <!-- ── FAQ ──────────────────────────────────────────────────────── -->
+  <section class="kj-home__faq" id="faq" kjAriaLabelledBy [kjLabelledBy]="'faq-heading'">
+    <div class="kj-home__container">
+      <div class="kj-home__eyebrow">// 04 — faq</div>
+      <h2 id="faq-heading" class="kj-home__section-title kj-home__section-title--space">
+        obvious questions, honest answers.
+      </h2>
+      <kj-accordion class="kj-home__faq-list">
+        @for (item of faq; track item.value) {
+          <kj-accordion-item [value]="item.value" [label]="item.q">
+            <kj-accordion-content>
+              <p class="kj-home__faq-answer">{{ item.a }}</p>
+            </kj-accordion-content>
+          </kj-accordion-item>
+        }
+      </kj-accordion>
+    </div>
+  </section>
+
+  <!-- ── Footer ───────────────────────────────────────────────────── -->
+  <footer class="kj-home__footer">
+    <div class="kj-home__container kj-home__footer-row">
+      <span>© kouji/ui · MIT · made with care</span>
+      <span aria-hidden="true">// keep it themeable</span>
+    </div>
   </footer>
 
 </main>
-</div>
-
-<router-outlet />
