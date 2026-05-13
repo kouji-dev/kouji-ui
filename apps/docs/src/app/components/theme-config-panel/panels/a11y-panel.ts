@@ -196,7 +196,7 @@ export class A11yPanel {
     const aaa = edges.filter(e => e.requirement === 'AAA-normal');
     if (aaa.length === 0) {
       return {
-        accent: 'color-mix(in oklch, var(--kj-color-neutral) 42%, transparent)',
+        accent: 'color-mix(in oklch, var(--kj-fg-muted) 42%, transparent)',
         overlayLine: 'No AAA-normal pairs',
         tooltipDetail:
           'No AAA-normal contrast pairs reference this swatch. Other checks (e.g. UI 3:1) may still apply.',
@@ -215,9 +215,9 @@ export class A11yPanel {
   }
 
   private ribbonAccent(minRatio: number, anyFail: boolean): string {
-    if (anyFail) return 'var(--kj-color-destructive)';
-    if (minRatio >= 7) return 'var(--kj-color-success)';
-    if (minRatio >= 4.5) return 'var(--kj-color-warning)';
-    return 'var(--kj-color-destructive)';
+    if (anyFail) return 'var(--kj-bg-danger)';
+    if (minRatio >= 7) return 'var(--kj-bg-success)';
+    if (minRatio >= 4.5) return 'var(--kj-bg-warning)';
+    return 'var(--kj-bg-danger)';
   }
 }

@@ -20,7 +20,7 @@
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
+  color: color-mix(in oklch, var(--kj-fg-default) 60%, transparent);
 }
 .control-row {
   display: flex;
@@ -33,7 +33,7 @@
 .control-label {
   flex: 1 1 100px;
   font: var(--kj-text-xs) var(--kj-font-mono);
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 .control-row__field {
   flex: 1 1 auto;
@@ -44,7 +44,7 @@
 .control-value {
   font-size: 0.625rem;
   font-family: var(--kj-font-mono);
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   min-width: 32px;
   text-align: right;
 }
@@ -60,7 +60,7 @@
   font-size: 0.625rem;
   font-family: var(--kj-font-mono);
   line-height: 1.2;
-  color: color-mix(in oklch, var(--kj-color-base-content) 55%, transparent);
+  color: color-mix(in oklch, var(--kj-fg-default) 55%, transparent);
   padding-top: 2px;
 }
 
@@ -111,17 +111,17 @@
 }
 
 .corner-preset:hover {
-  background: color-mix(in oklch, var(--kj-color-base-content) 6%, transparent);
+  background: color-mix(in oklch, var(--kj-fg-default) 6%, transparent);
 }
 
 .corner-preset:focus-visible {
-  outline: 2px solid var(--kj-color-primary);
+  outline: 2px solid var(--kj-border-focus);
   outline-offset: 2px;
 }
 
 .corner-preset--selected {
-  border-color: color-mix(in oklch, var(--kj-color-primary) 65%, var(--kj-color-base-300));
-  background: color-mix(in oklch, var(--kj-color-primary) 12%, transparent);
+  border-color: color-mix(in oklch, var(--kj-border-primary) 65%, var(--kj-border-default));
+  background: color-mix(in oklch, var(--kj-bg-primary) 12%, transparent);
 }
 
 .corner-preset__preview {
@@ -146,8 +146,8 @@
   height: 100%;
   box-sizing: border-box;
   border-radius: 0;
-  border: 1px solid var(--kj-color-accent);
-  background-color: var(--kj-color-base-200);
+  border: 1px solid var(--kj-border-primary);
+  background-color: var(--kj-bg-surface);
 }
 
 /** Border-width preview: horizontal stroke sample (thickness = px value). */
@@ -163,11 +163,11 @@
   margin-inline: auto;
   border-radius: 0.125rem;
   box-sizing: border-box;
-  background-color: var(--kj-color-neutral);
+  background-color: var(--kj-fg-muted);
 }
 
 .corner-preset__line--none {
   height: 1px !important;
-  background-color: var(--kj-color-base-300);
+  background-color: var(--kj-border-default);
 }
 

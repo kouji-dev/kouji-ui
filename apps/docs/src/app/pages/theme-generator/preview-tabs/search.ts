@@ -111,27 +111,27 @@ export class PreviewSearch {
   protected readonly allStatus = ALL_STATUS;
 
   private readonly tagTones: Record<string, string> = {
-    Engineering: 'var(--kj-color-primary)',
-    Design: 'var(--kj-color-secondary)',
-    Ops: 'var(--kj-color-info)',
-    Research: 'var(--kj-color-accent)',
-    Marketing: 'var(--kj-color-warning)',
+    Engineering: 'var(--kj-bg-primary)',
+    Design: 'var(--kj-bg-field)',
+    Ops: 'var(--kj-bg-info)',
+    Research: 'var(--kj-bg-accent)',
+    Marketing: 'var(--kj-bg-warning)',
   };
 
   private readonly tagToneContents: Record<string, string> = {
-    Engineering: 'var(--kj-color-primary-content)',
-    Design: 'var(--kj-color-secondary-content)',
-    Ops: 'var(--kj-color-info-content)',
-    Research: 'var(--kj-color-accent-content)',
-    Marketing: 'var(--kj-color-warning-content)',
+    Engineering: 'var(--kj-fg-on-primary)',
+    Design: 'var(--kj-fg-default)',
+    Ops: 'var(--kj-fg-on-info)',
+    Research: 'var(--kj-fg-on-accent)',
+    Marketing: 'var(--kj-fg-on-warning)',
   };
 
   protected toneFor(tag: string): string {
-    return this.tagTones[tag] ?? 'var(--kj-color-base-content)';
+    return this.tagTones[tag] ?? 'var(--kj-fg-default)';
   }
 
   protected toneContentFor(tag: string): string {
-    return this.tagToneContents[tag] ?? 'var(--kj-color-base-100)';
+    return this.tagToneContents[tag] ?? 'var(--kj-bg-body)';
   }
 
   protected readonly type = signal<ResultType>('all');
