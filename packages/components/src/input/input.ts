@@ -25,6 +25,32 @@ export type KjInputVariant = 'default' | 'sunken';
  * ```html
  * <kj-input type="email" placeholder="you@example.com" [(ngModel)]="email" />
  * ```
+ *
+ * @doc-keyboard
+ *   Tab    — Moves focus into and out of the input (native input semantics)
+ *   Enter  — Submits the parent <form> when present (native behavior)
+ *
+ * @doc-aria
+ *   aria-invalid   — set to "true" only after the control is touched AND [invalid] is true; avoids announcing errors before the user has interacted
+ *   data-invalid   — mirror of aria-invalid for CSS targeting
+ *   data-type      — reflects the `type` input ("text" | "email" | "password" | ...) for type-specific styling
+ *   data-variant   — reflects the visual `variant` input ("default" | "sunken")
+ *   disabled       — native attribute reflected when the bound form control's disabled state is true
+ *
+ * @doc-touch
+ *   Default height is 36px (md). Use `data-size="lg"` (2.75rem / 44px) when the input is the primary touch target in a form. The `type="color"` swatch renders at 44×32px — pair it with a textual label for the accessible name.
+ *
+ * @doc-a11y
+ *   `<kj-input>` is a thin wrapper around the headless `kjInput` directive that
+ *   composes `KjFormControl` (CVA), `KjDisabled`, and `KjFocusRing`. Always
+ *   associate a `<label>` via `for=`/`id=` or wrap the input in the label — the
+ *   component does not generate its own accessible name. Pair with a sibling
+ *   error node referenced by `aria-describedby` to surface validation messages
+ *   to screen readers. Focus visibility comes from `:focus-visible` only (2px
+ *   primary outline), never on mouse click.
+ *
+ * @doc-related field,password-input,textarea
+ *
  * @doc
  *   @doc-file input.example.ts
  *   @doc-file input.color.example.ts

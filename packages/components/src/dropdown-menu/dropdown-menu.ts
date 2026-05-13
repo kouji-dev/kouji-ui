@@ -31,6 +31,39 @@ export {
  * `[kjDropdownMenuLabel]` headings. The wrapper itself only projects content —
  * its purpose is to host the documentation page for the suite.
  *
+ * @doc-keyboard
+ *   Enter|Space    — Opens the menu from the trigger; activates the focused menu item when open
+ *   ArrowDown      — Moves focus to the next menu item (roving tabindex)
+ *   ArrowUp        — Moves focus to the previous menu item
+ *   Home           — Moves focus to the first menu item
+ *   End            — Moves focus to the last menu item
+ *   Escape         — Closes the menu and returns focus to the trigger (only the topmost overlay receives Escape when nested)
+ *   Tab            — Closes the menu and continues focus to the next focusable element
+ *
+ * @doc-aria
+ *   aria-haspopup  — set to "menu" on the trigger button
+ *   aria-expanded  — set on the trigger; reflects open/closed state
+ *   aria-controls  — links the trigger to the panel id
+ *   role="menu"    — on the content panel (provided via KJ_OVERLAY_PANEL_ROLE)
+ *   role="menuitem" — on each `[kjDropdownMenuItem]`
+ *   data-disabled  — set on items when [kjDisabled] is true (uses ARIA-disabled, not native, so items stay focusable)
+ *
+ * @doc-touch
+ *   Menu items enforce `min-height: 2.75rem` (44px) via CSS to meet WCAG 2.5.5 — every item is a valid touch target out of the box, regardless of label length.
+ *
+ * @doc-a11y
+ *   The menu follows the WAI-ARIA Menu pattern. Items use a roving tabindex
+ *   inside the panel, so the menu is a single Tab stop. Disabled items use
+ *   ARIA-disabled (not the native attribute) and intercept click events in the
+ *   capture phase — they remain focusable and discoverable. The panel
+ *   portal-mounts to `document.body` by default to escape clipping ancestors;
+ *   use `kjMount="inline"` to keep the panel as a sibling of the trigger when
+ *   you need it inside a transformed/clipped parent. For context-menu use,
+ *   set `kjTrigger="contextmenu"` and `kjMount="point"` to anchor at the pointer
+ *   coordinates rather than the trigger element.
+ *
+ * @doc-related menubar,command-palette,popover
+ *
  * @doc
  * @doc-name dropdown-menu
  * @doc-is-main
