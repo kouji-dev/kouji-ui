@@ -41,21 +41,6 @@
 
 .kj-navbar-spacer { flex: 1; }
 
-.kj-navbar-search {
-  --kj-button-justify: flex-start;
-  --kj-button-min-width: 180px;
-  --kj-button-font-size: 12px;
-  --kj-button-gap: 8px;
-}
-.kj-navbar-search kbd {
-  margin-left: auto;
-  background: var(--kj-bg-field);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-family: var(--kj-font-mono, monospace);
-}
-
 .kj-navbar-version {
   display: inline-flex;
   align-items: center;
@@ -108,11 +93,8 @@
 
 @media (max-width: 767px) {
   .kj-navbar-burger { display: inline-flex; }
-  .kj-navbar-search span,
-  .kj-navbar-search kbd,
   .kj-navbar-version,
   .kj-navbar-icon[aria-label="GitHub repository"],
   .kj-navbar-icon[aria-label="npm package"] { display: none; }
-  .kj-navbar-search { --kj-button-min-width: 0; --kj-button-padding-x: 8px; --kj-button-padding-y: 5px; }
   .kj-navbar-link { padding: 4px 6px; font-size: 12px; }
 }

@@ -1,11 +1,17 @@
 <aside class="kj-docs-sidebar">
   <nav class="kj-docs-sidebar__nav" role="navigation" aria-label="Documentation sections">
-    <!-- Search row (visual stub: keyboard hint + label) -->
-    <div class="kj-docs-sidebar__search" aria-hidden="true">
-      <span class="kj-docs-sidebar__search-glyph">⌕</span>
+    <!-- Search trigger — opens the global command palette mounted in app.ts -->
+    <button
+      type="button"
+      class="kj-docs-sidebar__search"
+      (click)="openSearch()"
+      aria-label="Search documentation (Cmd K / Ctrl K)"
+      aria-haspopup="dialog"
+    >
+      <span class="kj-docs-sidebar__search-glyph" aria-hidden="true">⌕</span>
       <span class="kj-docs-sidebar__search-text">search…</span>
-      <span class="kj-docs-sidebar__kbd">⌘K</span>
-    </div>
+      <kbd class="kj-docs-sidebar__kbd" aria-hidden="true">⌘K</kbd>
+    </button>
 
     <!-- Quick link: Getting Started -->
     <div class="kj-docs-sidebar__quick">

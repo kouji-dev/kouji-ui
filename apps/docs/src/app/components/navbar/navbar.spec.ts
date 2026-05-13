@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test } from 'vitest';
 import { NavbarComponent } from './navbar';
-import { SearchService } from '../search/search.service';
 import { DocsManifestProvider } from '../../services/docs-manifest.provider';
 
 class StubManifestProvider extends DocsManifestProvider {
@@ -16,7 +15,6 @@ const baseProviders = [
   provideRouter([]),
   provideHttpClient(),
   { provide: DocsManifestProvider, useClass: StubManifestProvider },
-  { provide: SearchService, useValue: { open: () => undefined } },
 ];
 
 describe('NavbarComponent', () => {
@@ -26,14 +24,9 @@ describe('NavbarComponent', () => {
     expect(screen.getByRole('link', { name: /theme generator/i })).toHaveAttribute('href', '/theme-generator');
   });
 
-  test('search trigger button opens SearchService', async () => {
-    let opened = false;
-    class StubSearch { open() { opened = true; } }
-    await render(NavbarComponent, {
-      providers: [provideRouter([]), { provide: SearchService, useClass: StubSearch }],
-    });
-    await userEvent.click(screen.getByRole('button', { name: /search docs/i }));
-    expect(opened).toBe(true);
+  test('does not render a search trigger (moved to sidebar)', async () => {
+    await render(NavbarComponent, { providers: baseProviders });
+    expect(screen.queryByRole('button', { name: /search docs/i })).toBeNull();
   });
 
   test('theme picker button toggles aria-expanded', async () => {

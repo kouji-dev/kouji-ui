@@ -11,6 +11,7 @@ import { Location } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
 import { DocsService, type DocsTrack, type SidebarNode } from '../../services/docs.service';
+import { SearchService } from '../search/search.service';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 
 /**
@@ -40,8 +41,14 @@ export class DocsSidebarComponent {
   private readonly location = inject(Location);
   private readonly docs = inject(DocsService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly search = inject(SearchService);
   private readonly url = signal<string>(this.router.url);
   protected readonly toggleService = inject(SidebarToggleService);
+
+  /** Opens the global command palette mounted by `<kj-search>` in `app.ts`. */
+  protected openSearch(): void {
+    this.search.open();
+  }
 
   protected readonly gettingStartedActive = computed(() =>
     this.url().startsWith('/docs/getting-started'),

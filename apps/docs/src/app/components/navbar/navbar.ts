@@ -8,7 +8,6 @@ import {
   KjDropdownMenuTrigger,
 } from '@kouji-ui/core';
 import { KjButtonComponent } from '@kouji-ui/components';
-import { SearchService } from '../search/search.service';
 import { ThemeService, AVAILABLE_THEMES, Theme } from '../../services/theme.service';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 import corePackage from '../../../../../../packages/core/package.json';
@@ -29,7 +28,6 @@ import corePackage from '../../../../../../packages/core/package.json';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavbarComponent {
-  private readonly search = inject(SearchService);
   private readonly themeService = inject(ThemeService);
   private readonly sidebarToggle = inject(SidebarToggleService);
   private readonly router = inject(Router);
@@ -58,9 +56,6 @@ export class NavbarComponent {
       .subscribe(() => this.url.set(this.router.url));
   }
 
-  protected openSearch(): void {
-    this.search.open();
-  }
   protected selectTheme(t: Theme): void {
     this.themeService.set(t);
   }

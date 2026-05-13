@@ -31,6 +31,8 @@
 /* ─────────── search row ─────────── */
 
 .kj-docs-sidebar__search {
+  appearance: none;
+  width: calc(100% - 16px);
   margin: 0 16px 22px 0;
   padding: 8px 12px;
   display: flex;
@@ -42,6 +44,19 @@
   font-family: var(--kj-font-mono);
   font-size: 11px;
   color: var(--kj-fg-muted);
+  cursor: pointer;
+  text-align: left;
+  min-height: 36px;
+}
+
+.kj-docs-sidebar__search:hover {
+  border-color: var(--kj-border-primary);
+  color: var(--kj-fg-default);
+}
+
+.kj-docs-sidebar__search:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
 }
 
 .kj-docs-sidebar__search-text {
@@ -53,6 +68,7 @@
   margin-left: auto;
   padding: 2px 6px;
   font-size: 10px;
+  font-family: var(--kj-font-mono);
   border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-selector);
   background: var(--kj-bg-elevated);
