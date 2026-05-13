@@ -69,5 +69,62 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    /* ─── new token system (additive) ─── */
+
+    --kj-bg-body:        var(--kj-base-gray-50);
+    --kj-bg-surface:     #ffffff;
+    --kj-bg-field:       var(--kj-base-gray-100);
+    --kj-bg-elevated:    #ffffff;
+    --kj-bg-overlay:     rgba(0, 0, 0, 0.5);
+    --kj-bg-inverse:     var(--kj-base-gray-900);
+    --kj-bg-disabled:    var(--kj-base-gray-200);
+
+    --kj-bg-primary:         var(--kj-base-blue-500);
+    --kj-bg-primary-subtle:  oklch(95% 0.04 250);
+    --kj-bg-accent:          var(--kj-base-blue-500);
+    --kj-bg-accent-subtle:   oklch(95% 0.04 250);
+
+    --kj-bg-info:            var(--kj-base-blue-500);
+    --kj-bg-info-subtle:     oklch(95% 0.04 250);
+    --kj-bg-success:         var(--kj-base-green-500);
+    --kj-bg-success-subtle:  oklch(95% 0.06 145);
+    --kj-bg-warning:         var(--kj-base-amber-500);
+    --kj-bg-warning-subtle:  oklch(95% 0.06 60);
+    --kj-bg-danger:          var(--kj-base-red-500);
+    --kj-bg-danger-subtle:   oklch(95% 0.05 20);
+
+    --kj-fg-default:    var(--kj-base-gray-900);
+    --kj-fg-muted:      var(--kj-base-gray-700);
+    --kj-fg-subtle:     var(--kj-base-gray-500);
+    --kj-fg-disabled:   var(--kj-base-gray-300);
+
+    --kj-fg-on-primary:   var(--kj-base-gray-50);
+    --kj-fg-on-accent:    var(--kj-base-gray-50);
+    --kj-fg-on-info:      var(--kj-base-gray-50);
+    --kj-fg-on-success:   var(--kj-base-gray-50);
+    --kj-fg-on-warning:   var(--kj-base-gray-950);
+    --kj-fg-on-danger:    var(--kj-base-gray-50);
+    --kj-fg-on-inverse:   var(--kj-base-gray-50);
+
+    --kj-fg-primary:    var(--kj-base-blue-700);
+    --kj-fg-accent:     var(--kj-base-blue-700);
+    --kj-fg-info:       var(--kj-base-blue-700);
+    --kj-fg-success:    oklch(45% 0.18 145);
+    --kj-fg-warning:    oklch(50% 0.17 55);
+    --kj-fg-danger:     var(--kj-base-red-600);
+
+    --kj-border-default:   var(--kj-base-gray-200);
+    --kj-border-muted:     var(--kj-base-gray-100);
+    --kj-border-strong:    var(--kj-base-gray-300);
+    --kj-border-focus:     var(--kj-base-blue-500);
+    --kj-border-disabled:  var(--kj-base-gray-200);
+    --kj-border-primary:   var(--kj-base-blue-500);
+    --kj-border-danger:    var(--kj-base-red-500);
+
+    --kj-shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.08);
+    --kj-shadow-md:     0 4px 12px rgba(0, 0, 0, 0.12);
+    --kj-shadow-lg:     0 16px 40px rgba(0, 0, 0, 0.18);
+    --kj-shadow-focus:  0 0 0 3px oklch(62% 0.19 250 / 0.4);
   }
 }
