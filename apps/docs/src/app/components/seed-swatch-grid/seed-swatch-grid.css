@@ -26,7 +26,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: color-mix(in oklch, var(--kj-color-base-content) 52%, transparent);
+  color: color-mix(in oklch, var(--kj-fg-default) 52%, transparent);
   margin: 0;
   text-align: end;
   white-space: nowrap;
@@ -72,7 +72,7 @@
 }
 
 .seed-grid--strip .hue-row__ramp::-webkit-scrollbar-thumb {
-  background: var(--kj-color-base-300);
+  background: var(--kj-bg-field);
   border-radius: 999px;
 }
 
@@ -86,7 +86,7 @@
 
 .swatch {
   border-radius: 0.1875rem;
-  border: 1px solid color-mix(in oklch, var(--kj-color-base-content) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--kj-fg-default) 12%, transparent);
   cursor: pointer;
   padding: 0;
   box-sizing: border-box;
@@ -95,17 +95,17 @@
 
 .swatch:hover {
   transform: scale(1.06);
-  box-shadow: 0 1px 4px color-mix(in oklch, var(--kj-color-base-content) 14%, transparent);
+  box-shadow: var(--kj-shadow-sm);
   z-index: 1;
 }
 
 .swatch:focus-visible {
-  outline: 2px solid var(--kj-color-primary);
+  outline: 2px solid var(--kj-bg-primary);
   outline-offset: 1px;
 }
 
 .swatch--active {
-  border-color: var(--kj-color-primary);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--kj-color-primary) 45%, transparent),
-    0 0 0 1px color-mix(in oklch, var(--kj-color-primary) 40%, transparent);
+  border-color: var(--kj-bg-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--kj-bg-primary) 45%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--kj-bg-primary) 40%, transparent);
 }

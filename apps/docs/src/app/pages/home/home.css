@@ -26,8 +26,8 @@ app-home {
 
 .page {
   min-height: 100dvh;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
+  background: var(--kj-bg-body);
+  color: var(--kj-fg-default);
   font-family: var(--kj-font-mono);
   overflow-x: hidden;
 }
@@ -35,7 +35,7 @@ app-home {
 /* ── Hero ── */
 .hero {
   padding: var(--kj-space-6xl) var(--kj-space-3xl) var(--kj-space-5xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-border-default);
   position: relative;
 }
 
@@ -44,8 +44,8 @@ app-home {
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--kj-color-primary);
-  border: 1px solid var(--kj-color-primary);
+  color: var(--kj-fg-primary);
+  border: 1px solid var(--kj-bg-primary);
   padding: var(--kj-space-xs) var(--kj-space-md);
   margin-bottom: 2.5rem;
   font-family: var(--kj-font-mono);
@@ -58,13 +58,13 @@ app-home {
   line-height: 0.9;
   letter-spacing: -0.04em;
   margin: 0 0 var(--kj-space-3xl);
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   max-width: 14ch;
 }
 
 .hero-title em {
   font-style: normal;
-  color: var(--kj-color-primary);
+  color: var(--kj-fg-primary);
   -webkit-text-stroke: 0px;
 }
 
@@ -78,7 +78,7 @@ app-home {
 .hero-desc {
   font-size: 1rem;
   line-height: 1.7;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   max-width: 38ch;
 }
 
@@ -110,29 +110,29 @@ app-home {
   display: inline-flex;
   align-items: center;
   gap: var(--kj-space-md);
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   font-family: var(--kj-font-mono);
   font-size: 0.875rem;
   text-decoration: none;
-  border-bottom: 1px solid var(--kj-color-neutral);
+  border-bottom: 1px solid var(--kj-border-default);
   padding-bottom: 0.125rem;
   transition: color 0.15s, border-color 0.15s;
 }
 .btn-secondary:hover {
-  color: var(--kj-color-base-content);
-  border-color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
+  border-color: var(--kj-border-strong, var(--kj-border-default));
 }
 
 /* ── Stats bar ── */
 .stats {
   display: flex;
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-border-default);
 }
 
 .stat {
   flex: 1;
   padding: var(--kj-space-2xl) var(--kj-space-3xl);
-  border-right: 1px solid var(--kj-color-base-300);
+  border-right: 1px solid var(--kj-border-default);
 }
 
 .stat:last-child {
@@ -144,7 +144,7 @@ app-home {
   font-family: var(--kj-font-display);
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--kj-color-primary);
+  color: var(--kj-fg-primary);
   line-height: 1;
   margin-bottom: var(--kj-space-sm);
 }
@@ -153,20 +153,20 @@ app-home {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 
 /* ── Features ── */
 .features {
   padding: var(--kj-space-5xl) var(--kj-space-3xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-border-default);
 }
 
 .section-label {
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   margin-bottom: var(--kj-space-3xl);
   display: flex;
   align-items: center;
@@ -177,7 +177,7 @@ app-home {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--kj-color-base-300);
+  background: var(--kj-border-default);
   max-width: 200px;
 }
 
@@ -189,8 +189,8 @@ app-home {
 
 .feature {
   padding: 2.5rem;
-  border-right: 1px solid var(--kj-color-base-300);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-right: 1px solid var(--kj-border-default);
+  border-bottom: 1px solid var(--kj-border-default);
 }
 
 .feature:nth-child(3n) {
@@ -213,20 +213,20 @@ app-home {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 0 var(--kj-space-md);
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   letter-spacing: -0.01em;
 }
 
 .feature-desc {
   font-size: 0.8rem;
   line-height: 1.7;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 
 /* ── Install ── */
 .install {
   padding: var(--kj-space-5xl) var(--kj-space-3xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-border-default);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--kj-space-5xl);
@@ -239,19 +239,19 @@ app-home {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   margin: 0 0 var(--kj-space-lg);
 }
 
 .install-sub {
   font-size: 0.85rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   line-height: 1.6;
 }
 
 .code-block {
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-surface);
+  border: 1px solid var(--kj-border-default);
   padding: var(--kj-space-2xl);
 }
 
@@ -261,14 +261,14 @@ app-home {
   justify-content: space-between;
   margin-bottom: 1.25rem;
   padding-bottom: var(--kj-space-lg);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-border-default);
 }
 
 .code-block-title {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 
 .code-lines {
@@ -280,21 +280,21 @@ app-home {
 .code-line {
   font-family: var(--kj-font-mono);
   font-size: 0.85rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 
 .code-line .prompt {
-  color: var(--kj-color-primary);
+  color: var(--kj-fg-primary);
   margin-right: var(--kj-space-md);
   user-select: none;
 }
 
 .code-line .pkg {
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
 }
 
 .code-line .flag {
-  color: var(--kj-color-primary);
+  color: var(--kj-fg-primary);
   opacity: 0.7;
 }
 
@@ -310,13 +310,13 @@ footer {
   font-family: var(--kj-font-display);
   font-weight: 800;
   font-size: 1rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   letter-spacing: -0.02em;
 }
 
 .footer-copy {
   font-size: 0.7rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   letter-spacing: 0.05em;
 }
 
@@ -325,7 +325,7 @@ footer {
   .hero { padding: 4rem 1.5rem 3rem; }
   .hero-sub { grid-template-columns: 1fr; gap: 2rem; }
   .stats { flex-direction: column; }
-  .stat { border-right: none; border-bottom: 1px solid var(--kj-color-base-300); }
+  .stat { border-right: none; border-bottom: 1px solid var(--kj-border-default); }
   .features-grid { grid-template-columns: 1fr; }
   .feature { border-right: none !important; }
   .install { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }

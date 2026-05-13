@@ -6,9 +6,9 @@
    `@import` from a workspace package didn't reliably resolve via
    esbuild's bare-specifier handling, so we register the entry file
    in angular.json instead).
-   Docs CSS reads var(--kj-color-*) / var(--kj-font-*) directly — no
-   docs-specific token aliases. Theme switching happens via
-   [data-theme] on <html>.
+   Docs CSS reads the new token taxonomy (var(--kj-bg-*) / var(--kj-fg-*)
+   / var(--kj-border-*) / var(--kj-font-*)) directly — no docs-specific
+   token aliases. Theme switching happens via [data-theme] on <html>.
    ──────────────────────────────────────────────────────────── */
 
 /* The universal reset goes in @layer kj.reset (lower than kj.component
@@ -19,19 +19,19 @@
   html { scroll-behavior: smooth; }
 
   /* ── Global scrollbar ── */
-  * { scrollbar-width: thin; scrollbar-color: var(--kj-color-base-300) transparent; }
+  * { scrollbar-width: thin; scrollbar-color: var(--kj-border-default) transparent; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: var(--kj-radius-selector); }
-  ::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
+  ::-webkit-scrollbar-thumb { background: var(--kj-bg-field); border-radius: var(--kj-radius-selector); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--kj-bg-elevated); }
 }
 
 html, body { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
+  background: var(--kj-bg-body);
+  color: var(--kj-fg-default);
   font-family: var(--kj-font-mono);
 }
 
@@ -51,8 +51,8 @@ body {
   position: sticky;
   top: 0;
   overflow-x: hidden;
-  border-left: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-100);
+  border-left: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-body);
 }
 
 @media (max-width: 900px) {
@@ -91,7 +91,7 @@ body {
 
 /* Navbar theme dropdown — menu panel is portaled to body (outside navbar host). */
 .kj-dropdown-menu .kj-navbar-theme-item--active {
-  background: color-mix(in oklch, var(--kj-color-primary) 14%, transparent);
-  color: var(--kj-color-primary);
+  background: color-mix(in oklch, var(--kj-bg-primary) 14%, transparent);
+  color: var(--kj-fg-primary);
   font-weight: 500;
 }

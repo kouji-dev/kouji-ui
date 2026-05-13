@@ -10,7 +10,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   margin-bottom: var(--kj-space-lg);
 }
 
@@ -28,7 +28,7 @@
 .toc-level-3 { padding-left: 0.75rem; }
 
 .toc-link {
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   text-decoration: none;
   font-size: 0.75rem;
   line-height: 1.4;
@@ -42,8 +42,8 @@
   display: block;
 }
 
-.toc-link:hover { color: var(--kj-color-neutral); border-left-color: var(--kj-color-neutral); }
+.toc-link:hover { color: var(--kj-fg-default); border-left-color: var(--kj-border-default); }
 
-.toc-link.active { color: var(--kj-color-primary); border-left-color: var(--kj-color-primary); }
+.toc-link.active { color: var(--kj-fg-primary); border-left-color: var(--kj-bg-primary); }
 
-.toc-empty { color: var(--kj-color-neutral); font-size: 0.75rem; margin: 0; }
+.toc-empty { color: var(--kj-fg-muted); font-size: 0.75rem; margin: 0; }

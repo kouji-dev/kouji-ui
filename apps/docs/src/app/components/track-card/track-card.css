@@ -9,8 +9,8 @@
   flex-direction: column;
   min-height: 220px;
   padding: var(--kj-space-xl);
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-surface);
+  border: 1px solid var(--kj-border-default);
   color: inherit;
   text-decoration: none;
   transition: transform 0.15s ease, border-color 0.15s, background 0.15s;
@@ -21,18 +21,18 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: 2px;
-  background: var(--kj-color-primary);
+  background: var(--kj-bg-primary);
   transform: scaleY(0);
   transform-origin: top;
   transition: transform 0.2s ease;
 }
 .track-card:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in oklab, var(--kj-color-primary) 35%, var(--kj-color-base-300));
+  border-color: color-mix(in oklab, var(--kj-bg-primary) 35%, var(--kj-border-default));
 }
 .track-card:hover::before { transform: scaleY(1); }
 .track-card:focus-visible {
-  outline: 2px solid var(--kj-color-primary);
+  outline: 2px solid var(--kj-bg-primary);
   outline-offset: 2px;
 }
 
@@ -47,7 +47,7 @@
 .track-card-pkg {
   font-family: var(--kj-font-mono);
   font-size: 0.75rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   background: transparent;
   padding: 0;
 }
@@ -59,12 +59,12 @@
   min-width: 1.75rem;
   height: 1.75rem;
   padding: 0 var(--kj-space-sm);
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-primary);
+  background: var(--kj-bg-body);
+  color: var(--kj-fg-primary);
   font-family: var(--kj-font-mono);
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid color-mix(in oklab, var(--kj-color-primary) 25%, var(--kj-color-base-300));
+  border: 1px solid color-mix(in oklab, var(--kj-bg-primary) 25%, var(--kj-border-default));
   border-radius: var(--kj-radius-selector);
 }
 
@@ -74,14 +74,14 @@
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   margin: 0 0 var(--kj-space-sm);
 }
 
 .track-card-tagline {
   font-size: 0.85rem;
   line-height: 1.55;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   margin: 0;
   max-width: 38ch;
 }
@@ -99,14 +99,14 @@
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   transition: color 0.15s, gap 0.15s;
 }
 .track-card-cta svg {
   transition: transform 0.18s ease;
 }
 .track-card:hover .track-card-cta {
-  color: var(--kj-color-primary);
+  color: var(--kj-fg-primary);
   gap: var(--kj-space-md);
 }
 .track-card:hover .track-card-cta svg {

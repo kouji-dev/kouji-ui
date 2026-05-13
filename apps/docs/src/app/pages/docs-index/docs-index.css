@@ -6,7 +6,7 @@
 .docs-hero {
   margin-bottom: var(--kj-space-4xl);
   padding-bottom: var(--kj-space-3xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  border-bottom: 1px solid var(--kj-border-default);
 }
 
 .tag {
@@ -14,8 +14,8 @@
   font-size: 0.65rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--kj-color-primary);
-  border: 1px solid var(--kj-color-primary);
+  color: var(--kj-fg-primary);
+  border: 1px solid var(--kj-bg-primary);
   padding: 0.2rem 0.6rem;
   margin-bottom: var(--kj-space-xl);
 }
@@ -29,7 +29,7 @@ h1 {
   line-height: 1;
 }
 
-.docs-hero p { color: var(--kj-color-neutral); font-size: 0.9rem; line-height: 1.6; }
+.docs-hero p { color: var(--kj-fg-muted); font-size: 0.9rem; line-height: 1.6; }
 
 .category-section { margin-bottom: 3rem; }
 
@@ -37,7 +37,7 @@ h1 {
   font-size: 0.65rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   margin: 0 0 var(--kj-space-xl);
 }
 
@@ -45,7 +45,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 0;
-  border: 1px solid var(--kj-color-base-300);
+  border: 1px solid var(--kj-border-default);
 }
 
 .track-grid { margin-top: var(--kj-space-2xl); }
@@ -57,13 +57,13 @@ h1 {
   transition: transform 0.15s;
 }
 .component-card-link:hover { transform: translateY(-2px); }
-.component-card-link:hover .card-arrow { color: var(--kj-color-primary); transform: translateX(3px); }
+.component-card-link:hover .card-arrow { color: var(--kj-fg-primary); transform: translateX(3px); }
 
 .card-name {
   font-family: var(--kj-font-display);
   font-weight: 700;
   font-size: 1rem;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   letter-spacing: -0.01em;
 }
 
@@ -71,12 +71,12 @@ h1 {
   font-size: 0.65rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--kj-color-primary);
+  color: var(--kj-fg-primary);
 }
 
 .card-desc {
   font-size: 0.75rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   line-height: 1.5;
   margin-top: var(--kj-space-xs);
   overflow: hidden;
