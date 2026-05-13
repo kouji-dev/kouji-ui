@@ -1,7 +1,13 @@
 <aside class="kj-docs-sidebar">
   <nav class="kj-docs-sidebar__nav" role="navigation" aria-label="Documentation sections">
-    <p class="kj-docs-sidebar__label">Docs</p>
+    <!-- Search row (visual stub: keyboard hint + label) -->
+    <div class="kj-docs-sidebar__search" aria-hidden="true">
+      <span class="kj-docs-sidebar__search-glyph">⌕</span>
+      <span class="kj-docs-sidebar__search-text">search…</span>
+      <span class="kj-docs-sidebar__kbd">⌘K</span>
+    </div>
 
+    <!-- Quick link: Getting Started -->
     <div class="kj-docs-sidebar__quick">
       <a
         routerLink="/docs/getting-started"
@@ -14,14 +20,75 @@
       </a>
     </div>
 
-    <p id="kj-docs-sidebar-browse-heading" class="kj-docs-sidebar__browse-heading">
+    <!-- Layered tray — one layer per track. Role=tree satisfies a11y contract;
+         layer-head buttons are treeitems with aria-expanded; leaf links are
+         treeitems too. -->
+    <p
+      id="kj-docs-sidebar-browse-heading"
+      class="kj-docs-sidebar__browse-heading"
+    >
       Browse by category
     </p>
-    <app-docs-nav-tree
-      labelledBy="kj-docs-sidebar-browse-heading"
-      [entries]="navTree()"
-      [expandedIds]="expandedFolderIds()"
-      (toggleFolder)="onToggleFolder($event)"
-    />
+    <div
+      role="tree"
+      aria-labelledby="kj-docs-sidebar-browse-heading"
+      class="kj-docs-sidebar__tree"
+    >
+      @for (layer of layers(); track layer.id) {
+        <div class="kj-docs-sidebar__layer">
+          <button
+            type="button"
+            class="kj-docs-sidebar__layer-head"
+            role="treeitem"
+            aria-selected="false"
+            [attr.aria-expanded]="isLayerOpen(layer.id)"
+            [attr.aria-controls]="'kj-docs-layer-' + layer.id"
+            [attr.id]="'kj-docs-layer-head-' + layer.id"
+            (click)="toggleLayer(layer.id)"
+          >
+            <span class="kj-docs-sidebar__layer-mark" aria-hidden="true">{{ layer.mark }}</span>
+            <span class="kj-docs-sidebar__layer-title">
+              <span class="kj-docs-sidebar__layer-lbl">{{ layer.label }}</span>
+              <span class="kj-docs-sidebar__layer-sub">{{ layer.sub }}</span>
+            </span>
+            <span
+              class="kj-docs-sidebar__layer-caret"
+              [class.kj-docs-sidebar__layer-caret--open]="isLayerOpen(layer.id)"
+              aria-hidden="true"
+            >▾</span>
+          </button>
+
+          @if (isLayerOpen(layer.id)) {
+            <div
+              class="kj-docs-sidebar__layer-body"
+              role="group"
+              [attr.id]="'kj-docs-layer-' + layer.id"
+              [attr.aria-labelledby]="'kj-docs-layer-head-' + layer.id"
+            >
+              @for (group of layer.groups; track group.label) {
+                <div class="kj-docs-sidebar__nav-group">
+                  <div class="kj-docs-sidebar__nav-label">{{ group.label }}</div>
+                  @for (item of group.children; track item.label) {
+                    @if (item.slug) {
+                      <a
+                        class="kj-docs-sidebar__nav-item"
+                        role="treeitem"
+                        [attr.aria-selected]="leafSelected(pageLink(layer.id, item.slug))"
+                        [routerLink]="pageLink(layer.id, item.slug)"
+                        routerLinkActive="kj-docs-sidebar__nav-item--active"
+                        [routerLinkActiveOptions]="{ exact: true }"
+                        ariaCurrentWhenActive="page"
+                      >
+                        <span class="kj-docs-sidebar__nav-name">{{ item.label }}</span>
+                      </a>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
   </nav>
 </aside>

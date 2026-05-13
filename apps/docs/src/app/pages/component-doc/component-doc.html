@@ -399,19 +399,42 @@
                     <span class="num">{{ (groupIdx + 1).toString().padStart(2, '0') }}</span>
                     <h2>{{ group.label }}</h2>
                   </header>
-                  @for (entry of group.examples; track entry.example.slug) {
-                    <article
-                      class="example-card"
-                      [id]="entry.example.slug"
-                      [attr.data-toc-entry]="entry.example.label"
-                      data-toc-level="3"
-                    >
-                      <h3 class="example-heading">{{ entry.example.label }}</h3>
-                      <kj-code-preview
-                        [docExamples]="[entry.example]"
-                        [componentName]="p.title"
-                      />
-                    </article>
+                  @if (group.bucket === 'playground') {
+                    <!-- Playground stays a full-width, single example block -->
+                    @for (entry of group.examples; track entry.example.slug) {
+                      <article
+                        class="example-card example-card--playground"
+                        [id]="entry.example.slug"
+                        [attr.data-toc-entry]="entry.example.label"
+                        data-toc-level="3"
+                      >
+                        <h3 class="example-heading">{{ entry.example.label }}</h3>
+                        <kj-code-preview
+                          [docExamples]="[entry.example]"
+                          [componentName]="p.title"
+                        />
+                      </article>
+                    }
+                  } @else {
+                    <!-- Variants / Sizes / States / Recipes — 2-column tile grid -->
+                    <div class="recipes-grid">
+                      @for (entry of group.examples; track entry.example.slug) {
+                        <article
+                          class="recipe-card"
+                          [id]="entry.example.slug"
+                          [attr.data-toc-entry]="entry.example.label"
+                          data-toc-level="3"
+                        >
+                          <h4 class="recipe-card__title">{{ entry.example.label }}</h4>
+                          <div class="recipe-card__preview">
+                            <kj-code-preview
+                              [docExamples]="[entry.example]"
+                              [componentName]="p.title"
+                            />
+                          </div>
+                        </article>
+                      }
+                    </div>
                   }
                 </section>
               }

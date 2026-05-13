@@ -268,6 +268,11 @@
   scroll-margin-top: var(--kj-space-2xl);
 }
 
+.example-card--playground {
+  /* Playground stays a single full-width block above the recipes grid */
+  margin-bottom: var(--kj-space-3xl);
+}
+
 .example-heading {
   font-family: var(--kj-font-mono);
   font-size: 0.7rem;
@@ -276,6 +281,53 @@
   color: var(--kj-fg-muted);
   margin: 0 0 var(--kj-space-sm);
   font-weight: 500;
+}
+
+/* ── Recipes grid (Variants / Sizes / States / Recipes buckets) ───
+   Source: design-revamp/.../docs.css L652-691. Two compact tiles per
+   row, single column under 720px. Each card holds title + live preview. */
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--kj-space-lg);
+}
+
+@media (max-width: 720px) {
+  .recipes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.recipe-card {
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-bg-surface);
+  padding: var(--kj-space-xl);
+  scroll-margin-top: var(--kj-space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-md);
+}
+
+.recipe-card__title {
+  margin: 0;
+  font-family: var(--kj-font-display);
+  font-weight: var(--kj-display-weight, 700);
+  letter-spacing: var(--kj-letter-spacing, -0.02em);
+  font-size: 1.25rem;
+  line-height: 1.15;
+  color: var(--kj-fg-default);
+}
+
+.recipe-card__preview {
+  /* The code-preview component itself owns its border/toolbar/preview,
+     so this wrapper just slots it into the card without extra chrome. */
+  display: block;
+  min-height: 88px;
+}
+
+.recipe-card__preview kj-code-preview {
+  display: block;
 }
 
 /* ── A11y keyboard chord chips ──────────────────────────────── */
