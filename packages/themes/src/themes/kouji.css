@@ -13,10 +13,12 @@
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           0;
 
-    /* ── type — mono for body / nav, Syne for display headings (matches
-       the original kouji-ui docs identity) ── */
+    /* ── type — mono everywhere. Brutalist identity statement: even
+       headlines use JetBrains Mono, no decorative display face. ── */
     --kj-font-sans:    var(--kj-base-font-mono);
-    --kj-font-display: var(--kj-base-font-display);
+    --kj-font-display: var(--kj-base-font-mono);
+    --kj-display-weight:  700;
+    --kj-letter-spacing: -0.02em;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);

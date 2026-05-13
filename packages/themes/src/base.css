@@ -56,9 +56,17 @@
     --kj-base-space-6xl: 8rem;      /* 128px */
 
     /* ── type ── */
-    --kj-base-font-sans:    system-ui, -apple-system, sans-serif;
+    /* Base font families. Themes alias their --kj-font-{sans,mono,display}
+       to one of these. `font-sans` is the workhorse; `font-mono` is for
+       code/kbd/tabular numerics; `font-display` is the brand/headline
+       face (set per theme, defaults to sans). `font-serif` and
+       `font-block` are alternate display options used by editorial /
+       brutalist themes (paper/sakura/retro use serif; bauhaus uses block). */
+    --kj-base-font-sans:    'Space Grotesk', system-ui, -apple-system, sans-serif;
     --kj-base-font-mono:    'JetBrains Mono', 'Fira Code', monospace;
     --kj-base-font-display: 'Syne', system-ui, sans-serif;
+    --kj-base-font-serif:   'DM Serif Display', 'Times New Roman', Georgia, serif;
+    --kj-base-font-block:   'Archivo Black', system-ui, sans-serif;
     --kj-base-text-xs:   0.75rem;
     --kj-base-text-sm:   0.875rem;
     --kj-base-text-base: 1rem;
@@ -100,5 +108,20 @@
     --kj-base-border-2: 2px;
     --kj-base-transition-fast: 0.12s ease;
     --kj-base-transition-base: 0.2s ease;
+
+    /* ── Display-tone primitives (per-theme overridable, sane defaults)
+       Themes only redeclare when their identity calls for it (e.g. retro
+       wants italic display; bauhaus wants extra-heavy weight; sakura
+       wants light + tighter tracking). Components read these from the
+       resolved `--kj-display-*` cascade, not directly from base. */
+    --kj-display-weight:   600;
+    --kj-display-italic:   normal;
+    --kj-letter-spacing:  -0.02em;
+    --kj-hover-translate: -2px;
+
+    /* Companion radius for box-level chrome (cards, panels, dialogs).
+       Distinct from --kj-radius-box so a theme can have small box radius
+       (`box`) and a larger hero radius (`box-lg`). Defaults to box. */
+    --kj-radius-box-lg:   var(--kj-base-radius-3);
   }
 }

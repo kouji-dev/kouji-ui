@@ -61,6 +61,10 @@ apps/*/dist/
 *.log
 /.tmp-*.html
 
+# Design handoff bundles — unzipped under design-revamp/ for reference,
+# never committed (would balloon the repo with PNG screenshots).
+/design-revamp/
+
 # Local worktrees + brainstorming session state
 .worktrees/
 .superpowers/

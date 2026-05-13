@@ -11,29 +11,25 @@ export const BUILT_IN_NAMES: readonly BuiltInName[] = [
 ];
 
 /* Resolved type-blocks per identity. Mirrors what base.css + theme.css
-   actually produce at runtime. base default for `fontDisplay` is now sans
-   — themes only opt into Syne or mono explicitly. */
-const SANS_TYPE = {
-  fontSans: 'system-ui, -apple-system, sans-serif',
-  fontMono: "'JetBrains Mono', 'Fira Code', monospace",
-  fontDisplay: 'system-ui, -apple-system, sans-serif',
-};
-const BRAND_TYPE = {
-  fontSans: 'system-ui, -apple-system, sans-serif',
-  fontMono: "'JetBrains Mono', 'Fira Code', monospace",
-  fontDisplay: "'Syne', system-ui, sans-serif",
-};
-const MONO_TYPE = {
-  fontSans: "'JetBrains Mono', monospace",
-  fontMono: "'JetBrains Mono', monospace",
-  fontDisplay: "'JetBrains Mono', monospace",
-};
-/** kouji: mono body + Syne display. */
-const KOUJI_TYPE = {
-  fontSans: "'JetBrains Mono', monospace",
-  fontMono: "'JetBrains Mono', monospace",
-  fontDisplay: "'Syne', system-ui, sans-serif",
-};
+   actually produce at runtime. base default for `fontDisplay` is sans;
+   themes opt into serif / block / mono / Syne when their identity calls
+   for it. Sans is now Space Grotesk (loaded in apps/docs/src/index.html). */
+const SANS_FAMILY  = "'Space Grotesk', system-ui, -apple-system, sans-serif";
+const MONO_FAMILY  = "'JetBrains Mono', 'Fira Code', monospace";
+const SERIF_FAMILY = "'DM Serif Display', 'Times New Roman', Georgia, serif";
+const BLOCK_FAMILY = "'Archivo Black', system-ui, sans-serif";
+const SYNE_FAMILY  = "'Syne', system-ui, sans-serif";
+
+const SANS_TYPE  = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: SANS_FAMILY };
+const SERIF_TYPE = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: SERIF_FAMILY };
+const BLOCK_TYPE = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: BLOCK_FAMILY };
+const SYNE_TYPE  = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: SYNE_FAMILY };
+const MONO_TYPE  = { fontSans: MONO_FAMILY, fontMono: MONO_FAMILY, fontDisplay: MONO_FAMILY };
+
+/** @deprecated legacy alias — kept for older drafts. Use SYNE_TYPE. */
+const BRAND_TYPE = SYNE_TYPE;
+/** @deprecated legacy alias — kouji is now all-mono. Use MONO_TYPE. */
+const KOUJI_TYPE = MONO_TYPE;
 const SHARED_SHAPE = { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 };
 const SHARED_TYPOGRAPHY = { bodyRem: 1, smallRem: 0.875 };
 const FAST = { transition: '0.12s ease' };
@@ -53,7 +49,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   light: {
     name: 'light',
     shape: { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 },
-    type: SANS_TYPE, motion: FAST,
+    type: SERIF_TYPE, motion: FAST,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#ffffff',
@@ -61,7 +57,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
       'bg-field':    '#f6f6f4',
       'bg-elevated': '#ffffff',
       'bg-primary':  '#1a1a1a',
-      'bg-accent':   '#b8860b',
+      'bg-accent':   '#d6a300',
       'bg-info':     '#1e40af',
       'bg-success':  '#166534',
       'bg-warning':  '#d97706',
@@ -79,7 +75,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   },
 
   dark: {
-    name: 'dark', shape: SHARED_SHAPE, type: BRAND_TYPE, motion: FAST,
+    name: 'dark', shape: SHARED_SHAPE, type: SANS_TYPE, motion: FAST,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     'oklch(15% 0 0)',
@@ -107,7 +103,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   kouji: {
     name: 'kouji',
     shape: { radiusBox: 0, radiusField: 0, radiusSelector: 0, border: 1, depth: 0 },
-    type: KOUJI_TYPE,
+    type: MONO_TYPE,
     motion: FAST,
     typography: SHARED_TYPOGRAPHY,
     bg: {
@@ -136,7 +132,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   retro: {
     name: 'retro',
     shape: { radiusBox: 8, radiusField: 8, radiusSelector: 8, border: 1, depth: 1 },
-    type: BRAND_TYPE, motion: BASE,
+    type: SERIF_TYPE, motion: BASE,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#ede5d0',
@@ -221,7 +217,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   sakura: {
     name: 'sakura',
     shape: { radiusBox: 16, radiusField: 8, radiusSelector: 8, border: 1, depth: 1 },
-    type: SANS_TYPE, motion: BASE,
+    type: SERIF_TYPE, motion: BASE,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#fef5f3',
@@ -249,7 +245,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   bauhaus: {
     name: 'bauhaus',
     shape: { radiusBox: 0, radiusField: 0, radiusSelector: 0, border: 2, depth: 0 },
-    type: BRAND_TYPE, motion: FAST,
+    type: BLOCK_TYPE, motion: FAST,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#f5efe1',
@@ -277,7 +273,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   dune: {
     name: 'dune',
     shape: { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 },
-    type: SANS_TYPE, motion: BASE,
+    type: SERIF_TYPE, motion: BASE,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#f5e9d6',
@@ -334,7 +330,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   forest: {
     name: 'forest',
     shape: { radiusBox: 8, radiusField: 8, radiusSelector: 8, border: 1, depth: 1 },
-    type: SANS_TYPE, motion: BASE,
+    type: SERIF_TYPE, motion: BASE,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#1a2820',
@@ -362,7 +358,7 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
   nord: {
     name: 'nord',
     shape: { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 },
-    type: BRAND_TYPE, motion: FAST,
+    type: SANS_TYPE, motion: FAST,
     typography: SHARED_TYPOGRAPHY,
     bg: {
       'bg-body':     '#2e3440',

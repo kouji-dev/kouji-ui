@@ -12,9 +12,12 @@
     --kj-border:          var(--kj-base-border-2);
     --kj-depth:           0;
 
-    /* ── type ── */
+    /* ── type — mono everywhere. Heavy weight + tight tracking gives
+       the headlines an aggressive techno-poster feel. */
     --kj-font-sans:    var(--kj-base-font-mono);
     --kj-font-display: var(--kj-base-font-mono);
+    --kj-display-weight: 800;
+    --kj-letter-spacing: -0.04em;
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
 

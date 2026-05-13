@@ -12,6 +12,14 @@
     --kj-radius-selector: var(--kj-base-radius-2);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
+
+    /* ── type — italic serif headlines on dark moss. Warm woodland
+       voice; sans body keeps the long-form text crisp on dark. */
+    --kj-font-display:   var(--kj-base-font-serif);
+    --kj-display-weight: 400;
+    --kj-display-italic: italic;
+    --kj-letter-spacing: -0.025em;
+
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
 

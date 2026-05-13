@@ -12,6 +12,13 @@
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
+
+    /* ── type — light serif headlines on a sans body; warm hand-printed
+       feel without being overwrought. */
+    --kj-font-display:   var(--kj-base-font-serif);
+    --kj-display-weight: 400;
+    --kj-letter-spacing: -0.02em;
+
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
 

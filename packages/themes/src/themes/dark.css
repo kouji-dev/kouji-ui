@@ -11,8 +11,11 @@
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
-    /* ── type — brand display face ── */
-    --kj-font-display: var(--kj-base-font-display);
+    /* ── type — crisp modern sans for headlines (Space Grotesk via
+       --kj-base-font-sans). Cobalt mono's identity is the palette, not
+       a decorative typeface. */
+    --kj-display-weight:  600;
+    --kj-letter-spacing: -0.04em;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);

@@ -14,6 +14,11 @@
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
 
+    /* ── type — clean sans display, slightly tighter tracking for a
+       fresh ceramic-shop feel. */
+    --kj-display-weight:  600;
+    --kj-letter-spacing: -0.035em;
+
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
 

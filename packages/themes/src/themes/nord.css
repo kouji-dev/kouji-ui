@@ -12,8 +12,10 @@
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
-    /* ── type — brand display face ── */
-    --kj-font-display: var(--kj-base-font-display);
+    /* ── type — clean arctic sans (Space Grotesk via base sans). Tighter
+       tracking + medium weight for cool calm headlines. */
+    --kj-display-weight:  600;
+    --kj-letter-spacing: -0.035em;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);

@@ -12,6 +12,14 @@
     --kj-radius-selector: var(--kj-base-radius-2);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
+
+    /* ── type — light italic serif (DM Serif Display italic). The soft
+       feminine voice of the palette calls for elegance, not weight. */
+    --kj-font-display:   var(--kj-base-font-serif);
+    --kj-display-weight: 400;
+    --kj-display-italic: italic;
+    --kj-letter-spacing: -0.025em;
+
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
 

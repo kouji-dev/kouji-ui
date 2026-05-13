@@ -13,8 +13,13 @@
     --kj-radius-selector: var(--kj-base-radius-0);
     --kj-border:          var(--kj-base-border-2);
     --kj-depth:           0;
-    /* ── type — brand display face ── */
-    --kj-font-display: var(--kj-base-font-display);
+    /* ── type — Archivo Black for display (constructivist block letters).
+       Heaviest weight, tight tracking, deeper hover lift for the
+       neo-brutalist offset-shadow motif. */
+    --kj-font-display:    var(--kj-base-font-block);
+    --kj-display-weight:  900;
+    --kj-letter-spacing: -0.04em;
+    --kj-hover-translate: -4px;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);

@@ -13,9 +13,12 @@
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           0;
 
-    /* ── type — mono everything ── */
+    /* ── type — mono everywhere. Phosphor terminals don't kern; keep
+       letter-spacing at 0 and weight medium for that CRT readout look. */
     --kj-font-sans:    var(--kj-base-font-mono);
     --kj-font-display: var(--kj-base-font-mono);
+    --kj-display-weight: 500;
+    --kj-letter-spacing: 0;
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
 

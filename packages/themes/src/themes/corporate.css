@@ -14,6 +14,12 @@
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
+
+    /* ── type — sans display (banking ≠ decorative). Tighter tracking
+       than the default for confident corporate headlines. */
+    --kj-display-weight:  600;
+    --kj-letter-spacing: -0.035em;
+
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
 
