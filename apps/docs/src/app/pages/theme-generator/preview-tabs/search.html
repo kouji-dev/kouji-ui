@@ -119,14 +119,14 @@
 
   <div class="results-pane">
     <div class="toolbar">
-      <label class="toolbar__sort">
-        <span class="toolbar__sort-label">Sort</span>
-        <kj-select [value]="sort()" (valueChange)="sort.set($any($event))" placeholder="Sort">
+      <div class="toolbar__sort">
+        <span id="search-sort-label" class="toolbar__sort-label">Sort</span>
+        <kj-select [value]="sort()" (valueChange)="sort.set($any($event))" placeholder="Sort" aria-labelledby="search-sort-label">
           <kj-option [value]="'recent'">Recent</kj-option>
           <kj-option [value]="'alpha'">Alphabetical</kj-option>
           <kj-option [value]="'views'">Most viewed</kj-option>
         </kj-select>
-      </label>
+      </div>
 
       <div class="toolbar__view" role="group" aria-label="View mode">
         <kj-button
