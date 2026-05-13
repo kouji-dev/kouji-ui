@@ -5,7 +5,7 @@ import { ContrastScoreService } from '../../services/contrast-score.service';
 import type { Edge, TypographyCheck } from '../../lib/theme/theme-a11y-report';
 
 /** Live theme-token accessibility scorecard for the active draft.
- * Groups results into Contrast (AAA 7:1), Non-text (3:1), and Typography. */
+ * Groups results into Contrast (AA 4.5:1, matching axe), Non-text (3:1), and Typography. */
 @Component({
   selector: 'kj-contrast-scorecard',
   standalone: true,
@@ -22,12 +22,14 @@ export class ContrastScorecard {
     this.score.buildReport(this.draftService.resolvedTokens(), this.draftService.draft()),
   );
 
-  /** Share of AAA-normal edge pairs that pass (for summary badge). */
-  protected readonly aaaPercent = computed(() => {
+  /** Share of AA-normal edge pairs that pass (for summary badge). */
+  protected readonly aaPercent = computed(() => {
     const s = this.report().summary;
-    if (s.aaaNormalTotal === 0) return 100;
-    return Math.round((100 * s.aaaNormalPass) / s.aaaNormalTotal);
+    if (s.aaNormalTotal === 0) return 100;
+    return Math.round((100 * s.aaNormalPass) / s.aaNormalTotal);
   });
+  /** Backwards-compat alias for the template. */
+  protected readonly aaaPercent = this.aaPercent;
 
   protected focusToken(slot: string): void {
     if (typeof document === 'undefined') return;

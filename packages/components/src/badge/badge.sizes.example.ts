@@ -5,7 +5,7 @@ import { KjBadgeComponent } from './badge';
   selector: 'kj-badge-sizes-example',
   standalone: true,
   imports: [KjBadgeComponent],
-  styles: [`:host { display: flex; gap: 0.5rem; align-items: center; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: flex; gap: 0.5rem; align-items: center; }`],
   template: `
     <kj-badge size="xs">Extra small</kj-badge>
     <kj-badge size="sm">Small</kj-badge>

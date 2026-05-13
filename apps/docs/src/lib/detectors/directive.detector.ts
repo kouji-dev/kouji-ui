@@ -2,7 +2,7 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { dirname } from 'node:path';
 import { parseDocTags } from '../doc-tags';
-import { getDocFiles, getDocThemes, getDocExamples } from '../examples';
+import { getDocFiles, getDocThemes, getDocExamples, deriveExampleSlug } from '../examples';
 import type {
   DocItem,
   InputDef,
@@ -85,7 +85,10 @@ export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
       examples: docExamples.length
         ? docExamples
         : (Object.keys(themedExamples).length || exampleFiles.length
-            ? [{ label: 'default', themedFiles: Object.keys(themedExamples).length ? themedExamples : { default: exampleFiles } }]
+            ? (() => {
+                const themedFiles = Object.keys(themedExamples).length ? themedExamples : { default: exampleFiles };
+                return [{ label: 'default', slug: deriveExampleSlug('default', themedFiles), themedFiles }];
+              })()
             : undefined),
     });
   }

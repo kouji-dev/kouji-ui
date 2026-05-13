@@ -19,14 +19,35 @@ import { onFocus } from '../primitives/overlay/strategies/trigger-event/on-focus
  * Composite trigger-event strategy: opens the calendar on input focus AND on
  * click of the input (handy for icons inside the input). Mirrors the
  * `hoverOrFocus` factory used by the tooltip migration.
+ *
+ * Naïvely wiring both `onClick` and `onFocus` to the same `toggle()` is a
+ * bug: clicking an unfocused input fires focus → toggle (opens), then
+ * click → toggle (closes), so the calendar appears only while the mouse
+ * button is held. We swallow any click toggle that fires within a short
+ * window after a focus-driven open so the activating click reads as a
+ * normal "open" instead of "open-then-close".
  */
 function clickOrFocus(): KjTriggerEventStrategy {
   const a = onClick();
   const b = onFocus();
+  let userToggle: (() => void) | null = null;
+  let suppressClickUntil = 0;
+  const guardedClickToggle = () => {
+    if (performance.now() < suppressClickUntil) return;
+    userToggle?.();
+  };
+  const focusToggle = () => {
+    suppressClickUntil = performance.now() + 300;
+    userToggle?.();
+  };
   return {
     ariaHasPopup: 'dialog',
     attach(ctx: KjOverlayContext) { a.attach(ctx); b.attach(ctx); },
-    bindToggle(t) { a.bindToggle(t); b.bindToggle(t); },
+    bindToggle(t) {
+      userToggle = t;
+      a.bindToggle(guardedClickToggle);
+      b.bindToggle(focusToggle);
+    },
     onOpen()  { a.onOpen?.();  b.onOpen?.();  },
     onClose() { a.onClose?.(); b.onClose?.(); },
     detach()  { a.detach();    b.detach();    },

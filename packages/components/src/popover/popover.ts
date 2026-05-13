@@ -20,7 +20,8 @@ export {
  * with optional `[kjPopoverTitle]` heading and `[kjPopoverClose]` button. The
  * wrapper itself only projects content — its purpose is to host the docs tags.
  *
- * @doc-name Popover
+ * @doc
+ * @doc-name popover
  * @doc-is-main
  * @doc-example Default
  *   @doc-file popover.example.ts

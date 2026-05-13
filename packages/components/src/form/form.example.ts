@@ -28,7 +28,7 @@ import {
     JsonPipe,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .submitted { font-size: 0.8125rem; opacity: 0.7; margin-top: 0.5rem; }
   `],
   template: `

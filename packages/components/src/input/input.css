@@ -17,9 +17,15 @@
     --kj-input-font:             var(--kj-font-sans);
     --kj-input-font-size:        var(--kj-text-sm);
     --kj-input-placeholder-fg:   var(--kj-fg-muted);
+    /* Match button md (36px) so inputs and buttons line up in form rows.
+       Don't set `align-self` — in column-flex parents (form-field stacks),
+       `center` horizontally shifts the host; explicit height alone is what
+       prevents row-flex parents from stretching the input vertically. */
+    --kj-input-height:           2.25rem;
 
     display: inline-flex;
     width: 100%;
+    height: var(--kj-input-height);
     background: var(--kj-input-bg);
     color: var(--kj-input-fg);
     border: var(--kj-input-border-width) var(--kj-input-border-style) var(--kj-input-border-color);
@@ -28,6 +34,9 @@
     font: var(--kj-input-font-size) / 1.4 var(--kj-input-font);
     transition: var(--kj-transition);
   }
+  /* Per-size heights mirror the button scale. */
+  .kj-input[data-size="sm"] { --kj-input-height: 2rem;    --kj-input-font-size: 0.8125rem; }
+  .kj-input[data-size="lg"] { --kj-input-height: 2.75rem; --kj-input-font-size: 1rem; }
   .kj-input::placeholder { color: var(--kj-input-placeholder-fg); }
 
   .kj-input:focus-visible {

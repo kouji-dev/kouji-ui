@@ -36,16 +36,12 @@ const REQUIRED_SHARED_TOKENS = [
   // shape
   '--kj-radius-box', '--kj-radius-field', '--kj-radius-selector',
   '--kj-border', '--kj-depth',
-  // type
-  '--kj-font-sans', '--kj-font-mono', '--kj-font-display',
-  '--kj-text-xs', '--kj-text-sm', '--kj-text-base', '--kj-text-lg', '--kj-text-xl', '--kj-text-2xl',
-  // spacing (semantic)
-  '--kj-space-xs', '--kj-space-sm', '--kj-space-md',
-  '--kj-space-lg', '--kj-space-xl',
-  '--kj-space-2xl', '--kj-space-3xl', '--kj-space-4xl',
-  '--kj-space-5xl', '--kj-space-6xl',
   // motion
   '--kj-transition',
+  // Note: font tokens (--kj-font-sans/mono/display), text-* scale, and
+  // space-* scale are NOT required per-theme. They cascade from `:root`
+  // defaults declared in base.css and are overridden by themes only when
+  // they need to differ (e.g. kouji sans=mono; corporate display=sans).
 ] as const;
 
 const themesDir = resolve(import.meta.dirname, 'themes');

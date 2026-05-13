@@ -7,7 +7,7 @@ import {
   selector: 'kj-accordion-multiple-example',
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-accordion type="multiple">
       <kj-accordion-item value="a" label="Section A">

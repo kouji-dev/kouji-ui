@@ -83,11 +83,11 @@
 }
 
 .chat__row:hover {
-  background: var(--kj-bg-elevated);
+  background: var(--kj-bg-surface);
 }
 
 .chat__row--active {
-  background: var(--kj-bg-elevated);
+  background: var(--kj-bg-surface);
   border-color: var(--kj-border-default);
 }
 
@@ -117,7 +117,7 @@
 .chat__pane {
   display: flex;
   flex-direction: column;
-  background: var(--kj-bg-elevated);
+  background: var(--kj-bg-surface);
   border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-box, 8px);
   overflow: hidden;

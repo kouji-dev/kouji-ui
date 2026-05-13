@@ -14,7 +14,7 @@ import {
   selector: 'kj-cascade-select-field-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <div style="display: flex; flex-direction: column; gap: 0.25rem; max-width: 20rem;">
       <label for="cascade-delivery-location" style="font-size: 0.875rem; font-weight: 500; color: var(--kj-fg-default);">

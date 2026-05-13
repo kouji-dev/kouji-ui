@@ -8,7 +8,6 @@ import {
   type ThemePalettePayload,
 } from '../../../services/theme-palette-dialog-context';
 import { hexToOklch, oklchToHex } from '../../../lib/theme/theme-color-utils';
-import type { ContentSlot } from '../../../lib/theme/types';
 
 @Component({
   selector: 'kj-theme-palette-dialog-body',
@@ -32,49 +31,34 @@ export class ThemePaletteDialogBody {
   protected readonly title = computed(() => {
     const p = this.payload();
     if (!p) return 'Pick a color';
-    if (p.kind === 'semantic-fill') return `Fill — ${p.slot}`;
-    if (p.kind === 'semantic-content') return `Content — ${p.slot}`;
-    return `Surface — ${p.slot}`;
+    return p.kind === 'bg' ? `Background — ${p.slot}` : `Foreground — ${p.slot}`;
   });
 
   protected readonly fineHex = computed(() => {
     const p = this.payload();
     if (!p) return '#000000';
     const draft = this.draftService.draft();
-    const tokens = this.draftService.resolvedTokens();
-    if (p.kind === 'semantic-fill') {
-      return oklchToHex(draft.colors[p.slot]);
-    }
-    if (p.kind === 'semantic-content') {
-      const key: ContentSlot =
-        p.slot === 'base-100' ? 'base-content' : (`${p.slot}-content` as ContentSlot);
-      return oklchToHex(tokens.contents[key]);
-    }
-    if (p.slot === 'base-200') return oklchToHex(tokens.derivedBase.base200);
-    if (p.slot === 'base-300') return oklchToHex(tokens.derivedBase.base300);
-    return oklchToHex(tokens.contents['base-content']);
+    return p.kind === 'bg'
+      ? oklchToHex(draft.bg[p.slot])
+      : oklchToHex(draft.fg[p.slot]);
   });
 
-  /** Highlight seed grid when editing primary and draft matches a single-seed derivation (same heuristic as colors panel). */
+  /** Highlight seed grid only when editing `bg-primary` and the user hasn't touched other slots. */
   protected readonly activeSeedHex = computed<string | null>(() => {
     const p = this.payload();
-    if (!p || p.kind !== 'semantic-fill' || p.slot !== 'primary') return null;
+    if (!p || p.kind !== 'bg' || p.slot !== 'bg-primary') return null;
     if (this.draftService.dirtySlots().size > 0) return null;
-    return this.draftService.draft().colors.primary;
+    return this.draftService.draft().bg['bg-primary'];
   });
 
   protected applyHex(hex: string): void {
     const p = this.payload();
     if (!p) return;
     const css = hexToOklch(hex);
-    if (p.kind === 'semantic-fill') {
-      this.draftService.setColor(p.slot, css);
-    } else if (p.kind === 'semantic-content') {
-      const key: ContentSlot =
-        p.slot === 'base-100' ? 'base-content' : (`${p.slot}-content` as ContentSlot);
-      this.draftService.setContentOverride(key, css);
+    if (p.kind === 'bg') {
+      this.draftService.setBg(p.slot, css);
     } else {
-      this.draftService.setContentOverride(p.slot, css);
+      this.draftService.setFg(p.slot, css);
     }
   }
 

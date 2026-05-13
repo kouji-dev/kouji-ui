@@ -9,7 +9,7 @@ import { KjLinkComponent } from './link';
   selector: 'kj-link-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <p>
       Visit <kj-link kjHref="/about">our about page</kj-link> for more

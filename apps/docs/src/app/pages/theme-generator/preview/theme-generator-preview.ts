@@ -15,6 +15,14 @@ import { PreviewSettings } from '../preview-tabs/settings';
 const TABS = ['dashboard', 'settings', 'big-form', 'search', 'chat'] as const;
 type Tab = typeof TABS[number];
 
+const TAB_LABELS: Record<Tab, string> = {
+  dashboard: 'Dashboard',
+  settings:  'Settings',
+  'big-form': 'Big form',
+  search:    'Search',
+  chat:      'Chat',
+};
+
 @Component({
   selector: 'kj-theme-generator-preview',
   standalone: true,
@@ -38,6 +46,7 @@ export class ThemeGeneratorPreviewComponent {
   private readonly route = inject(ActivatedRoute);
 
   protected readonly tabs = TABS;
+  protected readonly labels = TAB_LABELS;
   protected readonly active = signal<Tab>(this.initialTab());
 
   private initialTab(): Tab {

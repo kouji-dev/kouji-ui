@@ -1,0 +1,79 @@
+/* ─────────────────────────────────────────────────────────────
+   forest theme — dark
+   Deep moss & pine surfaces, bark fields, mustard-gold primary,
+   sage-green accent. Warm parchment text. Woodland mood.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="forest"] {
+    /* ── shape — soft, organic ── */
+    --kj-radius-box:      var(--kj-base-radius-2);
+    --kj-radius-field:    var(--kj-base-radius-2);
+    --kj-radius-selector: var(--kj-base-radius-2);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-base);
+
+    --kj-bg-body:        #1a2820;
+    --kj-bg-surface:     #243630;
+    --kj-bg-field:       #1f2e26;
+    --kj-bg-elevated:    #2d4035;
+    --kj-bg-overlay:     rgba(8, 18, 12, 0.65);
+    --kj-bg-inverse:     #f0ead8;
+    --kj-bg-disabled:    #2d3a32;
+
+    --kj-bg-primary:         #d4a017;
+    --kj-bg-primary-subtle:  #3d3520;
+    --kj-bg-accent:          #8fbc4a;
+    --kj-bg-accent-subtle:   #2a3a20;
+
+    --kj-bg-info:            #8ab8d4;
+    --kj-bg-info-subtle:     #1f2a35;
+    --kj-bg-success:         #6ba33e;
+    --kj-bg-success-subtle:  #1f3520;
+    --kj-bg-warning:         #e0a830;
+    --kj-bg-warning-subtle:  #3d3520;
+    --kj-bg-danger:          #d96550;
+    --kj-bg-danger-subtle:   #3d2520;
+
+    --kj-fg-default:    #e8e0c8;
+    --kj-fg-muted:      #c0b89a;
+    --kj-fg-subtle:     #9a9376;
+    --kj-fg-disabled:   #4a5548;
+
+    /* On a dark theme, intent fills are mid-bright; dark text passes
+       AA on every one (golds/greens/blues all sit at L > 0.30). */
+    --kj-fg-on-primary:   #1a1a1a;
+    --kj-fg-on-accent:    #1a1a1a;
+    --kj-fg-on-info:      #1a1a1a;
+    --kj-fg-on-success:   #1a1a1a;
+    --kj-fg-on-warning:   #1a1a1a;
+    --kj-fg-on-danger:    #1a1a1a;
+    --kj-fg-on-inverse:   #1a2820;
+
+    --kj-fg-primary:    #d4a017;
+    --kj-fg-accent:     #8fbc4a;
+    --kj-fg-info:       #8ab8d4;
+    --kj-fg-success:    #8fbc4a;
+    --kj-fg-warning:    #e0a830;
+    --kj-fg-danger:     #d96550;
+
+    --kj-border-default:   #3a4a40;
+    --kj-border-muted:     #2d3d33;
+    --kj-border-strong:    #5a6a60;
+    --kj-border-focus:     #d4a017;
+    --kj-border-disabled:  #2d3a32;
+    --kj-border-primary:   #d4a017;
+    --kj-border-danger:    #d96550;
+
+    --kj-shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.25);
+    --kj-shadow-md:     0 6px 18px rgba(0, 0, 0, 0.38);
+    --kj-shadow-lg:     0 20px 48px rgba(0, 0, 0, 0.50);
+    --kj-shadow-focus:  0 0 0 3px rgba(212, 160, 23, 0.35);
+
+    /* Mustard gold brightens on hover (8% black-mix would push it duller
+       on a dark theme — we want it more luminous against the moss bg). */
+    --kj-button-bg-hover: #e8b22a;
+  }
+}

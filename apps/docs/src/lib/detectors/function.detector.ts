@@ -3,7 +3,7 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import { dirname } from 'node:path';
 import { parseDocTags } from '../doc-tags';
 import { readDocCategoryTag } from '../extractor-helpers';
-import { getDocFiles, getDocThemes, getDocExamples } from '../examples';
+import { getDocFiles, getDocThemes, getDocExamples, deriveExampleSlug } from '../examples';
 import type {
   DocItem,
   DocKind,
@@ -61,7 +61,10 @@ export function detectFunctions(file: ParsedFile, pkg: SourcePkg): DocItem[] {
       examples: docExamples.length
         ? docExamples
         : (Object.keys(themedExamples).length || exampleFiles.length
-            ? [{ label: 'default', themedFiles: Object.keys(themedExamples).length ? themedExamples : { default: exampleFiles } }]
+            ? (() => {
+                const themedFiles = Object.keys(themedExamples).length ? themedExamples : { default: exampleFiles };
+                return [{ label: 'default', slug: deriveExampleSlug('default', themedFiles), themedFiles }];
+              })()
             : undefined),
     });
   }

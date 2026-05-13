@@ -14,7 +14,7 @@ import {
   selector: 'kj-tag-list-example',
   standalone: true,
   imports: [KjTagComponent, KjTagListComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-tag-list
       kjTagListRole="listbox"

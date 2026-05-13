@@ -5,7 +5,7 @@ import { KjSelectComponent, KjOptionComponent } from './select';
   selector: 'kj-select-placeholder-example',
   standalone: true,
   imports: [KjSelectComponent, KjOptionComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-select [(value)]="status" placeholder="Pick a status">
       <kj-option [value]="'active'">Active</kj-option>

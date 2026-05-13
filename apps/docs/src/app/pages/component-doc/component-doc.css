@@ -185,7 +185,6 @@ h1 {
   color: var(--kj-fg-muted);
   margin: 0 0 var(--kj-space-md);
   font-weight: 500;
-  opacity: 0.7;
 }
 .item-name {
   background: var(--kj-bg-surface);

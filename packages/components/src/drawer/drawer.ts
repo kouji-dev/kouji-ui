@@ -14,7 +14,8 @@ export {
  * via `kjSide="bottom"` plus drag options. The wrapper exists to host the
  * documentation page for the drawer suite.
  *
- * @doc-name Drawer
+ * @doc
+ * @doc-name drawer
  * @doc-is-main
  * @doc-example Default
  *   @doc-file drawer.example.ts

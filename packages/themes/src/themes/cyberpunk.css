@@ -14,27 +14,7 @@
 
     /* ── type ── */
     --kj-font-sans:    var(--kj-base-font-mono);
-    --kj-font-mono:    var(--kj-base-font-mono);
     --kj-font-display: var(--kj-base-font-mono);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
-
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
 
@@ -65,12 +45,14 @@
     --kj-fg-subtle:     #3a3a3a;
     --kj-fg-disabled:   #8a8000;
 
-    --kj-fg-on-primary:   #ffee00;
+    /* Yellow on hot-pink/red fails AA (3.14:1); swap to near-black on
+       primary + danger. Accent stays yellow (8.71:1 on deep violet). */
+    --kj-fg-on-primary:   #0a0a0a;
     --kj-fg-on-accent:    #ffee00;
     --kj-fg-on-info:      #0a0a0a;
     --kj-fg-on-success:   #0a0a0a;
     --kj-fg-on-warning:   #0a0a0a;
-    --kj-fg-on-danger:    #ffee00;
+    --kj-fg-on-danger:    #0a0a0a;
     --kj-fg-on-inverse:   #ffee00;
 
     /* fg.primary must meet AA on yellow body — pink darkened from #ff007f */

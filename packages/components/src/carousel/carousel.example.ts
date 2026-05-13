@@ -22,7 +22,7 @@ import {
     KjCarouselNextComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .slide { display: grid; place-items: center; min-height: 12rem; font-weight: 600; font-size: 1.125rem; }
   `],
   template: `

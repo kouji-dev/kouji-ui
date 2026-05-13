@@ -1,7 +1,7 @@
 <kj-tabs class="preview-tabs" [value]="active()" (valueChange)="setActive($event)">
   <kj-tab-list>
     @for (t of tabs; track t) {
-      <kj-tab [value]="t">{{ t }}</kj-tab>
+      <kj-tab [value]="t">{{ labels[t] }}</kj-tab>
     }
   </kj-tab-list>
 

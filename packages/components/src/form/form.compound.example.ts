@@ -29,7 +29,7 @@ import {
     ReactiveFormsModule,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .group { display: flex; flex-direction: column; gap: 0.5rem; padding: var(--kj-space-md); border: 1px solid var(--kj-border-default); border-radius: 0.5rem; }
     .group h3 { margin: 0; font-size: 0.875rem; }
   `],

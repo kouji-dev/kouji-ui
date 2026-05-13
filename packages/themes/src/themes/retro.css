@@ -12,29 +12,8 @@
     --kj-radius-selector: var(--kj-base-radius-2);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
-
-    /* ── type ── */
-    --kj-font-sans:    var(--kj-base-font-sans);
-    --kj-font-mono:    var(--kj-base-font-mono);
+    /* ── type — brand display face ── */
     --kj-font-display: var(--kj-base-font-display);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
@@ -62,8 +41,9 @@
     --kj-bg-danger-subtle:   #f3d4d2;
 
     --kj-fg-default:    #282425;
-    --kj-fg-muted:      #5d4037;
-    --kj-fg-subtle:     #8a6e60;
+    --kj-fg-muted:      #4a3530;
+    /* Subtle pulled darker so h3 / muted labels clear AA on bg-body. */
+    --kj-fg-subtle:     #6a4f43;
     --kj-fg-disabled:   #bdb098;
 
     --kj-fg-on-primary:   #282425;
@@ -94,5 +74,12 @@
     --kj-shadow-md:     0 4px 12px rgba(93, 64, 55, 0.18);
     --kj-shadow-lg:     0 16px 40px rgba(93, 64, 55, 0.25);
     --kj-shadow-focus:  0 0 0 3px rgba(122, 158, 177, 0.45);
+
+    /* Retro's `bg-primary` is pale salmon (#ef9995). The 8% darken in
+       button.css is nearly imperceptible against it; lift to a deeper
+       terracotta so the hover reads on the sun-faded palette. Cream fg
+       reads better than the default ink on the deepened terracotta. */
+    --kj-button-bg-hover: #d05c57;
+    --kj-button-fg-hover: #fff5e4;
   }
 }

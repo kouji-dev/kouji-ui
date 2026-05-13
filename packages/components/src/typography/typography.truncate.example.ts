@@ -15,8 +15,8 @@ import { KjTruncate } from '@kouji-ui/core';
   standalone: true,
   imports: [KjTruncate],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
-    .card { max-width: 28rem; padding: var(--kj-space-md); background: var(--kj-bg-body); border-radius: var(--kj-radius-md); }
+    :host { display: block; }
+    .card { max-width: 28rem; padding: var(--kj-space-md); border-radius: var(--kj-radius-md); }
   `],
   template: `
     <article class="card">

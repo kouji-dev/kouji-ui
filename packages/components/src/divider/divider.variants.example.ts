@@ -11,7 +11,7 @@ import { KjDividerComponent } from './divider';
   standalone: true,
   imports: [KjDividerComponent],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
   `],
   template: `
     <p>Solid — the default rule style.</p>

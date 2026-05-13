@@ -31,7 +31,8 @@ export {
  * `[kjDropdownMenuLabel]` headings. The wrapper itself only projects content —
  * its purpose is to host the documentation page for the suite.
  *
- * @doc-name Dropdown menu
+ * @doc
+ * @doc-name dropdown-menu
  * @doc-is-main
  * @doc-example Default
  *   @doc-file dropdown-menu.example.ts

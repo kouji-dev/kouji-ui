@@ -19,6 +19,10 @@
     --kj-button-padding-y:        var(--kj-space-sm);
     --kj-button-font:             var(--kj-font-sans);
     --kj-button-font-size:        var(--kj-text-sm);
+    --kj-button-justify:          center;
+    --kj-button-gap:              var(--kj-space-sm);
+    --kj-button-min-width:        auto;
+    --kj-button-height:           auto;
     --kj-button-shadow:           none;
     --kj-button-shadow-active:    none;
     --kj-button-translate-active: none;
@@ -26,8 +30,13 @@
     /* the only place raw var(--kj-button-*) is read */
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--kj-space-sm);
+    justify-content: var(--kj-button-justify);
+    gap: var(--kj-button-gap);
+    min-width: var(--kj-button-min-width);
+    /* Explicit per-size height + align-self prevents flex parents
+       (align-items: stretch) from over-growing the button vertically. */
+    height: var(--kj-button-height);
+    align-self: center;
     background: var(--kj-button-bg);
     color: var(--kj-button-fg);
     border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
@@ -96,28 +105,62 @@
     --kj-button-fg: color-mix(in oklch, var(--kj-fg-primary), black 8%);
   }
 
-  /* sizes */
+  /* sizes — heights are explicit so flex parents can't stretch the button.
+     padding-y is kept for the `height: auto` (token-overridden) case and
+     for visual rhythm with content larger than the height. */
   .kj-button[data-size="sm"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: 0.25rem;
     --kj-button-font-size: 0.8125rem;
+    --kj-button-height:    2rem;       /*  32px */
+  }
+  .kj-button[data-size="md"] {
+    --kj-button-height:    2.25rem;    /*  36px */
   }
   .kj-button[data-size="lg"] {
     --kj-button-padding-x: var(--kj-space-lg);
     --kj-button-padding-y: 0.625rem;
     --kj-button-font-size: 1rem;
+    --kj-button-height:    2.75rem;    /*  44px (AAA touch target) */
+  }
+  .kj-button[data-size="xl"] {
+    --kj-button-padding-x: var(--kj-space-2xl);
+    --kj-button-padding-y: 0.875rem;
+    --kj-button-font-size: 1.0625rem;
+    --kj-button-gap:       var(--kj-space-md);
+    --kj-button-height:    3.25rem;    /*  52px */
   }
   .kj-button[data-size="icon"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: var(--kj-space-sm);
+    --kj-button-height:    2.25rem;
     aspect-ratio: 1;
+  }
+
+  /* Full-width: spans the parent (flex / block / grid track). */
+  .kj-button[data-full="true"] {
+    width: 100%;
   }
 
   /* Default-variant hover (catches the unset-or-`default` case). Specificity
      here is lower than the variant-specific rules above, so destructive /
-     ghost / outline / link override correctly. */
+     ghost / outline / link override correctly.
+
+     Themes can retarget the hover surface by setting
+     `--kj-button-bg-hover` (and optionally `--kj-button-fg-hover`) on
+     `[data-theme="X"]`. The fallbacks below preserve the default 8%
+     darken behaviour for any theme that doesn't customise. Defining the
+     defaults via `var(name, fallback)` instead of a `--kj-button-bg-hover:`
+     declaration on `.kj-button` keeps the theme's ancestor declaration
+     winning the cascade (an element-level default would override the
+     inherited value from `[data-theme]`). */
   .kj-button:hover {
-    --kj-button-bg: color-mix(in oklch, var(--kj-bg-primary), black 8%);
+    --kj-button-bg: var(--kj-button-bg-hover, color-mix(in oklch, var(--kj-bg-primary), black 8%));
+  }
+  /* fg-hover only applies to the default variant; ghost/outline/link own
+     their hover fg already, and destructive keeps its on-danger fg. */
+  .kj-button[data-variant="default"]:hover {
+    --kj-button-fg: var(--kj-button-fg-hover, var(--kj-fg-on-primary));
   }
   .kj-button:active {
     transform: var(--kj-button-translate-active);

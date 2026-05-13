@@ -52,6 +52,7 @@ import { KJ_BUTTON_CONFIG } from './config';
     '[attr.data-disabled]': 'effectiveDisabled() ? "" : null',
     '[attr.aria-busy]':     'kjLoading() ? "true" : null',
     '[attr.aria-pressed]':  'pressedAttr()',
+    '[attr.data-full]':     'kjFullWidth() ? "true" : null',
   },
 })
 export class KjButton {
@@ -62,6 +63,9 @@ export class KjButton {
 
   /** Marks the button as in-flight (e.g. async action). Sets `aria-busy="true"` and forces disabled. */
   readonly kjLoading = input(false);
+
+  /** Stretches the button to fill the parent's inline axis. Reflects `data-full="true"`. */
+  readonly kjFullWidth = input(false);
 
   /**
    * Toggle state. Unset (default) marks this as a non-toggle button and omits

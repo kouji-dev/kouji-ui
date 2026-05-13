@@ -5,7 +5,7 @@ import { KjBadgeComponent } from './badge';
   selector: 'kj-badge-variants-example',
   standalone: true,
   imports: [KjBadgeComponent],
-  styles: [`:host { display: flex; gap: 0.5rem; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: flex; gap: 0.5rem; }`],
   template: `
     <kj-badge variant="default">Default</kj-badge>
     <kj-badge variant="secondary">Secondary</kj-badge>

@@ -25,7 +25,7 @@ export {
  * purpose is to host the documentation tags for the tooltip suite.
  *
  * @doc
- * @doc-name Tooltip
+ * @doc-name tooltip
  * @doc-is-main
  * @doc-example Default
  *   @doc-file tooltip.example.ts

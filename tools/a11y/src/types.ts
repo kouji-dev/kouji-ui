@@ -1,5 +1,7 @@
 export type Theme =
-  | 'kouji' | 'dark' | 'light' | 'retro' | 'cyberpunk' | 'corporate';
+  | 'kouji' | 'dark' | 'light' | 'retro' | 'cyberpunk' | 'corporate'
+  | 'sakura' | 'bauhaus' | 'dune' | 'mint'
+  | 'forest' | 'nord' | 'terminal';
 
 export interface PageDef {
   /** URL path, leading slash. e.g. '/', '/docs/button' */

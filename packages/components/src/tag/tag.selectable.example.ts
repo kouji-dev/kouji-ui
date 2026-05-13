@@ -10,7 +10,7 @@ import { KjTagComponent } from './tag';
   selector: 'kj-tag-selectable-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; }`],
   template: `
     <kj-tag [kjTagSelectable]="true" [(kjTagSelected)]="design">Design</kj-tag>
     <kj-tag [kjTagSelectable]="true" [(kjTagSelected)]="engineering">Engineering</kj-tag>

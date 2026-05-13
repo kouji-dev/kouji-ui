@@ -5,7 +5,7 @@ import { KjButtonComponent } from './button';
   selector: 'kj-button-icon-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-button kjSize="icon" kjAriaLabel="Open settings">
       <!-- Inline SVG keeps the example self-contained; consumers typically use their own icon system. -->

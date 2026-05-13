@@ -64,6 +64,11 @@
     outline: 2px solid var(--kj-bg-primary);
     outline-offset: -2px;
   }
+  .kj-dropdown-menu-item[aria-current="true"] {
+    background: var(--kj-dropdown-menu-item-current-bg, var(--kj-bg-field));
+    color: var(--kj-dropdown-menu-item-current-fg, var(--kj-fg-primary));
+    font-weight: 500;
+  }
   .kj-dropdown-menu-item[data-disabled] {
     cursor: not-allowed;
     opacity: 0.5;

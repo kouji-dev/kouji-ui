@@ -18,7 +18,7 @@ const LABELS: Record<string, string> = {
   selector: 'kj-cascade-select-path-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--kj-fg-default);">
       Path: <span style="font-weight: 600;">{{ breadcrumb() }}</span>

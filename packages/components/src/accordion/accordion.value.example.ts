@@ -15,9 +15,9 @@ import {
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .controls { display: flex; gap: var(--kj-space-sm); margin-bottom: var(--kj-space-md); }
-    button { padding: 0.25rem 0.75rem; border: 1px solid var(--kj-border-default); background: var(--kj-bg-body); border-radius: var(--kj-radius-field); cursor: pointer; }
+    button { padding: 0.25rem 0.75rem; border: 1px solid var(--kj-border-default); border-radius: var(--kj-radius-field); cursor: pointer; }
   `],
   template: `
     <div class="controls">

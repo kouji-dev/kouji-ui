@@ -9,7 +9,7 @@ import { KjButtonComponent } from './button';
   selector: 'kj-button-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `<kj-button kjVariant="default">Click me</kj-button>`,
 })
 export class KjButtonExample {}

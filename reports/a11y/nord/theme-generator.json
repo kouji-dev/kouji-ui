@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "theme": "nord",
+  "page": "/theme-generator",
+  "url": "http://localhost:4200/theme-generator?theme=nord",
+  "timestamp": "2026-05-13T20:15:00.219Z",
+  "axe": {
+    "violationsByImpact": {
+      "critical": 0,
+      "serious": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "violations": [],
+    "passes": 49
+  },
+  "fonts": {
+    "samples": [
+      {
+        "selector": "body",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "h1",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 32,
+        "lineHeight": 38.4,
+        "weight": 700
+      },
+      {
+        "selector": "h2",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 24,
+        "lineHeight": 36,
+        "weight": 700
+      },
+      {
+        "selector": "h3",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 17,
+        "lineHeight": 25.5,
+        "weight": 700
+      },
+      {
+        "selector": "button",
+        "fontFamily": "Arial",
+        "fontSize": 13.3333,
+        "lineHeight": 15.999959999999998,
+        "weight": 400
+      },
+      {
+        "selector": "a",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "p",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 10,
+        "lineHeight": 12,
+        "weight": 400
+      },
+      {
+        "selector": "[role=\"status\"]",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 14,
+        "lineHeight": 20.3,
+        "weight": 400
+      }
+    ],
+    "warnings": [
+      {
+        "selector": "h2",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      },
+      {
+        "selector": "h3",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      },
+      {
+        "selector": "p",
+        "issue": "fontSize 10px below 12px minimum (WCAG 1.4.4)"
+      },
+      {
+        "selector": "[role=\"status\"]",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      }
+    ]
+  },
+  "lighthouse": null,
+  "lighthouseError": "The \"start lh:gather:getBenchmarkIndex\" performance mark has not been set"
+}

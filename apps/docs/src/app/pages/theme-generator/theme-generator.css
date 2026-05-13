@@ -6,6 +6,13 @@
   position: relative;
 }
 
+/* The route-shell owns the `<main>` landmark. This inner wrapper exists only
+   to scope the page contents; `display: contents` keeps the flex chain from
+   :host down to `.generator-body` intact. */
+.theme-generator-main {
+  display: contents;
+}
+
 /* Preview (center) + config tabs (right rail), matching layout spec */
 .generator-body {
   flex: 1 1 auto;
@@ -35,6 +42,10 @@
   overflow: hidden;
   border-left: 1px solid var(--kj-border-default);
   background: var(--kj-bg-body);
+  /* Clamp the panel's stacking context so its inner z-indexes (sticky
+     summary, color-chip ribbons, etc.) can't escape and paint over a
+     body-portalled overlay (drawer, dialog) opened from the preview. */
+  isolation: isolate;
 }
 
 .generator-config > kj-theme-config-panel {

@@ -28,7 +28,7 @@ import {
     ReactiveFormsModule,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
   `],
   template: `
     <form kj-form [formGroup]="form" (kjSubmit)="onSubmit()">

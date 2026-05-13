@@ -52,13 +52,13 @@
   border-radius: var(--kj-radius-field);
   background: var(--kj-bg-field);
   border: 1px solid var(--kj-border-default);
-  color: color-mix(in oklch, var(--kj-fg-default) 88%, transparent);
+  color: var(--kj-fg-default);
 }
 
 .palette-dialog__hint {
   margin: var(--kj-space-sm) 0 0;
   font: var(--kj-text-xs) var(--kj-font-sans);
-  color: color-mix(in oklch, var(--kj-fg-default) 62%, transparent);
+  color: var(--kj-fg-subtle);
   line-height: 1.45;
 }
 
@@ -102,7 +102,7 @@
   flex: 0 0 auto;
   font: var(--kj-text-sm) var(--kj-font-sans);
   font-weight: 500;
-  color: color-mix(in oklch, var(--kj-fg-default) 78%, transparent);
+  color: var(--kj-fg-muted);
 }
 
 .palette-dialog__fine kj-input {

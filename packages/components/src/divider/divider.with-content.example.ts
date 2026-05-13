@@ -12,7 +12,7 @@ import { KjDividerComponent } from './divider';
   standalone: true,
   imports: [KjDividerComponent],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); }
   `],
   template: `
     <div>

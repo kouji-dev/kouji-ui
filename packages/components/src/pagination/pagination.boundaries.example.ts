@@ -27,7 +27,7 @@ import {
     KjPaginationLastComponent,
     KjPaginationEllipsisComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-pagination [(kjPage)]="page" [kjTotalPages]="5" #p="kjPagination">
       <kj-pagination-first>«</kj-pagination-first>

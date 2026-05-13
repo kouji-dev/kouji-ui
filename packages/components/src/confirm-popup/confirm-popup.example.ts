@@ -33,7 +33,7 @@ import { KjButtonComponent } from '../button/button';
     KjButtonComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-bg-surface); min-height: 14rem; }
+    :host { display: block; padding: var(--kj-space-2xl); min-height: 14rem; }
     .kj-confirm-popup-example__row { display: flex; align-items: center; gap: var(--kj-space-md); }
     .kj-confirm-popup-example__status { color: var(--kj-fg-default); opacity: 0.85; font-size: 0.875rem; }
   `],

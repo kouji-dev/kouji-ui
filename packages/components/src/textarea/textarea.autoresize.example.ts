@@ -12,10 +12,7 @@ import { KjTextareaComponent } from './textarea';
   styles: [`
     :host {
       display: grid;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-surface);
-    }
+      gap: var(--kj-space-md); }
     label {
       font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
       color: var(--kj-fg-muted);

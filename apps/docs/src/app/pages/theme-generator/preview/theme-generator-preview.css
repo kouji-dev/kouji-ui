@@ -3,4 +3,3 @@
 .preview-tabs kj-tab-panel {
   flex: 1; overflow: auto; padding: 1rem;
 }
-.preview-tabs kj-tab { text-transform: capitalize; }

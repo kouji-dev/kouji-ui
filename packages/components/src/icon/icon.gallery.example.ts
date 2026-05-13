@@ -26,10 +26,7 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
   encapsulation: ViewEncapsulation.None,
   styles: [`
     kj-icon-gallery-example {
-      display: block;
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-surface);
-    }
+      display: block; }
     kj-icon-gallery-example .gallery-header {
       display: flex;
       flex-direction: column;
@@ -96,9 +93,7 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
       text-align: center;
       line-height: 1.2;
     }
-    kj-icon-gallery-example .gallery-empty {
-      padding: var(--kj-space-xl);
-      text-align: center;
+    kj-icon-gallery-example .gallery-empty { text-align: center;
       color: var(--kj-fg-muted, currentColor);
       border: 1px dashed var(--kj-border-default, rgba(0, 0, 0, 0.12));
       border-radius: var(--kj-radius-md, 8px);

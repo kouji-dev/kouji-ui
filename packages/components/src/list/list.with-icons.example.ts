@@ -14,7 +14,7 @@ import { KjListComponent, KjListItemComponent } from './list';
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .kj-list-icon {
       display: inline-flex;
       align-items: center;

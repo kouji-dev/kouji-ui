@@ -5,7 +5,7 @@ import { KjCheckboxComponent } from './checkbox';
   selector: 'kj-checkbox-default-example',
   standalone: true,
   imports: [KjCheckboxComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `<kj-checkbox [(checked)]="value">Accept terms</kj-checkbox>`,
 })
 export class KjCheckboxDefaultExample { readonly value = signal(false); }

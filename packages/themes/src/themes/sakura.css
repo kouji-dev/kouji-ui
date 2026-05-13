@@ -1,0 +1,77 @@
+/* ─────────────────────────────────────────────────────────────
+   sakura theme — light
+   Soft pink dawn, washi-paper surfaces, deep aubergine text,
+   cherry-magenta primary + plum accent. Cherry-blossom mood.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="sakura"] {
+    /* ── shape — soft, organic ── */
+    --kj-radius-box:      var(--kj-base-radius-3);
+    --kj-radius-field:    var(--kj-base-radius-2);
+    --kj-radius-selector: var(--kj-base-radius-2);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-base);
+
+    --kj-bg-body:        #fef5f3;
+    --kj-bg-surface:     #ffffff;
+    --kj-bg-field:       #fbe9e6;
+    --kj-bg-elevated:    #ffffff;
+    --kj-bg-overlay:     rgba(45, 24, 48, 0.45);
+    --kj-bg-inverse:     #2d1830;
+    --kj-bg-disabled:    #f0d9d4;
+
+    --kj-bg-primary:         #c2185b;
+    --kj-bg-primary-subtle:  #fce4ec;
+    --kj-bg-accent:          #6a1b4f;
+    --kj-bg-accent-subtle:   #f0e0ee;
+
+    --kj-bg-info:            #5b4880;
+    --kj-bg-info-subtle:     #ece6f5;
+    --kj-bg-success:         #2e7d52;
+    --kj-bg-success-subtle:  #d4ecdc;
+    --kj-bg-warning:         #d48838;
+    --kj-bg-warning-subtle:  #fce8d0;
+    --kj-bg-danger:          #9b1b3a;
+    --kj-bg-danger-subtle:   #f9d8e0;
+
+    --kj-fg-default:    #2d1830;
+    --kj-fg-muted:      #4d3050;
+    --kj-fg-subtle:     #6b4f70;
+    --kj-fg-disabled:   #c4a8c8;
+
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #ffffff;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #2d1830;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #fef5f3;
+
+    --kj-fg-primary:    #a01548;
+    --kj-fg-accent:     #6a1b4f;
+    --kj-fg-info:       #5b4880;
+    --kj-fg-success:    #2e7d52;
+    --kj-fg-warning:    #8a5a1f;
+    --kj-fg-danger:     #9b1b3a;
+
+    --kj-border-default:   #f0d9d4;
+    --kj-border-muted:     #f7e6e3;
+    --kj-border-strong:    #d4a4a0;
+    --kj-border-focus:     #c2185b;
+    --kj-border-disabled:  #f0d9d4;
+    --kj-border-primary:   #c2185b;
+    --kj-border-danger:    #9b1b3a;
+
+    --kj-shadow-sm:     0 1px 3px rgba(194, 24, 91, 0.08);
+    --kj-shadow-md:     0 6px 16px rgba(194, 24, 91, 0.12);
+    --kj-shadow-lg:     0 20px 48px rgba(194, 24, 91, 0.18);
+    --kj-shadow-focus:  0 0 0 3px rgba(194, 24, 91, 0.30);
+
+    /* Lift the cherry magenta to a deeper rose so the hover reads
+       against the warm body. */
+    --kj-button-bg-hover: #a01548;
+  }
+}

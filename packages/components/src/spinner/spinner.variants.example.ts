@@ -12,7 +12,7 @@ import { KjSpinnerComponent } from './spinner';
   standalone: true,
   imports: [KjSpinnerComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-lg); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: flex; gap: var(--kj-space-lg); align-items: center; flex-wrap: wrap; }
   `],
   template: `
     <kj-spinner kjVariant="neutral" kjAriaLabel="Loading (neutral)" />

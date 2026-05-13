@@ -13,7 +13,8 @@ export {
  * panel. The wrapper component exists purely to give the dialog suite a
  * dedicated documentation page.
  *
- * @doc-name Dialog
+ * @doc
+ * @doc-name dialog
  * @doc-is-main
  * @doc-example Default
  *   @doc-file dialog.default.example.ts

@@ -10,7 +10,7 @@ import { KjPasswordInputComponent } from './password-input';
   standalone: true,
   imports: [KjPasswordInputComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
   `],
   template: `
     <kj-password-input

@@ -9,12 +9,14 @@ import {
   randomMotionTransition,
   randomShapeSnapshot,
 } from '../lib/theme/palette-derive';
-import type { DraftTheme, ColorSlot, ContentSlot, ShapeKey, FontKey, MotionKey, TypographyKey } from '../lib/theme/types';
+import type {
+  BgSlot, FgSlot, DraftTheme, ShapeKey, FontKey, MotionKey, TypographyKey,
+} from '../lib/theme/types';
 
 const STORAGE_KEY = 'kj-custom-themes';
 const DRAFT_KEY   = 'kj-draft-current';
 
-interface StoredEnvelope { version: 1; themes: SavedTheme[] }
+interface StoredEnvelope { version: 2; themes: SavedTheme[] }
 export interface SavedTheme extends DraftTheme { savedAt: number }
 
 export type SaveResult =
@@ -23,20 +25,22 @@ export type SaveResult =
 
 const BLANK_DRAFT: DraftTheme = {
   name: '',
-  colors: { ...BUILT_IN_THEMES.light.colors },
-  contentOverrides: {},
+  bg: { ...BUILT_IN_THEMES.light.bg },
+  fg: { ...BUILT_IN_THEMES.light.fg },
   shape:      { ...BUILT_IN_THEMES.light.shape },
   type:       { ...BUILT_IN_THEMES.light.type },
   typography: { ...BUILT_IN_THEMES.light.typography },
   motion:     { ...BUILT_IN_THEMES.light.motion },
 };
 
+type AnySlot = BgSlot | FgSlot;
+
 @Injectable({ providedIn: 'root' })
 export class ThemeDraftService {
   private readonly _draft = signal<DraftTheme>(this.readDraft() ?? structuredClone(BLANK_DRAFT));
   readonly draft = this._draft.asReadonly();
 
-  private readonly _dirty = signal<Set<ColorSlot>>(new Set());
+  private readonly _dirty = signal<Set<AnySlot>>(new Set());
   readonly dirtySlots = this._dirty.asReadonly();
 
   readonly resolvedTokens = computed(() => deriveTokens(this._draft()));
@@ -70,29 +74,40 @@ export class ThemeDraftService {
     this.persistDraft();
   }
 
-  setColor(slot: ColorSlot, value: string): void {
-    this._draft.update(d => ({ ...d, colors: { ...d.colors, [slot]: value } }));
+  setBg(slot: BgSlot, value: string): void {
+    this._draft.update(d => ({ ...d, bg: { ...d.bg, [slot]: value } }));
     this._dirty.update(s => { const n = new Set(s); n.add(slot); return n; });
     this.persistDraft();
   }
 
-  setColors(colors: Record<ColorSlot, string>): void {
-    this._draft.update(d => ({ ...d, colors: { ...colors } }));
+  setFg(slot: FgSlot, value: string): void {
+    this._draft.update(d => ({ ...d, fg: { ...d.fg, [slot]: value } }));
+    this._dirty.update(s => { const n = new Set(s); n.add(slot); return n; });
+    this.persistDraft();
+  }
+
+  setBgs(bg: Record<BgSlot, string>): void {
+    this._draft.update(d => ({ ...d, bg: { ...bg } }));
     this._dirty.set(new Set());
     this.persistDraft();
   }
 
-  /** Random curated palette (weighted hue family). Optionally shuffle radii, border, depth, and motion — DaisyUI-style “surprise theme”.
-   * Clears all manual surface/content overrides so every shuffle is a full reset. */
+  setFgs(fg: Record<FgSlot, string>): void {
+    this._draft.update(d => ({ ...d, fg: { ...fg } }));
+    this._dirty.set(new Set());
+    this.persistDraft();
+  }
+
+  /**
+   * Random curated palette (weighted hue family). Optionally shuffle radii,
+   * border, depth, and motion — DaisyUI-style "surprise theme". Clears all
+   * manual overrides so every shuffle is a full reset.
+   */
   applyRandomInspiration(opts: { includeShape?: boolean; random?: () => number } = {}): void {
     const rnd = opts.random ?? Math.random;
-    const palette = randomAccessiblePalette({ random: rnd });
+    const { bg, fg } = randomAccessiblePalette({ random: rnd });
     this._draft.update(d => {
-      const next: DraftTheme = {
-        ...d,
-        colors: palette,
-        contentOverrides: {},
-      };
+      const next: DraftTheme = { ...d, bg, fg };
       if (opts.includeShape) {
         next.shape = { ...d.shape, ...randomShapeSnapshot(rnd) };
         next.motion = { transition: randomMotionTransition(rnd) };
@@ -103,31 +118,28 @@ export class ThemeDraftService {
     this.persistDraft();
   }
 
-  /** Re-derive secondary/accent/neutral/semantic from current `primary`.
-   * Slots the user has manually edited (in `dirtySlots`) are preserved unless
-   * `overwriteDirty: true`. */
+  /**
+   * Re-derive every slot from the current `bg-primary`. Slots the user has
+   * manually edited (in `dirtySlots`) are preserved unless `overwriteDirty: true`.
+   */
   rederiveFromPrimary(opts: { overwriteDirty?: boolean; mode?: 'light' | 'dark' } = {}): void {
-    const seed = this._draft().colors.primary;
+    const seed = this._draft().bg['bg-primary'];
     const derived = deriveFromSeed(seed, { mode: opts.mode ?? 'light' });
     if (opts.overwriteDirty) {
-      this.setColors(derived);
+      this.setBgs(derived.bg);
+      this.setFgs(derived.fg);
       return;
     }
     const dirty = this._dirty();
-    const next = { ...this._draft().colors };
-    for (const slot of Object.keys(derived) as ColorSlot[]) {
-      if (!dirty.has(slot)) next[slot] = derived[slot];
+    const nextBg = { ...this._draft().bg };
+    const nextFg = { ...this._draft().fg };
+    for (const slot of Object.keys(derived.bg) as BgSlot[]) {
+      if (!dirty.has(slot)) nextBg[slot] = derived.bg[slot];
     }
-    this._draft.update(d => ({ ...d, colors: next }));
-    this.persistDraft();
-  }
-
-  setContentOverride(slot: ContentSlot, value: string | null): void {
-    this._draft.update(d => {
-      const next = { ...d.contentOverrides };
-      if (value === null) delete next[slot]; else next[slot] = value;
-      return { ...d, contentOverrides: next };
-    });
+    for (const slot of Object.keys(derived.fg) as FgSlot[]) {
+      if (!dirty.has(slot)) nextFg[slot] = derived.fg[slot];
+    }
+    this._draft.update(d => ({ ...d, bg: nextBg, fg: nextFg }));
     this.persistDraft();
   }
 
@@ -216,14 +228,14 @@ export class ThemeDraftService {
   }
 
   private read(): StoredEnvelope {
-    if (typeof localStorage === 'undefined') return { version: 1, themes: [] };
+    if (typeof localStorage === 'undefined') return { version: 2, themes: [] };
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { version: 1, themes: [] };
+    if (!raw) return { version: 2, themes: [] };
     try {
       const parsed = JSON.parse(raw) as StoredEnvelope;
-      if (parsed.version !== 1) return { version: 1, themes: [] };
+      if (parsed.version !== 2) return { version: 2, themes: [] };
       return parsed;
-    } catch { return { version: 1, themes: [] }; }
+    } catch { return { version: 2, themes: [] }; }
   }
   private write(env: StoredEnvelope): void {
     if (typeof localStorage === 'undefined') return;
@@ -235,6 +247,8 @@ export class ThemeDraftService {
     if (!raw) return null;
     try {
       const parsed = JSON.parse(raw) as DraftTheme;
+      // Reject pre-migration drafts; they lack the bg/fg shape.
+      if (!parsed.bg || !parsed.fg) return null;
       return {
         ...parsed,
         typography: parsed.typography ?? { ...BUILT_IN_THEMES.light.typography },

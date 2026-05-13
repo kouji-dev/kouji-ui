@@ -9,29 +9,41 @@ import { ThemeDraftService } from '../../../services/theme-draft.service';
 import { ThemePaletteDialogContext } from '../../../services/theme-palette-dialog-context';
 import { ThemePaletteDialogBody } from './theme-palette-dialog-body';
 import { oklchToHex } from '../../../lib/theme/theme-color-utils';
-import type { ColorSlot, ContentSlot } from '../../../lib/theme/types';
+import type { BgSlot, FgSlot } from '../../../lib/theme/types';
 import type { Edge } from '../../../lib/theme/theme-a11y-report';
-/**
- * Brand + semantic fills (excluding base canvas — see Base strip).
- * Same order as the Main chip row.
- */
-const MAIN_FILL_SLOTS: readonly ColorSlot[] = [
-  'primary',
-  'secondary',
-  'accent',
-  'neutral',
-  'info',
-  'success',
-  'warning',
-  'destructive',
-];
 
-/** Top ribbon + tooltip copy for worst AAA-normal case per swatch. */
-interface AaaRibbonVm {
+/** Surfaces row — 4 neutral backgrounds. */
+const SURFACE_CHIPS = [
+  { slot: 'bg-body'     as const, mark: 'Body' },
+  { slot: 'bg-surface'  as const, mark: 'Surf' },
+  { slot: 'bg-field'    as const, mark: 'Field' },
+  { slot: 'bg-elevated' as const, mark: 'Elev' },
+] as const;
+
+/** Intent row — 6 intent backgrounds. */
+const INTENT_CHIPS = [
+  { slot: 'bg-primary' as const, mark: 'Pri' },
+  { slot: 'bg-accent'  as const, mark: 'Acc' },
+  { slot: 'bg-info'    as const, mark: 'Inf' },
+  { slot: 'bg-success' as const, mark: 'Suc' },
+  { slot: 'bg-warning' as const, mark: 'Wrn' },
+  { slot: 'bg-danger'  as const, mark: 'Dng' },
+] as const;
+
+/** Foreground row — fg-default + 6 fg-on-* paired with intents. */
+const FG_CHIPS = [
+  { slot: 'fg-default'    as const, mark: 'Def' },
+  { slot: 'fg-on-primary' as const, mark: 'Pri' },
+  { slot: 'fg-on-accent'  as const, mark: 'Acc' },
+  { slot: 'fg-on-info'    as const, mark: 'Inf' },
+  { slot: 'fg-on-success' as const, mark: 'Suc' },
+  { slot: 'fg-on-warning' as const, mark: 'Wrn' },
+  { slot: 'fg-on-danger'  as const, mark: 'Dng' },
+] as const;
+
+interface RibbonVm {
   accent: string;
-  /** First line in tooltip: ratio · verdict (AA / AAA / …). */
   overlayLine: string;
-  /** Second line: AA/AAA threshold context and pass counts. */
   tooltipDetail: string;
 }
 
@@ -61,126 +73,47 @@ export class A11yPanel {
   protected readonly scoreReport = computed(() =>
     this.contrastScore.buildReport(this.draftService.resolvedTokens(), this.draftService.draft()),
   );
-  /** Semantic fill chips (Main row). */
-  protected readonly mainFillChips = [
-    { slot: 'primary' as const, mark: 'Pri' },
-    { slot: 'secondary' as const, mark: 'Sec' },
-    { slot: 'accent' as const, mark: 'Acc' },
-    { slot: 'neutral' as const, mark: 'Neu' },
-    { slot: 'info' as const, mark: 'Inf' },
-    { slot: 'success' as const, mark: 'Suc' },
-    { slot: 'warning' as const, mark: 'Wrn' },
-    { slot: 'destructive' as const, mark: 'Dst' },
-  ] as const;
 
-  /** AAA-normal ribbon model per Base swatch. */
-  protected readonly ribbonBase = computed(() => {
-    this.scoreReport();
-    return {
-      b100: this.buildAaaRibbon(this.edgesForSemantic('base-100')),
-      b200: this.buildAaaRibbon(this.edgesForDerived('base-200')),
-      b300: this.buildAaaRibbon(this.edgesForDerived('base-300')),
-      bContent: this.buildAaaRibbon(this.edgesForDerived('base-content')),
-    };
-  });
+  protected readonly surfaceChips = SURFACE_CHIPS;
+  protected readonly intentChips  = INTENT_CHIPS;
+  protected readonly fgChips      = FG_CHIPS;
 
-  /** AAA-normal ribbon per Main fill chip (fill-related edges only). */
-  protected readonly ribbonMainFill = computed(() => {
+  /** Worst-case AAA ribbon per bg slot. */
+  protected readonly bgRibbons = computed(() => {
     this.scoreReport();
-    const m = new Map<ColorSlot, AaaRibbonVm>();
-    for (const slot of MAIN_FILL_SLOTS) {
-      const edges = this.edgesForSemantic(slot).filter(e => !this.isSemanticContentFgToken(e.fgToken));
-      m.set(slot, this.buildAaaRibbon(edges));
+    const m = new Map<BgSlot, RibbonVm>();
+    for (const c of [...SURFACE_CHIPS, ...INTENT_CHIPS]) {
+      m.set(c.slot, this.buildRibbon(this.edgesForBg(c.slot)));
     }
     return m;
   });
 
-  /** AAA-normal ribbon per Text chip (*-content foreground edges). */
-  protected readonly ribbonText = computed(() => {
+  /** Worst-case AAA ribbon per fg slot. */
+  protected readonly fgRibbons = computed(() => {
     this.scoreReport();
-    const m = new Map<ColorSlot, AaaRibbonVm>();
-    for (const slot of MAIN_FILL_SLOTS) {
-      m.set(slot, this.buildAaaRibbon(this.edgesForSemanticContentFg(slot)));
+    const m = new Map<FgSlot, RibbonVm>();
+    for (const c of FG_CHIPS) {
+      m.set(c.slot, this.buildRibbon(this.edgesForFg(c.slot)));
     }
     return m;
   });
 
-  /** Contrast edges whose scored pair involves this derived surface/content token. */
-  protected edgesForDerived(slot: ContentSlot): Edge[] {
-    const r = this.scoreReport();
-    const { contrastEdges: ce, nonTextEdges: ne } = r;
-    if (slot === 'base-200') {
-      return [
-        ...ce.filter(e => e.fgToken === 'base-content' && e.bgToken === 'base-200'),
-        ...ne.filter(e => e.fgToken === 'base-300' && e.bgToken === 'base-200'),
-      ];
-    }
-    if (slot === 'base-300') {
-      return [
-        ...ce.filter(e => e.fgToken === 'base-content' && e.bgToken === 'base-300'),
-        ...ne.filter(e => e.fgToken === 'base-300'),
-      ];
-    }
-    return ce.filter(e => e.fgToken === 'base-content');
+  /** Hex value for a bg slot (chip background paint). */
+  protected hexForBg(slot: BgSlot): string {
+    return oklchToHex(this.draft().bg[slot]);
   }
 
-  /** Contrast edges where text paint is the semantic *-content token. */
-  private edgesForSemanticContentFg(slot: ColorSlot): Edge[] {
-    const ct = `${slot}-content`;
-    return this.scoreReport().contrastEdges.filter(e => e.fgToken === ct);
+  /** Hex value for a fg slot (chip background paint). */
+  protected hexForFg(slot: FgSlot): string {
+    return oklchToHex(this.draft().fg[slot]);
   }
 
-  private isSemanticContentFgToken(t: string): boolean {
-    return MAIN_FILL_SLOTS.some(s => `${s}-content` === t);
+  protected openBg(slot: BgSlot): void {
+    this.openPalette({ kind: 'bg', slot });
   }
 
-  /** Contrast edges for semantic fills (fill on canvas + content-on-fill). */
-  protected edgesForSemantic(slot: ColorSlot): Edge[] {
-    const ce = this.scoreReport().contrastEdges;
-    if (slot === 'base-100') {
-      return ce.filter(
-        e =>
-          (e.fgToken === 'base-content' && e.bgToken === 'base-100') ||
-          (e.fgToken === 'primary' && e.bgToken === 'base-100'),
-      );
-    }
-    const contentTok = `${slot}-content`;
-    const onFill = ce.filter(e => e.fgToken === contentTok && e.bgToken === slot);
-    const onCanvas = ce.filter(
-      e => e.fgToken === slot && (e.bgToken === 'base-100' || e.bgToken === 'base-200'),
-    );
-    return [...onFill, ...onCanvas];
-  }
-
-  protected hexFor(slot: ColorSlot): string {
-    return oklchToHex(this.draft().colors[slot]);
-  }
-
-  protected hexForDerived(slot: ContentSlot): string {
-    const tokens = this.draftService.resolvedTokens();
-    let value: string;
-    if (slot === 'base-200') value = tokens.derivedBase.base200;
-    else if (slot === 'base-300') value = tokens.derivedBase.base300;
-    else value = tokens.contents[slot];
-    return oklchToHex(value);
-  }
-
-  protected openSemanticFill(slot: ColorSlot): void {
-    this.openPalette({ kind: 'semantic-fill', slot });
-  }
-
-  protected openSemanticContent(slot: ColorSlot): void {
-    this.openPalette({ kind: 'semantic-content', slot });
-  }
-
-  /** Resolved hex for on-fill text (`primary-content`, …). */
-  protected hexForSemanticContent(slot: ColorSlot): string {
-    const key = `${slot}-content` as ContentSlot;
-    return oklchToHex(this.draftService.resolvedTokens().contents[key]);
-  }
-
-  protected openDerived(slot: ContentSlot): void {
-    this.openPalette({ kind: 'derived', slot });
+  protected openFg(slot: FgSlot): void {
+    this.openPalette({ kind: 'fg', slot });
   }
 
   private openPalette(payload: Parameters<ThemePaletteDialogContext['start']>[0]): void {
@@ -189,28 +122,36 @@ export class A11yPanel {
     ref.afterClosed$.subscribe(() => this.paletteCtx.end());
   }
 
-  /**
-   * Worst AAA-normal pair for this swatch → ribbon color; hover/focus shows worst ratio + verdict.
-   */
-  private buildAaaRibbon(edges: Edge[]): AaaRibbonVm {
-    const aaa = edges.filter(e => e.requirement === 'AAA-normal');
-    if (aaa.length === 0) {
+  /** Contrast edges that involve this bg slot (as the bg token). */
+  private edgesForBg(slot: BgSlot): Edge[] {
+    const r = this.scoreReport();
+    return [...r.contrastEdges, ...r.nonTextEdges].filter(e => e.bgToken === slot);
+  }
+
+  /** Contrast edges that paint with this fg slot. */
+  private edgesForFg(slot: FgSlot): Edge[] {
+    return this.scoreReport().contrastEdges.filter(e => e.fgToken === slot);
+  }
+
+  private buildRibbon(edges: Edge[]): RibbonVm {
+    const aa = edges.filter(e => e.requirement === 'AA-normal');
+    if (aa.length === 0) {
       return {
         accent: 'color-mix(in oklch, var(--kj-fg-muted) 42%, transparent)',
-        overlayLine: 'No AAA-normal pairs',
+        overlayLine: 'No AA-normal pairs',
         tooltipDetail:
-          'No AAA-normal contrast pairs reference this swatch. Other checks (e.g. UI 3:1) may still apply.',
+          'No AA-normal contrast pairs reference this swatch. Other checks (e.g. UI 3:1) may still apply.',
       };
     }
-    const worst = aaa.reduce((a, b) => (a.ratio <= b.ratio ? a : b));
+    const worst = aa.reduce((a, b) => (a.ratio <= b.ratio ? a : b));
     const minR = worst.ratio;
-    const failCount = aaa.filter(e => !e.pass).length;
+    const failCount = aa.filter(e => !e.pass).length;
     const accent = this.ribbonAccent(minR, failCount > 0);
     const overlayLine = `${minR.toFixed(2)}:1 · ${worst.verdict}`;
     const tooltipDetail =
       failCount === 0
-        ? `Worst case among ${aaa.length} AAA-normal pair(s). Targets: AA ≥4.5:1, AAA ≥7:1 for normal text — all pass.`
-        : `${failCount} of ${aaa.length} pair(s) below AA or AAA target (AA ≥4.5:1, AAA ≥7:1).`;
+        ? `Worst case among ${aa.length} AA-normal pair(s). Target: AA ≥4.5:1 (axe baseline) — all pass.`
+        : `${failCount} of ${aa.length} pair(s) below AA 4.5:1 target.`;
     return { accent, overlayLine, tooltipDetail };
   }
 

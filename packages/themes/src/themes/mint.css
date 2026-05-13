@@ -1,0 +1,94 @@
+/* ─────────────────────────────────────────────────────────────
+   mint theme — light
+   Fresh herbal cool greens. Mint-tinted cream body, crisp white
+   cards, deep spearmint primary (mono-hue: primary === accent ===
+   success). Calm spa / ceramic / fresh-herb feel.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="mint"] {
+    /* ── shape — soft, organic ── */
+    --kj-radius-box:      var(--kj-base-radius-2);
+    --kj-radius-field:    var(--kj-base-radius-1);
+    --kj-radius-selector: var(--kj-base-radius-1);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-base);
+
+    /* Surfaces — mint-tinted cream body, pure white cards. ~10% L
+       between body (#eef5ec ≈ 0.88) and surface (#ffffff = 1.00) so
+       cards visibly lift. Field is a deeper mint recess for inputs. */
+    --kj-bg-body:        #eef5ec;
+    --kj-bg-surface:     #ffffff;
+    --kj-bg-field:       #def0db;
+    --kj-bg-elevated:    #ffffff;
+    --kj-bg-overlay:     rgba(8, 40, 28, 0.55);
+    --kj-bg-inverse:     #0c2a1f;
+    --kj-bg-disabled:    #cee0cb;
+
+    /* Signature spearmint — used for primary/accent/success. Mono-hue
+       identity (cf. corporate Navy / dark Cobalt). Info gets a separate
+       restrained slate-blue so it doesn't collide with the spearmint
+       success state. */
+    --kj-bg-primary:         #047857;
+    --kj-bg-primary-subtle:  #d0ebde;
+    --kj-bg-accent:          #047857;
+    --kj-bg-accent-subtle:   #d0ebde;
+
+    --kj-bg-info:            #195e85;
+    --kj-bg-info-subtle:     #d4e3ed;
+    --kj-bg-success:         #047857;
+    --kj-bg-success-subtle:  #d0ebde;
+    --kj-bg-warning:         #a06400;
+    --kj-bg-warning-subtle:  #f5e2c0;
+    --kj-bg-danger:          #b8362c;
+    --kj-bg-danger-subtle:   #f3d4d0;
+
+    --kj-fg-default:    #0c2a1f;
+    --kj-fg-muted:      #284a3a;
+    --kj-fg-subtle:     #4a6a5a;
+    --kj-fg-disabled:   #a8b8ad;
+
+    /* Every intent fill is dark enough that white text passes AA
+       (≥ 4.5:1). Spearmint #047857 ≈ 5.5:1 with white. */
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #ffffff;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #ffffff;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #eef5ec;
+
+    /* fg-* tuned so each intent-as-text clears AA on both the mint body
+       (~0.88 L) AND the docs-app navbar's primary-subtle-derived bg
+       (~0.77 L). `#047857` only hits 4.19:1 on the navbar; deepening to
+       `#035a42` reaches ~5.47:1 there. Same color is used for the
+       hover-deep button bg below — coincidence is intentional. */
+    --kj-fg-primary:    #035a42;
+    --kj-fg-accent:     #035a42;
+    --kj-fg-info:       #195e85;
+    --kj-fg-success:    #035a42;
+    --kj-fg-warning:    #6b4200;
+    --kj-fg-danger:     #8b2a22;
+
+    --kj-border-default:   #c8dec5;
+    --kj-border-muted:     #def0db;
+    --kj-border-strong:    #94b099;
+    --kj-border-focus:     #047857;
+    --kj-border-disabled:  #cee0cb;
+    --kj-border-primary:   #047857;
+    --kj-border-danger:    #b8362c;
+
+    /* Cool mint-tinted shadows — spa softness, not generic gray. */
+    --kj-shadow-sm:     0 1px 3px rgba(8, 60, 40, 0.10);
+    --kj-shadow-md:     0 6px 16px rgba(8, 60, 40, 0.15);
+    --kj-shadow-lg:     0 20px 48px rgba(8, 60, 40, 0.22);
+    --kj-shadow-focus:  0 0 0 3px rgba(4, 120, 87, 0.30);
+
+    /* Deepen the spearmint on hover (~10% darker) so the interaction
+       reads on the bright body. */
+    --kj-button-bg-hover: #035a42;
+  }
+}

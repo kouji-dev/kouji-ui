@@ -14,7 +14,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   styles: [
-    `:host { display: block; padding: var(--kj-space-2xl); background: var(--kj-bg-surface); min-height: 22rem; }`,
+    `:host { display: block; padding: var(--kj-space-2xl); min-height: 22rem; }`,
   ],
   template: `
     <p>Menubar submenu example pending rewrite onto overlay primitives.</p>

@@ -1,16 +1,20 @@
-<kj-theme-toolbar (requestImport)="openImport()" />
+<div class="theme-generator-main">
+  <h1 kjVisuallyHidden>Theme generator</h1>
 
-<div class="generator-body">
-  <div class="generator-preview" data-theme="custom-draft">
-    <kj-theme-generator-preview />
+  <kj-theme-toolbar (requestImport)="openImport()" />
+
+  <div class="generator-body">
+    <div class="generator-preview" data-theme="custom-draft">
+      <kj-theme-generator-preview />
+    </div>
+    <aside class="generator-config" aria-label="Theme configuration">
+      <kj-theme-config-panel />
+    </aside>
   </div>
-  <aside class="generator-config" aria-label="Theme configuration">
-    <kj-theme-config-panel />
-  </aside>
+
+  @if (toast(); as msg) {
+    <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
+  }
+
+  <kj-theme-import-dialog [open]="importOpen()" (closed)="onImportClosed($event)" />
 </div>
-
-@if (toast(); as msg) {
-  <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
-}
-
-<kj-theme-import-dialog [open]="importOpen()" (closed)="onImportClosed($event)" />

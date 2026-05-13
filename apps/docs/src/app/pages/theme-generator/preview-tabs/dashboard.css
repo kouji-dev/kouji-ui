@@ -62,14 +62,14 @@
   color: var(--kj-fg-default);
 }
 .kpi__delta--up {
-  background: color-mix(in srgb, var(--kj-bg-success) 18%, transparent);
-  color: var(--kj-fg-success);
-  border-color: color-mix(in srgb, var(--kj-bg-success) 40%, transparent);
+  background: var(--kj-bg-success);
+  color: var(--kj-fg-on-success);
+  border-color: var(--kj-bg-success);
 }
 .kpi__delta--down {
-  background: color-mix(in srgb, var(--kj-bg-danger) 18%, transparent);
-  color: var(--kj-fg-danger);
-  border-color: color-mix(in srgb, var(--kj-bg-danger) 40%, transparent);
+  background: var(--kj-bg-danger);
+  color: var(--kj-fg-on-danger);
+  border-color: var(--kj-bg-danger);
 }
 
 .grid {
@@ -108,7 +108,7 @@
 }
 
 .card {
-  background: var(--kj-bg-elevated);
+  background: var(--kj-bg-surface);
   border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-box, 8px);
   padding: 1rem;
@@ -241,24 +241,24 @@
   color: var(--kj-fg-default);
 }
 .status[data-tone='success'] {
-  background: color-mix(in srgb, var(--kj-bg-success) 18%, transparent);
-  color: var(--kj-fg-success);
-  border-color: color-mix(in srgb, var(--kj-bg-success) 40%, transparent);
+  background: var(--kj-bg-success);
+  color: var(--kj-fg-on-success);
+  border-color: var(--kj-bg-success);
 }
 .status[data-tone='info'] {
-  background: color-mix(in srgb, var(--kj-bg-info) 18%, transparent);
-  color: var(--kj-fg-info);
-  border-color: color-mix(in srgb, var(--kj-bg-info) 40%, transparent);
+  background: var(--kj-bg-info);
+  color: var(--kj-fg-on-info);
+  border-color: var(--kj-bg-info);
 }
 .status[data-tone='warning'] {
-  background: color-mix(in srgb, var(--kj-bg-warning) 18%, transparent);
-  color: var(--kj-fg-warning);
-  border-color: color-mix(in srgb, var(--kj-bg-warning) 40%, transparent);
+  background: var(--kj-bg-warning);
+  color: var(--kj-fg-on-warning);
+  border-color: var(--kj-bg-warning);
 }
 .status[data-tone='destructive'] {
-  background: color-mix(in srgb, var(--kj-bg-danger) 18%, transparent);
-  color: var(--kj-fg-danger);
-  border-color: color-mix(in srgb, var(--kj-bg-danger) 40%, transparent);
+  background: var(--kj-bg-danger);
+  color: var(--kj-fg-on-danger);
+  border-color: var(--kj-bg-danger);
 }
 
 .qactions {
@@ -266,9 +266,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-top: 0.5rem;
-}
-.qactions kj-button {
-  width: 100%;
 }
 @media (max-width: 480px) {
   .qactions {

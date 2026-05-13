@@ -9,7 +9,7 @@ import { KjFileUploadComponent } from './file-upload';
   selector: 'kj-file-upload-example',
   standalone: true,
   imports: [KjFileUploadComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-file-upload
       [kjMultiple]="false"

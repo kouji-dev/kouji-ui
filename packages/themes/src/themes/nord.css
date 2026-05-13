@@ -1,0 +1,83 @@
+/* ─────────────────────────────────────────────────────────────
+   nord theme — dark
+   Arctic Ice Studios palette: polar-night surfaces, frost teal
+   primary, aurora accents (green/yellow/red). Cool, desaturated.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="nord"] {
+    /* ── shape ── */
+    --kj-radius-box:      var(--kj-base-radius-2);
+    --kj-radius-field:    var(--kj-base-radius-1);
+    --kj-radius-selector: var(--kj-base-radius-1);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+    /* ── type — brand display face ── */
+    --kj-font-display: var(--kj-base-font-display);
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-fast);
+
+    /* Polar Night surfaces: nord0 → nord3 */
+    --kj-bg-body:        #2e3440;
+    --kj-bg-surface:     #3b4252;
+    --kj-bg-field:       #434c5e;
+    --kj-bg-elevated:    #4c566a;
+    --kj-bg-overlay:     rgba(20, 24, 32, 0.55);
+    --kj-bg-inverse:     #eceff4;
+    --kj-bg-disabled:    #3b4252;
+
+    --kj-bg-primary:         #88c0d0;
+    --kj-bg-primary-subtle:  #3a4658;
+    --kj-bg-accent:          #81a1c1;
+    --kj-bg-accent-subtle:   #3a4555;
+
+    --kj-bg-info:            #88c0d0;
+    --kj-bg-info-subtle:     #3a4658;
+    --kj-bg-success:         #a3be8c;
+    --kj-bg-success-subtle:  #3a4540;
+    --kj-bg-warning:         #ebcb8b;
+    --kj-bg-warning-subtle:  #4a4535;
+    --kj-bg-danger:          #d8a0a5;
+    --kj-bg-danger-subtle:   #4a3838;
+
+    /* Snow Storm scaled: default = nord6, muted = nord4, subtle = nord4
+       darkened. */
+    --kj-fg-default:    #eceff4;
+    --kj-fg-muted:      #d8dee9;
+    --kj-fg-subtle:     #b8c0cd;
+    --kj-fg-disabled:   #4c566a;
+
+    --kj-fg-on-primary:   #1a1a1a;
+    --kj-fg-on-accent:    #1a1a1a;
+    --kj-fg-on-info:      #1a1a1a;
+    --kj-fg-on-success:   #1a1a1a;
+    --kj-fg-on-warning:   #1a1a1a;
+    --kj-fg-on-danger:    #1a1a1a;
+    --kj-fg-on-inverse:   #2e3440;
+
+    --kj-fg-primary:    #88c0d0;
+    --kj-fg-accent:     #81a1c1;
+    --kj-fg-info:       #88c0d0;
+    --kj-fg-success:    #a3be8c;
+    --kj-fg-warning:    #ebcb8b;
+    --kj-fg-danger:     #d8a0a5;
+
+    --kj-border-default:   #434c5e;
+    --kj-border-muted:     #3b4252;
+    --kj-border-strong:    #4c566a;
+    --kj-border-focus:     #88c0d0;
+    --kj-border-disabled:  #3b4252;
+    --kj-border-primary:   #88c0d0;
+    --kj-border-danger:    #d8a0a5;
+
+    --kj-shadow-sm:     0 1px 3px rgba(20, 24, 32, 0.30);
+    --kj-shadow-md:     0 6px 18px rgba(20, 24, 32, 0.42);
+    --kj-shadow-lg:     0 20px 48px rgba(20, 24, 32, 0.55);
+    --kj-shadow-focus:  0 0 0 3px rgba(136, 192, 208, 0.40);
+
+    /* Brighten frost teal on hover (dark themes need luminosity lift,
+       not the default 8% black-mix darken). */
+    --kj-button-bg-hover: #a3d4e2;
+  }
+}

@@ -10,7 +10,7 @@ import { KjAvatarComponent } from './avatar';
   selector: 'kj-avatar-group-overflow-example',
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-avatar-group [kjMax]="3" kjAriaLabel="collaborators">
       <kj-avatar content="AL" alt="Ada Lovelace" />

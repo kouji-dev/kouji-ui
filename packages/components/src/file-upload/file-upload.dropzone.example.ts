@@ -11,7 +11,7 @@ import { KjFileUploadComponent } from './file-upload';
   standalone: true,
   imports: [KjFileUploadComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .kj-file-upload__dropzone { min-height: 14rem; }
   `],
   template: `

@@ -11,7 +11,7 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
   selector: 'kj-overlay-badge-on-avatar-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjAvatarComponent],
-  styles: [`:host { display: flex; gap: var(--kj-space-xl); padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: flex; gap: var(--kj-space-xl); }`],
   template: `
     <kj-overlay-badge
       [kjDot]="true"

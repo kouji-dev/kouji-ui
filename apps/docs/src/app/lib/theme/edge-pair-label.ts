@@ -1,8 +1,8 @@
-import type { ColorSlot, ContentSlot } from './types';
+import type { BgSlot, FgSlot } from './types';
 import type { Edge } from './theme-a11y-report';
 
-/** Row identity for contrast chip labels (semantic fills + derived base/content). */
-export type ThemeColorRowSlot = ColorSlot | ContentSlot;
+/** Row identity for contrast chip labels (any editable slot). */
+export type ThemeColorRowSlot = BgSlot | FgSlot;
 
 /**
  * Visible label for a contrast edge under a color row: the row heading already names `slot`,

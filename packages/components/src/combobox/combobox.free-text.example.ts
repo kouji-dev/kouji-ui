@@ -11,7 +11,7 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from './combobox';
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .out { font: 0.875rem var(--kj-font-mono, monospace); margin-top: var(--kj-space-md); color: var(--kj-fg-default); }
   `],
   template: `

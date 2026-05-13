@@ -26,6 +26,9 @@ import {
  * destructive button) and `<kj-confirm-popup-content>` (placed inside an
  * `<ng-template>`) for the floating panel.
  *
+ * @doc
+ * @doc-name confirm-popup
+ * @doc-is-main
  * @doc-example Default
  *   @doc-file confirm-popup.example.ts
  * @doc-example Destructive

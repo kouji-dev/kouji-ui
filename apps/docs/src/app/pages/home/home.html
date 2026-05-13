@@ -1,10 +1,10 @@
 <div class="noise">
-<div class="page">
+<main class="page">
 
   <!-- Hero -->
-  <section class="hero">
+  <section class="hero" kjAriaLabelledBy [kjLabelledBy]="'hero-title'">
     <span class="hero-tag">Angular 21 · Headless · WCAG AAA</span>
-    <h1 class="hero-title">Build<br/><em>without</em><br/>limits.</h1>
+    <h1 id="hero-title" class="hero-title">Build<br/><em>without</em><br/>limits.</h1>
     <div class="hero-sub">
       <p class="hero-desc">
         A headless Angular UI library built on signals and CDK primitives.
@@ -12,10 +12,10 @@
       </p>
       <div class="hero-actions">
         <a routerLink="/docs/getting-started" class="hero-cta">
-          <kj-button kjVariant="default" kjSize="lg">Get started <span>→</span></kj-button>
+          <kj-button kjVariant="default" kjSize="xl">Get started <span>→</span></kj-button>
         </a>
         <a routerLink="/theme-generator" class="hero-cta hero-cta-secondary">
-          <kj-button kjVariant="outline" kjSize="lg">Try theme generator</kj-button>
+          <kj-button kjVariant="outline" kjSize="xl">Try theme generator</kj-button>
         </a>
         <a href="https://github.com" target="_blank" rel="noopener" class="btn-secondary">
           View on GitHub <span>↗</span>
@@ -25,7 +25,8 @@
   </section>
 
   <!-- Stats -->
-  <div class="stats">
+  <section class="stats" kjAriaLabelledBy [kjLabelledBy]="'stats-heading'">
+    <h2 id="stats-heading" kjVisuallyHidden>At a glance</h2>
     <div class="stat">
       <div class="stat-num">{{ angularMajor }}</div>
       <div class="stat-label">Angular version</div>
@@ -42,11 +43,11 @@
       <div class="stat-num">0</div>
       <div class="stat-label">CSS in core</div>
     </div>
-  </div>
+  </section>
 
   <!-- Features -->
-  <section class="features">
-    <div class="section-label">Why kouji</div>
+  <section class="features" kjAriaLabelledBy [kjLabelledBy]="'features-heading'">
+    <h2 id="features-heading" class="section-label">Why kouji</h2>
     <div class="features-grid">
       <div class="feature">
         <span class="feature-icon">◈</span>
@@ -82,9 +83,9 @@
   </section>
 
   <!-- Install -->
-  <section class="install">
+  <section class="install" kjAriaLabelledBy [kjLabelledBy]="'install-heading'">
     <div>
-      <h2 class="install-title">Start in<br/>seconds.</h2>
+      <h2 id="install-heading" class="install-title">Start in<br/>seconds.</h2>
       <p class="install-sub">Install the headless core and style it however<br/>you want — Tailwind, CSS, modules, anything.</p>
     </div>
     <div class="code-block">
@@ -107,7 +108,7 @@
     <span class="footer-copy">MIT License · Built with Angular 21</span>
   </footer>
 
-</div>
+</main>
 </div>
 
 <router-outlet />

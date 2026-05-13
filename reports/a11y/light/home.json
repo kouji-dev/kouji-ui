@@ -3,92 +3,16 @@
   "theme": "light",
   "page": "/",
   "url": "http://localhost:4200/?theme=light",
-  "timestamp": "2026-05-13T00:47:06.057Z",
+  "timestamp": "2026-05-13T20:11:41.121Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
       "serious": 0,
-      "moderate": 3,
+      "moderate": 0,
       "minor": 0
     },
-    "violations": [
-      {
-        "id": "heading-order",
-        "impact": "moderate",
-        "help": "Heading levels should only increase by one",
-        "nodes": [
-          {
-            "target": [
-              ".feature:nth-child(1) > h3"
-            ],
-            "failureSummary": "Fix any of the following:\n  Heading order invalid"
-          }
-        ]
-      },
-      {
-        "id": "landmark-one-main",
-        "impact": "moderate",
-        "help": "Document should have one main landmark",
-        "nodes": [
-          {
-            "target": [
-              "html"
-            ],
-            "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
-          }
-        ]
-      },
-      {
-        "id": "region",
-        "impact": "moderate",
-        "help": "All page content should be contained by landmarks",
-        "nodes": [
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              "h1"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".hero-desc"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".btn-secondary"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".stats"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".features"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".install"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          }
-        ]
-      }
-    ],
-    "passes": 30
+    "violations": [],
+    "passes": 32
   },
   "fonts": {
     "samples": [
@@ -108,10 +32,10 @@
       },
       {
         "selector": "h2",
-        "fontFamily": "Syne, system-ui, sans-serif",
-        "fontSize": 40,
-        "lineHeight": 44,
-        "weight": 800
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 24,
+        "lineHeight": 28.799999999999997,
+        "weight": 700
       },
       {
         "selector": "h3",
@@ -155,25 +79,11 @@
         "issue": "line-height ratio 0.90 below 1.2 (WCAG 1.4.12)"
       },
       {
-        "selector": "h2",
-        "issue": "line-height ratio 1.10 below 1.2 (WCAG 1.4.12)"
-      },
-      {
         "selector": "button",
         "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
       }
     ]
   },
-  "lighthouse": {
-    "scores": {
-      "performance": 37
-    },
-    "metrics": {
-      "FCP": 12198,
-      "LCP": 46941,
-      "CLS": 0,
-      "TBT": 740,
-      "SI": 12709
-    }
-  }
+  "lighthouse": null,
+  "lighthouseError": "The \"start lh:runner:gather\" performance mark has not been set"
 }

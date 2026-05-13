@@ -13,10 +13,7 @@ import { KjProgressBarComponent } from './progress-bar';
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-surface);
-    }
+      gap: var(--kj-space-md); }
   `],
   template: `
     <kj-progress-bar [kjValue]="50" kjSize="xs" kjAriaLabel="Extra small" />

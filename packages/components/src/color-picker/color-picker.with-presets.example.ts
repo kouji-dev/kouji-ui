@@ -11,8 +11,7 @@ import type { KjColorPreset } from '@kouji-ui/core';
   standalone: true,
   imports: [KjColorPickerComponent, FormsModule],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center;
-            padding: var(--kj-space-xl); background: var(--kj-bg-surface); min-height: 320px; }
+    :host { display: flex; gap: var(--kj-space-md); align-items: center; min-height: 320px; }
     code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-fg-muted); }
   `],
   template: `

@@ -66,6 +66,35 @@
     --kj-base-text-xl:   1.25rem;
     --kj-base-text-2xl:  1.5rem;
 
+    /* ── Semantic defaults (inherited by every theme) ─────────────────
+       Themes only redeclare these when they need to differ. The contract
+       spec no longer requires per-theme declarations.
+
+       font-display defaults to sans — the safer, brand-neutral choice.
+       Themes that want a real display face (kouji/dark/retro/bauhaus/
+       nord → Syne; cyberpunk/terminal → mono) override. */
+    --kj-font-sans:    var(--kj-base-font-sans);
+    --kj-font-mono:    var(--kj-base-font-mono);
+    --kj-font-display: var(--kj-base-font-sans);
+
+    --kj-text-xs:   var(--kj-base-text-xs);
+    --kj-text-sm:   var(--kj-base-text-sm);
+    --kj-text-base: var(--kj-base-text-base);
+    --kj-text-lg:   var(--kj-base-text-lg);
+    --kj-text-xl:   var(--kj-base-text-xl);
+    --kj-text-2xl:  var(--kj-base-text-2xl);
+
+    --kj-space-xs:  var(--kj-base-space-xs);
+    --kj-space-sm:  var(--kj-base-space-sm);
+    --kj-space-md:  var(--kj-base-space-md);
+    --kj-space-lg:  var(--kj-base-space-lg);
+    --kj-space-xl:  var(--kj-base-space-xl);
+    --kj-space-2xl: var(--kj-base-space-2xl);
+    --kj-space-3xl: var(--kj-base-space-3xl);
+    --kj-space-4xl: var(--kj-base-space-4xl);
+    --kj-space-5xl: var(--kj-base-space-5xl);
+    --kj-space-6xl: var(--kj-base-space-6xl);
+
     /* ── borders & motion ── */
     --kj-base-border-1: 1px;
     --kj-base-border-2: 2px;

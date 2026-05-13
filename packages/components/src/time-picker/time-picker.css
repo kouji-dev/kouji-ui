@@ -9,31 +9,38 @@
 
 @layer kj.component {
   .kj-time-picker {
-    --kj-time-picker-bg:               var(--kj-bg-body);
+    --kj-time-picker-bg:               var(--kj-bg-field);
     --kj-time-picker-fg:               var(--kj-fg-default);
     --kj-time-picker-border-color:     var(--kj-border-default);
     --kj-time-picker-border-width:     var(--kj-border);
     --kj-time-picker-radius:           var(--kj-radius-field);
     --kj-time-picker-padding-x:        var(--kj-space-md);
-    --kj-time-picker-padding-y:        var(--kj-space-sm);
     --kj-time-picker-font:             var(--kj-font-sans);
     --kj-time-picker-font-size:        var(--kj-text-sm);
-    --kj-time-picker-segment-width:    2.25rem;
-    --kj-time-picker-segment-height:   2.75rem; /* 44px touch target — WCAG 2.5.5 */
+    --kj-time-picker-segment-width:    2rem;
     --kj-time-picker-meridiem-bg:      var(--kj-bg-surface);
     --kj-time-picker-meridiem-fg:      var(--kj-fg-default);
+    /* Mirror `.kj-input` so a time-picker lines up vertically with sibling
+       inputs in a form row. Explicit height pins the box (sm/md/lg). Don't
+       set `align-self` here — when the parent is a column-flex stack
+       (e.g. <kj-form-field>'s label + control), `center` would horizontally
+       center this `inline-flex` host instead of leaving it at start. */
+    --kj-time-picker-height:           2.25rem;
 
     display: inline-flex;
     align-items: center;
     gap: 0.125rem;
+    height: var(--kj-time-picker-height);
     background: var(--kj-time-picker-bg);
     color: var(--kj-time-picker-fg);
     border: var(--kj-time-picker-border-width) solid var(--kj-time-picker-border-color);
     border-radius: var(--kj-time-picker-radius);
-    padding: var(--kj-time-picker-padding-y) var(--kj-time-picker-padding-x);
+    padding: 0 var(--kj-time-picker-padding-x);
     font: var(--kj-time-picker-font-size) / 1.4 var(--kj-time-picker-font);
     transition: var(--kj-transition);
   }
+  .kj-time-picker[data-size="sm"] { --kj-time-picker-height: 2rem;    --kj-time-picker-font-size: 0.8125rem; }
+  .kj-time-picker[data-size="lg"] { --kj-time-picker-height: 2.75rem; --kj-time-picker-font-size: 1rem; }
 
   .kj-time-picker:focus-within {
     --kj-time-picker-border-color: var(--kj-bg-primary);
@@ -52,7 +59,7 @@
 
   .kj-time-picker__segment {
     width: var(--kj-time-picker-segment-width);
-    min-height: var(--kj-time-picker-segment-height);
+    height: 100%;
     background: transparent;
     color: inherit;
     border: 0;
@@ -87,8 +94,8 @@
 
   .kj-time-picker__meridiem {
     margin-inline-start: var(--kj-space-sm);
-    min-width: 2.75rem;
-    min-height: 2.75rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;

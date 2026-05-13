@@ -1,8 +1,8 @@
 /* Multi-line item layout for the docs search palette. */
-.docs-search .kj-command-item {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.25rem;
+.docs-search {
+  --kj-command-item-direction: column;
+  --kj-command-item-align: stretch;
+  --kj-command-item-gap: 0.25rem;
 }
 
 .result-main {

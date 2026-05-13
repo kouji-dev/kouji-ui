@@ -10,7 +10,7 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
   selector: 'kj-input-group-example',
   standalone: true,
   imports: [KjInputGroupComponent, KjInputGroupAddonComponent, KjInputComponent, FormsModule],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-input-group>
       <kj-input-group-addon [kjAriaHidden]="true">$</kj-input-group-addon>

@@ -1,94 +1,18 @@
 {
   "schemaVersion": 1,
   "theme": "light",
-  "page": "/getting-started",
-  "url": "http://localhost:4200/getting-started?theme=light",
-  "timestamp": "2026-05-13T00:47:40.210Z",
+  "page": "/docs/getting-started",
+  "url": "http://localhost:4200/docs/getting-started?theme=light",
+  "timestamp": "2026-05-13T20:12:25.100Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
       "serious": 0,
-      "moderate": 3,
+      "moderate": 0,
       "minor": 0
     },
-    "violations": [
-      {
-        "id": "heading-order",
-        "impact": "moderate",
-        "help": "Heading levels should only increase by one",
-        "nodes": [
-          {
-            "target": [
-              ".feature:nth-child(1) > h3"
-            ],
-            "failureSummary": "Fix any of the following:\n  Heading order invalid"
-          }
-        ]
-      },
-      {
-        "id": "landmark-one-main",
-        "impact": "moderate",
-        "help": "Document should have one main landmark",
-        "nodes": [
-          {
-            "target": [
-              "html"
-            ],
-            "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
-          }
-        ]
-      },
-      {
-        "id": "region",
-        "impact": "moderate",
-        "help": "All page content should be contained by landmarks",
-        "nodes": [
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              "h1"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".hero-desc"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".btn-secondary"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".stats"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".features"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".install"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          }
-        ]
-      }
-    ],
-    "passes": 30
+    "violations": [],
+    "passes": 42
   },
   "fonts": {
     "samples": [
@@ -102,29 +26,22 @@
       {
         "selector": "h1",
         "fontFamily": "Syne, system-ui, sans-serif",
-        "fontSize": 153.6,
-        "lineHeight": 138.24,
+        "fontSize": 56,
+        "lineHeight": 56,
         "weight": 800
       },
       {
         "selector": "h2",
         "fontFamily": "Syne, system-ui, sans-serif",
-        "fontSize": 40,
-        "lineHeight": 44,
-        "weight": 800
-      },
-      {
-        "selector": "h3",
-        "fontFamily": "Syne, system-ui, sans-serif",
-        "fontSize": 17.6,
-        "lineHeight": 21.12,
+        "fontSize": 24,
+        "lineHeight": 28.799999999999997,
         "weight": 700
       },
       {
         "selector": "button",
-        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
-        "fontSize": 14,
-        "lineHeight": 16.8,
+        "fontFamily": "Arial",
+        "fontSize": 13.3333,
+        "lineHeight": 15.999959999999998,
         "weight": 400
       },
       {
@@ -135,10 +52,17 @@
         "weight": 400
       },
       {
+        "selector": "code",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 12.24,
+        "lineHeight": 20.808,
+        "weight": 400
+      },
+      {
         "selector": "p",
         "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
-        "fontSize": 16,
-        "lineHeight": 27.2,
+        "fontSize": 10,
+        "lineHeight": 12,
         "weight": 400
       },
       {
@@ -152,24 +76,24 @@
     "warnings": [
       {
         "selector": "h1",
-        "issue": "line-height ratio 0.90 below 1.2 (WCAG 1.4.12)"
+        "issue": "line-height ratio 1.00 below 1.2 (WCAG 1.4.12)"
       },
       {
-        "selector": "h2",
-        "issue": "line-height ratio 1.10 below 1.2 (WCAG 1.4.12)"
+        "selector": "p",
+        "issue": "fontSize 10px below 12px minimum (WCAG 1.4.4)"
       }
     ]
   },
   "lighthouse": {
     "scores": {
-      "performance": 39
+      "performance": 30
     },
     "metrics": {
-      "FCP": 10668,
-      "LCP": 46701,
+      "FCP": 10728,
+      "LCP": 48012,
       "CLS": 0,
-      "TBT": 640,
-      "SI": 11634
+      "TBT": 1451,
+      "SI": 19005
     }
   }
 }

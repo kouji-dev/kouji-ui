@@ -13,7 +13,7 @@ import {
   selector: 'kj-cascade-select-disabled-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 20rem;">
       <div>

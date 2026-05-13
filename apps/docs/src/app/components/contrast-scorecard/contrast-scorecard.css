@@ -53,11 +53,11 @@
   font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: color-mix(in oklch, var(--kj-fg-default) 60%, transparent);
+  color: var(--kj-fg-subtle);
 }
 .row--type { grid-template-columns: auto auto 1fr; }
 .row__message {
   font-size: 0.625rem;
   line-height: 1.3;
-  color: color-mix(in oklch, var(--kj-fg-default) 75%, transparent);
+  color: var(--kj-fg-muted);
 }

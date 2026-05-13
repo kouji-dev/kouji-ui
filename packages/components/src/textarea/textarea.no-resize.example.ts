@@ -10,7 +10,7 @@ import { KjTextareaComponent } from './textarea';
   standalone: true,
   imports: [KjTextareaComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
   `],
   template: `
     <kj-textarea

@@ -6,7 +6,7 @@ import { KjLinkComponent } from './link';
   standalone: true,
   imports: [KjLinkComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-lg); flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: flex; gap: var(--kj-space-lg); flex-wrap: wrap; }
   `],
   template: `
     <kj-link kjHref="/x" kjVariant="primary" kjUnderline="always">Primary</kj-link>

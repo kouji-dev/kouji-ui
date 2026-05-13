@@ -12,9 +12,7 @@ import { KjColorPickerComponent } from './color-picker';
   standalone: true,
   imports: [KjColorPickerComponent, ReactiveFormsModule],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md);
-            padding: var(--kj-space-xl); background: var(--kj-bg-surface);
-            min-height: 320px; }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); min-height: 320px; }
     label { display: flex; align-items: center; gap: var(--kj-space-md);
             color: var(--kj-fg-default); font: 0.875rem var(--kj-font-sans); }
     .error { color: var(--kj-fg-danger, #ef4444); font: 0.75rem var(--kj-font-sans); }

@@ -87,6 +87,7 @@
 
 .preview-frame {
   background: var(--kj-bg-body);
+  padding: var(--kj-space-xl);
   border-bottom: 1px solid var(--kj-border-default);
   position: relative;
   overflow: visible;

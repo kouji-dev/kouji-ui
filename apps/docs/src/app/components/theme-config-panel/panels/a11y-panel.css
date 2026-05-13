@@ -29,7 +29,7 @@
   margin: 0 0 6px;
   font: var(--kj-text-xs) var(--kj-font-mono);
   line-height: 1.28;
-  color: color-mix(in oklch, var(--kj-fg-default) 70%, transparent);
+  color: var(--kj-fg-muted);
 }
 
 .group-heading {
@@ -39,7 +39,7 @@
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: color-mix(in oklch, var(--kj-fg-default) 60%, transparent);
+  color: var(--kj-fg-subtle);
 }
 
 /* Shared divider + rhythm with token rows (Fonts → Shape / Motion) */
@@ -119,10 +119,13 @@
 .color-chip__mark {
   font: 700 0.625rem/1 var(--kj-font-mono);
   letter-spacing: -0.02em;
-  color: #fff;
-  text-shadow:
-    0 0 2px #000,
-    0 1px 3px rgb(0 0 0 / 0.85);
+  /* The chip's bg is arbitrary (a user-picked swatch). Paint the mark inside
+     a tiny readable pill rather than relying on text-shadow over the swatch,
+     which fails axe contrast checks on light swatches. */
+  background: var(--kj-bg-surface);
+  color: var(--kj-fg-default);
+  padding: 2px 5px;
+  border-radius: var(--kj-radius-field);
   pointer-events: none;
 }
 

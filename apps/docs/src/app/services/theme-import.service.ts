@@ -2,12 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { ThemeDraftService } from './theme-draft.service';
 import { BUILT_IN_THEMES } from '../lib/theme/built-in-themes';
 import { DraftThemeSchema } from '../lib/theme/import-schema';
-import type { DraftTheme, ColorSlot } from '../lib/theme/types';
+import { BG_SLOTS, FG_SLOTS } from '../lib/theme/types';
+import type { DraftTheme, BgSlot, FgSlot } from '../lib/theme/types';
 
 export type ImportResult = { ok: true; draft: DraftTheme } | { ok: false; reason: string };
 export type Format = 'json' | 'css';
-
-const COLOR_KEYS: ColorSlot[] = ['base-100','primary','secondary','accent','neutral','info','success','warning','destructive'];
 
 /** Parses pasted/uploaded theme payloads (JSON or CSS) into draft objects. */
 @Injectable({ providedIn: 'root' })
@@ -33,14 +32,19 @@ export class ThemeImportService {
     const draft: DraftTheme = structuredClone(BUILT_IN_THEMES.kouji ?? Object.values(BUILT_IN_THEMES)[0]);
     draft.name = '';
     const re = /--kj-([a-z0-9-]+)\s*:\s*([^;]+);/gi;
+    const bgSet = new Set<string>(BG_SLOTS);
+    const fgSet = new Set<string>(FG_SLOTS);
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       const key = m[1].trim();
       const value = m[2].trim();
-      if (key.startsWith('color-')) {
-        const slot = key.slice('color-'.length);
-        if ((COLOR_KEYS as string[]).includes(slot)) {
-          draft.colors[slot as ColorSlot] = value;
+      const fullKey = `--kj-${key}`;
+      if (bgSet.has(`bg-${key.replace(/^bg-/, '')}`) && key.startsWith('bg-')) {
+        draft.bg[key as BgSlot] = value;
+      } else if (fgSet.has(`fg-${key.replace(/^fg-/, '')}`) && key.startsWith('fg-')) {
+        const slot = key as FgSlot;
+        if (FG_SLOTS.includes(slot)) {
+          draft.fg[slot] = value;
         }
       } else if (key === 'radius-box')      draft.shape.radiusBox = parseFloat(value);
       else if (key === 'radius-field')      draft.shape.radiusField = parseFloat(value);
@@ -51,6 +55,7 @@ export class ThemeImportService {
       else if (key === 'font-mono')         draft.type.fontMono = value;
       else if (key === 'font-display')      draft.type.fontDisplay = value;
       else if (key === 'transition')        draft.motion.transition = value;
+      void fullKey;
     }
     return { ok: true, draft };
   }

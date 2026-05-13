@@ -12,7 +12,7 @@ import { KjListComponent, KjListItemComponent } from './list';
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .kj-list-interactive-status {
       margin-top: var(--kj-space-md);
       font: 0.875rem / 1.4 var(--kj-font-sans);

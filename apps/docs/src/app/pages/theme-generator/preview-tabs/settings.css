@@ -19,7 +19,7 @@
 }
 
 .card {
-  background: var(--kj-bg-elevated);
+  background: var(--kj-bg-surface);
   border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-box, 8px);
   padding: 1rem 1.125rem;

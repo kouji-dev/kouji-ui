@@ -25,7 +25,7 @@ import {
     KjStepperPreviousComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .actions { display: flex; gap: var(--kj-space-sm); margin-top: var(--kj-space-lg); }
   `],
   template: `

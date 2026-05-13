@@ -9,7 +9,7 @@ import { KjCardComponent } from './card';
   selector: 'kj-card-example',
   standalone: true,
   imports: [KjCardComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `<kj-card variant="default"><strong>Card title</strong><p style="margin: var(--kj-space-sm) 0 0; color: var(--kj-fg-muted);">Body content goes here. Cards group related information.</p></kj-card>`,
 })
 export class KjCardExample {}

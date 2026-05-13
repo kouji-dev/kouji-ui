@@ -89,6 +89,15 @@ export interface ExampleFile {
 
 export interface DocExample {
   label: string;
+  /**
+   * Stable URL-fragment slug for this example, derived from the canonical
+   * `*.example.ts` filename with `.example.ts` stripped (e.g.
+   * `button.size.example.ts` → `button.size`). Used as the anchor `id`
+   * on the example section so deep links survive label rewrites and
+   * example reordering. Falls back to a slugified label if no
+   * `.example.ts` file is referenced.
+   */
+  slug: string;
   themedFiles: Record<string, ExampleFile[]>;
 }
 

@@ -10,7 +10,7 @@ import { KjNumberInputComponent } from './number-input';
   selector: 'kj-number-input-min-max-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-number-input
       [(kjValue)]="percentage"

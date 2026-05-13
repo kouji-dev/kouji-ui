@@ -22,10 +22,7 @@ import {
   ],
   styles: [`
     :host {
-      display: block;
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-surface);
-      max-width: 400px;
+      display: block; max-width: 400px;
     }
     .card-form {
       display: flex;
@@ -39,9 +36,7 @@ import {
     .card-row kj-field {
       flex: 1;
     }
-    input[kjInputMask] {
-      background: var(--kj-bg-field);
-      color: var(--kj-fg-default);
+    input[kjInputMask] { color: var(--kj-fg-default);
       border: 1px solid var(--kj-border-default);
       border-radius: var(--kj-radius-field, 0.375rem);
       padding: var(--kj-space-sm) var(--kj-space-md);

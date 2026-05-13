@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--kj-space-sm);
-    background: var(--kj-bg-body);
+    background: var(--kj-bg-field);
     color: var(--kj-fg-default);
     border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
@@ -35,7 +35,7 @@
   /* ── Root panel ──────────────────────────────────────────────────────── */
   .kj-cascade-panel {
     box-sizing: border-box;
-    background: var(--kj-bg-body);
+    background: var(--kj-bg-elevated);
     border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
     box-shadow: var(--kj-shadow-md);
@@ -53,7 +53,7 @@
      based on the parent option's bounding rect. */
   .kj-cascade-sub-panel {
     position: fixed;
-    background: var(--kj-bg-body);
+    background: var(--kj-bg-elevated);
     border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
     box-shadow: var(--kj-shadow-md);

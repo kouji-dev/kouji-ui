@@ -255,9 +255,30 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
     }
 
     if (Object.keys(themedFiles).length) {
-      results.push({ label, themedFiles });
+      results.push({ label, slug: deriveExampleSlug(label, themedFiles), themedFiles });
     }
   }
 
   return results;
+}
+
+/**
+ * Derives the example's URL-fragment slug. Strategy: scan `themedFiles` for the
+ * first `*.example.ts` filename and strip `.example.ts` (e.g.
+ * `button.size.example.ts` → `button.size`). Falls back to a slugified label
+ * if no `.example.ts` file is referenced (only inline `@doc-file foo.ts`
+ * entries that don't follow the convention).
+ */
+export function deriveExampleSlug(label: string, themedFiles: Record<string, ExampleFile[]>): string {
+  for (const files of Object.values(themedFiles)) {
+    for (const f of files) {
+      if (f.filename.endsWith('.example.ts')) {
+        return f.filename.slice(0, -'.example.ts'.length);
+      }
+    }
+  }
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

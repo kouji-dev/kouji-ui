@@ -144,8 +144,9 @@
 
 .kj-command-item {
   display: flex;
-  align-items: center;
-  gap: var(--kj-space-md, 0.75rem);
+  flex-direction: var(--kj-command-item-direction, row);
+  align-items: var(--kj-command-item-align, center);
+  gap: var(--kj-command-item-gap, var(--kj-space-md, 0.75rem));
   width: 100%;
   min-height: 2.75rem;
   padding: 0.625rem var(--kj-space-lg, 1.25rem);

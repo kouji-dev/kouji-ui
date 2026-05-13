@@ -12,7 +12,7 @@ import { KjPasswordInputComponent } from './password-input';
   standalone: true,
   imports: [KjPasswordInputComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 380px; }
     label { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
     .rules { list-style: none; padding: 0; margin: var(--kj-space-xs) 0 0; display: grid; gap: 0.25rem; font-size: var(--kj-text-xs); }

@@ -16,10 +16,7 @@ import { KjInputOtpComponent } from './input-otp';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--kj-space-lg);
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-surface);
-    }
+      gap: var(--kj-space-lg); }
     label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
     .value {
       font-family: var(--kj-font-mono);

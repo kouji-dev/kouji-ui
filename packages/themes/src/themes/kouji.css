@@ -16,26 +16,7 @@
     /* ── type — mono for body / nav, Syne for display headings (matches
        the original kouji-ui docs identity) ── */
     --kj-font-sans:    var(--kj-base-font-mono);
-    --kj-font-mono:    var(--kj-base-font-mono);
     --kj-font-display: var(--kj-base-font-display);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
@@ -69,8 +50,9 @@
     --kj-bg-warning:         var(--kj-base-amber-500);
     --kj-bg-warning-subtle:  #2a1a00;
 
-    /* Intent surfaces — danger */
-    --kj-bg-danger:          var(--kj-base-red-500);
+    /* Intent surfaces — danger. red-600 (l=55%) gives 5.44:1 vs white,
+       passing AA 4.5:1; red-500 (l=63%) only hit 3.91:1. */
+    --kj-bg-danger:          var(--kj-base-red-600);
     --kj-bg-danger-subtle:   #2a0a0a;
 
     /* FG Class A — independent */
@@ -103,7 +85,7 @@
     --kj-border-focus:     #b8f500;
     --kj-border-disabled:  #1a1a1a;
     --kj-border-primary:   #b8f500;
-    --kj-border-danger:    var(--kj-base-red-500);
+    --kj-border-danger:    var(--kj-base-red-600);
 
     /* Shadows — kouji is brutalist/flat (depth 0) */
     --kj-shadow-sm:     0 0 0 1px #1a1a1a;
@@ -121,12 +103,20 @@
 
    `default` and `destructive` are the only variants whose surface is
    filled with brand color in this theme; brightening only those leaves
-   the secondary variants untouched. */
+   the secondary variants untouched.
+
+   Scoped via `@scope` so the override stops at the nearest nested
+   `[data-theme]` boundary. Without it, a preview swatch with
+   `data-theme="dark"` nested inside `<html data-theme="kouji">` would
+   still receive the lime hover because it remains a descendant of the
+   outer kouji theme. */
 @layer kj.component {
-  [data-theme="kouji"] .kj-button[data-variant="default"]:hover,
-  [data-theme="kouji"] .kj-button[data-variant="destructive"]:hover {
-    --kj-button-bg: #d4ff00;
-    --kj-button-fg: #0c0c0c;
-    transform: translateY(-2px);
+  @scope ([data-theme="kouji"]) to ([data-theme]:not([data-theme="kouji"])) {
+    .kj-button[data-variant="default"]:hover,
+    .kj-button[data-variant="destructive"]:hover {
+      --kj-button-bg: #d4ff00;
+      --kj-button-fg: #0c0c0c;
+      transform: translateY(-2px);
+    }
   }
 }

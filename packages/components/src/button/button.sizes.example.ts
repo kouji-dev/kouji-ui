@@ -6,7 +6,7 @@ import { KjButtonComponent } from './button';
   standalone: true,
   imports: [KjButtonComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-sm); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: flex; gap: var(--kj-space-sm); align-items: center; flex-wrap: wrap; }
   `],
   template: `
     <kj-button kjSize="sm">Small</kj-button>

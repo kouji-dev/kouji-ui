@@ -13,7 +13,7 @@ import { KjAvatarComponent } from './avatar';
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     a { display: inline-flex; text-decoration: none; color: inherit; }
   `],
   template: `

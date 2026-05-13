@@ -1,5 +1,5 @@
 <div class="page-with-toc">
-<main class="doc-main" kjPageToc #pageToc="kjPageToc">
+<div class="doc-main" kjPageToc #pageToc="kjPageToc">
   @if (page(); as p) {
     <header class="doc-header">
       <span class="tag">{{ p.categoryPath[p.categoryPath.length - 1] || p.pkg }}</span>
@@ -139,10 +139,10 @@
                data-toc-level="2">
         <h2 class="section-title">Examples</h2>
 
-        @for (entry of pageExamples(); track entry.itemId + ':' + entry.example.label; let i = $index) {
+        @for (entry of pageExamples(); track entry.example.slug) {
           <div
             class="example-section"
-            [id]="entry.itemSymbol + '-ex-' + i"
+            [id]="entry.example.slug"
             [attr.data-toc-entry]="entry.example.label"
             data-toc-level="3"
           >
@@ -165,9 +165,9 @@
       <p>Loading…</p>
     </div>
   }
-</main>
+</div>
 
-<aside class="toc-col">
+<div class="toc-col">
   <kj-page-toc [toc]="pageToc" />
-</aside>
+</div>
 </div>

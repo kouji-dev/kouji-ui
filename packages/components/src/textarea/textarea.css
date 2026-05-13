@@ -8,7 +8,7 @@
 @layer kj.component {
   .kj-textarea {
     /* component knobs — themes/users can override any of these */
-    --kj-textarea-bg:               var(--kj-bg-body);
+    --kj-textarea-bg:               var(--kj-bg-field);
     --kj-textarea-fg:               var(--kj-fg-default);
     --kj-textarea-border-color:     var(--kj-border-default);
     --kj-textarea-border-style:     solid;

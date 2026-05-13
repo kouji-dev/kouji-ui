@@ -6,7 +6,7 @@ import { KjSelectComponent, KjOptionComponent } from './select';
   standalone: true,
   imports: [KjSelectComponent, KjOptionComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .group-label { padding: 4px 12px; font-size: 0.75rem; color: var(--kj-fg-default); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
   `],
   template: `

@@ -9,7 +9,7 @@ import { KjKbdComponent } from './kbd';
   selector: 'kj-kbd-example',
   standalone: true,
   imports: [KjKbdComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `<p>Press <kj-kbd>K</kj-kbd> to focus search.</p>`,
 })
 export class KjKbdExample {}

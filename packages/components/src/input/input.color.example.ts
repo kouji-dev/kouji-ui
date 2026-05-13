@@ -10,8 +10,7 @@ import { KjInputComponent } from './input';
   standalone: true,
   imports: [KjInputComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center;
-            padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: flex; gap: var(--kj-space-md); align-items: center; }
     code { font: var(--kj-text-sm)/1 var(--kj-font-mono); color: var(--kj-fg-muted); }
   `],
   template: `

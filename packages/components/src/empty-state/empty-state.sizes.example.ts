@@ -24,9 +24,9 @@ import { KjButtonComponent } from '../button/button';
     KjButtonComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     .stack { display: grid; gap: var(--kj-space-lg); }
-    .stack > kj-empty-state { background: var(--kj-bg-body); border-radius: var(--kj-radius-box); }
+    .stack > kj-empty-state { border-radius: var(--kj-radius-box); }
   `],
   template: `
     <div class="stack">

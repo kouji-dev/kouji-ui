@@ -10,6 +10,7 @@
   "dependencies": {
     "@axe-core/playwright": "^4.10.0",
     "@playwright/test": "^1.59.1",
+    "chrome-launcher": "^1.2.1",
     "lighthouse": "^12.3.0"
   },
   "devDependencies": {

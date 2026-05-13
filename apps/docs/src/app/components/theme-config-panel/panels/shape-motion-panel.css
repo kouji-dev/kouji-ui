@@ -20,7 +20,7 @@
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: color-mix(in oklch, var(--kj-fg-default) 60%, transparent);
+  color: var(--kj-fg-subtle);
 }
 .control-row {
   display: flex;
@@ -60,7 +60,7 @@
   font-size: 0.625rem;
   font-family: var(--kj-font-mono);
   line-height: 1.2;
-  color: color-mix(in oklch, var(--kj-fg-default) 55%, transparent);
+  color: var(--kj-fg-subtle);
   padding-top: 2px;
 }
 

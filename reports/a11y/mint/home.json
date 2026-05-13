@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "theme": "mint",
+  "page": "/",
+  "url": "http://localhost:4200/?theme=mint",
+  "timestamp": "2026-05-13T20:55:13.011Z",
+  "axe": {
+    "violationsByImpact": {
+      "critical": 0,
+      "serious": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "violations": [],
+    "passes": 32
+  },
+  "fonts": {
+    "samples": [
+      {
+        "selector": "body",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "h1",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 153.6,
+        "lineHeight": 138.24,
+        "weight": 800
+      },
+      {
+        "selector": "h2",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 24,
+        "lineHeight": 28.799999999999997,
+        "weight": 700
+      },
+      {
+        "selector": "h3",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 17.6,
+        "lineHeight": 21.12,
+        "weight": 700
+      },
+      {
+        "selector": "button",
+        "fontFamily": "system-ui, -apple-system, sans-serif",
+        "fontSize": 14,
+        "lineHeight": 16.8,
+        "weight": 400
+      },
+      {
+        "selector": "a",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "p",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 27.2,
+        "weight": 400
+      },
+      {
+        "selector": "[role=\"status\"]",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 12.8,
+        "lineHeight": 15.36,
+        "weight": 400
+      }
+    ],
+    "warnings": [
+      {
+        "selector": "h1",
+        "issue": "line-height ratio 0.90 below 1.2 (WCAG 1.4.12)"
+      },
+      {
+        "selector": "h1",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      },
+      {
+        "selector": "h3",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      },
+      {
+        "selector": "button",
+        "issue": "computed font-family resolved to system fallback 'system-ui' — theme web font may have failed to load"
+      }
+    ]
+  },
+  "lighthouse": {
+    "scores": {
+      "performance": 54
+    },
+    "metrics": {
+      "FCP": 41046,
+      "LCP": 46439,
+      "CLS": 0,
+      "TBT": 139,
+      "SI": 41046
+    }
+  }
+}

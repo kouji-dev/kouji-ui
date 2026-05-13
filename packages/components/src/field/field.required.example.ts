@@ -22,14 +22,9 @@ import {
   styles: [
     `
       :host {
-        display: block;
-        padding: var(--kj-space-xl);
-        background: var(--kj-bg-surface);
-        max-width: 400px;
+        display: block; max-width: 400px;
       }
-      .kj-input {
-        background: var(--kj-bg-body);
-        color: var(--kj-fg-default);
+      .kj-input { color: var(--kj-fg-default);
         border: var(--kj-border) solid var(--kj-border-default);
         border-radius: var(--kj-radius-field);
         padding: var(--kj-space-sm) var(--kj-space-md);

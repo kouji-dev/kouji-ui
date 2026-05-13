@@ -26,7 +26,7 @@ import { KjButtonComponent } from '../button/button';
     KjButtonComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    :host { display: block; }
     a { color: var(--kj-bg-primary, #2563eb); text-decoration: underline; }
   `],
   template: `

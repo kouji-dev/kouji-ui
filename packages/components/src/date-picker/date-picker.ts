@@ -1,11 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  HostListener,
   ViewEncapsulation,
   booleanAttribute,
-  inject,
   input,
   model,
 } from '@angular/core';
@@ -77,16 +74,6 @@ import { KjCalendarComponent } from '../calendar/calendar';
         class="kj-date-picker__input"
         [placeholder]="kjPlaceholder()"
       />
-      <button
-        type="button"
-        class="kj-date-picker__toggle"
-        aria-label="Open calendar"
-        [attr.aria-haspopup]="'dialog'"
-        [attr.aria-expanded]="picker.open()"
-        [attr.aria-controls]="picker.panelId"
-        [disabled]="kjDisabled() || kjReadonly()"
-        (click)="picker.toggle()"
-      >📅</button>
       <div
         kjDatePickerCalendar
         [kjFor]="trig"
@@ -110,8 +97,6 @@ import { KjCalendarComponent } from '../calendar/calendar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjDatePickerComponent {
-  private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-
   /** Currently selected date. Two-way bindable — `[(kjValue)]`. `null` clears. */
   readonly kjValue = model<Date | null>(null);
 
@@ -145,15 +130,5 @@ export class KjDatePickerComponent {
   /** @internal — wired from the projected calendar. */
   onCalendarSelect(date: Date | null, picker: KjDatePicker): void {
     if (date) picker.selectDate(date);
-  }
-
-  /** Outside-click coordinator — closes the popover when a click lands outside. */
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.kjOpen()) return;
-    const root = this.elRef.nativeElement;
-    if (!root.contains(event.target as Node)) {
-      this.kjOpen.set(false);
-    }
   }
 }

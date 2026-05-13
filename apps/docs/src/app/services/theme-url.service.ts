@@ -4,7 +4,7 @@ import { DraftThemeSchema } from '../lib/theme/import-schema';
 import type { DraftTheme } from '../lib/theme/types';
 
 const HASH_PREFIX = 't=';
-const VERSION = 1;
+const VERSION = 2;
 
 function b64UrlEncode(bytes: Uint8Array): string {
   let s = '';

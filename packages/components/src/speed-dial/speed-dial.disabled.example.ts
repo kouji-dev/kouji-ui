@@ -28,17 +28,12 @@ import {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: var(--kj-space-2xl);
-      padding: var(--kj-space-2xl);
-      background: var(--kj-bg-surface);
-      min-height: 18rem;
+      padding: var(--kj-space-2xl); min-height: 18rem;
     }
     .kj-speed-dial-disabled__cell {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-body);
-      border-radius: var(--kj-radius-box);
+      justify-content: center; border-radius: var(--kj-radius-box);
     }
   `],
   template: `

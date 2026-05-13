@@ -94,15 +94,6 @@ app-home {
   display: contents;
 }
 
-/* Override the kj-button defaults in the hero CTA context to recreate the
-   chunky landing-page button (production was 14px / 32px padding, plus a
-   small icon→text gap). */
-.hero-cta .kj-button {
-  --kj-button-padding-x: var(--kj-space-2xl);
-  --kj-button-padding-y: 0.875rem;
-  gap: var(--kj-space-md);
-}
-
 /* Hover-underline secondary CTA — the GitHub link in the hero. Keeps the
    original "subtle hyperlink with bottom border" pattern. Uses kj theme
    tokens so it restyles with the active theme. */

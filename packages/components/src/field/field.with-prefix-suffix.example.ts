@@ -25,10 +25,7 @@ import {
   styles: [
     `
       :host {
-        display: block;
-        padding: var(--kj-space-xl);
-        background: var(--kj-bg-surface);
-        max-width: 400px;
+        display: block; max-width: 400px;
       }
       input.kj-bare {
         flex: 1;

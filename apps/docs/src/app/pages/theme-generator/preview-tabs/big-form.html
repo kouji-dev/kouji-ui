@@ -3,19 +3,13 @@
   <p class="hd__subtitle">Tell us about yourself, then verify your details.</p>
 </header>
 
-<ol class="steps" aria-label="Application progress">
-  @for (s of steps; track s.id) {
-    <li
-      class="steps__item"
-      [class.steps__item--done]="stepStatus(s.id) === 'done'"
-      [class.steps__item--current]="stepStatus(s.id) === 'current'"
-      [attr.aria-current]="stepStatus(s.id) === 'current' ? 'step' : null"
-    >
-      <span class="steps__num" aria-hidden="true">{{ $index + 1 }}</span>
-      <span class="steps__label">{{ s.label }}</span>
-    </li>
+<kj-stepper [(kjActiveStep)]="activeStep" kjOrientation="horizontal" aria-label="Application progress">
+  @for (s of steps; track s.id; let i = $index) {
+    <kj-step [kjStepCompleted]="i < activeStep()" [kjStepKey]="s.id">
+      <kj-step-label>{{ s.label }}</kj-step-label>
+    </kj-step>
   }
-</ol>
+</kj-stepper>
 
 <kj-alert kjVariant="warning" class="warn">
   <kj-alert-icon>!</kj-alert-icon>

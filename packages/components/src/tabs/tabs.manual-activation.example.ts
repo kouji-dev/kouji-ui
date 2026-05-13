@@ -15,7 +15,7 @@ import {
   selector: 'kj-tabs-manual-activation-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-tabs activationMode="manual">
       <kj-tab-list>

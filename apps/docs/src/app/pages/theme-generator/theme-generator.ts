@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { KJ_TAG_DEFAULTS, provideKjTag } from '@kouji-ui/core';
+import { KJ_TAG_DEFAULTS, KjVisuallyHidden, provideKjTag } from '@kouji-ui/core';
 import { ThemeGeneratorPreviewComponent } from './preview/theme-generator-preview';
 import { ThemeDraftService } from '../../services/theme-draft.service';
 import { ThemeUrlService } from '../../services/theme-url.service';
@@ -20,7 +20,7 @@ const STYLE_TAG_ID = 'kj-draft-style';
 @Component({
   selector: 'kj-theme-generator',
   standalone: true,
-  imports: [ThemeToolbar, ThemeConfigPanel, ThemeGeneratorPreviewComponent, ThemeImportDialog],
+  imports: [ThemeToolbar, ThemeConfigPanel, ThemeGeneratorPreviewComponent, ThemeImportDialog, KjVisuallyHidden],
   templateUrl: './theme-generator.html',
   styleUrl: './theme-generator.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

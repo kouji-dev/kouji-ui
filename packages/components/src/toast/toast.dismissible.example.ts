@@ -8,7 +8,7 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
   selector: 'kj-toast-dismissible-example',
   standalone: true,
   imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); min-height: 8rem; }`],
+  styles: [`:host { display: block; min-height: 8rem; }`],
   template: `
     <kj-button (click)="show()">Show persistent toast</kj-button>
     <kj-toast-viewport />

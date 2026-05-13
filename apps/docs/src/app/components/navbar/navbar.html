@@ -66,8 +66,7 @@
         <button
           type="button"
           kjDropdownMenuItem
-          class="kj-navbar-theme-item"
-          [class.kj-navbar-theme-item--active]="t === currentTheme()"
+          [attr.aria-current]="t === currentTheme() ? 'true' : null"
           (kjSelect)="selectTheme(t)"
         >
           {{ t }}

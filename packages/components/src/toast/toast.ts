@@ -14,7 +14,8 @@ import type { KjToastVariant } from '@kouji-ui/core';
  * toast, mount `<kj-toast-viewport>` near your trigger, and place
  * `<kj-toast>` / `<kj-toast-close>` inside the per-call `<ng-template>`.
  *
- * @doc-name Toast
+ * @doc
+ * @doc-name toast
  * @doc-is-main
  * @doc-example Default
  *   @doc-file toast.default.example.ts

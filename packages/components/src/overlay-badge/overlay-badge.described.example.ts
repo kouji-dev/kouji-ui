@@ -15,7 +15,7 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
   selector: 'kj-overlay-badge-described-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-overlay-badge
       [kjValue]="248"

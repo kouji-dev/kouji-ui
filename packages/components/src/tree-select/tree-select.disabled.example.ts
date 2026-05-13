@@ -12,7 +12,7 @@ import type { KjTreeNode } from '@kouji-ui/core';
   standalone: true,
   imports: [KjTreeSelectComponent],
   styles: [
-    `:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); display: flex; flex-direction: column; gap: var(--kj-space-lg); }`,
+    `:host { display: block; display: flex; flex-direction: column; gap: var(--kj-space-lg); }`,
     `label { font: 0.75rem var(--kj-font-sans); color: var(--kj-fg-default); opacity: 0.7; margin-bottom: var(--kj-space-xs); display: block; }`,
   ],
   template: `

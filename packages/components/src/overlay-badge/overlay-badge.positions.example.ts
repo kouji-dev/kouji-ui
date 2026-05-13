@@ -15,9 +15,7 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
       display: flex;
       flex-wrap: wrap;
       gap: var(--kj-space-2xl);
-      padding: var(--kj-space-2xl);
-      background: var(--kj-bg-surface);
-    }
+      padding: var(--kj-space-2xl); }
   `],
   template: `
     <kj-overlay-badge [kjValue]="3" kjPosition="top-end" kjDescription="3 unread">

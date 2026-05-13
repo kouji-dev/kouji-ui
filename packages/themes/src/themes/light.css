@@ -1,96 +1,86 @@
 /* ─────────────────────────────────────────────────────────────
-   light theme — shared layer
-   Sets every shared-layer token from the contract.
+   light theme — "Paper (ink)"
+   Editorial / print feel: pure white surfaces, warm paper field,
+   ink-black primary, dark goldenrod accent. Single signature
+   accent hue; intent colors stay restrained and AAA-friendly.
    ──────────────────────────────────────────────────────────── */
 
 @layer kj.shared {
   [data-theme="light"] {
-    /* ── shape ── */
+    /* ── shape — soft, editorial ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
-
-    /* ── type ── */
-    --kj-font-sans: var(--kj-base-font-sans);
-    --kj-font-mono:    var(--kj-base-font-mono);
-    --kj-font-display: var(--kj-base-font-display);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
-
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
 
-    --kj-bg-body:        var(--kj-base-gray-50);
+    /* Body is pure white; field gets a warm paper tint so inputs sit
+       slightly recessed against surface (which is also white). */
+    --kj-bg-body:        #ffffff;
     --kj-bg-surface:     #ffffff;
-    --kj-bg-field:       var(--kj-base-gray-100);
+    --kj-bg-field:       #f6f6f4;
     --kj-bg-elevated:    #ffffff;
-    --kj-bg-overlay:     rgba(0, 0, 0, 0.5);
-    --kj-bg-inverse:     var(--kj-base-gray-900);
-    --kj-bg-disabled:    var(--kj-base-gray-200);
+    --kj-bg-overlay:     rgba(26, 26, 26, 0.5);
+    --kj-bg-inverse:     #1a1a1a;
+    --kj-bg-disabled:    #ececea;
 
-    --kj-bg-primary:         var(--kj-base-blue-500);
-    --kj-bg-primary-subtle:  oklch(95% 0.04 250);
-    --kj-bg-accent:          var(--kj-base-blue-500);
-    --kj-bg-accent-subtle:   oklch(95% 0.04 250);
+    /* Ink primary + goldenrod accent — the theme's signature pair.
+       fg-on-accent stays ink (#1a1a1a on #b8860b → 5.14:1) instead of
+       white because white-on-goldenrod fails AA. */
+    --kj-bg-primary:         #1a1a1a;
+    --kj-bg-primary-subtle:  #f2f2f0;
+    --kj-bg-accent:          #b8860b;
+    --kj-bg-accent-subtle:   #fdf6e3;
 
-    --kj-bg-info:            var(--kj-base-blue-500);
-    --kj-bg-info-subtle:     oklch(95% 0.04 250);
-    --kj-bg-success:         var(--kj-base-green-500);
-    --kj-bg-success-subtle:  oklch(95% 0.06 145);
-    --kj-bg-warning:         var(--kj-base-amber-500);
-    --kj-bg-warning-subtle:  oklch(95% 0.06 60);
-    --kj-bg-danger:          var(--kj-base-red-500);
-    --kj-bg-danger-subtle:   oklch(95% 0.05 20);
+    --kj-bg-info:            #1e40af;
+    --kj-bg-info-subtle:     #e0e7ff;
+    --kj-bg-success:         #166534;
+    --kj-bg-success-subtle:  #d4ecdc;
+    --kj-bg-warning:         #d97706;
+    --kj-bg-warning-subtle:  #fef3c7;
+    --kj-bg-danger:          #991b1b;
+    --kj-bg-danger-subtle:   #fee2e2;
 
-    --kj-fg-default:    var(--kj-base-gray-900);
-    --kj-fg-muted:      var(--kj-base-gray-700);
-    --kj-fg-subtle:     var(--kj-base-gray-500);
-    --kj-fg-disabled:   var(--kj-base-gray-300);
+    --kj-fg-default:    #1a1a1a;
+    --kj-fg-muted:      #4a4a4a;
+    --kj-fg-subtle:     #6a6a6a;
+    --kj-fg-disabled:   #b8b8b6;
 
-    --kj-fg-on-primary:   var(--kj-base-gray-50);
-    --kj-fg-on-accent:    var(--kj-base-gray-50);
-    --kj-fg-on-info:      var(--kj-base-gray-50);
-    --kj-fg-on-success:   var(--kj-base-gray-50);
-    --kj-fg-on-warning:   var(--kj-base-gray-950);
-    --kj-fg-on-danger:    var(--kj-base-gray-50);
-    --kj-fg-on-inverse:   var(--kj-base-gray-50);
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #1a1a1a;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #1a1a1a;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #ffffff;
 
-    --kj-fg-primary:    var(--kj-base-blue-700);
-    --kj-fg-accent:     var(--kj-base-blue-700);
-    --kj-fg-info:       var(--kj-base-blue-700);
-    --kj-fg-success:    oklch(45% 0.18 145);
-    --kj-fg-warning:    oklch(50% 0.17 55);
-    --kj-fg-danger:     var(--kj-base-red-600);
+    /* fg.accent is darker than bg.accent — white #b8860b only hits ~3:1
+       on body, so use #8b6508 (~5.3:1) for accent-colored text. */
+    --kj-fg-primary:    #1a1a1a;
+    --kj-fg-accent:     #8b6508;
+    --kj-fg-info:       #1e40af;
+    --kj-fg-success:    #166534;
+    --kj-fg-warning:    #92400e;
+    --kj-fg-danger:     #991b1b;
 
-    --kj-border-default:   var(--kj-base-gray-200);
-    --kj-border-muted:     var(--kj-base-gray-100);
-    --kj-border-strong:    var(--kj-base-gray-300);
-    --kj-border-focus:     var(--kj-base-blue-500);
-    --kj-border-disabled:  var(--kj-base-gray-200);
-    --kj-border-primary:   var(--kj-base-blue-500);
-    --kj-border-danger:    var(--kj-base-red-500);
+    --kj-border-default:   #e8e6e0;
+    --kj-border-muted:     #f0eee8;
+    --kj-border-strong:    #c8c4b8;
+    --kj-border-focus:     #1a1a1a;
+    --kj-border-disabled:  #ececea;
+    --kj-border-primary:   #1a1a1a;
+    --kj-border-danger:    #991b1b;
 
-    --kj-shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.08);
-    --kj-shadow-md:     0 4px 12px rgba(0, 0, 0, 0.12);
-    --kj-shadow-lg:     0 16px 40px rgba(0, 0, 0, 0.18);
-    --kj-shadow-focus:  0 0 0 3px oklch(62% 0.19 250 / 0.4);
+    /* Slightly heavier shadow profile so cards read as paper-on-paper. */
+    --kj-shadow-sm:     0 1px 2px rgba(26, 26, 26, 0.06);
+    --kj-shadow-md:     0 6px 16px rgba(26, 26, 26, 0.10);
+    --kj-shadow-lg:     0 20px 48px rgba(26, 26, 26, 0.16);
+    --kj-shadow-focus:  0 0 0 3px rgba(26, 26, 26, 0.25);
+
+    /* 8% darken against #1a1a1a is nearly imperceptible; lift toward
+       #3a3a3a so the hover reads as a deliberate state change. */
+    --kj-button-bg-hover: #3a3a3a;
   }
 }

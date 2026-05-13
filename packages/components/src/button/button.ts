@@ -50,6 +50,7 @@ import { KjButton } from '@kouji-ui/core';
       [kjSize]="kjSize()"
       [kjDisabled]="kjDisabled()"
       [kjLoading]="kjLoading()"
+      [kjFullWidth]="kjFullWidth()"
       [(kjPressed)]="kjPressed"
       [attr.aria-label]="kjAriaLabel()"
     >
@@ -69,6 +70,7 @@ export class KjButtonComponent {
   readonly kjSize = input('md');
   readonly kjDisabled = input(false);
   readonly kjLoading = input(false);
+  readonly kjFullWidth = input(false);
   // Field annotation matches the directive's — ng-packagr otherwise narrows
   // both sides to ModelSignal<boolean>, breaking the [(kjPressed)] binding.
   readonly kjPressed: ModelSignal<boolean | undefined> = model<boolean | undefined>(undefined);

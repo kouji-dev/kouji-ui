@@ -14,10 +14,7 @@ import { KjInputOtpComponent } from './input-otp';
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--kj-space-xl);
-      padding: var(--kj-space-xl);
-      background: var(--kj-bg-surface);
-    }
+      gap: var(--kj-space-xl); }
     .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); }
     label { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); font-family: var(--kj-font-mono); }
   `],

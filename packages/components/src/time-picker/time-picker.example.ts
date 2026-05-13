@@ -9,7 +9,7 @@ import { KjTimePickerComponent } from './time-picker';
   selector: 'kj-time-picker-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-time-picker [(kjValue)]="time" kjAriaLabel="Departure time" />
   `,
