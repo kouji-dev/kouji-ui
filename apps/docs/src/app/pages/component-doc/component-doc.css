@@ -1,235 +1,370 @@
-/* ── Main content ── */
+/* ============================================================
+   Component doc page — full redesign
+
+   Layout owned here:
+     .page-with-toc → main column + sticky right rail (kj-page-toc)
+   Visual tokens come from packages/themes via CSS variables.
+   ============================================================ */
+
+.page-with-toc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  min-height: 0;
+}
+
 .doc-main {
   padding: var(--kj-space-4xl) 3.5rem var(--kj-space-5xl);
-  min-width: 0; /* prevent grid blowout */
+  min-width: 0;
+  max-width: 60rem;
   overflow-x: hidden;
 }
 
-/* ── Scrollbar ── */
+.toc-col {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100dvh;
+  overflow-y: auto;
+  border-left: 1px solid var(--kj-border-default);
+}
+
+/* ── Scrollbar polish ───────────────────────────────────────── */
 .doc-main::-webkit-scrollbar { width: 6px; }
 .doc-main::-webkit-scrollbar-track { background: transparent; }
-.doc-main::-webkit-scrollbar-thumb { background: var(--kj-bg-field); border-radius: var(--kj-radius-selector); }
+.doc-main::-webkit-scrollbar-thumb {
+  background: var(--kj-bg-field);
+  border-radius: var(--kj-radius-selector);
+}
 .doc-main::-webkit-scrollbar-thumb:hover { background: var(--kj-bg-elevated); }
 
-/* ── Page header ── */
+/* ── Header ─────────────────────────────────────────────────── */
 .doc-header {
-  padding-bottom: var(--kj-space-2xl);
-}
-
-.tag {
-  display: inline-block;
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--kj-fg-primary);
-  border: 1px solid var(--kj-bg-primary);
-  padding: 0.2rem 0.6rem;
-  margin-bottom: var(--kj-space-xl);
-}
-
-h1 {
-  font-family: var(--kj-font-display);
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  margin: 0 0 var(--kj-space-lg);
-  line-height: 1;
-}
-
-.doc-desc {
-  color: var(--kj-fg-muted);
-  font-size: 0.875rem;
-  line-height: 1.7;
-
-}
-
-/* ── Directive sections ── */
-.directive-section {
-  padding: 2.5rem 0;
-  border-bottom: 1px solid var(--kj-border-muted, var(--kj-border-default));
-  scroll-margin-top: 2rem;
-}
-
-.directive-header {
-  display: flex;
-  align-items: center;
-  gap: var(--kj-space-xl);
-  margin-bottom: var(--kj-space-lg);
-}
-
-.directive-selector {
-  background: var(--kj-bg-surface);
-  border: 1px solid var(--kj-border-default);
-  color: var(--kj-fg-primary);
-  padding: 0.3rem var(--kj-space-md);
-  font-size: 0.875rem;
-  font-family: var(--kj-font-mono);
-}
-
-.directive-class { color: var(--kj-fg-muted); font-size: 0.8rem; }
-
-.directive-desc {
-  color: var(--kj-fg-muted);
-  font-size: 0.85rem;
-  line-height: 1.7;
-
   margin-bottom: var(--kj-space-2xl);
+  padding-bottom: var(--kj-space-2xl);
+  border-bottom: 1px solid var(--kj-border-default);
 }
 
-/* ── Inputs table ── */
-.block-title {
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--kj-fg-muted);
-  margin: 0 0 var(--kj-space-lg);
-  font-family: var(--kj-font-mono);
-  font-weight: 400;
-}
-
-.inputs-block { margin-bottom: 2rem; }
-
-.required-note { font-size: 0.65rem; color: var(--kj-fg-muted); margin-top: 0.25rem; }
-
-/* ── Examples ── */
-.examples-block { margin-top: 2rem; }
-.example-section { margin-bottom: 2rem; }
-
-.example-label {
-  font-family: var(--kj-font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--kj-fg-muted);
-  padding: var(--kj-space-sm) 0;
-  margin-bottom: var(--kj-space-sm);
-  display: flex;
-  align-items: center;
-  gap: var(--kj-space-sm);
-}
-.example-label::before { content: '○'; color: var(--kj-fg-primary); font-size: 0.65rem; }
-.code-example {
-  background: var(--kj-bg-body);
-  border: 1px solid var(--kj-border-default);
-  padding: var(--kj-space-xl);
-  font-family: var(--kj-font-mono);
-  font-size: 0.8rem;
-  color: var(--kj-fg-muted);
-  overflow-x: auto;
-  white-space: pre;
-  line-height: 1.6;
+.doc-track-tag {
+  display: inline-block;
   margin-bottom: var(--kj-space-lg);
 }
 
-/* ── Not found / Loading ── */
-.not-found { padding: 4rem; color: var(--kj-fg-muted); font-size: 0.875rem; }
-.not-found a { color: var(--kj-fg-primary); text-decoration: none; }
-.loading { padding: 4rem; color: var(--kj-fg-muted); font-size: 0.875rem; opacity: 0.6; }
-
-/* ── Section layout ── */
-.definitions-section,
-.examples-section {
-  padding-top: 2.5rem;
-  border-top: 1px solid var(--kj-border-default);
-  margin-top: 2.5rem;
-}
-
-.section-title {
+.doc-title {
   font-family: var(--kj-font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--kj-fg-default);
-  margin: 0 0 var(--kj-space-2xl);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-weight: var(--kj-display-weight, 800);
+  letter-spacing: var(--kj-letter-spacing, -0.04em);
+  font-size: clamp(2.75rem, 8vw, 5.5rem);
+  line-height: 0.95;
+  margin: 0 0 var(--kj-space-lg);
 }
 
-.inline-examples-block {
+.doc-tagline {
+  font-family: var(--kj-font-sans);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--kj-fg-muted);
+  max-width: 36rem;
+  margin: 0;
+}
+
+/* ── Tabs chrome ────────────────────────────────────────────── */
+.doc-tabs {
+  display: block;
   margin-top: var(--kj-space-xl);
 }
 
-.required-badge { color: var(--kj-fg-primary); margin-left: 4px; font-size: 0.9em; }
+/* Tab count badge — sits inside each <kj-tab> button */
+.tab-count {
+  display: inline-block;
+  margin-left: var(--kj-space-sm);
+  padding: 1px 6px;
+  font-family: var(--kj-font-mono);
+  font-size: 0.625rem;
+  color: var(--kj-fg-muted);
+  background: var(--kj-bg-field);
+  border-radius: var(--kj-radius-selector);
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5rem;
+  text-align: center;
+}
 
-/* ── Mobile responsive overrides ── */
+.tab-body {
+  padding-top: var(--kj-space-2xl);
+}
+
+/* ── Section blocks ─────────────────────────────────────────── */
+.doc-section {
+  margin-bottom: var(--kj-space-4xl);
+  scroll-margin-top: var(--kj-space-2xl);
+}
+
+.doc-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--kj-space-lg);
+  margin-bottom: var(--kj-space-xl);
+  padding-bottom: var(--kj-space-md);
+  border-bottom: 1px solid var(--kj-border-default);
+}
+
+.doc-section-head .num {
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--kj-fg-muted);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.doc-section-head h2 {
+  font-family: var(--kj-font-display);
+  font-weight: var(--kj-display-weight, 700);
+  letter-spacing: var(--kj-letter-spacing, -0.02em);
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  line-height: 1.1;
+  margin: 0;
+}
+
+/* ── Prose ──────────────────────────────────────────────────── */
+.prose p {
+  font-family: var(--kj-font-sans);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--kj-fg-default);
+  max-width: 64ch;
+  margin: 0 0 var(--kj-space-md);
+}
+
+.prose code {
+  font-family: var(--kj-font-mono);
+  font-size: 0.85em;
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
+  padding: 1px 5px;
+  border-radius: var(--kj-radius-selector);
+}
+
+.prose-block {
+  font-family: var(--kj-font-sans);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--kj-fg-default);
+  white-space: pre-wrap;
+  margin: 0;
+  background: transparent;
+  padding: 0;
+}
+
+/* ── Code blocks ────────────────────────────────────────────── */
+.code-block {
+  background: var(--kj-bg-body);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  padding: var(--kj-space-lg);
+  font-family: var(--kj-font-mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--kj-fg-default);
+  overflow-x: auto;
+  white-space: pre;
+  margin: 0 0 var(--kj-space-lg);
+}
+
+.code-block code { font-family: inherit; font-size: inherit; }
+
+/* ── Callouts row ───────────────────────────────────────────── */
+.callouts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-md);
+}
+
+/* ── API table ──────────────────────────────────────────────── */
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  overflow: hidden;
+  font-family: var(--kj-font-mono);
+  font-size: 0.8rem;
+  margin-bottom: var(--kj-space-lg);
+}
+
+.api-table thead {
+  background: var(--kj-bg-surface);
+}
+
+.api-table th {
+  text-align: left;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.65rem;
+  color: var(--kj-fg-muted);
+  padding: var(--kj-space-md) var(--kj-space-lg);
+  border-bottom: 1px solid var(--kj-border-default);
+}
+
+.api-table td {
+  padding: var(--kj-space-md) var(--kj-space-lg);
+  border-bottom: 1px solid var(--kj-border-default);
+  vertical-align: top;
+  background: var(--kj-bg-body);
+  color: var(--kj-fg-default);
+}
+
+.api-table tr:last-child td { border-bottom: 0; }
+
+.api-table .prop-name {
+  font-weight: 700;
+  color: var(--kj-fg-default);
+}
+
+.api-table .prop-type {
+  display: inline-block;
+  color: var(--kj-fg-accent, var(--kj-fg-primary));
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  font-family: var(--kj-font-mono);
+}
+
+.api-table .prop-default {
+  display: inline-block;
+  color: var(--kj-fg-muted);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  font-family: var(--kj-font-mono);
+}
+
+.api-table .prop-desc {
+  font-family: var(--kj-font-sans);
+  color: var(--kj-fg-default);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: block;
+}
+
+.badge-req {
+  display: inline-block;
+  margin-left: var(--kj-space-sm);
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kj-fg-danger, var(--kj-fg-accent));
+  border: 1px solid var(--kj-fg-danger, var(--kj-fg-accent));
+  border-radius: var(--kj-radius-selector);
+}
+
+/* ── Examples cards ─────────────────────────────────────────── */
+.example-card {
+  margin-bottom: var(--kj-space-2xl);
+  scroll-margin-top: var(--kj-space-2xl);
+}
+
+.example-heading {
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kj-fg-muted);
+  margin: 0 0 var(--kj-space-sm);
+  font-weight: 500;
+}
+
+/* ── A11y keyboard chord chips ──────────────────────────────── */
+.key {
+  display: inline-block;
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-selector);
+  margin: 0 2px;
+  min-width: 1.75rem; /* keep narrow chord boxes legible */
+  text-align: center;
+  color: var(--kj-fg-default);
+}
+
+/* ── Related grid ───────────────────────────────────────────── */
+.related-section {
+  margin-top: var(--kj-space-5xl);
+  padding-top: var(--kj-space-2xl);
+  border-top: 1px solid var(--kj-border-default);
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--kj-space-md);
+}
+
+.related-card {
+  /* The card host already has a border; give it a min-height to keep cards
+     consistent and a flex layout so the kj-link fills the surface. */
+  display: flex;
+  align-items: center;
+  padding: var(--kj-space-lg);
+  min-height: 3rem; /* keeps touch target ≥ 44px once the link wraps */
+}
+
+.related-card kj-link {
+  display: block;
+  width: 100%;
+}
+
+/* ── Empty / fallback states ────────────────────────────────── */
+.empty-state {
+  font-family: var(--kj-font-sans);
+  font-size: 0.875rem;
+  color: var(--kj-fg-muted);
+  padding: var(--kj-space-xl) 0;
+  margin: 0;
+}
+
+.not-found,
+.loading {
+  padding: 4rem 0;
+  color: var(--kj-fg-muted);
+  font-size: 0.875rem;
+}
+
+.loading { opacity: 0.6; }
+
+.not-found a {
+  color: var(--kj-fg-primary);
+  text-decoration: none;
+}
+.not-found a:hover { text-decoration: underline; }
+
+/* ── Mobile ─────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .page-with-toc { grid-template-columns: minmax(0, 1fr); }
+  .toc-col { display: none; }
+}
+
 @media (max-width: 767px) {
   .doc-main {
     padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
   }
 
-  h1 {
-    font-size: 2.25rem;
-  }
-
-  .directive-section {
+  .doc-section {
     scroll-margin-top: calc(56px + 1rem);
   }
-}
 
-/* ── Description (plain text, preserves newlines) ── */
-.desc {
-  color: var(--kj-fg-muted);
-  font-size: 0.875rem;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  margin: 0 0 1.25rem;
-}
+  .api-table {
+    font-size: 0.75rem;
+  }
 
-.kind-group {
-  margin-top: var(--kj-space-3xl);
-}
-.kind-group-title {
-  font-family: var(--kj-font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--kj-fg-muted);
-  margin: 0 0 var(--kj-space-md);
-  font-weight: 500;
-}
-.item-name {
-  background: var(--kj-bg-surface);
-  border: 1px solid var(--kj-border-default);
-  color: var(--kj-fg-primary);
-  padding: 0.3rem var(--kj-space-md);
-  font-size: 0.875rem;
-  font-family: var(--kj-font-mono);
-}
-.item-section {
-  padding: var(--kj-space-xl) 0;
-  scroll-margin-top: 2rem;
-}
-.item-section + .item-section {
-  border-top: 1px dashed var(--kj-border-muted, var(--kj-border-default));
-}
-.item-header {
-  display: flex;
-  align-items: center;
-  gap: var(--kj-space-xl);
-  margin-bottom: var(--kj-space-lg);
-  flex-wrap: wrap;
-}
-.main-badge {
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.5rem;
-  background: var(--kj-bg-primary);
-  color: var(--kj-fg-on-primary, white);
-}
-.signature {
-  background: var(--kj-bg-body);
-  border: 1px solid var(--kj-border-default);
-  padding: var(--kj-space-md) var(--kj-space-xl);
-  font-family: var(--kj-font-mono);
-  font-size: 0.85rem;
-  overflow-x: auto;
-  margin-bottom: var(--kj-space-xl);
-}
-.token-type, .const-type {
-  background: var(--kj-bg-surface);
-  border: 1px solid var(--kj-border-default);
-  color: var(--kj-fg-primary);
-  padding: 0.3rem var(--kj-space-md);
-  font-size: 0.875rem;
-  font-family: var(--kj-font-mono);
+  .api-table th,
+  .api-table td {
+    padding: var(--kj-space-sm) var(--kj-space-md);
+  }
 }
