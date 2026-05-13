@@ -26,6 +26,13 @@ app-home {
   overflow-x: hidden;
 }
 
+/* Flex column children default to flex-shrink:1, which collapses any
+   section taller than the available cross-axis room — that's how the
+   hero kept rendering at exactly `padding` height (160px) while the
+   wordmark inside overflowed at 320px. Pin every direct section to
+   its own intrinsic height. */
+.kj-home > * { flex-shrink: 0; }
+
 .kj-home__container {
   width: 100%;
   max-width: 1240px;
@@ -264,11 +271,14 @@ app-home {
 }
 
 /* ── Stats row ───────────────────────────────────────────── */
+/* Per design: a 4-column row underneath the marquee tape with the
+   bright theme default-text on the page surface, dividers between
+   each stat. Big display numbers; muted mono labels below. */
 .kj-home__stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
-  border-bottom: 1px solid var(--kj-border-default);
+  border-top: 1px solid var(--kj-border-default);
 }
 .kj-home__stat {
   padding: var(--kj-space-2xl) var(--kj-space-xl);
@@ -281,7 +291,9 @@ app-home {
   font-size: clamp(2.25rem, 5vw, 3.5rem);
   letter-spacing: var(--kj-letter-spacing);
   line-height: 1;
-  color: var(--kj-fg-primary);
+  /* The design uses the theme's default text color here — bright on
+     dark themes (white-ish on kouji/dark/terminal), inked on light. */
+  color: var(--kj-fg-default);
 }
 .kj-home__stat-label {
   font-family: var(--kj-font-mono);

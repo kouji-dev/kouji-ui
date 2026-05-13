@@ -26,15 +26,40 @@
   .kj-tab:focus-visible { outline: 2px solid var(--kj-bg-primary); outline-offset: 2px; }
   .kj-tab:disabled, .kj-tab[aria-disabled="true"] { opacity: 0.3; cursor: not-allowed; }
 
-  .kj-tabs[data-variant="pills"] .kj-tab-list { border-bottom: 0; gap: 4px; }
+  /* Pills variant — a small "tray" container with each active tab popping
+     to the page-body color and an inset 1px ring. Matches the design's
+     showcase view-mode toggle. */
+  .kj-tabs[data-variant="pills"] {
+    /* The host becomes the tray itself when only a tab-list is rendered
+       (e.g. used purely as a view-mode toggle). */
+    display: inline-block;
+  }
+  .kj-tabs[data-variant="pills"] .kj-tab-list {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background-color: var(--kj-bg-surface);
+    border: 1px solid var(--kj-border-default);
+    border-radius: var(--kj-radius-field);
+    width: fit-content;
+    margin-bottom: 0;
+  }
   .kj-tabs[data-variant="pills"] .kj-tab {
     border-bottom: 0;
-    border-radius: var(--kj-radius-field);
+    border-radius: calc(var(--kj-radius-field) - 2px);
     margin: 0;
+    padding: var(--kj-space-xs, 0.375rem) var(--kj-space-md);
+    color: var(--kj-fg-muted);
+    opacity: 1;
+    transition: background-color var(--kj-transition),
+                color var(--kj-transition),
+                box-shadow var(--kj-transition);
   }
+  .kj-tabs[data-variant="pills"] .kj-tab:hover { color: var(--kj-fg-default); }
   .kj-tabs[data-variant="pills"] .kj-tab[aria-selected="true"] {
-    background: var(--kj-bg-primary);
-    color: var(--kj-fg-on-primary);
+    background-color: var(--kj-bg-body);
+    color: var(--kj-fg-default);
+    box-shadow: inset 0 0 0 1px var(--kj-border-default);
   }
 
   .kj-tabs[data-orientation="vertical"] .kj-tab { border-bottom: 0; border-right: 2px solid transparent; margin: 0 -1px 0 0; text-align: left; }
