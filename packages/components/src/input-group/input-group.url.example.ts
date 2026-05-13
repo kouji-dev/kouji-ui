@@ -10,7 +10,7 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
   selector: 'kj-input-group-url-example',
   standalone: true,
   imports: [KjInputGroupComponent, KjInputGroupAddonComponent, KjInputComponent, FormsModule],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-input-group>
       <kj-input-group-addon [kjAriaHidden]="true">https://</kj-input-group-addon>

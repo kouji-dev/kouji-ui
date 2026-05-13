@@ -9,7 +9,7 @@ import { KjInputComponent } from './input';
   selector: 'kj-input-example',
   standalone: true,
   imports: [KjInputComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `<kj-input type="text" placeholder="Type something…"></kj-input>`,
 })
 export class KjInputExample {}

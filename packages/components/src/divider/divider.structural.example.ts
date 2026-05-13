@@ -14,7 +14,7 @@ import { KjDividerComponent } from './divider';
   standalone: true,
   imports: [KjDividerComponent],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     section { display: flex; flex-direction: column; gap: var(--kj-space-xs); }
     ul { margin: 0; padding-inline-start: var(--kj-space-lg); }
   `],

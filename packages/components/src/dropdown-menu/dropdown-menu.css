@@ -5,12 +5,12 @@
      clipping ancestor. */
 
   .kj-dropdown-menu {
-    --kj-dropdown-menu-bg:           var(--kj-color-base-100);
-    --kj-dropdown-menu-fg:           var(--kj-color-base-content);
-    --kj-dropdown-menu-border-color: var(--kj-color-base-300);
+    --kj-dropdown-menu-bg:           var(--kj-bg-elevated);
+    --kj-dropdown-menu-fg:           var(--kj-fg-default);
+    --kj-dropdown-menu-border-color: var(--kj-border-default);
     --kj-dropdown-menu-radius:       var(--kj-radius-box);
     --kj-dropdown-menu-padding:      var(--kj-space-xs);
-    --kj-dropdown-menu-shadow:       0 12px 32px rgb(0 0 0 / 0.18);
+    --kj-dropdown-menu-shadow:       var(--kj-shadow-md);
 
     display: flex;
     flex-direction: column;
@@ -35,8 +35,8 @@
     --kj-dropdown-menu-item-padding-y: var(--kj-space-sm);
     --kj-dropdown-menu-item-min-height: 2.75rem; /* 44px AAA touch target */
     --kj-dropdown-menu-item-radius:    var(--kj-radius-field);
-    --kj-dropdown-menu-item-hover-bg:  var(--kj-color-base-200);
-    --kj-dropdown-menu-item-active-bg: var(--kj-color-base-300);
+    --kj-dropdown-menu-item-hover-bg:  var(--kj-bg-surface);
+    --kj-dropdown-menu-item-active-bg: var(--kj-bg-field);
 
     display: flex;
     align-items: center;
@@ -61,7 +61,7 @@
     background: var(--kj-dropdown-menu-item-hover-bg);
   }
   .kj-dropdown-menu-item:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: -2px;
   }
   .kj-dropdown-menu-item[data-disabled] {
@@ -73,7 +73,7 @@
     display: block;
     height: 1px;
     margin: var(--kj-space-xs) calc(var(--kj-space-xs) * -1);
-    background: color-mix(in oklab, var(--kj-color-base-content) 12%, transparent);
+    background: color-mix(in oklab, var(--kj-fg-default) 12%, transparent);
     border: 0;
   }
 
@@ -84,7 +84,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     opacity: 0.65;
   }
 

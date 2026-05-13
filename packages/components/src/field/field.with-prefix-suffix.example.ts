@@ -27,13 +27,13 @@ import {
       :host {
         display: block;
         padding: var(--kj-space-xl);
-        background: var(--kj-color-base-200);
+        background: var(--kj-bg-surface);
         max-width: 400px;
       }
       input.kj-bare {
         flex: 1;
         background: transparent;
-        color: var(--kj-color-base-content);
+        color: var(--kj-fg-default);
         border: 0;
         outline: none;
         padding: var(--kj-space-sm) var(--kj-space-md);

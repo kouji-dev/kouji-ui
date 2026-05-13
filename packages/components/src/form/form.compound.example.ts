@@ -29,8 +29,8 @@ import {
     ReactiveFormsModule,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .group { display: flex; flex-direction: column; gap: 0.5rem; padding: var(--kj-space-md); border: 1px solid var(--kj-color-base-300); border-radius: 0.5rem; }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    .group { display: flex; flex-direction: column; gap: 0.5rem; padding: var(--kj-space-md); border: 1px solid var(--kj-border-default); border-radius: 0.5rem; }
     .group h3 { margin: 0; font-size: 0.875rem; }
   `],
   template: `

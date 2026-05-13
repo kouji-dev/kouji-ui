@@ -29,8 +29,8 @@ import { KjButtonComponent } from '../button/button';
     KjButtonComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); min-height: 14rem; }
-    .kj-confirm-popup-example__status { margin-top: var(--kj-space-md); color: var(--kj-color-base-content); opacity: 0.85; font-size: 0.875rem; }
+    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-bg-surface); min-height: 14rem; }
+    .kj-confirm-popup-example__status { margin-top: var(--kj-space-md); color: var(--kj-fg-default); opacity: 0.85; font-size: 0.875rem; }
   `],
   template: `
     <kj-confirm-popup

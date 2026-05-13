@@ -6,9 +6,9 @@
 
 @layer kj.component {
   .kj-input {
-    --kj-input-bg:               var(--kj-color-base-100);
-    --kj-input-fg:               var(--kj-color-base-content);
-    --kj-input-border-color:     var(--kj-color-base-300);
+    --kj-input-bg:               var(--kj-bg-field);
+    --kj-input-fg:               var(--kj-fg-default);
+    --kj-input-border-color:     var(--kj-border-default);
     --kj-input-border-style:     solid;
     --kj-input-border-width:     var(--kj-border);
     --kj-input-radius:           var(--kj-radius-field);
@@ -16,7 +16,7 @@
     --kj-input-padding-y:        var(--kj-space-sm);
     --kj-input-font:             var(--kj-font-sans);
     --kj-input-font-size:        var(--kj-text-sm);
-    --kj-input-placeholder-fg:   var(--kj-color-neutral);
+    --kj-input-placeholder-fg:   var(--kj-fg-muted);
 
     display: inline-flex;
     width: 100%;
@@ -31,12 +31,12 @@
   .kj-input::placeholder { color: var(--kj-input-placeholder-fg); }
 
   .kj-input:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: 2px;
-    --kj-input-border-color: var(--kj-color-primary);
+    --kj-input-border-color: var(--kj-border-focus, var(--kj-bg-primary));
   }
   .kj-input[aria-invalid="true"] {
-    --kj-input-border-color: var(--kj-color-destructive);
+    --kj-input-border-color: var(--kj-border-danger, var(--kj-fg-danger));
   }
   .kj-input[aria-disabled="true"], .kj-input:disabled {
     opacity: 0.55;

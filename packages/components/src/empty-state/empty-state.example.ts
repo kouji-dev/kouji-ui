@@ -23,7 +23,7 @@ import { KjButtonComponent } from '../button/button';
     KjEmptyStateActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-empty-state>
       <kj-empty-state-icon aria-hidden="true">

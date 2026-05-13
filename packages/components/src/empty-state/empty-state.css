@@ -5,9 +5,9 @@
 @layer kj.component {
   .kj-empty-state {
     --kj-empty-state-bg:        transparent;
-    --kj-empty-state-fg:        var(--kj-color-base-content);
-    --kj-empty-state-muted-fg:  var(--kj-color-neutral);
-    --kj-empty-state-accent:    var(--kj-color-base-300);
+    --kj-empty-state-fg:        var(--kj-fg-default);
+    --kj-empty-state-muted-fg:  var(--kj-fg-muted);
+    --kj-empty-state-accent:    var(--kj-border-default);
     --kj-empty-state-padding-y: var(--kj-space-2xl, 2rem);
     --kj-empty-state-padding-x: var(--kj-space-xl,  1.5rem);
     --kj-empty-state-gap:       var(--kj-space-md,  0.75rem);
@@ -46,7 +46,7 @@
   }
 
   .kj-empty-state[data-variant="error"] {
-    --kj-empty-state-accent: var(--kj-color-error, #b91c1c);
+    --kj-empty-state-accent: var(--kj-fg-danger, #b91c1c);
   }
   .kj-empty-state[data-variant="error"] .kj-empty-state-icon {
     color: var(--kj-empty-state-accent);

@@ -13,8 +13,8 @@ import { KjDatePickerComponent } from './date-picker';
   standalone: true,
   imports: [KjDatePickerComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-color-base-200, #f3f3f3); min-height: 24rem; }
-    .selected { margin-top: var(--kj-space-md, 0.75rem); font-family: monospace; color: var(--kj-color-base-content, #111); }
+    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-bg-surface, #f3f3f3); min-height: 24rem; }
+    .selected { margin-top: var(--kj-space-md, 0.75rem); font-family: monospace; color: var(--kj-fg-default, #111); }
   `],
   template: `
     <kj-date-picker

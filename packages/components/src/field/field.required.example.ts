@@ -24,13 +24,13 @@ import {
       :host {
         display: block;
         padding: var(--kj-space-xl);
-        background: var(--kj-color-base-200);
+        background: var(--kj-bg-surface);
         max-width: 400px;
       }
       .kj-input {
-        background: var(--kj-color-base-100);
-        color: var(--kj-color-base-content);
-        border: var(--kj-border) solid var(--kj-color-base-300);
+        background: var(--kj-bg-body);
+        color: var(--kj-fg-default);
+        border: var(--kj-border) solid var(--kj-border-default);
         border-radius: var(--kj-radius-field);
         padding: var(--kj-space-sm) var(--kj-space-md);
         font: var(--kj-text-sm) / 1.4 var(--kj-font-sans);

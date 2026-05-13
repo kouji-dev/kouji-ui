@@ -1,6 +1,6 @@
 @layer kj.component {
   .kj-divider {
-    --kj-divider-color:     var(--kj-color-border, color-mix(in oklch, var(--kj-color-base-content) 20%, transparent));
+    --kj-divider-color:     var(--kj-border-default, color-mix(in oklch, var(--kj-fg-default) 20%, transparent));
     --kj-divider-thickness: 1px;
     --kj-divider-spacing:   var(--kj-space-md, 1rem);
     --kj-divider-gap:       var(--kj-space-md, 1rem);
@@ -86,7 +86,7 @@
   .kj-divider[data-size="lg"] { --kj-divider-spacing: var(--kj-space-lg, 2rem);  --kj-divider-thickness: 2px; }
 
   .kj-divider__content {
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     font: inherit;
     white-space: nowrap;
   }

@@ -28,7 +28,7 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
     kj-icon-gallery-example {
       display: block;
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
     kj-icon-gallery-example .gallery-header {
       display: flex;
@@ -47,11 +47,11 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
       margin: 0;
       font-size: var(--kj-font-size-lg, 1.125rem);
       font-weight: 600;
-      color: var(--kj-color-text-primary, currentColor);
+      color: var(--kj-fg-default, currentColor);
     }
     kj-icon-gallery-example .gallery-count {
       font-size: var(--kj-font-size-sm, 0.875rem);
-      color: var(--kj-color-text-muted, currentColor);
+      color: var(--kj-fg-muted, currentColor);
       font-variant-numeric: tabular-nums;
     }
     kj-icon-gallery-example .gallery-grid {
@@ -67,9 +67,9 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
       gap: var(--kj-space-xs);
       min-height: 88px;
       padding: var(--kj-space-md);
-      border: 1px solid var(--kj-color-border, rgba(0, 0, 0, 0.12));
+      border: 1px solid var(--kj-border-default, rgba(0, 0, 0, 0.12));
       border-radius: var(--kj-radius-md, 8px);
-      background: var(--kj-color-base-100, transparent);
+      background: var(--kj-bg-body, transparent);
       color: inherit;
       font: inherit;
       cursor: pointer;
@@ -77,12 +77,12 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
     }
     kj-icon-gallery-example .gallery-tile:hover,
     kj-icon-gallery-example .gallery-tile:focus-visible {
-      background: var(--kj-color-base-300, rgba(0, 0, 0, 0.04));
-      border-color: var(--kj-color-border-strong, rgba(0, 0, 0, 0.24));
+      background: var(--kj-bg-surface, rgba(0, 0, 0, 0.04));
+      border-color: var(--kj-border-default, rgba(0, 0, 0, 0.24));
       outline: none;
     }
     kj-icon-gallery-example .gallery-tile:focus-visible {
-      box-shadow: 0 0 0 2px var(--kj-color-focus-ring, #5b8def);
+      box-shadow: 0 0 0 2px var(--kj-bg-primary, #5b8def);
     }
     kj-icon-gallery-example .gallery-tile i.kj-icon {
       font-size: 24px;
@@ -91,7 +91,7 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
       font-size: 11px;
       letter-spacing: 0.04em;
       text-transform: lowercase;
-      color: var(--kj-color-text-muted, currentColor);
+      color: var(--kj-fg-muted, currentColor);
       word-break: break-all;
       text-align: center;
       line-height: 1.2;
@@ -99,8 +99,8 @@ import { LUCIDE_ICON_NAMES } from './lucide/icon-names';
     kj-icon-gallery-example .gallery-empty {
       padding: var(--kj-space-xl);
       text-align: center;
-      color: var(--kj-color-text-muted, currentColor);
-      border: 1px dashed var(--kj-color-border, rgba(0, 0, 0, 0.12));
+      color: var(--kj-fg-muted, currentColor);
+      border: 1px dashed var(--kj-border-default, rgba(0, 0, 0, 0.12));
       border-radius: var(--kj-radius-md, 8px);
     }
     kj-icon-gallery-example .visually-hidden {
