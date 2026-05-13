@@ -23,9 +23,15 @@
     --kj-button-gap:              var(--kj-space-sm);
     --kj-button-min-width:        auto;
     --kj-button-height:           auto;
-    --kj-button-shadow:           none;
-    --kj-button-shadow-active:    none;
     --kj-button-translate-active: none;
+    /* --kj-button-shadow / --kj-button-shadow-hover / --kj-button-shadow-active
+       are intentionally NOT declared here. Declaring them with element-level
+       specificity would win over the theme's `[data-theme="X"]` ancestor
+       declaration (e.g. kouji's `6px 6px 0 #2a2a2a` offset block), since
+       both selectors are (0,1,0) and same-layer source-order favours the
+       element. The hover/active rules below pull the value via
+       `var(name, fallback)` so the theme's inherited value reaches the
+       component AND the fallback (`none`) applies when no theme sets one. */
     /* Typographic tone — themes override these for brand voice (e.g.
        bauhaus bumps weight to 900; cyberpunk tightens tracking). */
     --kj-button-font-weight:      600;
@@ -51,7 +57,10 @@
     padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
     font: var(--kj-button-font-weight) var(--kj-button-font-size) / 1.2 var(--kj-button-font);
     letter-spacing: var(--kj-button-letter-spacing);
-    box-shadow: var(--kj-button-shadow);
+    /* `none` fallback so themes that don't declare --kj-button-shadow still
+       render flat. Themes (e.g. kouji) inject their value at `[data-theme]`
+       ancestor scope. */
+    box-shadow: var(--kj-button-shadow, none);
     /* Transition only properties tied to user interaction (hover / active /
        focus). NOT background-color — variant-driven bg changes propagate
        through the wrapper input on the same tick as the host attribute, and
@@ -179,7 +188,9 @@
   }
   .kj-button:active {
     transform: var(--kj-button-translate-active);
-    box-shadow: var(--kj-button-shadow-active);
+    /* Same fallback chain as :hover so themes that don't set
+       --kj-button-shadow-active keep their static shadow on press. */
+    box-shadow: var(--kj-button-shadow-active, var(--kj-button-shadow, none));
   }
   .kj-button:focus-visible {
     outline: 2px solid var(--kj-border-focus);

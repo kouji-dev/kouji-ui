@@ -148,18 +148,29 @@ app-home {
   z-index: 1;
 }
 .kj-home__marker {
-  background-color: var(--kj-bg-primary);
+  /* Translucent fill — the decorative hero-grid lines deliberately cut
+     through the accent rectangle for a "stamped on graph paper" feel.
+     65% primary blends the brand colour with the page bg while keeping
+     the marker text easily legible. */
+  background-color: color-mix(in oklch, var(--kj-bg-primary) 65%, transparent);
   color: var(--kj-fg-on-primary);
   padding: 0 0.5rem;
   border-radius: calc(var(--kj-radius-field) / 2);
-  /* Marker establishes its own stacking context above the hero-grid so
-     the decorative 1px grid lines never bleed through the accent fill. */
   position: relative;
   z-index: 2;
   /* `box-decoration-break: clone` makes the marker fill wrap to a new
      line cleanly without splitting the accent rectangle awkwardly. */
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+
+/* Landing-only override: on the kouji theme, the hero's default-variant
+   buttons also let the grid lines cut through (same brutalist "stamped"
+   treatment as the marker). Other themes keep their solid button fills.
+   Scoped to .kj-home__hero so the rest of the landing — and every other
+   page — stays at full opacity. */
+[data-theme="kouji"] .kj-home__hero .kj-button[data-variant="default"] {
+  --kj-button-bg: color-mix(in oklch, var(--kj-bg-primary) 80%, transparent);
 }
 
 .kj-home__sub {
