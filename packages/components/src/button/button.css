@@ -26,6 +26,13 @@
     --kj-button-shadow:           none;
     --kj-button-shadow-active:    none;
     --kj-button-translate-active: none;
+    /* Typographic tone — themes override these for brand voice (e.g.
+       bauhaus bumps weight to 900; cyberpunk tightens tracking). */
+    --kj-button-font-weight:      600;
+    --kj-button-letter-spacing:  -0.01em;
+    /* Hover lift — pulls from the shared per-theme --kj-hover-translate
+       (bauhaus = -4px; everyone else = -2px). */
+    --kj-button-hover-translate:  var(--kj-hover-translate, -2px);
 
     /* the only place raw var(--kj-button-*) is read */
     display: inline-flex;
@@ -42,7 +49,8 @@
     border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
     border-radius: var(--kj-button-radius);
     padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
-    font: var(--kj-button-font-size) / 1.2 var(--kj-button-font);
+    font: var(--kj-button-font-weight) var(--kj-button-font-size) / 1.2 var(--kj-button-font);
+    letter-spacing: var(--kj-button-letter-spacing);
     box-shadow: var(--kj-button-shadow);
     /* Transition only properties tied to user interaction (hover / active /
        focus). NOT background-color — variant-driven bg changes propagate
@@ -156,6 +164,13 @@
      inherited value from `[data-theme]`). */
   .kj-button:hover {
     --kj-button-bg: var(--kj-button-bg-hover, color-mix(in oklch, var(--kj-bg-primary), black 8%));
+    /* Hover lift — themed via --kj-hover-translate. Bauhaus = -4px,
+       everyone else = -2px (default in :root). */
+    transform: translateY(var(--kj-button-hover-translate));
+    /* Hover-state shadow falls back to the static --kj-button-shadow
+       (no flip) unless the theme set --kj-button-shadow-hover. Kouji /
+       bauhaus collapse their offset shadow to a tight ring on hover. */
+    box-shadow: var(--kj-button-shadow-hover, var(--kj-button-shadow));
   }
   /* fg-hover only applies to the default variant; ghost/outline/link own
      their hover fg already, and destructive keeps its on-danger fg. */

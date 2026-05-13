@@ -83,6 +83,12 @@
     --kj-shadow-lg:     8px 8px 0 #1a1a1a;
     --kj-shadow-focus:  0 0 0 3px #1d3aff;
 
+    /* Bauhaus button mirrors kouji's offset/ring pattern but with the
+       heaviest 8px block (matches the design's bauhaus signature). */
+    --kj-button-shadow:        8px 8px 0 #111111;
+    --kj-button-shadow-hover:  0 0 0 2.5px #111111;
+    --kj-button-shadow-active: 0 0 0 2.5px #111111;
+
     --kj-button-bg-hover: #8e0f1d;
   }
 }

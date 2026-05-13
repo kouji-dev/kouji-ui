@@ -33,11 +33,11 @@
     --kj-bg-disabled:    #1a1a1a;
 
     /* Intent surfaces — primary */
-    --kj-bg-primary:         #b8f500;
+    --kj-bg-primary:         #c4ff3d;
     --kj-bg-primary-subtle:  #2a3300;
 
     /* Intent surfaces — accent (kouji: same as primary) */
-    --kj-bg-accent:          #b8f500;
+    --kj-bg-accent:          #c4ff3d;
     --kj-bg-accent-subtle:   #2a3300;
 
     /* Intent surfaces — info */
@@ -73,8 +73,8 @@
     --kj-fg-on-inverse:   #0c0c0c;
 
     /* FG Class C — intent as text */
-    --kj-fg-primary:    #b8f500;
-    --kj-fg-accent:     #b8f500;
+    --kj-fg-primary:    #c4ff3d;
+    --kj-fg-accent:     #c4ff3d;
     --kj-fg-info:       var(--kj-base-blue-400);
     --kj-fg-success:    var(--kj-base-lime-500);
     --kj-fg-warning:    var(--kj-base-amber-500);
@@ -84,16 +84,24 @@
     --kj-border-default:   #1a1a1a;
     --kj-border-muted:     #141414;
     --kj-border-strong:    #2a2a2a;
-    --kj-border-focus:     #b8f500;
+    --kj-border-focus:     #c4ff3d;
     --kj-border-disabled:  #1a1a1a;
-    --kj-border-primary:   #b8f500;
+    --kj-border-primary:   #c4ff3d;
     --kj-border-danger:    var(--kj-base-red-600);
 
     /* Shadows — kouji is brutalist/flat (depth 0) */
     --kj-shadow-sm:     0 0 0 1px #1a1a1a;
     --kj-shadow-md:     0 0 0 1px #1a1a1a;
     --kj-shadow-lg:     0 0 0 2px #1a1a1a;
-    --kj-shadow-focus:  0 0 0 2px #b8f500;
+    --kj-shadow-focus:  0 0 0 2px #c4ff3d;
+
+    /* Brutalist button signature — hard 6px offset block. On hover the
+       offset collapses to a tight ring (matches the design's neo-
+       brutalist "pressed-in" feel: lift the button -2px while removing
+       the cast shadow, so the surface looks flatter against the page). */
+    --kj-button-shadow:        6px 6px 0 #2a2a2a;
+    --kj-button-shadow-hover:  0 0 0 1.5px #2a2a2a;
+    --kj-button-shadow-active: 0 0 0 1.5px #2a2a2a;
   }
 }
 
