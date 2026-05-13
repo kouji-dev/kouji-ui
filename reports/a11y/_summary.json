@@ -1,77 +1,77 @@
 {
   "schemaVersion": 1,
-  "timestamp": "2026-05-12T22:53:29.836Z",
+  "timestamp": "2026-05-13T00:50:27.884Z",
   "themes": {
     "kouji": {
       "axeViolationsByImpact": {
         "critical": 0,
-        "serious": 6,
+        "serious": 1,
         "moderate": 16,
         "minor": 0
       },
       "fontWarnings": 14,
       "lighthouseAvg": {
-        "performance": 32
+        "performance": 37
       }
     },
     "dark": {
       "axeViolationsByImpact": {
         "critical": 0,
-        "serious": 5,
+        "serious": 1,
         "moderate": 16,
         "minor": 0
       },
       "fontWarnings": 15,
       "lighthouseAvg": {
-        "performance": 32
+        "performance": 46
       }
     },
     "light": {
       "axeViolationsByImpact": {
         "critical": 0,
-        "serious": 6,
+        "serious": 1,
         "moderate": 16,
         "minor": 0
       },
       "fontWarnings": 15,
       "lighthouseAvg": {
-        "performance": 30
+        "performance": 37
       }
     },
     "retro": {
       "axeViolationsByImpact": {
         "critical": 0,
-        "serious": 6,
+        "serious": 1,
         "moderate": 16,
         "minor": 0
       },
       "fontWarnings": 15,
       "lighthouseAvg": {
-        "performance": 31
+        "performance": 38
       }
     },
     "cyberpunk": {
       "axeViolationsByImpact": {
         "critical": 0,
-        "serious": 6,
+        "serious": 1,
         "moderate": 16,
         "minor": 0
       },
       "fontWarnings": 14,
       "lighthouseAvg": {
-        "performance": 30
+        "performance": 40
       }
     },
     "corporate": {
       "axeViolationsByImpact": {
         "critical": 0,
-        "serious": 6,
+        "serious": 1,
         "moderate": 16,
         "minor": 0
       },
       "fontWarnings": 18,
       "lighthouseAvg": {
-        "performance": 29
+        "performance": 38
       }
     }
   }

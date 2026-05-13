@@ -3,32 +3,15 @@
   "theme": "kouji",
   "page": "/",
   "url": "http://localhost:4200/?theme=kouji",
-  "timestamp": "2026-05-12T22:47:45.895Z",
+  "timestamp": "2026-05-13T00:47:05.999Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
+      "serious": 0,
       "moderate": 3,
       "minor": 0
     },
     "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".hero-desc"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #666666, background color: #0c0c0c, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#666666",
-            "bg": "#0c0c0c",
-            "ratio": 3.4,
-            "expected": "4.5:1"
-          }
-        ]
-      },
       {
         "id": "heading-order",
         "impact": "moderate",
@@ -179,14 +162,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 28
+      "performance": 36
     },
     "metrics": {
-      "FCP": 11297,
-      "LCP": 50414,
+      "FCP": 11370,
+      "LCP": 47119,
       "CLS": 0,
-      "TBT": 1891,
-      "SI": 14231
+      "TBT": 812,
+      "SI": 11370
     }
   }
 }

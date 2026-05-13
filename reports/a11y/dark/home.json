@@ -3,7 +3,7 @@
   "theme": "dark",
   "page": "/",
   "url": "http://localhost:4200/?theme=dark",
-  "timestamp": "2026-05-12T22:47:46.090Z",
+  "timestamp": "2026-05-13T00:47:06.037Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
@@ -166,14 +166,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 27
+      "performance": 50
     },
     "metrics": {
-      "FCP": 11419,
-      "LCP": 49954,
+      "FCP": 27508,
+      "LCP": 45913,
       "CLS": 0,
-      "TBT": 1924,
-      "SI": 17646
+      "TBT": 249,
+      "SI": 27508
     }
   }
 }

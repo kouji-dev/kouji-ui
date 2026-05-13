@@ -3,7 +3,7 @@
   "theme": "kouji",
   "page": "/theme-generator",
   "url": "http://localhost:4200/theme-generator?theme=kouji",
-  "timestamp": "2026-05-12T22:52:11.584Z",
+  "timestamp": "2026-05-13T00:49:38.349Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
@@ -17,16 +17,6 @@
         "impact": "serious",
         "help": "Elements must meet minimum color contrast ratio thresholds",
         "nodes": [
-          {
-            "target": [
-              "#toolbar-name-helper"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #666666, background color: #0c0c0c, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#666666",
-            "bg": "#0c0c0c",
-            "ratio": 3.4,
-            "expected": "4.5:1"
-          },
           {
             "target": [
               ".hd__actions > kj-button[kjvariant=\"default\"] > .kj-button[data-variant=\"default\"][kjbutton=\"\"]"
@@ -146,16 +136,6 @@
             "bg": "#898285",
             "ratio": 3.75,
             "expected": "4.5:1"
-          },
-          {
-            "target": [
-              "#type-font-sans-label"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #666666, background color: #0c0c0c, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#666666",
-            "bg": "#0c0c0c",
-            "ratio": 3.4,
-            "expected": "4.5:1"
           }
         ]
       },
@@ -251,11 +231,11 @@
       "performance": 25
     },
     "metrics": {
-      "FCP": 12213,
-      "LCP": 62929,
+      "FCP": 11544,
+      "LCP": 62639,
       "CLS": 0,
-      "TBT": 3518,
-      "SI": 14815
+      "TBT": 3764,
+      "SI": 18036
     }
   }
 }

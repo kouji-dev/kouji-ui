@@ -3,7 +3,7 @@
   "theme": "cyberpunk",
   "page": "/theme-generator",
   "url": "http://localhost:4200/theme-generator?theme=cyberpunk",
-  "timestamp": "2026-05-12T22:52:20.410Z",
+  "timestamp": "2026-05-13T00:49:40.128Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
@@ -17,26 +17,6 @@
         "impact": "serious",
         "help": "Elements must meet minimum color contrast ratio thresholds",
         "nodes": [
-          {
-            "target": [
-              ".active"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.58 (foreground color: #ff007f, background color: #ffd10f, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ff007f",
-            "bg": "#ffd10f",
-            "ratio": 2.58,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              ".kj-navbar-version"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.61 (foreground color: #ff007f, background color: #f0d808, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ff007f",
-            "bg": "#f0d808",
-            "ratio": 2.61,
-            "expected": "4.5:1"
-          },
           {
             "target": [
               ".hd__actions > kj-button[kjvariant=\"default\"] > .kj-button[data-variant=\"default\"][kjbutton=\"\"]"
@@ -251,11 +231,11 @@
       "performance": 25
     },
     "metrics": {
-      "FCP": 11042,
-      "LCP": 65323,
+      "FCP": 11606,
+      "LCP": 63491,
       "CLS": 0,
-      "TBT": 5176,
-      "SI": 21097
+      "TBT": 3886,
+      "SI": 19631
     }
   }
 }

@@ -3,42 +3,15 @@
   "theme": "light",
   "page": "/",
   "url": "http://localhost:4200/?theme=light",
-  "timestamp": "2026-05-12T22:47:45.943Z",
+  "timestamp": "2026-05-13T00:47:06.057Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
+      "serious": 0,
       "moderate": 3,
       "minor": 0
     },
     "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".kj-navbar-version"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.08 (foreground color: #0071df, background color: #eeeeee, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#0071df",
-            "bg": "#eeeeee",
-            "ratio": 4.08,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #0071df, background color: #f8f8f8, font size: 8.4pt (11.2px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#0071df",
-            "bg": "#f8f8f8",
-            "ratio": 4.46,
-            "expected": "4.5:1"
-          }
-        ]
-      },
       {
         "id": "heading-order",
         "impact": "moderate",
@@ -193,14 +166,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 27
+      "performance": 37
     },
     "metrics": {
-      "FCP": 11330,
-      "LCP": 49728,
+      "FCP": 12198,
+      "LCP": 46941,
       "CLS": 0,
-      "TBT": 2329,
-      "SI": 18506
+      "TBT": 740,
+      "SI": 12709
     }
   }
 }

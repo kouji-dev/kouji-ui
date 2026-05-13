@@ -3,42 +3,15 @@
   "theme": "cyberpunk",
   "page": "/",
   "url": "http://localhost:4200/?theme=cyberpunk",
-  "timestamp": "2026-05-12T22:47:46.086Z",
+  "timestamp": "2026-05-13T00:47:06.035Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
+      "serious": 0,
       "moderate": 3,
       "minor": 0
     },
     "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".kj-navbar-version"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.61 (foreground color: #ff007f, background color: #f0d808, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ff007f",
-            "bg": "#f0d808",
-            "ratio": 2.61,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.14 (foreground color: #ff007f, background color: #ffee00, font size: 8.4pt (11.2px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ff007f",
-            "bg": "#ffee00",
-            "ratio": 3.14,
-            "expected": "4.5:1"
-          }
-        ]
-      },
       {
         "id": "heading-order",
         "impact": "moderate",
@@ -189,14 +162,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 26
+      "performance": 48
     },
     "metrics": {
-      "FCP": 11139,
-      "LCP": 48708,
+      "FCP": 40660,
+      "LCP": 46032,
       "CLS": 0,
-      "TBT": 3145,
-      "SI": 15901
+      "TBT": 317,
+      "SI": 40660
     }
   }
 }

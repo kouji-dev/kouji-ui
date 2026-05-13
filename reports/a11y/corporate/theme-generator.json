@@ -3,7 +3,7 @@
   "theme": "corporate",
   "page": "/theme-generator",
   "url": "http://localhost:4200/theme-generator?theme=corporate",
-  "timestamp": "2026-05-12T22:52:20.440Z",
+  "timestamp": "2026-05-13T00:49:40.992Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
@@ -19,22 +19,22 @@
         "nodes": [
           {
             "target": [
-              ".active"
+              "#theme-rail-heading"
             ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.75 (foreground color: #4b6bfb, background color: #e9edff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#4b6bfb",
-            "bg": "#e9edff",
-            "ratio": 3.75,
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #72737d, background color: #f8f9fa, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#72737d",
+            "bg": "#f8f9fa",
+            "ratio": 4.46,
             "expected": "4.5:1"
           },
           {
             "target": [
-              ".kj-navbar-version"
+              "#rail-heading-built-in"
             ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.15 (foreground color: #4b6bfb, background color: #f8f9fa, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#4b6bfb",
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #72737d, background color: #f8f9fa, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#72737d",
             "bg": "#f8f9fa",
-            "ratio": 4.15,
+            "ratio": 4.46,
             "expected": "4.5:1"
           },
           {
@@ -111,20 +111,30 @@
             "target": [
               "kj-tag[kjvariant=\"success\"]"
             ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.92 (foreground color: #ffffff, background color: #36d399, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.55 (foreground color: #ffffff, background color: #2eb872, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
             "fg": "#ffffff",
-            "bg": "#36d399",
-            "ratio": 1.92,
+            "bg": "#2eb872",
+            "ratio": 2.55,
             "expected": "4.5:1"
           },
           {
             "target": [
               "kj-tag[kjvariant=\"info\"][data-variant=\"info\"]"
             ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.1 (foreground color: #ffffff, background color: #3abff8, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #ffffff, background color: #4b6bfb, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
             "fg": "#ffffff",
-            "bg": "#3abff8",
-            "ratio": 2.1,
+            "bg": "#4b6bfb",
+            "ratio": 4.37,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".group-heading:nth-child(3)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #72737d, background color: #f8f9fa, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#72737d",
+            "bg": "#f8f9fa",
+            "ratio": 4.46,
             "expected": "4.5:1"
           },
           {
@@ -159,6 +169,26 @@
           },
           {
             "target": [
+              ".group-heading:nth-child(5)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #72737d, background color: #f8f9fa, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#72737d",
+            "bg": "#f8f9fa",
+            "ratio": 4.46,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              ".group-heading:nth-child(7)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #72737d, background color: #f8f9fa, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#72737d",
+            "bg": "#f8f9fa",
+            "ratio": 4.46,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
               "button[aria-label=\"Edit primary text color\"] > .color-chip__mark[_ngcontent-ng-c4178927257=\"\"]"
             ],
             "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.69 (foreground color: #ffffff, background color: #808689, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
@@ -179,12 +209,22 @@
           },
           {
             "target": [
+              ".type-panel > .group-heading"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.46 (foreground color: #72737d, background color: #f8f9fa, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "fg": "#72737d",
+            "bg": "#f8f9fa",
+            "ratio": 4.46,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
               "div[aria-labelledby=\"type-font-sans-label\"] > .type-meta[_ngcontent-ng-c347213319=\"\"]"
             ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.87 (foreground color: #80818a, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#80818a",
-            "bg": "#ffffff",
-            "ratio": 3.87,
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.82 (foreground color: #7d7e88, background color: #f8f9fa, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#7d7e88",
+            "bg": "#f8f9fa",
+            "ratio": 3.82,
             "expected": "4.5:1"
           }
         ]
@@ -281,11 +321,11 @@
       "performance": 25
     },
     "metrics": {
-      "FCP": 11307,
-      "LCP": 65284,
+      "FCP": 11500,
+      "LCP": 63764,
       "CLS": 0,
-      "TBT": 4521,
-      "SI": 20352
+      "TBT": 5777,
+      "SI": 18269
     }
   }
 }

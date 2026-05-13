@@ -3,32 +3,15 @@
   "theme": "retro",
   "page": "/docs/badge",
   "url": "http://localhost:4200/docs/badge?theme=retro",
-  "timestamp": "2026-05-12T22:51:27.718Z",
+  "timestamp": "2026-05-13T00:49:08.859Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
+      "serious": 0,
       "moderate": 3,
       "minor": 0
     },
     "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".hero-desc"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #666666, background color: #0c0c0c, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#666666",
-            "bg": "#0c0c0c",
-            "ratio": 3.4,
-            "expected": "4.5:1"
-          }
-        ]
-      },
       {
         "id": "heading-order",
         "impact": "moderate",
@@ -179,14 +162,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 37
+      "performance": 44
     },
     "metrics": {
-      "FCP": 10337,
-      "LCP": 47977,
+      "FCP": 11477,
+      "LCP": 46569,
       "CLS": 0,
-      "TBT": 759,
-      "SI": 12687
+      "TBT": 466,
+      "SI": 11477
     }
   }
 }

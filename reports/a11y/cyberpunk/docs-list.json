@@ -3,32 +3,15 @@
   "theme": "cyberpunk",
   "page": "/docs/list",
   "url": "http://localhost:4200/docs/list?theme=cyberpunk",
-  "timestamp": "2026-05-12T22:50:33.413Z",
+  "timestamp": "2026-05-13T00:48:39.003Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
+      "serious": 0,
       "moderate": 3,
       "minor": 0
     },
     "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".hero-desc"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.4 (foreground color: #666666, background color: #0c0c0c, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#666666",
-            "bg": "#0c0c0c",
-            "ratio": 3.4,
-            "expected": "4.5:1"
-          }
-        ]
-      },
       {
         "id": "heading-order",
         "impact": "moderate",
@@ -179,14 +162,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 32
+      "performance": 40
     },
     "metrics": {
-      "FCP": 11268,
-      "LCP": 48602,
+      "FCP": 10719,
+      "LCP": 47179,
       "CLS": 0,
-      "TBT": 1131,
-      "SI": 12798
+      "TBT": 605,
+      "SI": 11854
     }
   }
 }

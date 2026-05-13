@@ -3,7 +3,7 @@
   "theme": "light",
   "page": "/theme-generator",
   "url": "http://localhost:4200/theme-generator?theme=light",
-  "timestamp": "2026-05-12T22:52:21.084Z",
+  "timestamp": "2026-05-13T00:49:38.775Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
@@ -17,26 +17,6 @@
         "impact": "serious",
         "help": "Elements must meet minimum color contrast ratio thresholds",
         "nodes": [
-          {
-            "target": [
-              ".active"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.8 (foreground color: #0071df, background color: #dae8f5, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#0071df",
-            "bg": "#dae8f5",
-            "ratio": 3.8,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              ".kj-navbar-version"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.08 (foreground color: #0071df, background color: #eeeeee, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#0071df",
-            "bg": "#eeeeee",
-            "ratio": 4.08,
-            "expected": "4.5:1"
-          },
           {
             "target": [
               ".hd__actions > kj-button[kjvariant=\"default\"] > .kj-button[data-variant=\"default\"][kjbutton=\"\"]"
@@ -105,6 +85,16 @@
             "fg": "#45ba50",
             "bg": "#cde2cf",
             "ratio": 1.83,
+            "expected": "4.5:1"
+          },
+          {
+            "target": [
+              "kj-tag[kjvariant=\"success\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.35 (foreground color: #f8f8f8, background color: #45ba50, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "fg": "#f8f8f8",
+            "bg": "#45ba50",
+            "ratio": 2.35,
             "expected": "4.5:1"
           },
           {
@@ -271,11 +261,11 @@
       "performance": 25
     },
     "metrics": {
-      "FCP": 12599,
-      "LCP": 65401,
+      "FCP": 11533,
+      "LCP": 61876,
       "CLS": 0,
-      "TBT": 4304,
-      "SI": 21940
+      "TBT": 3776,
+      "SI": 19612
     }
   }
 }

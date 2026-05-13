@@ -3,7 +3,7 @@
   "theme": "dark",
   "page": "/theme-generator",
   "url": "http://localhost:4200/theme-generator?theme=dark",
-  "timestamp": "2026-05-12T22:52:20.982Z",
+  "timestamp": "2026-05-13T00:49:41.646Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
@@ -226,6 +226,16 @@
       }
     ]
   },
-  "lighthouse": null,
-  "lighthouseError": "lighthouse exited with code 1: Runtime error encountered: Waiting for DevTools protocol response has exceeded the allotted time. (Method: Network.getResponseBody)\n"
+  "lighthouse": {
+    "scores": {
+      "performance": 26
+    },
+    "metrics": {
+      "FCP": 11581,
+      "LCP": 63382,
+      "CLS": 0,
+      "TBT": 2754,
+      "SI": 20177
+    }
+  }
 }

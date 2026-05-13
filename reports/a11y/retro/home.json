@@ -3,52 +3,15 @@
   "theme": "retro",
   "page": "/",
   "url": "http://localhost:4200/?theme=retro",
-  "timestamp": "2026-05-12T22:47:45.936Z",
+  "timestamp": "2026-05-13T00:47:06.005Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
+      "serious": 0,
       "moderate": 3,
       "minor": 0
     },
     "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".kj-navbar-version"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.52 (foreground color: #ef9995, background color: #e4d8b4, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ef9995",
-            "bg": "#e4d8b4",
-            "ratio": 1.52,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.73 (foreground color: #ef9995, background color: #ede5d0, font size: 8.4pt (11.2px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ef9995",
-            "bg": "#ede5d0",
-            "ratio": 1.73,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              "em"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.73 (foreground color: #ef9995, background color: #ede5d0, font size: 115.2pt (153.6px), font weight: bold). Expected contrast ratio of 3:1",
-            "fg": "#ef9995",
-            "bg": "#ede5d0",
-            "ratio": 1.73,
-            "expected": "3:1"
-          }
-        ]
-      },
       {
         "id": "heading-order",
         "impact": "moderate",
@@ -203,14 +166,14 @@
   },
   "lighthouse": {
     "scores": {
-      "performance": 27
+      "performance": 38
     },
     "metrics": {
-      "FCP": 10987,
-      "LCP": 48924,
+      "FCP": 10611,
+      "LCP": 47296,
       "CLS": 0,
-      "TBT": 2209,
-      "SI": 17440
+      "TBT": 703,
+      "SI": 11506
     }
   }
 }
