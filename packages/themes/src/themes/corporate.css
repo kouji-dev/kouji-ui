@@ -70,5 +70,63 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    /* ─── new token system (additive) ─── */
+
+    --kj-bg-body:        #f8f9fa;
+    --kj-bg-surface:     #ffffff;
+    --kj-bg-field:       #f1f3f5;
+    --kj-bg-elevated:    #ffffff;
+    --kj-bg-overlay:     rgba(24, 26, 42, 0.55);
+    --kj-bg-inverse:     #181a2a;
+    --kj-bg-disabled:    #e9ecef;
+
+    --kj-bg-primary:         #4b6bfb;
+    --kj-bg-primary-subtle:  #e9edff;
+    --kj-bg-accent:          #67cba0;
+    --kj-bg-accent-subtle:   #ddf3e8;
+
+    --kj-bg-info:            #4b6bfb;
+    --kj-bg-info-subtle:     #e9edff;
+    --kj-bg-success:         #2eb872;
+    --kj-bg-success-subtle:  #d4f0e2;
+    --kj-bg-warning:         #f5a623;
+    --kj-bg-warning-subtle:  #fde9c8;
+    --kj-bg-danger:          #e74c3c;
+    --kj-bg-danger-subtle:   #fbd9d5;
+
+    --kj-fg-default:    #181a2a;
+    --kj-fg-muted:      #4a4f5e;
+    --kj-fg-subtle:     #7a7f8e;
+    --kj-fg-disabled:   #adb5bd;
+
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #181a2a;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #181a2a;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #ffffff;
+
+    /* fg.primary must meet AA on #f8f9fa — darker than #4b6bfb */
+    --kj-fg-primary:    #2d4ad7;
+    --kj-fg-accent:     #1f7a4a;
+    --kj-fg-info:       #2d4ad7;
+    --kj-fg-success:    #1f7a4a;
+    --kj-fg-warning:    #a06800;
+    --kj-fg-danger:     #b32e20;
+
+    --kj-border-default:   #e9ecef;
+    --kj-border-muted:     #f1f3f5;
+    --kj-border-strong:    #ced4da;
+    --kj-border-focus:     #4b6bfb;
+    --kj-border-disabled:  #e9ecef;
+    --kj-border-primary:   #4b6bfb;
+    --kj-border-danger:    #e74c3c;
+
+    --kj-shadow-sm:     0 1px 2px rgba(24, 26, 42, 0.06);
+    --kj-shadow-md:     0 4px 12px rgba(24, 26, 42, 0.10);
+    --kj-shadow-lg:     0 16px 40px rgba(24, 26, 42, 0.15);
+    --kj-shadow-focus:  0 0 0 3px rgba(75, 107, 251, 0.35);
   }
 }
