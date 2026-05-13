@@ -6,8 +6,8 @@ import { KjSelectComponent, KjOptionComponent } from './select';
   standalone: true,
   imports: [KjSelectComponent, KjOptionComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
-    .group-label { padding: 4px 12px; font-size: 0.75rem; color: var(--kj-color-base-content); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
+    .group-label { padding: 4px 12px; font-size: 0.75rem; color: var(--kj-fg-default); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
   `],
   template: `
     <kj-select [(value)]="city" placeholder="Choose a city">

@@ -9,9 +9,9 @@
 @layer kj.component {
   .kj-link {
     /* component knobs — themes / users can override any of these */
-    --kj-link-fg:               var(--kj-color-link, var(--kj-color-primary));
-    --kj-link-hover-fg:         var(--kj-color-link-hover, var(--kj-color-primary-hover, var(--kj-color-primary)));
-    --kj-link-visited-fg:       var(--kj-color-link-visited, var(--kj-color-secondary, var(--kj-color-primary)));
+    --kj-link-fg:               var(--kj-color-link, var(--kj-fg-primary));
+    --kj-link-hover-fg:         var(--kj-color-link-hover, color-mix(in oklch, var(--kj-fg-primary), black 8%));
+    --kj-link-visited-fg:       var(--kj-color-link-visited, var(--kj-color-secondary, var(--kj-fg-primary)));
     --kj-link-decoration:       underline;
     --kj-link-underline-offset: 3px;
     --kj-link-font-size:        inherit;
@@ -36,7 +36,7 @@
   }
 
   .kj-link:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-fg-primary);
     outline-offset: 2px;
   }
 
@@ -49,10 +49,10 @@
 
   /* ── Variants ───────────────────────────────────────────────── */
   .kj-link[data-variant="primary"] {
-    --kj-link-fg: var(--kj-color-link, var(--kj-color-primary));
+    --kj-link-fg: var(--kj-color-link, var(--kj-fg-primary));
     --kj-link-hover-fg: var(
       --kj-color-link-hover,
-      color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content))
+      color-mix(in oklab, var(--kj-fg-primary) 80%, var(--kj-fg-default))
     );
   }
 
@@ -60,24 +60,21 @@
     --kj-link-fg: var(--kj-color-secondary);
     --kj-link-hover-fg: var(
       --kj-color-secondary-hover,
-      color-mix(in oklab, var(--kj-color-secondary) 80%, var(--kj-color-base-content))
+      color-mix(in oklab, var(--kj-color-secondary) 80%, var(--kj-fg-default))
     );
   }
 
   .kj-link[data-variant="muted"] {
     --kj-link-fg: var(
       --kj-color-link-muted,
-      color-mix(in oklab, var(--kj-color-base-content) 70%, transparent)
+      color-mix(in oklab, var(--kj-fg-default) 70%, transparent)
     );
-    --kj-link-hover-fg: var(--kj-color-base-content);
+    --kj-link-hover-fg: var(--kj-fg-default);
   }
 
   .kj-link[data-variant="destructive"] {
-    --kj-link-fg: var(--kj-color-destructive);
-    --kj-link-hover-fg: var(
-      --kj-color-destructive-hover,
-      color-mix(in oklab, var(--kj-color-destructive) 80%, var(--kj-color-base-content))
-    );
+    --kj-link-fg: var(--kj-fg-danger);
+    --kj-link-hover-fg: color-mix(in oklab, var(--kj-fg-danger) 80%, var(--kj-fg-default));
   }
 
   /* ── Sizes ──────────────────────────────────────────────────── */

@@ -10,7 +10,7 @@ import { KjListComponent, KjListItemComponent } from './list';
   selector: 'kj-list-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-list ariaLabel="Account settings">
       <kj-list-item>Profile</kj-list-item>

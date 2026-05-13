@@ -9,8 +9,8 @@
 @layer kj.component {
   .kj-list {
     --kj-list-bg:           transparent;
-    --kj-list-fg:           var(--kj-color-base-content);
-    --kj-list-border-color: var(--kj-color-base-300);
+    --kj-list-fg:           var(--kj-fg-default);
+    --kj-list-border-color: var(--kj-border-default);
     --kj-list-radius:       var(--kj-radius-box);
     --kj-list-row-gap:      0;
     --kj-list-row-padding-x: var(--kj-space-md);
@@ -107,19 +107,19 @@
   /* Hoverable rows. Cascade order matters: the `:hover` rule comes BEFORE
      the `[data-active]` rule so the active row wins when both are true. */
   .kj-list[data-hoverable] .kj-list-item:hover {
-    background: color-mix(in oklab, var(--kj-color-base-content) 6%, transparent);
+    background: color-mix(in oklab, var(--kj-fg-default) 6%, transparent);
     cursor: pointer;
   }
 
   /* Active row — current location in a nav. Painted via background tint plus
      a left bar (≥3:1 against background per WCAG 1.4.11). */
   .kj-list-item[data-active] {
-    background: color-mix(in oklab, var(--kj-color-primary) 12%, transparent);
-    color: var(--kj-color-primary);
-    box-shadow: inset 3px 0 0 0 var(--kj-color-primary);
+    background: color-mix(in oklab, var(--kj-bg-primary) 12%, transparent);
+    color: var(--kj-fg-primary);
+    box-shadow: inset 3px 0 0 0 var(--kj-bg-primary);
   }
   .kj-list[data-orientation='horizontal'] .kj-list-item[data-active] {
-    box-shadow: inset 0 -3px 0 0 var(--kj-color-primary);
+    box-shadow: inset 0 -3px 0 0 var(--kj-bg-primary);
   }
 
   /* Disabled row — dim the chrome and any projected interactive child.
@@ -159,7 +159,7 @@
   }
 
   .kj-list-item > :where(a, button):focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-fg-primary);
     outline-offset: 2px;
     border-radius: var(--kj-list-row-radius);
   }

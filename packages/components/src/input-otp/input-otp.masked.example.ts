@@ -17,10 +17,10 @@ import { KjInputOtpComponent } from './input-otp';
       align-items: center;
       gap: var(--kj-space-lg);
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
-    .hint { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); }
+    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
+    .hint { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
   `],
   template: `
     <label for="input-otp-masked">Enter your PIN</label>

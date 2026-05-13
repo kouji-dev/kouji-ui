@@ -5,7 +5,7 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-disabled-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-radio-group [(value)]="choice" ariaLabel="Choice">
       <kj-radio [value]="'a'">Option A</kj-radio>

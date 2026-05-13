@@ -5,7 +5,7 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-inline-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-radio-group [(value)]="vote" orientation="horizontal" ariaLabel="Vote">
       <kj-radio [value]="'yes'">Yes</kj-radio>

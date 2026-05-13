@@ -11,7 +11,7 @@ import { KjKbdComponent } from './kbd';
   standalone: true,
   imports: [KjKbdComponent],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; gap: var(--kj-space-md); align-items: center; flex-wrap: wrap; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
   `],
   template: `
     <kj-kbd kjSize="xs">Esc</kj-kbd>

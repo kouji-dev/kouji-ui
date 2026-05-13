@@ -5,7 +5,7 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-group-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-radio-group [(value)]="plan" ariaLabel="Plan">
       <kj-radio [value]="'free'">Free</kj-radio>

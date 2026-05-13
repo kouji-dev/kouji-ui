@@ -16,10 +16,10 @@ import { KjInputOtpComponent } from './input-otp';
       align-items: flex-start;
       gap: var(--kj-space-xl);
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
     .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); }
-    label { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); font-family: var(--kj-font-mono); }
+    label { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); font-family: var(--kj-font-mono); }
   `],
   template: `
     <div class="row">

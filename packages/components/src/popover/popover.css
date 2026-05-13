@@ -4,13 +4,13 @@
      `.kj-popover-content` class lands on the panel via `kjPanelClass`. */
 
   .kj-popover-content {
-    --kj-popover-bg:           var(--kj-color-base-100);
-    --kj-popover-fg:           var(--kj-color-base-content);
-    --kj-popover-border-color: var(--kj-color-base-300);
+    --kj-popover-bg:           var(--kj-bg-elevated);
+    --kj-popover-fg:           var(--kj-fg-default);
+    --kj-popover-border-color: var(--kj-border-default);
     --kj-popover-radius:       var(--kj-radius-box);
     --kj-popover-padding-x:    var(--kj-space-md);
     --kj-popover-padding-y:    var(--kj-space-md);
-    --kj-popover-shadow:       0 12px 32px rgb(0 0 0 / 0.18);
+    --kj-popover-shadow:       var(--kj-shadow-md, 0 12px 32px rgb(0 0 0 / 0.18));
     --kj-popover-arrow-size:   8px;
 
     /* Layout — the directive applies position: fixed and writes top/left. */
@@ -36,7 +36,7 @@
     font-size: 0.9375rem;
     font-weight: 600;
     margin: 0 0 var(--kj-space-xs);
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
   }
 
   /* Arrow positioning relative to the panel's resolved data-side. */
@@ -44,8 +44,8 @@
     position: absolute;
     width: var(--kj-popover-arrow-size, 8px);
     height: var(--kj-popover-arrow-size, 8px);
-    background: var(--kj-popover-bg, var(--kj-color-base-100));
-    border: var(--kj-border) solid var(--kj-popover-border-color, var(--kj-color-base-300));
+    background: var(--kj-popover-bg, var(--kj-bg-elevated));
+    border: var(--kj-border) solid var(--kj-popover-border-color, var(--kj-border-default));
     transform: rotate(45deg);
   }
 

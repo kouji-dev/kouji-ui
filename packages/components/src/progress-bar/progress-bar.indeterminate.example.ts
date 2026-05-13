@@ -11,7 +11,7 @@ import { KjProgressBarComponent } from './progress-bar';
   standalone: true,
   imports: [KjProgressBarComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
   `],
   template: `
     <kj-progress-bar kjAriaLabel="Loading" />

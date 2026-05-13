@@ -16,7 +16,7 @@
     align-items: center;
     gap: var(--kj-space-sm);
     cursor: pointer;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     font: 0.875rem / 1.4 var(--kj-font-sans);
   }
   .kj-radio-label { user-select: none; }
@@ -24,8 +24,8 @@
   /* The interactive dot (carries the kjRadio directive). */
   .kj-radio-dot {
     --kj-radio-size:        1rem;
-    --kj-radio-border:      var(--kj-color-neutral);
-    --kj-radio-bg-checked:  var(--kj-color-primary);
+    --kj-radio-border:      var(--kj-border-default);
+    --kj-radio-bg-checked:  var(--kj-bg-primary);
 
     display: inline-block;
     width: var(--kj-radio-size);
@@ -33,7 +33,7 @@
     flex-shrink: 0;
     border: var(--kj-border) solid var(--kj-radio-border);
     border-radius: 9999px;
-    background: var(--kj-color-base-100);
+    background: var(--kj-bg-field);
     position: relative;
     transition: var(--kj-transition);
   }
@@ -45,7 +45,7 @@
     background: var(--kj-radio-bg-checked);
   }
   .kj-radio-dot[data-checked] { border-color: var(--kj-radio-bg-checked); }
-  .kj-radio-dot:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-radio-dot:focus-visible { outline: 2px solid var(--kj-fg-primary); outline-offset: 2px; }
 
   /* Disabled — dim the whole group (dot + label text) for visual consistency
      with native form controls. */

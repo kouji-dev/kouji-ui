@@ -12,11 +12,11 @@ import { KjListComponent, KjListItemComponent } from './list';
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     .kj-list-interactive-status {
       margin-top: var(--kj-space-md);
       font: 0.875rem / 1.4 var(--kj-font-sans);
-      color: var(--kj-color-base-content);
+      color: var(--kj-fg-default);
       opacity: 0.75;
     }
   `],

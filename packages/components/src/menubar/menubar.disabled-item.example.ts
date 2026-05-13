@@ -10,7 +10,7 @@ import { Component } from '@angular/core';
   selector: 'kj-menubar-disabled-item-example',
   standalone: true,
   imports: [],
-  styles: [`:host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); min-height: 18rem; }`],
+  styles: [`:host { display: block; padding: var(--kj-space-2xl); background: var(--kj-bg-surface); min-height: 18rem; }`],
   template: `<p>Menubar disabled-item example pending rewrite onto overlay primitives.</p>`,
 })
 export class KjMenubarDisabledItemExample {}

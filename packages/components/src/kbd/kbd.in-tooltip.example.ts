@@ -15,7 +15,7 @@ import { KjButtonComponent } from '../button/button';
   standalone: true,
   imports: [KjKbdComponent, KjTooltipTrigger, KjTooltipContent, KjButtonComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-2xl); background: var(--kj-bg-surface); }
     .kj-kbd-in-tooltip-body { display: inline-flex; align-items: center; gap: var(--kj-space-2xs); }
   `],
   template: `

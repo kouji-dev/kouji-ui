@@ -17,12 +17,12 @@ import { KjInputOtpComponent } from './input-otp';
       align-items: center;
       gap: var(--kj-space-lg);
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
+    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
     .error {
       font-size: var(--kj-text-xs);
-      color: var(--kj-color-destructive);
+      color: var(--kj-fg-danger);
       font-family: var(--kj-font-mono);
       min-height: 1.25rem;
     }

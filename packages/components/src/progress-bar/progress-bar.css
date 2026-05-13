@@ -9,8 +9,8 @@
 @layer kj.component {
   .kj-progress-bar {
     /* component knobs — themes/users can override any of these */
-    --kj-progress-bar-track:        var(--kj-color-base-300);
-    --kj-progress-bar-fill:         var(--kj-color-primary);
+    --kj-progress-bar-track:        var(--kj-bg-field);
+    --kj-progress-bar-fill:         var(--kj-bg-primary);
     --kj-progress-bar-radius:       9999px;
     --kj-progress-bar-height:       0.5rem; /* md default — 8px */
     --kj-progress-bar-transition:   200ms ease-out;
@@ -32,10 +32,10 @@
   .kj-progress-bar[data-size="lg"] { --kj-progress-bar-height: 0.75rem; }  /* 12px */
 
   /* ── Variants ── (data-variant mirrored by KjVariant host directive) */
-  .kj-progress-bar[data-variant="primary"] { --kj-progress-bar-fill: var(--kj-color-primary); }
-  .kj-progress-bar[data-variant="success"] { --kj-progress-bar-fill: var(--kj-color-success); }
-  .kj-progress-bar[data-variant="warning"] { --kj-progress-bar-fill: var(--kj-color-warning); }
-  .kj-progress-bar[data-variant="error"]   { --kj-progress-bar-fill: var(--kj-color-error, var(--kj-color-destructive)); }
+  .kj-progress-bar[data-variant="primary"] { --kj-progress-bar-fill: var(--kj-bg-primary); }
+  .kj-progress-bar[data-variant="success"] { --kj-progress-bar-fill: var(--kj-bg-success); }
+  .kj-progress-bar[data-variant="warning"] { --kj-progress-bar-fill: var(--kj-bg-warning); }
+  .kj-progress-bar[data-variant="error"]   { --kj-progress-bar-fill: var(--kj-bg-danger); }
 
   /* ── Fill (determinate) ──
      The directive sets --kj-progress-fraction (0..1) on the host AND on the

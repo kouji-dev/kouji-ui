@@ -18,13 +18,13 @@ import { KjInputOtpComponent } from './input-otp';
       align-items: center;
       gap: var(--kj-space-lg);
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
+    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
     .value {
       font-family: var(--kj-font-mono);
       font-size: var(--kj-text-sm);
-      color: var(--kj-color-neutral);
+      color: var(--kj-fg-muted);
       letter-spacing: 0.1em;
     }
   `],

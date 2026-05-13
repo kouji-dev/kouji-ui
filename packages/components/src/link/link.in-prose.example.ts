@@ -6,7 +6,7 @@ import { KjLinkComponent } from './link';
   standalone: true,
   imports: [KjLinkComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     p { max-width: 60ch; line-height: 1.6; }
   `],
   template: `

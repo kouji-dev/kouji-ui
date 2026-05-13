@@ -16,7 +16,7 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
       flex-wrap: wrap;
       gap: var(--kj-space-2xl);
       padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
   `],
   template: `

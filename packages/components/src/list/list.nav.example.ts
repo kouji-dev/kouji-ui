@@ -16,7 +16,7 @@ import { KjListComponent, KjListItemComponent } from './list';
   selector: 'kj-list-nav-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-list as="nav" ariaLabel="Primary" [hoverable]="true">
       <kj-list-item [active]="true">

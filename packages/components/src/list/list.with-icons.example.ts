@@ -14,7 +14,7 @@ import { KjListComponent, KjListItemComponent } from './list';
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
     .kj-list-icon {
       display: inline-flex;
       align-items: center;
@@ -22,7 +22,7 @@ import { KjListComponent, KjListItemComponent } from './list';
       width: 1.5rem;
       height: 1.5rem;
       font-size: 1rem;
-      color: var(--kj-color-base-content);
+      color: var(--kj-fg-default);
       opacity: 0.7;
     }
     .kj-list-body {
@@ -34,11 +34,11 @@ import { KjListComponent, KjListItemComponent } from './list';
     .kj-list-title {
       font: 0.875rem / 1.4 var(--kj-font-sans);
       font-weight: 600;
-      color: var(--kj-color-base-content);
+      color: var(--kj-fg-default);
     }
     .kj-list-subtitle {
       font: 0.75rem / 1.3 var(--kj-font-sans);
-      color: var(--kj-color-base-content);
+      color: var(--kj-fg-default);
       opacity: 0.65;
     }
     .kj-list-badge {
@@ -49,8 +49,8 @@ import { KjListComponent, KjListItemComponent } from './list';
       padding: 0 var(--kj-space-sm);
       height: 1.5rem;
       border-radius: 9999px;
-      background: var(--kj-color-primary);
-      color: var(--kj-color-primary-content);
+      background: var(--kj-bg-primary);
+      color: var(--kj-fg-on-primary);
       font: 600 0.75rem / 1 var(--kj-font-sans);
     }
   `],

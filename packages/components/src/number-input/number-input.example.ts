@@ -9,7 +9,7 @@ import { KjNumberInputComponent } from './number-input';
   selector: 'kj-number-input-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-number-input [(kjValue)]="qty" kjAriaLabel="Quantity" />
   `,

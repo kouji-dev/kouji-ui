@@ -15,7 +15,7 @@ import { KjProgressBarComponent } from './progress-bar';
       flex-direction: column;
       gap: var(--kj-space-md);
       padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
+      background: var(--kj-bg-surface);
     }
   `],
   template: `

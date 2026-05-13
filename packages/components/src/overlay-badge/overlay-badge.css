@@ -11,8 +11,8 @@
     /* Visual chrome inherited from <kj-badge>. We re-apply the same token
        set here so the slot renders identically whether the consumer uses
        <kj-overlay-badge> or projects a manual <span kjOverlayBadgeContent>. */
-    --kj-badge-bg:           var(--kj-color-primary);
-    --kj-badge-fg:           var(--kj-color-primary-content);
+    --kj-badge-bg:           var(--kj-bg-primary);
+    --kj-badge-fg:           var(--kj-fg-on-primary);
     --kj-badge-border-color: transparent;
     --kj-badge-radius:       var(--kj-radius-selector);
     --kj-badge-padding-x:    var(--kj-space-sm);
@@ -34,7 +34,7 @@
 
     /* 2px halo against the anchor for WCAG 1.4.11 non-text contrast — the
        badge is a small element sitting on top of arbitrary surfaces. */
-    box-shadow: 0 0 0 2px var(--kj-color-base-100);
+    box-shadow: 0 0 0 2px var(--kj-bg-body);
 
     /* Logical-property positioning so RTL flips for free. The translate
        pulls the badge half-out of the anchor at each corner — keeps the
@@ -47,17 +47,17 @@
 
   /* Variant overrides — mirror <kj-badge>'s data-variant rules. */
   .kj-overlay-badge[data-variant="secondary"] {
-    --kj-badge-bg: var(--kj-color-base-200);
-    --kj-badge-fg: var(--kj-color-base-content);
+    --kj-badge-bg: var(--kj-bg-surface);
+    --kj-badge-fg: var(--kj-fg-default);
   }
   .kj-overlay-badge[data-variant="destructive"] {
-    --kj-badge-bg: var(--kj-color-destructive);
-    --kj-badge-fg: var(--kj-color-destructive-content);
+    --kj-badge-bg: var(--kj-bg-danger);
+    --kj-badge-fg: var(--kj-fg-on-danger);
   }
   .kj-overlay-badge[data-variant="outline"] {
     --kj-badge-bg: transparent;
-    --kj-badge-fg: var(--kj-color-base-content);
-    --kj-badge-border-color: var(--kj-color-neutral);
+    --kj-badge-fg: var(--kj-fg-default);
+    --kj-badge-border-color: var(--kj-border-default);
   }
 
   /* Sizes. */
