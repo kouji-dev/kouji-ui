@@ -4,8 +4,8 @@
 
 @layer kj.component {
   .kj-card {
-    --kj-card-bg:           var(--kj-color-base-200);
-    --kj-card-fg:           var(--kj-color-base-content);
+    --kj-card-bg:           var(--kj-bg-surface);
+    --kj-card-fg:           var(--kj-fg-default);
     --kj-card-border-color: transparent;
     --kj-card-border-width: var(--kj-border);
     --kj-card-radius:       var(--kj-radius-box);
@@ -30,11 +30,11 @@
 
   .kj-card[data-variant="outline"] {
     --kj-card-bg: transparent;
-    --kj-card-border-color: var(--kj-color-neutral);
+    --kj-card-border-color: var(--kj-border-default);
   }
 
   .kj-card[data-variant="subtle"] {
-    --kj-card-bg: var(--kj-color-base-300);
+    --kj-card-bg: var(--kj-bg-field);
   }
 
   /* Cover image. Fixed aspect ratio + cover-fit prevents tall hero images
@@ -46,7 +46,7 @@
 
     display: block;
     height: var(--kj-card-cover-height);
-    background: var(--kj-color-base-300);
+    background: var(--kj-bg-field);
     overflow: hidden;
   }
   .kj-card-cover img,
@@ -75,13 +75,13 @@
   .kj-card-title {
     font: 600 1rem / 1.3 var(--kj-font-sans);
     margin: 0;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
   }
 
   /* Subtitle */
   .kj-card-subtitle {
     font: 0.875rem / 1.4 var(--kj-font-sans);
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     opacity: 0.6;
     margin: 0;
   }
@@ -89,7 +89,7 @@
   /* Content */
   .kj-card-content {
     display: block;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     font: 0.9375rem / 1.5 var(--kj-font-sans);
   }
   .kj-card-content[data-padded] {
@@ -102,7 +102,7 @@
     align-items: center;
     gap: var(--kj-space-sm);
     padding: var(--kj-card-padding-y) var(--kj-card-padding-x);
-    border-top: var(--kj-border) solid var(--kj-color-base-300);
+    border-top: var(--kj-border) solid var(--kj-border-default);
   }
   .kj-card-footer[data-align="start"]   { justify-content: flex-start; }
   .kj-card-footer[data-align="center"]  { justify-content: center; }

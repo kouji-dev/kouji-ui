@@ -18,9 +18,9 @@ const LABELS: Record<string, string> = {
   selector: 'kj-cascade-select-path-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
-    <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--kj-color-base-content);">
+    <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--kj-fg-default);">
       Path: <span style="font-weight: 600;">{{ breadcrumb() }}</span>
     </div>
 
@@ -51,7 +51,7 @@ const LABELS: Record<string, string> = {
       </kj-cascade-option>
     </kj-cascade-select>
 
-    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--kj-color-base-content);">
+    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--kj-fg-default);">
       Selected value: <strong>{{ selectedCity() ?? '—' }}</strong>
     </p>
   `,

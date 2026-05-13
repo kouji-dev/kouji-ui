@@ -5,8 +5,8 @@
     flex-direction: column;
     gap: var(--kj-space-md);
     padding: var(--kj-space-md);
-    background: var(--kj-color-base-100);
-    color: var(--kj-color-base-content);
+    background: var(--kj-bg-body);
+    color: var(--kj-fg-default);
     border-radius: var(--kj-radius-box);
     overflow-y: auto;
     font-family: var(--kj-font-sans);
@@ -86,7 +86,7 @@
   .kj-chat-header {
     grid-area: header;
     font-size: 0.75rem;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     opacity: 0.7;
     display: inline-flex;
     align-items: baseline;
@@ -101,8 +101,8 @@
 
   /* ── Bubble body ─────────────────────────────────────────── */
   .kj-chat-bubble {
-    --kj-chat-bubble-bg:        var(--kj-color-base-200);
-    --kj-chat-bubble-fg:        var(--kj-color-base-content);
+    --kj-chat-bubble-bg:        var(--kj-bg-surface);
+    --kj-chat-bubble-fg:        var(--kj-fg-default);
     --kj-chat-bubble-radius:    var(--kj-radius-box, 0.75rem);
     --kj-chat-bubble-padding-x: var(--kj-space-md);
     --kj-chat-bubble-padding-y: var(--kj-space-sm);
@@ -125,32 +125,32 @@
 
   /* Variant tokens. Each pairs background + readable foreground. */
   .kj-chat-bubble[data-variant='primary'] {
-    --kj-chat-bubble-bg: var(--kj-color-primary, #2563eb);
-    --kj-chat-bubble-fg: var(--kj-color-primary-content, #ffffff);
+    --kj-chat-bubble-bg: var(--kj-bg-primary, #2563eb);
+    --kj-chat-bubble-fg: var(--kj-fg-on-primary, #ffffff);
   }
   .kj-chat-bubble[data-variant='secondary'] {
-    --kj-chat-bubble-bg: var(--kj-color-secondary, var(--kj-color-base-300));
-    --kj-chat-bubble-fg: var(--kj-color-secondary-content, var(--kj-color-base-content));
+    --kj-chat-bubble-bg: var(--kj-bg-field, var(--kj-bg-field));
+    --kj-chat-bubble-fg: var(--kj-fg-default, var(--kj-fg-default));
   }
   .kj-chat-bubble[data-variant='accent'] {
-    --kj-chat-bubble-bg: var(--kj-color-accent, #a855f7);
-    --kj-chat-bubble-fg: var(--kj-color-accent-content, #ffffff);
+    --kj-chat-bubble-bg: var(--kj-bg-accent, #a855f7);
+    --kj-chat-bubble-fg: var(--kj-fg-on-accent, #ffffff);
   }
   .kj-chat-bubble[data-variant='info'] {
-    --kj-chat-bubble-bg: var(--kj-color-info, #0ea5e9);
-    --kj-chat-bubble-fg: var(--kj-color-info-content, #ffffff);
+    --kj-chat-bubble-bg: var(--kj-bg-info, #0ea5e9);
+    --kj-chat-bubble-fg: var(--kj-fg-on-info, #ffffff);
   }
   .kj-chat-bubble[data-variant='success'] {
-    --kj-chat-bubble-bg: var(--kj-color-success, #16a34a);
-    --kj-chat-bubble-fg: var(--kj-color-success-content, #ffffff);
+    --kj-chat-bubble-bg: var(--kj-bg-success, #16a34a);
+    --kj-chat-bubble-fg: var(--kj-fg-on-success, #ffffff);
   }
   .kj-chat-bubble[data-variant='warning'] {
-    --kj-chat-bubble-bg: var(--kj-color-warning, #f59e0b);
-    --kj-chat-bubble-fg: var(--kj-color-warning-content, #1f1300);
+    --kj-chat-bubble-bg: var(--kj-bg-warning, #f59e0b);
+    --kj-chat-bubble-fg: var(--kj-fg-on-warning, #1f1300);
   }
   .kj-chat-bubble[data-variant='error'] {
-    --kj-chat-bubble-bg: var(--kj-color-error, #dc2626);
-    --kj-chat-bubble-fg: var(--kj-color-error-content, #ffffff);
+    --kj-chat-bubble-bg: var(--kj-bg-danger, #dc2626);
+    --kj-chat-bubble-fg: var(--kj-fg-on-danger, #ffffff);
   }
 
   /* Sizes: padding + type-scale only — radius cascades through `em`. */
@@ -201,7 +201,7 @@
   .kj-chat-footer {
     grid-area: footer;
     font-size: 0.6875rem;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     opacity: 0.6;
     display: inline-flex;
     align-items: center;
@@ -220,8 +220,8 @@
   .kj-chat-footer[data-state='sending']::before   { content: '\025F7'; opacity: 0.7; }
   .kj-chat-footer[data-state='sent']::before      { content: '\02713'; }
   .kj-chat-footer[data-state='delivered']::before { content: '\02713\02713'; letter-spacing: -0.15em; padding-inline-end: 0.15em; }
-  .kj-chat-footer[data-state='read']::before      { content: '\02713\02713'; letter-spacing: -0.15em; padding-inline-end: 0.15em; color: var(--kj-color-info, #0ea5e9); }
-  .kj-chat-footer[data-state='error']::before     { content: '\0203C'; color: var(--kj-color-error, #dc2626); }
+  .kj-chat-footer[data-state='read']::before      { content: '\02713\02713'; letter-spacing: -0.15em; padding-inline-end: 0.15em; color: var(--kj-fg-info, #0ea5e9); }
+  .kj-chat-footer[data-state='error']::before     { content: '\0203C'; color: var(--kj-fg-danger, #dc2626); }
 
   /* Reduced motion: the tail is static, so nothing here animates. The log's
      scroll behaviour is the consumer's; this rule documents the contract. */

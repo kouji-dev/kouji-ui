@@ -9,7 +9,7 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from './combobox';
   selector: 'kj-combobox-example',
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-combobox [(value)]="country" placeholder="Search countries…">
       <kj-combobox-option [value]="'fr'">France</kj-combobox-option>

@@ -6,7 +6,7 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-card-full-example',
   standalone: true,
   imports: [KjCardComponent, KjCardHeaderComponent, KjCardTitleComponent, KjCardSubtitleComponent, KjCardContentComponent, KjCardFooterComponent, KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-card style="max-width: 24rem;">
       <kj-card-header>

@@ -8,9 +8,9 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * `<kj-card-cover>` sub-components for structured layouts.
  *
  * Variants:
- * - `default` — base surface (background `--kj-color-base-200`)
+ * - `default` — base surface (background `--kj-bg-surface`)
  * - `outline` — transparent background, neutral border
- * - `subtle`  — slightly elevated surface (background `--kj-color-base-300`), no border
+ * - `subtle`  — slightly elevated surface (background `--kj-bg-field`), no border
  *
  * @example
  * ```html

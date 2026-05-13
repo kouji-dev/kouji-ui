@@ -1,7 +1,7 @@
 @layer kj.component {
   .kj-badge {
-    --kj-badge-bg:           var(--kj-color-primary);
-    --kj-badge-fg:           var(--kj-color-primary-content);
+    --kj-badge-bg:           var(--kj-bg-primary);
+    --kj-badge-fg:           var(--kj-fg-on-primary);
     --kj-badge-border-color: transparent;
     --kj-badge-radius:       var(--kj-radius-selector);
     --kj-badge-padding-x:    var(--kj-space-sm);
@@ -21,17 +21,17 @@
   }
 
   .kj-badge[data-variant="secondary"] {
-    --kj-badge-bg: var(--kj-color-base-200);
-    --kj-badge-fg: var(--kj-color-base-content);
+    --kj-badge-bg: var(--kj-bg-surface);
+    --kj-badge-fg: var(--kj-fg-default);
   }
   .kj-badge[data-variant="destructive"] {
-    --kj-badge-bg: var(--kj-color-destructive);
-    --kj-badge-fg: var(--kj-color-destructive-content);
+    --kj-badge-bg: var(--kj-bg-danger);
+    --kj-badge-fg: var(--kj-fg-on-danger);
   }
   .kj-badge[data-variant="outline"] {
     --kj-badge-bg: transparent;
-    --kj-badge-fg: var(--kj-color-base-content);
-    --kj-badge-border-color: var(--kj-color-neutral);
+    --kj-badge-fg: var(--kj-fg-default);
+    --kj-badge-border-color: var(--kj-border-default);
   }
 
   .kj-badge[data-size="xs"] {

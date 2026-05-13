@@ -11,7 +11,7 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-button-group-example',
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-button-group kjAriaLabel="Document actions">
       <kj-button kjVariant="outline">Save</kj-button>

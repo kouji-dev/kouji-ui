@@ -18,7 +18,7 @@ import {
     KjComboboxOptionComponent,
     KjComboboxEmptyComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-combobox [(value)]="fruit" placeholder="Try typing 'xyz'…">
       <kj-combobox-option [value]="'apple'">Apple</kj-combobox-option>

@@ -5,7 +5,7 @@ import { KjBadgeComponent } from './badge';
   selector: 'kj-badge-default-example',
   standalone: true,
   imports: [KjBadgeComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `<kj-badge>New</kj-badge>`,
 })
 export class KjBadgeDefaultExample {}

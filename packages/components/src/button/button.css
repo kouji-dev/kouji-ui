@@ -9,8 +9,8 @@
 @layer kj.component {
   .kj-button {
     /* component knobs — themes/users can override any of these */
-    --kj-button-bg:               var(--kj-color-primary);
-    --kj-button-fg:               var(--kj-color-primary-content);
+    --kj-button-bg:               var(--kj-bg-primary);
+    --kj-button-fg:               var(--kj-fg-on-primary);
     --kj-button-border-color:     transparent;
     --kj-button-border-style:     solid;
     --kj-button-border-width:     var(--kj-border);
@@ -50,47 +50,42 @@
   /* Variants flip component tokens. Each variant owns its hover so the
      hover surface is designed per intent, not derived heuristically.
 
-     Filled variants (default, destructive) prefer a designed
-     `--kj-color-*-hover` token from the theme, falling back to a
-     base-content-mix that automatically darkens in light themes and
-     lightens in dark themes. Themes are encouraged to define the
-     `*-hover` tokens for a brand-correct shade. */
+     Filled variants (default, destructive) darken on hover via a fixed
+     8% color-mix toward black. Themes can override the variant rules
+     entirely for a brand-correct shade. */
 
   .kj-button[data-variant="destructive"] {
-    --kj-button-bg: var(--kj-color-destructive);
-    --kj-button-fg: var(--kj-color-destructive-content);
+    --kj-button-bg: var(--kj-bg-danger);
+    --kj-button-fg: var(--kj-fg-on-danger);
   }
   .kj-button[data-variant="destructive"]:hover {
-    --kj-button-bg: var(
-      --kj-color-destructive-hover,
-      color-mix(in oklab, var(--kj-color-destructive) 85%, var(--kj-color-base-content))
-    );
+    --kj-button-bg: color-mix(in oklch, var(--kj-bg-danger), black 8%);
   }
 
   .kj-button[data-variant="ghost"] {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-color-base-content);
+    --kj-button-fg: var(--kj-fg-default);
     --kj-button-border-color: transparent;
   }
   /* Use a foreground-tinted overlay rather than a static base-200 surface so
      the hover state stays visible even on themes where base-100 / base-200
      are nearly the same value (e.g. kouji's deep #0c0c0c / #141414 ramp). */
   .kj-button[data-variant="ghost"]:hover {
-    --kj-button-bg: color-mix(in oklab, var(--kj-color-base-content) 10%, transparent);
+    --kj-button-bg: color-mix(in oklab, var(--kj-fg-default) 10%, transparent);
   }
 
   .kj-button[data-variant="outline"] {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-color-base-content);
-    --kj-button-border-color: var(--kj-color-neutral);
+    --kj-button-fg: var(--kj-fg-default);
+    --kj-button-border-color: var(--kj-border-default);
   }
   .kj-button[data-variant="outline"]:hover {
-    --kj-button-bg: var(--kj-color-base-200);
+    --kj-button-bg: var(--kj-bg-surface);
   }
 
   .kj-button[data-variant="link"] {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-color-primary);
+    --kj-button-fg: var(--kj-fg-primary);
     --kj-button-padding-x: 0;
     --kj-button-padding-y: 0;
     text-decoration: underline;
@@ -98,10 +93,7 @@
   }
   .kj-button[data-variant="link"]:hover {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(
-      --kj-color-primary-hover,
-      color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content))
-    );
+    --kj-button-fg: color-mix(in oklch, var(--kj-fg-primary), black 8%);
   }
 
   /* sizes */
@@ -125,17 +117,14 @@
      here is lower than the variant-specific rules above, so destructive /
      ghost / outline / link override correctly. */
   .kj-button:hover {
-    --kj-button-bg: var(
-      --kj-color-primary-hover,
-      color-mix(in oklab, var(--kj-color-primary) 85%, var(--kj-color-base-content))
-    );
+    --kj-button-bg: color-mix(in oklch, var(--kj-bg-primary), black 8%);
   }
   .kj-button:active {
     transform: var(--kj-button-translate-active);
     box-shadow: var(--kj-button-shadow-active);
   }
   .kj-button:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
   .kj-button[aria-disabled="true"] {
@@ -155,13 +144,13 @@
 
   /* ── Busy / loading state ───────────────────────────────────────────── */
   .kj-button[aria-busy='true'] {
-    --kj-button-fg: color-mix(in srgb, var(--kj-color-base-content) 60%, transparent);
+    --kj-button-fg: color-mix(in srgb, var(--kj-fg-default) 60%, transparent);
     cursor: progress;
   }
 
   /* ── Pressed (toggle) state ─────────────────────────────────────────── */
   .kj-button[aria-pressed='true'] {
-    --kj-button-bg: var(--kj-color-base-300);
+    --kj-button-bg: var(--kj-bg-field);
     box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.12);
   }
 

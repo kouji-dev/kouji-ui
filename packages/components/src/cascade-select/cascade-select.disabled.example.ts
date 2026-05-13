@@ -13,7 +13,7 @@ import {
   selector: 'kj-cascade-select-disabled-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 20rem;">
       <div>
@@ -40,7 +40,7 @@ import {
         </p>
       </div>
 
-      <hr style="border: none; border-top: 1px solid var(--kj-color-base-300);" />
+      <hr style="border: none; border-top: 1px solid var(--kj-border-default);" />
 
       <div>
         <p style="margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500;">

@@ -11,8 +11,8 @@
     --kj-breadcrumb-gap:                var(--kj-space-sm, 0.5rem);
     --kj-breadcrumb-separator-content:  '/';
     --kj-breadcrumb-overflow-pad:       0.25rem;
-    --kj-color-breadcrumb-muted:        var(--kj-color-link, var(--kj-color-base-content));
-    --kj-color-breadcrumb-current:      var(--kj-color-base-content);
+    --kj-color-breadcrumb-muted:        var(--kj-fg-muted);
+    --kj-color-breadcrumb-current:      var(--kj-fg-default);
 
     display: block;
     color: var(--kj-color-breadcrumb-muted);
@@ -110,7 +110,7 @@
   }
 
   .kj-breadcrumb-ellipsis[data-overflow="menu"]:hover {
-    background: var(--kj-color-base-200, transparent);
+    background: var(--kj-bg-surface, transparent);
   }
 
   /* ── Print: show the full breadcrumb ────────────────────────── */

@@ -13,11 +13,11 @@ import { KjColorPickerComponent } from './color-picker';
   imports: [KjColorPickerComponent, FormsModule],
   styles: [`
     :host { display: flex; flex-direction: column; gap: var(--kj-space-md);
-            padding: var(--kj-space-xl); background: var(--kj-color-base-200);
+            padding: var(--kj-space-xl); background: var(--kj-bg-surface);
             min-height: 280px; }
     .row { display: flex; gap: var(--kj-space-md); align-items: center; }
-    code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-color-neutral); }
-    p { font: 0.8125rem var(--kj-font-sans); color: var(--kj-color-base-content);
+    code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-fg-muted); }
+    p { font: 0.8125rem var(--kj-font-sans); color: var(--kj-fg-default);
         margin: 0; max-width: 28rem; }
   `],
   template: `

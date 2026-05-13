@@ -14,7 +14,7 @@ import { KjButtonComponent } from '../button/button';
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-bg-surface); }
   `],
   template: `
     <kj-button-group kjVariant="outline" kjAriaLabel="Outline group">

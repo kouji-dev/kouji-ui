@@ -14,10 +14,10 @@ import {
   selector: 'kj-cascade-select-field-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <div style="display: flex; flex-direction: column; gap: 0.25rem; max-width: 20rem;">
-      <label for="cascade-delivery-location" style="font-size: 0.875rem; font-weight: 500; color: var(--kj-color-base-content);">
+      <label for="cascade-delivery-location" style="font-size: 0.875rem; font-weight: 500; color: var(--kj-fg-default);">
         Delivery location
       </label>
       <kj-cascade-select id="cascade-delivery-location" [(kjValue)]="location" placeholder="Select a city">
@@ -44,7 +44,7 @@ import {
           </kj-cascade-sub-panel>
         </kj-cascade-option>
       </kj-cascade-select>
-      <span style="font-size: 0.75rem; color: var(--kj-color-base-400, #888);">
+      <span style="font-size: 0.75rem; color: var(--kj-fg-muted, #888);">
         Choose your country, state, then city.
       </span>
     </div>

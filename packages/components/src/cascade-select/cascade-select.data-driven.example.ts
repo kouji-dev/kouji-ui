@@ -69,7 +69,7 @@ const REGIONS: readonly GeoNode[] = [
     KjCascadeOptionComponent,
     KjCascadeSubPanelComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); }`],
   template: `
     <kj-cascade-select [(kjValue)]="selected" placeholder="Select a location">
       @for (region of regions; track region.value) {
@@ -94,7 +94,7 @@ const REGIONS: readonly GeoNode[] = [
       }
     </kj-cascade-select>
 
-    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--kj-color-base-content);">
+    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--kj-fg-default);">
       Selected: <strong>{{ selected() ?? '—' }}</strong>
     </p>
   `,

@@ -1,11 +1,11 @@
 .kj-calendar {
   display: inline-block;
   padding: var(--kj-space-md, 0.75rem);
-  background: var(--kj-color-base-100, #fff);
-  border: 1px solid var(--kj-color-base-300, #e5e5e5);
+  background: var(--kj-bg-body, #fff);
+  border: 1px solid var(--kj-border-default, #e5e5e5);
   border-radius: var(--kj-radius-md, 0.5rem);
   font-family: inherit;
-  color: var(--kj-color-base-content, #111);
+  color: var(--kj-fg-default, #111);
 }
 
 .kj-calendar__header {
@@ -40,7 +40,7 @@
 }
 
 .kj-calendar__nav:hover:not([disabled]) {
-  background: var(--kj-color-base-200, #f3f3f3);
+  background: var(--kj-bg-surface, #f3f3f3);
 }
 
 .kj-calendar__nav[disabled] {
@@ -58,7 +58,7 @@
   padding: var(--kj-space-xs, 0.25rem);
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--kj-color-base-content, #111);
+  color: var(--kj-fg-default, #111);
   opacity: 0.65;
   text-align: center;
 }
@@ -85,22 +85,22 @@
 }
 
 .kj-calendar__day:hover:not([disabled]) {
-  background: var(--kj-color-base-200, #f3f3f3);
+  background: var(--kj-bg-surface, #f3f3f3);
 }
 
 .kj-calendar__day:focus-visible {
-  outline: 2px solid var(--kj-color-primary, #2563eb);
+  outline: 2px solid var(--kj-border-focus, #2563eb);
   outline-offset: 2px;
 }
 
 .kj-calendar__day[data-today] {
-  border-color: var(--kj-color-primary, #2563eb);
+  border-color: var(--kj-border-focus, #2563eb);
   font-weight: 600;
 }
 
 .kj-calendar__day[data-selected] {
-  background: var(--kj-color-primary, #2563eb);
-  color: var(--kj-color-primary-content, #fff);
+  background: var(--kj-bg-primary, #2563eb);
+  color: var(--kj-fg-on-primary, #fff);
 }
 
 .kj-calendar__day[data-outside-month] {

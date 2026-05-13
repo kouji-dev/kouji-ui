@@ -5,7 +5,7 @@ import { KjCheckboxComponent } from './checkbox';
   selector: 'kj-checkbox-disabled-example',
   standalone: true,
   imports: [KjCheckboxComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); display: flex; gap: 1rem; }`],
+  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-bg-surface); display: flex; gap: 1rem; }`],
   template: `
     <kj-checkbox [(checked)]="off" [disabled]="true">Disabled off</kj-checkbox>
     <kj-checkbox [(checked)]="on" [disabled]="true">Disabled on</kj-checkbox>
