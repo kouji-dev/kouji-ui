@@ -11,7 +11,9 @@ import type { DocItem, InputDef } from './docs-extractor.types';
  * Bump CACHE_VERSION whenever the extractor's output shape changes so old
  * caches are silently discarded.
  */
-const CACHE_VERSION = 1;
+/** Bumped to 2 when `DocExample` gained a required `slug` field. Older
+ *  caches from v1 omit slug; loading them would leave the field undefined. */
+const CACHE_VERSION = 2;
 
 export interface CachedFile {
   sha: string;

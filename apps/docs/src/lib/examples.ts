@@ -273,7 +273,11 @@ export function deriveExampleSlug(label: string, themedFiles: Record<string, Exa
   for (const files of Object.values(themedFiles)) {
     for (const f of files) {
       if (f.filename.endsWith('.example.ts')) {
-        return f.filename.slice(0, -'.example.ts'.length);
+        // Normalise: drop directory portion AND any leading `./` so a
+        // `@doc-file ./examples/foo.example.ts` and a bare
+        // `@doc-file foo.example.ts` produce the same slug.
+        const base = f.filename.split(/[\\/]/).pop() ?? f.filename;
+        return base.slice(0, -'.example.ts'.length);
       }
     }
   }
