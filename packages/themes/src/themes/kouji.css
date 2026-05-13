@@ -78,6 +78,79 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    /* ─── new token system (additive — old tokens above retained during migration) ─── */
+
+    /* Neutral surfaces (7) */
+    --kj-bg-body:        #0c0c0c;
+    --kj-bg-surface:     #141414;
+    --kj-bg-field:       #141414;
+    --kj-bg-elevated:    #1a1a1a;
+    --kj-bg-overlay:     rgba(0, 0, 0, 0.7);
+    --kj-bg-inverse:     #f0ede6;
+    --kj-bg-disabled:    #1a1a1a;
+
+    /* Intent surfaces — primary */
+    --kj-bg-primary:         #b8f500;
+    --kj-bg-primary-subtle:  #2a3300;
+
+    /* Intent surfaces — accent (kouji: same as primary) */
+    --kj-bg-accent:          #b8f500;
+    --kj-bg-accent-subtle:   #2a3300;
+
+    /* Intent surfaces — info */
+    --kj-bg-info:            var(--kj-base-blue-400);
+    --kj-bg-info-subtle:     #0a1a2a;
+
+    /* Intent surfaces — success */
+    --kj-bg-success:         var(--kj-base-lime-500);
+    --kj-bg-success-subtle:  #1a2a00;
+
+    /* Intent surfaces — warning */
+    --kj-bg-warning:         var(--kj-base-amber-500);
+    --kj-bg-warning-subtle:  #2a1a00;
+
+    /* Intent surfaces — danger */
+    --kj-bg-danger:          var(--kj-base-red-500);
+    --kj-bg-danger-subtle:   #2a0a0a;
+
+    /* FG Class A — independent */
+    --kj-fg-default:    #f0ede6;
+    --kj-fg-muted:      #b8b3a3;
+    --kj-fg-subtle:     #8a8578;
+    --kj-fg-disabled:   #5a5648;
+
+    /* FG Class B — paired */
+    --kj-fg-on-primary:   #0c0c0c;
+    --kj-fg-on-accent:    #0c0c0c;
+    --kj-fg-on-info:      var(--kj-base-gray-950);
+    --kj-fg-on-success:   var(--kj-base-gray-950);
+    --kj-fg-on-warning:   var(--kj-base-gray-950);
+    --kj-fg-on-danger:    var(--kj-base-gray-50);
+    --kj-fg-on-inverse:   #0c0c0c;
+
+    /* FG Class C — intent as text */
+    --kj-fg-primary:    #b8f500;
+    --kj-fg-accent:     #b8f500;
+    --kj-fg-info:       var(--kj-base-blue-400);
+    --kj-fg-success:    var(--kj-base-lime-500);
+    --kj-fg-warning:    var(--kj-base-amber-500);
+    --kj-fg-danger:     var(--kj-base-red-400);
+
+    /* Borders */
+    --kj-border-default:   #1a1a1a;
+    --kj-border-muted:     #141414;
+    --kj-border-strong:    #2a2a2a;
+    --kj-border-focus:     #b8f500;
+    --kj-border-disabled:  #1a1a1a;
+    --kj-border-primary:   #b8f500;
+    --kj-border-danger:    var(--kj-base-red-500);
+
+    /* Shadows — kouji is brutalist/flat (depth 0) */
+    --kj-shadow-sm:     0 0 0 1px #1a1a1a;
+    --kj-shadow-md:     0 0 0 1px #1a1a1a;
+    --kj-shadow-lg:     0 0 0 2px #1a1a1a;
+    --kj-shadow-focus:  0 0 0 2px #b8f500;
   }
 }
 
