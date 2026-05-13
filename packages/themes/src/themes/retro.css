@@ -70,5 +70,63 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
+
+    /* ─── new token system (additive) ─── */
+
+    --kj-bg-body:        #ede5d0;
+    --kj-bg-surface:     #e4d8b4;
+    --kj-bg-field:       #f4ecd8;
+    --kj-bg-elevated:    #fff8e4;
+    --kj-bg-overlay:     rgba(40, 36, 37, 0.5);
+    --kj-bg-inverse:     #282425;
+    --kj-bg-disabled:    #d6c89a;
+
+    --kj-bg-primary:         #ef9995;
+    --kj-bg-primary-subtle:  #fce3df;
+    --kj-bg-accent:          #7a9eb1;
+    --kj-bg-accent-subtle:   #d6e2ea;
+
+    --kj-bg-info:            #7a9eb1;
+    --kj-bg-info-subtle:     #d6e2ea;
+    --kj-bg-success:         #91b859;
+    --kj-bg-success-subtle:  #dfecc8;
+    --kj-bg-warning:         #e9b872;
+    --kj-bg-warning-subtle:  #faedd5;
+    --kj-bg-danger:          #c4625d;
+    --kj-bg-danger-subtle:   #f3d4d2;
+
+    --kj-fg-default:    #282425;
+    --kj-fg-muted:      #5d4037;
+    --kj-fg-subtle:     #8a6e60;
+    --kj-fg-disabled:   #bdb098;
+
+    --kj-fg-on-primary:   #282425;
+    --kj-fg-on-accent:    #282425;
+    --kj-fg-on-info:      #282425;
+    --kj-fg-on-success:   #282425;
+    --kj-fg-on-warning:   #282425;
+    --kj-fg-on-danger:    #ede5d0;
+    --kj-fg-on-inverse:   #ede5d0;
+
+    /* fg.primary must meet AA on body — terracotta darkened from #ef9995 */
+    --kj-fg-primary:    #8a3a36;
+    --kj-fg-accent:     #3d5a6b;
+    --kj-fg-info:       #3d5a6b;
+    --kj-fg-success:    #4a6b2b;
+    --kj-fg-warning:    #8a5a1f;
+    --kj-fg-danger:     #8a2f2a;
+
+    --kj-border-default:   #d6c89a;
+    --kj-border-muted:     #e4d8b4;
+    --kj-border-strong:    #b8a578;
+    --kj-border-focus:     #7a9eb1;
+    --kj-border-disabled:  #d6c89a;
+    --kj-border-primary:   #ef9995;
+    --kj-border-danger:    #c4625d;
+
+    --kj-shadow-sm:     0 1px 3px rgba(93, 64, 55, 0.1);
+    --kj-shadow-md:     0 4px 12px rgba(93, 64, 55, 0.18);
+    --kj-shadow-lg:     0 16px 40px rgba(93, 64, 55, 0.25);
+    --kj-shadow-focus:  0 0 0 3px rgba(122, 158, 177, 0.45);
   }
 }
