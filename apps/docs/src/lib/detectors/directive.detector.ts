@@ -2,7 +2,11 @@ import { tsquery } from '@phenomnomnominal/tsquery';
 import ts from 'typescript';
 import { dirname } from 'node:path';
 import { parseDocTags } from '../doc-tags';
-import { getDocFiles, getDocThemes, getDocExamples, deriveExampleSlug } from '../examples';
+import {
+  getDocFiles, getDocThemes, getDocExamples,
+  deriveExampleSlug, deriveExampleBucket, getJsDocBlock,
+} from '../examples';
+import { readBlockTag, readCallouts, readKeyboard, readAria } from '../doc-blocks';
 import type {
   DocItem,
   InputDef,
@@ -60,6 +64,16 @@ export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
     const themedExamples = getDocThemes(cls, tsSourceFile, sourceDir);
     const docExamples = getDocExamples(cls, tsSourceFile, sourceDir);
 
+    // Block-level Docs-page tags (only meaningful on the main item, but
+    // extracted on every item so the page-assembler can pick whichever
+    // carries them — supports authoring on a subclass when needed).
+    const jsDoc = getJsDocBlock(cls, tsSourceFile);
+    const prereqs    = jsDoc ? readBlockTag(jsDoc, 'doc-prereqs') ?? undefined : undefined;
+    const a11yProse  = jsDoc ? readBlockTag(jsDoc, 'doc-a11y')    ?? undefined : undefined;
+    const callouts   = jsDoc ? readCallouts(jsDoc) : [];
+    const keyboard   = jsDoc ? readKeyboard(jsDoc) : [];
+    const aria       = jsDoc ? readAria(jsDoc)     : [];
+
     items.push({
       id: makeItemId(pkg, filePath, className),
       symbol: className,
@@ -87,9 +101,23 @@ export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
         : (Object.keys(themedExamples).length || exampleFiles.length
             ? (() => {
                 const themedFiles = Object.keys(themedExamples).length ? themedExamples : { default: exampleFiles };
-                return [{ label: 'default', slug: deriveExampleSlug('default', themedFiles), themedFiles }];
+                const slug = deriveExampleSlug('default', themedFiles);
+                return [{
+                  label: 'default',
+                  slug,
+                  bucket: deriveExampleBucket(slug, 'default'),
+                  themedFiles,
+                }];
               })()
             : undefined),
+      ...(prereqs        ? { prereqs }                : {}),
+      ...(a11yProse      ? { a11yProse }              : {}),
+      ...(callouts.length ? { callouts }              : {}),
+      ...(keyboard.length ? { keyboard }              : {}),
+      ...(aria.length     ? { aria }                  : {}),
+      ...(tags.importOverride ? { importOverride: tags.importOverride } : {}),
+      ...(tags.touchTarget    ? { touchTarget:    tags.touchTarget    } : {}),
+      ...(tags.related.length ? { related:        tags.related        } : {}),
     });
   }
 

@@ -11,9 +11,15 @@ import type { DocItem, InputDef } from './docs-extractor.types';
  * Bump CACHE_VERSION whenever the extractor's output shape changes so old
  * caches are silently discarded.
  */
-/** Bumped to 2 when `DocExample` gained a required `slug` field. Older
- *  caches from v1 omit slug; loading them would leave the field undefined. */
-const CACHE_VERSION = 2;
+/** Output-shape version. Bump whenever the DocItem / DocExample schema
+ *  gains a required field — otherwise the cache will replay stale items
+ *  whose new fields are silently undefined.
+ *
+ *  v1 → original schema
+ *  v2 → DocExample.slug
+ *  v3 → DocExample.bucket + DocItem.{prereqs, callouts, importOverride,
+ *       keyboard, aria, touchTarget, a11yProse, related} */
+const CACHE_VERSION = 3;
 
 export interface CachedFile {
   sha: string;

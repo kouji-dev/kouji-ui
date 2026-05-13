@@ -116,8 +116,8 @@ describe('assemblePages', () => {
 
   it('flattens examples across all definitions in render order', () => {
     const items = [
-      item({ id: '1', symbol: 'M', pageName: 'p', isMain: true, sourceOrder: 0, examples: [{ label: 'a', slug: 'a', themedFiles: {} }] }),
-      item({ id: '2', symbol: 'X', pageName: 'p', sourceOrder: 1, examples: [{ label: 'b', slug: 'b', themedFiles: {} }, { label: 'c', slug: 'c', themedFiles: {} }] }),
+      item({ id: '1', symbol: 'M', pageName: 'p', isMain: true, sourceOrder: 0, examples: [{ label: 'a', slug: 'a', bucket: 'playground', themedFiles: {} }] }),
+      item({ id: '2', symbol: 'X', pageName: 'p', sourceOrder: 1, examples: [{ label: 'b', slug: 'b', bucket: 'recipe', themedFiles: {} }, { label: 'c', slug: 'c', bucket: 'recipe', themedFiles: {} }] }),
     ];
     const { pages } = assemblePages(items);
     expect(pages[0].examples.map(e => e.example.label)).toEqual(['a', 'b', 'c']);

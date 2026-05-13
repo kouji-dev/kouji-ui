@@ -7,6 +7,12 @@ export interface ParsedDocTags {
   isMain: boolean;
   order: number | null;
   description: string | null;
+  /** `@doc-import <stmt>` — overrides the auto-generated import line. */
+  importOverride: string | null;
+  /** `@doc-touch <note>` — single-line touch-target compliance note. */
+  touchTarget: string | null;
+  /** `@doc-related foo,bar,baz` — slugs of related pages. */
+  related: string[];
   unknownTags: string[];
 }
 
@@ -19,7 +25,17 @@ const KNOWN_DOC_TAGS = new Set([
   'doc-file',
   'doc-example',
   'doc-themes',
+  'doc-theme',
   'doc-category',
+  /* Docs-page metadata (Agent B handoff) */
+  'doc-prereqs',
+  'doc-callout',
+  'doc-import',
+  'doc-keyboard',
+  'doc-aria',
+  'doc-touch',
+  'doc-a11y',
+  'doc-related',
   'internal',
   'example',
   'deprecated',
@@ -43,6 +59,9 @@ export function parseDocTags(node: ts.Node): ParsedDocTags {
     isMain: false,
     order: null,
     description: null,
+    importOverride: null,
+    touchTarget: null,
+    related: [],
     unknownTags: [],
   };
 
@@ -71,6 +90,18 @@ export function parseDocTags(node: ts.Node): ParsedDocTags {
       }
       case 'doc-description':
         result.description = comment.trim() || null;
+        break;
+      case 'doc-import':
+        result.importOverride = comment.trim() || null;
+        break;
+      case 'doc-touch':
+        result.touchTarget = comment.trim() || null;
+        break;
+      case 'doc-related':
+        result.related = comment
+          .split(/[,\s]+/)
+          .map(s => s.trim())
+          .filter(Boolean);
         break;
       case 'internal':
         internal = true;

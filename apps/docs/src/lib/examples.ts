@@ -2,7 +2,10 @@ import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import { join, resolve, dirname } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
-import type { ExampleFile, DocExample } from './docs-extractor.types';
+import type {
+  ExampleFile, DocExample, ExampleBucket,
+  Callout, CalloutKind, KeyboardEntry, AriaEntry,
+} from './docs-extractor.types';
 
 // ── Workspace root helper ─────────────────────────────────────────────────────
 
@@ -255,11 +258,40 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
     }
 
     if (Object.keys(themedFiles).length) {
-      results.push({ label, slug: deriveExampleSlug(label, themedFiles), themedFiles });
+      const slug = deriveExampleSlug(label, themedFiles);
+      results.push({ label, slug, bucket: deriveExampleBucket(slug, label), themedFiles });
     }
   }
 
   return results;
+}
+
+/**
+ * The state axis — example slugs like `<comp>.<state>.example.ts` where
+ * `<state>` is in this set get bucketed into the States section.
+ */
+const STATE_KEYS = new Set([
+  'disabled', 'loading', 'pressed', 'checked', 'indeterminate',
+  'busy', 'readonly', 'invalid', 'active', 'hover', 'focus',
+]);
+
+/**
+ * Buckets an example based on its slug. The slug is `<comp>` or
+ * `<comp>.<variant>` (or deeper). The first segment after the component
+ * name determines the bucket; unknown segments fall through to recipe.
+ */
+export function deriveExampleBucket(slug: string, label: string): ExampleBucket {
+  const segments = slug.split('.');
+  if (segments.length <= 1) return 'playground';
+  const axis = segments[1];
+  if (axis === 'variants') return 'variants';
+  if (axis === 'sizes') return 'sizes';
+  if (STATE_KEYS.has(axis)) return 'states';
+  // Heuristic: a label of literally "Default" / "Playground" wins regardless
+  // of slug (handles components whose canonical example uses a deeper slug).
+  const labelLc = label.toLowerCase();
+  if (labelLc === 'default' || labelLc === 'playground') return 'playground';
+  return 'recipe';
 }
 
 /**
