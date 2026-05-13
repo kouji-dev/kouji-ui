@@ -2,10 +2,7 @@ import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import { join, resolve, dirname } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
-import type {
-  ExampleFile, DocExample, ExampleBucket,
-  Callout, CalloutKind, KeyboardEntry, AriaEntry,
-} from './docs-extractor.types';
+import type { ExampleFile, DocExample, ExampleBucket } from './docs-extractor.types';
 
 // ── Workspace root helper ─────────────────────────────────────────────────────
 

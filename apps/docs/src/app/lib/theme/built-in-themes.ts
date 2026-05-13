@@ -23,13 +23,12 @@ const SYNE_FAMILY  = "'Syne', system-ui, sans-serif";
 const SANS_TYPE  = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: SANS_FAMILY };
 const SERIF_TYPE = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: SERIF_FAMILY };
 const BLOCK_TYPE = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: BLOCK_FAMILY };
-const SYNE_TYPE  = { fontSans: SANS_FAMILY, fontMono: MONO_FAMILY, fontDisplay: SYNE_FAMILY };
 const MONO_TYPE  = { fontSans: MONO_FAMILY, fontMono: MONO_FAMILY, fontDisplay: MONO_FAMILY };
 
-/** @deprecated legacy alias — kept for older drafts. Use SYNE_TYPE. */
-const BRAND_TYPE = SYNE_TYPE;
-/** @deprecated legacy alias — kouji is now all-mono. Use MONO_TYPE. */
-const KOUJI_TYPE = MONO_TYPE;
+/* SYNE_FAMILY (Syne Google Font) is intentionally retained for future
+   themes that may want Syne as their display face — no current theme
+   uses it post-design-handoff (kouji moved to all-mono). */
+void SYNE_FAMILY;
 const SHARED_SHAPE = { radiusBox: 8, radiusField: 4, radiusSelector: 4, border: 1, depth: 1 };
 const SHARED_TYPOGRAPHY = { bodyRem: 1, smallRem: 0.875 };
 const FAST = { transition: '0.12s ease' };
