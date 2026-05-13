@@ -37,6 +37,15 @@
     --kj-card-bg: var(--kj-bg-field);
   }
 
+  /* Lift modifier — borrows the theme's button-shadow value so cards in
+     brutalist themes (kouji / bauhaus) get the same hard offset block as
+     primary buttons. Themes without an offset signature fall back to
+     `--kj-shadow-md` so the card still reads as elevated. */
+  .kj-card[data-shadow="lift"] {
+    --kj-card-shadow: var(--kj-button-shadow, var(--kj-shadow-md));
+    --kj-card-border-color: var(--kj-border-default);
+  }
+
   /* Cover image. Fixed aspect ratio + cover-fit prevents tall hero images
      from blowing the card. The `--kj-card-cover-height` knob lets a
      consumer override the height; `--kj-card-cover-fit` swaps cover/contain. */

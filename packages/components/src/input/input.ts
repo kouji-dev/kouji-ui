@@ -12,6 +12,10 @@ import { KjInput } from '@kouji-ui/core';
 export type KjInputType = 'text' | 'email' | 'password' | 'number'
                         | 'search' | 'tel' | 'url' | 'color';
 
+/** Visual variants — `default` uses the field surface; `sunken` drops to
+ *  body bg so the input pops against a card/surface parent. */
+export type KjInputVariant = 'default' | 'sunken';
+
 /**
  * Styled wrapper around the headless KjInput directive.
  *
@@ -47,6 +51,7 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
       [type]="type()"
       [value]="value()"
       [placeholder]="placeholder()"
+      [attr.data-variant]="variant()"
       [kjInvalid]="invalid()"
       [kjDisabled]="disabled()"
     />
@@ -61,6 +66,7 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
 })
 export class KjInputComponent implements ControlValueAccessor {
   readonly type = input<KjInputType>('text');
+  readonly variant = input<KjInputVariant>('default');
   readonly value = input<string>('');
   readonly placeholder = input<string>('');
   readonly invalid = input(false);

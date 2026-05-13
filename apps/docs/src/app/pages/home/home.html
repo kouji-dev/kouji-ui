@@ -96,23 +96,27 @@
   </div>
 
   <!-- ── Stats ────────────────────────────────────────────────────── -->
-  <section class="kj-home__stats" kjAriaLabelledBy [kjLabelledBy]="'stats-heading'">
+  <section class="kj-home__stats-section" kjAriaLabelledBy [kjLabelledBy]="'stats-heading'">
     <h2 id="stats-heading" kjVisuallyHidden>At a glance</h2>
-    <div class="kj-home__stat">
-      <div class="kj-home__stat-num">{{ componentCount() }}</div>
-      <div class="kj-home__stat-label">components</div>
-    </div>
-    <div class="kj-home__stat">
-      <div class="kj-home__stat-num">{{ themes.length }}</div>
-      <div class="kj-home__stat-label">themes</div>
-    </div>
-    <div class="kj-home__stat">
-      <div class="kj-home__stat-num">{{ angularMajor }}</div>
-      <div class="kj-home__stat-label">angular major</div>
-    </div>
-    <div class="kj-home__stat">
-      <div class="kj-home__stat-num">AAA</div>
-      <div class="kj-home__stat-label">wcag target</div>
+    <div class="kj-home__container">
+      <div class="kj-home__stats">
+        <div class="kj-home__stat">
+          <div class="kj-home__stat-num">{{ componentCount() }}</div>
+          <div class="kj-home__stat-label">components</div>
+        </div>
+        <div class="kj-home__stat">
+          <div class="kj-home__stat-num">{{ themes.length }}</div>
+          <div class="kj-home__stat-label">themes</div>
+        </div>
+        <div class="kj-home__stat">
+          <div class="kj-home__stat-num">{{ angularMajor }}</div>
+          <div class="kj-home__stat-label">angular major</div>
+        </div>
+        <div class="kj-home__stat">
+          <div class="kj-home__stat-num">AAA</div>
+          <div class="kj-home__stat-label">wcag target</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -138,7 +142,7 @@
 
       <div class="kj-home__showcase-grid">
         <!-- Buttons -->
-        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-7">
+        <kj-card variant="default" data-shadow="lift" class="kj-home__demo-card kj-home__demo-card--span-7">
           <span class="kj-home__card-label">kj-button</span>
           <h3 class="kj-home__demo-title">buttons</h3>
           <p class="kj-home__demo-desc">three variants. theme-aware shadows. springy hover.</p>
@@ -151,25 +155,25 @@
         </kj-card>
 
         <!-- Inputs -->
-        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-5">
+        <kj-card variant="default" data-shadow="lift" class="kj-home__demo-card kj-home__demo-card--span-5">
           <span class="kj-home__card-label">kj-input</span>
           <h3 class="kj-home__demo-title">inputs</h3>
           <div class="kj-home__demo-stack">
             <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label class="kj-home__field">
               <span class="kj-home__field-label">display name</span>
-              <kj-input type="text" placeholder="kosuke" [(ngModel)]="demoName" />
+              <kj-input type="text" variant="sunken" placeholder="kosuke" [(ngModel)]="demoName" />
             </label>
             <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
             <label class="kj-home__field">
               <span class="kj-home__field-label">email</span>
-              <kj-input type="email" placeholder="you@studio.jp" [(ngModel)]="demoEmail" />
+              <kj-input type="email" variant="sunken" placeholder="you@studio.jp" [(ngModel)]="demoEmail" />
             </label>
           </div>
         </kj-card>
 
         <!-- Toggles -->
-        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-4">
+        <kj-card variant="default" data-shadow="lift" class="kj-home__demo-card kj-home__demo-card--span-4">
           <span class="kj-home__card-label">kj-toggle</span>
           <h3 class="kj-home__demo-title">toggles</h3>
           <div class="kj-home__demo-stack">
@@ -195,7 +199,7 @@
         </kj-card>
 
         <!-- Tags + progress -->
-        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-4">
+        <kj-card variant="default" data-shadow="lift" class="kj-home__demo-card kj-home__demo-card--span-4">
           <span class="kj-home__card-label">kj-tag</span>
           <h3 class="kj-home__demo-title">tags + progress</h3>
           <div class="kj-home__demo-row">
@@ -219,7 +223,7 @@
         </kj-card>
 
         <!-- Composition card -->
-        <kj-card variant="default" class="kj-home__demo-card kj-home__demo-card--span-4">
+        <kj-card variant="default" data-shadow="lift" class="kj-home__demo-card kj-home__demo-card--span-4">
           <span class="kj-home__card-label">kj-card</span>
           <h3 class="kj-home__demo-title">composition</h3>
           <p class="kj-home__demo-desc">cards inherit edges, radius and shadow from the active theme. no overrides.</p>
@@ -245,15 +249,16 @@
 
       <div class="kj-home__install-block">
         <div class="kj-home__terminal" role="region" aria-label="Install command">
-          <kj-button
-            kjVariant="outline"
-            kjSize="sm"
-            class="kj-home__copy"
-            (click)="onCopy()"
-            [kjAriaLabel]="copied() ? 'Copied install command' : 'Copy install command'"
-          >
-            {{ copied() ? 'copied ✓' : 'copy' }}
-          </kj-button>
+          <span class="kj-home__copy">
+            <kj-button
+              kjVariant="outline"
+              kjSize="sm"
+              (click)="onCopy()"
+              [kjAriaLabel]="copied() ? 'Copied install command' : 'Copy install command'"
+            >
+              {{ copied() ? 'copied ✓' : 'copy' }}
+            </kj-button>
+          </span>
           <div><span class="kj-home__term-comment"># 1. install the library</span></div>
           <div><span class="kj-home__term-prompt">$</span> {{ installCmd }}</div>
           <div>&nbsp;</div>

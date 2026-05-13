@@ -37,6 +37,14 @@
   /* Per-size heights mirror the button scale. */
   .kj-input[data-size="sm"] { --kj-input-height: 2rem;    --kj-input-font-size: 0.8125rem; }
   .kj-input[data-size="lg"] { --kj-input-height: 2.75rem; --kj-input-font-size: 1rem; }
+
+  /* Variant: sunken — inputs sit on `--kj-bg-body` so they read distinctly
+     against a card / surface parent. Used on the landing showcase where
+     cards already use `--kj-bg-surface`; mirrors the design's pattern of
+     "input on page bg, card around it on surface". */
+  .kj-input[data-variant="sunken"] {
+    --kj-input-bg: var(--kj-bg-body);
+  }
   .kj-input::placeholder { color: var(--kj-input-placeholder-fg); }
 
   .kj-input:focus-visible {
