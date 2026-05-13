@@ -1,0 +1,100 @@
+:host {
+  display: block;
+}
+
+.tg-a11y {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  padding: var(--kj-space-xs) var(--kj-space-md);
+  border-bottom: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-surface);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  min-height: 56px;
+}
+
+.tg-a11y-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-right: var(--kj-space-sm);
+  border-right: 1px solid var(--kj-border-default);
+  flex-shrink: 0;
+}
+.tg-a11y-score .big {
+  font: 700 1.5rem/1 var(--kj-font-display, var(--kj-font-sans));
+  color: var(--kj-fg-default);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.tg-a11y-score .big small {
+  font-size: 0.75rem;
+  color: var(--kj-fg-muted);
+  font-weight: 500;
+}
+.tg-a11y-score .big.fail {
+  color: var(--kj-bg-danger);
+}
+.tg-a11y-score .lbl {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--kj-fg-muted);
+}
+
+.tg-a11y-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.tg-a11y-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-bg-body);
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-default);
+  white-space: nowrap;
+  min-height: 28px;
+}
+.tg-a11y-chip .grade {
+  font-weight: 700;
+  font-size: 0.625rem;
+  padding: 2px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+.tg-a11y-chip[data-grade='AAA'] .grade { background: var(--kj-bg-success); color: var(--kj-fg-on-success); }
+.tg-a11y-chip[data-grade='AA']  .grade { background: var(--kj-bg-warning); color: var(--kj-fg-on-warning); }
+.tg-a11y-chip[data-grade='fail'] .grade { background: var(--kj-bg-danger);  color: var(--kj-fg-on-danger); }
+.tg-a11y-chip .pair {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--kj-fg-muted);
+}
+.tg-a11y-chip .ratio {
+  font-variant-numeric: tabular-nums;
+  color: var(--kj-fg-muted);
+  font-size: 0.6875rem;
+}
+
+.tg-a11y-extra {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-xs);
+  padding-left: var(--kj-space-sm);
+  border-left: 1px solid var(--kj-border-default);
+  flex-shrink: 0;
+}
+.tg-a11y-select {
+  min-width: 9rem;
+}

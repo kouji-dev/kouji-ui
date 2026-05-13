@@ -6,74 +6,201 @@
   position: relative;
 }
 
-/* The route-shell owns the `<main>` landmark. This inner wrapper exists only
-   to scope the page contents; `display: contents` keeps the flex chain from
-   :host down to `.generator-body` intact. */
+/* Inner wrapper exists only to scope the page contents; display:contents
+   keeps the flex chain from :host down to .tg-shell intact (route-shell
+   owns the `<main>` landmark). */
 .theme-generator-main {
   display: contents;
 }
 
-/* Preview (center) + config tabs (right rail), matching layout spec */
-.generator-body {
-  flex: 1 1 auto;
-  min-height: 0;
+/* ── Subheader ── */
+.tg-subheader {
   display: flex;
-  flex-direction: row;
-  overflow: hidden;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kj-space-lg);
+  padding: var(--kj-space-md) var(--kj-space-xl);
+  border-bottom: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-body);
+  flex-wrap: wrap;
 }
 
-.generator-preview {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--kj-space-xl);
-  background: var(--kj-bg-body);
+.tg-subheader-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tg-eyebrow {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+.tg-h1 {
+  font-family: var(--kj-font-display, var(--kj-font-sans));
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  margin: 0;
   color: var(--kj-fg-default);
 }
 
-.generator-config {
-  flex: 0 0 clamp(260px, 28vw, 360px);
-  width: clamp(260px, 28vw, 360px);
-  max-width: 100%;
+.tg-subheader-right {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  flex-wrap: wrap;
+}
+
+.tg-name-wrap {
+  position: relative;
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+.tg-name-input {
+  appearance: none;
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  color: var(--kj-fg-default);
+  padding: var(--kj-space-xs) var(--kj-space-sm) var(--kj-space-xs) calc(var(--kj-space-md) + 8px);
+  font: var(--kj-text-sm) var(--kj-font-mono);
+  min-height: 44px;
+  min-width: 220px;
+}
+.tg-name-input:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+  border-color: var(--kj-bg-primary);
+}
+.tg-name-input[aria-invalid='true'] {
+  border-color: var(--kj-bg-danger);
+}
+.tg-name-wrap::before {
+  content: '@';
+  position: absolute;
+  left: var(--kj-space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--kj-fg-muted);
+  font: var(--kj-text-sm) var(--kj-font-mono);
+  pointer-events: none;
+}
+.tg-name-helper {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  padding-left: 4px;
+}
+.tg-name-helper.error {
+  color: var(--kj-fg-danger, var(--kj-bg-danger));
+}
+
+.tg-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-xs);
+  flex-wrap: wrap;
+}
+
+/* ── Shell: controls | right pane ── */
+.tg-shell {
+  flex: 1 1 auto;
   min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(280px, 22vw, 340px) 1fr;
   overflow: hidden;
-  border-left: 1px solid var(--kj-border-default);
-  background: var(--kj-bg-body);
-  /* Clamp the panel's stacking context so its inner z-indexes (sticky
-     summary, color-chip ribbons, etc.) can't escape and paint over a
-     body-portalled overlay (drawer, dialog) opened from the preview. */
+}
+
+.tg-shell-controls {
+  border-right: 1px solid var(--kj-border-default);
+  min-width: 0;
+  min-height: 0;
+  display: block;
+  overflow: hidden;
   isolation: isolate;
 }
 
-.generator-config > kj-theme-config-panel {
+.tg-right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--kj-bg-body);
+}
+
+/* ── Stage / preview area ── */
+.tg-stage-wrap {
   flex: 1 1 auto;
   min-height: 0;
-}
-
-@media (max-width: 900px) {
-  .generator-body {
-    flex-direction: column;
-  }
-
-  .generator-config {
-    flex: 0 1 min(45vh, 420px);
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid var(--kj-border-default);
-  }
-}
-
-.generator-toast {
-  position: absolute;
-  bottom: var(--kj-space-lg);
-  right: var(--kj-space-lg);
-  z-index: 2;
-  background: var(--kj-bg-elevated);
+  overflow-y: auto;
+  background: var(--kj-bg-body);
   color: var(--kj-fg-default);
+}
+
+/* Colorblind sim filter applied to the stage. */
+.tg-stage-wrap[data-cb-sim='protanopia']     { filter: url(#cb-protanopia); }
+.tg-stage-wrap[data-cb-sim='deuteranopia']   { filter: url(#cb-deuteranopia); }
+.tg-stage-wrap[data-cb-sim='tritanopia']     { filter: url(#cb-tritanopia); }
+.tg-stage-wrap[data-cb-sim='achromatopsia']  { filter: url(#cb-achromatopsia); }
+
+/* Reduced-motion preview override. */
+.tg-stage-wrap[data-reduced-motion] *,
+.tg-stage-wrap[data-reduced-motion] *::before,
+.tg-stage-wrap[data-reduced-motion] *::after {
+  transition-duration: 0ms !important;
+  animation-duration: 0ms !important;
+}
+
+/* Focus-rings-everywhere test. */
+.tg-stage-wrap[data-focus-test] button,
+.tg-stage-wrap[data-focus-test] input,
+.tg-stage-wrap[data-focus-test] select,
+.tg-stage-wrap[data-focus-test] textarea,
+.tg-stage-wrap[data-focus-test] [tabindex] {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
+.tg-cb-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+/* ── Toast ── */
+.tg-toast {
+  position: fixed;
+  bottom: var(--kj-space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
   padding: var(--kj-space-sm) var(--kj-space-md);
   border-radius: var(--kj-radius-field);
   font: var(--kj-text-sm) var(--kj-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 200;
+}
+
+/* ── Narrow viewports ── */
+@media (max-width: 900px) {
+  .tg-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .tg-shell-controls {
+    border-right: 0;
+    border-bottom: 1px solid var(--kj-border-default);
+    max-height: 50vh;
+  }
+  .tg-subheader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

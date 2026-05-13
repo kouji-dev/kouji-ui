@@ -1,0 +1,222 @@
+<aside class="tg-controls" aria-label="Theme controls">
+  <div class="tg-fork-row">
+    <kj-select
+      class="tg-fork-select"
+      placeholder="fork from preset…"
+      [value]="''"
+      (valueChange)="fork($event)"
+    >
+      @for (id of builtInNames; track id) {
+        <kj-option [value]="id">{{ id }}</kj-option>
+      }
+    </kj-select>
+    <kj-button
+      kjVariant="outline"
+      kjSize="sm"
+      type="button"
+      aria-label="Reset to original"
+      (click)="reset()"
+    >↺</kj-button>
+  </div>
+
+  <!-- ── 01 Colors ── -->
+  <section class="tg-section" aria-labelledby="tg-section-colors">
+    <header class="tg-section-head">
+      <span class="step">01</span>
+      <strong id="tg-section-colors">colors</strong>
+      <div class="tg-mode" role="group" aria-label="Color editor mode">
+        <button type="button" [attr.aria-pressed]="mode() === 'simple'" (click)="setMode('simple')">simple</button>
+        <button type="button" [attr.aria-pressed]="mode() === 'full'"   (click)="setMode('full')">full</button>
+      </div>
+    </header>
+
+    @if (mode() === 'simple') {
+      @for (row of simpleColors(); track row.label) {
+        <div class="tg-color">
+          <kj-color-picker
+            kjFormat="hex"
+            [ngModel]="row.hex"
+            (ngModelChange)="row.set($event)"
+            [kjAriaLabel]="row.label"
+          />
+          <span class="name">{{ row.label }}</span>
+          <span class="hex">{{ row.hex.toUpperCase() }}</span>
+        </div>
+      }
+      <p class="tg-hint">
+        surfaces, borders, text auto-derived from background. switch to <em>full</em> for per-token control.
+      </p>
+    } @else {
+      <h4 class="tg-subhead">surfaces &amp; intents</h4>
+      @for (row of fullBgRows(); track row.label) {
+        <div class="tg-color">
+          <kj-color-picker
+            kjFormat="hex"
+            [ngModel]="row.hex"
+            (ngModelChange)="row.set($event)"
+            [kjAriaLabel]="row.label"
+          />
+          <span class="name">{{ row.label }}</span>
+          <span class="hex">{{ row.hex.toUpperCase() }}</span>
+        </div>
+      }
+      <h4 class="tg-subhead">foregrounds</h4>
+      @for (row of fullFgRows(); track row.label) {
+        <div class="tg-color">
+          <kj-color-picker
+            kjFormat="hex"
+            [ngModel]="row.hex"
+            (ngModelChange)="row.set($event)"
+            [kjAriaLabel]="row.label"
+          />
+          <span class="name">{{ row.label }}</span>
+          <span class="hex">{{ row.hex.toUpperCase() }}</span>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- ── 02 Type ── -->
+  <section class="tg-section" aria-labelledby="tg-section-type">
+    <header class="tg-section-head">
+      <span class="step">02</span>
+      <strong id="tg-section-type">type</strong>
+    </header>
+
+    <div class="tg-field tg-field--stack">
+      <span class="lbl">display font</span>
+      <kj-select [value]="fontIdFor('fontDisplay')" (valueChange)="onFont('fontDisplay', $event)" placeholder="font-display">
+        @for (f of fonts; track f.id) {
+          <kj-option [value]="f.id">{{ f.family }}</kj-option>
+        }
+      </kj-select>
+    </div>
+
+    <div class="tg-field tg-field--stack">
+      <span class="lbl">body font</span>
+      <kj-select [value]="fontIdFor('fontSans')" (valueChange)="onFont('fontSans', $event)" placeholder="font-sans">
+        @for (f of fonts; track f.id) {
+          <kj-option [value]="f.id">{{ f.family }}</kj-option>
+        }
+      </kj-select>
+    </div>
+
+    <div class="tg-field tg-field--stack">
+      <span class="lbl">mono font</span>
+      <kj-select [value]="fontIdFor('fontMono')" (valueChange)="onFont('fontMono', $event)" placeholder="font-mono">
+        @for (f of fonts; track f.id) {
+          <kj-option [value]="f.id">{{ f.family }}</kj-option>
+        }
+      </kj-select>
+    </div>
+
+    <div class="tg-field">
+      <span class="lbl">body size</span>
+      <kj-slider
+        class="tg-slider"
+        [kjValue]="bodyRem()"
+        (kjValueChange)="onBodyRem($event)"
+        [kjMin]="0.75"
+        [kjMax]="1.25"
+        [kjStep]="0.0625"
+        [kjAriaLabel]="'body size'"
+      />
+      <span class="val">{{ bodyRem().toFixed(3) }}rem</span>
+    </div>
+  </section>
+
+  <!-- ── 03 Shape ── -->
+  <section class="tg-section" aria-labelledby="tg-section-shape">
+    <header class="tg-section-head">
+      <span class="step">03</span>
+      <strong id="tg-section-shape">shape</strong>
+    </header>
+
+    <div class="tg-field">
+      <span class="lbl">radius</span>
+      <kj-slider
+        class="tg-slider"
+        [kjValue]="draft().shape.radiusBox"
+        (kjValueChange)="onRadius($event)"
+        [kjMin]="0"
+        [kjMax]="24"
+        [kjStep]="1"
+        [kjAriaLabel]="'corner radius'"
+      />
+      <span class="val">{{ draft().shape.radiusBox }}px</span>
+    </div>
+
+    <div class="tg-field">
+      <span class="lbl">border</span>
+      <kj-slider
+        class="tg-slider"
+        [kjValue]="draft().shape.border"
+        (kjValueChange)="onBorder($event)"
+        [kjMin]="0"
+        [kjMax]="4"
+        [kjStep]="1"
+        [kjAriaLabel]="'border width'"
+      />
+      <span class="val">{{ draft().shape.border }}px</span>
+    </div>
+
+    <div class="tg-field tg-field--stack">
+      <span class="lbl">depth</span>
+      <div class="tg-radio" role="radiogroup" aria-label="Depth">
+        @for (d of [0, 1, 2]; track d) {
+          <button type="button" [attr.aria-pressed]="draft().shape.depth === d" (click)="onDepth(d)">
+            {{ d === 0 ? 'flat' : d === 1 ? 'soft' : 'deep' }}
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 04 Spacing ── -->
+  <section class="tg-section" aria-labelledby="tg-section-spacing">
+    <header class="tg-section-head">
+      <span class="step">04</span>
+      <strong id="tg-section-spacing">spacing</strong>
+    </header>
+
+    <div class="tg-field tg-field--stack">
+      <span class="lbl">density</span>
+      <div class="tg-radio" role="radiogroup" aria-label="Density">
+        <button type="button" [attr.aria-pressed]="bodyRem() <= 0.9375"  (click)="onBodyRem(0.875)">cozy</button>
+        <button type="button" [attr.aria-pressed]="bodyRem() > 0.9375 && bodyRem() <= 1.0625" (click)="onBodyRem(1)">comfy</button>
+        <button type="button" [attr.aria-pressed]="bodyRem() > 1.0625" (click)="onBodyRem(1.125)">loose</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 05 Motion ── -->
+  <section class="tg-section" aria-labelledby="tg-section-motion">
+    <header class="tg-section-head">
+      <span class="step">05</span>
+      <strong id="tg-section-motion">motion</strong>
+    </header>
+
+    <div class="tg-field">
+      <span class="lbl">duration</span>
+      <kj-slider
+        class="tg-slider"
+        [kjValue]="motionMs()"
+        (kjValueChange)="onMotionMs($event)"
+        [kjMin]="0"
+        [kjMax]="500"
+        [kjStep]="20"
+        [kjAriaLabel]="'motion duration'"
+      />
+      <span class="val">{{ motionMs() }}ms</span>
+    </div>
+
+    <div class="tg-field tg-field--stack">
+      <span class="lbl">easing</span>
+      <div class="tg-radio" role="radiogroup" aria-label="Easing">
+        @for (e of ['none', 'linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out']; track e) {
+          <button type="button" [attr.aria-pressed]="currentEasing() === e" (click)="setEasing(e)">{{ e }}</button>
+        }
+      </div>
+    </div>
+  </section>
+</aside>

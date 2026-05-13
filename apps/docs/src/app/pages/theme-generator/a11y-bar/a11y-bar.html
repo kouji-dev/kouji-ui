@@ -1,0 +1,49 @@
+<div class="tg-a11y" role="region" aria-label="Accessibility checks and preview controls">
+  <div class="tg-a11y-score">
+    <span class="big" [class.fail]="overall() === 'fail'">
+      {{ score() }}<small>/100</small>
+    </span>
+    <span class="lbl">a11y · {{ overall() }}</span>
+  </div>
+
+  <div class="tg-a11y-chips" aria-live="polite">
+    @for (c of chips(); track c.id) {
+      <span class="tg-a11y-chip" [attr.data-grade]="c.grade" [title]="c.label + ': ' + c.ratio.toFixed(2) + ':1'">
+        <span class="grade">{{ c.grade === 'fail' ? '✗' : c.grade }}</span>
+        <span class="pair">{{ c.label }}</span>
+        <span class="ratio">{{ c.ratio.toFixed(1) }}</span>
+      </span>
+    }
+  </div>
+
+  <div class="tg-a11y-extra">
+    <kj-select
+      class="tg-a11y-select"
+      [value]="cbSim()"
+      (valueChange)="setCbSim($event)"
+      placeholder="cb: off"
+    >
+      <kj-option [value]="'none'">cb: off</kj-option>
+      <kj-option [value]="'protanopia'">cb: protan</kj-option>
+      <kj-option [value]="'deuteranopia'">cb: deutan</kj-option>
+      <kj-option [value]="'tritanopia'">cb: tritan</kj-option>
+      <kj-option [value]="'achromatopsia'">cb: achroma</kj-option>
+    </kj-select>
+
+    <kj-toggle
+      size="sm"
+      ariaLabel="Show focus rings on every interactive in preview"
+      [(pressed)]="focusTest"
+    >
+      focus
+    </kj-toggle>
+
+    <kj-toggle
+      size="sm"
+      ariaLabel="Force reduced-motion in preview"
+      [(pressed)]="reducedMotion"
+    >
+      ↯ motion
+    </kj-toggle>
+  </div>
+</div>
