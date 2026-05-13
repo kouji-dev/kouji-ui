@@ -6,45 +6,6 @@
 
 @layer kj.shared {
   [data-theme="kouji"] {
-    /* ── color slots ── */
-    /* Literal hex values to recreate the original kouji-ui docs exactly:
-       - #0c0c0c page bg, #141414 elevated surface, #1a1a1a borders/separators,
-       - #f0ede6 warm-white text. These are slightly darker / warmer than the
-       generic dark theme's gray ramp, so we override at the slot level. */
-    --kj-color-base-100:     #0c0c0c;
-    --kj-color-base-200:     #141414;
-    --kj-color-base-300:     #1a1a1a;
-    --kj-color-base-content: #f0ede6;
-
-    --kj-color-primary:         #b8f500;
-    --kj-color-primary-content: #0c0c0c;
-
-    --kj-color-secondary:         var(--kj-base-gray-700);
-    --kj-color-secondary-content: var(--kj-base-gray-50);
-
-    --kj-color-accent:         #b8f500;
-    --kj-color-accent-content: #0c0c0c;
-
-    /* #666 matches the original docs' dominant muted-text color
-       (was --text-secondary). #888 was reserved for the lightest hover
-       affordances and is rare; mapping both onto neutral is acceptable. */
-    --kj-color-neutral:         #666666;
-    --kj-color-neutral-content: #f0ede6;
-
-    --kj-color-info:         var(--kj-base-blue-400);
-    --kj-color-info-content: var(--kj-base-gray-950);
-
-    --kj-color-success:         var(--kj-base-lime-500);
-    --kj-color-success-content: var(--kj-base-gray-950);
-
-    /* Amber instead of yellow so warning reads distinct from the lime
-       brand (#b8f500) — yellow at 90° was too close to lime at 124°. */
-    --kj-color-warning:         var(--kj-base-amber-500);
-    --kj-color-warning-content: var(--kj-base-gray-950);
-
-    --kj-color-destructive:         var(--kj-base-red-500);
-    --kj-color-destructive-content: var(--kj-base-gray-50);
-
     /* ── shape — brutalist (no radius) ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -78,8 +39,6 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
-
-    /* ─── new token system (additive — old tokens above retained during migration) ─── */
 
     /* Neutral surfaces (7) */
     --kj-bg-body:        #0c0c0c;

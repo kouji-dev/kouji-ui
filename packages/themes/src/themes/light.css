@@ -5,38 +5,6 @@
 
 @layer kj.shared {
   [data-theme="light"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     var(--kj-base-gray-50);
-    --kj-color-base-200:     var(--kj-base-gray-100);
-    --kj-color-base-300:     var(--kj-base-gray-200);
-    --kj-color-base-content: var(--kj-base-gray-900);
-
-    --kj-color-primary:         var(--kj-base-blue-600);
-    --kj-color-primary-content: var(--kj-base-gray-50);
-    --kj-color-primary-hover:   var(--kj-base-blue-700);
-
-    --kj-color-secondary:         var(--kj-base-gray-300);
-    --kj-color-secondary-content: var(--kj-base-gray-900);
-
-    --kj-color-accent:         var(--kj-base-blue-500);
-    --kj-color-accent-content: var(--kj-base-gray-50);
-
-    --kj-color-neutral:         var(--kj-base-gray-700);
-    --kj-color-neutral-content: var(--kj-base-gray-50);
-
-    --kj-color-info:         var(--kj-base-blue-500);
-    --kj-color-info-content: var(--kj-base-gray-50);
-
-    --kj-color-success:         var(--kj-base-green-500);
-    --kj-color-success-content: var(--kj-base-gray-900);
-
-    --kj-color-warning:         var(--kj-base-yellow-500);
-    --kj-color-warning-content: var(--kj-base-gray-900);
-
-    --kj-color-destructive:         var(--kj-base-red-500);
-    --kj-color-destructive-content: var(--kj-base-gray-50);
-    --kj-color-destructive-hover:   var(--kj-base-red-600);
-
     /* ── shape ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -69,8 +37,6 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
-
-    /* ─── new token system (additive) ─── */
 
     --kj-bg-body:        var(--kj-base-gray-50);
     --kj-bg-surface:     #ffffff;

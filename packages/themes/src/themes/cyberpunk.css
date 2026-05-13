@@ -5,38 +5,6 @@
 
 @layer kj.shared {
   [data-theme="cyberpunk"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     #ffee00;
-    --kj-color-base-200:     #f0d808;
-    --kj-color-base-300:     #d6c008;
-    --kj-color-base-content: #0a0a0a;
-
-    --kj-color-primary:         #ff007f;
-    --kj-color-primary-content: #ffee00;
-    --kj-color-primary-hover:   #ff3399;
-
-    --kj-color-secondary:         #00f0ff;
-    --kj-color-secondary-content: #0a0a0a;
-
-    --kj-color-accent:         #4d00b8;
-    --kj-color-accent-content: #ffee00;
-
-    --kj-color-neutral:         #1a1a1a;
-    --kj-color-neutral-content: #ffee00;
-
-    --kj-color-info:         #00f0ff;
-    --kj-color-info-content: #0a0a0a;
-
-    --kj-color-success:         #39ff14;
-    --kj-color-success-content: #0a0a0a;
-
-    --kj-color-warning:         #ff8c00;
-    --kj-color-warning-content: #0a0a0a;
-
-    --kj-color-destructive:         #ff0040;
-    --kj-color-destructive-content: #ffee00;
-    --kj-color-destructive-hover: #ff3366;
-
     /* ── shape — sharp, no rounding ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -69,8 +37,6 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
-
-    /* ─── new token system (additive) ─── */
 
     --kj-bg-body:        #ffee00;
     --kj-bg-surface:     #f0d808;

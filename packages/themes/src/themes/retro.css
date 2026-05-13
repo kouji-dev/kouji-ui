@@ -6,38 +6,6 @@
 
 @layer kj.shared {
   [data-theme="retro"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     #ede5d0;
-    --kj-color-base-200:     #e4d8b4;
-    --kj-color-base-300:     #d6c89a;
-    --kj-color-base-content: #282425;
-
-    --kj-color-primary:         #ef9995;
-    --kj-color-primary-content: #282425;
-    --kj-color-primary-hover:   #e98079;
-
-    --kj-color-secondary:         #fab57a;
-    --kj-color-secondary-content: #282425;
-
-    --kj-color-accent:         #7a9eb1;
-    --kj-color-accent-content: #282425;
-
-    --kj-color-neutral:         #5d4037;
-    --kj-color-neutral-content: #ede5d0;
-
-    --kj-color-info:         #7a9eb1;
-    --kj-color-info-content: #282425;
-
-    --kj-color-success:         #91b859;
-    --kj-color-success-content: #282425;
-
-    --kj-color-warning:         #e9b872;
-    --kj-color-warning-content: #282425;
-
-    --kj-color-destructive:         #c4625d;
-    --kj-color-destructive-content: #ede5d0;
-    --kj-color-destructive-hover: #b04f4a;
-
     /* ── shape — soft rounded, vintage cards ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-2);
@@ -70,8 +38,6 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-base);
-
-    /* ─── new token system (additive) ─── */
 
     --kj-bg-body:        #ede5d0;
     --kj-bg-surface:     #e4d8b4;

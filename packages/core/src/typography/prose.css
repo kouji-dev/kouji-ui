@@ -101,13 +101,13 @@
 
   /* ── Anchors ─────────────────────────────────────────────── */
   .kj-prose a {
-    color: var(--kj-color-link, var(--kj-fg-default));
+    color: var(--kj-fg-primary);
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
 
   .kj-prose a:visited {
-    color: var(--kj-color-link-visited, var(--kj-color-link, var(--kj-fg-default)));
+    color: var(--kj-fg-accent);
   }
 
   .kj-prose a:hover {

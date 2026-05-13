@@ -20,16 +20,6 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   const lines: string[] = [];
   lines.push(`color-scheme: ${colorScheme(t.colors['base-100'])};`);
 
-  // colors (slots + derived base shades + contents)
-  lines.push(`--kj-color-base-100: ${t.colors['base-100']};`);
-  lines.push(`--kj-color-base-200: ${t.derivedBase.base200};`);
-  lines.push(`--kj-color-base-300: ${t.derivedBase.base300};`);
-  lines.push(`--kj-color-base-content: ${t.contents['base-content']};`);
-  for (const slot of ['primary','secondary','accent','neutral','info','success','warning','destructive'] as const) {
-    lines.push(`--kj-color-${slot}: ${t.colors[slot]};`);
-    lines.push(`--kj-color-${slot}-content: ${t.contents[`${slot}-content`]};`);
-  }
-
   // shape
   lines.push(`--kj-radius-box: ${t.shape.radiusBox};`);
   lines.push(`--kj-radius-field: ${t.shape.radiusField};`);
@@ -48,9 +38,7 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   lines.push(`--kj-text-body: ${t.typography.bodyRem};`);
   lines.push(`--kj-text-small: ${t.typography.smallRem};`);
 
-  // ─── new token system (additive) ───
-  // Map the resolved slot colors to the new semantic token names so themes
-  // exported from the generator are forward-compatible with the new system.
+  // Map the resolved slot colors to the semantic token names.
   const isDark = colorScheme(t.colors['base-100']) === 'dark';
 
   // Neutral surfaces

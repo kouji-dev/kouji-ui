@@ -6,38 +6,6 @@
 
 @layer kj.shared {
   [data-theme="corporate"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     #ffffff;
-    --kj-color-base-200:     #f8f9fa;
-    --kj-color-base-300:     #e9ecef;
-    --kj-color-base-content: #181a2a;
-
-    --kj-color-primary:         #4b6bfb;
-    --kj-color-primary-content: #ffffff;
-    --kj-color-primary-hover:   #3950d6;
-
-    --kj-color-secondary:         #7b92b2;
-    --kj-color-secondary-content: #ffffff;
-
-    --kj-color-accent:         #67cba0;
-    --kj-color-accent-content: #181a2a;
-
-    --kj-color-neutral:         #181a2a;
-    --kj-color-neutral-content: #ffffff;
-
-    --kj-color-info:         #3abff8;
-    --kj-color-info-content: #ffffff;
-
-    --kj-color-success:         #36d399;
-    --kj-color-success-content: #ffffff;
-
-    --kj-color-warning:         #fbbd23;
-    --kj-color-warning-content: #181a2a;
-
-    --kj-color-destructive:         #f87272;
-    --kj-color-destructive-content: #ffffff;
-    --kj-color-destructive-hover: color-mix(in oklab, var(--kj-color-destructive) 80%, #000);
-
     /* ── shape — subtle rounding ── */
     --kj-radius-box:      var(--kj-base-radius-1);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -70,8 +38,6 @@
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
-
-    /* ─── new token system (additive) ─── */
 
     --kj-bg-body:        #f8f9fa;
     --kj-bg-surface:     #ffffff;

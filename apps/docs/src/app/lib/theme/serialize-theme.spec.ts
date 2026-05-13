@@ -28,15 +28,6 @@ describe('serializeToScopedBlock', () => {
   test('includes every required token', () => {
     const css = serializeToScopedBlock('x', deriveTokens(DRAFT));
     const required = [
-      '--kj-color-base-100', '--kj-color-base-200', '--kj-color-base-300', '--kj-color-base-content',
-      '--kj-color-primary', '--kj-color-primary-content',
-      '--kj-color-secondary', '--kj-color-secondary-content',
-      '--kj-color-accent', '--kj-color-accent-content',
-      '--kj-color-neutral', '--kj-color-neutral-content',
-      '--kj-color-info', '--kj-color-info-content',
-      '--kj-color-success', '--kj-color-success-content',
-      '--kj-color-warning', '--kj-color-warning-content',
-      '--kj-color-destructive', '--kj-color-destructive-content',
       '--kj-radius-box', '--kj-radius-field', '--kj-radius-selector',
       '--kj-border', '--kj-depth',
       '--kj-font-sans', '--kj-font-mono', '--kj-font-display',
