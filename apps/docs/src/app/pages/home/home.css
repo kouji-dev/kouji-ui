@@ -148,29 +148,30 @@ app-home {
   z-index: 1;
 }
 .kj-home__marker {
-  /* Translucent fill — the decorative hero-grid lines deliberately cut
-     through the accent rectangle for a "stamped on graph paper" feel.
-     65% primary blends the brand colour with the page bg while keeping
-     the marker text easily legible. */
-  background-color: color-mix(in oklch, var(--kj-bg-primary) 65%, transparent);
+  /* Solid primary fill per the design (app.css `.hero-tagline .marker`).
+     `box-decoration-break: clone` keeps the rectangle clean across line
+     wraps; `z-index: 2` keeps the marker above the decorative hero-grid
+     so the grid only bleeds through where we explicitly want it. */
+  background-color: var(--kj-bg-primary);
   color: var(--kj-fg-on-primary);
   padding: 0 0.5rem;
   border-radius: calc(var(--kj-radius-field) / 2);
   position: relative;
   z-index: 2;
-  /* `box-decoration-break: clone` makes the marker fill wrap to a new
-     line cleanly without splitting the accent rectangle awkwardly. */
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
 
-/* Landing-only override: on the kouji theme, the hero's default-variant
-   buttons also let the grid lines cut through (same brutalist "stamped"
-   treatment as the marker). Other themes keep their solid button fills.
-   Scoped to .kj-home__hero so the rest of the landing — and every other
-   page — stays at full opacity. */
+/* Landing-only kouji override: keep the marker + the hero's default-variant
+   button at full brightness, but lay a faint dark line-grid on top so the
+   brutalist "stamped on graph paper" motif still reads. Previous attempt
+   used color-mix(... transparent) which darkened the yellow on the
+   near-black body. Layering preserves the bright fill. */
+[data-theme="kouji"] .kj-home__hero .kj-home__marker,
 [data-theme="kouji"] .kj-home__hero .kj-button[data-variant="default"] {
-  --kj-button-bg: color-mix(in oklch, var(--kj-bg-primary) 80%, transparent);
+  background-image:
+    repeating-linear-gradient(0deg,  transparent 0 31px, rgba(0, 0, 0, 0.18) 31px 32px),
+    repeating-linear-gradient(90deg, transparent 0 31px, rgba(0, 0, 0, 0.18) 31px 32px);
 }
 
 .kj-home__sub {
@@ -203,7 +204,12 @@ app-home {
   border: 1px solid var(--kj-border-default);
   background-color: var(--kj-bg-surface);
   border-radius: var(--kj-radius-box-lg, var(--kj-radius-box));
-  box-shadow: var(--kj-shadow-md);
+  /* Carries the theme's signature "card-shadow". On themes with a
+     brutalist offset block (kouji = 6px, bauhaus = 8px) this matches
+     the primary button's silhouette — same `--shadow-card` token the
+     design source uses for both. Falls back to `--kj-shadow-md` for
+     themes that don't ship a button shadow. */
+  box-shadow: var(--kj-button-shadow, var(--kj-shadow-md));
 }
 .kj-home__switcher-head {
   display: flex;
