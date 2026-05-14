@@ -103,8 +103,9 @@ import { KjButton } from '@kouji-ui/core';
     >
       @if (kjLoading()) {
         <span class="kj-button__spinner" aria-hidden="true"></span>
+      } @else {
+        <ng-content />
       }
-      <ng-content />
     </button>
   `,
   styleUrl: './button.css',
