@@ -1,0 +1,77 @@
+@if (entry(); as e) {
+  <div class="playground">
+    <div class="playground-stage">
+      <ng-container #stage />
+    </div>
+
+    <div class="playground-controls">
+      @for (ctrl of e.controls; track ctrl.input + ctrl.label) {
+        @switch (ctrl.kind) {
+          @case ('chips') {
+            <div class="pg-control">
+              <span class="pg-label">{{ ctrl.label }}</span>
+              <div class="pg-group" role="radiogroup" [attr.aria-label]="ctrl.label">
+                @for (opt of ctrl.options; track opt) {
+                  <button
+                    class="pg-chip"
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="chipPressed(ctrl, opt)"
+                    [attr.aria-pressed]="chipPressed(ctrl, opt)"
+                    (click)="setChip(ctrl, opt)"
+                  >{{ opt }}</button>
+                }
+              </div>
+            </div>
+          }
+          @case ('toggle') {
+            <div class="pg-row">
+              <label [attr.for]="'pg-' + ctrl.input">{{ ctrl.label }}</label>
+              <button
+                class="pg-chip pg-toggle"
+                type="button"
+                role="switch"
+                [id]="'pg-' + ctrl.input"
+                [attr.aria-checked]="isOn(ctrl)"
+                [attr.aria-pressed]="isOn(ctrl)"
+                (click)="toggle(ctrl)"
+              >{{ isOn(ctrl) ? 'on' : 'off' }}</button>
+            </div>
+          }
+          @case ('text') {
+            <div class="pg-control">
+              <label class="pg-label" [attr.for]="'pg-slot'">{{ ctrl.label }}</label>
+              <input
+                class="pg-text"
+                id="pg-slot"
+                type="text"
+                [value]="textValue()"
+                (input)="setText($any($event.target).value)"
+              />
+            </div>
+          }
+        }
+      }
+    </div>
+  </div>
+
+  <div class="pg-snippet">
+    <button
+      class="pg-copy"
+      type="button"
+      (click)="copy()"
+      [attr.aria-label]="copied() ? 'Copied to clipboard' : 'Copy code snippet'"
+    >
+      @if (copied()) {
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        copied
+      } @else {
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        copy
+      }
+    </button>
+    <pre class="pg-snippet-code"><code>{{ snippet() }}</code></pre>
+  </div>
+} @else {
+  <p class="empty-state">Playground not yet wired for this component.</p>
+}

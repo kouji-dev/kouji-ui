@@ -344,7 +344,11 @@
   color: var(--kj-fg-default);
 }
 
-/* ── Related grid ───────────────────────────────────────────── */
+/* ── Related grid — design-revamp/docs.css L738-760 ─────────────
+   Flat 3-col grid; each card is a single-row anchor with the
+   slug on the left and a right-aligned arrow glyph. Mono font,
+   border hovers to --kj-border-focus. WCAG 2.5.5: 18px padding +
+   15px line-height keeps the hit target ≥ 44px tall. */
 .related-section {
   margin-top: var(--kj-space-5xl);
   padding-top: var(--kj-space-2xl);
@@ -353,23 +357,59 @@
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--kj-space-md);
 }
 
-.related-card {
-  /* The card host already has a border; give it a min-height to keep cards
-     consistent and a flex layout so the kj-link fills the surface. */
-  display: flex;
-  align-items: center;
-  padding: var(--kj-space-lg);
-  min-height: 3rem; /* keeps touch target ≥ 44px once the link wraps */
+@media (max-width: 720px) {
+  .related-grid { grid-template-columns: 1fr; }
 }
 
-.related-card kj-link {
-  display: block;
-  width: 100%;
+.related-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--kj-space-lg);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-bg-surface);
+  text-decoration: none;
+  color: var(--kj-fg-default);
+  font-family: var(--kj-font-mono);
+  min-height: 2.75rem; /* 44px — WCAG 2.5.5 */
+  transition: border-color var(--kj-transition), background var(--kj-transition);
 }
+
+.related-card:hover {
+  border-color: var(--kj-border-focus, var(--kj-fg-primary));
+}
+
+.related-card:focus-visible {
+  outline: 2px solid var(--kj-border-focus, var(--kj-fg-primary));
+  outline-offset: 2px;
+}
+
+.related-card .name {
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 700;
+  color: var(--kj-fg-default);
+}
+
+.related-card .arr {
+  color: var(--kj-fg-muted);
+  font-size: 1rem;
+}
+
+/* ── Usage code editor (Overview / Import) ──────────────────── */
+.usage-editor {
+  margin-top: var(--kj-space-lg);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  overflow: hidden;
+  background: var(--kj-bg-body);
+}
+
+.usage-editor kj-code-editor { display: block; }
 
 /* ── Empty / fallback states ────────────────────────────────── */
 .empty-state {

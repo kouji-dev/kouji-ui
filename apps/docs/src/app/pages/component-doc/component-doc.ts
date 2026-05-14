@@ -13,9 +13,7 @@ import {
   KjAlertTitleComponent,
   KjAlertDescriptionComponent,
 } from '@kouji-ui/components';
-import { KjCardComponent } from '@kouji-ui/components';
 import { KjTagComponent } from '@kouji-ui/components';
-import { KjLinkComponent } from '@kouji-ui/components';
 import { DocsService } from '../../services/docs.service';
 import type { DocItem, DocPage } from '../../services/docs.service';
 import type {
@@ -23,8 +21,10 @@ import type {
   PageExample,
 } from '../../../lib/docs-extractor.types';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
+import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
+import { PlaygroundComponent } from './playground';
 
 /** Maps Callout.kind to a kj-alert variant. */
 const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'error'> = {
@@ -40,8 +40,10 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
   imports: [
     RouterLink,
     CodePreviewComponent,
+    CodeEditorComponent,
     PageTocDirective,
     PageTocComponent,
+    PlaygroundComponent,
     KjTabsComponent,
     KjTabListComponent,
     KjTabComponent,
@@ -49,9 +51,7 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
     KjAlertComponent,
     KjAlertTitleComponent,
     KjAlertDescriptionComponent,
-    KjCardComponent,
     KjTagComponent,
-    KjLinkComponent,
   ],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
@@ -87,26 +87,43 @@ export class ComponentDocComponent {
   protected readonly pageExamples = computed<PageExample[]>(() => this.page()?.examples ?? []);
 
   /**
-   * Playground example shown live on the Overview tab. Prefers a `playground`
-   * bucket whose slug matches the page name; otherwise the first playground
-   * example; otherwise null (overview falls back to the import snippet only).
+   * Usage example shown in the Overview tab's Import section. Looks for an
+   * example whose slug is `<page>.usage` (e.g. `button.usage`). The first
+   * `.ts` file in that example's default themed bundle is rendered live in
+   * the code editor. When no usage example exists, the page falls back to
+   * the auto-derived `importSnippet`.
    */
-  protected readonly playground = computed<PageExample | null>(() => {
+  protected readonly usageExample = computed<PageExample | null>(() => {
     const examples = this.pageExamples();
     const p = this.page();
     if (!examples.length || !p) return null;
-    const playgrounds = examples.filter((e) => e.example.bucket === 'playground');
-    return playgrounds.find((e) => e.example.slug === p.name) ?? playgrounds[0] ?? null;
+    const targetSlug = `${p.name}.usage`;
+    return examples.find((e) => e.example.slug === targetSlug) ?? null;
+  });
+
+  /** Source of the usage `.ts` file rendered in the Overview's Import code editor. */
+  protected readonly usageSource = computed<string>(() => {
+    const ex = this.usageExample();
+    if (!ex) return '';
+    const files = ex.example.themedFiles['default'] ?? [];
+    const tsFile = files.find((f) => f.lang === 'ts') ?? files[0];
+    return tsFile?.content ?? '';
   });
 
   /**
-   * Flat list of non-playground examples rendered on the Examples tab.
-   * Variants / sizes / states / recipes all live in a single grid — no
+   * Flat list of non-playground, non-usage examples rendered on the Examples
+   * tab. Variants / sizes / states / recipes all live in a single grid — no
    * per-bucket sub-sections, matching design-revamp/docs.jsx `ExamplesTab`.
+   * The usage example is hidden from the recipes grid (it owns the Overview
+   * code editor instead).
    */
-  protected readonly recipeExamples = computed<PageExample[]>(() =>
-    this.pageExamples().filter((e) => e.example.bucket !== 'playground'),
-  );
+  protected readonly recipeExamples = computed<PageExample[]>(() => {
+    const p = this.page();
+    const usageSlug = p ? `${p.name}.usage` : '';
+    return this.pageExamples().filter(
+      (e) => e.example.bucket !== 'playground' && e.example.slug !== usageSlug,
+    );
+  });
 
   /** Auto-derived import snippet — uses `importOverride` when set. */
   protected readonly importSnippet = computed<string>(() => {

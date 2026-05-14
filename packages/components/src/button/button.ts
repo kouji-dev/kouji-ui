@@ -16,6 +16,11 @@ import { KjButton } from '@kouji-ui/core';
  * @doc-example Default
  *   The default playground — variant `secondary`, size `md`, no states.
  *   @doc-file button.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common button usages — variants, sizes,
+ *   loading / disabled / pressed states, and a click handler. Use this as the
+ *   copy-paste starting point for new screens.
+ *   @doc-file button.usage.example.ts
  * @doc-example Variants
  *   Primary / secondary / ghost / destructive — pick the visual weight that
  *   matches the action's importance.

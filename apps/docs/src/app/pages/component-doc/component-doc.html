@@ -79,7 +79,7 @@
                 </section>
               }
 
-              <!-- Import -->
+              <!-- Import / Usage -->
               <section
                 class="doc-section"
                 id="import"
@@ -91,33 +91,36 @@
                   <h2>Import</h2>
                 </header>
                 <div class="prose">
-                  <p>Add the symbol to your component's <code>imports</code> array.</p>
+                  <p>Add the symbol to your component's <code>imports</code> array. The walkthrough below shows the most common usages — copy &amp; tweak.</p>
                 </div>
                 <pre class="code-block"><code>{{ importSnippet() }}</code></pre>
+                <!-- Usage walkthrough: rendered as a read-only Monaco editor
+                     fed by the `<page>.usage.example.ts` file when present.
+                     When no usage example exists we silently fall back to the
+                     auto-derived import line above. -->
+                @if (usageSource(); as src) {
+                  <div class="usage-editor">
+                    <kj-code-editor [code]="src" lang="ts" [readonly]="true" [showHeader]="false" />
+                  </div>
+                }
               </section>
 
-              <!-- Playground — live, interactive demo (replaces the static
-                   "minimal usage" snippet). Falls back to silent when no
-                   playground-bucket example is registered for this page. -->
-              @if (playground(); as pg) {
-                <section
-                  class="doc-section"
-                  id="playground"
-                  data-toc-entry="Playground"
-                  data-toc-level="2"
-                >
-                  <header class="doc-section-head">
-                    <span class="num">04</span>
-                    <h2>Playground</h2>
-                  </header>
-                  @if (page(); as pp) {
-                    <kj-code-preview
-                      [docExamples]="[pg.example]"
-                      [componentName]="pp.title"
-                    />
-                  }
-                </section>
-              }
+              <!-- Playground — interactive form (right) that drives a live
+                   component (left) and a generated, copy-able template
+                   snippet (bottom). Registry-backed: pages whose symbol isn't
+                   wired show a placeholder. -->
+              <section
+                class="doc-section"
+                id="playground"
+                data-toc-entry="Playground"
+                data-toc-level="2"
+              >
+                <header class="doc-section-head">
+                  <span class="num">04</span>
+                  <h2>Playground</h2>
+                </header>
+                <app-playground [symbol]="m.symbol" />
+              </section>
             }
           </div>
         </kj-tab-panel>
@@ -551,9 +554,10 @@
           </header>
           <div class="related-grid">
             @for (slug of main()!.related; track slug) {
-              <kj-card variant="outline" class="related-card">
-                <kj-link [kjHref]="relatedHref(slug, p.pkg)">{{ slug }}</kj-link>
-              </kj-card>
+              <a class="related-card" [routerLink]="relatedHref(slug, p.pkg)">
+                <span class="name">{{ slug }}</span>
+                <span class="arr" aria-hidden="true">→</span>
+              </a>
             }
           </div>
         </section>

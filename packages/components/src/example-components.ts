@@ -65,6 +65,7 @@ export { KjBadgeWithIconExample } from './badge/badge.with-icon.example';
 
 // Button
 export { KjButtonExample }            from './button/button.example';
+export { KjButtonUsageExample }       from './button/button.usage.example';
 export { KjButtonVariantsExample }    from './button/button.variants.example';
 export { KjButtonSizesExample }       from './button/button.sizes.example';
 export { KjButtonDisabledExample }    from './button/button.disabled.example';
