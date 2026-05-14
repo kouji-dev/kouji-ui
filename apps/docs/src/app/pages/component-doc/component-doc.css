@@ -126,6 +126,26 @@
   margin: 0;
 }
 
+/* Right-pinned in-page anchor link. Pulls to the end of the flex
+   baseline row via margin-left:auto (design source docs.css:267-274).
+   Mono / muted by default; brightens to --kj-fg-primary on hover. */
+.doc-section-head .anchor {
+  margin-left: auto;
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  color: var(--kj-fg-muted);
+  text-decoration: none;
+  transition: color var(--kj-transition);
+}
+.doc-section-head .anchor:hover,
+.doc-section-head .anchor:focus-visible {
+  color: var(--kj-fg-primary);
+}
+.doc-section-head .anchor:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
 /* ── Prose ──────────────────────────────────────────────────── */
 .prose p {
   font-family: var(--kj-font-sans);

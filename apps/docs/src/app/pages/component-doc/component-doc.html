@@ -50,6 +50,7 @@
                   <header class="doc-section-head">
                     <span class="num">01</span>
                     <h2>Prerequisites</h2>
+                    <a class="anchor" href="#prereqs">#prereqs</a>
                   </header>
                   <div class="prose">
                     <pre class="prose-block">{{ m.prereqs }}</pre>
@@ -68,6 +69,7 @@
                   <header class="doc-section-head">
                     <span class="num">02</span>
                     <h2>Notes</h2>
+                    <a class="anchor" href="#notes">#notes</a>
                   </header>
                   <div class="callouts">
                     @for (callout of m.callouts; track $index) {
@@ -89,6 +91,7 @@
                 <header class="doc-section-head">
                   <span class="num">03</span>
                   <h2>Import</h2>
+                    <a class="anchor" href="#import">#import</a>
                 </header>
                 <div class="prose">
                   <p>Add the symbol to your component's <code>imports</code> array. The walkthrough below shows the most common usages — copy &amp; tweak.</p>
@@ -118,6 +121,7 @@
                 <header class="doc-section-head">
                   <span class="num">04</span>
                   <h2>Playground</h2>
+                    <a class="anchor" href="#playground">#playground</a>
                 </header>
                 <app-playground [symbol]="m.symbol" />
               </section>
@@ -140,6 +144,7 @@
                     <header class="doc-section-head">
                       <span class="num">01</span>
                       <h2>Inputs</h2>
+                    <a class="anchor" href="#inputs">#inputs</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -179,6 +184,7 @@
                     <header class="doc-section-head">
                       <span class="num">02</span>
                       <h2>Models</h2>
+                    <a class="anchor" href="#models">#models</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -213,6 +219,7 @@
                     <header class="doc-section-head">
                       <span class="num">03</span>
                       <h2>Outputs</h2>
+                    <a class="anchor" href="#outputs">#outputs</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -247,6 +254,7 @@
                     <header class="doc-section-head">
                       <span class="num">01</span>
                       <h2>Methods</h2>
+                    <a class="anchor" href="#methods">#methods</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -278,6 +286,7 @@
                     <header class="doc-section-head">
                       <span class="num">02</span>
                       <h2>Properties</h2>
+                    <a class="anchor" href="#properties">#properties</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -311,6 +320,7 @@
                   <header class="doc-section-head">
                     <span class="num">01</span>
                     <h2>Signature</h2>
+                    <a class="anchor" href="#signature">#signature</a>
                   </header>
                   <pre class="code-block"><code>{{ f.signature }}</code></pre>
                   @if (f.parameters.length) {
@@ -348,6 +358,7 @@
                   <header class="doc-section-head">
                     <span class="num">01</span>
                     <h2>Type</h2>
+                    <a class="anchor" href="#token">#token</a>
                   </header>
                   <pre class="code-block"><code>{{ t.type }}</code></pre>
                 </section>
@@ -363,6 +374,7 @@
                   <header class="doc-section-head">
                     <span class="num">01</span>
                     <h2>Type</h2>
+                    <a class="anchor" href="#type-alias">#type-alias</a>
                   </header>
                   <pre class="code-block"><code>{{ t.type }}</code></pre>
                 </section>
@@ -378,6 +390,7 @@
                   <header class="doc-section-head">
                     <span class="num">01</span>
                     <h2>Constant</h2>
+                    <a class="anchor" href="#const">#const</a>
                   </header>
                   <pre class="code-block"><code>{{ c.type }}</code></pre>
                   @if (c.literalValue) {
@@ -445,6 +458,7 @@
                     <header class="doc-section-head">
                       <span class="num">01</span>
                       <h2>Keyboard</h2>
+                    <a class="anchor" href="#keyboard">#keyboard</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -479,6 +493,7 @@
                     <header class="doc-section-head">
                       <span class="num">02</span>
                       <h2>ARIA</h2>
+                    <a class="anchor" href="#aria">#aria</a>
                     </header>
                     <table class="api-table">
                       <thead>
@@ -509,6 +524,7 @@
                     <header class="doc-section-head">
                       <span class="num">03</span>
                       <h2>Touch target</h2>
+                    <a class="anchor" href="#touch">#touch</a>
                     </header>
                     <div class="prose">
                       <p>{{ m.touchTarget }}</p>
@@ -526,6 +542,7 @@
                     <header class="doc-section-head">
                       <span class="num">04</span>
                       <h2>Notes</h2>
+                    <a class="anchor" href="#a11y-notes">#a11y-notes</a>
                     </header>
                     <div class="prose">
                       <pre class="prose-block">{{ m.a11yProse }}</pre>
@@ -551,6 +568,7 @@
           <header class="doc-section-head">
             <span class="num">99</span>
             <h2>Related</h2>
+                    <a class="anchor" href="#related">#related</a>
           </header>
           <div class="related-grid">
             @for (slug of main()!.related; track slug) {
