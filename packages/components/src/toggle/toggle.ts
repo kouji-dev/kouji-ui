@@ -31,11 +31,18 @@ import { KjToggle } from '@kouji-ui/core';
       type="button"
       kjToggle
       class="kj-toggle"
+      [class.kj-toggle--switch]="appearance() === 'switch'"
       [(kjPressed)]="pressed"
       [kjDisabled]="disabled()"
       [attr.data-size]="size()"
+      [attr.data-appearance]="appearance()"
       [attr.aria-label]="ariaLabel()"
     >
+      @if (appearance() === 'switch') {
+        <span class="kj-toggle__track" aria-hidden="true">
+          <span class="kj-toggle__thumb"></span>
+        </span>
+      }
       <ng-content />
     </button>
   `,
@@ -49,4 +56,11 @@ export class KjToggleComponent {
   readonly disabled = input(false);
   readonly size = input<'sm' | 'md' | 'lg'>('md');
   readonly ariaLabel = input<string | undefined>(undefined);
+  /**
+   * `'press'` (default) renders the toggle as a press/unpress button — the
+   * classic kj-toggle look. `'switch'` renders a track+thumb sliding switch
+   * matching `app.css .toggle` from the design source. Both keep
+   * `role="switch"` + `aria-pressed` semantics from `kjToggle`.
+   */
+  readonly appearance = input<'press' | 'switch'>('press');
 }

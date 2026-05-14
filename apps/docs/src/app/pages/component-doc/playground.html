@@ -27,28 +27,33 @@
           @case ('toggle') {
             <div class="pg-row">
               <label [attr.for]="'pg-' + ctrl.input">{{ ctrl.label }}</label>
-              <button
-                class="pg-chip pg-toggle"
-                type="button"
-                role="switch"
+              <kj-toggle
+                appearance="switch"
                 [id]="'pg-' + ctrl.input"
-                [attr.aria-checked]="isOn(ctrl)"
-                [attr.aria-pressed]="isOn(ctrl)"
-                (click)="toggle(ctrl)"
-              >{{ isOn(ctrl) ? 'on' : 'off' }}</button>
+                [pressed]="isOn(ctrl)"
+                [ariaLabel]="ctrl.label"
+                (pressedChange)="toggle(ctrl)"
+              ></kj-toggle>
             </div>
           }
           @case ('text') {
-            <div class="pg-control">
-              <label class="pg-label" [attr.for]="'pg-slot'">{{ ctrl.label }}</label>
-              <input
-                class="pg-text"
-                id="pg-slot"
-                type="text"
-                [value]="textValue()"
-                (input)="setText($any($event.target).value)"
-              />
-            </div>
+            @if (!iconMode()) {
+              <div class="pg-control">
+                <label class="pg-label" [attr.for]="'pg-slot'">{{ ctrl.label }}</label>
+                <input
+                  class="pg-text"
+                  id="pg-slot"
+                  type="text"
+                  [value]="textValue()"
+                  (input)="setText($any($event.target).value)"
+                />
+              </div>
+            } @else {
+              <div class="pg-control pg-control--ignored">
+                <span class="pg-label">{{ ctrl.label }}</span>
+                <span class="pg-ignored-note">ignored while size=icon</span>
+              </div>
+            }
           }
         }
       }

@@ -36,10 +36,33 @@
   .kj-accordion-trigger:focus-visible { outline: 2px solid var(--kj-border-focus); outline-offset: -2px; }
   .kj-accordion-trigger[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 
+  /* Always in the DOM so open/close can animate; visual state is driven by
+     `[data-state]` from the headless directive. `overflow: hidden` clips the
+     content during the max-height transition so children don't bleed out. */
   .kj-accordion-content {
-    padding: 0 var(--kj-space-lg) var(--kj-space-md);
     color: var(--kj-fg-default);
     font: 0.875rem / 1.5 var(--kj-font-sans);
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    /* `padding` participates in the height transition — collapses to 0 when
+       closed so the panel reads as fully hidden. */
+    padding: 0 var(--kj-space-lg);
+    transition:
+      max-height var(--kj-transition, 0.2s ease),
+      opacity var(--kj-transition, 0.2s ease),
+      padding var(--kj-transition, 0.2s ease);
   }
-  .kj-accordion-content[hidden] { display: none; }
+  .kj-accordion-content[data-state="open"] {
+    /* `1000px` is the conventional "tall enough" ceiling for height tweens
+       on content of unknown size. If panels routinely exceed this, raise the
+       value — the cost is only a slightly slower expand animation. */
+    max-height: 1000px;
+    opacity: 1;
+    padding: 0 var(--kj-space-lg) var(--kj-space-md);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kj-accordion-content { transition: none; }
+  }
 }

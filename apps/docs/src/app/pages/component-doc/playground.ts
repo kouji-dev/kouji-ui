@@ -11,6 +11,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { KjToggleComponent } from '@kouji-ui/components';
 import { ClipboardService } from '../../services/clipboard.service';
 import {
   ControlSpec,
@@ -42,6 +43,7 @@ import {
 @Component({
   selector: 'app-playground',
   standalone: true,
+  imports: [KjToggleComponent],
   templateUrl: './playground.html',
   styleUrl: './playground.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,6 +79,25 @@ export class PlaygroundComponent {
 
   private readonly liveRef = signal<ComponentRef<unknown> | null>(null);
   private slotNode: Text | null = null;
+  private iconNode: SVGSVGElement | null = null;
+  private slotHolder: HTMLSpanElement | null = null;
+
+  /**
+   * Inline settings-gear SVG matching `button.icon.example.ts` — projected
+   * into kj-button when `kjSize === 'icon'` so the icon-only variant renders
+   * a real icon instead of overflowing text.
+   */
+  private static readonly ICON_SVG_PATH =
+    'M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .61.22l2.39-.96c.5.39 1.04.71 1.62.94l.36 2.54c.04.24.25.42.49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64ZM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Z';
+
+  /** True when the current values resolve `kjSize` to `icon`. */
+  protected readonly iconMode = computed<boolean>(() => {
+    const v = this.values()['kjSize'];
+    if (typeof v === 'string') return v === 'icon';
+    const e = this.entry();
+    const ctrl = e?.controls.find((c) => c.kind === 'chips' && c.input === 'kjSize');
+    return ctrl && ctrl.kind === 'chips' ? ctrl.default === 'icon' : false;
+  });
 
   constructor() {
     // Re-seed defaults whenever the page entry flips. `untracked` keeps the
@@ -88,6 +109,9 @@ export class PlaygroundComponent {
     });
 
     // Mount / unmount the live component when entry + stage become available.
+    // We project a single `<span>` slot-holder and swap its child between a
+    // text node (default) and an inline SVG (icon mode) at runtime — keeps
+    // the ComponentRef stable while we hot-swap projected content.
     effect(() => {
       const vcr = this.stage();
       const e = this.entry();
@@ -96,12 +120,19 @@ export class PlaygroundComponent {
       if (prev) {
         prev.destroy();
         this.slotNode = null;
+        this.iconNode = null;
+        this.slotHolder = null;
         this.liveRef.set(null);
       }
       vcr.clear();
       if (!e) return;
-      this.slotNode = typeof document !== 'undefined' ? document.createTextNode('') : null;
-      const projectable: Node[][] = this.slotNode ? [[this.slotNode]] : [[]];
+      if (typeof document !== 'undefined') {
+        this.slotNode = document.createTextNode('');
+        this.slotHolder = document.createElement('span');
+        this.slotHolder.style.display = 'contents';
+        this.slotHolder.appendChild(this.slotNode);
+      }
+      const projectable: Node[][] = this.slotHolder ? [[this.slotHolder]] : [[]];
       const ref = vcr.createComponent(e.component, { projectableNodes: projectable });
       this.liveRef.set(ref);
     });
@@ -114,6 +145,7 @@ export class PlaygroundComponent {
       const e = this.entry();
       const ref = this.liveRef();
       if (!ref || !e) return;
+      const useIcon = this.iconMode();
       for (const c of e.controls) {
         if (c.kind === 'text' && c.input === '__slot__') {
           if (this.slotNode) this.slotNode.nodeValue = (v['__slot__'] as string) ?? c.default;
@@ -126,8 +158,51 @@ export class PlaygroundComponent {
           // Input not declared on this component — silently skip.
         }
       }
+      // Swap projected content: text node (default) ↔ inline SVG (icon mode).
+      this.applyProjectedSlot(useIcon);
+      // Icon-only buttons require an aria-label — kj-button warns in dev otherwise.
+      if (useIcon) {
+        try { ref.setInput('kjAriaLabel', 'Icon button'); } catch { /* not exposed on this component */ }
+      } else {
+        try { ref.setInput('kjAriaLabel', undefined); } catch { /* ignore */ }
+      }
       ref.changeDetectorRef.markForCheck();
     });
+  }
+
+  /**
+   * Swap the projected slot child between the text node (default) and the
+   * inline SVG (icon mode). We keep both nodes in fields so the swap is a
+   * cheap `replaceChild` rather than recreating the whole ComponentRef.
+   */
+  private applyProjectedSlot(useIcon: boolean): void {
+    if (!this.slotHolder || typeof document === 'undefined') return;
+    if (useIcon) {
+      if (!this.iconNode) this.iconNode = this.buildIconNode();
+      if (this.slotHolder.firstChild !== this.iconNode) {
+        this.slotHolder.replaceChildren(this.iconNode);
+      }
+    } else {
+      if (!this.slotNode) this.slotNode = document.createTextNode('');
+      if (this.slotHolder.firstChild !== this.slotNode) {
+        this.slotHolder.replaceChildren(this.slotNode);
+      }
+    }
+  }
+
+  /** Build a 20×20 settings-gear SVG matching `button.icon.example.ts`. */
+  private buildIconNode(): SVGSVGElement {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('width', '20');
+    svg.setAttribute('height', '20');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', PlaygroundComponent.ICON_SVG_PATH);
+    svg.appendChild(path);
+    return svg;
   }
 
   /** Re-seed defaults — invoked on symbol change. */

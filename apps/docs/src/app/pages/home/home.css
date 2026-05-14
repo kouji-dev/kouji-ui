@@ -7,6 +7,12 @@
    --kj-hover-translate, --kj-radius-*).
    ============================================================ */
 
+/* SINGLE scroll owner: `app-home` is the only vertical scroller on the
+   landing route. `app-root` is `overflow: hidden`, so without this `app-home`
+   wouldn't scroll at all. Previously `.kj-home` ALSO set `min-height: 100dvh`,
+   which made the inner element taller than its host even on short pages and
+   produced a nested scrollbar inside `app-home`. The inner block now lets the
+   parent define height — content grows naturally and the host handles overflow. */
 app-home {
   display: flex;
   flex: 1;
@@ -18,7 +24,6 @@ app-home {
 .kj-home {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   background: var(--kj-bg-body);
   color: var(--kj-fg-default);
   font-family: var(--kj-font-sans);

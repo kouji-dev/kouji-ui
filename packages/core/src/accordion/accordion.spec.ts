@@ -28,7 +28,13 @@ const baseTemplate = `
 describe('KjAccordion', () => {
   it('content hidden by default', async () => {
     const { container } = await render(baseTemplate, { imports });
-    expect(container.querySelector('[kjAccordionContent]')).toHaveAttribute('hidden', '');
+    const content = container.querySelector('[kjAccordionContent]');
+    // Visibility is driven by `[data-state]` + CSS animation (the element
+    // stays in the DOM so open/close can transition). `aria-hidden` + `inert`
+    // keep the closed panel out of the AT tree and tab sequence.
+    expect(content).toHaveAttribute('data-state', 'closed');
+    expect(content).toHaveAttribute('aria-hidden', 'true');
+    expect(content).toHaveAttribute('inert', '');
   });
 
   it('click trigger expands and updates aria-expanded', async () => {
@@ -37,7 +43,10 @@ describe('KjAccordion', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(container.querySelector('[kjAccordionContent]')).not.toHaveAttribute('hidden');
+    const content = container.querySelector('[kjAccordionContent]');
+    expect(content).toHaveAttribute('data-state', 'open');
+    expect(content).not.toHaveAttribute('aria-hidden');
+    expect(content).not.toHaveAttribute('inert');
   });
 
   it('single mode closes other items when one opens', async () => {

@@ -41,4 +41,83 @@
   .kj-toggle:hover { background: color-mix(in oklab, var(--kj-toggle-bg) 88%, black); }
   .kj-toggle:focus-visible { outline: 2px solid var(--kj-bg-primary); outline-offset: 2px; }
   .kj-toggle[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+  /* ── Switch appearance — track + thumb sliding switch ────────────
+     Matches design-revamp/kouji-ui/project/app.css `.toggle` block
+     (lines 447–471): 44×24 rounded track, 18×18 thumb at top:2 left:2,
+     translateX(20px) on pressed. Tokenised throughout (no hex). */
+  .kj-toggle--switch {
+    --kj-switch-w: 44px;
+    --kj-switch-h: 24px;
+    --kj-switch-thumb: 18px;
+    --kj-switch-pad: 2px;
+
+    background: transparent;
+    border: 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--kj-font-sans);
+    font-size: var(--kj-text-sm);
+    color: var(--kj-fg-default);
+  }
+  .kj-toggle--switch:hover { background: transparent; }
+  .kj-toggle--switch:focus-visible { outline: none; }
+  .kj-toggle--switch:focus-visible .kj-toggle__track {
+    outline: 2px solid var(--kj-bg-primary);
+    outline-offset: 2px;
+  }
+
+  /* Track + thumb corner geometry follows the theme. kouji (radius 0)
+     renders a square track + square thumb; sakura/dune (large radii)
+     render fully pill; everyone in between scales. Falls back to the
+     pill-shape (radius = track height) when --kj-radius-selector
+     resolves to 0 only on themes where that's the brand decision. */
+  .kj-toggle--switch {
+    --kj-switch-track-radius: var(--kj-radius-selector, var(--kj-switch-h));
+    --kj-switch-thumb-radius: calc(var(--kj-switch-track-radius) - var(--kj-switch-pad));
+  }
+
+  .kj-toggle__track {
+    width: var(--kj-switch-w);
+    height: var(--kj-switch-h);
+    border-radius: var(--kj-switch-track-radius);
+    background-color: var(--kj-bg-surface);
+    border: var(--kj-border) solid var(--kj-border-default);
+    position: relative;
+    flex-shrink: 0;
+    transition: background-color 0.25s cubic-bezier(.34, 1.56, .64, 1);
+  }
+
+  .kj-toggle__thumb {
+    position: absolute;
+    top: var(--kj-switch-pad);
+    left: var(--kj-switch-pad);
+    width: var(--kj-switch-thumb);
+    height: var(--kj-switch-thumb);
+    /* Mirror the track's radius so square themes stay square, soft themes
+       stay round. `max(0, ...)` keeps the result non-negative on kouji
+       (radius 0). */
+    border-radius: max(0px, var(--kj-switch-thumb-radius));
+    background-color: var(--kj-fg-default);
+    transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1),
+                background-color 0.25s cubic-bezier(.34, 1.56, .64, 1);
+  }
+
+  .kj-toggle--switch[aria-pressed="true"] .kj-toggle__track,
+  .kj-toggle--switch[data-pressed] .kj-toggle__track {
+    background-color: var(--kj-bg-primary);
+    border-color: var(--kj-bg-primary);
+  }
+  .kj-toggle--switch[aria-pressed="true"] .kj-toggle__thumb,
+  .kj-toggle--switch[data-pressed] .kj-toggle__thumb {
+    transform: translateX(calc(var(--kj-switch-w) - var(--kj-switch-h)));
+    background-color: var(--kj-fg-on-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kj-toggle__track,
+    .kj-toggle__thumb { transition: none; }
+  }
 }

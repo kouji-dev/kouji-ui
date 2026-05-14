@@ -119,6 +119,16 @@
 
 .pg-row label { flex: 1; cursor: pointer; }
 
+/* Slot-text row collapses to a muted "ignored" note when the resolved kjSize
+   is `icon` — the icon-mode playground swaps the slot for an SVG instead. */
+.pg-control--ignored { opacity: 0.55; }
+.pg-ignored-note {
+  font-family: var(--kj-font-mono);
+  font-size: 0.6875rem;
+  color: var(--kj-fg-muted);
+  font-style: italic;
+}
+
 .pg-text {
   width: 100%;
   font-family: var(--kj-font-mono);
