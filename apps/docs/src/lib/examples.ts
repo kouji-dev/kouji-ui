@@ -230,10 +230,21 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
   const exampleParts = cleanText.split(/(?:\n|^)(?=\s*@doc-example\s)/m);
 
   for (const part of exampleParts) {
-    const headerMatch = part.match(/^\s*@doc-example\s+(.+)/);
+    const headerMatch = part.match(/^\s*@doc-example[^\S\n]+([^\n]+)/);
     if (!headerMatch) continue;
     const label = headerMatch[1].trim();
     const body = part.slice(headerMatch.index! + headerMatch[0].length);
+
+    // Capture any prose between the label line and the first @doc-file /
+    // @doc-theme as the example description. Falls back to '' when absent.
+    const firstTagIdx = body.search(/\n\s*@(?:doc-file|doc-theme)\b/);
+    const descBlock = firstTagIdx === -1 ? body : body.slice(0, firstTagIdx);
+    const description = descBlock
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0)
+      .join(' ')
+      .trim();
 
     const themedFiles: Record<string, ExampleFile[]> = {};
 
@@ -256,7 +267,13 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
 
     if (Object.keys(themedFiles).length) {
       const slug = deriveExampleSlug(label, themedFiles);
-      results.push({ label, slug, bucket: deriveExampleBucket(slug, label), themedFiles });
+      results.push({
+        label,
+        ...(description ? { description } : {}),
+        slug,
+        bucket: deriveExampleBucket(slug, label),
+        themedFiles,
+      });
     }
   }
 

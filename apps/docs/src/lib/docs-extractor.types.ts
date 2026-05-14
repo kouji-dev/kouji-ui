@@ -112,6 +112,12 @@ export type ExampleBucket =
 export interface DocExample {
   label: string;
   /**
+   * Optional short prose shown under the recipe card's title. Captured from
+   * the lines between the `@doc-example <label>` line and the first `@doc-file`
+   * / `@doc-theme` in the same example block. May be empty.
+   */
+  description?: string;
+  /**
    * Stable URL-fragment slug for this example, derived from the canonical
    * `*.example.ts` filename with `.example.ts` stripped (e.g.
    * `button.size.example.ts` → `button.size`). Used as the anchor `id`

@@ -262,30 +262,11 @@
   border-radius: var(--kj-radius-selector);
 }
 
-/* ── Examples cards ─────────────────────────────────────────── */
-.example-card {
-  margin-bottom: var(--kj-space-2xl);
-  scroll-margin-top: var(--kj-space-2xl);
-}
-
-.example-card--playground {
-  /* Playground stays a single full-width block above the recipes grid */
-  margin-bottom: var(--kj-space-3xl);
-}
-
-.example-heading {
-  font-family: var(--kj-font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--kj-fg-muted);
-  margin: 0 0 var(--kj-space-sm);
-  font-weight: 500;
-}
-
-/* ── Recipes grid (Variants / Sizes / States / Recipes buckets) ───
-   Source: design-revamp/.../docs.css L652-691. Two compact tiles per
-   row, single column under 720px. Each card holds title + live preview. */
+/* ── Recipes grid — flat 2-col layout for ALL non-playground examples ──
+   Source: design-revamp/.../docs.css L652-691 (`.recipes-grid` + `.recipe-card`
+   + `.recipe-card .preview`). One uniform tile grid; the previous per-bucket
+   (Variants / Sizes / States / Recipes) sub-sections are gone — see
+   design-revamp/docs.jsx `ExamplesTab`. */
 .recipes-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -306,7 +287,7 @@
   scroll-margin-top: var(--kj-space-2xl);
   display: flex;
   flex-direction: column;
-  gap: var(--kj-space-md);
+  gap: var(--kj-space-xs);
 }
 
 .recipe-card__title {
@@ -319,10 +300,28 @@
   color: var(--kj-fg-default);
 }
 
+.recipe-card__desc {
+  margin: 0 0 var(--kj-space-md);
+  font-family: var(--kj-font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--kj-fg-muted);
+}
+
 .recipe-card__preview {
-  /* The code-preview component itself owns its border/toolbar/preview,
-     so this wrapper just slots it into the card without extra chrome. */
-  display: block;
+  /* Surface for the live demo. The kj-code-preview ([previewOnly]) renders
+     just the demo (no editor / toolbar / theme strip) so this wrapper owns
+     the inner padding + centering. min-height: 88px from the design source. */
+  margin-top: var(--kj-space-sm);
+  padding: var(--kj-space-xl);
+  background: var(--kj-bg-body);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kj-space-sm);
+  flex-wrap: wrap;
   min-height: 88px;
 }
 

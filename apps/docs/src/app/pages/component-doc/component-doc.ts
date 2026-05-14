@@ -20,25 +20,11 @@ import { DocsService } from '../../services/docs.service';
 import type { DocItem, DocPage } from '../../services/docs.service';
 import type {
   CalloutKind,
-  ExampleBucket,
-  ExampleFile,
   PageExample,
 } from '../../../lib/docs-extractor.types';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
-
-/** Order of bucket sections rendered in the Examples tab. */
-const BUCKET_ORDER: ExampleBucket[] = ['playground', 'variants', 'sizes', 'states', 'recipe'];
-
-/** Display label shown as the bucket section heading. */
-const BUCKET_LABEL: Record<ExampleBucket, string> = {
-  playground: 'Playground',
-  variants: 'Variants',
-  sizes: 'Sizes',
-  states: 'States',
-  recipe: 'Recipes',
-};
 
 /** Maps Callout.kind to a kj-alert variant. */
 const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'error'> = {
@@ -47,12 +33,6 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
   warning: 'warning',
   danger: 'error',
 };
-
-interface BucketGroup {
-  bucket: ExampleBucket;
-  label: string;
-  examples: PageExample[];
-}
 
 @Component({
   selector: 'app-component-doc',
@@ -106,17 +86,27 @@ export class ComponentDocComponent {
   /** Flattened example entries on the page. */
   protected readonly pageExamples = computed<PageExample[]>(() => this.page()?.examples ?? []);
 
-  /** Pre-grouped examples for the Examples tab — empty groups elided. */
-  protected readonly bucketGroups = computed<BucketGroup[]>(() => {
+  /**
+   * Playground example shown live on the Overview tab. Prefers a `playground`
+   * bucket whose slug matches the page name; otherwise the first playground
+   * example; otherwise null (overview falls back to the import snippet only).
+   */
+  protected readonly playground = computed<PageExample | null>(() => {
     const examples = this.pageExamples();
-    return BUCKET_ORDER
-      .map((bucket) => ({
-        bucket,
-        label: BUCKET_LABEL[bucket],
-        examples: examples.filter((e) => e.example.bucket === bucket),
-      }))
-      .filter((g) => g.examples.length > 0);
+    const p = this.page();
+    if (!examples.length || !p) return null;
+    const playgrounds = examples.filter((e) => e.example.bucket === 'playground');
+    return playgrounds.find((e) => e.example.slug === p.name) ?? playgrounds[0] ?? null;
   });
+
+  /**
+   * Flat list of non-playground examples rendered on the Examples tab.
+   * Variants / sizes / states / recipes all live in a single grid — no
+   * per-bucket sub-sections, matching design-revamp/docs.jsx `ExamplesTab`.
+   */
+  protected readonly recipeExamples = computed<PageExample[]>(() =>
+    this.pageExamples().filter((e) => e.example.bucket !== 'playground'),
+  );
 
   /** Auto-derived import snippet — uses `importOverride` when set. */
   protected readonly importSnippet = computed<string>(() => {
@@ -126,28 +116,6 @@ export class ComponentDocComponent {
     if (m.importOverride) return m.importOverride;
     const pkg = p.pkg === 'core' ? 'core' : 'components';
     return `import { ${m.symbol} } from '@kouji-ui/${pkg}';`;
-  });
-
-  /**
-   * Minimal usage snippet: first 10–12 lines of the playground example's `.ts`
-   * file. Prefers an example whose `slug` matches the page name; otherwise the
-   * first playground example; otherwise the first example overall.
-   */
-  protected readonly minimalUsage = computed<string>(() => {
-    const examples = this.pageExamples();
-    const p = this.page();
-    if (!examples.length || !p) return '';
-    const playgrounds = examples.filter((e) => e.example.bucket === 'playground');
-    const chosen =
-      playgrounds.find((e) => e.example.slug === p.name)
-      ?? playgrounds[0]
-      ?? examples[0];
-    if (!chosen) return '';
-    const themed = chosen.example.themedFiles;
-    const files: ExampleFile[] = themed['default'] ?? Object.values(themed)[0] ?? [];
-    const tsFile = files.find((f) => f.lang === 'ts') ?? files[0];
-    if (!tsFile) return '';
-    return tsFile.content.split('\n').slice(0, 12).join('\n');
   });
 
   /** Whether to render the A11y tab body — false when every a11y field is empty. */
@@ -192,7 +160,7 @@ export class ComponentDocComponent {
       + (f?.parameters.length ?? 0);
   });
 
-  protected readonly examplesCount = computed<number>(() => this.pageExamples().length);
+  protected readonly examplesCount = computed<number>(() => this.recipeExamples().length);
 
   constructor() {
     toObservable(this.page).pipe(

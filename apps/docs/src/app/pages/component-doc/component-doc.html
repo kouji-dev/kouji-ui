@@ -94,22 +94,26 @@
                 <pre class="code-block"><code>{{ importSnippet() }}</code></pre>
               </section>
 
-              <!-- Minimal usage -->
-              @if (minimalUsage()) {
+              <!-- Playground — live, interactive demo (replaces the static
+                   "minimal usage" snippet). Falls back to silent when no
+                   playground-bucket example is registered for this page. -->
+              @if (playground(); as pg) {
                 <section
                   class="doc-section"
-                  id="usage"
-                  data-toc-entry="Usage"
+                  id="playground"
+                  data-toc-entry="Playground"
                   data-toc-level="2"
                 >
                   <header class="doc-section-head">
                     <span class="num">04</span>
-                    <h2>Usage</h2>
+                    <h2>Playground</h2>
                   </header>
-                  <div class="prose">
-                    <p>Minimal example — copy, paste, adapt.</p>
-                  </div>
-                  <pre class="code-block"><code>{{ minimalUsage() }}</code></pre>
+                  @if (page(); as pp) {
+                    <kj-code-preview
+                      [docExamples]="[pg.example]"
+                      [componentName]="pp.title"
+                    />
+                  }
                 </section>
               }
             }
@@ -388,57 +392,33 @@
         <kj-tab-panel value="examples">
           <div class="tab-body">
             @if (page(); as p) {
-              @for (group of bucketGroups(); track group.bucket; let groupIdx = $index) {
-                <section
-                  class="doc-section"
-                  [id]="'bucket-' + group.bucket"
-                  [attr.data-toc-entry]="group.label"
-                  data-toc-level="2"
-                >
-                  <header class="doc-section-head">
-                    <span class="num">{{ (groupIdx + 1).toString().padStart(2, '0') }}</span>
-                    <h2>{{ group.label }}</h2>
-                  </header>
-                  @if (group.bucket === 'playground') {
-                    <!-- Playground stays a full-width, single example block -->
-                    @for (entry of group.examples; track entry.example.slug) {
-                      <article
-                        class="example-card example-card--playground"
-                        [id]="entry.example.slug"
-                        [attr.data-toc-entry]="entry.example.label"
-                        data-toc-level="3"
-                      >
-                        <h3 class="example-heading">{{ entry.example.label }}</h3>
+              @if (recipeExamples().length > 0) {
+                <!-- Flat 2-col grid — variants / sizes / states / recipes all
+                     live here side-by-side. Source: design-revamp/docs.jsx
+                     `ExamplesTab` + `RecipeCard`. -->
+                <div class="recipes-grid">
+                  @for (entry of recipeExamples(); track entry.example.slug) {
+                    <article
+                      class="recipe-card"
+                      [id]="entry.example.slug"
+                      [attr.data-toc-entry]="entry.example.label"
+                      data-toc-level="2"
+                    >
+                      <h4 class="recipe-card__title">{{ entry.example.label }}</h4>
+                      @if (entry.example.description) {
+                        <p class="recipe-card__desc">{{ entry.example.description }}</p>
+                      }
+                      <div class="recipe-card__preview">
                         <kj-code-preview
                           [docExamples]="[entry.example]"
                           [componentName]="p.title"
+                          [previewOnly]="true"
                         />
-                      </article>
-                    }
-                  } @else {
-                    <!-- Variants / Sizes / States / Recipes — 2-column tile grid -->
-                    <div class="recipes-grid">
-                      @for (entry of group.examples; track entry.example.slug) {
-                        <article
-                          class="recipe-card"
-                          [id]="entry.example.slug"
-                          [attr.data-toc-entry]="entry.example.label"
-                          data-toc-level="3"
-                        >
-                          <h4 class="recipe-card__title">{{ entry.example.label }}</h4>
-                          <div class="recipe-card__preview">
-                            <kj-code-preview
-                              [docExamples]="[entry.example]"
-                              [componentName]="p.title"
-                            />
-                          </div>
-                        </article>
-                      }
-                    </div>
+                      </div>
+                    </article>
                   }
-                </section>
-              }
-              @if (bucketGroups().length === 0) {
+                </div>
+              } @else {
                 <p class="empty-state">No examples recorded yet.</p>
               }
             }

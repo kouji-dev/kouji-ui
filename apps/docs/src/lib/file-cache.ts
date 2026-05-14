@@ -18,8 +18,9 @@ import type { DocItem, InputDef } from './docs-extractor.types';
  *  v1 → original schema
  *  v2 → DocExample.slug
  *  v3 → DocExample.bucket + DocItem.{prereqs, callouts, importOverride,
- *       keyboard, aria, touchTarget, a11yProse, related} */
-const CACHE_VERSION = 3;
+ *       keyboard, aria, touchTarget, a11yProse, related}
+ *  v4 → DocExample.description */
+const CACHE_VERSION = 4;
 
 export interface CachedFile {
   sha: string;

@@ -14,22 +14,37 @@ import { KjButton } from '@kouji-ui/core';
  * </kj-button>
  * ```
  * @doc-example Default
+ *   The default playground — variant `secondary`, size `md`, no states.
  *   @doc-file button.example.ts
  * @doc-example Variants
+ *   Primary / secondary / ghost / destructive — pick the visual weight that
+ *   matches the action's importance.
  *   @doc-file button.variants.example.ts
  * @doc-example Sizes
+ *   `sm`, `md`, `lg` — `md` is the default. `sm` keeps a 44px touch target via
+ *   padding so it stays WCAG 2.5.5 compliant.
  *   @doc-file button.sizes.example.ts
  * @doc-example Disabled
+ *   `[disabled]="true"` removes the button from the tab order and dims it. Use
+ *   for forms where validation hasn't passed.
  *   @doc-file button.disabled.example.ts
  * @doc-example Loading
+ *   Toggle `[loading]="true"` while a request is in-flight. Implies disabled —
+ *   don't set both.
  *   @doc-file button.loading.example.ts
  * @doc-example Pressed (toggle)
+ *   Stateful toggle via `[kjPressed]`. `aria-pressed` is wired automatically.
  *   @doc-file button.pressed.example.ts
  * @doc-example Icon-only
+ *   Provide `[kjAriaLabel]` for screen readers — dev-mode enforces it.
  *   @doc-file button.icon.example.ts
  * @doc-example Anchor as button
+ *   Render as `<a>` while keeping button visuals — handy for navigation that
+ *   needs to look like an action.
  *   @doc-file button.anchor.example.ts
  * @doc-example Configured presets
+ *   `provideKjButton({ variant: 'primary' })` sets the default for every
+ *   button in the injection scope.
  *   @doc-file button.configured.example.ts
  * @doc-category Library/Actions
  * @doc

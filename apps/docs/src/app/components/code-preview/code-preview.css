@@ -6,6 +6,23 @@
   /* overflow: hidden would clip absolutely-positioned overlay content (tooltips, popovers) */
 }
 
+/* ── Preview-only mode ───────────────────────────────────────
+   Used inside recipe-cards on the docs Examples tab. The card
+   already provides the surface chrome — drop our border, drop the
+   preview-frame's border-bottom, and centre the demo content. The
+   88px min-height matches design-revamp/.../docs.css `.recipe-card .preview`. */
+.preview-wrap.preview-only {
+  border: 0;
+}
+
+.preview-wrap.preview-only .preview-frame {
+  /* Strip the frame's own surface — the host card provides bg, border,
+     padding and centering (.recipe-card__preview). */
+  background: transparent;
+  border-bottom: 0;
+  padding: 0;
+}
+
 .preview-toolbar {
   display: flex;
   align-items: center;
