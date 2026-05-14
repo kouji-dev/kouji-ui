@@ -30,7 +30,9 @@
               <span class="tab-count">{{ examplesCount() }}</span>
             }
           </kj-tab>
-          <kj-tab value="a11y">a11y</kj-tab>
+          @if (hasA11y()) {
+            <kj-tab value="a11y">a11y</kj-tab>
+          }
         </kj-tab-list>
 
         <!-- ─────────── Overview tab ─────────── -->

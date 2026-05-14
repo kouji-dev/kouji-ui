@@ -114,6 +114,12 @@
     --kj-button-fg: var(--kj-fg-primary);
     --kj-button-padding-x: 0;
     --kj-button-padding-y: 0;
+    /* Link variant is plain underlined text — explicitly null out any
+       theme-set --kj-button-shadow so kouji/bauhaus offsets don't leak
+       onto inline text links. Ghost / outline / destructive keep theirs. */
+    --kj-button-shadow: none;
+    --kj-button-shadow-hover: none;
+    --kj-button-shadow-active: none;
     text-decoration: underline;
     text-underline-offset: 4px;
   }

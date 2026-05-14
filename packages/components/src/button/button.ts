@@ -46,6 +46,33 @@ import { KjButton } from '@kouji-ui/core';
  *   `provideKjButton({ variant: 'primary' })` sets the default for every
  *   button in the injection scope.
  *   @doc-file button.configured.example.ts
+ *
+ * @doc-keyboard
+ *   Enter|Space — Activates the button (native click on the underlying
+ *     <button>; for [kjPressed] toggles this also flips the pressed state)
+ *   Tab          — Moves focus to the next focusable element
+ *
+ * @doc-aria
+ *   aria-disabled — Reflected when [kjDisabled] or [kjLoading] is true
+ *   aria-busy     — Reflected when [kjLoading] is true
+ *   aria-pressed  — Reflected when used as a toggle (kjPressed is bound)
+ *   aria-label    — Wired through to the inner <button>; required for icon-only
+ *   data-variant  — Mirrors the resolved variant for theme/scope hooks
+ *   data-size     — Mirrors the resolved size for theme/scope hooks
+ *
+ * @doc-touch
+ *   `size="lg"` and `size="icon"` meet WCAG 2.5.5 ≥ 44×44 by default.
+ *   `sm` and `md` rely on the inline-text-link exception — embed in text only.
+ *
+ * @doc-a11y
+ *   Renders a real <button type="..."> (defaults to "button"), so the
+ *   native focus ring, click semantics, and form-submission behaviour
+ *   are preserved. `KjFocusRing` (from kjButton) shows the outline on
+ *   `:focus-visible` only — never on mouse-down. When used as an anchor
+ *   via `[routerLink]`, Enter activates per native anchor semantics.
+ *
+ * @doc-related button-group,link,icon
+ *
  * @doc-category Library/Actions
  * @doc
  * @doc-name button
