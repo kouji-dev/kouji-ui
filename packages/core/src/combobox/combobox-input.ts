@@ -62,6 +62,7 @@ import { KjCombobox } from './combobox-root';
     '[attr.aria-autocomplete]': '"list"',
     '[attr.aria-busy]': 'ctx.loading() ? "true" : null',
     '(input)': 'onInput($event)',
+    '(click)': 'onClick()',
     '(keydown.enter)': 'onEnter($event)',
     '(keydown.escape)': 'onEscape($event)',
     '(keydown.alt.arrowdown)': '$event.preventDefault(); ctx.show()',
@@ -97,6 +98,16 @@ export class KjComboboxInput implements OnInit, OnDestroy {
   onInput(e: Event): void {
     const v = (e.target as HTMLInputElement).value;
     this.ctx.setQuery(v);
+  }
+
+  /**
+   * Re-open the listbox on click. The `onFocusOrInput` trigger strategy
+   * opens on first focus; after a commit-close, focus typically stays
+   * on the input so no new focus event fires. A click here reopens
+   * without requiring the user to blur + refocus first.
+   */
+  onClick(): void {
+    if (!this.ctx.open()) this.ctx.show();
   }
 
   /**

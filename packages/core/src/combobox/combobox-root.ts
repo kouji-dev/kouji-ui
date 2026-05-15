@@ -9,6 +9,7 @@ import {
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { KjDisabled } from '../primitives';
 import { KjOverlayController } from '../primitives/overlay/controller';
@@ -129,12 +130,13 @@ export class KjCombobox implements KjListNavigatorConfig {
   private readonly _inputEl = signal<HTMLElement | null>(null);
   readonly inputElement = this._inputEl.asReadonly();
 
-  /** @internal — set by KjComboboxInput's lifecycle. */
-  private _nav: KjListNavigator | null = null;
-  _setNavigator(n: KjListNavigator | null): void { this._nav = n; }
+  /** @internal — set by KjComboboxInput's lifecycle. Signal so auto-activate
+   *  effects can re-run when the navigator becomes available. */
+  private readonly _nav = signal<KjListNavigator | null>(null);
+  _setNavigator(n: KjListNavigator | null): void { this._nav.set(n); }
 
   /** Currently active descendant id (or null). */
-  readonly activeId = computed(() => this._nav?.activeId() ?? null);
+  readonly activeId = computed(() => this._nav()?.activeId() ?? null);
 
   /** Adapts the consumer `(query, label) => boolean` shape into the
    *  primitive's `KjFilterFn` shape. Derived; no effect/setter needed. */
@@ -153,6 +155,31 @@ export class KjCombobox implements KjListNavigatorConfig {
       autoActivateFirst: this.kjAutoActivateFirst,
     });
     effect(() => this.kjQueryChange.emit(this.kjQuery()));
+
+    // Auto-activate first visible item on query change so Enter can
+    // commit it without an explicit ArrowDown press. APG combobox 1.2
+    // discoverability pattern.
+    effect(() => {
+      this.kjQuery();
+      const autoFirst = this.kjAutoActivateFirst();
+      const nav = this._nav();
+      if (!autoFirst || !nav) return;
+      untracked(() => {
+        const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
+        nav.setActive(visible.length ? visible[0].id : null);
+      });
+    });
+
+    // Seed the active item once the navigator attaches (input mounts).
+    effect(() => {
+      const nav = this._nav();
+      if (!nav || !this.kjAutoActivateFirst()) return;
+      if (nav.activeId() !== null) return;
+      untracked(() => {
+        const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
+        if (visible.length > 0) nav.setActive(visible[0].id);
+      });
+    });
   }
 
   setQuery(value: string): void {
