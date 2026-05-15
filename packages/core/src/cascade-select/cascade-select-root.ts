@@ -26,6 +26,7 @@ import {
   KJ_CASCADE_SELECT,
   type KjCascadeSelectContext,
 } from './cascade-select.context';
+import { KjCascadeSelectOption } from './cascade-select-option';
 
 /**
  * Root cascade-select container. Implements
@@ -101,6 +102,29 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
   // ── KjListNavigatorConfig implementation ──────────────────────────
   /** All `KjListItem`s under this cascade — source for the navigators. */
   readonly items = contentChildren(KjListItem, { descendants: true });
+
+  /**
+   * Every projected `KjCascadeSelectOption`. Used by {@link findOption}
+   * to resolve a `KjListItem` id (typically the navigator's active id)
+   * to its wrapping option directive — no `document.getElementById` /
+   * `querySelector` lookups in panel keydown handlers.
+   */
+  private readonly _options = contentChildren(KjCascadeSelectOption, { descendants: true });
+
+  private readonly _optionsById = computed(() => {
+    const map = new Map<string, KjCascadeSelectOption>();
+    for (const o of this._options()) map.set(o.item.id, o);
+    return map;
+  });
+
+  /**
+   * Resolve the `KjCascadeSelectOption` wrapping the given
+   * `KjListItem.id`. Returns `undefined` when no projected option
+   * matches.
+   */
+  findOption(itemId: string): KjCascadeSelectOption | undefined {
+    return this._optionsById().get(itemId);
+  }
 
   /**
    * Implements `KjListNavigatorConfig.value`. Shared with `kjValue` so

@@ -1,16 +1,14 @@
 import {
   booleanAttribute,
   computed,
-  contentChildren,
   Directive,
-  effect,
   inject,
   input,
   OnDestroy,
+  signal,
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
 import { KJ_CASCADE_SELECT } from './cascade-select.context';
-import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
 
 /**
  * Single row inside a `[kjCascadeSelectPanel]` or
@@ -23,9 +21,12 @@ import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
  * (via the shared `KjSelectionModel` in `'leaf'` mode), and
  * `aria-disabled`. This directive contributes cascade-specific
  * semantics: `role="treeitem"`, branch `aria-haspopup` / `aria-expanded`,
- * hover-open / hover-close timers for sub-panels, and the
- * `data-owner-option-id` reverse-lookup attribute used by the panel
- * keyboard handler.
+ * and hover-open / hover-close timers for sub-panels.
+ *
+ * Branch detection is signal-driven: `KjCascadeSelectSubPanel` instances
+ * declared inside this option call `_registerSubPanel()` from their
+ * constructor (they inject this directive via the element injector).
+ * No `contentChildren` + binding effect — straightforward DI both ways.
  *
  * Branch clicks are no-ops at the selection-model level (leaf mode
  * filters them out when a `treeShape` is provided on the root) but
@@ -70,7 +71,6 @@ import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
     '[attr.data-leaf]': 'isLeaf().toString()',
     '[attr.data-selected]': 'item.ariaSelected() === "true" ? "" : null',
     '[attr.data-active-path]': 'isOnActivePath() ? "" : null',
-    '[attr.data-owner-option-id]': 'isBranch() ? item.id : null',
     '(click)': 'handleClick()',
     '(mouseenter)': 'handleMouseEnter()',
     '(mouseleave)': 'handleMouseLeave()',
@@ -97,21 +97,23 @@ export class KjCascadeSelectOption implements OnDestroy {
   /** Whether this option is disabled. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
-  /** @internal Stable id minted by the composed `KjListItem`. */
-  get _id(): string { return this.item.id; }
-
   /**
-   * @internal Sub-panel directives declared as content children. Detected
-   * via `contentChildren` (which follows the declaration tree, so it works
-   * for both `<div kjCascadeSelectOption>` and `<kj-cascade-option>` wrapper
-   * forms). When non-empty, this option is a branch node.
+   * @internal Number of `KjCascadeSelectSubPanel` directives declared
+   * inside this option. Incremented by each sub-panel's constructor
+   * (which injects this directive via the element injector). When
+   * non-zero, this option is a branch.
    */
-  private readonly subPanels = contentChildren(KjCascadeSelectSubPanel, { descendants: false });
+  private readonly _subPanelCount = signal(0);
+
+  /** @internal — called by `KjCascadeSelectSubPanel` from its constructor. */
+  _registerSubPanel(): void {
+    this._subPanelCount.update(n => n + 1);
+  }
 
   /** @internal Whether this option is a branch node. */
-  readonly isBranch = computed(() => this.subPanels().length > 0);
+  readonly isBranch = computed(() => this._subPanelCount() > 0);
 
-  /** @internal Computed inverse of isBranch for the data-leaf attribute. */
+  /** @internal Inverse of `isBranch` for the `data-leaf` attribute. */
   readonly isLeaf = computed(() => !this.isBranch());
 
   private _openTimer: ReturnType<typeof setTimeout> | undefined;
@@ -129,16 +131,6 @@ export class KjCascadeSelectOption implements OnDestroy {
     const path = this.ctx.path();
     return path.includes(this.kjOptionValue());
   });
-
-  constructor() {
-    // Bind each declared sub-panel to this option's auto-generated id so
-    // the sub-panel's `open` computed can match against the open list
-    // without the consumer having to wire `kjOwnerOptionId` manually.
-    effect(() => {
-      const panels = this.subPanels();
-      panels.forEach(p => p.setParentOptionId(this.item.id));
-    });
-  }
 
   ngOnDestroy(): void {
     clearTimeout(this._openTimer);

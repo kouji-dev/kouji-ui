@@ -1,6 +1,5 @@
 import {
   Directive,
-  ElementRef,
   inject,
   input,
 } from '@angular/core';
@@ -14,7 +13,7 @@ import type { KjAlign, KjSide } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
 import { KjListNavigator } from '../primitives/list';
-import { KJ_CASCADE_SELECT } from './cascade-select.context';
+import { KjCascadeSelect } from './cascade-select-root';
 
 /**
  * Root panel for a Cascade Select. Composes:
@@ -61,9 +60,8 @@ import { KJ_CASCADE_SELECT } from './cascade-select.context';
   },
 })
 export class KjCascadeSelectPanel {
-  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  /** @internal — root cascade-select context (sub-panel state). */
-  private readonly ctx = inject(KJ_CASCADE_SELECT);
+  /** @internal — root directive (typed). Owns sub-panel state + option lookup. */
+  private readonly root = inject(KjCascadeSelect);
   /** @internal — generic list navigator composed via `hostDirectives`. */
   private readonly nav = inject(KjListNavigator);
 
@@ -89,20 +87,19 @@ export class KjCascadeSelectPanel {
         e.preventDefault();
         const activeId = this.nav.activeId();
         if (!activeId) return;
-        const optEl = this.el.nativeElement.querySelector<HTMLElement>(`#${CSS.escape(activeId)}`);
-        const ownerId = optEl?.getAttribute('data-owner-option-id');
-        if (ownerId) this.ctx.openSubPanel(ownerId);
+        const option = this.root.findOption(activeId);
+        if (option?.isBranch()) this.root.openSubPanel(option.item.id);
         return;
       }
       case 'Escape':
         e.preventDefault();
         e.stopPropagation();
-        this.ctx.hide();
-        this.ctx.closeAll();
+        this.root.hide();
+        this.root.closeAll();
         return;
       case 'Tab':
-        this.ctx.hide();
-        this.ctx.closeAll();
+        this.root.hide();
+        this.root.closeAll();
         return;
     }
   }
