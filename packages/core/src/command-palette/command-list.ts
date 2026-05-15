@@ -1,5 +1,5 @@
 import { Directive, inject } from '@angular/core';
-import { KJ_COMMAND_PALETTE } from './command-palette.context';
+import { KjCommandPalette } from './command-palette';
 
 /**
  * Listbox panel for the command palette. Role-only — keyboard nav
@@ -21,5 +21,5 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
 })
 export class KjCommandList {
   /** @internal — for the [id] host binding. */
-  protected readonly palette = inject(KJ_COMMAND_PALETTE);
+  protected readonly palette = inject(KjCommandPalette);
 }

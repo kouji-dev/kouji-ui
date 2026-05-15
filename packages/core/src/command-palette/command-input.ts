@@ -7,7 +7,7 @@ import {
   inject,
 } from '@angular/core';
 import { KjListNavigator } from '../primitives/list';
-import { KJ_COMMAND_PALETTE } from './command-palette.context';
+import { KjCommandPalette } from './command-palette';
 
 /**
  * Search input inside the command palette. Composes `KjListNavigator`
@@ -43,7 +43,7 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
   },
 })
 export class KjCommandInput implements OnInit, OnDestroy {
-  protected readonly palette = inject(KJ_COMMAND_PALETTE);
+  protected readonly palette = inject(KjCommandPalette);
   private readonly nav = inject(KjListNavigator);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
 

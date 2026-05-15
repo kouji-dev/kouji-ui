@@ -16,7 +16,7 @@ import {
 } from '../primitives/overlay/tokens';
 import { onFocusOrInput } from '../primitives/overlay/strategies/trigger-event/on-focus-or-input';
 import { KjListNavigator } from '../primitives/list';
-import { KJ_COMBOBOX } from './combobox.context';
+import { KjCombobox } from './combobox-root';
 
 /**
  * Decorates a native `<input>` to act as the combobox trigger. Composes the
@@ -71,7 +71,7 @@ import { KJ_COMBOBOX } from './combobox.context';
 })
 export class KjComboboxInput implements OnInit, OnDestroy {
   /** @internal */
-  readonly ctx = inject(KJ_COMBOBOX);
+  readonly ctx = inject(KjCombobox);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly nav = inject(KjListNavigator);
 

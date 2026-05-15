@@ -7,7 +7,6 @@ import {
   input,
   model,
   signal,
-  untracked,
 } from '@angular/core';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
@@ -77,20 +76,11 @@ export class KjSelect implements KjListNavigatorConfig {
   readonly items = contentChildren(KjListItem, { descendants: true });
 
   constructor() {
-    // Push compareBy + mode into the selection model.
-    effect(() => this.selection.setCompareBy(this.kjCompareBy() as KjCompareFn<unknown>));
+    // Selection model storage IS the kjSelectValue model() — no bridging.
+    this.selection.bindValue(this.kjSelectValue as never);
+    // Mode follows the kjMultiple flag; compareBy follows kjCompareBy.
     effect(() => this.selection.setMode(this._multiple() ? 'multi' : 'single'));
-
-    // Bridge: external model() <-> selection model. Use untracked
-    // to avoid feedback loops.
-    effect(() => {
-      const external = this.kjSelectValue();
-      untracked(() => this.selection.setValue(external as never));
-    });
-    effect(() => {
-      const internal = this.selection.value();
-      untracked(() => this.kjSelectValue.set(internal as unknown));
-    });
+    effect(() => this.selection.setCompareBy(this.kjCompareBy() as KjCompareFn<unknown>));
   }
 
   /** True iff `target` is currently selected. */

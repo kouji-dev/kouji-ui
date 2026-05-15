@@ -1,6 +1,6 @@
 import { computed, Directive, inject } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
-import { KJ_COMBOBOX } from './combobox.context';
+import { KjCombobox } from './combobox-root';
 
 /**
  * One option inside the combobox listbox. Composes `KjListItem` for
@@ -32,7 +32,7 @@ import { KJ_COMBOBOX } from './combobox.context';
 })
 export class KjComboboxOption {
   private readonly item = injectListItem<unknown>();
-  private readonly combobox = inject(KJ_COMBOBOX);
+  private readonly combobox = inject(KjCombobox);
 
   /** Whether this option is the currently active (aria-activedescendant) item. */
   readonly isActive = computed(() =>

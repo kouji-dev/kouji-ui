@@ -1,7 +1,6 @@
-import { Directive, computed, contentChildren } from '@angular/core';
+import { Directive, computed, contentChildren, inject } from '@angular/core';
 import { KjListItem } from '../primitives/list';
-import { KJ_COMMAND_PALETTE } from './command-palette.context';
-import { inject } from '@angular/core';
+import { KjCommandPalette } from './command-palette';
 
 let _groupIdCounter = 0;
 
@@ -26,7 +25,7 @@ let _groupIdCounter = 0;
   },
 })
 export class KjCommandGroup {
-  private readonly ctx = inject(KJ_COMMAND_PALETTE);
+  private readonly ctx = inject(KjCommandPalette);
 
   /** All `KjListItem` children directly under this group. */
   private readonly groupItems = contentChildren(KjListItem, { descendants: true });

@@ -20,11 +20,12 @@ import {
   type KjFilterFn,
   type KjListNavigatorConfig,
 } from '../primitives/list';
-import {
-  KJ_COMMAND_PALETTE,
-  nextCommandListId,
-  type KjCommandPaletteContext,
-} from './command-palette.context';
+
+let _listIdCounter = 0;
+/** Allocate a stable command list id. */
+export function nextCommandListId(): string {
+  return `kj-command-list-${++_listIdCounter}`;
+}
 
 /** Payload for the `kjActivate` output. */
 export interface KjCommandActivateEvent {
@@ -35,8 +36,7 @@ export interface KjCommandActivateEvent {
 /**
  * Root state container for the command palette. Provides
  * KJ_LIST_NAVIGATOR_CONFIG (items via contentChildren), KjFilterableList,
- * and KjTypeAhead. Keeps the KjCommandPaletteContext shape so child
- * directives need no API changes.
+ * and KjTypeAhead. Children inject `KjCommandPalette` directly.
  *
  * @doc
  * @doc-example Inline
@@ -59,13 +59,12 @@ export interface KjCommandActivateEvent {
   standalone: true,
   exportAs: 'kjCommandPalette',
   providers: [
-    { provide: KJ_COMMAND_PALETTE, useExisting: KjCommandPalette },
     { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: KjCommandPalette },
     KjFilterableList,
     KjTypeAhead,
   ],
 })
-export class KjCommandPalette implements KjCommandPaletteContext, KjListNavigatorConfig {
+export class KjCommandPalette implements KjListNavigatorConfig {
   /** Pluggable filter function. */
   readonly kjFilter = input<KjFilterFn | null>(null);
   /** When `false`, internal filtering is skipped (server-side / consumer-controlled). */
@@ -98,6 +97,18 @@ export class KjCommandPalette implements KjCommandPaletteContext, KjListNavigato
   readonly activeValue  = computed(() => this.kjValue());
   readonly loading      = computed(() => this.kjLoading());
 
+  /** Default filter — substring match across haystacks. */
+  private readonly defaultFilter: KjFilterFn = (q, hs) => {
+    if (!q) return 1;
+    const needle = q.toLowerCase();
+    return hs.some(h => h.toLowerCase().includes(needle)) ? 1 : 0;
+  };
+
+  /** Bound source: custom filter when provided, else default. */
+  private readonly resolvedFilter = computed<KjFilterFn>(
+    () => this.kjFilter() ?? this.defaultFilter,
+  );
+
   /** @internal — set by `KjCommandInput`'s lifecycle. */
   private readonly _nav = signal<KjListNavigator | null>(null);
 
@@ -108,16 +119,11 @@ export class KjCommandPalette implements KjCommandPaletteContext, KjListNavigato
   readonly activeId = computed(() => this._nav()?.activeId() ?? null);
 
   constructor() {
-    // Push consumer filter config into the service.
-    effect(() => {
-      const custom = this.kjFilter();
-      if (custom) this.filterSvc.setFilterFn(custom);
-    });
-    effect(() => this.filterSvc.setShouldFilter(this.kjShouldFilter()));
-    effect(() => this.filterSvc.setAutoActivateFirst(this.kjAutoActivateFirst()));
-    effect(() => {
-      const q = this.kjQuery();
-      untracked(() => this.filterSvc.setQuery(q));
+    this.filterSvc.bind({
+      query:             this.kjQuery,
+      filterFn:          this.resolvedFilter,
+      shouldFilter:      this.kjShouldFilter,
+      autoActivateFirst: this.kjAutoActivateFirst,
     });
 
     // Auto-activate first visible item on query change.
@@ -159,7 +165,6 @@ export class KjCommandPalette implements KjCommandPaletteContext, KjListNavigato
       const autoFirst = this.kjAutoActivateFirst();
       if (!autoFirst) return;
       untracked(() => {
-        // Only seed if nothing is active in the navigator yet.
         if (nav.activeId() !== null) return;
         const visible = this.visibleItems();
         if (visible.length > 0) {
@@ -176,8 +181,6 @@ export class KjCommandPalette implements KjCommandPaletteContext, KjListNavigato
 
   activate(value: unknown): void {
     this.kjValue.set(value);
-    // Sync the navigator's active id so aria-activedescendant and
-    // data-active both reflect the activated item.
     const nav = this._nav();
     if (nav) {
       const item = this.items().find(i => i.value() === value);

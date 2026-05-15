@@ -4,7 +4,7 @@ import {
   inject,
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
-import { KJ_COMMAND_PALETTE } from './command-palette.context';
+import { KjCommandPalette } from './command-palette';
 
 /**
  * Individual command item (`role="option"`). Composes `KjListItem` for
@@ -48,7 +48,7 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
 })
 export class KjCommandItem {
   private readonly item = injectListItem<unknown>();
-  private readonly palette = inject(KJ_COMMAND_PALETTE);
+  private readonly palette = inject(KjCommandPalette);
 
   /** Whether this item is the active (highlighted) item. */
   readonly isActive = computed(() =>

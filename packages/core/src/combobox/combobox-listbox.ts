@@ -8,7 +8,7 @@ import {
 import type { KjSide, KjAlign } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
-import { KJ_COMBOBOX } from './combobox.context';
+import { KjCombobox } from './combobox-root';
 
 /**
  * The popup listbox that contains [kjComboboxOption] children. Composes the
@@ -34,7 +34,7 @@ import { KJ_COMBOBOX } from './combobox.context';
 })
 export class KjComboboxListbox {
   /** @internal */
-  readonly ctx = inject(KJ_COMBOBOX);
+  readonly ctx = inject(KjCombobox);
 
   readonly kjSide = input<KjSide>('bottom');
   readonly kjAlign = input<KjAlign>('start');

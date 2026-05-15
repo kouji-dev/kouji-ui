@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal, type WritableSignal } from '@angular/core';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { KjFilterableList } from './filterable-list';
-import { KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
+import { KJ_LIST_NAVIGATOR_CONFIG, type KjFilterFn } from './tokens';
 import type { KjListItem } from './item';
 
 function fakeItem(id: string, label: string, keywords: readonly string[] = []): KjListItem<unknown> {
@@ -25,6 +25,10 @@ function fakeItem(id: string, label: string, keywords: readonly string[] = []): 
 describe('KjFilterableList', () => {
   let items: WritableSignal<readonly KjListItem<unknown>[]>;
   let svc: KjFilterableList;
+  let query: WritableSignal<string>;
+  let filterFn: WritableSignal<KjFilterFn>;
+  let shouldFilter: WritableSignal<boolean>;
+  let autoActivateFirst: WritableSignal<boolean>;
 
   beforeEach(() => {
     items = signal<readonly KjListItem<unknown>[]>([
@@ -32,6 +36,15 @@ describe('KjFilterableList', () => {
       fakeItem('2', 'Banana'),
       fakeItem('3', 'Apricot'),
     ]);
+    query = signal('');
+    filterFn = signal<KjFilterFn>((q, hs) => {
+      if (!q) return 1;
+      const needle = q.toLowerCase();
+      return hs.some(h => h.toLowerCase().includes(needle)) ? 1 : 0;
+    });
+    shouldFilter = signal(true);
+    autoActivateFirst = signal(true);
+
     TestBed.configureTestingModule({
       providers: [
         KjFilterableList,
@@ -39,7 +52,7 @@ describe('KjFilterableList', () => {
       ],
     });
     svc = TestBed.inject(KjFilterableList);
-    // Trigger initial effect run.
+    svc.bind({ query, filterFn, shouldFilter, autoActivateFirst });
     TestBed.flushEffects();
   });
 
@@ -47,14 +60,14 @@ describe('KjFilterableList', () => {
     expect(svc.visibleItems().length).toBe(3);
   });
 
-  it('substring filter narrows results', () => {
-    svc.setQuery('ap');
+  it('substring filter narrows results when query changes', () => {
+    query.set('ap');
     TestBed.flushEffects();
     expect(svc.visibleItems().map(i => i.id)).toEqual(['1', '3']);
   });
 
   it('marks filtered-out items as not visible via setVisible(false)', () => {
-    svc.setQuery('ap');
+    query.set('ap');
     TestBed.flushEffects();
     const all = items();
     expect(all[0].visible()).toBe(true);   // Apple
@@ -64,27 +77,27 @@ describe('KjFilterableList', () => {
 
   it('isEmpty signal flips on no-result query', () => {
     expect(svc.isEmpty()).toBe(false);
-    svc.setQuery('zzz');
+    query.set('zzz');
     TestBed.flushEffects();
     expect(svc.isEmpty()).toBe(true);
   });
 
   it('shouldFilter=false bypasses filter and shows all', () => {
-    svc.setQuery('zzz');
-    svc.setShouldFilter(false);
+    query.set('zzz');
+    shouldFilter.set(false);
     TestBed.flushEffects();
     expect(svc.visibleItems().length).toBe(3);
   });
 
-  it('custom filter fn is applied', () => {
-    svc.setFilterFn((q, hs) => hs.some(h => h.endsWith(q)) ? 1 : 0);
-    svc.setQuery('cot');
+  it('custom filter fn applied when the bound signal updates', () => {
+    filterFn.set((q, hs) => hs.some(h => h.endsWith(q)) ? 1 : 0);
+    query.set('cot');
     TestBed.flushEffects();
     expect(svc.visibleItems().map(i => i.id)).toEqual(['3']);
   });
 
   it('stamps posInSet/setSize on visible items, clears them on hidden items', () => {
-    svc.setQuery('ap');
+    query.set('ap');
     TestBed.flushEffects();
     const all = items();
     expect(all[0].posInSet()).toBe(1);
@@ -94,10 +107,10 @@ describe('KjFilterableList', () => {
   });
 
   it('announcement signal returns "N results" / "No results"', () => {
-    svc.setQuery('ap');
+    query.set('ap');
     TestBed.flushEffects();
     expect(svc.announcement()).toBe('2 results');
-    svc.setQuery('zzz');
+    query.set('zzz');
     TestBed.flushEffects();
     expect(svc.announcement()).toBe('No results');
   });

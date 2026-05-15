@@ -1,10 +1,4 @@
 export * from './combobox-root';
 export * from './combobox-input';
-export * from './combobox-content';
+export * from './combobox-listbox';
 export * from './combobox-option';
-export {
-  KJ_COMBOBOX,
-  kjContainsFilter,
-  kjStartsWithFilter,
-  type KjComboboxContext,
-} from './combobox.context';

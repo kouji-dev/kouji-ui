@@ -1,5 +1,5 @@
 // packages/core/src/primitives/list/selection.ts
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, type WritableSignal } from '@angular/core';
 import type { KjCompareFn, KjListSelectionMode, KjTreeShape } from './tokens';
 
 /**
@@ -11,32 +11,62 @@ import type { KjCompareFn, KjListSelectionMode, KjTreeShape } from './tokens';
  * - `'single'` — replace + close
  * - `'multi'` — flat toggle in array
  * - `'leaf'` — tree-aware multi where only leaves enter `value`
- * - `'cascade'` — tri-state tree selection (toggling a branch cascades
- *   to all leaf descendants; branch state computed as `true`/`false`/`mixed`)
+ * - `'cascade'` — tri-state tree selection
  *
  * Tree modes require a topology provided via {@link setTreeShape}. Without
  * one, `'leaf'` and `'cascade'` fall back to flat `'multi'` behavior.
+ *
+ * **Binding the value** — consumers hand the model a writable signal
+ * (typically a `model()` input) via {@link bindValue}. The model stops
+ * owning storage and reads/writes through the consumer's signal directly,
+ * which removes the need for bridging effects between the consumer's
+ * `kjValue` and the model's value.
  *
  * @doc-category Core/Primitives
  */
 @Injectable()
 export class KjSelectionModel<T = unknown> {
+  /**
+   * Internal storage. Replaced wholesale by {@link bindValue} so the
+   * consumer's writable signal (typically a `model()` input) becomes the
+   * single source of truth. `bindValue` MUST be called from the
+   * consumer's constructor, before any read of `value` / `isSelected` /
+   * etc — otherwise downstream `computed`s would have already subscribed
+   * to the previous (default) signal.
+   */
+  private _value: WritableSignal<T | readonly T[] | null> = signal(null);
   private readonly _mode  = signal<KjListSelectionMode>('single');
-  private readonly _value = signal<T | readonly T[] | null>(null);
   private _compareBy: KjCompareFn<T> = Object.is as KjCompareFn<T>;
   private _treeShape: KjTreeShape<T> | null = null;
 
   /** Current mode. */
   readonly mode  = this._mode.asReadonly();
-  /** Current selection. `single` → `T | null`; multi-style → `readonly T[]`. */
-  readonly value = this._value.asReadonly();
+  /**
+   * Current selection. `single` → `T | null`; multi-style → `readonly T[]`.
+   * Reactive — tracks the bound signal once {@link bindValue} has run.
+   */
+  readonly value: () => T | readonly T[] | null = () => this._value();
+
+  /**
+   * Bind a consumer-owned writable signal as the storage for `value`.
+   * After binding, `toggle()` / `setValue()` write through the consumer's
+   * signal, and reads return its current value. Eliminates the bridging
+   * effects a consumer would otherwise need to mirror its `model()` input
+   * into the model.
+   *
+   * Must run in the consumer's constructor before any downstream
+   * `computed` / `effect` reads `value`/`isSelected`.
+   */
+  bindValue(source: WritableSignal<T | readonly T[] | null>): void {
+    this._value = source;
+  }
 
   /** Switch mode. Tree modes require a `setTreeShape()` call too. */
   setMode(mode: KjListSelectionMode): void {
     this._mode.set(mode);
   }
 
-  /** Replace the current selection value. */
+  /** Replace the current selection value (writes through bound storage). */
   setValue(v: T | readonly T[] | null): void {
     this._value.set(v);
   }

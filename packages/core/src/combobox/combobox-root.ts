@@ -1,15 +1,14 @@
 import {
+  Directive,
   booleanAttribute,
   computed,
   contentChildren,
-  Directive,
   effect,
   inject,
   input,
   model,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import { KjDisabled } from '../primitives';
 import { KjOverlayController } from '../primitives/overlay/controller';
@@ -22,21 +21,28 @@ import {
   type KjFilterFn,
   type KjListNavigatorConfig,
 } from '../primitives/list';
-import {
-  KJ_COMBOBOX,
-  kjContainsFilter,
-  type KjComboboxContext,
-} from './combobox.context';
 
 let _idCounter = 0;
 const nextId = (): string => `kj-combobox-${++_idCounter}`;
+
+/** Default substring filter — case-insensitive contains match. */
+export const kjContainsFilter = (query: string, label: string): boolean => {
+  if (!query) return true;
+  return label.toLowerCase().includes(query.toLowerCase());
+};
+
+/** Case-insensitive prefix match. */
+export const kjStartsWithFilter = (query: string, label: string): boolean => {
+  if (!query) return true;
+  return label.toLowerCase().startsWith(query.toLowerCase());
+};
 
 /**
  * Root combobox / autocomplete container. Provides
  * KJ_LIST_NAVIGATOR_CONFIG via contentChildren(KjListItem),
  * KjSelectionModel (single mode), KjFilterableList, and the shared
- * KjOverlayController. The trigger/input/listbox/option composites
- * read state from this root via DI.
+ * KjOverlayController. Children (`KjComboboxInput`, `KjComboboxListbox`,
+ * `KjComboboxOption`) inject `KjCombobox` directly.
  *
  * Compound shape — pair with [kjComboboxInput], [kjComboboxListbox] and
  * [kjComboboxOption]:
@@ -59,7 +65,6 @@ const nextId = (): string => `kj-combobox-${++_idCounter}`;
   exportAs: 'kjCombobox',
   hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
   providers: [
-    { provide: KJ_COMBOBOX, useExisting: KjCombobox },
     { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: KjCombobox },
     KjSelectionModel,
     KjFilterableList,
@@ -69,7 +74,7 @@ const nextId = (): string => `kj-combobox-${++_idCounter}`;
     '[attr.data-state]': "open() ? 'open' : 'closed'",
   },
 })
-export class KjCombobox implements KjComboboxContext, KjListNavigatorConfig {
+export class KjCombobox implements KjListNavigatorConfig {
   /** The currently selected value. Two-way bindable. */
   readonly kjValue = model<unknown>(null);
 
@@ -112,7 +117,7 @@ export class KjCombobox implements KjComboboxContext, KjListNavigatorConfig {
     () => this.filter.visibleItems() as readonly KjListItem<unknown>[],
   );
 
-  // KjComboboxContext public surface
+  /** Public surface read by children. */
   readonly value         = this.kjValue.asReadonly();
   readonly query         = this.kjQuery.asReadonly();
   readonly open          = this.controller.isOpen;
@@ -126,41 +131,28 @@ export class KjCombobox implements KjComboboxContext, KjListNavigatorConfig {
 
   /** @internal — set by KjComboboxInput's lifecycle. */
   private _nav: KjListNavigator | null = null;
-
-  /** @internal */
   _setNavigator(n: KjListNavigator | null): void { this._nav = n; }
 
   /** Currently active descendant id (or null). */
   readonly activeId = computed(() => this._nav?.activeId() ?? null);
 
+  /** Adapts the consumer `(query, label) => boolean` shape into the
+   *  primitive's `KjFilterFn` shape. Derived; no effect/setter needed. */
+  private readonly adaptedFilter = computed<KjFilterFn>(() => {
+    const userFn = this.kjFilter();
+    return (q, hs) => (hs.some(h => userFn(q, h)) ? 1 : 0);
+  });
+
   constructor() {
     this.selection.setMode('single');
-
-    // Adapt user (query, label) filter into primitive (query, haystacks).
-    effect(() => {
-      const userFn = this.kjFilter();
-      const adapted: KjFilterFn = (q, hs) => (hs.some(h => userFn(q, h)) ? 1 : 0);
-      this.filter.setFilterFn(adapted);
+    this.selection.bindValue(this.kjValue);
+    this.filter.bind({
+      query:             this.kjQuery,
+      filterFn:          this.adaptedFilter,
+      shouldFilter:      this.kjShouldFilter,
+      autoActivateFirst: this.kjAutoActivateFirst,
     });
-    effect(() => this.filter.setShouldFilter(this.kjShouldFilter()));
-    effect(() => this.filter.setAutoActivateFirst(this.kjAutoActivateFirst()));
-    effect(() => {
-      const q = this.kjQuery();
-      untracked(() => {
-        this.filter.setQuery(q);
-        this.kjQueryChange.emit(q);
-      });
-    });
-
-    // Bridge external kjValue <-> selection model.
-    effect(() => {
-      const ext = this.kjValue();
-      untracked(() => this.selection.setValue(ext as never));
-    });
-    effect(() => {
-      const int = this.selection.value();
-      untracked(() => this.kjValue.set(int as unknown));
-    });
+    effect(() => this.kjQueryChange.emit(this.kjQuery()));
   }
 
   setQuery(value: string): void {

@@ -8,10 +8,6 @@ export { KjCommandEmpty } from './command-empty';
 export { KjCommandPaletteDialog } from './command-palette-dialog';
 export { KjCommandPaletteTrigger } from './command-palette-trigger';
 export {
-  KJ_COMMAND_PALETTE,
-  type KjCommandPaletteContext,
-} from './command-palette.context';
-export {
   kjSubstringFilter,
   kjFuzzyFilter,
   stripDiacritics,
