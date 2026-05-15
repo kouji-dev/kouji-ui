@@ -4,6 +4,6 @@ export { KjListItem } from './item';
 // They are commented out until those tasks land to avoid compile errors.
 export { KjListNavigator } from './navigator';
 export { KjSelectionModel } from './selection';
-// export { KjFilterableList } from './filterable-list';
+export { KjFilterableList } from './filterable-list';
 export { KjTypeAhead } from './type-ahead';
-// export { injectListItem, injectSelectionModel, injectFilterableList } from './inject-helpers';
+export { injectListItem, injectSelectionModel, injectFilterableList } from './inject-helpers';
