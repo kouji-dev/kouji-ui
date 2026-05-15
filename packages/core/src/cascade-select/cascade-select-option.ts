@@ -167,6 +167,28 @@ export class KjCascadeSelectOption implements OnDestroy {
   handleMouseLeave(): void {
     if (this.kjDisabled() || !this.isBranch()) return;
     clearTimeout(this._openTimer);
+    this._scheduleClose();
+  }
+
+  /**
+   * @internal Called by `KjCascadeSelectSubPanel` when the cursor enters
+   * the sub-panel. The option's `mouseleave` fires the moment the cursor
+   * crosses out of the option's bounding box — including the case where
+   * the cursor moves *into* the adjacent sub-panel. Without this bridge,
+   * the close timer kept ticking and dismissed an actively-hovered
+   * sub-panel after `subPanelCloseDelayMs`.
+   */
+  _cancelCloseTimer(): void {
+    clearTimeout(this._closeTimer);
+    this._closeTimer = undefined;
+  }
+
+  /**
+   * @internal Called by `KjCascadeSelectSubPanel` when the cursor leaves
+   * the sub-panel (to anywhere except back into the parent option).
+   * Restarts the same close timer the option's own `mouseleave` would.
+   */
+  _scheduleClose(): void {
     const delay = this.ctx.subPanelCloseDelayMs();
     this._closeTimer = setTimeout(() => {
       if (!this.subPanelOpen()) return;

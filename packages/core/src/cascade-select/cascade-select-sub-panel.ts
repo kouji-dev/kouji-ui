@@ -57,6 +57,8 @@ import { KjCascadeSelectOption } from './cascade-select-option';
     '[attr.aria-labelledby]': 'ownerOptionId()',
     '(keydown)': 'onKeydown($event)',
     '(click)': '$event.stopPropagation()',
+    '(mouseenter)': 'parentOption?._cancelCloseTimer()',
+    '(mouseleave)': 'parentOption?._scheduleClose()',
   },
 })
 export class KjCascadeSelectSubPanel {
@@ -70,8 +72,9 @@ export class KjCascadeSelectSubPanel {
    * injector — `[kjCascadeSelectSubPanel]` is always declared as a
    * content child of `[kjCascadeSelectOption]`, so Angular walks the
    * host hierarchy and finds it without an explicit registration call.
+   * Not `private` because the host hover bindings reference it.
    */
-  private readonly parentOption = inject(KjCascadeSelectOption, { optional: true });
+  readonly parentOption = inject(KjCascadeSelectOption, { optional: true });
 
   /**
    * Override the parent-option id for `aria-labelledby` (rare —
