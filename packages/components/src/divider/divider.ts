@@ -45,17 +45,49 @@ import {
  * <kj-divider [kjStructural]="true">OR</kj-divider>
  * ```
  * @doc-example Default
+ *   A horizontal rule between two short text blocks.
  *   @doc-file divider.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common divider usages — structural separator,
+ *   labelled rule, and vertical divider inside a flex row.
+ *   @doc-file divider.usage.example.ts
  * @doc-example Vertical
+ *   `kjOrientation="vertical"` for inline separators inside a flex strip.
  *   @doc-file divider.vertical.example.ts
  * @doc-example With content
+ *   A short label nestled into the rule — "OR", "AND THEN", section breaks.
  *   @doc-file divider.with-content.example.ts
  * @doc-example Variants
+ *   Line styles — `solid` / `dashed` / `dotted`.
  *   @doc-file divider.variants.example.ts
  * @doc-example Sizes
+ *   `sm` / `md` / `lg` — drives both thickness and surrounding spacing.
  *   @doc-file divider.sizes.example.ts
  * @doc-example Structural
+ *   `[kjStructural]="true"` exposes `role="separator"` for AT.
  *   @doc-file divider.structural.example.ts
+ *
+ * @doc-aria
+ *   role="separator"  — Reflected on the rule when `[kjStructural]="true"`
+ *   aria-hidden       — Reflected `"true"` when decorative (the default)
+ *   data-orientation  — Mirrors the resolved orientation for theme/scope hooks
+ *   data-with-content — Mirrors whether a label is projected
+ *
+ * @doc-css-var
+ *   --kj-divider-color     — Rule color. Defaults to --kj-border-default with a fg-default fallback mix.
+ *   --kj-divider-thickness — Line thickness. `sm` keeps 1px; `lg` bumps to 2px.
+ *   --kj-divider-spacing   — Margin around the rule along its block axis (or inline for vertical).
+ *   --kj-divider-gap       — Gap between the projected label and the surrounding rule segments.
+ *
+ * @doc-a11y
+ *   When `kjStructural` is `true`, the rule announces as a structural break
+ *   between regions (`role="separator"`); when false (default), it is fully
+ *   decorative (`aria-hidden="true"`). The wrapper auto-elects `<hr>` for
+ *   rule-only and `<div>` for with-content (since `<hr>` is void and cannot
+ *   host a label).
+ *
+ * @doc-related typography,card,list
+ *
  * @doc-category Library/Layout/Divider
  * @doc
  * @doc-name divider

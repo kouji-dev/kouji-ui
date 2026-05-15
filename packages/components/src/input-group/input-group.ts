@@ -25,15 +25,55 @@ import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
  * </kj-input-group>
  * ```
  * @doc-example Default
+ *   Currency prefix and decimal suffix flanking a text input.
  *   @doc-file input-group.example.ts
+ * @doc-example Usage
+ *   Common input-group shapes — icon prefix, button suffix, and URL slug.
+ *   @doc-file input-group.usage.example.ts
  * @doc-example With icon
+ *   Decorative icon addon for search and similar affordances.
  *   @doc-file input-group.icon.example.ts
  * @doc-example With button
+ *   Inline action button as a suffix (copy, submit, generate, etc.).
  *   @doc-file input-group.button.example.ts
  * @doc-example URL slug
+ *   Static base URL prefix paired with an editable slug.
  *   @doc-file input-group.url.example.ts
  * @doc-example Variants
+ *   Theme variants forwarded to the composed `KjInputGroup` directive.
  *   @doc-file input-group.variants.example.ts
+ *
+ * @doc-keyboard
+ *   Tab — Moves focus to the inner input. Addons are skipped unless they project a focusable child.
+ *
+ * @doc-aria
+ *   aria-hidden     — Set [kjAriaHidden]="true" on decorative addons (icons, currency symbols, units)
+ *   data-position   — Mirrors the addon's resolved "prefix" / "suffix" position
+ *   data-disabled   — Mirrors group-level [kjDisabled] for theme CSS
+ *
+ * @doc-touch
+ *   Addons inherit the group's height — keep size ≥ `md` so the inline input
+ *   stays at or above the 44 px target when it is the primary touch surface.
+ *
+ * @doc-a11y
+ *   Decorative addons (icons, symbols) must use `[kjAriaHidden]="true"` so AT
+ *   does not announce them ahead of the input value. Action addons that wrap a
+ *   real `<button>` or `<a>` keep their native semantics; the group never
+ *   inserts an extra `role`.
+ *
+ * @doc-related input,field,button
+ *
+ * @doc-css-var
+ *   --kj-input-group-border-color — Border color shared across input and addons.
+ *   --kj-input-group-border-width — Border thickness. Inherits --kj-border.
+ *   --kj-input-group-radius       — Outer corner radius of the group. Inherits --kj-radius-field.
+ *   --kj-input-group-addon-bg     — Background fill for prefix / suffix addons.
+ *   --kj-input-group-addon-fg     — Foreground color inside addons.
+ *   --kj-input-group-addon-font   — Font family used inside addons.
+ *   --kj-input-group-addon-size   — Font size used inside addons.
+ *   --kj-input-group-padding-x    — Horizontal padding inside addons.
+ *   --kj-input-group-padding-y    — Vertical padding inside addons.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name input-group

@@ -102,6 +102,7 @@
             "styles": [
               "packages/themes/src/index.css",
               "packages/core/src/primitives/overlay/overlay.css",
+              "packages/core/src/typography/prose.css",
               "apps/docs/src/styles.css",
               "packages/core/src/icon/icon.css",
               "packages/components/src/popover/popover.css",
@@ -140,7 +141,7 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "10kB",
-                  "maximumError": "16kB"
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"

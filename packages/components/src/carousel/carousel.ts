@@ -61,15 +61,62 @@ import type {
  * ```
  *
  * @doc-example Default
+ *   The default playground — four slides with manual prev / next controls.
  *   @doc-file carousel.example.ts
+ * @doc-example Usage
+ *   The common shape — bound active slide, prev / next, and indicator dots.
+ *   Use this as the copy-paste starting point.
+ *   @doc-file carousel.usage.example.ts
  * @doc-example With indicators
+ *   Add `<kj-carousel-indicators>` to expose a dot list under the viewport.
  *   @doc-file carousel.indicators.example.ts
  * @doc-example Autoplay with pause control
+ *   Pair `<kj-carousel-autoplay>` with `<kj-carousel-pause>` whenever delay > 5s (WCAG 2.2.2).
  *   @doc-file carousel.autoplay.example.ts
  * @doc-example Tabbed carousel
+ *   `kjControlPattern="tabs"` switches indicators to a tablist for editorial decks.
  *   @doc-file carousel.tabs-pattern.example.ts
  * @doc-example Lazy-loaded images
+ *   Render heavy media on-demand using the slide's visibility signal.
  *   @doc-file carousel.lazy-load.example.ts
+ *
+ * @doc-keyboard
+ *   Tab           — Moves focus through prev / next / pause / indicators in DOM order
+ *   Enter|Space   — Activates the focused control
+ *   ArrowLeft|ArrowRight — On indicator tablist mode, moves between tabs (auto-activates the slide)
+ *
+ * @doc-aria
+ *   role               — `region` on the host; `aria-roledescription="carousel"`
+ *   aria-label         — Required; supply via `label` or `labelledby`
+ *   aria-live          — Politely announces slide changes via the wrapper's hidden live region
+ *   aria-current       — `"true"` on the active indicator
+ *   aria-controls      — Prev / next reference the viewport id
+ *
+ * @doc-touch
+ *   Prev / next / pause buttons default to a ≥ 44×44 control diameter
+ *   (`--kj-carousel-control-size`). Indicators are smaller dots — if they're
+ *   the primary nav on mobile, switch to `kjControlPattern="tabs"` for larger
+ *   targets.
+ *
+ * @doc-a11y
+ *   Follows the WAI-ARIA APG Carousel pattern. Autoplay > 5s requires a
+ *   pause control (WCAG 2.2.2 Pause, Stop, Hide) — pair `kj-carousel-autoplay`
+ *   with `kj-carousel-pause` whenever it's present. The wrapper's internal
+ *   `kjLiveRegion` announces user-initiated slide changes politely.
+ *
+ * @doc-related tabs,accordion,list
+ *
+ * @doc-css-var
+ *   --kj-carousel-gap                 — Gap between viewport and controls + between slides.
+ *   --kj-carousel-radius              — Corner radius for viewport and slides. Inherits --kj-radius-box.
+ *   --kj-carousel-control-size        — Diameter of prev/next/pause buttons. Defaults to 44px for WCAG touch.
+ *   --kj-carousel-control-bg          — Background of prev/next/pause buttons.
+ *   --kj-carousel-control-fg          — Foreground (icon) color of prev/next/pause buttons.
+ *   --kj-carousel-indicator-size      — Diameter of the indicator dots.
+ *   --kj-carousel-indicator-active    — Fill color of the active indicator dot.
+ *   --kj-carousel-indicator-idle      — Fill color of idle indicator dots.
+ *   --kj-carousel-slides-per-view     — Number of slides visible at once. Defaults to 1.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name carousel

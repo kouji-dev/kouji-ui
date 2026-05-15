@@ -108,7 +108,10 @@ export const BUILT_IN_THEMES: Record<BuiltInName, DraftTheme> = {
     bg: {
       'bg-body':     '#0c0c0c',
       'bg-surface':  '#141414',
-      'bg-field':    '#141414',
+      // Lighter than both body and surface so a forked draft preserves the
+      // "raised slot" feel of kouji's themed field. Mirrors the live token
+      // in `packages/themes/src/themes/kouji.css`.
+      'bg-field':    '#1f1f1f',
       'bg-elevated': '#1a1a1a',
       'bg-primary':  '#b8f500',
       'bg-accent':   '#b8f500',

@@ -12,7 +12,7 @@
 //   @doc-aria           — list of `<attr> — <notes>` lines
 
 import { stripJsDocLineMarkers } from './examples';
-import type { Callout, CalloutKind, KeyboardEntry, AriaEntry } from './docs-extractor.types';
+import type { Callout, CalloutKind, KeyboardEntry, AriaEntry, CssVarEntry } from './docs-extractor.types';
 
 /**
  * Reads the body of a single-occurrence block tag (`@doc-prereqs`,
@@ -54,8 +54,16 @@ function isCalloutKind(k: string): k is CalloutKind {
 }
 
 /**
+ * Shared separator regex for `<name> <sep> <description>` block lines
+ * (`@doc-keyboard`, `@doc-aria`, `@doc-css-var`). Requires whitespace
+ * BEFORE the separator so prefixes such as `--kj-button-bg` are not
+ * eaten by the `--` alternative. Accepts em-dash, en-dash, double
+ * hyphen, single hyphen, or colon.
+ */
+const NAME_DESC_SEP = /^(.+?)[ \t]+(?:—|–|--|-|:)[ \t]+(.+)$/;
+
+/**
  * Parses `@doc-keyboard` as a list of `<keys> — <action>` lines.
- * Accepts em-dash `—`, en-dash `–`, hyphens (`-`, `--`), or `:` as separator.
  * Lines without a separator are skipped.
  */
 export function readKeyboard(jsDocText: string): KeyboardEntry[] {
@@ -63,7 +71,7 @@ export function readKeyboard(jsDocText: string): KeyboardEntry[] {
   if (!body) return [];
   const out: KeyboardEntry[] = [];
   for (const line of body.split('\n')) {
-    const m = line.match(/^(.+?)\s*(?:—|–|--|-|:)\s*(.+)$/);
+    const m = line.match(NAME_DESC_SEP);
     if (!m) continue;
     const keys = m[1].trim();
     const action = m[2].trim();
@@ -82,11 +90,36 @@ export function readAria(jsDocText: string): AriaEntry[] {
   if (!body) return [];
   const out: AriaEntry[] = [];
   for (const line of body.split('\n')) {
-    const split = line.match(/^(.+?)\s*(?:—|–|--|-|:)\s*(.+)$/);
+    const split = line.match(NAME_DESC_SEP);
     if (split) {
       out.push({ attr: split[1].trim(), notes: split[2].trim() });
     } else if (line.trim()) {
       out.push({ attr: line.trim(), notes: '' });
+    }
+  }
+  return out;
+}
+
+/**
+ * Parses `@doc-css-var` as a list of `<--var-name> — <description>` lines.
+ * Same separator rules as `@doc-aria`. Lines missing the leading `--`
+ * still pass through (the renderer prefixes it), so authors may shorten
+ * to just the suffix. Empty bodies return an empty list.
+ */
+export function readCssVars(jsDocText: string): CssVarEntry[] {
+  const body = readBlockTag(jsDocText, 'doc-css-var');
+  if (!body) return [];
+  const out: CssVarEntry[] = [];
+  for (const line of body.split('\n')) {
+    const split = line.match(NAME_DESC_SEP);
+    if (split) {
+      const raw = split[1].trim();
+      const name = raw.startsWith('--') ? raw : `--${raw}`;
+      out.push({ name, description: split[2].trim() });
+    } else if (line.trim()) {
+      const raw = line.trim();
+      const name = raw.startsWith('--') ? raw : `--${raw}`;
+      out.push({ name, description: '' });
     }
   }
   return out;

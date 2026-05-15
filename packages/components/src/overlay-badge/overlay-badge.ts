@@ -46,15 +46,54 @@ import {
  * ```
  *
  * @doc-example Default
+ *   Notification bell with an unread count and an accessible description.
  *   @doc-file overlay-badge.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — counts, presence dots, and
+ *   truncated values. Use this as the copy-paste starting point.
+ *   @doc-file overlay-badge.usage.example.ts
  * @doc-example Dot mode
+ *   `[kjDot]="true"` collapses to a fixed-size pip — for status indicators.
  *   @doc-file overlay-badge.dot.example.ts
  * @doc-example Positions
+ *   `kjPosition="top-end"` / `bottom-start` — each corner is a valid pin point.
  *   @doc-file overlay-badge.positions.example.ts
  * @doc-example On avatar
+ *   Anchor over `<kj-avatar>` for the canonical online / unread pattern.
  *   @doc-file overlay-badge.on-avatar.example.ts
  * @doc-example With description
+ *   `kjDescription` is wired into the anchor's `aria-describedby` chain.
  *   @doc-file overlay-badge.described.example.ts
+ *
+ * @doc-aria
+ *   aria-describedby   — Merged on the anchor; points to the visually-hidden description
+ *   aria-hidden        — Set on the badge content when no description is provided
+ *   data-variant       — Mirrors the resolved variant for theme/scope hooks
+ *   data-size          — Mirrors the resolved size for theme/scope hooks
+ *   data-position      — Mirrors the corner pin point for theme hooks
+ *   data-hidden        — Mirrors the collapsed state on the anchor host
+ *
+ * @doc-touch
+ *   The badge is non-interactive — touch-target rules apply to the *anchor*.
+ *   Pair with `<kj-button kjSize="icon">` (44×44) for icon-only triggers.
+ *
+ * @doc-a11y
+ *   The badge is purely decorative without a `kjDescription`. When a count
+ *   carries meaning ("4 unread notifications"), set `kjDescription` so the
+ *   anchor's accessible description is enriched instead of leaving a stray
+ *   "4" floating in the AT tree. `kjDecorative="true"` opts out entirely.
+ *
+ * @doc-related badge,avatar,button
+ *
+ * @doc-css-var
+ *   --kj-badge-bg            — Badge background fill. Variants override per data-variant.
+ *   --kj-badge-fg            — Badge foreground (label) color.
+ *   --kj-badge-border-color  — Border color. Outline variant sets this.
+ *   --kj-badge-radius        — Corner radius. Inherits --kj-radius-selector.
+ *   --kj-badge-padding-x     — Horizontal padding. Sizes override.
+ *   --kj-badge-padding-y     — Vertical padding.
+ *   --kj-badge-font-size     — Font size. Sizes override.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name overlay-badge

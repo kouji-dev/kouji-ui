@@ -43,15 +43,31 @@ export {
  * @doc-name dialog
  * @doc-is-main
  * @doc-example Default
+ *   The simplest service-launched dialog — open a body component from a button.
  *   @doc-file dialog.default.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common dialog usages — open a confirmation and
+ *   resolve through `afterClosed$`.
+ *   @doc-file dialog.usage.example.ts
  * @doc-example Confirmation
+ *   Yes/no confirmation with a typed result via `KjDialogRef<T, R>`.
  *   @doc-file dialog.confirmation.example.ts
  * @doc-example Scrollable
+ *   Long bodies scroll inside the panel while the header / footer stay pinned.
  *   @doc-file dialog.scrollable.example.ts
  * @doc-example With form
+ *   A reactive form lives inside the panel; submit closes with the value.
  *   @doc-file dialog.with-form.example.ts
  * @doc-example Nested overlays
+ *   Open another dialog from inside a dialog — only the topmost gets Escape.
  *   @doc-file dialog.nested.example.ts
+ *
+ * @doc-css-var
+ *   --kj-bg-elevated  — Panel background fill. Inherited from the theme.
+ *   --kj-radius-box   — Panel corner radius. Inherited from the theme.
+ *   --kj-shadow-lg    — Box shadow under the panel. Inherited from the theme.
+ *   --kj-space-xl     — Default panel padding.
+ *
  * @doc-category Library/Overlay
  */
 @Component({

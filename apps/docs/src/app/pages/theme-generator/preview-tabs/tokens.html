@@ -1,0 +1,66 @@
+<div class="tokens-scene">
+  <header class="tokens-scene__head">
+    <h2 class="tokens-scene__title">your tokens</h2>
+    <p class="tokens-scene__lede">raw values, as exported.</p>
+  </header>
+
+  <section class="tokens-scene__group" aria-labelledby="tokens-scene-bg">
+    <h3 class="tokens-scene__subhead" id="tokens-scene-bg">surfaces &amp; intents</h3>
+    <div class="tokens-scene__grid">
+      @for (c of bgRows(); track c.key) {
+        <div class="tokens-scene__swatch">
+          <span class="tokens-scene__chip" [style.background]="c.value" aria-hidden="true"></span>
+          <div class="tokens-scene__meta">
+            <span class="tokens-scene__key">{{ c.key }}</span>
+            <span class="tokens-scene__val">{{ c.hex.toUpperCase() }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="tokens-scene__group" aria-labelledby="tokens-scene-fg">
+    <h3 class="tokens-scene__subhead" id="tokens-scene-fg">foregrounds</h3>
+    <div class="tokens-scene__grid">
+      @for (c of fgRows(); track c.key) {
+        <div class="tokens-scene__swatch">
+          <span class="tokens-scene__chip" [style.background]="c.value" aria-hidden="true"></span>
+          <div class="tokens-scene__meta">
+            <span class="tokens-scene__key">{{ c.key }}</span>
+            <span class="tokens-scene__val">{{ c.hex.toUpperCase() }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="tokens-scene__group" aria-labelledby="tokens-scene-type">
+    <h3 class="tokens-scene__subhead" id="tokens-scene-type">type scale</h3>
+    <kj-card variant="outline" class="tokens-scene__card">
+      @for (t of typeScale; track t.label) {
+        <div class="tokens-scene__type-row">
+          <span class="tokens-scene__type-sample" [style.fontSize]="t.size">kouji</span>
+          <span class="tokens-scene__type-label">{{ t.label }}</span>
+        </div>
+      }
+    </kj-card>
+  </section>
+
+  <section class="tokens-scene__group" aria-labelledby="tokens-scene-shape">
+    <h3 class="tokens-scene__subhead" id="tokens-scene-shape">shape &amp; motion</h3>
+    <div class="tokens-scene__metrics">
+      <div class="tokens-scene__metric">
+        <span class="tokens-scene__metric-label">radius</span>
+        <span class="tokens-scene__metric-value">{{ radius() }}</span>
+      </div>
+      <div class="tokens-scene__metric">
+        <span class="tokens-scene__metric-label">border</span>
+        <span class="tokens-scene__metric-value">{{ border() }}</span>
+      </div>
+      <div class="tokens-scene__metric">
+        <span class="tokens-scene__metric-label">transition</span>
+        <span class="tokens-scene__metric-value">{{ motion() }}</span>
+      </div>
+    </div>
+  </section>
+</div>

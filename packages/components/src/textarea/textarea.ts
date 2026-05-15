@@ -69,15 +69,68 @@ function numberWithDefault(def: number) {
  * ```
  *
  * @doc-example Default
+ *   The default playground — a 4-row textarea with placeholder.
  *   @doc-file textarea.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common textarea usages — `[(ngModel)]`,
+ *   placeholder, character counter, and an invalid state with a helper note.
+ *   @doc-file textarea.usage.example.ts
  * @doc-example Auto-resize
+ *   `kjAutoresize="auto"` grows the textarea to fit content between
+ *   `kjMinRows` and `kjMaxRows`.
  *   @doc-file textarea.autoresize.example.ts
  * @doc-example Character counter
+ *   `[kjMaxLength]` + `kjShowCounter` renders a live `n / max` counter wired
+ *   to a polite live region.
  *   @doc-file textarea.character-count.example.ts
  * @doc-example No resize handle
+ *   `kjResize="none"` hides the native drag-to-resize affordance.
  *   @doc-file textarea.no-resize.example.ts
  * @doc-example With Field wrapper
+ *   Compose under `<kj-field>` for label / error / hint association.
  *   @doc-file textarea.with-field.example.ts
+ *
+ * @doc-keyboard
+ *   Tab            — Moves focus into the textarea
+ *   Shift+Tab      — Moves focus to the previous focusable element
+ *   Enter          — Inserts a newline (native textarea behaviour)
+ *   Cmd/Ctrl+A     — Selects all (native)
+ *
+ * @doc-aria
+ *   aria-disabled       — Reflected when `[kjDisabled]="true"`
+ *   aria-invalid        — Reflected when `[kjInvalid]="true"`
+ *   aria-describedby    — Wired to the counter id when the counter is visible
+ *   role="status"       — Internal live region announces threshold crossings
+ *   data-variant        — Mirrors the resolved variant for theme hooks
+ *   data-size           — Mirrors the resolved size for theme hooks
+ *
+ * @doc-touch
+ *   Default `--kj-textarea-min-height` is the WCAG 2.5.5 touch-target floor
+ *   (≥ 44×44). `sm` density retains the floor — only padding shrinks.
+ *
+ * @doc-a11y
+ *   Renders a real `<textarea>` so native focus, form integration, validation,
+ *   and `maxlength` all work without ceremony. The character counter is wired
+ *   via `aria-describedby` plus a polite live region that announces at 20 / 10
+ *   / 0 remaining, never interrupting the typist.
+ *
+ * @doc-related input,field,form
+ *
+ * @doc-css-var
+ *   --kj-textarea-bg              — Background fill. Filled variant retargets to --kj-bg-surface.
+ *   --kj-textarea-fg              — Foreground (text) color.
+ *   --kj-textarea-border-color    — Border color. Focus and invalid states retarget this.
+ *   --kj-textarea-border-style    — Border style. Default solid.
+ *   --kj-textarea-border-width    — Border thickness. Inherits the theme's --kj-border.
+ *   --kj-textarea-radius          — Corner radius. Inherits --kj-radius-field.
+ *   --kj-textarea-padding-x       — Horizontal padding. Sizes override.
+ *   --kj-textarea-padding-y       — Vertical padding. Sizes override.
+ *   --kj-textarea-font            — Font family. Defaults to --kj-font-sans.
+ *   --kj-textarea-font-size       — Font size. Sizes (sm/md/lg) override.
+ *   --kj-textarea-line-height     — Line height for the text content.
+ *   --kj-textarea-placeholder-fg  — Foreground color of the placeholder text.
+ *   --kj-textarea-min-height      — Minimum height. Defaults to the WCAG 2.5.5 touch-target floor.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name textarea

@@ -53,10 +53,7 @@
             (click)="toggleLayer(layer.id)"
           >
             <span class="kj-docs-sidebar__layer-mark" aria-hidden="true">{{ layer.mark }}</span>
-            <span class="kj-docs-sidebar__layer-title">
-              <span class="kj-docs-sidebar__layer-lbl">{{ layer.label }}</span>
-              <span class="kj-docs-sidebar__layer-sub">{{ layer.sub }}</span>
-            </span>
+            <span class="kj-docs-sidebar__layer-lbl">{{ layer.label }}</span>
             <span
               class="kj-docs-sidebar__layer-caret"
               [class.kj-docs-sidebar__layer-caret--open]="isLayerOpen(layer.id)"

@@ -1,13 +1,15 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ElementRef,
+  PLATFORM_ID,
   computed,
   DestroyRef,
   inject,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Location } from '@angular/common';
+import { Location, isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
 import { DocsService, type DocsTrack, type SidebarNode } from '../../services/docs.service';
@@ -23,7 +25,6 @@ interface LayerView {
   /** Single uppercase letter shown in `.layer-mark`. */
   mark: string;
   label: string;
-  sub: string;
   groups: SidebarNode[];
 }
 
@@ -42,8 +43,17 @@ export class DocsSidebarComponent {
   private readonly docs = inject(DocsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly search = inject(SearchService);
+  private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly url = signal<string>(this.router.url);
   protected readonly toggleService = inject(SidebarToggleService);
+
+  /**
+   * Whether we've already scrolled the active leaf into view. Flips on the
+   * first reveal so subsequent in-app navigations (user clicking a sidebar
+   * link) don't yank the scrollbar — the user is already looking at it.
+   */
+  private initialScrollDone = false;
 
   /** Opens the global command palette mounted by `<kj-search>` in `app.ts`. */
   protected openSearch(): void {
@@ -83,8 +93,37 @@ export class DocsSidebarComponent {
         this.url.set(this.router.url);
         this.toggleService.close();
         this.expandActiveLayer();
+        this.scrollActiveIntoViewOnce();
       });
-    this.docs.loadManifest().subscribe(() => this.expandActiveLayer());
+    this.docs.loadManifest().subscribe(() => {
+      this.expandActiveLayer();
+      this.scrollActiveIntoViewOnce();
+    });
+  }
+
+  /**
+   * On the first hand-off (manifest loads or first navigation), scroll the
+   * active leaf into view so deep-linked URLs don't leave the user staring
+   * at a sidebar scrolled to the top. After that single reveal, in-app
+   * clicks rely on the user's own scroll position — they already see the
+   * item they just clicked.
+   *
+   * Uses `block: 'nearest'` so the scroll is the minimum needed to bring the
+   * item into the viewport (no centering jump). Deferred via `setTimeout`
+   * so it runs after Angular commits the routerLinkActive class.
+   */
+  private scrollActiveIntoViewOnce(): void {
+    if (this.initialScrollDone) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    setTimeout(() => {
+      if (this.initialScrollDone) return;
+      const active = this.host.nativeElement.querySelector<HTMLElement>(
+        '.kj-docs-sidebar__nav-item--active',
+      );
+      if (!active) return;
+      active.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+      this.initialScrollDone = true;
+    }, 0);
   }
 
   protected toggleLayer(id: string): void {
@@ -132,12 +171,16 @@ export class DocsSidebarComponent {
   }
 
   private buildLayers(tracks: DocsTrack[]): LayerView[] {
-    return tracks.map(t => ({
-      id: t.id,
-      mark: t.id.charAt(0).toUpperCase(),
-      label: t.id === 'headless' ? 'headless' : 'components',
-      sub: t.id === 'headless' ? 'directives + services' : 'ready to use',
-      groups: t.tree,
-    }));
+    // Stable order, components first. Most visitors land here for the
+    // themed library; headless directives are a secondary track.
+    const order: Record<string, number> = { components: 0, headless: 1 };
+    return [...tracks]
+      .sort((a, b) => (order[a.id] ?? 99) - (order[b.id] ?? 99))
+      .map(t => ({
+        id: t.id,
+        mark: t.id.charAt(0).toUpperCase(),
+        label: t.id === 'headless' ? 'headless' : 'components',
+        groups: t.tree,
+      }));
   }
 }

@@ -159,6 +159,13 @@ export class ThemeGeneratorComponent {
   });
 
   constructor() {
+    // When the route re-mounts (user came back from /docs), re-extract the
+    // draft from the live theme CSS if the user hasn't edited anything.
+    // The ThemeDraftService singleton survives navigation, so without this
+    // refresh the draft would stay frozen on the snapshot it had when the
+    // generator was first opened — even after the user changed the site
+    // theme in between.
+    this.draftService.refreshFromActiveThemeIfClean();
     this.url.startSync();
     this.destroyRef.onDestroy(() => {
       this.document.getElementById(STYLE_TAG_ID)?.remove();

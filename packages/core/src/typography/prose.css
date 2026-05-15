@@ -295,11 +295,18 @@
     white-space: nowrap;
   }
 
+  /* Multi-line clamp. Modern `attr(data-truncate type(<number>))` works in
+     Chromium 133+ but doesn't ship in every WebKit-based engine yet, so
+     enumerate the common counts (2..6) explicitly — covers card / list
+     description copy without needing engine fallback gymnastics. */
   [data-truncate]:not([data-truncate='1']) {
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: attr(data-truncate type(<number>), 2);
     display: -webkit-box;
-    line-clamp: attr(data-truncate type(<number>), 2);
+    -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  [data-truncate='2'] { -webkit-line-clamp: 2; line-clamp: 2; }
+  [data-truncate='3'] { -webkit-line-clamp: 3; line-clamp: 3; }
+  [data-truncate='4'] { -webkit-line-clamp: 4; line-clamp: 4; }
+  [data-truncate='5'] { -webkit-line-clamp: 5; line-clamp: 5; }
+  [data-truncate='6'] { -webkit-line-clamp: 6; line-clamp: 6; }
 }

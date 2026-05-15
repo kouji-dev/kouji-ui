@@ -154,6 +154,21 @@ export interface AriaEntry {
   notes: string;
 }
 
+/**
+ * A `@doc-css-var` entry — one line, CSS custom property name + description.
+ *
+ * Authored as `--kj-button-bg — background color of the button` (em-dash,
+ * en-dash, double-hyphen, single-hyphen, or `:` accepted as separator).
+ * Listed in the API tab so consumers know which vars they can override
+ * at any scope to restyle the component.
+ */
+export interface CssVarEntry {
+  /** Custom property name including the leading `--`, e.g. `--kj-button-bg`. */
+  name: string;
+  /** Short prose explaining what the var controls. */
+  description: string;
+}
+
 export interface DocItem {
   /** Stable id within a manifest. Built from `<pkg>:<filePath>:<symbol>`. */
   id: string;
@@ -195,6 +210,8 @@ export interface DocItem {
   keyboard?: KeyboardEntry[];
   /** `@doc-aria` — ARIA attributes the directive/component manages. */
   aria?: AriaEntry[];
+  /** `@doc-css-var` — CSS custom properties consumers can override. */
+  cssVars?: CssVarEntry[];
   /** `@doc-touch` — single-line touch-target compliance note. */
   touchTarget?: string;
   /** `@doc-a11y` — free-form a11y prose (markdown). */

@@ -33,6 +33,7 @@ import { KjAriaLabelledBy, KjVisuallyHidden } from '@kouji-ui/core';
 import { ClipboardService } from '../../services/clipboard.service';
 import { AVAILABLE_THEMES, Theme, ThemeService } from '../../services/theme.service';
 import { DocsService } from '../../services/docs.service';
+import { KjThemeFigure } from './theme-figures';
 import corePackage from '../../../../../../packages/core/package.json';
 
 /** Theme metadata for the chip grid — keyed by the `data-theme` attribute. */
@@ -128,6 +129,7 @@ const FAQ_DATA: ReadonlyArray<{ value: string; q: string; a: string }> = [
     KjTabPanelComponent,
     KjTabsComponent,
     KjTagComponent,
+    KjThemeFigure,
     KjToggleComponent,
     KjVisuallyHidden,
   ],

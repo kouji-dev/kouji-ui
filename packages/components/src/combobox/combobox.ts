@@ -24,15 +24,65 @@ import {
  * set (e.g. a tags input).
  *
  * @doc-example Default — country picker
+ *   Country picker with built-in synchronous substring filtering.
  *   @doc-file combobox.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common combobox usages — sync filtering,
+ *   placeholder, value binding, and disabled.
+ *   @doc-file combobox.usage.example.ts
  * @doc-example Async search
+ *   Consumer-driven filtering via `(queryChange)` for remote results.
  *   @doc-file combobox.async.example.ts
  * @doc-example Free-text values
+ *   `[freeText]="true"` accepts arbitrary typed input not in the option set.
  *   @doc-file combobox.free-text.example.ts
  * @doc-example Empty state
+ *   `<kj-combobox-empty>` slot for the "no matches" message.
  *   @doc-file combobox.empty-state.example.ts
  * @doc-example With icons
+ *   Each option projects a leading icon next to the label text.
  *   @doc-file combobox.with-icons.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowDown        — Opens the listbox; moves to the next option when open
+ *   ArrowUp          — Moves to the previous option (wraps at the top)
+ *   Home|End         — Jumps to the first / last visible option
+ *   Enter            — Selects the active option (or commits the typed value when `freeText`)
+ *   Escape           — Closes the listbox and clears the active option
+ *   Tab              — Closes the listbox and continues focus
+ *   Printable keys   — Filter the listbox in real-time
+ *
+ * @doc-aria
+ *   role="combobox"    — On the input (via `[kjComboboxInput]`)
+ *   aria-haspopup      — "listbox" on the input
+ *   aria-expanded      — Reflects open / closed state
+ *   aria-controls      — Links the input to the listbox id
+ *   aria-activedescendant — Tracks the currently-active option without moving DOM focus
+ *   aria-busy          — Reflected on the input when `[loading]="true"`
+ *   role="option"      — On each `<kj-combobox-option>`
+ *   aria-selected      — Mirrors which option matches the committed value
+ *
+ * @doc-css-var
+ *   --kj-bg-field         — Input background. Inherited from the theme.
+ *   --kj-border-default   — Input and listbox border color.
+ *   --kj-bg-elevated      — Listbox panel background.
+ *   --kj-radius-field     — Input and listbox corner radius.
+ *
+ * @doc-touch
+ *   The input grows with its container — pair with a `lg` size from your form
+ *   row for ≥ 44px touch height. Options reach 44px via padding plus the
+ *   inline-text-link exception inside the listbox.
+ *
+ * @doc-a11y
+ *   The combobox follows the WAI-ARIA Combobox + Listbox pattern. The input
+ *   keeps focus; the active option is tracked via `aria-activedescendant`
+ *   without moving DOM focus into the listbox. The listbox auto-mounts to
+ *   `document.body` to escape clipping and re-anchors to the input. The
+ *   `<kj-combobox-empty>` slot uses `role="status"` with `aria-live="polite"`
+ *   so screen readers announce the no-results state.
+ *
+ * @doc-related select,command-palette,field
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name combobox

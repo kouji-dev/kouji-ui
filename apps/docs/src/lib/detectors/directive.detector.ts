@@ -6,7 +6,7 @@ import {
   getDocFiles, getDocThemes, getDocExamples,
   deriveExampleSlug, deriveExampleBucket, getJsDocBlock,
 } from '../examples';
-import { readBlockTag, readCallouts, readKeyboard, readAria } from '../doc-blocks';
+import { readBlockTag, readCallouts, readKeyboard, readAria, readCssVars } from '../doc-blocks';
 import type {
   DocItem,
   InputDef,
@@ -73,6 +73,7 @@ export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
     const callouts   = jsDoc ? readCallouts(jsDoc) : [];
     const keyboard   = jsDoc ? readKeyboard(jsDoc) : [];
     const aria       = jsDoc ? readAria(jsDoc)     : [];
+    const cssVars    = jsDoc ? readCssVars(jsDoc)  : [];
 
     items.push({
       id: makeItemId(pkg, filePath, className),
@@ -115,6 +116,7 @@ export function detectDirectives(file: ParsedFile, pkg: SourcePkg): DocItem[] {
       ...(callouts.length ? { callouts }              : {}),
       ...(keyboard.length ? { keyboard }              : {}),
       ...(aria.length     ? { aria }                  : {}),
+      ...(cssVars.length  ? { cssVars }               : {}),
       ...(tags.importOverride ? { importOverride: tags.importOverride } : {}),
       ...(tags.touchTarget    ? { touchTarget:    tags.touchTarget    } : {}),
       ...(tags.related.length ? { related:        tags.related        } : {}),

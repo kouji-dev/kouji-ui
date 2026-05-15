@@ -193,6 +193,13 @@ app-home {
   gap: var(--kj-space-md);
   margin-top: var(--kj-space-2xl);
   align-items: center;
+  /* Landing hero is the one place the brutalist button shadow lives. Only
+     `kj-button[data-variant="default"]` reads these vars (see button.css);
+     outline / ghost CTAs stay flat. Values intentionally hardcoded so the
+     shadow keeps its kouji aesthetic regardless of the active theme. */
+  --kj-button-shadow:        6px 6px 0 #2a2a2a;
+  --kj-button-shadow-hover:  0 0 0 1.5px #2a2a2a;
+  --kj-button-shadow-active: 0 0 0 1.5px #2a2a2a;
 }
 /* `kj-button` host is display:contents — wrap router-link <a> in this
    anchor to keep the focus ring on the inner native <button>. */
@@ -200,6 +207,110 @@ app-home {
   display: inline-flex;
   text-decoration: none;
   color: inherit;
+}
+
+/* ── Hero 2-col + theme-figure ───────────────────────────
+   Mirrors design-revamp/kouji-ui-v2/app.css: left wordmark/tagline,
+   right per-theme figure container. Stacks under 880px.
+   Wordmark shrinks when 2-col so it never overruns the left track. */
+.kj-home__hero-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 360px);
+  gap: 40px;
+  align-items: center;
+  margin-top: 4px;
+}
+.kj-home__hero-left { min-width: 0; }
+.kj-home__hero-figure-col { min-width: 0; }
+@media (min-width: 880px) {
+  .kj-home__hero-left .kj-home__wordmark {
+    font-size: clamp(64px, 12vw, 180px);
+  }
+}
+@media (max-width: 880px) {
+  .kj-home__hero-layout { grid-template-columns: 1fr; gap: 24px; }
+  .kj-home__hero-figure-col { max-width: 360px; margin: 8px auto 0; }
+}
+
+/* Theme-figure container — exact match to design `.theme-figure`. */
+.theme-figure {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-box-lg, var(--kj-radius-box));
+  overflow: hidden;
+  box-shadow: var(--kj-button-shadow, var(--kj-shadow-md));
+  background-color: var(--kj-bg-surface);
+  display: block;
+}
+.figure-svg { display: block; width: 100%; height: 100%; }
+
+/* Per-figure ambient animations — ported 1:1 from design app.css. */
+.fig-pulse { animation: fig-pulse 2.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes fig-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+
+.fig-spin-slow   { animation: fig-spin 28s linear infinite; transform-origin: 200px 200px; transform-box: view-box; }
+.fig-spin-slower { animation: fig-spin 50s linear infinite reverse; transform-origin: 200px 200px; transform-box: view-box; }
+@keyframes fig-spin { to { transform: rotate(360deg); } }
+
+.fig-breathe { animation: fig-breathe 4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes fig-breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+.fig-enso-draw { stroke-dashoffset: 680; animation: fig-enso 1.6s cubic-bezier(.4,0,.2,1) forwards; }
+@keyframes fig-enso { to { stroke-dashoffset: 0; } }
+
+.fig-pulse-slow { animation: fig-pulse-slow 3.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes fig-pulse-slow { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.35);opacity:.7} }
+
+.fig-cyber-shadow { animation: fig-glitch-shadow 4s steps(1) infinite; }
+.fig-cyber-main { animation: fig-glitch-main 4s steps(1) infinite; }
+@keyframes fig-glitch-shadow {
+  0%,92%{transform:translate(8px,0)} 93%,94%{transform:translate(-7px,3px)}
+  95%{transform:translate(14px,-4px)} 96%,100%{transform:translate(8px,0)}
+}
+@keyframes fig-glitch-main {
+  0%,92%{transform:none} 93%{transform:translate(3px,-2px)}
+  94%{transform:translate(-2px,2px)} 95%{transform:translate(0,1px)}
+}
+
+.fig-bar { transform-origin: bottom center; transform-box: fill-box; animation: fig-bar-grow .9s cubic-bezier(.34,1.56,.64,1) backwards; }
+@keyframes fig-bar-grow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+
+.fig-petal-fall { animation: fig-petal 7s linear infinite; transform-box: fill-box; }
+@keyframes fig-petal {
+  0%   { transform: translate(0, 0) rotate(0); opacity: 0; }
+  8%   { opacity: 0.9; }
+  100% { transform: translate(48px, 460px) rotate(540deg); opacity: 0; }
+}
+
+.fig-bauhaus-piece { transform-origin: center; transform-box: fill-box; animation: fig-piece 1s cubic-bezier(.34,1.56,.64,1) backwards; }
+@keyframes fig-piece { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+.fig-dune-sun { animation: fig-dune-sun 12s ease-in-out infinite alternate; }
+@keyframes fig-dune-sun { from{transform:translateY(0)} to{transform:translateY(38px)} }
+
+.fig-mint-sway { animation: fig-sway 5s ease-in-out infinite; transform-origin: 200px 200px; transform-box: view-box; }
+@keyframes fig-sway { 0%,100%{transform:rotate(-2deg)} 50%{transform:rotate(2deg)} }
+
+.fig-firefly { animation: fig-firefly 3.6s ease-in-out infinite; transform-box: fill-box; }
+@keyframes fig-firefly { 0%,100%{opacity:.25;transform:translateY(0)} 50%{opacity:1;transform:translateY(-8px)} }
+
+.fig-aurora-1 { animation: fig-aurora 9s ease-in-out infinite; }
+.fig-aurora-2 { animation: fig-aurora 13s ease-in-out infinite reverse; }
+@keyframes fig-aurora {
+  0%,100% { transform: translateX(-30px) skewX(-2deg); }
+  50%     { transform: translateX(30px) skewX(2deg); }
+}
+
+.fig-cursor { animation: fig-cursor-blink 1s steps(1) infinite; }
+@keyframes fig-cursor-blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-figure *, .theme-figure *::before, .theme-figure *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* ── Theme switcher ──────────────────────────────────────── */

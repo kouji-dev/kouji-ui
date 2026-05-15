@@ -26,7 +26,11 @@
     /* Neutral surfaces (7) */
     --kj-bg-body:        #0c0c0c;
     --kj-bg-surface:     #141414;
-    --kj-bg-field:       #141414;
+    /* Field sits LIGHTER than both `bg-body` and `bg-surface` so an input
+       reads as a distinct interactive slot whether it's on the page body
+       or nested inside a card. Going darker doesn't work here because
+       body is already near-black — fields would just merge into the page. */
+    --kj-bg-field:       #1f1f1f;
     --kj-bg-elevated:    #1a1a1a;
     --kj-bg-overlay:     rgba(0, 0, 0, 0.7);
     --kj-bg-inverse:     #f0ede6;
@@ -94,14 +98,6 @@
     --kj-shadow-md:     0 0 0 1px #1a1a1a;
     --kj-shadow-lg:     0 0 0 2px #1a1a1a;
     --kj-shadow-focus:  0 0 0 2px #c4ff3d;
-
-    /* Brutalist button signature — hard 6px offset block. On hover the
-       offset collapses to a tight ring (matches the design's neo-
-       brutalist "pressed-in" feel: lift the button -2px while removing
-       the cast shadow, so the surface looks flatter against the page). */
-    --kj-button-shadow:        6px 6px 0 #2a2a2a;
-    --kj-button-shadow-hover:  0 0 0 1.5px #2a2a2a;
-    --kj-button-shadow-active: 0 0 0 1.5px #2a2a2a;
   }
 }
 

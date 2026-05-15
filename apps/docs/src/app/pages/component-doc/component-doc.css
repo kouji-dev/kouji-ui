@@ -2,14 +2,12 @@
    Component doc page — full redesign
 
    Layout owned here:
-     .page-with-toc → main column + sticky right rail (kj-page-toc)
+     .page-with-toc → single main column (right TOC removed).
    Visual tokens come from packages/themes via CSS variables.
    ============================================================ */
 
 .page-with-toc {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  display: block;
   min-height: 0;
 }
 
@@ -17,16 +15,8 @@
   padding: var(--kj-space-4xl) 3.5rem var(--kj-space-5xl);
   min-width: 0;
   max-width: 60rem;
+  margin-inline: auto;
   overflow-x: hidden;
-}
-
-.toc-col {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  height: 100dvh;
-  overflow-y: auto;
-  border-left: 1px solid var(--kj-border-default);
 }
 
 /* ── Scrollbar polish ───────────────────────────────────────── */
@@ -270,6 +260,69 @@
   display: block;
 }
 
+/* ── CSS variables (distinct from the api-table) ─────────────
+   Two-column definition list. The var name lives in a monospace
+   token chip with a primary-accented left border; the description
+   sits in a sans-serif right column. No row strokes — just a
+   subtle border between rows so the chips read as the dominant
+   element of each line. */
+.css-var-list {
+  display: grid;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  overflow: hidden;
+  margin: 0 0 var(--kj-space-lg);
+  background: var(--kj-bg-body);
+}
+
+.css-var-row {
+  display: grid;
+  grid-template-columns: minmax(14rem, 22rem) minmax(0, 1fr);
+  gap: var(--kj-space-lg);
+  align-items: baseline;
+  padding: var(--kj-space-md) var(--kj-space-lg);
+  border-bottom: 1px solid var(--kj-border-muted);
+}
+
+.css-var-row:last-child { border-bottom: 0; }
+
+.css-var-row__name {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.css-var-row__name code {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--kj-font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--kj-fg-primary);
+  background: var(--kj-bg-surface);
+  border-left: 3px solid var(--kj-fg-primary);
+  padding: 0.35rem 0.55rem 0.35rem 0.65rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.css-var-row__desc {
+  margin: 0;
+  font-family: var(--kj-font-sans);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--kj-fg-default);
+}
+
+@media (max-width: 720px) {
+  .css-var-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--kj-space-xs);
+  }
+}
+
 .badge-req {
   display: inline-block;
   margin-left: var(--kj-space-sm);
@@ -456,11 +509,6 @@
 .not-found a:hover { text-decoration: underline; }
 
 /* ── Mobile ─────────────────────────────────────────────────── */
-@media (max-width: 960px) {
-  .page-with-toc { grid-template-columns: minmax(0, 1fr); }
-  .toc-col { display: none; }
-}
-
 @media (max-width: 767px) {
   .doc-main {
     padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);

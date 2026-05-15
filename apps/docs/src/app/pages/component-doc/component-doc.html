@@ -1,5 +1,5 @@
 <div class="page-with-toc">
-  <div class="doc-main" kjPageToc #pageToc="kjPageToc">
+  <div class="doc-main">
     @if (page(); as p) {
       <!-- ─────────── Header ─────────── -->
       <header class="doc-header">
@@ -399,7 +399,33 @@
                 </section>
               }
 
-              @if (apiCount() === 0) {
+              @if (m.cssVars?.length) {
+                <section
+                  class="doc-section"
+                  id="css-vars"
+                  data-toc-entry="CSS variables"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">{{ cssVarsSectionNum() }}</span>
+                    <h2>CSS variables</h2>
+                    <a class="anchor" href="#css-vars">#css-vars</a>
+                  </header>
+                  <p class="prose">Override any of these custom properties at any scope (component-level inline style, page-level CSS, or a theme rule) to restyle the component without forking it.</p>
+                  <dl class="css-var-list" aria-label="CSS variables">
+                    @for (cssVar of m.cssVars; track cssVar.name) {
+                      <div class="css-var-row">
+                        <dt class="css-var-row__name">
+                          <code>{{ cssVar.name }}</code>
+                        </dt>
+                        <dd class="css-var-row__desc">{{ cssVar.description || '—' }}</dd>
+                      </div>
+                    }
+                  </dl>
+                </section>
+              }
+
+              @if (apiCount() === 0 && !m.cssVars?.length) {
                 <p class="empty-state">No API surface recorded.</p>
               }
             }
@@ -590,9 +616,5 @@
         <p>Loading…</p>
       </div>
     }
-  </div>
-
-  <div class="toc-col">
-    <kj-page-toc [toc]="pageToc" />
   </div>
 </div>

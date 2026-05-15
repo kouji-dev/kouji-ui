@@ -1,11 +1,11 @@
-@if (entry(); as e) {
+@if (playgroundFile(); as pf) {
   <div class="playground">
     <div class="playground-stage">
       <ng-container #stage />
     </div>
 
     <div class="playground-controls">
-      @for (ctrl of e.controls; track ctrl.input + ctrl.label) {
+      @for (ctrl of pf.controls; track ctrl.name + ctrl.label) {
         @switch (ctrl.kind) {
           @case ('chips') {
             <div class="pg-control">
@@ -26,34 +26,40 @@
           }
           @case ('toggle') {
             <div class="pg-row">
-              <label [attr.for]="'pg-' + ctrl.input">{{ ctrl.label }}</label>
+              <label [attr.for]="'pg-' + ctrl.name">{{ ctrl.label }}</label>
               <kj-toggle
                 appearance="switch"
-                [id]="'pg-' + ctrl.input"
-                [pressed]="isOn(ctrl)"
+                [id]="'pg-' + ctrl.name"
+                [pressed]="toggleOn(ctrl)"
                 [ariaLabel]="ctrl.label"
                 (pressedChange)="toggle(ctrl)"
               ></kj-toggle>
             </div>
           }
           @case ('text') {
-            @if (!iconMode()) {
-              <div class="pg-control">
-                <label class="pg-label" [attr.for]="'pg-slot'">{{ ctrl.label }}</label>
-                <input
-                  class="pg-text"
-                  id="pg-slot"
-                  type="text"
-                  [value]="textValue()"
-                  (input)="setText($any($event.target).value)"
-                />
-              </div>
-            } @else {
-              <div class="pg-control pg-control--ignored">
-                <span class="pg-label">{{ ctrl.label }}</span>
-                <span class="pg-ignored-note">ignored while size=icon</span>
-              </div>
-            }
+            <div class="pg-control">
+              <label class="pg-label" [attr.for]="'pg-' + ctrl.name">{{ ctrl.label }}</label>
+              <kj-input
+                [id]="'pg-' + ctrl.name"
+                type="text"
+                [placeholder]="ctrl.placeholder ?? ''"
+                [ngModel]="$any(getValue(ctrl.name)) ?? ''"
+                (ngModelChange)="setText(ctrl, $any($event))"
+              />
+            </div>
+          }
+          @case ('number') {
+            <div class="pg-control">
+              <label class="pg-label" [attr.for]="'pg-' + ctrl.name">{{ ctrl.label }}</label>
+              <kj-number-input
+                [id]="'pg-' + ctrl.name"
+                [kjValue]="$any(getValue(ctrl.name)) ?? 0"
+                (kjValueChange)="setNumber(ctrl, $event)"
+                [kjMin]="$any(ctrl.min)"
+                [kjMax]="$any(ctrl.max)"
+                [kjStep]="ctrl.step ?? 1"
+              />
+            </div>
           }
         }
       }
@@ -61,21 +67,20 @@
   </div>
 
   <div class="pg-snippet">
-    <button
-      class="pg-copy"
-      type="button"
-      (click)="copy()"
-      [attr.aria-label]="copied() ? 'Copied to clipboard' : 'Copy code snippet'"
-    >
-      @if (copied()) {
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-        copied
-      } @else {
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        copy
-      }
-    </button>
     <pre class="pg-snippet-code"><code>{{ snippet() }}</code></pre>
+    <span class="pg-copy-wrap">
+      <kj-button
+        class="pg-copy-btn"
+        kjVariant="ghost"
+        kjSize="sm"
+        type="button"
+        (click)="copy()"
+        [kjAriaLabel]="copied() ? 'Copied to clipboard' : 'Copy code snippet'"
+      >
+        <span [kjIcon]="copied() ? 'check' : 'copy'" kjIconSize="sm"></span>
+        <span>{{ copied() ? 'copied' : 'copy' }}</span>
+      </kj-button>
+    </span>
   </div>
 } @else {
   <p class="empty-state">Playground not yet wired for this component.</p>

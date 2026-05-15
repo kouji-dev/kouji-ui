@@ -30,13 +30,57 @@ import {
  * @doc-name confirm-popup
  * @doc-is-main
  * @doc-example Default
+ *   The simplest anchored confirmation — a trigger button with a yes/no panel.
  *   @doc-file confirm-popup.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common confirm-popup usages — destructive and
+ *   benign variants with `(kjResult)` handling.
+ *   @doc-file confirm-popup.usage.example.ts
  * @doc-example Destructive
+ *   `[kjDestructive]="true"` tints the action button and announces an `alertdialog`.
  *   @doc-file confirm-popup.destructive.example.ts
  * @doc-example With message
+ *   A descriptive paragraph projected as the panel's accessible description.
  *   @doc-file confirm-popup.with-message.example.ts
  * @doc-example Placement
+ *   Anchor side and offset overrides for tight layouts.
  *   @doc-file confirm-popup.placement.example.ts
+ *
+ * @doc-keyboard
+ *   Enter|Space — Opens the popup from the trigger
+ *   Escape      — Closes the popup, resolves `false`, restores focus to the trigger
+ *   Tab         — Cycles between the cancel and action buttons (focus trap)
+ *   Shift+Tab   — Cycles backward
+ *
+ * @doc-aria
+ *   role           — "alertdialog" when destructive, "dialog" otherwise
+ *   aria-modal     — "true" while open
+ *   aria-labelledby — Wire to the heading id when you project one
+ *   aria-describedby — Auto-wired to the `<kj-confirm-popup-message>` id
+ *   data-state     — Reflects "open" / "closed" for animation hooks
+ *
+ * @doc-css-var
+ *   --kj-confirm-popup-bg            — Panel background fill. Defaults to --kj-bg-elevated.
+ *   --kj-confirm-popup-fg            — Foreground text color. Defaults to --kj-fg-default.
+ *   --kj-confirm-popup-border-color  — Border color around the panel. Defaults to --kj-border-default.
+ *   --kj-confirm-popup-radius        — Corner radius of the panel. Inherits --kj-radius-box.
+ *   --kj-confirm-popup-padding-x     — Horizontal inset of panel content.
+ *   --kj-confirm-popup-padding-y     — Vertical inset of panel content.
+ *   --kj-confirm-popup-shadow        — Box shadow under the floating panel. Defaults to --kj-shadow-md.
+ *
+ * @doc-touch
+ *   The trigger inherits its host button's touch target. The action and cancel
+ *   buttons should use `kj-button` `size="md"` or larger (≥ 44px) per WCAG 2.5.5.
+ *
+ * @doc-a11y
+ *   Built on the WAI-ARIA `alertdialog` pattern. Cancel receives initial focus
+ *   by default (WCAG 3.3.4 *Error Prevention*) — flip via `[kjDefaultFocus]`.
+ *   Focus is trapped inside the panel while open and restored to the trigger
+ *   on dismiss. Outside-clicks and Escape both resolve the popup with `false`,
+ *   so consumers can treat any dismissal as cancellation.
+ *
+ * @doc-related dialog,popover,tooltip
+ *
  * @doc-category Library/Overlay
  */
 @Component({

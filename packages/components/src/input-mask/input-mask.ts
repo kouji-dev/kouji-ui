@@ -23,15 +23,48 @@ import { KjInputMask } from '@kouji-ui/core';
  * ```
  *
  * @doc-example Default
+ *   Phone number mask — anchors the chrome and the `kjMaskMode="unmasked"` default.
  *   @doc-file input-mask.example.ts
+ * @doc-example Usage
+ *   Common mask patterns assembled into one screen — phone, date, and credit card.
+ *   @doc-file input-mask.usage.example.ts
  * @doc-example Credit card
+ *   16-digit mask with grouped quads.
  *   @doc-file input-mask.credit-card.example.ts
  * @doc-example Date
+ *   ISO `YYYY-MM-DD` mask with format-hint announcement for AT.
  *   @doc-file input-mask.date.example.ts
  * @doc-example Validation
+ *   Pairs `kjComplete` with reactive form validators to flag incomplete masks.
  *   @doc-file input-mask.validation.example.ts
  * @doc-example Custom tokens
+ *   Per-instance token map for masks beyond `9` / `A` / `*`.
  *   @doc-file input-mask.custom-tokens.example.ts
+ *
+ * @doc-keyboard
+ *   Tab        — Moves focus into and out of the masked input (native semantics)
+ *   Backspace  — Removes the previous variable slot; static separators are skipped
+ *   Arrow keys — Move the caret across slots; the directive snaps over static chars
+ *
+ * @doc-aria
+ *   aria-invalid    — Reflected when [kjInvalid] is true (via the composed KjInput plumbing)
+ *   aria-describedby— Auto-augmented with the auto-generated format hint unless [kjFormatHint] is empty
+ *   data-mask-mode  — Mirrors [kjMaskMode] ("unmasked" | "masked") for CSS hooks
+ *
+ * @doc-touch
+ *   Height inherits the `kj-input` defaults — `md` is 36 px; use `data-size="lg"`
+ *   for primary touch fields so the slot-tap surface meets WCAG 2.5.5.
+ *
+ * @doc-a11y
+ *   `KjInputMask` auto-generates a screen-reader format hint from the mask
+ *   template (e.g. `'(999) 999-9999'` → "Format: (___) ___-____") and wires
+ *   it through `aria-describedby`. Override or suppress with `[kjFormatHint]`.
+ *   The native `<input>` underneath keeps full focus + caret semantics.
+ *
+ * @doc-related input,field,form,number-input
+ *
+ * @doc-css-var
+ *   --kj-input-mask-height — Explicit height of the masked input. Sizes (sm/lg via data-size) override.
  *
  * @doc-category Library/Data input
  * @doc

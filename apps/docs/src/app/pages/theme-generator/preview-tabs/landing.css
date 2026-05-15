@@ -1,0 +1,53 @@
+.landing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-md);
+  padding: var(--kj-space-md);
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.landing__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kj-space-md);
+}
+
+.landing__caption {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.landing__hero {
+  font-family: var(--kj-font-display, var(--kj-font-sans));
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--kj-fg-default);
+}
+
+.landing__pitch {
+  font: var(--kj-text-base) var(--kj-font-sans);
+  line-height: 1.55;
+  color: var(--kj-fg-default);
+  max-width: 32rem;
+  margin: 0;
+}
+
+.landing__cta {
+  display: flex;
+  gap: var(--kj-space-sm);
+  flex-wrap: wrap;
+  margin: var(--kj-space-sm) 0 var(--kj-space-lg);
+}
+
+.landing__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--kj-space-sm);
+}

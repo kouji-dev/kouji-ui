@@ -180,28 +180,14 @@
   flex-shrink: 0;
 }
 
-.kj-docs-sidebar__layer-title {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.kj-docs-sidebar__layer-lbl {
   flex: 1;
   min-width: 0;
-}
-
-.kj-docs-sidebar__layer-lbl {
   font-size: 13px;
   font-weight: 700;
   color: var(--kj-fg-default);
   text-transform: lowercase;
   letter-spacing: 0;
-}
-
-.kj-docs-sidebar__layer-sub {
-  font-size: 9px;
-  color: var(--kj-fg-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-top: 2px;
 }
 
 .kj-docs-sidebar__layer-caret {

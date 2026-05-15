@@ -27,17 +27,67 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
  * separator is purely decorative and never included in the form value.
  *
  * @doc-example Default
+ *   6-digit OTP with `[(ngModel)]` two-way binding — anchors the chrome.
  *   @doc-file input-otp.example.ts
+ * @doc-example Usage
+ *   Common OTP shapes — reactive form, length 4, masked digits, and a visual
+ *   separator — assembled as a copy-paste starting point.
+ *   @doc-file input-otp.usage.example.ts
  * @doc-example Reactive form
+ *   Wires up `[formControl]` with a `minLength` validator + a submit handler.
  *   @doc-file input-otp.reactive.example.ts
  * @doc-example Lengths
+ *   Common lengths (4 / 6 / 8) side-by-side.
  *   @doc-file input-otp.lengths.example.ts
  * @doc-example Masked
+ *   `[kjMask]="true"` flips cells to `type="password"` for sensitive codes.
  *   @doc-file input-otp.masked.example.ts
  * @doc-example With separator
+ *   `[kjSeparatorAfter]="[2]"` renders a decorative dash between cell groups.
  *   @doc-file input-otp.separator.example.ts
  * @doc-example Auto-submit
+ *   Emits `(kjComplete)` once the code is fully entered — handy for short codes.
  *   @doc-file input-otp.autosubmit.example.ts
+ *
+ * @doc-keyboard
+ *   Digits|Letters — Type to populate the focused cell, advance to the next
+ *   Backspace      — Clears the focused cell and moves focus back
+ *   Arrow left|right — Move focus across cells without altering the value
+ *   Home|End       — Jump to the first / last cell
+ *   Cmd|Ctrl + V   — Paste a code; characters distribute across remaining cells
+ *
+ * @doc-aria
+ *   role="group"     — On the OTP container; labelled by [kjAriaLabel] or the surrounding kj-field
+ *   aria-label       — Bound from [kjAriaLabel] when no kj-field-label is present
+ *   aria-invalid     — Reflected on the group when [kjInvalid] is true (touched-gated)
+ *   aria-disabled    — Reflected on the group when [kjDisabled] is true
+ *   aria-readonly    — Reflected on the group when [kjReadonly] is true
+ *   inputmode        — Set on each cell to "numeric" for digits charset
+ *
+ * @doc-touch
+ *   `--kj-otp-cell-size` defaults to 44 px so each cell already meets WCAG
+ *   2.5.5. The visual separator is `aria-hidden` and never receives focus.
+ *
+ * @doc-a11y
+ *   `KjInputOtp` owns paste distribution, charset filtering, and the live
+ *   announcement on `(kjComplete)`. The widget composes `KjFormControl` (CVA)
+ *   so `[(ngModel)]` and `[formControl]` work out of the box — the full
+ *   concatenated code is the form value; the decorative separator is never
+ *   included.
+ *
+ * @doc-related input,input-mask,field,form
+ *
+ * @doc-css-var
+ *   --kj-otp-cell-size         — Square cell width/height. Default 44px (WCAG 2.5.5 touch target).
+ *   --kj-otp-cell-gap          — Gap between adjacent cells.
+ *   --kj-otp-cell-bg           — Cell background fill.
+ *   --kj-otp-cell-fg           — Cell foreground (digit) color.
+ *   --kj-otp-cell-border-color — Cell border color. Focus and invalid states retarget this.
+ *   --kj-otp-cell-border-width — Cell border thickness. Inherits --kj-border.
+ *   --kj-otp-cell-radius       — Cell corner radius. Inherits --kj-radius-field.
+ *   --kj-otp-cell-font         — Font family inside cells.
+ *   --kj-otp-cell-font-size    — Font size inside cells.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name input-otp

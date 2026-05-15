@@ -6,6 +6,25 @@
 
 @layer kj.reset, kj.base, kj.shared, kj.component;
 
+@layer kj.reset {
+  /**
+   * Theme-scoped resets. Every `[data-theme]` block starts from these so
+   * nesting one theme inside another (e.g. the theme-generator preview
+   * stage rendered inside the docs `data-theme="kouji"` root) doesn't
+   * inherit brutalist defaults. Themes opt back in by declaring the var
+   * in `kj.shared` — kj.shared wins over kj.reset via layer ordering,
+   * regardless of selector specificity.
+   *
+   * Button shadow: defaults to `none`; kouji + bauhaus set their offset
+   * blocks in their own `[data-theme="X"]` declarations.
+   */
+  [data-theme] {
+    --kj-button-shadow:        none;
+    --kj-button-shadow-hover:  none;
+    --kj-button-shadow-active: none;
+  }
+}
+
 @layer kj.base {
   :root {
     /* ── color palette ── */
@@ -123,5 +142,24 @@
        Distinct from --kj-radius-box so a theme can have small box radius
        (`box`) and a larger hero radius (`box-lg`). Defaults to box. */
     --kj-radius-box-lg:   var(--kj-base-radius-3);
+
+    /* ── Icon tokens ────────────────────────────────────────────
+       Map [kjIconColor] semantic tokens to the existing --kj-fg-*
+       palette so colored icons inherit theme tone. [kjIconSize]
+       resolves to em-relative steps so icons scale with surrounding
+       text by default. Themes can override any of these to pin a
+       brand-specific icon palette. */
+    --kj-color-icon-muted:   var(--kj-fg-muted);
+    --kj-color-icon-primary: var(--kj-fg-primary);
+    --kj-color-icon-success: var(--kj-fg-success);
+    --kj-color-icon-warning: var(--kj-fg-warning);
+    --kj-color-icon-danger:  var(--kj-fg-danger);
+    --kj-color-icon-info:    var(--kj-fg-info);
+
+    --kj-icon-size-xs: 0.75em;
+    --kj-icon-size-sm: 0.875em;
+    --kj-icon-size-md: 1em;
+    --kj-icon-size-lg: 1.25em;
+    --kj-icon-size-xl: 1.5em;
   }
 }

@@ -36,13 +36,52 @@ import { KJ_SIZE_PRESET, KJ_KBD_SIZE_PRESET, KjKbd } from '@kouji-ui/core';
  * <kj-kbd kjKbdAriaLabel="Command">⌘</kj-kbd>
  * ```
  * @doc-example Default
+ *   A single keyboard key rendered inline with prose — anchors the chrome.
  *   @doc-file kbd.example.ts
+ * @doc-example Usage
+ *   Common kbd shapes — sizes, glyph keys with aria-labels, and a combo.
+ *   @doc-file kbd.usage.example.ts
  * @doc-example Combo
+ *   Sibling `<kj-kbd>` elements joined by a literal "+" glyph.
  *   @doc-file kbd.combo.example.ts
  * @doc-example Sizes
+ *   `xs` / `sm` / `md` / `lg` — the only library component that goes below `sm`.
  *   @doc-file kbd.sizes.example.ts
  * @doc-example In a tooltip
+ *   Tooltip body wraps a shortcut hint with `<kj-kbd>`.
  *   @doc-file kbd.in-tooltip.example.ts
+ *
+ * @doc-keyboard
+ *   None — kbd is purely visual. The element is non-interactive and does not participate in tab order.
+ *
+ * @doc-aria
+ *   aria-label  — When [kjKbdAriaLabel] is set, forwarded to the inner <kbd> for glyph keys (⌘, ⌥, ⇧, ↵)
+ *   data-size   — Mirrors [kjSize] (xs/sm/md/lg) for theme CSS
+ *
+ * @doc-touch
+ *   Kbd is a label, not a target — no 44 px requirement. When embedded in
+ *   an actionable control (button / link), the parent owns the touch
+ *   surface.
+ *
+ * @doc-a11y
+ *   Uses the semantic `<kbd>` element underneath so AT reads the text content
+ *   directly. Only set `[kjKbdAriaLabel]` when the visible glyph is unicode
+ *   the screen reader cannot pronounce — for `Enter`, `Ctrl`, `K`, the
+ *   default text content is the right read.
+ *
+ * @doc-related tooltip,command-palette,badge
+ *
+ * @doc-css-var
+ *   --kj-kbd-bg           — Background fill of the key cap. Defaults to --kj-bg-surface.
+ *   --kj-kbd-fg           — Foreground (glyph) color.
+ *   --kj-kbd-border-color — Border color. Bumped at xs for contrast.
+ *   --kj-kbd-border-width — Border thickness. Inherits --kj-border.
+ *   --kj-kbd-radius       — Corner radius. Inherits --kj-radius-selector.
+ *   --kj-kbd-padding-x    — Horizontal padding inside the cap. Sizes override.
+ *   --kj-kbd-padding-y    — Vertical padding inside the cap. Sizes override.
+ *   --kj-kbd-font         — Font family. Defaults to --kj-font-mono.
+ *   --kj-kbd-font-size    — Font size. Sizes (xs/sm/md/lg) override.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name kbd

@@ -44,6 +44,11 @@
     scroll-snap-type: y mandatory;
     grid-column: 1;
     grid-row: 2;
+    /* Grid items default to `min-height: auto`, which lets the viewport
+       grow past its `1fr` row when slides are taller than the share —
+       defeating the scroll-snap container. Pin to 0 so the row's
+       fraction actually constrains the viewport height. */
+    min-height: 0;
   }
 
   .kj-carousel-slide {

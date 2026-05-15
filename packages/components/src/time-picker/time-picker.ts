@@ -28,16 +28,74 @@ import {
  * `aria-valuemin / max / now / text`) is forwarded by the headless directives.
  *
  * @doc-example Default (24-hour)
+ *   The default playground — HH : MM spinbuttons, 24-hour cycle.
  *   @doc-file time-picker.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common time-picker usages — 24-hour, 12-hour
+ *   with AM/PM, and a formatted string output bound to `[(kjValue)]`.
+ *   @doc-file time-picker.usage.example.ts
  * @doc-example 12-hour with AM/PM
+ *   `[kj12Hour]="true"` renders an AM/PM toggle next to the segments.
  *   @doc-file time-picker.12-hour.example.ts
  * @doc-example With seconds
+ *   `kjShowSeconds` adds an HH : MM : SS spinbutton triple.
  *   @doc-file time-picker.with-seconds.example.ts
  * @doc-example Range (start / end)
+ *   Two pickers wired with `[kjMin]` / `[kjMax]` so end can't precede start.
  *   @doc-file time-picker.range.example.ts
  * @doc-example Formatted string output
+ *   `kjValueShape="string"` emits `'HH:mm[:ss]'` strings instead of `Date`.
  *   @doc-file time-picker.formatted.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowUp|ArrowDown   — Steps the focused segment up/down by its step value
+ *   ArrowLeft|ArrowRight — Moves focus between segments (HH ↔ MM ↔ SS ↔ AM/PM)
+ *   Home                — Sets the focused segment to its minimum
+ *   End                 — Sets the focused segment to its maximum
+ *   PageUp|PageDown     — Coarse step (10×) on the focused segment
+ *   0-9                 — Type-ahead entry on the focused segment
+ *   Enter|Space         — Toggles AM/PM when focused on the meridiem button
+ *
+ * @doc-aria
+ *   role="group"        — applied to the host wrapping the segments
+ *   role="spinbutton"   — set on each HH / MM / SS input by the headless directive
+ *   aria-valuemin / max / now / text — wired per segment for AT announcement
+ *   aria-label          — `kjAriaLabel` on the wrapper; per-segment labels via
+ *                         `kjHoursLabel` / `kjMinutesLabel` / `kjSecondsLabel`
+ *   aria-disabled       — Reflected when `[kjDisabled]="true"`
+ *   data-disabled       — Mirrors disabled state for CSS hooks
+ *
+ * @doc-touch
+ *   Each segment ships with the `md` density floor (≥ 44×44 via padding).
+ *   The meridiem toggle inherits the same surface. `sm` keeps the floor —
+ *   only horizontal padding shrinks.
+ *
+ * @doc-a11y
+ *   Each segment is a real ARIA `spinbutton` so AT reads the current value,
+ *   range, and step. Min/max gating is enforced at the directive layer — the
+ *   picker never reports an out-of-range value through `(kjValueChange)`.
+ *
+ * @doc-related date-picker,number-input,form
+ *
+ * @doc-css-var
+ *   --kj-time-picker-bg              — Background fill of the segment row.
+ *   --kj-time-picker-fg              — Foreground (text) color of the segments.
+ *   --kj-time-picker-border-color    — Border color of the segment row.
+ *   --kj-time-picker-border-width    — Border thickness. Inherits --kj-border.
+ *   --kj-time-picker-radius          — Corner radius. Inherits --kj-radius-field.
+ *   --kj-time-picker-padding-x       — Horizontal padding of the segment row.
+ *   --kj-time-picker-font            — Font family. Defaults to --kj-font-sans.
+ *   --kj-time-picker-font-size       — Font size. Sizes (sm/md/lg) override.
+ *   --kj-time-picker-segment-width   — Fixed width of each HH/MM/SS spinbutton.
+ *   --kj-time-picker-height          — Row height. Sizes override.
+ *   --kj-time-picker-meridiem-bg     — Background of the AM/PM toggle button.
+ *   --kj-time-picker-meridiem-fg     — Foreground of the AM/PM toggle button.
+ *
  * @doc-category Library/Data input
+ * @doc
+ * @doc-name time-picker
+ * @doc-description Themed time entry with HH MM SS spinbuttons, optional AM/PM, and `Date` or string output.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-time-picker',

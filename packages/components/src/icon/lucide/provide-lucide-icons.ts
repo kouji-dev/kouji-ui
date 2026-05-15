@@ -70,6 +70,16 @@ function buildLucideRegistry(): Record<string, string> {
  *
  * @doc-example Gallery
  *   @doc-file ../icon.gallery.example.ts
+ *
+ * @doc-css-var
+ *   --kj-icon       — Resolved icon value (url("...") or "glyph"). Set by the directive — read by the rendered .kj-icon.
+ *   --kj-icon-font  — Font family for `mode="font"` icons. Set on a parent to wire a pre-loaded icon font.
+ *   --kj-icon-size-xs — Token size for the `xs` icon scale. Override per theme.
+ *   --kj-icon-size-sm — Token size for the `sm` icon scale.
+ *   --kj-icon-size-md — Token size for the `md` icon scale.
+ *   --kj-icon-size-lg — Token size for the `lg` icon scale.
+ *   --kj-icon-size-xl — Token size for the `xl` icon scale.
+ *
  * @doc-category Library/Icon
  * @doc
  * @doc-name icon

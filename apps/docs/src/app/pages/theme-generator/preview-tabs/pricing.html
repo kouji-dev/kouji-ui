@@ -1,0 +1,44 @@
+<div class="pricing-scene">
+  <header class="pricing-scene__head">
+    <h2 class="pricing-scene__title">simple pricing.</h2>
+    <p class="pricing-scene__lede">14-day free trial on every paid plan. no card.</p>
+  </header>
+
+  <div class="pricing-scene__grid">
+    @for (t of tiers; track t.id) {
+      <kj-card
+        [variant]="t.featured ? 'default' : 'outline'"
+        class="pricing-scene__tier"
+        [class.pricing-scene__tier--featured]="t.featured"
+      >
+        @if (t.featured) {
+          <kj-badge variant="default" size="sm" class="pricing-scene__pill">most popular</kj-badge>
+        }
+
+        <h3 class="pricing-scene__tier-name">{{ t.name }}</h3>
+        <p class="pricing-scene__tier-desc">{{ t.desc }}</p>
+
+        <p class="pricing-scene__price">
+          {{ t.price }}<span class="pricing-scene__cadence">{{ t.cadence }}</span>
+        </p>
+
+        <kj-divider />
+
+        <ul class="pricing-scene__feats" role="list">
+          @for (f of t.features; track f) {
+            <li class="pricing-scene__feat">
+              <span class="pricing-scene__check" aria-hidden="true">&check;</span>
+              <span>{{ f }}</span>
+            </li>
+          }
+        </ul>
+
+        <kj-button
+          [kjVariant]="t.featured ? 'default' : 'outline'"
+          [kjFullWidth]="true"
+          class="pricing-scene__cta"
+        >{{ t.cta }}</kj-button>
+      </kj-card>
+    }
+  </div>
+</div>

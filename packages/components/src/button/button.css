@@ -57,10 +57,10 @@
     padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
     font: var(--kj-button-font-weight) var(--kj-button-font-size) / 1.2 var(--kj-button-font);
     letter-spacing: var(--kj-button-letter-spacing);
-    /* `none` fallback so themes that don't declare --kj-button-shadow still
-       render flat. Themes (e.g. kouji) inject their value at `[data-theme]`
-       ancestor scope. */
-    box-shadow: var(--kj-button-shadow, none);
+    /* Button shadow is opt-in PER PAGE CONTEXT (e.g. landing hero, docs
+       playground stage) AND restricted to the `default` (primary) variant
+       — never global. Pages set `--kj-button-shadow` at their scope; the
+       applying rules below only fire for `[data-variant="default"]`. */
     /* Transition only properties tied to user interaction (hover / active /
        focus). NOT background-color — variant-driven bg changes propagate
        through the wrapper input on the same tick as the host attribute, and
@@ -182,21 +182,27 @@
     /* Hover lift — themed via --kj-hover-translate. Bauhaus = -4px,
        everyone else = -2px (default in :root). */
     transform: translateY(var(--kj-button-hover-translate));
-    /* Hover-state shadow falls back to the static --kj-button-shadow
-       (no flip) unless the theme set --kj-button-shadow-hover. Kouji /
-       bauhaus collapse their offset shadow to a tight ring on hover. */
-    box-shadow: var(--kj-button-shadow-hover, var(--kj-button-shadow));
   }
   /* fg-hover only applies to the default variant; ghost/outline/link own
      their hover fg already, and destructive keeps its on-danger fg. */
   .kj-button[data-variant="default"]:hover {
     --kj-button-fg: var(--kj-button-fg-hover, var(--kj-fg-on-primary));
   }
+  /* Shadow application — `default` (primary) variant only. Themes leave
+     `--kj-button-shadow` unset by default; pages opt in by declaring it
+     at their scope (landing hero, docs playground stage). Hover/active
+     fall back to the static shadow so a single declaration is enough. */
+  .kj-button[data-variant="default"] {
+    box-shadow: var(--kj-button-shadow, none);
+  }
+  .kj-button[data-variant="default"]:hover {
+    box-shadow: var(--kj-button-shadow-hover, var(--kj-button-shadow, none));
+  }
+  .kj-button[data-variant="default"]:active {
+    box-shadow: var(--kj-button-shadow-active, var(--kj-button-shadow, none));
+  }
   .kj-button:active {
     transform: var(--kj-button-translate-active);
-    /* Same fallback chain as :hover so themes that don't set
-       --kj-button-shadow-active keep their static shadow on press. */
-    box-shadow: var(--kj-button-shadow-active, var(--kj-button-shadow, none));
   }
   .kj-button:focus-visible {
     outline: 2px solid var(--kj-border-focus);

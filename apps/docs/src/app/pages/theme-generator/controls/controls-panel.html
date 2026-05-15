@@ -3,7 +3,7 @@
     <kj-select
       class="tg-fork-select"
       placeholder="fork from preset…"
-      [value]="''"
+      [value]="forkedPreset() ?? ''"
       (valueChange)="fork($event)"
     >
       @for (id of builtInNames; track id) {

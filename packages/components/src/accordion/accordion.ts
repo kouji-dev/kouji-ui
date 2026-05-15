@@ -9,13 +9,61 @@ import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } 
  * find it in their element-injector chain.
  *
  * @doc-example Default
+ *   The default playground — single-open accordion with two items.
  *   @doc-file accordion.default.example.ts
+ * @doc-example Usage
+ *   The common shape: labelled items, controlled value, and arrow-key
+ *   navigation. Use this as the copy-paste starting point.
+ *   @doc-file accordion.usage.example.ts
  * @doc-example Multiple open
+ *   `type="multiple"` lets users expand several panels at once. Bind an array
+ *   of open ids to `[(value)]`.
  *   @doc-file accordion.multiple.example.ts
  * @doc-example Disabled item
+ *   Mark an item `disabled` to skip it in tab order and arrow navigation.
  *   @doc-file accordion.disabled.example.ts
  * @doc-example Rich content
+ *   Project anything inside `<kj-accordion-content>` — paragraphs, lists, forms.
  *   @doc-file accordion.rich-content.example.ts
+ * @doc-example Arrow navigation
+ *   `arrowNavigation` enables APG roving focus across triggers.
+ *   @doc-file accordion.arrow-nav.example.ts
+ * @doc-example Controlled value
+ *   Two-way bind `[(value)]` to drive open state from a signal or form.
+ *   @doc-file accordion.value.example.ts
+ *
+ * @doc-keyboard
+ *   Enter|Space   — Toggles the focused trigger's panel
+ *   Tab           — Moves focus to the next trigger (default) or out of the accordion (roving mode)
+ *   ArrowDown     — When `arrowNavigation`, moves focus to the next trigger (clamps at the end)
+ *   ArrowUp       — When `arrowNavigation`, moves focus to the previous trigger (clamps at the start)
+ *   Home          — When `arrowNavigation`, moves focus to the first trigger
+ *   End           — When `arrowNavigation`, moves focus to the last trigger
+ *
+ * @doc-aria
+ *   aria-expanded   — Reflected on each trigger; flips with the panel's open state
+ *   aria-controls   — Trigger references its panel id
+ *   aria-labelledby — Panel references its trigger id
+ *   aria-disabled   — Reflected when an item is disabled
+ *   role            — Panel host carries `region` so it's a navigable landmark
+ *
+ * @doc-css-var
+ *   --kj-accordion-bg          — Background fill of the accordion shell. Inherits --kj-bg-body.
+ *   --kj-accordion-border      — Border color around the shell and between items. Inherits --kj-border-default.
+ *   --kj-accordion-radius      — Outer corner radius. Inherits --kj-radius-box.
+ *
+ * @doc-touch
+ *   Triggers render real `<button>` elements that span the row width — easily
+ *   clears WCAG 2.5.5 ≥ 44×44 on the default size.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA APG Accordion pattern. Triggers are real
+ *   `<button>` hosts (Enter / Space activation, native focus ring). Roving
+ *   focus is opt-in via `arrowNavigation`; without it Tab walks through every
+ *   trigger sequentially.
+ *
+ * @doc-related card,tabs,dropdown-menu
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name accordion

@@ -1,5 +1,52 @@
-:host { display: flex; flex-direction: column; height: 100%; }
-.preview-tabs { display: flex; flex-direction: column; height: 100%; }
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.preview-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .preview-tabs kj-tab-panel {
-  flex: 1; overflow: auto; padding: 1rem;
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+}
+
+/* Zero-padded numeric prefix on each tab — mirrors design ref "01 landing". */
+.preview-tab__num {
+  font: 0.625rem var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  margin-right: 0.5rem;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.preview-tab[data-state='active'] .preview-tab__num {
+  color: inherit;
+  opacity: 1;
+}
+.preview-tab__label {
+  text-transform: lowercase;
+}
+
+/* Live region for the current theme name, pinned to the stage top-right. */
+.preview-stage-label {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  z-index: 5;
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  background: var(--kj-bg-surface);
+  border: var(--kj-border) solid var(--kj-border-default);
+  border-radius: 3px;
+  padding: 2px 6px;
+  pointer-events: none;
 }

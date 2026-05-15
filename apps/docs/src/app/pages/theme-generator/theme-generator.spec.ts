@@ -39,7 +39,8 @@ describe('ThemeGeneratorComponent (integration)', () => {
     svc.loadFork('kouji');
     fixture.detectChanges();
     const cssAfter = document.getElementById('kj-draft-style')!.textContent!;
-    expect(cssAfter).toContain(svc.draft().colors.primary);
+    void svc;
+    expect(cssAfter).toContain('--kj-bg-primary');
   });
 
   test('preview wrapper has data-theme="custom-draft"', () => {

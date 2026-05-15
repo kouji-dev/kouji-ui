@@ -32,15 +32,63 @@ import {
  * ```
  *
  * @doc-example Default
+ *   The default playground — three-step linear wizard with completion gating.
  *   @doc-file stepper.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common stepper usages — linear vs non-linear,
+ *   active step tracking, and Next / Previous / Reset commands.
+ *   @doc-file stepper.usage.example.ts
  * @doc-example Non-linear
+ *   `[kjLinear]="false"` lets the user jump to any step regardless of order.
  *   @doc-file stepper.non-linear.example.ts
  * @doc-example Vertical
+ *   `kjOrientation="vertical"` stacks the steps top-to-bottom.
  *   @doc-file stepper.vertical.example.ts
  * @doc-example With error
+ *   `[kjStepError]="true"` marks a step as failed; theme swaps the indicator.
  *   @doc-file stepper.with-error.example.ts
  * @doc-example Optional step
+ *   `[kjStepOptional]="true"` lets the user skip without blocking advancement.
  *   @doc-file stepper.optional-step.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowRight|ArrowDown — Moves focus to the next step label (orientation-aware)
+ *   ArrowLeft|ArrowUp    — Moves focus to the previous step label
+ *   Home                 — Moves focus to the first step
+ *   End                  — Moves focus to the last step
+ *   Enter|Space          — Activates the focused step label (gated by `kjLinear`)
+ *   Tab                  — Leaves the step list and moves into the active step content
+ *
+ * @doc-aria
+ *   role="list"          — applied to the `<ol>` host of `<kj-stepper>`
+ *   aria-current="step"  — set on the active step indicator
+ *   aria-disabled        — set on steps that cannot be activated (linear + uncompleted)
+ *   aria-orientation     — reflects `kjOrientation` ("horizontal" | "vertical")
+ *   hidden / inert       — applied to inactive `<kj-step-content>` panels
+ *
+ * @doc-touch
+ *   Step labels default to a ~44px hit area at `md` density. Pair with
+ *   `kjOrientation="vertical"` on narrow viewports so labels stay tappable.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA Wizard pattern. Roving tabindex via
+ *   `KjRovingTabindex` keeps the step list as a single Tab stop; arrow keys
+ *   move focus between labels. Linear mode disables steps the user has not
+ *   yet earned — non-linear mode treats every step as freely reachable.
+ *
+ * @doc-related tabs,progress-bar,form
+ *
+ * @doc-css-var
+ *   --kj-stepper-gap             — Vertical gap between steps in the list.
+ *   --kj-stepper-indicator-size  — Diameter of the numbered step indicator circle.
+ *   --kj-stepper-bg              — Default step indicator background.
+ *   --kj-stepper-border          — Default step indicator and content border color.
+ *   --kj-stepper-active          — Background/border color for the active step indicator.
+ *   --kj-stepper-active-fg       — Foreground color rendered on top of the active indicator.
+ *   --kj-stepper-completed       — Background color for steps marked completed (with check mark).
+ *   --kj-stepper-error           — Background color for steps marked in error state.
+ *   --kj-stepper-muted           — Foreground color for inactive step labels.
+ *
  * @doc-category Library/Navigation
  * @doc
  * @doc-name stepper

@@ -1,7 +1,7 @@
-import { ApplicationRef, Component, computed, inject, viewChild } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map, filter, take } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { switchMap, map } from 'rxjs/operators';
 import {
   KjTabsComponent,
   KjTabListComponent,
@@ -22,8 +22,6 @@ import type {
 } from '../../../lib/docs-extractor.types';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
-import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
-import { PageTocComponent } from '../../components/page-toc/page-toc';
 import { PlaygroundComponent } from './playground';
 
 /** Maps Callout.kind to a kj-alert variant. */
@@ -41,8 +39,6 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
     RouterLink,
     CodePreviewComponent,
     CodeEditorComponent,
-    PageTocDirective,
-    PageTocComponent,
     PlaygroundComponent,
     KjTabsComponent,
     KjTabListComponent,
@@ -59,7 +55,6 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
 export class ComponentDocComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly docs = inject(DocsService);
-  private readonly appRef = inject(ApplicationRef);
 
   protected readonly page = toSignal(
     this.route.url.pipe(
@@ -73,8 +68,6 @@ export class ComponentDocComponent {
       }),
     ),
   );
-
-  private readonly pageToc = viewChild(PageTocDirective);
 
   /** The page's main item — carries the Docs-page metadata. */
   protected readonly main = computed<DocItem | null>(() => {
@@ -179,10 +172,28 @@ export class ComponentDocComponent {
 
   protected readonly examplesCount = computed<number>(() => this.recipeExamples().length);
 
-  constructor() {
-    toObservable(this.page).pipe(
-      filter(Boolean),
-      switchMap(() => this.appRef.isStable.pipe(filter(Boolean), take(1))),
-    ).subscribe(() => this.pageToc()?.refresh());
-  }
+  /**
+   * Position of the CSS-variables section within the API tab — directives
+   * occupy `01..03` (Inputs/Models/Outputs), services occupy `01..02`
+   * (Methods/Properties), etc. CSS vars always land just after.
+   */
+  protected readonly cssVarsSectionNum = computed<string>(() => {
+    const m = this.main();
+    if (!m) return '01';
+    let occupied = 0;
+    if (m.directive) {
+      if (m.directive.inputs.length)  occupied += 1;
+      if (m.directive.models.length)  occupied += 1;
+      if (m.directive.outputs.length) occupied += 1;
+    }
+    if (m.service) {
+      if (m.service.methods.length)    occupied += 1;
+      if (m.service.properties.length) occupied += 1;
+    }
+    if (m.function) occupied += 1;
+    if (m.token)     occupied += 1;
+    if (m.typeAlias) occupied += 1;
+    if (m.const)     occupied += 1;
+    return String(occupied + 1).padStart(2, '0');
+  });
 }

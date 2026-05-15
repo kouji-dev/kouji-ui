@@ -31,16 +31,62 @@ import {
  * `kjEndAriaLabel` (range).
  *
  * @doc-example Default
+ *   A single-thumb 0–100 volume slider — the bare-minimum recipe.
  *   @doc-file slider.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — volume, price range, and a
+ *   stepped rating selector. Use this as the copy-paste starting point.
+ *   @doc-file slider.usage.example.ts
  * @doc-example Range (two thumbs)
+ *   `[(kjRange)]` switches to two-thumb mode with min-distance coordination.
  *   @doc-file slider.range.example.ts
  * @doc-example With tick marks
+ *   `kjTicks="auto"` or a numeric array renders tick glyphs along the track.
  *   @doc-file slider.with-marks.example.ts
  * @doc-example Vertical
+ *   `kjOrientation="vertical"` flips the track and arrow-key mapping.
  *   @doc-file slider.vertical.example.ts
  * @doc-example Formatted value (Intl.NumberFormat)
+ *   `kjDisplayWith` shapes `aria-valuetext` for currency / unit / percent.
  *   @doc-file slider.formatted.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowRight|ArrowUp   — Increment focused thumb by `kjStep`
+ *   ArrowLeft|ArrowDown  — Decrement focused thumb by `kjStep`
+ *   PageUp               — Increment by `kjPageStep` (when > 0)
+ *   PageDown             — Decrement by `kjPageStep` (when > 0)
+ *   Home                 — Jump to `kjMin`
+ *   End                  — Jump to `kjMax`
+ *   Tab                  — Moves focus between thumbs (range mode) and out
+ *
+ * @doc-aria
+ *   role="slider"        — On each thumb `<button>`
+ *   aria-valuemin        — Reflects `kjMin`
+ *   aria-valuemax        — Reflects `kjMax`
+ *   aria-valuenow        — Reflects the thumb's current value
+ *   aria-valuetext       — Reflects `kjDisplayWith(value, thumbIndex)`
+ *   aria-orientation     — Reflects `horizontal` / `vertical`
+ *   aria-label           — Wired from `kjAriaLabel` (single) or `kjStartAriaLabel` / `kjEndAriaLabel` (range)
+ *   aria-disabled        — Reflected on thumbs when `kjDisabled` is true
+ *
+ * @doc-touch
+ *   Thumbs render at 1.25rem with a 44×44 hit-target halo via padding —
+ *   meets WCAG 2.5.5 on touch devices. The track itself accepts click-to-jump.
+ *
+ * @doc-a11y
+ *   Thumbs are real `<button>` elements so native focus, click, and form
+ *   semantics work. Each thumb owns its own accessible name — in range
+ *   mode use distinct `kjStartAriaLabel` / `kjEndAriaLabel` so SR users can
+ *   tell them apart. Pair with a visible `aria-valuetext` formatter when
+ *   the raw number is ambiguous (currency, dates, percentages).
+ *
+ * @doc-related number-input,progress-bar,form
+ *
  * @doc-category Library/Data input
+ * @doc
+ * @doc-name slider
+ * @doc-description Themed single or range slider with ticks, vertical orientation, and Intl-formatted values.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-slider',

@@ -65,6 +65,29 @@ import { KjButton } from '@kouji-ui/core';
  *   data-variant  — Mirrors the resolved variant for theme/scope hooks
  *   data-size     — Mirrors the resolved size for theme/scope hooks
  *
+ * @doc-css-var
+ *   --kj-button-bg              — Background fill. Variant rules set this; override to brand-paint a one-off.
+ *   --kj-button-fg              — Foreground (label + icon) color. Resolved per variant.
+ *   --kj-button-bg-hover        — Hover background. Defaults to an 8% black mix on the variant fill.
+ *   --kj-button-fg-hover        — Hover foreground (default variant only).
+ *   --kj-button-border-color    — Border color. Outline/destructive set this per variant.
+ *   --kj-button-border-width    — Border thickness. Inherits the theme's --kj-border.
+ *   --kj-button-radius          — Corner radius. Inherits --kj-radius-field.
+ *   --kj-button-padding-x       — Horizontal padding. Sizes override.
+ *   --kj-button-padding-y       — Vertical padding. Sizes override.
+ *   --kj-button-gap             — Gap between icon and label.
+ *   --kj-button-font            — Font family. Defaults to --kj-font-sans.
+ *   --kj-button-font-size       — Font size. Sizes override.
+ *   --kj-button-font-weight     — Font weight. Default 600; brutalist themes bump it.
+ *   --kj-button-letter-spacing  — Letter tracking. Default -0.01em.
+ *   --kj-button-height          — Explicit height. Sizes (sm/md/lg/icon) set this.
+ *   --kj-button-min-width       — Minimum width. Defaults to auto.
+ *   --kj-button-hover-translate — Y translation on hover (lift). -2px default; bauhaus -4px.
+ *   --kj-button-translate-active — Transform on press. Defaults to none.
+ *   --kj-button-shadow          — Box shadow on the `default` variant. Unset by default — opt in at the page/scope where you want the brutalist offset (e.g. landing hero, docs playground stage).
+ *   --kj-button-shadow-hover    — Box shadow on hover (default variant). Falls back to --kj-button-shadow.
+ *   --kj-button-shadow-active   — Box shadow on press (default variant). Falls back to --kj-button-shadow.
+ *
  * @doc-touch
  *   `size="lg"` and `size="icon"` meet WCAG 2.5.5 ≥ 44×44 by default.
  *   `sm` and `md` rely on the inline-text-link exception — embed in text only.

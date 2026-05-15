@@ -52,6 +52,20 @@ import { valueFromClientPosition } from './slider.geometry';
  * each thumb's `aria-valuemin/max` to the partner-thumb position, and
  * exposes the dragging / active-thumb state for the wrapper visuals.
  *
+ * @doc-css-var
+ *   --kj-slider-track-thickness  — Track width on vertical / height on horizontal.
+ *   --kj-slider-track-bg         — Track (unfilled portion) background.
+ *   --kj-slider-fill-bg          — Filled-range background between thumbs (or start → thumb).
+ *   --kj-slider-thumb-size       — Visual diameter of the thumb circle.
+ *   --kj-slider-thumb-hit        — Invisible hit area / touch target around the thumb. 2.75rem for WCAG 2.5.5.
+ *   --kj-slider-thumb-bg         — Thumb background fill.
+ *   --kj-slider-thumb-fg         — Thumb foreground (icon/text inside) color.
+ *   --kj-slider-thumb-border     — Thumb border shorthand. Halos the thumb against the track.
+ *   --kj-slider-tick-size        — Diameter of optional tick marks.
+ *   --kj-slider-tick-bg          — Tick mark color.
+ *   --kj-slider-radius           — Track and fill corner radius. Defaults to a pill.
+ *   --kj-slider-vertical-length  — Default rail length when orientation is vertical.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name slider

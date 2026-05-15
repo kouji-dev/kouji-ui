@@ -58,15 +58,55 @@ export type KjEmptyStateLevel = 1 | 2 | 3 | 4 | 5 | 6;
  * </kj-empty-state>
  * ```
  * @doc-example Default
+ *   Never-populated case — neutral variant with no `kjLive`.
  *   @doc-file empty-state.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common empty-state usages — never-populated
+ *   neutral, search-no-results polite, and assertive error.
+ *   @doc-file empty-state.usage.example.ts
  * @doc-example Error
+ *   `kjVariant="error"` + `kjLive="assertive"` for runtime load failures.
  *   @doc-file empty-state.error.example.ts
  * @doc-example No search results
+ *   Search-no-results pattern with a polite live announcement.
  *   @doc-file empty-state.search.example.ts
  * @doc-example Sizes
+ *   `kjSize="sm"` / `md` / `lg` — drives padding, icon size, and font sizes.
  *   @doc-file empty-state.sizes.example.ts
  * @doc-example With secondary actions
+ *   Primary + secondary action rows (the secondary stack appears beneath).
  *   @doc-file empty-state.with-actions.example.ts
+ *
+ * @doc-aria
+ *   role         — Derived from `kjLive` + `kjVariant`: `alert` for error+live, `status` for neutral+live, none otherwise
+ *   aria-live    — `assertive` for the error variant, `polite` for neutral, omitted when `kjLive=false`
+ *   aria-atomic  — `"true"` whenever a live region is active so the full message re-announces
+ *   aria-label   — Forwarded from `[kjEmptyStateLabel]` when provided
+ *   aria-hidden  — `"true"` on the icon slot — the meaning lives in the title / description
+ *
+ * @doc-css-var
+ *   --kj-empty-state-bg          — Background fill. Defaults to transparent so the surface inherits.
+ *   --kj-empty-state-fg          — Title and primary text color. Defaults to --kj-fg-default.
+ *   --kj-empty-state-muted-fg    — Description and icon tint. Defaults to --kj-fg-muted.
+ *   --kj-empty-state-accent      — Accent color used for the error variant icon.
+ *   --kj-empty-state-padding-y   — Vertical padding around the centered stack. Sizes override.
+ *   --kj-empty-state-padding-x   — Horizontal padding around the centered stack. Sizes override.
+ *   --kj-empty-state-gap         — Gap between icon, title, description, and actions.
+ *   --kj-empty-state-icon-size   — Edge length of the icon slot. Sizes override (2/3/4.5rem).
+ *   --kj-empty-state-title-size  — Title font size. Sizes override.
+ *   --kj-empty-state-desc-size   — Description font size. Sizes override.
+ *   --kj-empty-state-max-width   — Max width for title and description blocks. Defaults to 32rem.
+ *
+ * @doc-a11y
+ *   The component is purely visual until `kjLive` is set. Initial-render
+ *   never-populated empties read in flow without a live region (`kjLive=false`).
+ *   Search-no-results — `kjLive="polite"` so AT announces the new state without
+ *   interrupting. Errors — `kjLive="assertive"` for failures that demand
+ *   immediate attention. Pick a heading level on `<kj-empty-state-title>` that
+ *   matches the empty state's depth in the outline.
+ *
+ * @doc-related alert,toast,skeleton
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name empty-state

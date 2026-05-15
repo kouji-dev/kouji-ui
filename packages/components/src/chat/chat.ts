@@ -51,15 +51,61 @@ export type KjChatLogLive = 'polite' | 'off';
  * inbound message is the canonical chat-app a11y bug.
  *
  * @doc-example Default
+ *   The default playground — a four-message conversation between two senders.
  *   @doc-file chat-bubble.example.ts
+ * @doc-example Usage
+ *   The common shape — start/end sides, primary variant for self, footer
+ *   read-state. Use this as the copy-paste starting point.
+ *   @doc-file chat.usage.example.ts
  * @doc-example Sides
+ *   `kjSide="start"` (theirs) vs `"end"` (mine) — drives bubble tail and alignment.
  *   @doc-file chat-bubble.sides.example.ts
  * @doc-example Variants
+ *   default / primary / success / warning / error — pick the visual register.
  *   @doc-file chat-bubble.variants.example.ts
  * @doc-example With state
+ *   Footer `kjState` reflects delivery / read / failed glyphs with an `aria-label`.
  *   @doc-file chat-bubble.with-state.example.ts
  * @doc-example Grouped
+ *   Consecutive rows from the same `kjChatAuthor` collapse their headers and tails.
  *   @doc-file chat-bubble.grouped.example.ts
+ *
+ * @doc-keyboard
+ *   Tab           — Moves focus through interactive elements inside the log (links, action buttons)
+ *
+ * @doc-aria
+ *   role             — `log` on `<kj-chat-log>`; `article` on each `<kj-chat>` row
+ *   aria-live        — `"polite"` on the log (assertive is deliberately not exposed)
+ *   aria-relevant    — `"additions"` on the log so removed messages don't re-announce
+ *   aria-labelledby  — Row references its header id
+ *   aria-describedby — Row references its footer (state) id
+ *   data-side        — Mirrors `kjSide` for theme/scope hooks
+ *   data-grouped     — Reflected when consecutive rows share an author
+ *
+ * @doc-touch
+ *   Bubbles are reading surfaces, not tap targets. When wiring in action
+ *   buttons (reply, react, copy) inside a row, size them to ≥ 44×44 and
+ *   reveal them on hover/focus rather than packing them inline.
+ *
+ * @doc-a11y
+ *   Follows the WAI-ARIA APG Log pattern. The log defaults to `aria-live="polite"`
+ *   so AT users hear inbound messages without interruption — we deliberately
+ *   do not expose `"assertive"`. Avatars are forced `aria-hidden` because the
+ *   row's header conveys sender identity. Footer state glyphs carry an
+ *   `aria-label` so "✓✓" reads as "Read".
+ *
+ * @doc-related dialog,toast,popover
+ *
+ * @doc-css-var
+ *   --kj-chat-gap                — Column gap between avatar and bubble in the row grid.
+ *   --kj-chat-col-gap            — Row gap between header, bubble, and footer cells.
+ *   --kj-chat-bubble-bg          — Bubble background fill. Variant rules set this; override per side or sender.
+ *   --kj-chat-bubble-fg          — Bubble foreground (text) color. Resolved per variant.
+ *   --kj-chat-bubble-radius      — Bubble corner radius. Inherits --kj-radius-box.
+ *   --kj-chat-bubble-padding-x   — Horizontal padding inside the bubble. Sizes override.
+ *   --kj-chat-bubble-padding-y   — Vertical padding inside the bubble. Sizes override.
+ *   --kj-chat-bubble-font-size   — Bubble font size. Sizes override.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name chat

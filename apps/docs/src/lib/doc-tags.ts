@@ -33,6 +33,7 @@ const KNOWN_DOC_TAGS = new Set([
   'doc-import',
   'doc-keyboard',
   'doc-aria',
+  'doc-css-var',
   'doc-touch',
   'doc-a11y',
   'doc-related',

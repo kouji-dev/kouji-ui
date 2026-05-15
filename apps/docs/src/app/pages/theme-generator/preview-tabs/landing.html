@@ -1,0 +1,31 @@
+<div class="landing">
+  <div class="landing__top">
+    <kj-badge variant="default" size="sm">v0.4 launch</kj-badge>
+    <span class="landing__caption">kouji ui / preview</span>
+  </div>
+
+  <h1 class="landing__hero">
+    ship fast, theme<br />fearlessly.
+  </h1>
+
+  <p class="landing__pitch">
+    a small, opinionated component library. every primitive obeys your design
+    tokens — bend it to your brand without writing a single override.
+  </p>
+
+  <div class="landing__cta">
+    <kj-button kjVariant="default" kjSize="md">get started &rarr;</kj-button>
+    <kj-button kjVariant="ghost" kjSize="md">read docs</kj-button>
+  </div>
+
+  <div class="landing__grid">
+    @for (f of features; track f.title) {
+      <kj-card variant="outline">
+        <kj-card-content>
+          <kj-card-title>{{ f.title }}</kj-card-title>
+          <kj-card-subtitle>{{ f.description }}</kj-card-subtitle>
+        </kj-card-content>
+      </kj-card>
+    }
+  </div>
+</div>

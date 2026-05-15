@@ -30,6 +30,9 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  *   aria-disabled        — set on options when [kjDisabled] is true
  *   data-disabled / data-multiple — mirrors of the disabled / multiple state for CSS
  *
+ * @doc-css-var
+ *   --kj-select-trigger-height — Height of the trigger button. Sizes (sm/md/lg) override.
+ *
  * @doc-touch
  *   Default trigger height is 36px. Apply `data-size="lg"` on `<kj-select>` to bump the trigger to 2.75rem (44px) and meet WCAG 2.5.5 for touch-first layouts. Options have padding-only sizing and rely on their text affordance.
  *
@@ -45,12 +48,20 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
  * @doc-related combobox,cascade-select,radio-group
  *
  * @doc-example Default
+ *   A single-value fruit picker — the bare-minimum recipe.
  *   @doc-file select.default.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — placeholder, pre-selected,
+ *   and disabled. Use this as the copy-paste starting point.
+ *   @doc-file select.usage.example.ts
  * @doc-example With placeholder
+ *   `placeholder="…"` is shown until a value is bound.
  *   @doc-file select.placeholder.example.ts
  * @doc-example Disabled
+ *   `[disabled]="true"` removes the trigger from the tab order.
  *   @doc-file select.disabled.example.ts
  * @doc-example Grouped options
+ *   Cluster options under headings for richer listbox menus.
  *   @doc-file select.grouped.example.ts
  * @doc-category Library/Data input
  * @doc

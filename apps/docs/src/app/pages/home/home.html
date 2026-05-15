@@ -5,48 +5,62 @@
     <div class="kj-home__hero-grid" aria-hidden="true"></div>
     <div class="kj-home__container">
 
-      <div class="kj-home__hero-meta">
-        <span class="kj-home__pill" aria-label="Active theme">
-          theme · {{ themePosition() }}
-        </span>
-        <span class="kj-home__hero-note">{{ themeNote() }}</span>
-        <span class="kj-home__hero-hint" aria-hidden="true">
-          ← / → to cycle
-        </span>
-      </div>
+      <div class="kj-home__hero-layout">
+        <div class="kj-home__hero-left">
 
-      <h1 id="home-hero-title" class="kj-home__wordmark" [attr.data-theme-key]="currentTheme()">
-        <span kjVisuallyHidden>kouji</span>
-        @for (g of wordmarkGlyphs; track g.char; let i = $index) {
-          <span
-            class="kj-home__glyph"
-            [class.kj-home__glyph--accent]="g.accent"
-            [style.animation-delay.ms]="i * 40"
-            aria-hidden="true"
-          >{{ g.char }}</span>
-        }
-      </h1>
+          <div class="kj-home__hero-meta">
+            <span class="kj-home__pill" aria-label="Active theme">
+              theme · {{ themePosition() }}
+            </span>
+            <span class="kj-home__hero-note">{{ themeNote() }}</span>
+            <span class="kj-home__hero-hint" aria-hidden="true">
+              ← / → to cycle
+            </span>
+          </div>
 
-      <p class="kj-home__tagline">
-        themeable angular components that
-        <mark class="kj-home__marker">don't fight you</mark>.
-        accessibility-first, ssr-ready, thirteen themes out of the box.
-      </p>
+          <h1 id="home-hero-title" class="kj-home__wordmark" [attr.data-theme-key]="currentTheme()">
+            <span kjVisuallyHidden>kouji</span>
+            @for (g of wordmarkGlyphs; track g.char; let i = $index) {
+              <span
+                class="kj-home__glyph"
+                [class.kj-home__glyph--accent]="g.accent"
+                [style.animation-delay.ms]="i * 40"
+                aria-hidden="true"
+              >{{ g.char }}</span>
+            }
+          </h1>
 
-      <p class="kj-home__sub">
-        $ pnpm add &#64;kouji-ui/core — and you're 13 vibes in 1 install away from done.
-      </p>
+          <p class="kj-home__tagline">
+            themeable angular components that
+            <mark class="kj-home__marker">don't fight you</mark>.
+            accessibility-first, ssr-ready, thirteen themes out of the box.
+          </p>
 
-      <div class="kj-home__cta-row">
-        <a routerLink="/docs/getting-started" class="kj-home__cta-link">
-          <kj-button kjVariant="default" kjSize="lg">get started <span aria-hidden="true">→</span></kj-button>
-        </a>
-        <a routerLink="/docs" class="kj-home__cta-link">
-          <kj-button kjVariant="outline" kjSize="lg">read docs</kj-button>
-        </a>
-        <kj-button kjVariant="ghost" kjSize="lg" (click)="shuffleTheme()" kjAriaLabel="Shuffle to a random theme">
-          <span aria-hidden="true">⟳</span> surprise me
-        </kj-button>
+          <p class="kj-home__sub">
+            $ pnpm add &#64;kouji-ui/core — and you're 13 vibes in 1 install away from done.
+          </p>
+
+          <div class="kj-home__cta-row">
+            <a routerLink="/docs/getting-started" class="kj-home__cta-link">
+              <kj-button kjVariant="default" kjSize="lg">get started <span aria-hidden="true">→</span></kj-button>
+            </a>
+            <a routerLink="/docs" class="kj-home__cta-link">
+              <kj-button kjVariant="outline" kjSize="lg">read docs</kj-button>
+            </a>
+            <kj-button kjVariant="ghost" kjSize="lg" (click)="shuffleTheme()" kjAriaLabel="Shuffle to a random theme">
+              <span aria-hidden="true">⟳</span> surprise me
+            </kj-button>
+          </div>
+
+        </div>
+
+        <!-- ── Theme-specific decorative figure ─────────────────────
+             Component renders one of 13 SVG compositions keyed by the
+             active theme. `key`-style remount on theme change replays
+             any entry animations defined per-figure. -->
+        <div class="kj-home__hero-figure-col">
+          <kj-theme-figure [themeId]="currentTheme()" />
+        </div>
       </div>
 
       <!-- Theme switcher / swatch grid -->

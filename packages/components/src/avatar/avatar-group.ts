@@ -15,15 +15,50 @@ import { KjAvatarComponent } from './avatar';
  * duplicate the announcement.
  *
  * @doc-example Default
+ *   The default playground — five stacked avatars with the group's defaults.
  *   @doc-file avatar-group.example.ts
+ * @doc-example Usage
+ *   The common shape: a small face-pile with an overflow chip, accessible label,
+ *   and a list-mode variant for documents-shared screens.
+ *   @doc-file avatar-group.usage.example.ts
  * @doc-example Overflow
+ *   `kjMax` caps visible avatars; the remainder collapses into a "+N" chip.
  *   @doc-file avatar-group.overflow.example.ts
  * @doc-example Sizes
+ *   Group `kjSize` cascades onto every projected `<kj-avatar>` for a uniform pile.
  *   @doc-file avatar-group.sizes.example.ts
  * @doc-example Shapes
+ *   Group `kjShape` cascades to children; the +N chip mirrors it for a consistent silhouette.
  *   @doc-file avatar-group.shapes.example.ts
  * @doc-example List
+ *   `kjRole="list"` switches to a list landmark — use for "shared by" rows in docs UIs.
  *   @doc-file avatar-group.list.example.ts
+ *
+ * @doc-aria
+ *   aria-label       — Count-aware label like "3 of 8 collaborators"; override via `kjAriaLabelOverride`
+ *   role             — Defaults to `img` (face-pile); set `kjRole="list"` for a true list landmark
+ *   aria-hidden      — Forced on the +N chip so the count isn't re-announced
+ *
+ * @doc-touch
+ *   Stacked avatars are decorative — they aren't tab stops. Pair the group
+ *   with an interactive trigger (button/link) sized ≥ 44×44 when clicking is
+ *   meaningful (e.g. opens a collaborator dialog).
+ *
+ * @doc-a11y
+ *   The face-pile is an `img` landmark with a count-aware accessible name so
+ *   AT users hear "3 of 8 collaborators" rather than every initial. Switch to
+ *   `role="list"` whenever the order/identity of each face matters
+ *   semantically. The overflow chip is always `aria-hidden` because the
+ *   group's name already conveys totality.
+ *
+ * @doc-related avatar,badge,tag
+ *
+ * @doc-css-var
+ *   --kj-avatar-size    — Avatar diameter. Sizes (xs/sm/md/lg/xl) override.
+ *   --kj-avatar-bg      — Avatar background. Defaults to --kj-bg-field; the +N chip inherits this too.
+ *   --kj-avatar-fg      — Avatar foreground (initials, fallback glyph). Defaults to --kj-fg-default.
+ *   --kj-avatar-radius  — Corner radius. `circle` shape pins it to 9999px; `rounded` swaps to --kj-radius-box.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name avatar

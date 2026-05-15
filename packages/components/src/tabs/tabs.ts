@@ -65,14 +65,24 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
  * @doc-related tab-list,segmented,stepper
  *
  * @doc-example Default
+ *   The default playground — three tabs, automatic activation, horizontal.
  *   @doc-file tabs.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common tabs usages — controlled value, default
+ *   active, disabled tab, and a panel that reads from the active value.
+ *   @doc-file tabs.usage.example.ts
  * @doc-example Vertical
+ *   `[orientation]="'vertical'"` stacks the tabs and panels side-by-side.
  *   @doc-file tabs.vertical.example.ts
  * @doc-example Manual activation
+ *   `[activationMode]="'manual'"` separates focus from activation — useful
+ *   for tabs that swap heavy content.
  *   @doc-file tabs.manual-activation.example.ts
  * @doc-example Disabled tab
+ *   `[disabled]="true"` on a `<kj-tab>` removes it from activation; arrow keys skip it.
  *   @doc-file tabs.disabled.example.ts
  * @doc-example Controlled
+ *   Two-way bind `[(value)]` to drive activation from outside the strip.
  *   @doc-file tabs.controlled.example.ts
  * @doc-category Library/Navigation
  * @doc

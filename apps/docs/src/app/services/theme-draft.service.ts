@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { BUILT_IN_THEMES, BUILT_IN_NAMES, type BuiltInName } from '../lib/theme/built-in-themes';
 import { deriveTokens } from '../lib/theme/derive-tokens';
 import { serializeToScopedBlock } from '../lib/theme/serialize-theme';
@@ -9,6 +9,8 @@ import {
   randomMotionTransition,
   randomShapeSnapshot,
 } from '../lib/theme/palette-derive';
+import { ThemeService } from './theme.service';
+import { ThemePresetExtractor } from './theme-preset-extractor.service';
 import type {
   BgSlot, FgSlot, DraftTheme, ShapeKey, FontKey, MotionKey, TypographyKey,
 } from '../lib/theme/types';
@@ -37,8 +39,69 @@ type AnySlot = BgSlot | FgSlot;
 
 @Injectable({ providedIn: 'root' })
 export class ThemeDraftService {
-  private readonly _draft = signal<DraftTheme>(this.readDraft() ?? structuredClone(BLANK_DRAFT));
+  private readonly themeService = inject(ThemeService);
+  private readonly extractor = inject(ThemePresetExtractor);
+
+  /**
+   * Source of truth for built-in theme snapshots. In the browser this reads
+   * the live theme CSS so a draft is always in sync with whatever the
+   * theme stylesheets ship today. The hardcoded `BUILT_IN_THEMES` table
+   * remains as the SSR-side fallback and as a stable input for the test
+   * suite — the theme-generator route opts out of SSR via
+   * `RenderMode.Client`, so the live path is the one users see.
+   */
+  private fork(name: BuiltInName): DraftTheme {
+    const live = this.extractor.extract(name);
+    return live ?? structuredClone(BUILT_IN_THEMES[name]);
+  }
+
+  /**
+   * Initial draft. Priority:
+   *  1. Persisted draft from `localStorage` (preserves in-flight tweaks across reloads).
+   *  2. Fork of the currently-selected site theme — opening the generator
+   *     should always pre-load the theme the user is already looking at,
+   *     not a hardcoded `light` baseline.
+   *  3. Fallback to `light` (only reachable when the site theme name isn't
+   *     a known built-in, which shouldn't happen in practice).
+   */
+  private readonly _draft = signal<DraftTheme>(this.initialDraft());
   readonly draft = this._draft.asReadonly();
+
+  /**
+   * Which built-in preset the current draft was forked from. Drives the
+   * "fork from preset" select in the controls panel so the dropdown
+   * pre-selects the active site theme on first load (and stays in sync as
+   * the user picks a different preset).
+   */
+  private readonly _forkedPreset = signal<BuiltInName | null>(this.initialForkedPreset());
+  readonly forkedPreset = this._forkedPreset.asReadonly();
+
+  private initialDraft(): DraftTheme {
+    const stored = this.readDraft();
+    if (stored) return stored;
+    const active = this.themeService.theme();
+    if ((BUILT_IN_NAMES as readonly string[]).includes(active)) {
+      return { ...this.fork(active as BuiltInName), name: '' };
+    }
+    return structuredClone(BLANK_DRAFT);
+  }
+
+  private initialForkedPreset(): BuiltInName | null {
+    const stored = this.readDraft();
+    if (stored) {
+      // `loadFork(name)` sets `name = '<preset>-fork'`. Recover the preset
+      // from the persisted name so the dropdown stays accurate across reloads.
+      const match = stored.name.match(/^([a-z-]+?)-fork$/);
+      if (match && (BUILT_IN_NAMES as readonly string[]).includes(match[1])) {
+        return match[1] as BuiltInName;
+      }
+      return null;
+    }
+    const active = this.themeService.theme();
+    return (BUILT_IN_NAMES as readonly string[]).includes(active)
+      ? (active as BuiltInName)
+      : null;
+  }
 
   private readonly _dirty = signal<Set<AnySlot>>(new Set());
   readonly dirtySlots = this._dirty.asReadonly();
@@ -47,10 +110,29 @@ export class ThemeDraftService {
   readonly css = computed(() => serializeToScopedBlock('custom-draft', this.resolvedTokens()));
 
   loadFork(name: BuiltInName): void {
-    const src = BUILT_IN_THEMES[name];
-    this._draft.set({ ...structuredClone(src), name: `${name}-fork` });
+    this._draft.set({ ...this.fork(name), name: `${name}-fork` });
     this._dirty.set(new Set());
+    this._forkedPreset.set(name);
     this.persistDraft();
+  }
+
+  /**
+   * Re-seed the draft from the currently-active site theme — but only if
+   * the user hasn't made manual edits. Called when the theme-generator
+   * route mounts so re-visiting after a site-theme change shows the new
+   * theme's tokens, while still preserving an in-flight edit session.
+   *
+   * Returns `true` when the draft was refreshed.
+   */
+  refreshFromActiveThemeIfClean(): boolean {
+    if (this._dirty().size > 0) return false;
+    const active = this.themeService.theme();
+    if (!(BUILT_IN_NAMES as readonly string[]).includes(active)) return false;
+    const name = active as BuiltInName;
+    this._draft.set({ ...this.fork(name), name: '' });
+    this._forkedPreset.set(name);
+    this.persistDraft();
+    return true;
   }
 
   /** Replace the entire draft (e.g. from a URL hash or import payload). Clears dirty set. */
@@ -212,18 +294,38 @@ export class ThemeDraftService {
 
   resetToOriginal(): void {
     const name = this._draft().name;
-    const baseName = name.endsWith('-fork') ? name.slice(0, -5) as BuiltInName : null;
-    if (baseName && (BUILT_IN_NAMES as readonly string[]).includes(baseName)) {
-      this.loadFork(baseName);
-      return;
-    }
+
+    // 1. Saved user theme — restore the persisted version.
     const saved = this.list().find(t => t.name === name);
     if (saved) {
       this.loadSaved(name);
       return;
     }
+
+    // 2. Forked draft — re-fork from the preset the user picked.
+    //    Prefer the explicit `_forkedPreset` signal (set by loadFork /
+    //    refresh), and fall back to the legacy `<name>-fork` convention
+    //    for drafts created before the signal existed.
+    const preset = this._forkedPreset()
+      ?? (name.endsWith('-fork') ? (name.slice(0, -5) as BuiltInName) : null);
+    if (preset && (BUILT_IN_NAMES as readonly string[]).includes(preset)) {
+      this.loadFork(preset);
+      return;
+    }
+
+    // 3. Last resort — fall back to a freshly-extracted active site theme.
+    //    Better than blanking to BLANK_DRAFT (which always lands on light),
+    //    keeps the reset behaviour aligned with "what the user is looking
+    //    at right now".
+    const active = this.themeService.theme();
+    if ((BUILT_IN_NAMES as readonly string[]).includes(active)) {
+      this.loadFork(active as BuiltInName);
+      return;
+    }
+
     this._draft.set(structuredClone(BLANK_DRAFT));
     this._dirty.set(new Set());
+    this._forkedPreset.set(null);
     this.persistDraft();
   }
 

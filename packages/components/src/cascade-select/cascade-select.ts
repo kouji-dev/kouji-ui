@@ -23,15 +23,57 @@ import {
  * via `(kjCascadePathChange)`.
  *
  * @doc-example Default
+ *   The default playground — three-level country/state/city tree.
  *   @doc-file cascade-select.example.ts
+ * @doc-example Usage
+ *   The common shape — controlled leaf value with a path listener. Use this as
+ *   the copy-paste starting point.
+ *   @doc-file cascade-select.usage.example.ts
  * @doc-example Data-driven
+ *   Build the option tree from a `TreeNode[]` source so it can be hydrated
+ *   from an API response.
  *   @doc-file cascade-select.data-driven.example.ts
  * @doc-example Path output
+ *   Bind `[(kjCascadePath)]` to mirror the full ancestor chain into the form.
  *   @doc-file cascade-select.path.example.ts
  * @doc-example In a field
+ *   Wraps the trigger in `<kj-field>` for label / hint / error wiring.
  *   @doc-file cascade-select.field.example.ts
  * @doc-example Disabled options
+ *   Mark an option `disabled` to skip it in navigation and prevent selection.
  *   @doc-file cascade-select.disabled.example.ts
+ *
+ * @doc-keyboard
+ *   Enter|Space    — Opens the panel from the trigger; activates the focused option
+ *   ArrowDown      — Moves focus to the next option in the current panel
+ *   ArrowUp        — Moves focus to the previous option in the current panel
+ *   ArrowRight     — Opens a branch option's sub-panel
+ *   ArrowLeft      — Closes the current sub-panel and returns focus to its owner
+ *   Home|End       — Jumps to the first / last option in the current panel
+ *   Escape         — Closes all panels and returns focus to the trigger
+ *
+ * @doc-aria
+ *   role                 — `combobox` on the trigger; each panel is `listbox`; options are `option`
+ *   aria-haspopup        — `"listbox"` on the trigger
+ *   aria-expanded        — Reflected on the trigger; flips with the panel open state
+ *   aria-controls        — Trigger references the root panel id
+ *   aria-activedescendant — Trigger references the currently-focused option id
+ *   aria-disabled        — Reflected on disabled options
+ *
+ * @doc-touch
+ *   The trigger inherits `<kj-button>` sizing — default `md` is ≥ 36px tall;
+ *   bump to `lg` for touch-first surfaces. Option rows are full-width and
+ *   meet WCAG 2.5.5 on the default padding.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA APG Combobox + nested Listbox pattern. The panel
+ *   is portalled via the shared overlay primitive so it escapes clipping
+ *   ancestors. Selection emits at the leaf level via `[(kjValue)]`; the full
+ *   ancestor chain is available via `[(kjCascadePath)]` for forms that need
+ *   the breadcrumb.
+ *
+ * @doc-related select,tree-select,combobox
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name cascade-select

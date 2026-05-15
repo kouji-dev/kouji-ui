@@ -54,6 +54,7 @@ export class ControlsPanel {
   private readonly fontLoader = inject(FontLoaderService);
 
   protected readonly draft = this.draftService.draft;
+  protected readonly forkedPreset = this.draftService.forkedPreset;
   protected readonly mode = signal<'simple' | 'full'>('simple');
   protected readonly builtInNames = BUILT_IN_NAMES;
   protected readonly fonts: readonly CuratedFont[] = CURATED_FONTS;
