@@ -1,15 +1,13 @@
-import { Directive, computed, contentChildren, inject } from '@angular/core';
-import { KjListItem } from '../primitives/list';
-import { KjCommandPalette } from './command-palette';
-
-let _groupIdCounter = 0;
+import { Directive } from '@angular/core';
+import { KjListGroup } from '../primitives/list';
 
 /**
- * Group wrapper for command items. Sets `role="group"` and auto-hides when
- * all its child items are filtered out.
+ * Group wrapper for command items. Composes `KjListGroup` for the
+ * shared role=group / aria-labelledby / auto-hide-when-empty behavior;
+ * this selector exists so existing command-palette templates keep
+ * working unchanged.
  *
- * Uses `contentChildren(KjListItem)` to track which items belong to this group,
- * then checks their ids against the palette's visible items set.
+ * Pair with a `[kjListGroupLabel]` heading element for the section title.
  *
  * @doc-category Core/Actions
  * @doc
@@ -18,29 +16,6 @@ let _groupIdCounter = 0;
 @Directive({
   selector: '[kjCommandGroup]',
   standalone: true,
-  host: {
-    'role': 'group',
-    '[attr.hidden]': 'isHidden() ? "" : null',
-    '[attr.data-kj-group-id]': 'groupId',
-  },
+  hostDirectives: [KjListGroup],
 })
-export class KjCommandGroup {
-  private readonly ctx = inject(KjCommandPalette);
-
-  /** All `KjListItem` children directly under this group. */
-  private readonly groupItems = contentChildren(KjListItem, { descendants: true });
-
-  /** Stable group id. */
-  readonly groupId = `kj-command-group-${++_groupIdCounter}`;
-
-  /**
-   * True when this group has no child items, OR when all child items
-   * are filtered out (not in the palette's visible set).
-   */
-  readonly isHidden = computed(() => {
-    const myItems = this.groupItems();
-    if (myItems.length === 0) return false; // no items projected yet — don't hide
-    const visibleIds = new Set(this.ctx.visibleItems().map(i => i.id));
-    return myItems.every(item => !visibleIds.has(item.id));
-  });
-}
+export class KjCommandGroup {}

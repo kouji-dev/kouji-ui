@@ -149,6 +149,7 @@ export class KjCombobox implements KjListNavigatorConfig {
     this.selection.setMode('single');
     this.selection.bindValue(this.kjValue);
     this.filter.bind({
+      items:             this.items,
       query:             this.kjQuery,
       filterFn:          this.adaptedFilter,
       shouldFilter:      this.kjShouldFilter,

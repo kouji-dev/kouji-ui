@@ -1,10 +1,7 @@
 // packages/core/src/primitives/list/filterable-list.ts
-import { Injectable, Injector, type Signal, computed, effect, inject, signal } from '@angular/core';
-import { KJ_LIST_NAVIGATOR_CONFIG, type KjFilterFn, type KjListNavigatorConfig } from './tokens';
+import { Injectable, type Signal, computed, effect, signal } from '@angular/core';
+import type { KjFilterFn } from './tokens';
 import type { KjListItem } from './item';
-
-// Field defaults so the service is usable without bind() in tests.
-const defaultQuery: Signal<string> = signal('');
 
 const defaultSubstring: KjFilterFn = (q, hs) => {
   if (!q) return 1;
@@ -12,47 +9,36 @@ const defaultSubstring: KjFilterFn = (q, hs) => {
   return hs.some(h => h.toLowerCase().includes(needle)) ? 1 : 0;
 };
 
+const EMPTY_ITEMS = signal<readonly KjListItem<unknown>[]>([]);
+
 /**
  * Filter / search state for a list-style consumer (KjCombobox,
- * KjCommandPalette). Reads items from `KJ_LIST_NAVIGATOR_CONFIG` and
- * exposes `visibleItems`, `visibleCount`, `isEmpty`, plus a human
- * `announcement()` signal consumers wire into a `kjLiveRegion` so
- * WCAG 4.1.3 (Status Messages) is honored.
+ * KjCommandPalette). Reads its items source + filter inputs through
+ * {@link bind}, so no DI lookup is needed at construction (which sidesteps
+ * the cyclic dep that arises when the root provides itself under
+ * `KJ_LIST_NAVIGATOR_CONFIG` and `KjFilterableList` together).
  *
  * Side effects (via `effect`):
  * - Calls `item.setVisible(bool)` on every item to reflect filter state.
  * - Stamps `item.posInSet` / `item.setSize` for visible items; clears
  *   them to `null` for hidden items.
  *
- * **Binding sources** — consumers wire their reactive inputs (typically
- * `model()` / `input()` signals) via {@link bind}. Replaces the
- * imperative setter-in-effect pattern with a single signal handoff.
+ * Exposes `visibleItems`, `visibleCount`, `isEmpty`, plus a human
+ * `announcement()` signal consumers wire into a `kjLiveRegion` so
+ * WCAG 4.1.3 (Status Messages) is honored.
  *
  * @doc-category Core/Primitives
  */
 @Injectable()
 export class KjFilterableList<T = unknown> {
-  private readonly injector = inject(Injector);
-  /**
-   * Resolved once on first access then cached. Direct `inject` at
-   * construction would deadlock when both `KjFilterableList` and
-   * `KJ_LIST_NAVIGATOR_CONFIG` (`useExisting` the root directive) are
-   * provided on the same element — at that point the root is still
-   * mid-construction. First access happens inside an effect that fires
-   * AFTER construction, when the root is fully resolved.
-   */
-  private _cfg?: KjListNavigatorConfig;
-  private get cfg(): KjListNavigatorConfig {
-    return (this._cfg ??= this.injector.get(KJ_LIST_NAVIGATOR_CONFIG));
-  }
-
   /**
    * Source signals. Replaced wholesale by {@link bind} so the consumer's
    * reactive inputs become the canonical state. `bind` MUST be called
    * from the consumer's constructor, before any downstream consumer
    * (e.g. KjListNavigator) subscribes to `visibleItems`.
    */
-  private _query: Signal<string>             = defaultQuery;
+  private _items: Signal<readonly KjListItem<T>[]> = EMPTY_ITEMS as Signal<readonly KjListItem<T>[]>;
+  private _query: Signal<string>              = signal('');
   private _filterFn: Signal<KjFilterFn>       = signal(defaultSubstring);
   private _shouldFilter: Signal<boolean>      = signal(true);
   private _autoActivateFirst: Signal<boolean> = signal(true);
@@ -62,7 +48,7 @@ export class KjFilterableList<T = unknown> {
 
   /** Items passing the current filter. */
   readonly visibleItems = computed<readonly KjListItem<T>[]>(() => {
-    const all = this.cfg.items() as readonly KjListItem<T>[];
+    const all = this._items();
     if (!this._shouldFilter()) return all;
     const q = this._query();
     const fn = this._filterFn();
@@ -93,19 +79,22 @@ export class KjFilterableList<T = unknown> {
 
   /**
    * Bind consumer-owned source signals. Each is optional; unbound keys
-   * keep their previous source (defaulting to a constant on first construct).
+   * keep their previous source (defaulting to constants on first construct).
    *
-   * Replaces the imperative setQuery/setFilterFn/etc. setters when the
-   * consumer holds the canonical reactive state (typically a `model()`
-   * or `input()`). Call once in the consumer's constructor before any
-   * downstream `computed` / `effect` subscribes to `visibleItems`.
+   * Replaces the imperative setter-in-effect pattern when the consumer
+   * holds the canonical reactive state (typically a `model()` /
+   * `input()` / `contentChildren()`). Call once in the consumer's
+   * constructor before any downstream `computed` / `effect` subscribes
+   * to `visibleItems`.
    */
   bind(sources: {
+    readonly items?:             Signal<readonly KjListItem<T>[]>;
     readonly query?:             Signal<string>;
     readonly filterFn?:          Signal<KjFilterFn>;
     readonly shouldFilter?:      Signal<boolean>;
     readonly autoActivateFirst?: Signal<boolean>;
   }): void {
+    if (sources.items)             this._items = sources.items;
     if (sources.query)             this._query = sources.query;
     if (sources.filterFn)          this._filterFn = sources.filterFn;
     if (sources.shouldFilter)      this._shouldFilter = sources.shouldFilter;
@@ -116,7 +105,7 @@ export class KjFilterableList<T = unknown> {
     // Toggle visibility + stamp posInSet/setSize on each item whenever
     // the filtered visible set changes.
     effect(() => {
-      const all = this.cfg.items();
+      const all = this._items();
       const visible = this.visibleItems() as readonly KjListItem<unknown>[];
       const visibleSet = new Set(visible.map(v => v.id));
       const total = visible.length;

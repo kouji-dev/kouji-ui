@@ -120,6 +120,7 @@ export class KjCommandPalette implements KjListNavigatorConfig {
 
   constructor() {
     this.filterSvc.bind({
+      items:             this.items,
       query:             this.kjQuery,
       filterFn:          this.resolvedFilter,
       shouldFilter:      this.kjShouldFilter,

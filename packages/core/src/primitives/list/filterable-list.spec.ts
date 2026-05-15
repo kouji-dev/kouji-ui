@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal, type WritableSignal } from '@angular/core';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { KjFilterableList } from './filterable-list';
-import { KJ_LIST_NAVIGATOR_CONFIG, type KjFilterFn } from './tokens';
+import type { KjFilterFn } from './tokens';
 import type { KjListItem } from './item';
 
 function fakeItem(id: string, label: string, keywords: readonly string[] = []): KjListItem<unknown> {
@@ -46,13 +46,10 @@ describe('KjFilterableList', () => {
     autoActivateFirst = signal(true);
 
     TestBed.configureTestingModule({
-      providers: [
-        KjFilterableList,
-        { provide: KJ_LIST_NAVIGATOR_CONFIG, useValue: { items } },
-      ],
+      providers: [KjFilterableList],
     });
     svc = TestBed.inject(KjFilterableList);
-    svc.bind({ query, filterFn, shouldFilter, autoActivateFirst });
+    svc.bind({ items, query, filterFn, shouldFilter, autoActivateFirst });
     TestBed.flushEffects();
   });
 

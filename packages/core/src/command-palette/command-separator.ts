@@ -1,8 +1,10 @@
 import { Directive } from '@angular/core';
+import { KjListSeparator } from '../primitives/list';
 
 /**
- * Visual separator between command groups. Non-interactive.
- * Sets `role="separator"` and `aria-orientation="horizontal"`.
+ * Visual separator between command groups. Non-interactive. Composes
+ * the shared `KjListSeparator` primitive (role=separator,
+ * aria-orientation=horizontal).
  *
  * @doc-category Core/Actions
  * @doc
@@ -11,9 +13,6 @@ import { Directive } from '@angular/core';
 @Directive({
   selector: '[kjCommandSeparator]',
   standalone: true,
-  host: {
-    'role': 'separator',
-    'aria-orientation': 'horizontal',
-  },
+  hostDirectives: [KjListSeparator],
 })
 export class KjCommandSeparator {}
