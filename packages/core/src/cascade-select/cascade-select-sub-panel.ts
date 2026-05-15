@@ -7,20 +7,26 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { KjListNavigator } from '../primitives/list';
 import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
 
 /**
  * Sub-panel for a single level in the cascade. Apply as a child of a
  * `[kjCascadeSelectOption]` that acts as a sub-trigger (branch node).
  *
- * Role: `group` (descendant of the root `tree` via `aria-owns`).
+ * Composes `KjListNavigator` (vertical + activedescendant) for the
+ * generic Up/Down / Home/End / Enter / Space / type-ahead contract.
+ * Cascade-specific ArrowRight (open the next-level sub-panel) and
+ * ArrowLeft (close this sub-panel + focus parent) remain handled here.
+ *
+ * Role: `group` (descendant of the root `tree` via DOM ancestry).
  * Hidden when the owner option's sub-panel is not in the open list.
  *
  * @example
  * ```html
- * <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">
- *   <div kjCascadeSelectSubPanel [kjOwnerOptionId]="optionEl.id">
- *     <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="San Francisco" />
+ * <div kjCascadeSelectOption [kjOptionValue]="'us'" kjOptionLabel="USA">
+ *   <div kjCascadeSelectSubPanel>
+ *     <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="San Francisco" />
  *   </div>
  * </div>
  * ```
@@ -31,13 +37,20 @@ import { KJ_CASCADE_SELECT, nextCascadeId } from './cascade-select.context';
 @Directive({
   selector: '[kjCascadeSelectSubPanel]',
   standalone: true,
+  hostDirectives: [
+    {
+      directive: KjListNavigator,
+      inputs: ['kjOrientation', 'kjFocusMode'],
+    },
+  ],
   host: {
     'role': 'group',
     'tabindex': '-1',
+    'kjOrientation': 'vertical',
+    'kjFocusMode': 'activedescendant',
     '[id]': 'panelId',
     '[attr.hidden]': '!open() ? "" : null',
     '[attr.aria-labelledby]': 'ownerOptionId()',
-    '[attr.aria-activedescendant]': 'activeId()',
     '(keydown)': 'onKeydown($event)',
     '(click)': '$event.stopPropagation()',
   },
@@ -46,6 +59,8 @@ export class KjCascadeSelectSubPanel {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   /** @internal */
   readonly ctx = inject(KJ_CASCADE_SELECT);
+  /** @internal — generic list navigator composed via `hostDirectives`. */
+  private readonly nav = inject(KjListNavigator);
 
   /**
    * The id of the option element that owns / opens this sub-panel. When
@@ -107,99 +122,44 @@ export class KjCascadeSelectSubPanel {
   /** @internal Stable panel id used in aria-owns. */
   readonly panelId = nextCascadeId('kj-cascade-sub-panel');
 
-  /** @internal Level index derived from DOM depth (simplified: linear chain). */
-  private _levelIndex = 1;
-
   /** @internal True when this panel is in the open list. */
   readonly open = computed(() =>
     this.ctx.openSubPanels().includes(this.ownerOptionId()),
   );
 
-  /** @internal */
-  readonly activeId = computed(() => this.ctx.getActiveId(this._levelIndex));
-
-  setLevelIndex(idx: number): void {
-    this._levelIndex = idx;
-  }
-
-  /** @internal */
+  /**
+   * @internal Cascade-specific keys — ArrowRight opens the active
+   * branch's nested sub-panel; ArrowLeft closes this sub-panel and
+   * pops the active focus back to the parent panel; Escape / Tab
+   * dismiss this level (or all levels at depth 1). Up/Down / Home/End
+   * / Enter / Space / typeahead are owned by the composed
+   * `KjListNavigator`.
+   */
   onKeydown(e: KeyboardEvent): void {
-    const options = this.getOptions();
-    if (!options.length) return;
-    const activeId = this.ctx.getActiveId(this._levelIndex);
-    let idx = activeId ? options.findIndex(o => o.id === activeId) : -1;
-
     switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        idx = Math.min(idx + 1, options.length - 1);
-        if (idx < 0) idx = 0;
-        this.ctx.setActive(this._levelIndex, options[idx]?.id ?? null);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        idx = Math.max(idx - 1, 0);
-        this.ctx.setActive(this._levelIndex, options[idx]?.id ?? null);
-        break;
-      case 'Home':
-        e.preventDefault();
-        this.ctx.setActive(this._levelIndex, options[0]?.id ?? null);
-        break;
-      case 'End':
-        e.preventDefault();
-        this.ctx.setActive(this._levelIndex, options[options.length - 1]?.id ?? null);
-        break;
       case 'ArrowRight': {
         e.preventDefault();
-        const active = activeId ? options.find(o => o.id === activeId) : undefined;
-        if (active?.ownerOptionId) {
-          this.ctx.openSubPanel(active.ownerOptionId);
-        }
-        break;
+        const activeId = this.nav.activeId();
+        if (!activeId) return;
+        const optEl = this.el.nativeElement.querySelector<HTMLElement>(`#${CSS.escape(activeId)}`);
+        const ownerId = optEl?.getAttribute('data-owner-option-id');
+        if (ownerId) this.ctx.openSubPanel(ownerId);
+        return;
       }
       case 'ArrowLeft':
         e.preventDefault();
         e.stopPropagation();
         this.ctx.closeSubPanel(this.ownerOptionId());
-        break;
+        return;
       case 'Escape':
         e.preventDefault();
         e.stopPropagation();
-        if (this._levelIndex <= 1) {
-          this.ctx.hide();
-          this.ctx.closeAll();
-        } else {
-          this.ctx.closeSubPanel(this.ownerOptionId());
-        }
-        break;
+        this.ctx.closeSubPanel(this.ownerOptionId());
+        return;
       case 'Tab':
         this.ctx.hide();
         this.ctx.closeAll();
-        break;
-      default: {
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-          const char = e.key.toLowerCase();
-          const start = idx >= 0 ? idx + 1 : 0;
-          const match =
-            options.slice(start).find(o => o.label.toLowerCase().startsWith(char)) ??
-            options.slice(0, start).find(o => o.label.toLowerCase().startsWith(char));
-          if (match) {
-            e.preventDefault();
-            this.ctx.setActive(this._levelIndex, match.id);
-          }
-        }
-      }
+        return;
     }
-  }
-
-  private getOptions(): Array<{ id: string; label: string; ownerOptionId: string | null }> {
-    const els = Array.from(
-      this.el.nativeElement.querySelectorAll<HTMLElement>('[kjCascadeSelectOption]'),
-    ).filter(el => !el.hasAttribute('data-disabled'));
-    return els.map(el => ({
-      id: el.id,
-      label: el.getAttribute('data-label') ?? el.textContent?.trim() ?? '',
-      ownerOptionId: el.getAttribute('data-owner-option-id'),
-    }));
   }
 }

@@ -12,8 +12,11 @@ export interface KjCascadeNode<T = unknown> {
 }
 
 /**
- * Shared context for the Cascade Select compound family.
- * Owned by `KjCascadeSelect`; injected by panel, sub-panel, and option directives.
+ * Shared cascade-specific context for the Cascade Select compound family.
+ * Owned by `KjCascadeSelect`; injected by panel, sub-panel, and option
+ * directives. Carries only the cross-cutting state that doesn't already
+ * live on the shared `KjListNavigator` / `KjSelectionModel` primitives
+ * (open sub-panels, the cascade path, sub-panel hover timing).
  */
 export interface KjCascadeSelectContext<T = unknown> {
   /** The currently selected leaf value (mirrors KjSelect's value). */
@@ -38,8 +41,9 @@ export interface KjCascadeSelectContext<T = unknown> {
   readonly subPanelCloseDelayMs: Signal<number>;
 
   /**
-   * Commit a leaf value. Closes all sub-panels, emits pathChange,
-   * and calls KjSelect.select() with the value.
+   * Commit a leaf value programmatically. The typical click / Enter /
+   * Space path goes through `KjListItem._activate` → `KjSelectionModel`
+   * → `afterSelect` instead.
    */
   selectLeaf(value: T, path: readonly T[]): void;
 
@@ -60,15 +64,6 @@ export interface KjCascadeSelectContext<T = unknown> {
 
   /** Close the root cascade panel. */
   hide(): void;
-
-  /**
-   * Set the active-descendant option id at the given level.
-   * `null` clears the active descendant at that level.
-   */
-  setActive(levelIndex: number, optionId: string | null): void;
-
-  /** Get the active-descendant option id at the given level. */
-  getActiveId(levelIndex: number): string | null;
 }
 
 /** DI token for the Cascade Select shared context. */

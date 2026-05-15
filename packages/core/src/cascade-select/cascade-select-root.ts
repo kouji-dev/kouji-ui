@@ -1,35 +1,54 @@
 import {
   Directive,
   computed,
+  contentChildren,
+  forwardRef,
   inject,
   input,
   model,
   output,
   signal,
+  type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import { KJ_SELECT } from '../select/select-root';
+import {
+  KJ_LIST_NAVIGATOR_CONFIG,
+  KjListItem,
+  KjSelectionModel,
+  type KjCompareFn,
+  type KjListNavigatorConfig,
+  type KjListSelectionMode,
+  type KjTreeShape,
+} from '../primitives/list';
 import {
   KJ_CASCADE_SELECT,
   type KjCascadeSelectContext,
 } from './cascade-select.context';
 
 /**
- * Root cascade-select container. Owns the selection model, the cascade
- * chain state (open sub-panels, active descendants per level), and the
- * shared `KjOverlayController` so the trigger, root panel, sub-panels,
- * and individual options all wire to the same overlay state.
+ * Root cascade-select container. Implements
+ * {@link KjListNavigatorConfig} (items, value, mode, compareBy, treeShape,
+ * afterSelect) and provides itself under `KJ_LIST_NAVIGATOR_CONFIG` via
+ * `forwardRef`. Each cascade panel + sub-panel hosts its own
+ * `KjListNavigator` (vertical + activedescendant); `KjListItem` instances
+ * composed on `KjCascadeSelectOption` toggle the shared `KjSelectionModel`
+ * in `'leaf'` mode, so branch clicks are no-ops at the model layer and
+ * only leaf activations enter `kjValue`.
  *
- * Mirrors the `[kjSelect]` pattern: the umbrella root holds context and
- * controller; the trigger, panel, and option directives read from it via
- * DI. The panel directive becomes a thin overlay panel + keyboard handler.
+ * Like `KjSelect`, the root does NOT `inject(KjSelectionModel)` — doing
+ * so at construction creates a runtime cycle (the model's
+ * `inject(KJ_LIST_NAVIGATOR_CONFIG)` would resolve to a not-yet-built
+ * `KjCascadeSelect` instance, regardless of `forwardRef`). The model is
+ * constructed lazily when a child `KjListItem` first asks for it.
  *
  * @example
  * ```html
- * <div kjCascadeSelect [(kjValue)]="city" [(kjCascadePath)]="path">
+ * <div kjCascadeSelect [(kjValue)]="city" [kjTreeShape]="shape">
  *   <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger">Pick</button>
  *   <div kjCascadeSelectPanel [kjFor]="t">
- *     <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">…</div>
+ *     <div kjCascadeSelectOption [kjOptionValue]="'us'" kjOptionLabel="USA">…</div>
  *   </div>
  * </div>
  * ```
@@ -38,19 +57,21 @@ import {
  * @doc
  * @doc-name cascade-select
  * @doc-is-main
- * @doc-description Unstyled cascade-select root that holds the selection model and shares state with trigger, panels, and options.
+ * @doc-description Unstyled cascade-select root that implements KjListNavigatorConfig and owns the shared selection model.
  */
 @Directive({
   selector: '[kjCascadeSelect]',
   exportAs: 'kjCascadeSelect',
   standalone: true,
   providers: [
-    { provide: KJ_CASCADE_SELECT, useExisting: KjCascadeSelect },
-    { provide: KJ_SELECT, useExisting: KjCascadeSelect },
+    { provide: KJ_CASCADE_SELECT, useExisting: forwardRef(() => KjCascadeSelect) },
+    { provide: KJ_SELECT, useExisting: forwardRef(() => KjCascadeSelect) },
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjCascadeSelect) },
+    KjSelectionModel,
     KjOverlayController,
   ],
 })
-export class KjCascadeSelect implements KjCascadeSelectContext {
+export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectContext {
   /** @internal — shared overlay controller; trigger + panel + options share this. */
   private readonly _controller = inject(KjOverlayController);
 
@@ -59,6 +80,14 @@ export class KjCascadeSelect implements KjCascadeSelectContext {
 
   /** Two-way bindable path of values from root to selected leaf. */
   readonly kjCascadePath = model<readonly unknown[]>([]);
+
+  /**
+   * Tree topology used by `KjSelectionModel` in `'leaf'` mode (branch
+   * clicks become no-ops automatically when the shape is known). Also
+   * used by `afterSelect` to derive the cascade path from the selected
+   * leaf value.
+   */
+  readonly kjTreeShape = input<KjTreeShape<unknown> | null>(null);
 
   /** Sub-panel hover-open delay in ms. Default 100 (matches Dropdown Menu). */
   readonly kjSubPanelOpenDelayMs = input<number>(100);
@@ -69,9 +98,33 @@ export class KjCascadeSelect implements KjCascadeSelectContext {
   /** Emitted when the active-descendant crosses a level boundary. */
   readonly kjLevelChange = output<{ levelIndex: number }>();
 
+  // ── KjListNavigatorConfig implementation ──────────────────────────
+  /** All `KjListItem`s under this cascade — source for the navigators. */
+  readonly items = contentChildren(KjListItem, { descendants: true });
+
+  /**
+   * Implements `KjListNavigatorConfig.value`. Shared with `kjValue` so
+   * `KjSelectionModel` reads / writes through the same signal — one
+   * source of truth.
+   */
+  readonly value = this.kjValue as unknown as WritableSignal<
+    unknown | readonly unknown[] | null
+  >;
+
+  /**
+   * Cascade is leaf-only: branch options never enter `kjValue`. The
+   * `KjSelectionModel` in `'leaf'` mode no-ops on branch toggles when a
+   * `treeShape` is provided.
+   */
+  readonly mode: Signal<KjListSelectionMode> = signal<KjListSelectionMode>('leaf');
+
+  /** Implements `KjListNavigatorConfig.compareBy`. */
+  readonly compareBy = signal<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);
+
+  /** Re-exposes `kjTreeShape` under the {@link KjListNavigatorConfig} key. */
+  readonly treeShape = this.kjTreeShape;
+
   // ── KjSelectContext-compatible surface ──────────────────────────────
-  /** Read-only signal mirroring the selected leaf value. */
-  readonly value = this.kjValue.asReadonly();
   /** Open state — drives `KjSelect.open` for downstream consumers. */
   readonly open = this._controller.isOpen;
 
@@ -89,7 +142,6 @@ export class KjCascadeSelect implements KjCascadeSelectContext {
 
   // ── KjCascadeSelectContext implementation ──────────────────────────
   private readonly _openSubPanels = signal<readonly string[]>([]);
-  private readonly _activePerId = signal<Map<number, string | null>>(new Map());
 
   /** Path of values from root option to the selected leaf. */
   readonly path = computed(() => this.kjCascadePath());
@@ -102,6 +154,43 @@ export class KjCascadeSelect implements KjCascadeSelectContext {
   /** Hover-out close delay (ms). */
   readonly subPanelCloseDelayMs = computed(() => this.kjSubPanelCloseDelayMs());
 
+  /**
+   * Implements `KjListNavigatorConfig.afterSelect`. Invoked by
+   * `KjListItem` after it toggles the shared selection model. In
+   * leaf mode the model always returns `closeRequested: false`, but
+   * cascade-select's existing behavior closes the panel after every
+   * leaf commit — so we ignore `closeRequested` and close
+   * unconditionally when a real (defined) value was toggled. Branch
+   * clicks bypass the model toggle (no-op in leaf mode when a
+   * `treeShape` is known) and the panel stays open so the user can
+   * keep traversing.
+   */
+  afterSelect(value: unknown, _closeRequested: boolean): void {
+    if (value === undefined) return;
+    const shape = this.kjTreeShape();
+    if (shape && !shape.isLeaf(value)) return;
+    // Derive the path from tree shape (if any) by walking parents from
+    // the selected leaf up to the root. Without a shape, we can't
+    // reconstruct ancestry — fall back to a single-element path.
+    if (shape) {
+      const reverse: unknown[] = [value];
+      let cur: unknown | null = shape.getParent(value);
+      while (cur !== null) {
+        reverse.unshift(cur);
+        cur = shape.getParent(cur);
+      }
+      this.kjCascadePath.set(reverse);
+    } else {
+      this.kjCascadePath.set([value]);
+    }
+    this._openSubPanels.set([]);
+    this._controller.close('programmatic');
+  }
+
+  /**
+   * Programmatic commit used by code paths that don't flow through
+   * `KjListItem._activate` (e.g. trigger-level shortcuts).
+   */
   selectLeaf(value: unknown, path: readonly unknown[]): void {
     this.kjValue.set(value);
     this.kjCascadePath.set(path);
@@ -133,19 +222,4 @@ export class KjCascadeSelect implements KjCascadeSelectContext {
   hide(): void {
     this._controller.close('programmatic');
   }
-
-  setActive(levelIndex: number, optionId: string | null): void {
-    this._activePerId.update(map => {
-      const next = new Map(map);
-      next.set(levelIndex, optionId);
-      return next;
-    });
-  }
-
-  getActiveId(levelIndex: number): string | null {
-    return this._activePerId().get(levelIndex) ?? null;
-  }
-
-  /** @internal — exposed for the panel directive's ARIA active-descendant. */
-  readonly activeId = computed(() => this.getActiveId(0));
 }
