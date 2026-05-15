@@ -1,6 +1,6 @@
 // packages/core/src/primitives/list/filterable-list.ts
 import { Injectable, Injector, type Signal, computed, effect, inject, signal } from '@angular/core';
-import { KJ_LIST_NAVIGATOR_CONFIG, type KjFilterFn } from './tokens';
+import { KJ_LIST_NAVIGATOR_CONFIG, type KjFilterFn, type KjListNavigatorConfig } from './tokens';
 import type { KjListItem } from './item';
 
 // Field defaults so the service is usable without bind() in tests.
@@ -33,11 +33,17 @@ const defaultSubstring: KjFilterFn = (q, hs) => {
 @Injectable()
 export class KjFilterableList<T = unknown> {
   private readonly injector = inject(Injector);
-
-  /** Lazily resolved to break the circular dep when both KjFilterableList
-   *  and KJ_LIST_NAVIGATOR_CONFIG are provided on the same element. */
-  private get cfg() {
-    return this.injector.get(KJ_LIST_NAVIGATOR_CONFIG);
+  /**
+   * Resolved once on first access then cached. Direct `inject` at
+   * construction would deadlock when both `KjFilterableList` and
+   * `KJ_LIST_NAVIGATOR_CONFIG` (`useExisting` the root directive) are
+   * provided on the same element — at that point the root is still
+   * mid-construction. First access happens inside an effect that fires
+   * AFTER construction, when the root is fully resolved.
+   */
+  private _cfg?: KjListNavigatorConfig;
+  private get cfg(): KjListNavigatorConfig {
+    return (this._cfg ??= this.injector.get(KJ_LIST_NAVIGATOR_CONFIG));
   }
 
   /**
