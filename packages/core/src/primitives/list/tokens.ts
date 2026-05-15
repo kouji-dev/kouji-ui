@@ -48,6 +48,27 @@ export interface KjListNavigatorConfig {
 export const KJ_LIST_NAVIGATOR_CONFIG =
   new InjectionToken<KjListNavigatorConfig>('KJ_LIST_NAVIGATOR_CONFIG');
 
+/**
+ * Focus model for a list-style cluster:
+ *
+ * - `'activedescendant'` — host element keeps DOM focus; the active
+ *   option is signalled via `aria-activedescendant`. Default for
+ *   listbox / combobox / command-palette.
+ * - `'roving'` — the active option *is* the focused element; focus
+ *   moves between options via roving `tabindex`. Used by menus,
+ *   menubars, tree-select.
+ */
+export type KjListFocusMode = 'activedescendant' | 'roving';
+
+/**
+ * Provided by `KjListNavigator` so child `KjListItem`s can read the
+ * current focus mode reactively and bind their own `tabindex`. Items
+ * inject this `{ optional: true }` — when absent (no navigator on the
+ * host) they fall back to `'activedescendant'` behavior.
+ */
+export const KJ_LIST_FOCUS_MODE =
+  new InjectionToken<Signal<KjListFocusMode>>('KJ_LIST_FOCUS_MODE');
+
 export type KjListOrientation = 'vertical' | 'horizontal' | 'both';
 
 /**

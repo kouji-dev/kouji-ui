@@ -3,14 +3,16 @@ import {
   Directive,
   ElementRef,
   computed,
+  forwardRef,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
 import { KjDisabled } from '../interaction/disabled';
+import { KjListNavigator } from './navigator';
 import { KjSelectionModel } from './selection';
-import { KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
+import { KJ_LIST_FOCUS_MODE, KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
 
 let _id = 0;
 
@@ -32,7 +34,7 @@ let _id = 0;
   hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
   host: {
     '[hidden]': '!visible()',
-    '[attr.tabindex]': '"-1"',
+    '[attr.tabindex]': 'tabIndex()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-selected]': 'ariaSelected()',
     '[attr.aria-checked]': 'ariaChecked()',
@@ -67,11 +69,46 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   private readonly el = inject(ElementRef<HTMLElement>);
   readonly disabled = inject(KjDisabled).disabled;
 
+  // Optional — only present when this item lives inside a
+  // `[kjListNavigator]` (the common case). Read by `tabIndex()` so the
+  // item can reactively re-bind its host `tabindex` as activeId moves.
+  // forwardRef avoids the navigator <-> item circular reference issue.
+  private readonly navigator = inject<KjListNavigator | null>(
+    forwardRef(() => KjListNavigator),
+    { optional: true },
+  );
+  // Focus mode signal provided by the navigator. Optional: when no
+  // navigator hosts this item, fall back to activedescendant behavior
+  // (always `-1`) — matches the legacy tabindex output.
+  private readonly focusMode = inject(KJ_LIST_FOCUS_MODE, { optional: true });
+
   constructor() {
     const host = this.el.nativeElement;
     this.id = host.id || `kj-list-item-${++_id}`;
     host.id = this.id;
   }
+
+  /** @internal Native host element. Used by `KjListNavigator` to call `.focus()` in roving mode. */
+  _host(): HTMLElement {
+    return this.el.nativeElement;
+  }
+
+  /**
+   * Reactive `tabindex` for the host element:
+   * - No navigator / `'activedescendant'`: always `-1` — the navigator
+   *   host owns the Tab stop and signals activation via
+   *   `aria-activedescendant`.
+   * - `'roving'`: `0` for the currently active (focused) item and `-1`
+   *   for the rest. Disabled items are never active because
+   *   `KjListNavigator.navigable` filters them out, so they naturally
+   *   read `-1` here.
+   */
+  readonly tabIndex = computed<string>(() => {
+    const mode = this.focusMode?.();
+    if (mode !== 'roving') return '-1';
+    if (this.disabled()) return '-1';
+    return this.navigator?.activeId() === this.id ? '0' : '-1';
+  });
 
   private readonly _elText = signal('');
   readonly value     = computed<T | undefined>(() => this.kjItemValue());

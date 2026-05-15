@@ -1,11 +1,28 @@
 // packages/core/src/primitives/list/navigator.spec.ts
-import { signal } from '@angular/core';
+import { Component, Directive, contentChildren, forwardRef, signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { render, type RenderResult } from '@testing-library/angular';
 import { describe, it, expect } from 'vitest';
 import { KjListNavigator } from './navigator';
+import { KjListItem } from './item';
 import { KjTypeAhead } from './type-ahead';
 import { KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
-import type { KjListItem } from './item';
+
+/**
+ * Minimal test root that registers child KjListItems into
+ * KJ_LIST_NAVIGATOR_CONFIG via contentChildren — same pattern as
+ * KjSelect / KjCombobox. Used by the focus-mode tests below.
+ */
+@Directive({
+  selector: '[testListRoot]',
+  standalone: true,
+  providers: [
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => TestListRoot) },
+  ],
+})
+class TestListRoot {
+  readonly items = contentChildren(KjListItem, { descendants: true });
+}
 
 /** Shape that mirrors the parts of KjListItem the navigator reads. */
 function fakeItem(id: string, label: string, disabled = false) {
@@ -154,5 +171,116 @@ describe('KjListNavigator', () => {
     press(host, fixture, 'End');
     press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('2');
+  });
+});
+
+describe('KjListNavigator focus modes', () => {
+  it('default activedescendant: all KjListItem tabindex=-1', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjListNavigator, KjListItem, TestListRoot],
+      template: `
+        <div testListRoot kjListNavigator>
+          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+        </div>
+      `,
+    })
+    class Host {}
+    const { container } = await render(Host);
+    const els = container.querySelectorAll('[kjListItem]');
+    els.forEach(el => expect(el.getAttribute('tabindex')).toBe('-1'));
+  });
+
+  it('roving mode: first item is tabindex=0 on first render, others -1', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjListNavigator, KjListItem, TestListRoot],
+      template: `
+        <div testListRoot kjListNavigator [kjFocusMode]="'roving'">
+          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+          <div role="option" kjListItem id="c" [kjItemValue]="'c'">C</div>
+        </div>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    fixture.detectChanges();
+    const a = container.querySelector('#a')!;
+    const b = container.querySelector('#b')!;
+    const c = container.querySelector('#c')!;
+    expect(a.getAttribute('tabindex')).toBe('0');
+    expect(b.getAttribute('tabindex')).toBe('-1');
+    expect(c.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('roving mode: moveBy(1) flips the tabbable item to the next', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjListNavigator, KjListItem, TestListRoot],
+      template: `
+        <div testListRoot kjListNavigator [kjFocusMode]="'roving'" #nav="kjListNavigator">
+          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+        </div>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(KjListNavigator)).injector.get(KjListNavigator);
+    nav.moveBy(1);
+    fixture.detectChanges();
+    const a = container.querySelector('#a')!;
+    const b = container.querySelector('#b')!;
+    expect(a.getAttribute('tabindex')).toBe('-1');
+    expect(b.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('roving mode: disabled items get -1 even when first; first navigable seeded', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjListNavigator, KjListItem, TestListRoot],
+      template: `
+        <div testListRoot kjListNavigator [kjFocusMode]="'roving'">
+          <div role="option" kjListItem id="a" [kjDisabled]="true" [kjItemValue]="'a'">A</div>
+          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+          <div role="option" kjListItem id="c" [kjItemValue]="'c'">C</div>
+        </div>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    fixture.detectChanges();
+    const a = container.querySelector('#a')!;
+    const b = container.querySelector('#b')!;
+    const c = container.querySelector('#c')!;
+    // Disabled first item: tabindex=-1, first navigable (b) gets 0.
+    expect(a.getAttribute('tabindex')).toBe('-1');
+    expect(b.getAttribute('tabindex')).toBe('0');
+    expect(c.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('roving mode: setActive(id) moves focus to that item\'s host element', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjListNavigator, KjListItem, TestListRoot],
+      template: `
+        <div testListRoot kjListNavigator [kjFocusMode]="'roving'">
+          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+        </div>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    fixture.detectChanges();
+    const nav = fixture.debugElement.query(By.directive(KjListNavigator)).injector.get(KjListNavigator);
+    const b = container.querySelector('#b') as HTMLElement;
+    nav.setActive('b');
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(b);
+    expect(b.getAttribute('tabindex')).toBe('0');
   });
 });

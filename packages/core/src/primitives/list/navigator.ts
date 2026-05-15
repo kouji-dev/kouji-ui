@@ -2,13 +2,16 @@
 import {
   Directive,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
 import {
+  KJ_LIST_FOCUS_MODE,
   KJ_LIST_NAVIGATOR_CONFIG,
+  type KjListFocusMode,
   type KjListOrientation,
 } from './tokens';
 import { KjTypeAhead } from './type-ahead';
@@ -27,8 +30,16 @@ import type { KjListItem } from './item';
   selector: '[kjListNavigator]',
   exportAs: 'kjListNavigator',
   standalone: true,
+  providers: [
+    {
+      provide: KJ_LIST_FOCUS_MODE,
+      // The factory closes over the directive instance via `inject`,
+      // exposing the live `kjFocusMode` signal to child `KjListItem`s.
+      useFactory: () => inject(KjListNavigator).kjFocusMode,
+    },
+  ],
   host: {
-    '[attr.aria-activedescendant]': 'activeId()',
+    '[attr.aria-activedescendant]': 'kjFocusMode() === "activedescendant" ? activeId() : null',
     '(keydown)': '_onKeydown($event)',
   },
 })
@@ -41,6 +52,16 @@ export class KjListNavigator {
   readonly kjPageSize        = input<number>(10);
   /** Activate item on pointer hover. Default: `false`. */
   readonly kjActivateOnHover = input<boolean>(false);
+  /**
+   * Focus model. `'activedescendant'` (default) keeps DOM focus on the
+   * navigator host and signals the active option via
+   * `aria-activedescendant`. `'roving'` moves DOM focus onto the active
+   * option itself via roving `tabindex`. Switch to `'roving'` for menu
+   * / menubar / tree-select patterns where each item must be the focus
+   * target (so screen-reader virtual-cursor and JAWS / NVDA forms-mode
+   * line up with the visual highlight).
+   */
+  readonly kjFocusMode       = input<KjListFocusMode>('activedescendant');
 
   /** Fires when the active item changes. Emits the new id or `null`. */
   readonly kjActiveChange = output<string | null>();
@@ -60,6 +81,35 @@ export class KjListNavigator {
     const source = this.cfg.visibleItems?.() ?? this.cfg.items();
     return source.filter(i => !i.disabled());
   });
+
+  constructor() {
+    // Roving seed: when the focus model is `'roving'` and no item is
+    // active yet, point at the first navigable so its `tabindex=0`
+    // makes the list reachable by Tab on first render — required by
+    // WAI-ARIA APG (menu / tree). In `'activedescendant'` mode the
+    // listbox host itself is the Tab target, so seeding would
+    // pre-highlight an option before the user has interacted, hurting
+    // accessibility (false "selected" cue). Hence: roving only.
+    effect(() => {
+      if (this.kjFocusMode() !== 'roving') return;
+      if (this._activeId() !== null) return;
+      const first = this.navigable()[0];
+      if (first) this._activeId.set(first.id);
+    });
+
+    // Roving focus follow: when the active item changes (keyboard nav,
+    // pointer hover, programmatic setActive), move DOM focus onto its
+    // host element so the browser's focus ring + screen-reader virtual
+    // cursor track the visual highlight. Only relevant in roving mode
+    // — activedescendant keeps focus on the navigator host element.
+    effect(() => {
+      if (this.kjFocusMode() !== 'roving') return;
+      const item = this.activeItem();
+      if (!item) return;
+      const host = item._host();
+      if (host && document.activeElement !== host) host.focus();
+    });
+  }
 
   /**
    * The resolved active item object, or `null` when nothing is active.
