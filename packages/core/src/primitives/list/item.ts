@@ -2,6 +2,7 @@ import {
   AfterContentInit,
   Directive,
   ElementRef,
+  booleanAttribute,
   computed,
   forwardRef,
   inject,
@@ -9,7 +10,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { KjDisabled } from '../interaction/disabled';
 import { KjListNavigator } from './navigator';
 import { KjSelectionModel } from './selection';
 import { KJ_LIST_FOCUS_MODE, KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
@@ -31,19 +31,19 @@ let _id = 0;
   selector: '[kjListItem]',
   exportAs: 'kjListItem',
   standalone: true,
-  hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
   host: {
     '[hidden]': '!visible()',
     '[attr.tabindex]': 'tabIndex()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.data-disabled]': 'disabled() ? "" : null',
     '[attr.aria-selected]': 'ariaSelected()',
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-posinset]': 'posInSet()',
     '[attr.aria-setsize]': 'setSize()',
     '[attr.aria-keyshortcuts]': 'kjShortcut() || null',
-    '(click)': '_activate()',
-    '(keydown.enter)': '$event.preventDefault(); _activate()',
-    '(keydown.space)': '$event.preventDefault(); _activate()',
+    '(click)': '_activate($event)',
+    '(keydown.enter)': '$event.preventDefault(); _activate($event)',
+    '(keydown.space)': '$event.preventDefault(); _activate($event)',
   },
 })
 export class KjListItem<T = unknown> implements AfterContentInit {
@@ -55,6 +55,14 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   readonly kjItemKeywords = input<readonly string[]>([]);
   /** ARIA keyboard shortcut string bound to `aria-keyshortcuts`. Omit to suppress the attribute. */
   readonly kjShortcut     = input<string | null>(null);
+  /**
+   * Disabled flag. Declared as a top-level input (rather than as a
+   * `hostDirective` forward) so consumers that compose `KjListItem`
+   * inside their own `hostDirectives` (`KjOption`, `KjTreeSelectNode`,
+   * …) can re-forward it without falling foul of NG0311. The composed
+   * `KjDisabled` instance follows this signal via an effect below.
+   */
+  readonly kjDisabled     = input<boolean, unknown>(false, { transform: booleanAttribute });
 
   /** Fires when the item is activated (click / Enter / Space) and not disabled. Emits `value()`. */
   readonly activate = output<T | undefined>();
@@ -67,7 +75,7 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   readonly id: string;
 
   private readonly el = inject(ElementRef<HTMLElement>);
-  readonly disabled = inject(KjDisabled).disabled;
+  readonly disabled = this.kjDisabled;
 
   // Optional — only present when this item lives inside a
   // `[kjListNavigator]` (the common case). Read by `tabIndex()` so the
@@ -165,8 +173,14 @@ export class KjListItem<T = unknown> implements AfterContentInit {
     this._elText.set(this.el.nativeElement.textContent ?? '');
   }
 
-  _activate(): void {
+  _activate(event?: Event): void {
     if (this.disabled()) return;
+    // Stop bubbling so a click on a nested `kjListItem` doesn't also
+    // activate the ancestor item (matters for tree-style consumers
+    // where leaf nodes are rendered inside their parent branch's host
+    // element — without this, the leaf activation would be followed
+    // by the branch's `_activate` overriding the selection).
+    event?.stopPropagation();
     const v = this.value();
     // Selection toggle + consumer hook live here — not in the option
     // wrapper — because every list-style cluster that wires a

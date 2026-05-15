@@ -76,6 +76,13 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
   ],
 })
 export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext {
+  // Note: selection state (current value, isSelected membership) lives
+  // on the shared `KjSelectionModel` injected by `KjListItem`. The
+  // tree-select context here only owns tree-specific surface:
+  // expansion, the node-data signal, and the public `selectionMode`
+  // input name. Programmatic selection routes through the same
+  // `kjValue` signal that the selection model writes to — see
+  // `afterSelect` below.
   /** @internal — shared overlay controller; trigger + content + nodes all see this same instance. */
   private readonly controller = inject(KjOverlayController);
 
@@ -116,7 +123,6 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
 
   private readonly _expandedIds = signal<Set<string>>(new Set());
   private readonly _expandedValues = signal<Set<unknown>>(new Set());
-  private readonly _selectedValues = signal<readonly unknown[]>([]);
 
   // ── KjListNavigatorConfig implementation ────────────────────────────
 
@@ -152,17 +158,22 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
 
   /**
    * Hook called by `KjListItem` after it toggles the shared selection
-   * model. In single mode (the only mode that returns `closeRequested:
-   * true`) we close the overlay; multi keeps the panel open.
+   * model. Re-emits the public `kjNodeSelect` output so consumers see
+   * the same notification they saw before the migration (the legacy
+   * per-node `handleClick` emitted it; activation now happens inside
+   * `KjListItem._activate`, so the root is the only place left to
+   * forward it). In single mode (the only mode that returns
+   * `closeRequested: true`) we then close the overlay; multi keeps the
+   * panel open.
    */
-  afterSelect(_: unknown, closeRequested: boolean): void {
+  afterSelect(value: unknown, closeRequested: boolean): void {
+    if (value !== undefined) this.kjNodeSelect.emit(value);
     if (closeRequested) this.controller.close('programmatic');
   }
 
   // ── KjTreeSelectContext implementation ──────────────────────────────
 
   readonly selectionMode = computed(() => this.kjSelectionMode());
-  readonly selectedValues = computed(() => this._selectedValues());
   readonly expandedIds = computed(() =>
     new Set(this._expandedIds()) as ReadonlySet<string>,
   );
@@ -183,32 +194,7 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
     });
   }
 
-  // ── Selection ops ────────────────────────────────────────────────────
-
-  /**
-   * Manual selection path used by `KjTreeSelectNode` while node-level
-   * `KjListItem` composition hasn't landed yet. Mirrors the previous
-   * behavior: writes to `kjValue`, emits `kjNodeSelect`, closes in
-   * single mode. Task 3 of the migration plan replaces this with a
-   * `KjListItem`-driven toggle on the shared `KjSelectionModel`.
-   */
-  selectNode(value: unknown): void {
-    if (this.kjSelectionMode() === 'single') {
-      this.kjValue.set(value);
-      this._selectedValues.set([value]);
-      this.controller.close('programmatic');
-    } else {
-      const current = this._selectedValues();
-      const idx = current.indexOf(value);
-      if (idx >= 0) {
-        this._selectedValues.set(current.filter((_, i) => i !== idx));
-      } else {
-        this._selectedValues.set([...current, value]);
-      }
-      this.kjValue.set(this._selectedValues());
-    }
-    this.kjNodeSelect.emit(value);
-  }
+  // ── Expansion ops ────────────────────────────────────────────────────
 
   toggleNode(nodeId: string): void {
     const set = new Set(this._expandedIds());
@@ -234,12 +220,5 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
 
   isValueExpanded(value: unknown): boolean {
     return this._expandedValues().has(value);
-  }
-
-  isSelected(value: unknown): boolean {
-    if (this.kjSelectionMode() === 'single') {
-      return this.kjValue() === value;
-    }
-    return this._selectedValues().includes(value);
   }
 }

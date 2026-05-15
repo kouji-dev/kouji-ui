@@ -1,6 +1,7 @@
 import { render, fireEvent } from '@testing-library/angular';
 import { By } from '@angular/platform-browser';
 import { toHaveNoViolations } from 'jest-axe';
+import { afterEach } from 'vitest';
 import {
   KjTreeSelect,
   KjTreeSelectNode,
@@ -12,6 +13,16 @@ import { KJ_LIST_NAVIGATOR_CONFIG } from '../primitives/list';
 
 expect.extend(toHaveNoViolations);
 
+// Sweep portalled overlay wrappers between tests. The body-portal
+// mount strategy detaches them on overlay close, but if a test ends
+// while the panel is still open the wrapper survives in `document.body`
+// and pollutes subsequent `document.querySelector` calls.
+afterEach(() => {
+  document
+    .querySelectorAll('.kj-overlay-wrapper, .kj-overlay-container')
+    .forEach(w => w.remove());
+});
+
 const imports = [
   KjTreeSelect,
   KjTreeSelectTrigger,
@@ -19,6 +30,15 @@ const imports = [
   KjTreeSelectNode,
   KjTreeSelectToggle,
 ];
+
+// The overlay uses the body-portal mount strategy, so on open the panel
+// (and all of its tree-node children) move from the test `container`
+// into a per-overlay wrapper inside `document.body`. Pre-open queries
+// happily use the test `container`; post-open queries must scope to
+// `document` (or fall back to `container` when the portal is closed).
+const q = (sel: string): Element | null =>
+  document.querySelector(sel) ?? null;
+const qa = (sel: string): NodeListOf<Element> => document.querySelectorAll(sel);
 
 // ── Base single-select template ──────────────────────────────────────────────
 
@@ -75,7 +95,8 @@ describe('KjTreeSelect – panel visibility', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    expect(container.querySelector('kj-tree-select-content')).not.toHaveAttribute('hidden');
+    // Panel is portalled to body on open — query via `document`.
+    expect(q('kj-tree-select-content')).not.toHaveAttribute('hidden');
   });
 
   it('aria-expanded on trigger reflects open state', async () => {
@@ -96,7 +117,15 @@ describe('KjTreeSelect – panel visibility', () => {
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute('hidden', '');
+    // `KjOverlayController.close` schedules its DOM teardown inside a
+    // requestAnimationFrame (so consumers can animate close transitions
+    // without panicking the state machine). Wait one RAF before we
+    // assert on the final `hidden` attribute. Once closed, the panel
+    // is detached/hidden regardless of which parent currently holds
+    // it — query against `document` so the assertion stays
+    // intent-preserving.
+    await new Promise<void>(r => requestAnimationFrame(() => r()));
+    expect(q('kj-tree-select-content')).toHaveAttribute('hidden', '');
   });
 });
 
@@ -138,6 +167,17 @@ describe('KjTreeSelect – panel ARIA', () => {
     const branchNode = container.querySelector('[kjTreeSelectNode][data-has-children="true"]')!;
     expect(branchNode).toHaveAttribute('aria-expanded', 'false');
   });
+
+  it('node host element has an id minted by the composed KjListItem', async () => {
+    const { container } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    const node = container.querySelector('[kjTreeSelectNode]')!;
+    // KjListItem auto-mints `kj-list-item-N` ids unless an `id` is
+    // already set on the host element.
+    expect(node.id).toMatch(/^kj-list-item-\d+$/);
+  });
 });
 
 describe('KjTreeSelect – expand / collapse', () => {
@@ -147,9 +187,9 @@ describe('KjTreeSelect – expand / collapse', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const toggle = container.querySelector('[kjTreeSelectToggle]')!;
+    const toggle = q('[kjTreeSelectToggle]')!;
     fireEvent.click(toggle);
-    const branchNode = container.querySelector('[kjTreeSelectNode][data-has-children="true"]')!;
+    const branchNode = q('[kjTreeSelectNode][data-has-children="true"]')!;
     expect(branchNode).toHaveAttribute('aria-expanded', 'true');
     expect(branchNode).toHaveAttribute('data-expanded', 'true');
   });
@@ -160,10 +200,10 @@ describe('KjTreeSelect – expand / collapse', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const toggle = container.querySelector('[kjTreeSelectToggle]')!;
+    const toggle = q('[kjTreeSelectToggle]')!;
     fireEvent.click(toggle);
     fireEvent.click(toggle);
-    const branchNode = container.querySelector('[kjTreeSelectNode][data-has-children="true"]')!;
+    const branchNode = q('[kjTreeSelectNode][data-has-children="true"]')!;
     expect(branchNode).toHaveAttribute('aria-expanded', 'false');
   });
 
@@ -173,10 +213,10 @@ describe('KjTreeSelect – expand / collapse', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const toggle = container.querySelector('[kjTreeSelectToggle]')!;
+    const toggle = q('[kjTreeSelectToggle]')!;
     fireEvent.click(toggle);
     fixture.detectChanges();
-    expect(container.querySelector('kj-tree-select-content')).not.toHaveAttribute('hidden');
+    expect(q('kj-tree-select-content')).not.toHaveAttribute('hidden');
   });
 });
 
@@ -187,12 +227,22 @@ describe('KjTreeSelect – single selection', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const leafNode = container.querySelector('[kjTreeSelectNode][aria-level="2"]')!;
+    const leafNode = q('[kjTreeSelectNode][aria-level="2"]')!;
+    // Capture the node's id before activation so we can find it again
+    // post-close (panel may be portalled back to its original slot, or
+    // remain in the body wrapper — `document.querySelector` covers
+    // both placements).
+    const leafId = leafNode.id;
     fireEvent.click(leafNode);
     fixture.detectChanges();
-    expect(container.querySelector('kj-tree-select-content')).toHaveAttribute('hidden', '');
-    expect(leafNode).toHaveAttribute('aria-selected', 'true');
-    expect(leafNode).toHaveAttribute('data-selected', '');
+    // `KjOverlayController.close` schedules its DOM teardown inside a
+    // requestAnimationFrame — wait one RAF before asserting on
+    // `hidden`.
+    await new Promise<void>(r => requestAnimationFrame(() => r()));
+    expect(q('kj-tree-select-content')).toHaveAttribute('hidden', '');
+    const refoundLeaf = q(`#${leafId}`)!;
+    expect(refoundLeaf).toHaveAttribute('aria-selected', 'true');
+    expect(refoundLeaf).toHaveAttribute('data-selected', '');
   });
 
   it('aria-selected="false" on unselected nodes', async () => {
@@ -210,14 +260,16 @@ describe('KjTreeSelect – single selection', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const nodes = container.querySelectorAll('[kjTreeSelectNode][aria-level="2"]');
-    fireEvent.click(nodes[0]);
+    const initial = qa('[kjTreeSelectNode][aria-level="2"]');
+    const firstId = initial[0].id;
+    const secondId = initial[1].id;
+    fireEvent.click(initial[0]);
     fixture.detectChanges();
 
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
     fixture.detectChanges();
-    expect(nodes[0]).toHaveAttribute('aria-selected', 'true');
-    expect(nodes[1]).toHaveAttribute('aria-selected', 'false');
+    expect(q(`#${firstId}`)).toHaveAttribute('aria-selected', 'true');
+    expect(q(`#${secondId}`)).toHaveAttribute('aria-selected', 'false');
   });
 });
 
@@ -239,9 +291,9 @@ describe('KjTreeSelect – multi selection', () => {
       componentProperties: { selected: [] },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const nodes = container.querySelectorAll('[kjTreeSelectNode]');
+    const nodes = qa('[kjTreeSelectNode]');
     fireEvent.click(nodes[0]);
-    expect(container.querySelector('kj-tree-select-content')).not.toHaveAttribute('hidden');
+    expect(q('kj-tree-select-content')).not.toHaveAttribute('hidden');
   });
 
   it('panel has aria-multiselectable="true"', async () => {
@@ -260,7 +312,7 @@ describe('KjTreeSelect – multi selection', () => {
       componentProperties: { selected: [] },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const nodes = container.querySelectorAll('[kjTreeSelectNode]');
+    const nodes = qa('[kjTreeSelectNode]');
     fireEvent.click(nodes[0]);
     fireEvent.click(nodes[2]);
     fixture.detectChanges();
@@ -275,7 +327,7 @@ describe('KjTreeSelect – multi selection', () => {
       componentProperties: { selected: [] },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const nodes = container.querySelectorAll('[kjTreeSelectNode]');
+    const nodes = qa('[kjTreeSelectNode]');
     fireEvent.click(nodes[0]);
     fireEvent.click(nodes[0]);
     fixture.detectChanges();
@@ -317,9 +369,9 @@ describe('KjTreeSelect – disabled node', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    fireEvent.click(container.querySelector('[kjTreeSelectNode]')!);
+    const node = q('[kjTreeSelectNode]')!;
+    fireEvent.click(node);
     fixture.detectChanges();
-    const node = container.querySelector('[kjTreeSelectNode]')!;
     expect(node).toHaveAttribute('aria-selected', 'false');
   });
 });
@@ -340,15 +392,22 @@ describe('KjTreeSelect – KjListNavigatorConfig integration', () => {
 });
 
 describe('KjTreeSelect – keyboard navigation', () => {
+  // Pre-Task-4: keyboard nav is owned by KjTreeSelectContent's custom
+  // handler (the `kjFocusMode="roving"` integration with
+  // `KjListNavigator` lands in Task 4). The node now no longer carries
+  // `tabindex="0"` by default — KjListItem owns tabindex and in
+  // activedescendant mode keeps it at `-1`. The content handler still
+  // calls `.focus()` on each node directly, so these assertions remain
+  // meaningful: the DOM `activeElement` mirrors the navigated node.
   it('ArrowDown on the panel moves focus to the first node', async () => {
     const { container } = await render(singleTemplate, {
       imports,
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const panel = container.querySelector('kj-tree-select-content')!;
+    const panel = q('kj-tree-select-content')!;
     fireEvent.keyDown(panel, { key: 'ArrowDown' });
-    const nodes = container.querySelectorAll('[kjTreeSelectNode]');
+    const nodes = qa('[kjTreeSelectNode]');
     expect(document.activeElement).toBe(nodes[0]);
   });
 
@@ -358,9 +417,16 @@ describe('KjTreeSelect – keyboard navigation', () => {
       componentProperties: { selected: undefined },
     });
     fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const leafNode = container.querySelector('[kjTreeSelectNode][aria-level="2"]')!;
+    const leafNode = q('[kjTreeSelectNode][aria-level="2"]')!;
+    const leafId = leafNode.id;
     fireEvent.keyDown(leafNode, { key: 'Enter' });
     fixture.detectChanges();
-    expect(leafNode).toHaveAttribute('aria-selected', 'true');
+    // Enter routes through the content keydown handler, which calls
+    // `node.click()` — `KjListItem`'s `(click)` runs `_activate` →
+    // `KjSelectionModel.toggle` → root `afterSelect` closes the panel
+    // (single mode). Look up by id via `document` so we don't depend
+    // on whether the panel has been re-parented yet.
+    const refoundLeaf = q(`#${leafId}`)!;
+    expect(refoundLeaf).toHaveAttribute('aria-selected', 'true');
   });
 });
