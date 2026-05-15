@@ -243,9 +243,18 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
       );
       return;
     }
+    // Walk the target's ancestry once: build the new chain AND cancel
+    // any pending close timer along it. The second part fixes a
+    // hover-transition glitch where, after the cursor moves from
+    // sibling A to sibling B, a spurious close timer queued on B
+    // during the inter-option crossing would fire 300ms later and
+    // dismiss B's freshly-opened sub-panel. Cancelling on open makes
+    // the new chain authoritative — only an actual mouseleave on the
+    // current chain can schedule a fresh close.
     const chain: string[] = [];
     let current: typeof target | null = target;
     while (current) {
+      current._cancelCloseTimer();
       chain.unshift(current.item.id);
       current = current.parentSubPanel?.parentOption ?? null;
     }
