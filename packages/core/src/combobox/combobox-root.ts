@@ -4,12 +4,15 @@ import {
   computed,
   contentChildren,
   effect,
+  forwardRef,
   inject,
   input,
   model,
   output,
   signal,
   untracked,
+  type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { KjDisabled } from '../primitives';
 import { KjOverlayController } from '../primitives/overlay/controller';
@@ -21,6 +24,7 @@ import {
   KjSelectionModel,
   type KjFilterFn,
   type KjListNavigatorConfig,
+  type KjListSelectionMode,
 } from '../primitives/list';
 
 let _idCounter = 0;
@@ -66,7 +70,7 @@ export const kjStartsWithFilter = (query: string, label: string): boolean => {
   exportAs: 'kjCombobox',
   hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
   providers: [
-    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: KjCombobox },
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjCombobox) },
     KjSelectionModel,
     KjFilterableList,
     KjOverlayController,
@@ -78,6 +82,17 @@ export const kjStartsWithFilter = (query: string, label: string): boolean => {
 export class KjCombobox implements KjListNavigatorConfig {
   /** The currently selected value. Two-way bindable. */
   readonly kjValue = model<unknown>(null);
+
+  /**
+   * Implements `KjListNavigatorConfig.value`. The selection model reads
+   * and writes through this same signal — one source of truth.
+   */
+  readonly value = this.kjValue as unknown as WritableSignal<
+    unknown | readonly unknown[] | null
+  >;
+
+  /** Implements `KjListNavigatorConfig.mode`. Combobox is always single. */
+  readonly mode: Signal<KjListSelectionMode> = signal('single');
 
   /** The current query string typed into the input. Two-way bindable. */
   readonly kjQuery = model<string>('');
@@ -104,7 +119,6 @@ export class KjCombobox implements KjListNavigatorConfig {
   readonly kjCommit = output<unknown>();
 
   private readonly controller = inject(KjOverlayController);
-  private readonly selection  = inject(KjSelectionModel);
   private readonly filter     = inject(KjFilterableList);
 
   /** Stable listbox id for `aria-controls` wiring. */
@@ -119,7 +133,6 @@ export class KjCombobox implements KjListNavigatorConfig {
   );
 
   /** Public surface read by children. */
-  readonly value         = this.kjValue.asReadonly();
   readonly query         = this.kjQuery.asReadonly();
   readonly open          = this.controller.isOpen;
   readonly loading       = this.kjLoading;
@@ -146,8 +159,6 @@ export class KjCombobox implements KjListNavigatorConfig {
   });
 
   constructor() {
-    this.selection.setMode('single');
-    this.selection.bindValue(this.kjValue);
     this.filter.bind({
       items:             this.items,
       query:             this.kjQuery,
@@ -202,12 +213,34 @@ export class KjCombobox implements KjListNavigatorConfig {
     this.controller.open();
   }
 
+  /**
+   * Programmatic select used by `commitActive()` (Enter on the input
+   * with a navigator-active item) and the free-text Enter fallback in
+   * `KjComboboxInput`. Sets the value through the shared signal, then
+   * runs the same post-selection side-effects `afterSelect()` runs for
+   * option clicks — keeping both paths converged.
+   */
   select(value: unknown): void {
-    this.selection.setValue(value as never);
+    this.kjValue.set(value);
+    this._finishSelect(value);
+  }
+
+  /**
+   * Implements `KjListNavigatorConfig.afterSelect`. Called by
+   * `KjListItem` after it toggles the shared selection model, so option
+   * clicks / Enter / Space don't need a per-option `activate.subscribe`.
+   */
+  afterSelect(value: unknown, closeRequested: boolean): void {
+    if (!closeRequested) return;
+    this._finishSelect(value);
+  }
+
+  private _finishSelect(value: unknown): void {
     this.controller.close('programmatic');
-    // Reflect the chosen item's label in the input so the combobox reads
-    // as a picker (e.g. "France") instead of leaving the user's typed
-    // query text behind. Matches the autocomplete UX of `kj-select`.
+    // Reflect the chosen item's label in the input so the combobox
+    // reads as a picker (e.g. "France") instead of leaving the user's
+    // typed query text behind. Matches the autocomplete UX of
+    // `kj-select`.
     const match = this.items().find(i => i.value() === value);
     this.kjQuery.set(match ? match.label() : String(value ?? ''));
     this.kjCommit.emit(value);
@@ -219,11 +252,11 @@ export class KjCombobox implements KjListNavigatorConfig {
 
   move(delta: 1 | -1): void {
     if (!this.controller.isOpen()) this.controller.open();
-    this._nav?.moveBy(delta);
+    this._nav()?.moveBy(delta);
   }
 
   commitActive(): void {
-    const item = this._nav?.activeItem();
+    const item = this._nav()?.activeItem();
     if (item && !item.disabled()) {
       const v = item.value();
       if (v !== undefined) { this.select(v); return; }

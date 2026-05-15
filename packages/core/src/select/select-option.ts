@@ -1,13 +1,13 @@
-import { Directive, inject } from '@angular/core';
-import { KjListItem, injectListItem } from '../primitives/list';
-import { KJ_SELECT } from './select-root';
+import { Directive } from '@angular/core';
+import { KjListItem } from '../primitives/list';
 
 /**
- * Individual option inside a `<kj-select-content>`. Public input
- * (`kjOptionValue`) is preserved by aliasing into the composed
- * `KjListItem`'s `kjItemValue`. Click / Enter / Space activation is
- * owned by `KjListItem`; this directive adapts the value back to
- * `KjSelect.select(value)` and sets the ARIA role.
+ * Individual option inside a `<kj-select-content>`. Public inputs
+ * (`kjOptionValue`, `kjOptionLabel`) are aliased onto the composed
+ * `KjListItem`'s `kjItemValue` / `kjItemLabel`. Activation (click /
+ * Enter / Space), selection-model toggle, and overlay dismissal are
+ * all owned by `KjListItem` + `KjSelect.afterSelect` — this directive
+ * is just role + class + the input aliasing.
  *
  * @example
  * ```html
@@ -23,6 +23,7 @@ import { KJ_SELECT } from './select-root';
       directive: KjListItem,
       inputs: [
         'kjItemValue:kjOptionValue',
+        'kjItemLabel:kjOptionLabel',
       ],
     },
   ],
@@ -31,13 +32,4 @@ import { KJ_SELECT } from './select-root';
     'role': 'option',
   },
 })
-export class KjOption {
-  private readonly item = injectListItem<unknown>();
-  private readonly select = inject(KJ_SELECT, { optional: true });
-
-  constructor() {
-    this.item.activate.subscribe(value => {
-      if (this.select && value !== undefined) this.select.select(value);
-    });
-  }
-}
+export class KjOption {}

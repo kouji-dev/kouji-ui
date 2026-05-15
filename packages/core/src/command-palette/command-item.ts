@@ -8,9 +8,11 @@ import { KjCommandPalette } from './command-palette';
 
 /**
  * Individual command item (`role="option"`). Composes `KjListItem` for
- * id/value/label/keywords/disabled/click+keyboard activation; wires
- * the value into `KjCommandPalette.activate()` and applies
- * `aria-selected`/`data-active` bindings from the palette's active state.
+ * id / value / label / keywords / disabled / click+keyboard activation.
+ * The activation → `palette.activate(value)` wiring is now handled
+ * centrally by `KjCommandPalette.afterSelect`, called from
+ * `KjListItem` — this directive only contributes role, classes, the
+ * `kj*` input aliases, and the active-item ARIA / data attributes.
  *
  * @example
  * ```html
@@ -47,18 +49,11 @@ import { KjCommandPalette } from './command-palette';
   },
 })
 export class KjCommandItem {
-  private readonly item = injectListItem<unknown>();
+  private readonly item    = injectListItem<unknown>();
   private readonly palette = inject(KjCommandPalette);
 
   /** Whether this item is the active (highlighted) item. */
   readonly isActive = computed(() =>
-    this.palette.activeId() !== null && this.palette.activeId() === this.item.id
+    this.palette.activeId() !== null && this.palette.activeId() === this.item.id,
   );
-
-  constructor() {
-    // Wire activation events from KjListItem to the palette.
-    this.item.activate.subscribe(value => {
-      this.palette.activate(value);
-    });
-  }
 }

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { KjDisabled } from '../interaction/disabled';
 import { KjSelectionModel } from './selection';
+import { KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
 
 let _id = 0;
 
@@ -95,6 +96,7 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   readonly setSize  = signal<number | null>(null);
 
   private readonly selection = inject(KjSelectionModel, { optional: true }) as KjSelectionModel<T> | null;
+  private readonly cfg       = inject(KJ_LIST_NAVIGATOR_CONFIG, { optional: true });
 
   /**
    * `aria-selected` driven by the injected selection model. `null` when
@@ -128,6 +130,21 @@ export class KjListItem<T = unknown> implements AfterContentInit {
 
   _activate(): void {
     if (this.disabled()) return;
-    this.activate.emit(this.value());
+    const v = this.value();
+    // Selection toggle + consumer hook live here — not in the option
+    // wrapper — because every list-style cluster that wires a
+    // `KjSelectionModel` repeats the same two steps after activation:
+    // (1) toggle the value, (2) run consumer-specific side-effects
+    // (close the overlay, set an input query, emit a commit event).
+    // Centralizing both removes the per-option `activate.subscribe(...)`
+    // boilerplate. `afterSelect` is invoked even when the toggle was a
+    // no-op (e.g. leaf-mode branch click) so consumers can decide what
+    // counts as "select" — they receive `closeRequested` to gate on.
+    let closeRequested = false;
+    if (this.selection && v !== undefined) {
+      ({ closeRequested } = this.selection.toggle(v));
+    }
+    this.cfg?.afterSelect?.(v, closeRequested);
+    this.activate.emit(v);
   }
 }

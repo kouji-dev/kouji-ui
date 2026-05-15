@@ -43,9 +43,18 @@ describe('KjListItem', () => {
 
   it('binds aria-checked from KjSelectionModel.cascadeState when mode is cascade', async () => {
     const { KjSelectionModel } = await import('./selection');
+    const { KJ_LIST_NAVIGATOR_CONFIG } = await import('./tokens');
+    const { signal } = await import('@angular/core');
+    const value = signal<unknown | readonly unknown[] | null>(null);
     const { container, fixture } = await render(
       `<div role="treeitem" kjListItem [kjItemValue]="'A1'">A1</div>`,
-      { imports: [KjListItem], providers: [KjSelectionModel] },
+      {
+        imports: [KjListItem],
+        providers: [
+          KjSelectionModel,
+          { provide: KJ_LIST_NAVIGATOR_CONFIG, useValue: { items: signal([]), value } },
+        ],
+      },
     );
     const m = fixture.debugElement.injector.get(KjSelectionModel);
     m.setMode('cascade');

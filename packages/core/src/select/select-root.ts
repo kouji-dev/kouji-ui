@@ -1,12 +1,15 @@
 import {
   Directive,
   InjectionToken,
+  computed,
   contentChildren,
-  effect,
+  forwardRef,
   inject,
   input,
   model,
   signal,
+  type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
@@ -16,28 +19,25 @@ import {
   KjTypeAhead,
   type KjCompareFn,
   type KjListNavigatorConfig,
+  type KjListSelectionMode,
 } from '../primitives/list';
 
 export const KJ_SELECT = new InjectionToken<KjSelect>('KjSelect');
 
 /**
- * Root select container. Owns the overlay controller + selection model
- * (`KjSelectionModel`) + item query (`contentChildren(KjListItem)`).
- * Trigger / panel / option composites read state from this root via
- * DI tokens.
+ * Root select container. Implements `KjListNavigatorConfig` (items,
+ * value, mode, compareBy) and provides itself under
+ * `KJ_LIST_NAVIGATOR_CONFIG` via `forwardRef`. Downstream primitives
+ * (`KjSelectionModel`, `KjListNavigator`, `KjTypeAhead`) read whatever
+ * they need from this single contract.
  *
- * Public API (kjSelectValue, kjCompareBy, isSelected, select, _multiple)
- * is preserved end-to-end — the change is internal composition only.
+ * `KjSelect` itself does NOT inject `KjSelectionModel` — doing so at
+ * construction would create a runtime cycle (the model's
+ * `inject(KJ_LIST_NAVIGATOR_CONFIG)` would try to resolve a not-yet-
+ * constructed `KjSelect` instance, regardless of `forwardRef`). Instead,
+ * the model is constructed lazily when a child (`KjOption`, `KjListItem`)
+ * first asks for it, by which point `KjSelect` is fully built.
  *
- * @example
- * ```html
- * <div kjSelect [(kjSelectValue)]="selected">
- *   <button kjSelectTrigger #t="kjSelectTrigger">Choose fruit</button>
- *   <kj-select-content [kjFor]="t">
- *     <div kjOption [kjOptionValue]="'apple'">Apple</div>
- *   </kj-select-content>
- * </div>
- * ```
  * @doc-category Core/Inputs
  */
 @Directive({
@@ -45,57 +45,57 @@ export const KJ_SELECT = new InjectionToken<KjSelect>('KjSelect');
   standalone: true,
   exportAs: 'kjSelect',
   providers: [
-    { provide: KJ_SELECT, useExisting: KjSelect },
-    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: KjSelect },
+    { provide: KJ_SELECT, useExisting: forwardRef(() => KjSelect) },
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjSelect) },
     KjSelectionModel,
     KjTypeAhead,
     KjOverlayController,
   ],
 })
 export class KjSelect implements KjListNavigatorConfig {
-  private readonly controller = inject(KjOverlayController);
-  private readonly selection  = inject(KjSelectionModel);
-
   /** Two-way bindable selected value (single) or values (multi). */
   readonly kjSelectValue = model<unknown>(undefined);
+
+  /**
+   * Implements `KjListNavigatorConfig.value`. The selection model reads
+   * and writes through this same signal — one source of truth, no
+   * bridging effects.
+   */
+  readonly value = this.kjSelectValue as unknown as WritableSignal<
+    unknown | readonly unknown[] | null
+  >;
 
   /** Optional custom equality fn. Defaults to `Object.is`. */
   readonly kjCompareBy = input<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);
 
   /** @internal — written by `KjSelectTrigger`'s `kjMultiple` input. */
   readonly _multiple = signal(false);
-
-  /** Read-only signal of the current selection. */
-  readonly value = this.kjSelectValue.asReadonly();
   /** Whether multi-select is enabled. */
   readonly multiple = this._multiple.asReadonly();
-  /** Whether the overlay is open. */
-  readonly open = this.controller.isOpen;
 
   /** All `KjListItem`s under this select — source for navigator + type-ahead. */
   readonly items = contentChildren(KjListItem, { descendants: true });
 
-  constructor() {
-    // Selection model storage IS the kjSelectValue model() — no bridging.
-    this.selection.bindValue(this.kjSelectValue as never);
-    // Mode follows the kjMultiple flag; compareBy follows kjCompareBy.
-    effect(() => this.selection.setMode(this._multiple() ? 'multi' : 'single'));
-    effect(() => this.selection.setCompareBy(this.kjCompareBy() as KjCompareFn<unknown>));
-  }
+  /** Implements `KjListNavigatorConfig.mode`. */
+  readonly mode: Signal<KjListSelectionMode> = computed(() =>
+    this._multiple() ? 'multi' : 'single',
+  );
 
-  /** True iff `target` is currently selected. */
-  isSelected(target: unknown): boolean {
-    return this.selection.isSelected(target);
-  }
+  /** Implements `KjListNavigatorConfig.compareBy`. */
+  readonly compareBy = this.kjCompareBy;
+
+  private readonly controller = inject(KjOverlayController);
+
+  /** Whether the overlay is open. */
+  readonly open = this.controller.isOpen;
 
   /**
-   * Toggle the value through the selection model. Single mode closes the
-   * overlay; multi mode keeps it open. Return shape preserved for backward
-   * compat with `KjSelectTrigger`.
+   * Implements `KjListNavigatorConfig.afterSelect`. Called by
+   * `KjListItem` right after it toggles the shared selection model.
+   * In single mode (the only mode where `closeRequested` is `true`)
+   * we dismiss the overlay; multi mode keeps it open.
    */
-  select(target: unknown): { close: boolean } {
-    const { closeRequested } = this.selection.toggle(target);
+  afterSelect(_: unknown, closeRequested: boolean): void {
     if (closeRequested) this.controller.close('programmatic');
-    return { close: closeRequested };
   }
 }

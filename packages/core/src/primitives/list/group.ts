@@ -3,7 +3,9 @@ import {
   Directive,
   computed,
   contentChildren,
+  effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { KjListItem } from './item';
@@ -49,14 +51,22 @@ let _labelId = 0;
   standalone: true,
   host: {
     'role': 'group',
-    '[id]': 'id',
+    '[attr.id]': 'id()',
     '[attr.aria-labelledby]': 'labelId()',
     '[hidden]': 'isHidden()',
   },
 })
 export class KjListGroup {
-  /** Stable group id used as the `aria-labelledby` target's reference. */
-  readonly id = `kj-list-group-${++_groupId}`;
+  /** Optional override id. Falls back to a generated `kj-list-group-N`. */
+  readonly kjId = input<string>('');
+
+  private readonly _fallbackId = `kj-list-group-${++_groupId}`;
+
+  /**
+   * Resolved id used by the host `id` attribute and as the target of any
+   * child label's `aria-labelledby`. Reactively follows `kjId` when set.
+   */
+  readonly id = computed(() => this.kjId() || this._fallbackId);
 
   /** Items directly under this group. Source of truth for auto-hide. */
   readonly items = contentChildren(KjListItem, { descendants: true });
@@ -82,7 +92,9 @@ export class KjListGroup {
 
 /**
  * Heading inside a `[kjListGroup]`. Mints a stable id and registers it
- * with the group so the wrapper picks it up via `aria-labelledby`.
+ * with the surrounding group so the wrapper picks it up via
+ * `aria-labelledby`. The host `id` attribute is bound from the resolved
+ * id — write `id="my-id"` on the element to override.
  *
  * @doc-category Core/Primitives
  */
@@ -91,16 +103,22 @@ export class KjListGroup {
   exportAs: 'kjListGroupLabel',
   standalone: true,
   host: {
-    '[id]': 'id',
+    '[attr.id]': 'id()',
   },
 })
 export class KjListGroupLabel {
-  /** Stable id targeted by the parent group's `aria-labelledby`. */
-  readonly id = `kj-list-group-label-${++_labelId}`;
+  /** Optional override id. Falls back to a generated `kj-list-group-label-N`. */
+  readonly kjId = input<string>('');
+
+  private readonly _fallbackId = `kj-list-group-label-${++_labelId}`;
+
+  /** Resolved id used by the host `id` attribute and by the parent group. */
+  readonly id = computed(() => this.kjId() || this._fallbackId);
+
+  private readonly group = inject(KjListGroup);
 
   constructor() {
-    const group = inject(KjListGroup, { optional: true });
-    group?.setLabelId(this.id);
+    effect(() => this.group.setLabelId(this.id()));
   }
 }
 

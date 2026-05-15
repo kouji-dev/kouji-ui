@@ -4,6 +4,7 @@ import {
   computed,
   contentChildren,
   effect,
+  forwardRef,
   inject,
   input,
   model,
@@ -59,7 +60,7 @@ export interface KjCommandActivateEvent {
   standalone: true,
   exportAs: 'kjCommandPalette',
   providers: [
-    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: KjCommandPalette },
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjCommandPalette) },
     KjFilterableList,
     KjTypeAhead,
   ],
@@ -188,5 +189,16 @@ export class KjCommandPalette implements KjListNavigatorConfig {
       if (item) nav.setActive(item.id);
     }
     this.kjActivate.emit({ value, query: this.kjQuery() });
+  }
+
+  /**
+   * Implements `KjListNavigatorConfig.afterSelect`. The palette has no
+   * `KjSelectionModel`, so `closeRequested` is always `false` here —
+   * we use this purely as the central "an item was activated" hook
+   * called from `KjListItem`, which lets `KjCommandItem` skip the
+   * `activate.subscribe(...)` boilerplate.
+   */
+  afterSelect(value: unknown): void {
+    this.activate(value);
   }
 }
