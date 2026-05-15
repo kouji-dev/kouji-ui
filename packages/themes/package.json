@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/themes",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Theme tokens and theme stylesheets for kouji-ui — pure CSS, swappable at runtime via data-theme.",
   "license": "MIT",
   "repository": {
@@ -9,11 +9,26 @@
     "directory": "packages/themes"
   },
   "homepage": "https://kouji-ui.onrender.com",
-  "bugs": { "url": "https://github.com/kouji-dev/kouji-ui/issues" },
-  "keywords": ["css", "theme", "tokens", "design-system", "kouji"],
-  "publishConfig": { "access": "public", "provenance": true },
-  "sideEffects": ["**/*.css"],
-  "files": ["src/"],
+  "bugs": {
+    "url": "https://github.com/kouji-dev/kouji-ui/issues"
+  },
+  "keywords": [
+    "css",
+    "theme",
+    "tokens",
+    "design-system",
+    "kouji"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "src/"
+  ],
   "exports": {
     ".": "./src/index.css",
     "./base.css": "./src/base.css",
