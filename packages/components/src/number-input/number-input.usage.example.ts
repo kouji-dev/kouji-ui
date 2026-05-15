@@ -17,10 +17,12 @@ import { KjNumberInputComponent } from './number-input';
   `],
   template: `
     <div class="row">
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label>
         Quantity
         <kj-number-input [(kjValue)]="qty" kjAriaLabel="Quantity" />
       </label>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label>
         Servings (1–12)
         <kj-number-input
@@ -30,6 +32,7 @@ import { KjNumberInputComponent } from './number-input';
           [kjStep]="1"
           kjAriaLabel="Servings" />
       </label>
+      <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label>
         Price
         <kj-number-input

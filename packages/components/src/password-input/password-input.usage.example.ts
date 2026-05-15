@@ -15,6 +15,7 @@ import { KjPasswordInputComponent } from './password-input';
     label { display: grid; gap: var(--kj-space-xs); font-size: 0.875rem; color: var(--kj-fg-default); }
   `],
   template: `
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       Current password
       <kj-password-input
@@ -22,6 +23,7 @@ import { KjPasswordInputComponent } from './password-input';
         kjPlaceholder="Enter your password" />
     </label>
 
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       New password
       <kj-password-input
@@ -31,6 +33,7 @@ import { KjPasswordInputComponent } from './password-input';
         [kjShowCapsLockWarning]="true" />
     </label>
 
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       Read-only (disabled)
       <kj-password-input [kjDisabled]="true" kjPlaceholder="Locked" />

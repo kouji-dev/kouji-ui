@@ -76,7 +76,7 @@ export const PLAYGROUND: PlaygroundFile = {
   ],
   snippet: (values) => {
     const s = values as { sample: string; truncateLines: number };
-    let body = '';
+    let body: string;
     switch (s.sample) {
       case 'lead':
         body = `  <p kjLead>A lead-in paragraph carries softer tone and a touch more size.</p>`;

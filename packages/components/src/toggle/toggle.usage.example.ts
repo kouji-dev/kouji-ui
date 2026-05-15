@@ -22,6 +22,7 @@ import { KjToggleComponent } from './toggle';
       <kj-toggle [disabled]="true" ariaLabel="Strikethrough">S</kj-toggle>
     </div>
 
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label class="row">
       <kj-toggle [(pressed)]="notifications" appearance="switch" ariaLabel="Notifications" />
       <span class="label">{{ notifications() ? 'Notifications on' : 'Notifications off' }}</span>

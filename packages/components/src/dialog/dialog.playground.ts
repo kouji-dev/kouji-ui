@@ -18,7 +18,7 @@ const showCancel = signal(true);
 const open = signal(false);
 
 @Component({
-  selector: 'app-pg-dialog-body',
+  selector: 'kj-dialog-playground-body',
   standalone: true,
   imports: [KjDialog, KjButtonComponent],
   template: `

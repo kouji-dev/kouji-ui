@@ -15,6 +15,7 @@ import { KjSelectComponent, KjOptionComponent } from './select';
     label { display: grid; gap: var(--kj-space-xs); font-size: 0.875rem; color: var(--kj-fg-default); }
   `],
   template: `
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       Fruit (placeholder)
       <kj-select [(value)]="fruit" placeholder="Choose a fruit">
@@ -24,6 +25,7 @@ import { KjSelectComponent, KjOptionComponent } from './select';
       </kj-select>
     </label>
 
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       Country (pre-selected)
       <kj-select [(value)]="country">
@@ -33,6 +35,7 @@ import { KjSelectComponent, KjOptionComponent } from './select';
       </kj-select>
     </label>
 
+    <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       Locked
       <kj-select [(value)]="locked" [disabled]="true" placeholder="Read-only">

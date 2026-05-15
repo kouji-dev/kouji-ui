@@ -14,7 +14,7 @@ const message = signal('Slide-in side panel — close with Escape or the backdro
 const open = signal(false);
 
 @Component({
-  selector: 'app-pg-drawer-body',
+  selector: 'kj-drawer-playground-body',
   standalone: true,
   imports: [KjDrawer],
   template: `
