@@ -2,7 +2,9 @@ import { InjectionToken, Signal } from '@angular/core';
 import type { KjListItem } from './item';
 
 export interface KjListNavigatorConfig {
+  /** All registered items in DOM order. Source of truth for nav + filter. */
   readonly items: Signal<readonly KjListItem<unknown>[]>;
+  /** Filter-aware visible subset. Falls back to `items` when not provided. */
   readonly visibleItems?: Signal<readonly KjListItem<unknown>[]>;
 }
 

@@ -44,11 +44,16 @@ let _id = 0;
   },
 })
 export class KjListItem<T = unknown> implements AfterContentInit {
+  /** Typed value emitted on activation. `undefined` when unset. */
   readonly kjItemValue    = input<T | undefined>(undefined);
+  /** Display label. Falls back to element text content when empty. */
   readonly kjItemLabel    = input<string>('');
+  /** Extra search terms merged into `haystacks` for type-ahead / filter matching. */
   readonly kjItemKeywords = input<readonly string[]>([]);
+  /** ARIA keyboard shortcut string bound to `aria-keyshortcuts`. Omit to suppress the attribute. */
   readonly kjShortcut     = input<string | null>(null);
 
+  /** Fires when the item is activated (click / Enter / Space) and not disabled. Emits `value()`. */
   readonly activate = output<T | undefined>();
 
   readonly id = `kj-list-item-${++_id}`;
@@ -65,10 +70,20 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   readonly visible = this._visible.asReadonly();
   setVisible(v: boolean): void { this._visible.set(v); }
 
+  /**
+   * Position in the visible (filter-aware) set, bound to `aria-posinset`.
+   * Writable for internal use by `KjFilterableList` only; consumers
+   * should treat it as read-only.
+   */
   readonly posInSet = signal<number | null>(null);
+  /**
+   * Total size of the visible (filter-aware) set, bound to `aria-setsize`.
+   * Writable for internal use by `KjFilterableList` only; consumers
+   * should treat it as read-only.
+   */
   readonly setSize  = signal<number | null>(null);
 
-  private readonly selection = inject<KjSelectionModel<T> | null>(KjSelectionModel as never, { optional: true });
+  private readonly selection = inject(KjSelectionModel, { optional: true }) as KjSelectionModel<T> | null;
   readonly ariaSelected = computed<'true' | 'false' | null>(() => {
     if (!this.selection) return null;
     const v = this.value();

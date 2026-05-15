@@ -105,6 +105,23 @@ describe('KjListItem', () => {
     expect(container.querySelector('[kjListItem]')!.getAttribute('aria-keyshortcuts')).toBe('Mod+P');
   });
 
+  it('binds aria-posinset and aria-setsize from posInSet/setSize signals', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjListItem],
+      template: `<div role="option" kjListItem #i="kjListItem" [kjItemValue]="'a'">A</div>`,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    const item = fixture.debugElement.query(By.directive(KjListItem)).injector.get(KjListItem);
+    item.posInSet.set(2);
+    item.setSize.set(5);
+    fixture.detectChanges();
+    const el = container.querySelector('[kjListItem]')!;
+    expect(el.getAttribute('aria-posinset')).toBe('2');
+    expect(el.getAttribute('aria-setsize')).toBe('5');
+  });
+
   it('passes axe accessibility audit', async () => {
     const { container } = await render(
       `<ul role="listbox" aria-label="Options">
