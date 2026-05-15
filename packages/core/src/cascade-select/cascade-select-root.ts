@@ -222,12 +222,34 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
     this._controller.close('programmatic');
   }
 
+  /**
+   * Open the sub-panel for `ownerOptionId`. The full chain is rebuilt
+   * from the option's ancestry — walking `parentSubPanel.parentOption`
+   * up to the root — so siblings at any depth become mutually
+   * exclusive. Without this, opening sibling B with sibling A still in
+   * the chain leaves both panels in `_openSubPanels`, and A's pending
+   * close timer (queued when the cursor crossed out of A) then fires
+   * and `slice(0, idx)` strips B too. Rebuilding from ancestry makes
+   * the chain authoritative: stale entries can't slice through fresh
+   * ones because the fresh open already removed them.
+   */
   openSubPanel(ownerOptionId: string): void {
-    this._openSubPanels.update(panels => {
-      const idx = panels.indexOf(ownerOptionId);
-      if (idx >= 0) return panels.slice(0, idx + 1);
-      return [...panels, ownerOptionId];
-    });
+    const target = this.findOption(ownerOptionId);
+    if (!target) {
+      // Fallback: option not yet registered (rare — pre-content-init).
+      // Append to keep behavior monotonic; the close path is tolerant.
+      this._openSubPanels.update(panels =>
+        panels.includes(ownerOptionId) ? panels : [...panels, ownerOptionId],
+      );
+      return;
+    }
+    const chain: string[] = [];
+    let current: typeof target | null = target;
+    while (current) {
+      chain.unshift(current.item.id);
+      current = current.parentSubPanel?.parentOption ?? null;
+    }
+    this._openSubPanels.set(chain);
   }
 
   closeSubPanel(ownerOptionId: string): void {

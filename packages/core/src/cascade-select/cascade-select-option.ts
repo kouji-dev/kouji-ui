@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   computed,
   Directive,
+  forwardRef,
   inject,
   input,
   OnDestroy,
@@ -9,6 +10,7 @@ import {
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
 import { KJ_CASCADE_SELECT } from './cascade-select.context';
+import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
 
 /**
  * Single row inside a `[kjCascadeSelectPanel]` or
@@ -81,6 +83,23 @@ export class KjCascadeSelectOption implements OnDestroy {
   readonly item = injectListItem<unknown>();
   /** @internal */
   readonly ctx = inject(KJ_CASCADE_SELECT);
+
+  /**
+   * @internal Closest ancestor sub-panel (if any). `null` when this
+   * option sits in the root cascade panel. Used by `KjCascadeSelect`'s
+   * `openSubPanel` chain rebuild — walking parent panels up to the
+   * root produces the exact open-chain that should be set, so opening
+   * a sibling at any level closes its siblings automatically (instead
+   * of leaving stale entries that a late-firing close timer can then
+   * slice through).
+   *
+   * `forwardRef` defers the class lookup so the option ↔ sub-panel
+   * import cycle doesn't trip on first evaluation.
+   */
+  readonly parentSubPanel = inject<KjCascadeSelectSubPanel | null>(
+    forwardRef(() => KjCascadeSelectSubPanel),
+    { optional: true },
+  );
 
   /**
    * The value this option represents. Forwarded to the composed
