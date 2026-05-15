@@ -1,3 +1,4 @@
+export { KjDropdownMenu } from './dropdown-menu';
 export { KjDropdownMenuTrigger } from './dropdown-menu-trigger';
 export { KjDropdownMenuContent } from './dropdown-menu-content';
 export { KjDropdownMenuItem } from './dropdown-menu-item';
