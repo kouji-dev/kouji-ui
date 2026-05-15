@@ -180,6 +180,20 @@ export class KjCombobox implements KjListNavigatorConfig {
         if (visible.length > 0) nav.setActive(visible[0].id);
       });
     });
+
+    // Seed `kjQuery` from the selected item's label whenever the input
+    // would otherwise render blank. Covers the case where `kjValue` is
+    // bound up-front (preset) but no query text has been typed yet.
+    effect(() => {
+      const items = this.items();
+      const v = this.kjValue();
+      if (v === null || v === undefined) return;
+      if (this.kjQuery() !== '') return;
+      untracked(() => {
+        const match = items.find(i => i.value() === v);
+        if (match) this.kjQuery.set(match.label());
+      });
+    });
   }
 
   setQuery(value: string): void {
@@ -190,6 +204,11 @@ export class KjCombobox implements KjListNavigatorConfig {
   select(value: unknown): void {
     this.selection.setValue(value as never);
     this.controller.close('programmatic');
+    // Reflect the chosen item's label in the input so the combobox reads
+    // as a picker (e.g. "France") instead of leaving the user's typed
+    // query text behind. Matches the autocomplete UX of `kj-select`.
+    const match = this.items().find(i => i.value() === value);
+    this.kjQuery.set(match ? match.label() : String(value ?? ''));
     this.kjCommit.emit(value);
   }
 

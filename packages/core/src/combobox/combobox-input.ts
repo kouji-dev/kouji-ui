@@ -61,6 +61,7 @@ import { KjCombobox } from './combobox-root';
     'spellcheck': 'false',
     '[attr.aria-autocomplete]': '"list"',
     '[attr.aria-busy]': 'ctx.loading() ? "true" : null',
+    '[value]': 'ctx.query()',
     '(input)': 'onInput($event)',
     '(click)': 'onClick()',
     '(keydown.enter)': 'onEnter($event)',
