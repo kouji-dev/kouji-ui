@@ -86,22 +86,28 @@ import {
 @Component({
   selector: 'kj-menubar',
   standalone: true,
-  imports: [KjMenubar],
-  template: `
-    <nav
-      kjMenubar
-      class="kj-menubar"
-      [kjLoop]="kjLoop()"
-      [kjAutoDisclose]="kjAutoDisclose()"
-      [kjAutoDiscloseDelayMs]="kjAutoDiscloseDelayMs()"
-      [kjAriaLabel]="kjAriaLabel()"
-    >
-      <ng-content />
-    </nav>
-  `,
+  // KjMenubar must live on this component's host element (not on an
+  // inner `<nav>`) so projected `<kj-menubar-item>` children can
+  // resolve KJ_MENUBAR through their declaration-tree element-injector
+  // walk. Composing via hostDirectives places the directive — and the
+  // KJ_MENUBAR provider — exactly there.
+  hostDirectives: [
+    {
+      directive: KjMenubar,
+      inputs: [
+        'kjLoop',
+        'kjAutoDisclose',
+        'kjAutoDiscloseDelayMs',
+        'kjAriaLabel',
+      ],
+    },
+  ],
+  template: `<ng-content />`,
   styleUrl: './menubar.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-menubar',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarComponent {
