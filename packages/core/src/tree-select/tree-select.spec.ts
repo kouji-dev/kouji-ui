@@ -392,13 +392,14 @@ describe('KjTreeSelect – KjListNavigatorConfig integration', () => {
 });
 
 describe('KjTreeSelect – keyboard navigation', () => {
-  // Pre-Task-4: keyboard nav is owned by KjTreeSelectContent's custom
-  // handler (the `kjFocusMode="roving"` integration with
-  // `KjListNavigator` lands in Task 4). The node now no longer carries
-  // `tabindex="0"` by default — KjListItem owns tabindex and in
-  // activedescendant mode keeps it at `-1`. The content handler still
-  // calls `.focus()` on each node directly, so these assertions remain
-  // meaningful: the DOM `activeElement` mirrors the navigated node.
+  // Post-Task-4: Up/Down/Home/End/Enter/Space/type-ahead are owned by
+  // the composed `KjListNavigator`; tree-specific ArrowLeft/Right stay
+  // on `KjTreeSelectContent`. Roving DOM focus is wired by the content
+  // component via a local effect on `KjListNavigator.activeId` plus a
+  // `KJ_LIST_FOCUS_MODE` provider override (Angular's
+  // `hostDirectives.inputs` cannot statically push `'roving'` into the
+  // navigator's input signal). Net effect for these tests: keyboard
+  // moves `activeId` → DOM focus follows → `activeElement` matches.
   it('ArrowDown on the panel moves focus to the first node', async () => {
     const { container } = await render(singleTemplate, {
       imports,

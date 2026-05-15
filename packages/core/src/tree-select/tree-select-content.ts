@@ -4,6 +4,7 @@ import {
   ElementRef,
   Injector,
   ViewEncapsulation,
+  effect,
   inject,
   input,
   signal,
@@ -18,19 +19,34 @@ import {
 import type { KjSide, KjAlign } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
+import {
+  KJ_LIST_FOCUS_MODE,
+  KjListNavigator,
+  type KjListFocusMode,
+} from '../primitives/list';
 import { KJ_TREE_SELECT } from './tree-select.context';
+
+// Token override below pins the focus mode to `'roving'` for descendant
+// `KjListItem`s. Defined at module scope so it can be referenced from
+// the `providers` array literal without a class capture.
+const ROVING_FOCUS_MODE = signal<KjListFocusMode>('roving');
 
 /**
  * Tree panel container. Composes `KjOverlayPanel` for mount/position/role
- * wiring (carries `role="tree"` from the panel role provider) and adds tree
- * keyboard navigation (ArrowUp/Down for vertical movement, ArrowRight to
- * expand a branch, ArrowLeft to collapse, Enter/Space to select, Home/End
- * to jump, Escape to close, type-ahead for character keys) plus
- * `aria-multiselectable` reflection from the parent context selection mode.
+ * wiring (carries `role="tree"` from the panel role provider) and
+ * `KjListNavigator` for the generic Up/Down / Home/End / Enter / Space /
+ * type-ahead contract. The tree-specific ArrowLeft / ArrowRight keys
+ * remain handled here because they carry expand/collapse +
+ * parent/first-child semantics the generic navigator doesn't cover.
  *
- * Tree node directives (`[kjTreeSelectNode]`, `[kjTreeSelectToggle]`)
- * remain unchanged — this component only orchestrates the overlay surface
- * and panel-level keyboard ergonomics.
+ * Roving DOM focus is wired here (rather than via the navigator's own
+ * `kjFocusMode="roving"` mode) because Angular's `hostDirectives.inputs`
+ * surface can only rename inputs — it can't push a static default into a
+ * composed input signal. Instead this component (1) overrides the
+ * `KJ_LIST_FOCUS_MODE` provider so child `KjListItem`s flip their
+ * `tabindex` correctly, and (2) drives the active-item DOM focus via a
+ * local effect on `KjListNavigator.activeId()`. The navigator itself
+ * continues to run its keyboard / type-ahead state machine unchanged.
  *
  * @doc-category Core/Inputs
  */
@@ -39,11 +55,17 @@ import { KJ_TREE_SELECT } from './tree-select.context';
   standalone: true,
   hostDirectives: [
     { directive: KjOverlayPanel, inputs: ['kjFor'] },
+    KjListNavigator,
   ],
   providers: [
     { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'tree' as const },
     { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => anchoredTo() },
+    // Pin items' focus model to `'roving'` (per WAI-ARIA APG tree). This
+    // overrides the provider the navigator registers (which mirrors the
+    // navigator's own `kjFocusMode` signal). The navigator's internal
+    // seed / focus effects are skipped — both are driven here instead.
+    { provide: KJ_LIST_FOCUS_MODE, useValue: ROVING_FOCUS_MODE },
   ],
   host: {
     '[attr.aria-multiselectable]':
@@ -73,6 +95,11 @@ export class KjTreeSelectContent {
   }
   /** @internal */
   readonly ctx = inject(KJ_TREE_SELECT, { optional: true });
+  // The composed `KjListNavigator` owns the generic Up/Down/Home/End/
+  // Enter/Space/type-ahead contract. We read its `activeItem()` below to
+  // anchor ArrowLeft / ArrowRight off the currently focused tree node
+  // and to follow the active id with DOM focus (roving model).
+  private readonly nav = inject(KjListNavigator);
 
   readonly kjSide = input<KjSide>('bottom');
   readonly kjAlign = input<KjAlign>('start');
@@ -83,9 +110,19 @@ export class KjTreeSelectContent {
   constructor() {
     const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
     pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset, matchTriggerWidth: 'min' });
-  }
 
-  private readonly _activeIndex = signal(-1);
+    // Roving focus follow: mirror the navigator's `activeId` to DOM
+    // focus. Equivalent to `KjListNavigator`'s internal focus effect,
+    // re-implemented here because the navigator's effect is gated on
+    // `kjFocusMode() === 'roving'` and we can't statically push that
+    // value into a hostDirective input signal.
+    effect(() => {
+      const item = this.nav.activeItem();
+      if (!item) return;
+      const host = item._host();
+      if (host && document.activeElement !== host) host.focus();
+    });
+  }
 
   /** @internal */
   onDocClick(event: MouseEvent): void {
@@ -99,108 +136,64 @@ export class KjTreeSelectContent {
     ctrl.close('outside');
   }
 
-  /** @internal */
+  /**
+   * Tree-specific ArrowLeft / ArrowRight handling. Up/Down/Home/End/
+   * Enter/Space/type-ahead all flow through the composed
+   * `KjListNavigator` — they aren't reimplemented here.
+   *
+   * - ArrowRight on a collapsed branch → expand (toggle).
+   * - ArrowRight on an expanded branch → move active to first child.
+   * - ArrowLeft on an expanded branch → collapse (toggle).
+   * - ArrowLeft elsewhere → move active to the parent (prior item with
+   *   `aria-level` less than current).
+   *
+   * @internal
+   */
   onKeydown(event: KeyboardEvent): void {
-    const items = this._getVisibleNodes();
-    if (!items.length) return;
-    let idx = this._activeIndex();
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    const active = this.nav.activeItem();
+    if (!active) return;
+    const node = active._host();
+    const items = this._domNodes();
+    const idx = items.indexOf(node);
+    if (idx === -1) return;
+    const hasChildren = node.getAttribute('data-has-children') === 'true';
+    const expanded = node.getAttribute('data-expanded') === 'true';
 
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        idx = idx < items.length - 1 ? idx + 1 : 0;
-        this._activeIndex.set(idx);
-        items[idx]?.focus();
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        idx = idx > 0 ? idx - 1 : items.length - 1;
-        this._activeIndex.set(idx);
-        items[idx]?.focus();
-        break;
-      case 'Home':
-        event.preventDefault();
-        this._activeIndex.set(0);
-        items[0]?.focus();
-        break;
-      case 'End':
-        event.preventDefault();
-        this._activeIndex.set(items.length - 1);
-        items[items.length - 1]?.focus();
-        break;
-      case 'ArrowRight': {
-        event.preventDefault();
-        const node = items[idx];
-        if (node) {
-          const hasChildren = node.getAttribute('data-has-children') === 'true';
-          const expanded = node.getAttribute('data-expanded') === 'true';
-          if (hasChildren && !expanded) {
-            const toggle = node.querySelector('[kjTreeSelectToggle]') as HTMLElement | null;
-            toggle?.click();
-          } else if (hasChildren && expanded) {
-            const nextItems = this._getVisibleNodes();
-            const nextIdx = idx + 1;
-            if (nextIdx < nextItems.length) {
-              this._activeIndex.set(nextIdx);
-              nextItems[nextIdx]?.focus();
-            }
-          }
-        }
-        break;
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      if (hasChildren && !expanded) {
+        const toggle = node.querySelector('[kjTreeSelectToggle]') as HTMLElement | null;
+        toggle?.click();
+      } else if (hasChildren && expanded) {
+        const next = items[idx + 1];
+        if (next) this.nav.setActive(next.id);
       }
-      case 'ArrowLeft': {
-        event.preventDefault();
-        const node = items[idx];
-        if (node) {
-          const expanded = node.getAttribute('data-expanded') === 'true';
-          if (expanded) {
-            const toggle = node.querySelector('[kjTreeSelectToggle]') as HTMLElement | null;
-            toggle?.click();
-          } else {
-            const currentLevel = parseInt(node.getAttribute('aria-level') ?? '1', 10);
-            for (let i = idx - 1; i >= 0; i--) {
-              const parentLevel = parseInt(items[i]?.getAttribute('aria-level') ?? '1', 10);
-              if (parentLevel < currentLevel) {
-                this._activeIndex.set(i);
-                items[i]?.focus();
-                break;
-              }
-            }
-          }
-        }
+      return;
+    }
+
+    // ArrowLeft
+    event.preventDefault();
+    if (hasChildren && expanded) {
+      const toggle = node.querySelector('[kjTreeSelectToggle]') as HTMLElement | null;
+      toggle?.click();
+      return;
+    }
+    const currentLevel = parseInt(node.getAttribute('aria-level') ?? '1', 10);
+    for (let i = idx - 1; i >= 0; i--) {
+      const lvl = parseInt(items[i]?.getAttribute('aria-level') ?? '1', 10);
+      if (lvl < currentLevel) {
+        this.nav.setActive(items[i].id);
         break;
-      }
-      case 'Enter':
-      case ' ': {
-        event.preventDefault();
-        const node = items[idx];
-        if (node) node.click();
-        break;
-      }
-      case 'Escape':
-        event.preventDefault();
-        this.controller?.close('esc');
-        break;
-      default: {
-        const char = event.key.length === 1 ? event.key.toLowerCase() : null;
-        if (char) {
-          const match = items.findIndex(item =>
-            (item.textContent ?? '').trim().toLowerCase().startsWith(char),
-          );
-          if (match >= 0) {
-            this._activeIndex.set(match);
-            items[match]?.focus();
-          }
-        }
       }
     }
   }
 
-  private _getVisibleNodes(): HTMLElement[] {
-    return (
-      Array.from(
-        this.el.nativeElement.querySelectorAll('[kjTreeSelectNode]'),
-      ) as HTMLElement[]
-    ).filter(el => el.getAttribute('hidden') === null && !el.hasAttribute('hidden'));
+  /** DOM-order list of tree nodes scoped to this panel. */
+  private _domNodes(): HTMLElement[] {
+    return Array.from(
+      this.el.nativeElement.querySelectorAll('[kjTreeSelectNode]'),
+    ) as HTMLElement[];
   }
 }
+
