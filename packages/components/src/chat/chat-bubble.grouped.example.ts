@@ -27,7 +27,7 @@ import {
     KjAvatarComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
   `],
   template: `
     <kj-chat-log kjChatLogLabel="Grouped messages">

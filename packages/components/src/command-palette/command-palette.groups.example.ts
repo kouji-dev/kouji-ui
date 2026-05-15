@@ -21,7 +21,7 @@ import {
     KjCommandSeparatorComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: flex; justify-content: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 16rem; }`],
+  styles: [`:host { display: flex; justify-content: center; min-height: 16rem; }`],
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">Open palette</kj-button>
 

@@ -27,7 +27,7 @@ import {
     KjAlertDismissComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     @if (visible()) {
       <kj-alert

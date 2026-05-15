@@ -17,7 +17,7 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
     FormsModule,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-input-group>
       <kj-input type="search" placeholder="Search…" [(ngModel)]="query" aria-label="Search" />

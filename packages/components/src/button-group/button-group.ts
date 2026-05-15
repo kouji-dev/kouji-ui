@@ -27,15 +27,51 @@ import { KjButtonGroup, KjButtonGroupOrientation } from '@kouji-ui/core';
  * </kj-button-group>
  * ```
  * @doc-example Default
+ *   The default playground — three joined outline buttons in a row.
  *   @doc-file button-group.example.ts
+ * @doc-example Usage
+ *   The common shapes — segmented toolbar, vertical stack, and an icon-only
+ *   cluster. Use this as the copy-paste starting point.
+ *   @doc-file button-group.usage.example.ts
  * @doc-example Vertical
+ *   `kjOrientation="vertical"` stacks buttons and joins their top/bottom edges.
  *   @doc-file button-group.vertical.example.ts
  * @doc-example Variants
+ *   Set `kjVariant` on the group to cascade onto every child button.
  *   @doc-file button-group.variants.example.ts
  * @doc-example Toggle
+ *   Pair with `[kjPressed]` on each child to build a segmented control.
  *   @doc-file button-group.toggle.example.ts
  * @doc-example Icon only
+ *   Pure-icon children — give each an `kjAriaLabel` for AT users.
  *   @doc-file button-group.icon-only.example.ts
+ *
+ * @doc-keyboard
+ *   Tab           — Moves focus through each button in DOM order
+ *   Enter|Space   — Activates the focused button (native click)
+ *
+ * @doc-aria
+ *   role               — `group` on the host (set by `KjButtonGroup` directive)
+ *   aria-label         — Override via `kjAriaLabel` for toolbars without surrounding context
+ *   aria-orientation   — Mirrors `kjOrientation` for AT
+ *   data-orientation   — Mirrors `kjOrientation` for theme/scope hooks
+ *
+ * @doc-touch
+ *   Children inherit `<kj-button>` sizing rules — `lg` and `icon` sizes clear
+ *   WCAG 2.5.5 ≥ 44×44 by default. For high-density toolbars on touch, raise
+ *   the children to `lg` or pad the host.
+ *
+ * @doc-a11y
+ *   Renders a `role="group"` so AT announces "group, 3 buttons" instead of
+ *   listing each independently. Set `kjAriaLabel` for toolbars that lack a
+ *   surrounding labelled landmark. `kjDisabled` on the group OR-s with each
+ *   child's own disabled state.
+ *
+ * @doc-related button,toggle,tabs
+ *
+ * @doc-css-var
+ *   --kj-button-group-gap  — Gap between adjacent buttons. Defaults to 0 (segmented look); raise for a spaced cluster.
+ *
  * @doc-category Library/Actions
  * @doc
  * @doc-name button-group

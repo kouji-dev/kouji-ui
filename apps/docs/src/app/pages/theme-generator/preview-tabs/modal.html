@@ -1,0 +1,37 @@
+<div class="modal-scene">
+  <div class="modal-scene__page" aria-hidden="true">
+    <kj-card variant="outline" class="modal-scene__page-card">
+      <p class="modal-scene__page-meta">dashboard &middot; workspace settings</p>
+    </kj-card>
+    <div class="modal-scene__page-grid"></div>
+  </div>
+
+  <div class="modal-scene__backdrop" aria-hidden="true"></div>
+
+  <div class="modal-scene__panel"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="modal-scene-title"
+       aria-describedby="modal-scene-desc">
+    <h3 class="modal-scene__title" id="modal-scene-title">delete workspace?</h3>
+    <p class="modal-scene__desc" id="modal-scene-desc">
+      this will permanently delete <strong>"design studio"</strong> and all 142
+      projects inside it. this action cannot be undone.
+    </p>
+
+    <kj-field>
+      <kj-field-label>type the workspace name to confirm</kj-field-label>
+      <kj-input
+        [(ngModel)]="confirmText"
+        name="confirm"
+        type="text"
+        placeholder="design studio"
+      />
+    </kj-field>
+
+    <div class="modal-scene__actions">
+      <kj-button kjVariant="ghost">cancel</kj-button>
+      <kj-button kjVariant="destructive">delete forever</kj-button>
+    </div>
+  </div>
+</div>

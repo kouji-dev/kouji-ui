@@ -20,19 +20,19 @@ import { KjTextareaComponent } from './textarea';
     KjFieldError,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     [kjField] { display: grid; gap: var(--kj-space-xs); max-width: 480px; }
     [kjFieldLabel] {
       font: var(--kj-text-sm)/1.2 var(--kj-font-sans);
-      color: var(--kj-color-base-content);
+      color: var(--kj-fg-default);
     }
     [kjFieldHelp] {
       font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
-      color: var(--kj-color-neutral);
+      color: var(--kj-fg-muted);
     }
     [kjFieldError] {
       font: var(--kj-text-xs)/1.2 var(--kj-font-mono, var(--kj-font-sans));
-      color: var(--kj-color-destructive);
+      color: var(--kj-fg-danger);
     }
   `],
   template: `

@@ -23,6 +23,32 @@ import { KJ_BUTTON_CONFIG } from './config';
  * ```html
  * <button kjButton [kjVariant]="'destructive'" [kjSize]="'sm'" [kjLoading]="busy()">Delete</button>
  * ```
+ *
+ * @doc-keyboard
+ *   Enter|Space  — Activates the button (native button semantics)
+ *   Tab          — Moves focus to the next focusable element; disabled buttons remain focusable
+ *
+ * @doc-aria
+ *   aria-disabled  — set to "true" when [kjDisabled] or [kjLoading] is true
+ *   aria-busy      — set to "true" when [kjLoading] is true
+ *   aria-pressed   — emitted only when [kjPressed] is bound; absent for non-toggle buttons
+ *   data-disabled  — mirror of aria-disabled for CSS targeting
+ *   data-full      — set to "true" when [kjFullWidth] is true
+ *
+ * @doc-touch
+ *   Meets WCAG 2.5.5 (44×44 CSS px) at `size="lg"` (2.75rem) and `size="icon"` (enforced via min-width/min-height). Sizes `sm` (32px) and `md` (36px) sit below the 44px floor and rely on the inline-text-link exception — use them for buttons embedded in a sentence or dense form rows only.
+ *
+ * @doc-a11y
+ *   Kouji uses ARIA-disabled rather than the native `disabled` attribute so the
+ *   button stays focusable and discoverable by assistive tech. Click events on
+ *   a disabled/loading button are intercepted in the capture phase and suppressed
+ *   before consumer listeners fire. The focus ring is provided by `KjFocusRing`,
+ *   so the outline only appears on `:focus-visible` (keyboard / programmatic
+ *   focus) and never on mouse focus. When `kjButton` is applied to an `<a>`,
+ *   activation follows native anchor semantics (Enter only).
+ *
+ * @doc-related button-group,link,icon-button
+ *
  * @doc
  *  @doc-example Variants
  *    @doc-theme default
@@ -52,6 +78,7 @@ import { KJ_BUTTON_CONFIG } from './config';
     '[attr.data-disabled]': 'effectiveDisabled() ? "" : null',
     '[attr.aria-busy]':     'kjLoading() ? "true" : null',
     '[attr.aria-pressed]':  'pressedAttr()',
+    '[attr.data-full]':     'kjFullWidth() ? "true" : null',
   },
 })
 export class KjButton {
@@ -62,6 +89,9 @@ export class KjButton {
 
   /** Marks the button as in-flight (e.g. async action). Sets `aria-busy="true"` and forces disabled. */
   readonly kjLoading = input(false);
+
+  /** Stretches the button to fill the parent's inline axis. Reflects `data-full="true"`. */
+  readonly kjFullWidth = input(false);
 
   /**
    * Toggle state. Unset (default) marks this as a non-toggle button and omits

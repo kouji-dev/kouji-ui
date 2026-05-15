@@ -1,0 +1,39 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/core — overlay primitive base styles
+   --------------------------------------------------------------
+   Ships the structural CSS for the singleton overlay container
+   created by `getOverlayContainer()` and per-overlay wrappers
+   created by `createOverlayWrapper()`, plus the default visual
+   for `kj-backdrop` (the `solidBackdrop()` strategy's class).
+
+   Consumers register this file once (typically alongside their
+   theme tokens) — every overlay-based component (dialog, drawer,
+   popover, tooltip, dropdown-menu, toast) relies on it.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-overlay-container {
+    position: fixed;
+    inset: 0;
+    z-index: var(--kj-overlay-z-index, 1000);
+    pointer-events: none;
+  }
+
+  .kj-overlay-wrapper {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .kj-overlay-wrapper > * {
+    pointer-events: auto;
+  }
+
+  .kj-backdrop,
+  .kj-overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--kj-backdrop-bg, rgb(0 0 0 / 0.5));
+    pointer-events: auto;
+  }
+}

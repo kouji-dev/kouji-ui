@@ -12,12 +12,12 @@ import { KjPasswordInputComponent } from './password-input';
   standalone: true,
   imports: [KjPasswordInputComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 380px; }
-    label { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); }
+    label { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
     .rules { list-style: none; padding: 0; margin: var(--kj-space-xs) 0 0; display: grid; gap: 0.25rem; font-size: var(--kj-text-xs); }
-    .rules li { color: var(--kj-color-neutral); }
-    .rules li[data-pass="true"] { color: var(--kj-color-success, #059669); }
+    .rules li { color: var(--kj-fg-muted); }
+    .rules li[data-pass="true"] { color: var(--kj-fg-success, #059669); }
     .rules li::before { content: "○ "; }
     .rules li[data-pass="true"]::before { content: "✓ "; }
   `],

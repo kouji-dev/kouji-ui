@@ -25,7 +25,7 @@ import { KjButtonComponent } from '../button/button';
     KjEmptyStateActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-empty-state kjVariant="error" kjLive="assertive">
       <kj-empty-state-icon>

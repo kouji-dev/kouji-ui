@@ -1,22 +1,12 @@
 import { z } from 'zod';
+import { BG_SLOTS, FG_SLOTS } from './types';
 
-const COLOR_SLOTS = [
-  'base-100','primary','secondary','accent','neutral','info','success','warning','destructive',
-] as const;
-
-const CONTENT_SLOTS = [
-  'base-200', 'base-300',
-  'base-content',
-  'primary-content','secondary-content','accent-content','neutral-content',
-  'info-content','success-content','warning-content','destructive-content',
-] as const;
-
-const colorsObj = z.object(
-  Object.fromEntries(COLOR_SLOTS.map(s => [s, z.string()])) as Record<typeof COLOR_SLOTS[number], z.ZodString>,
+const bgObj = z.object(
+  Object.fromEntries(BG_SLOTS.map(s => [s, z.string()])) as Record<typeof BG_SLOTS[number], z.ZodString>,
 );
 
-const contentsObj = z.object(
-  Object.fromEntries(CONTENT_SLOTS.map(s => [s, z.string().optional()])) as Record<typeof CONTENT_SLOTS[number], z.ZodOptional<z.ZodString>>,
+const fgObj = z.object(
+  Object.fromEntries(FG_SLOTS.map(s => [s, z.string()])) as Record<typeof FG_SLOTS[number], z.ZodString>,
 );
 
 const typographyObj = z.object({
@@ -26,8 +16,8 @@ const typographyObj = z.object({
 
 export const DraftThemeSchema = z.object({
   name: z.string().max(32),
-  colors: colorsObj,
-  contentOverrides: contentsObj.optional().default({}),
+  bg: bgObj,
+  fg: fgObj,
   shape: z.object({
     radiusBox: z.number(),
     radiusField: z.number(),

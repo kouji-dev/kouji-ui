@@ -13,7 +13,7 @@ import { KjCode } from '@kouji-ui/core';
   selector: 'kj-typography-code-example',
   standalone: true,
   imports: [KjCode],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <p>
       Run <code kjCode>npm install &#64;kouji-ui/core</code> to install the

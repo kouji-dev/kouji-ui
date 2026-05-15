@@ -31,13 +31,48 @@ import { KjSkeleton, type KjSkeletonAnimation, type KjSkeletonShape } from '@kou
  * <kj-skeleton kjSkeletonShape="text-block" [kjLines]="4" />
  * ```
  * @doc-example Default
+ *   A single rectangle placeholder — the bare-minimum recipe.
  *   @doc-file skeleton.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — avatar + lines and card
+ *   preview. Use this as the copy-paste starting point.
+ *   @doc-file skeleton.usage.example.ts
  * @doc-example Shapes
+ *   `rectangle`, `circle`, `text`, `text-block` — pick the cadence that fits.
  *   @doc-file skeleton.shapes.example.ts
  * @doc-example Animations
+ *   `shimmer`, `pulse`, `none` — collapse under `prefers-reduced-motion`.
  *   @doc-file skeleton.animations.example.ts
  * @doc-example Card
+ *   A complete card composition while data is loading.
  *   @doc-file skeleton.card.example.ts
+ *
+ * @doc-aria
+ *   aria-hidden="true" — Set on the skeleton host (decorative; semantics live on the parent region)
+ *   data-shape         — Mirrors the shape preset for theme hooks
+ *   data-animation     — Mirrors the animation preset for theme hooks
+ *
+ * @doc-touch
+ *   The skeleton is non-interactive — no touch target rules apply. The
+ *   parent region should carry `aria-busy="true"` while loading.
+ *
+ * @doc-a11y
+ *   The wrapper sets `aria-hidden="true"` so the placeholder is invisible
+ *   to AT. The parent region owns the loading semantics — typically a
+ *   `role="status"` live region with `aria-busy="true"` while the data is
+ *   in-flight. Animations collapse under `prefers-reduced-motion: reduce`.
+ *
+ * @doc-related spinner,progress-bar,empty-state
+ *
+ * @doc-css-var
+ *   --kj-skeleton-bg                 — Surface background of the placeholder block.
+ *   --kj-skeleton-highlight          — Highlight gradient color used by the shimmer sweep.
+ *   --kj-skeleton-radius             — Corner radius for rectangle/text shapes.
+ *   --kj-skeleton-line-height        — Per-line block size for text and text-block shapes.
+ *   --kj-skeleton-line-radius        — Corner radius applied to text lines.
+ *   --kj-skeleton-shimmer-duration   — One-sweep duration of the shimmer animation.
+ *   --kj-skeleton-pulse-duration     — One-cycle duration of the pulse animation.
+ *
  * @doc-category Library/Feedback
  * @doc
  * @doc-name skeleton

@@ -5,7 +5,7 @@ import { KjToggleComponent } from './toggle';
   selector: 'kj-toggle-checked-example',
   standalone: true,
   imports: [KjToggleComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `<kj-toggle [(pressed)]="active" ariaLabel="Active">Active</kj-toggle>`,
 })
 export class KjToggleCheckedExample { readonly active = signal(true); }

@@ -10,7 +10,7 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from './combobox';
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     .flag {
       display: inline-block;
       width: 1.5rem;

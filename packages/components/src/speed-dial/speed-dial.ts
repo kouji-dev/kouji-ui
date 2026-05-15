@@ -46,13 +46,57 @@ export type KjSpeedDialPosition =
  * ```
  *
  * @doc-example Default
+ *   The default playground — bottom-right anchored FAB fanning up.
  *   @doc-file speed-dial.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common speed-dial usages — direction, position,
+ *   disabled state, and per-action handlers. Copy-paste starting point.
+ *   @doc-file speed-dial.usage.example.ts
  * @doc-example Directions
+ *   `kjDirection` controls the fan-out axis — `up`, `down`, `left`, `right`.
  *   @doc-file speed-dial.directions.example.ts
  * @doc-example With tooltips
+ *   Pair each action with a `<kj-tooltip-content>` for label-on-hover.
  *   @doc-file speed-dial.with-tooltips.example.ts
  * @doc-example Disabled
+ *   `[kjDisabled]="true"` on the root disables the trigger and all actions.
  *   @doc-file speed-dial.disabled.example.ts
+ *
+ * @doc-keyboard
+ *   Enter|Space — Opens the dial when on the trigger; activates the focused action
+ *   ArrowKeys   — Move focus along the fan-out axis between trigger and actions
+ *   Escape      — Closes the dial and returns focus to the trigger
+ *   Tab         — Single tab stop on the trigger (roving tabindex inside)
+ *
+ * @doc-aria
+ *   role="menu"     — applied to `<kj-speed-dial-actions>` while open
+ *   role="menuitem" — applied to each `<kj-speed-dial-action>`
+ *   aria-haspopup   — set on the trigger to "menu"
+ *   aria-expanded   — reflects the open/closed state on the trigger
+ *   aria-label      — required on icon-only trigger and actions (dev-mode warns)
+ *   data-position   — mirrors `kjPosition` on the host for CSS hooks
+ *
+ * @doc-touch
+ *   Trigger defaults to `kjSize="lg"` (48px) — meets WCAG 2.5.5 (≥ 44×44).
+ *   Actions default to `kjSize="md"` (40px) — bump to `lg` for touch-first layouts.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA Menu Button APG pattern. Roving tabindex keeps the
+ *   trigger as a single Tab stop; arrow keys move focus through the open
+ *   action cluster. Focus returns to the trigger on close. Activating an
+ *   action closes the dial by default (`kjCloseOnActivate`).
+ *
+ * @doc-related dropdown-menu,tooltip,button-group
+ *
+ * @doc-css-var
+ *   --kj-speed-dial-gap           — Gap between the trigger and the action cluster.
+ *   --kj-speed-dial-edge          — Distance from the viewport edge when fixed-positioned.
+ *   --kj-speed-dial-trigger-size  — Width/height of the circular FAB trigger.
+ *   --kj-speed-dial-action-size   — Width/height of each fan-out action button.
+ *   --kj-speed-dial-shadow        — Elevation shadow shared by the trigger and actions.
+ *   --kj-speed-dial-stagger       — Per-action delay applied to the fan-out animation.
+ *   --kj-speed-dial-duration      — Transition duration for the trigger and fan-out motion.
+ *
  * @doc-category Library/Actions
  * @doc
  * @doc-name speed-dial

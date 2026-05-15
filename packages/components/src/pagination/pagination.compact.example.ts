@@ -21,7 +21,7 @@ import {
     KjPaginationPreviousComponent,
     KjPaginationNextComponent,
   ],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-pagination [(kjPage)]="page" [kjTotalPages]="10" #p="kjPagination">
       <kj-pagination-previous>‹</kj-pagination-previous>

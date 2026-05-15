@@ -26,7 +26,7 @@ import {
     KjCarouselIndicatorsComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     img { width: 100%; height: 16rem; object-fit: cover; border-radius: var(--kj-radius-box); }
   `],
   template: `

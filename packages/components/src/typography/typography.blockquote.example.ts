@@ -13,7 +13,7 @@ import { KjBlockquote } from '@kouji-ui/core';
   selector: 'kj-typography-blockquote-example',
   standalone: true,
   imports: [KjBlockquote],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <figure>
       <blockquote kjBlockquote>

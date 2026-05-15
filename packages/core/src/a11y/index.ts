@@ -1,4 +1,5 @@
 ﻿export { KjAriaDescribedBy } from './aria-describedby';
+export { KjAriaLabelledBy } from './aria-labelledby';
 export { KjFocusTrap } from './focus-trap';
 export { KjLiveRegion, type KjLivePoliteness } from './live-region';
 export {

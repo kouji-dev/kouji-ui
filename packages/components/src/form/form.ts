@@ -37,13 +37,57 @@ import {
  * </form>
  * ```
  * @doc-example Default
+ *   A login form with email + password — anchors the default chrome and the
+ *   submit-on-valid plumbing.
  *   @doc-file form.example.ts
+ * @doc-example Usage
+ *   Common form shapes — validation summary, reactive form, and an actions
+ *   row — assembled as a copy-paste starting point.
+ *   @doc-file form.usage.example.ts
  * @doc-example Validation with summary
+ *   `<kj-form-summary />` lists invalid controls after a failed submit and
+ *   focuses on populate.
  *   @doc-file form.validation.example.ts
  * @doc-example Async submit
+ *   `[kjAsyncSubmit]` toggles `[kjSubmitting]` while a promise resolves —
+ *   wire to a button's `[kjLoading]`.
  *   @doc-file form.async-submit.example.ts
  * @doc-example Compound (multiple groups)
+ *   Multiple `<kj-field>` groups coordinated under a single
+ *   `<form kj-form>` parent.
  *   @doc-file form.compound.example.ts
+ *
+ * @doc-keyboard
+ *   Enter — Submits the form when focus is inside any non-multiline control
+ *   Tab   — Moves focus across fields in DOM order
+ *
+ * @doc-aria
+ *   role="form"      — Native on the underlying <form>
+ *   aria-live        — kj-form-summary uses [kjPoliteness] (default polite) to announce errors
+ *   aria-busy        — Reflected on the form when [kjSubmitting] is true
+ *   data-submitting  — Mirrors [kjSubmitting] for theme CSS
+ *   data-invalid     — Mirrors the form's invalid state for theme CSS
+ *
+ * @doc-touch
+ *   The form itself is layout-only; touch-target compliance lives on each
+ *   projected control (`kj-input`, `kj-button`, etc.).
+ *
+ * @doc-a11y
+ *   `KjForm` intercepts submit so the form only fires `(kjSubmit)` when valid,
+ *   marks all controls as touched, focuses the first invalid control, and
+ *   optionally scrolls it into view. `<kj-form-summary>` reads the invalid
+ *   controls live and focuses on populate when configured.
+ *
+ * @doc-related field,input,button
+ *
+ * @doc-css-var
+ *   --kj-form-gap             — Vertical gap between projected form rows.
+ *   --kj-form-actions-gap     — Gap between buttons inside the actions row.
+ *   --kj-form-summary-bg      — Background fill for the error summary alert.
+ *   --kj-form-summary-fg      — Foreground text color of the error summary body.
+ *   --kj-form-summary-accent  — Accent color for the summary title and left bar.
+ *   --kj-form-summary-radius  — Corner radius of the error summary block.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name form

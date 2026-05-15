@@ -3,119 +3,16 @@
   "theme": "cyberpunk",
   "page": "/",
   "url": "http://localhost:4200/?theme=cyberpunk",
-  "timestamp": "2026-05-12T22:47:46.086Z",
+  "timestamp": "2026-05-13T20:11:41.121Z",
   "axe": {
     "violationsByImpact": {
       "critical": 0,
-      "serious": 1,
-      "moderate": 3,
+      "serious": 0,
+      "moderate": 0,
       "minor": 0
     },
-    "violations": [
-      {
-        "id": "color-contrast",
-        "impact": "serious",
-        "help": "Elements must meet minimum color contrast ratio thresholds",
-        "nodes": [
-          {
-            "target": [
-              ".kj-navbar-version"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.61 (foreground color: #ff007f, background color: #f0d808, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ff007f",
-            "bg": "#f0d808",
-            "ratio": 2.61,
-            "expected": "4.5:1"
-          },
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.14 (foreground color: #ff007f, background color: #ffee00, font size: 8.4pt (11.2px), font weight: normal). Expected contrast ratio of 4.5:1",
-            "fg": "#ff007f",
-            "bg": "#ffee00",
-            "ratio": 3.14,
-            "expected": "4.5:1"
-          }
-        ]
-      },
-      {
-        "id": "heading-order",
-        "impact": "moderate",
-        "help": "Heading levels should only increase by one",
-        "nodes": [
-          {
-            "target": [
-              ".feature:nth-child(1) > h3"
-            ],
-            "failureSummary": "Fix any of the following:\n  Heading order invalid"
-          }
-        ]
-      },
-      {
-        "id": "landmark-one-main",
-        "impact": "moderate",
-        "help": "Document should have one main landmark",
-        "nodes": [
-          {
-            "target": [
-              "html"
-            ],
-            "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
-          }
-        ]
-      },
-      {
-        "id": "region",
-        "impact": "moderate",
-        "help": "All page content should be contained by landmarks",
-        "nodes": [
-          {
-            "target": [
-              ".hero-tag"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              "h1"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".hero-desc"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".btn-secondary"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".stats"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".features"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          },
-          {
-            "target": [
-              ".install"
-            ],
-            "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
-          }
-        ]
-      }
-    ],
-    "passes": 30
+    "violations": [],
+    "passes": 32
   },
   "fonts": {
     "samples": [
@@ -136,9 +33,9 @@
       {
         "selector": "h2",
         "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
-        "fontSize": 40,
-        "lineHeight": 44,
-        "weight": 800
+        "fontSize": 24,
+        "lineHeight": 28.799999999999997,
+        "weight": 700
       },
       {
         "selector": "h3",
@@ -180,23 +77,9 @@
       {
         "selector": "h1",
         "issue": "line-height ratio 0.90 below 1.2 (WCAG 1.4.12)"
-      },
-      {
-        "selector": "h2",
-        "issue": "line-height ratio 1.10 below 1.2 (WCAG 1.4.12)"
       }
     ]
   },
-  "lighthouse": {
-    "scores": {
-      "performance": 26
-    },
-    "metrics": {
-      "FCP": 11139,
-      "LCP": 48708,
-      "CLS": 0,
-      "TBT": 3145,
-      "SI": 15901
-    }
-  }
+  "lighthouse": null,
+  "lighthouseError": "The \"start lh:runner:gather\" performance mark has not been set"
 }

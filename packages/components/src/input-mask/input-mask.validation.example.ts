@@ -28,15 +28,10 @@ import {
   ],
   styles: [`
     :host {
-      display: block;
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-      max-width: 400px;
+      display: block; max-width: 400px;
     }
-    input[kjInputMask] {
-      background: var(--kj-color-base-100);
-      color: var(--kj-color-base-content);
-      border: 1px solid var(--kj-color-base-300);
+    input[kjInputMask] { color: var(--kj-fg-default);
+      border: 1px solid var(--kj-border-default);
       border-radius: var(--kj-radius-field, 0.375rem);
       padding: var(--kj-space-sm) var(--kj-space-md);
       font: var(--kj-text-sm) / 1.4 var(--kj-font-sans);
@@ -44,12 +39,12 @@ import {
       width: 100%;
     }
     input[kjInputMask]:focus-visible {
-      outline: 2px solid var(--kj-color-primary);
+      outline: 2px solid var(--kj-fg-primary);
       outline-offset: 2px;
-      border-color: var(--kj-color-primary);
+      border-color: var(--kj-fg-primary);
     }
     input[kjInputMask][aria-invalid='true'] {
-      border-color: var(--kj-color-destructive, #ef4444);
+      border-color: var(--kj-fg-danger, #ef4444);
     }
   `],
   template: `

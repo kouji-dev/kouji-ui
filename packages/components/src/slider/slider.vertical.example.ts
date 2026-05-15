@@ -14,9 +14,9 @@ import { KjSliderComponent } from './slider';
   standalone: true,
   imports: [KjSliderComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     .row { display: flex; gap: var(--kj-space-xl); align-items: center; }
-    .value { font: 0.875rem var(--kj-font-mono, monospace); color: var(--kj-color-base-content); }
+    .value { font: 0.875rem var(--kj-font-mono, monospace); color: var(--kj-fg-default); }
   `],
   template: `
     <div class="row">

@@ -14,7 +14,7 @@ import {
   selector: 'kj-tabs-vertical-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-tabs orientation="vertical">
       <kj-tab-list>

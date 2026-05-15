@@ -1,0 +1,46 @@
+<div class="form-scene">
+  <h2 class="form-scene__title">create your account</h2>
+  <p class="form-scene__lede">30 seconds, no credit card.</p>
+
+  <form class="form-scene__body" (submit)="$event.preventDefault()">
+    <kj-field>
+      <kj-field-label>full name</kj-field-label>
+      <kj-input [(ngModel)]="fullName" name="fullName" type="text" />
+    </kj-field>
+
+    <kj-field [kjInvalid]="!emailValid()">
+      <kj-field-label>work email</kj-field-label>
+      <kj-input [(ngModel)]="email" name="email" type="email" />
+      @if (!emailValid()) {
+        <kj-field-error>that doesn't look like an email.</kj-field-error>
+      } @else {
+        <kj-field-help>we'll only use this for login.</kj-field-help>
+      }
+    </kj-field>
+
+    <kj-field>
+      <kj-field-label>team size</kj-field-label>
+      <kj-select [(value)]="teamSize" placeholder="select team size">
+        @for (t of teamOptions; track t) {
+          <kj-option [value]="t">{{ t }}</kj-option>
+        }
+      </kj-select>
+    </kj-field>
+
+    <div class="form-scene__terms">
+      <kj-checkbox [(checked)]="agree">
+        I agree to the <a href="#" (click)="$event.preventDefault()">terms</a> and <a href="#" (click)="$event.preventDefault()">privacy policy</a>
+      </kj-checkbox>
+    </div>
+
+    <div class="form-scene__actions">
+      <kj-button kjVariant="ghost" type="button">cancel</kj-button>
+      <kj-button
+        kjVariant="default"
+        type="submit"
+        [kjFullWidth]="true"
+        [kjDisabled]="submitDisabled()"
+      >create account &rarr;</kj-button>
+    </div>
+  </form>
+</div>

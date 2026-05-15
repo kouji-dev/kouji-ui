@@ -10,7 +10,7 @@
     align-items: center;
     gap: var(--kj-space-sm);
     cursor: pointer;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     font: 0.875rem / 1.4 var(--kj-font-sans);
   }
   .kj-checkbox-label { user-select: none; }
@@ -18,10 +18,10 @@
   /* The interactive box (carries the kjCheckbox directive). */
   .kj-checkbox-box {
     --kj-checkbox-size:        1rem;
-    --kj-checkbox-bg:          var(--kj-color-base-100);
-    --kj-checkbox-bg-checked:  var(--kj-color-primary);
-    --kj-checkbox-fg-checked:  var(--kj-color-primary-content);
-    --kj-checkbox-border:      var(--kj-color-neutral);
+    --kj-checkbox-bg:          var(--kj-bg-body);
+    --kj-checkbox-bg-checked:  var(--kj-bg-primary);
+    --kj-checkbox-fg-checked:  var(--kj-fg-on-primary);
+    --kj-checkbox-border:      var(--kj-border-default);
     --kj-checkbox-radius:      var(--kj-radius-selector);
 
     display: inline-flex;
@@ -61,7 +61,7 @@
   .kj-checkbox-box[data-size="sm"] { --kj-checkbox-size: 0.875rem; }
   .kj-checkbox-box[data-size="lg"] { --kj-checkbox-size: 1.25rem; }
 
-  .kj-checkbox-box:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-checkbox-box:focus-visible { outline: 2px solid var(--kj-border-focus); outline-offset: 2px; }
 
   /* Disabled — dim the whole checkbox (box + label text) for visual
      consistency with native form controls. */

@@ -1,6 +1,6 @@
-<div class="preview-wrap">
+<div class="preview-wrap" [class.preview-only]="previewOnly()">
 
-  @if (docExamples().length > 1) {
+  @if (!previewOnly() && docExamples().length > 1) {
     <div class="example-tabs">
       @for (ex of docExamples(); track ex.label; let i = $index) {
         <button
@@ -15,7 +15,7 @@
     </div>
   }
 
-  @if (hasDemo()) {
+  @if (hasDemo() && !previewOnly()) {
     <div class="preview-theme-strip">
       @if (hasMultipleThemes()) {
         @for (t of previewThemes; track t.value) {
@@ -54,7 +54,7 @@
     </div>
   }
 
-  @if (showCode()) {
+  @if (showCode() && !previewOnly()) {
     @if (activeFiles().length) {
       <div class="preview-toolbar">
         <div class="file-tabs">
@@ -94,7 +94,7 @@
     }
   }
 
-  @if (!hasDemo() && activeFiles().length) {
+  @if (!hasDemo() && activeFiles().length && !previewOnly()) {
     <!-- No live demo — always show the code (no toggle needed) -->
     <div class="preview-toolbar">
       <div class="file-tabs">

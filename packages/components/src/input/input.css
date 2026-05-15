@@ -6,9 +6,9 @@
 
 @layer kj.component {
   .kj-input {
-    --kj-input-bg:               var(--kj-color-base-100);
-    --kj-input-fg:               var(--kj-color-base-content);
-    --kj-input-border-color:     var(--kj-color-base-300);
+    --kj-input-bg:               var(--kj-bg-field);
+    --kj-input-fg:               var(--kj-fg-default);
+    --kj-input-border-color:     var(--kj-border-default);
     --kj-input-border-style:     solid;
     --kj-input-border-width:     var(--kj-border);
     --kj-input-radius:           var(--kj-radius-field);
@@ -16,10 +16,16 @@
     --kj-input-padding-y:        var(--kj-space-sm);
     --kj-input-font:             var(--kj-font-sans);
     --kj-input-font-size:        var(--kj-text-sm);
-    --kj-input-placeholder-fg:   var(--kj-color-neutral);
+    --kj-input-placeholder-fg:   var(--kj-fg-muted);
+    /* Match button md (36px) so inputs and buttons line up in form rows.
+       Don't set `align-self` — in column-flex parents (form-field stacks),
+       `center` horizontally shifts the host; explicit height alone is what
+       prevents row-flex parents from stretching the input vertically. */
+    --kj-input-height:           2.25rem;
 
     display: inline-flex;
     width: 100%;
+    height: var(--kj-input-height);
     background: var(--kj-input-bg);
     color: var(--kj-input-fg);
     border: var(--kj-input-border-width) var(--kj-input-border-style) var(--kj-input-border-color);
@@ -28,15 +34,26 @@
     font: var(--kj-input-font-size) / 1.4 var(--kj-input-font);
     transition: var(--kj-transition);
   }
+  /* Per-size heights mirror the button scale. */
+  .kj-input[data-size="sm"] { --kj-input-height: 2rem;    --kj-input-font-size: 0.8125rem; }
+  .kj-input[data-size="lg"] { --kj-input-height: 2.75rem; --kj-input-font-size: 1rem; }
+
+  /* Variant: sunken — inputs sit on `--kj-bg-body` so they read distinctly
+     against a card / surface parent. Used on the landing showcase where
+     cards already use `--kj-bg-surface`; mirrors the design's pattern of
+     "input on page bg, card around it on surface". */
+  .kj-input[data-variant="sunken"] {
+    --kj-input-bg: var(--kj-bg-body);
+  }
   .kj-input::placeholder { color: var(--kj-input-placeholder-fg); }
 
   .kj-input:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: 2px;
-    --kj-input-border-color: var(--kj-color-primary);
+    --kj-input-border-color: var(--kj-border-focus, var(--kj-bg-primary));
   }
   .kj-input[aria-invalid="true"] {
-    --kj-input-border-color: var(--kj-color-destructive);
+    --kj-input-border-color: var(--kj-border-danger, var(--kj-fg-danger));
   }
   .kj-input[aria-disabled="true"], .kj-input:disabled {
     opacity: 0.55;

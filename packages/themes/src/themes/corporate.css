@@ -1,74 +1,91 @@
 /* ─────────────────────────────────────────────────────────────
-   corporate theme — shared layer
-   Clean white surfaces, blue primary, subtle rounding.
-   Calm, accessible, business-ready.
+   corporate theme — "Navy (banking)"
+   Institutional / banking feel: cool off-white surfaces, deep
+   navy as a single signature hue (primary === accent === info).
+   Subdued intent colors (forest/oxblood/dark amber) and sharp
+   small-radius geometry. Restrained shadows.
    ──────────────────────────────────────────────────────────── */
 
 @layer kj.shared {
   [data-theme="corporate"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     #ffffff;
-    --kj-color-base-200:     #f8f9fa;
-    --kj-color-base-300:     #e9ecef;
-    --kj-color-base-content: #181a2a;
-
-    --kj-color-primary:         #4b6bfb;
-    --kj-color-primary-content: #ffffff;
-    --kj-color-primary-hover:   #3950d6;
-
-    --kj-color-secondary:         #7b92b2;
-    --kj-color-secondary-content: #ffffff;
-
-    --kj-color-accent:         #67cba0;
-    --kj-color-accent-content: #181a2a;
-
-    --kj-color-neutral:         #181a2a;
-    --kj-color-neutral-content: #ffffff;
-
-    --kj-color-info:         #3abff8;
-    --kj-color-info-content: #ffffff;
-
-    --kj-color-success:         #36d399;
-    --kj-color-success-content: #ffffff;
-
-    --kj-color-warning:         #fbbd23;
-    --kj-color-warning-content: #181a2a;
-
-    --kj-color-destructive:         #f87272;
-    --kj-color-destructive-content: #ffffff;
-    --kj-color-destructive-hover: color-mix(in oklab, var(--kj-color-destructive) 80%, #000);
-
-    /* ── shape — subtle rounding ── */
+    /* ── shape — sharp, institutional ── */
     --kj-radius-box:      var(--kj-base-radius-1);
     --kj-radius-field:    var(--kj-base-radius-1);
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
 
-    /* ── type ── */
-    --kj-font-sans:    var(--kj-base-font-sans);
-    --kj-font-mono:    var(--kj-base-font-mono);
-    --kj-font-display: var(--kj-base-font-sans);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
+    /* ── type — sans display (banking ≠ decorative). Tighter tracking
+       than the default for confident corporate headlines. */
+    --kj-display-weight:  600;
+    --kj-letter-spacing: -0.035em;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    --kj-bg-body:        #f5f7fa;
+    --kj-bg-surface:     #ffffff;
+    --kj-bg-field:       #eef1f5;
+    --kj-bg-elevated:    #ffffff;
+    --kj-bg-overlay:     rgba(10, 37, 64, 0.55);
+    --kj-bg-inverse:     #0a2540;
+    --kj-bg-disabled:    #dde2ea;
+
+    /* Single signature navy. primary === accent === info on purpose —
+       this is the banking-mono identity. Intent colors stay subdued
+       (forest, oxblood, dark amber) so the navy reads as the only
+       confident hue in the palette. */
+    --kj-bg-primary:         #0a2540;
+    --kj-bg-primary-subtle:  #dce4f0;
+    --kj-bg-accent:          #0a2540;
+    --kj-bg-accent-subtle:   #dce4f0;
+
+    --kj-bg-info:            #0a2540;
+    --kj-bg-info-subtle:     #dce4f0;
+    --kj-bg-success:         #15543d;
+    --kj-bg-success-subtle:  #d9eae0;
+    --kj-bg-warning:         #a05a00;
+    --kj-bg-warning-subtle:  #f6e2c5;
+    --kj-bg-danger:          #8b1a1a;
+    --kj-bg-danger-subtle:   #f0d4d4;
+
+    --kj-fg-default:    #0a2540;
+    --kj-fg-muted:      #2d3e54;
+    --kj-fg-subtle:     #4a5568;
+    --kj-fg-disabled:   #aebbcb;
+
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #ffffff;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #ffffff;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #ffffff;
+
+    /* fg-warning darkened so warning-tinted text passes AA on bg-body. */
+    --kj-fg-primary:    #0a2540;
+    --kj-fg-accent:     #0a2540;
+    --kj-fg-info:       #0a2540;
+    --kj-fg-success:    #15543d;
+    --kj-fg-warning:    #804600;
+    --kj-fg-danger:     #7a1414;
+
+    --kj-border-default:   #d8dee5;
+    --kj-border-muted:     #e6ebf0;
+    --kj-border-strong:    #b0bac5;
+    --kj-border-focus:     #0a2540;
+    --kj-border-disabled:  #dde2ea;
+    --kj-border-primary:   #0a2540;
+    --kj-border-danger:    #8b1a1a;
+
+    /* Restrained shadows — banking doesn't float. */
+    --kj-shadow-sm:     0 1px 2px rgba(10, 37, 64, 0.06);
+    --kj-shadow-md:     0 4px 10px rgba(10, 37, 64, 0.09);
+    --kj-shadow-lg:     0 12px 28px rgba(10, 37, 64, 0.14);
+    --kj-shadow-focus:  0 0 0 3px rgba(10, 37, 64, 0.30);
+
+    /* 8% darken on #0a2540 is invisible; lift to #15355a so the hover
+       reads against the deep navy primary. */
+    --kj-button-bg-hover: #15355a;
   }
 }

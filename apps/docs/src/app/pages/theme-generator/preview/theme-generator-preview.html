@@ -1,23 +1,39 @@
 <kj-tabs class="preview-tabs" [value]="active()" (valueChange)="setActive($event)">
   <kj-tab-list>
     @for (t of tabs; track t) {
-      <kj-tab [value]="t">{{ t }}</kj-tab>
+      <kj-tab [value]="t" class="preview-tab">
+        <span class="preview-tab__num" aria-hidden="true">{{ num(t) }}</span>
+        <span class="preview-tab__label">{{ labels[t] }}</span>
+      </kj-tab>
     }
   </kj-tab-list>
 
+  <span class="preview-stage-label" role="status" aria-live="polite">
+    your theme &middot; {{ themeName() }}
+  </span>
+
+  <kj-tab-panel [value]="'landing'">
+    <kj-preview-landing />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'form'">
+    <kj-preview-form />
+  </kj-tab-panel>
   <kj-tab-panel [value]="'dashboard'">
     <kj-preview-dashboard />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'modal'">
+    <kj-preview-modal />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'chat'">
+    <kj-preview-chat />
+  </kj-tab-panel>
+  <kj-tab-panel [value]="'pricing'">
+    <kj-preview-pricing />
   </kj-tab-panel>
   <kj-tab-panel [value]="'settings'">
     <kj-preview-settings />
   </kj-tab-panel>
-  <kj-tab-panel [value]="'big-form'">
-    <kj-preview-big-form />
-  </kj-tab-panel>
-  <kj-tab-panel [value]="'search'">
-    <kj-preview-search />
-  </kj-tab-panel>
-  <kj-tab-panel [value]="'chat'">
-    <kj-preview-chat />
+  <kj-tab-panel [value]="'tokens'">
+    <kj-preview-tokens />
   </kj-tab-panel>
 </kj-tabs>

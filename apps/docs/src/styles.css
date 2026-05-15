@@ -6,9 +6,9 @@
    `@import` from a workspace package didn't reliably resolve via
    esbuild's bare-specifier handling, so we register the entry file
    in angular.json instead).
-   Docs CSS reads var(--kj-color-*) / var(--kj-font-*) directly — no
-   docs-specific token aliases. Theme switching happens via
-   [data-theme] on <html>.
+   Docs CSS reads the new token taxonomy (var(--kj-bg-*) / var(--kj-fg-*)
+   / var(--kj-border-*) / var(--kj-font-*)) directly — no docs-specific
+   token aliases. Theme switching happens via [data-theme] on <html>.
    ──────────────────────────────────────────────────────────── */
 
 /* The universal reset goes in @layer kj.reset (lower than kj.component
@@ -19,19 +19,19 @@
   html { scroll-behavior: smooth; }
 
   /* ── Global scrollbar ── */
-  * { scrollbar-width: thin; scrollbar-color: var(--kj-color-base-300) transparent; }
+  * { scrollbar-width: thin; scrollbar-color: var(--kj-border-default) transparent; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--kj-color-base-300); border-radius: var(--kj-radius-selector); }
-  ::-webkit-scrollbar-thumb:hover { background: var(--kj-color-neutral); }
+  ::-webkit-scrollbar-thumb { background: var(--kj-bg-field); border-radius: var(--kj-radius-selector); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--kj-bg-elevated); }
 }
 
 html, body { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
+  background: var(--kj-bg-body);
+  color: var(--kj-fg-default);
   font-family: var(--kj-font-mono);
 }
 
@@ -51,8 +51,8 @@ body {
   position: sticky;
   top: 0;
   overflow-x: hidden;
-  border-left: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-100);
+  border-left: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-body);
 }
 
 @media (max-width: 900px) {
@@ -60,38 +60,3 @@ body {
   .page-with-toc .toc-col { display: none; }
 }
 
-/* ── Overlay system root ────────────────────────────────────────────────
-   Single body-level container that hosts every overlay (dialogs, drawers,
-   popovers, tooltips, dropdowns, toasts). Each overlay lives in its own
-   `.kj-overlay-wrapper` inside this container — sibling order alone
-   resolves stacking among open overlays (last-opened wins) so we don't
-   need a per-overlay z-index ladder.
-   ─────────────────────────────────────────────────────────────────── */
-.kj-overlay-container {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  pointer-events: none;
-}
-.kj-overlay-wrapper {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.kj-overlay-wrapper > * {
-  pointer-events: auto;
-}
-.kj-backdrop,
-.kj-overlay-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgb(0 0 0 / 0.5);
-  pointer-events: auto;
-}
-
-/* Navbar theme dropdown — menu panel is portaled to body (outside navbar host). */
-.kj-dropdown-menu .kj-navbar-theme-item--active {
-  background: color-mix(in oklch, var(--kj-color-primary) 14%, transparent);
-  color: var(--kj-color-primary);
-  font-weight: 500;
-}

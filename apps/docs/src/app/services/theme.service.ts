@@ -4,10 +4,15 @@ import { Injectable, PLATFORM_ID, afterNextRender, computed, inject, signal } fr
 /**
  * Theme name. Add new theme names here as @kouji-ui/themes ships more themes.
  */
-export type Theme = 'dark' | 'light' | 'kouji' | 'retro' | 'cyberpunk' | 'corporate';
+export type Theme =
+  | 'dark' | 'light' | 'kouji' | 'retro' | 'cyberpunk' | 'corporate'
+  | 'sakura' | 'bauhaus' | 'dune' | 'mint'
+  | 'forest' | 'nord' | 'terminal';
 
 export const AVAILABLE_THEMES: readonly Theme[] = [
   'kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate',
+  'sakura', 'bauhaus', 'dune', 'mint',
+  'forest', 'nord', 'terminal',
 ] as const;
 
 /**
@@ -23,6 +28,13 @@ export const THEME_SCHEME: Record<Theme, 'light' | 'dark'> = {
   retro:     'light',
   cyberpunk: 'light',
   corporate: 'light',
+  sakura:    'light',
+  bauhaus:   'light',
+  dune:      'light',
+  mint:      'light',
+  forest:    'dark',
+  nord:      'dark',
+  terminal:  'dark',
 };
 
 @Injectable({ providedIn: 'root' })

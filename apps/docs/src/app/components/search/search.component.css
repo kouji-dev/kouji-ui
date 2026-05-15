@@ -1,8 +1,8 @@
 /* Multi-line item layout for the docs search palette. */
-.docs-search .kj-command-item {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.25rem;
+.docs-search {
+  --kj-command-item-direction: column;
+  --kj-command-item-align: stretch;
+  --kj-command-item-gap: 0.25rem;
 }
 
 .result-main {
@@ -14,7 +14,7 @@
 .result-label {
   font-family: var(--kj-font-mono);
   font-size: 0.875rem;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
 }
 
 .result-type {
@@ -27,7 +27,7 @@
   opacity: 0.6;
 }
 
-.result-type-component { color: var(--kj-color-primary); }
+.result-type-component { color: var(--kj-fg-primary); }
 .result-type-directive { color: #82aaff; }
 .result-type-selector  { color: #c792ea; }
 .result-type-input     { color: #f78c6c; }
@@ -35,5 +35,5 @@
 .result-path {
   font-family: var(--kj-font-mono);
   font-size: 0.7rem;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }

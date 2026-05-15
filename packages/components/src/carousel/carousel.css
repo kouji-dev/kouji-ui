@@ -3,11 +3,11 @@
     --kj-carousel-gap:           var(--kj-space-md);
     --kj-carousel-radius:        var(--kj-radius-box);
     --kj-carousel-control-size:  44px;
-    --kj-carousel-control-bg:    var(--kj-color-base-100);
-    --kj-carousel-control-fg:    var(--kj-color-base-content);
+    --kj-carousel-control-bg:    var(--kj-bg-body);
+    --kj-carousel-control-fg:    var(--kj-fg-default);
     --kj-carousel-indicator-size:    10px;
-    --kj-carousel-indicator-active:  var(--kj-color-primary);
-    --kj-carousel-indicator-idle:    var(--kj-color-base-300);
+    --kj-carousel-indicator-active:  var(--kj-bg-primary);
+    --kj-carousel-indicator-idle:    var(--kj-bg-field);
 
     position: relative;
     display: grid;
@@ -44,6 +44,11 @@
     scroll-snap-type: y mandatory;
     grid-column: 1;
     grid-row: 2;
+    /* Grid items default to `min-height: auto`, which lets the viewport
+       grow past its `1fr` row when slides are taller than the share —
+       defeating the scroll-snap container. Pin to 0 so the row's
+       fraction actually constrains the viewport height. */
+    min-height: 0;
   }
 
   .kj-carousel-slide {
@@ -51,8 +56,8 @@
     scroll-snap-align: start;
     scroll-snap-stop: always;
     border-radius: var(--kj-carousel-radius);
-    background: var(--kj-color-base-100);
-    color: var(--kj-color-base-content);
+    background: var(--kj-bg-body);
+    color: var(--kj-fg-default);
     padding: var(--kj-space-lg);
     min-height: 0;
   }
@@ -67,7 +72,7 @@
     min-width: var(--kj-carousel-control-size);
     min-height: var(--kj-carousel-control-size);
     border-radius: 50%;
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    border: var(--kj-border) solid var(--kj-border-default);
     background: var(--kj-carousel-control-bg);
     color: var(--kj-carousel-control-fg);
     cursor: pointer;
@@ -77,9 +82,9 @@
     font: 1rem var(--kj-font-sans);
     transition: var(--kj-transition);
   }
-  .kj-carousel-control:hover { background: var(--kj-color-base-200); }
+  .kj-carousel-control:hover { background: var(--kj-bg-surface); }
   .kj-carousel-control:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
   .kj-carousel-control[aria-disabled="true"] {
@@ -136,7 +141,7 @@
     transform: scale(1.25);
   }
   .kj-carousel-indicator:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
     border-radius: 50%;
   }
@@ -147,7 +152,7 @@
     width: var(--kj-carousel-control-size);
     height: var(--kj-carousel-control-size);
     border-radius: 50%;
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    border: var(--kj-border) solid var(--kj-border-default);
     background: var(--kj-carousel-control-bg);
     color: var(--kj-carousel-control-fg);
     cursor: pointer;
@@ -157,12 +162,12 @@
     font: 1rem var(--kj-font-sans);
   }
   .kj-carousel-pause:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
   .kj-carousel-pause[aria-pressed="true"] {
-    background: var(--kj-color-primary);
-    color: var(--kj-color-primary-content);
+    background: var(--kj-bg-primary);
+    color: var(--kj-fg-on-primary);
   }
   .kj-carousel-pause[disabled] {
     opacity: 0.4;

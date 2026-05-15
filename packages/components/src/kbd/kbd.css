@@ -9,9 +9,9 @@
 
 @layer kj.component {
   .kj-kbd {
-    --kj-kbd-bg:           var(--kj-color-base-200);
-    --kj-kbd-fg:           var(--kj-color-base-content);
-    --kj-kbd-border-color: var(--kj-color-base-300);
+    --kj-kbd-bg:           var(--kj-bg-surface);
+    --kj-kbd-fg:           var(--kj-fg-default);
+    --kj-kbd-border-color: var(--kj-border-default);
     --kj-kbd-border-width: var(--kj-border, 1px);
     --kj-kbd-radius:       var(--kj-radius-selector, 0.25rem);
     --kj-kbd-padding-x:    0.4em;
@@ -41,7 +41,7 @@
     /* At xs the border carries most of the visual identity; bump it to a
        higher-contrast token so it clears 3:1 against base-100/200/300 page
        backgrounds (analysis Open question 5). */
-    --kj-kbd-border-color: color-mix(in oklab, var(--kj-color-base-content) 30%, transparent);
+    --kj-kbd-border-color: color-mix(in oklab, var(--kj-fg-default) 30%, transparent);
     --kj-kbd-font-size: var(--kj-text-xs);
     --kj-kbd-padding-x: 0.3em;
     --kj-kbd-padding-y: 0.1em;

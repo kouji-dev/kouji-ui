@@ -9,13 +9,53 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  * the design-system tokens applied on top of the headless `KjRadioGroup`.
  *
  * @doc-example Default
+ *   A vertical size picker — the bare-minimum recipe.
  *   @doc-file radio.default.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — vertical and horizontal
+ *   groups, disabled option. Use this as the copy-paste starting point.
+ *   @doc-file radio.usage.example.ts
  * @doc-example Group
+ *   Multiple option groups laid out together — labels stay click-targetable.
  *   @doc-file radio.group.example.ts
  * @doc-example Disabled
+ *   `[disabled]="true"` removes the option from the tab order and dims it.
  *   @doc-file radio.disabled.example.ts
  * @doc-example Inline
+ *   `orientation="horizontal"` lays the radios in a single row.
  *   @doc-file radio.inline.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowUp|ArrowDown    — Moves selection between radios in a vertical group
+ *   ArrowLeft|ArrowRight — Moves selection between radios in a horizontal group
+ *   Tab                  — Enters the group (focuses the checked or first radio)
+ *   Space                — Selects the focused radio
+ *
+ * @doc-aria
+ *   role="radiogroup"  — On the host `<kj-radio-group>` (provided by the directive)
+ *   role="radio"       — On each `<kj-radio>` dot
+ *   aria-checked       — Reflects the selection state per option
+ *   aria-labelledby    — Wired from the option's visible text label id
+ *   aria-disabled      — Reflects `[disabled]` on individual radios
+ *   data-orientation   — Mirrors `horizontal` / `vertical` for theme hooks
+ *
+ * @doc-touch
+ *   The label wraps both the dot and the text — the entire `<kj-radio>` row
+ *   is clickable. Pair with adequate line-height so the row meets WCAG 2.5.5.
+ *
+ * @doc-a11y
+ *   Selection follows the roving-tabindex pattern — only the checked (or
+ *   first) radio is tab-focusable; arrow keys cycle within. Group always
+ *   exposes a programmatic name — set `ariaLabel` or wire `aria-labelledby`
+ *   to a sibling heading.
+ *
+ * @doc-related checkbox,select,toggle
+ *
+ * @doc-css-var
+ *   --kj-radio-size        — Diameter of the radio dot.
+ *   --kj-radio-border      — Border color of the unchecked dot. Inherits --kj-border-default.
+ *   --kj-radio-bg-checked  — Inner fill and border color when checked. Inherits --kj-bg-primary.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name radio

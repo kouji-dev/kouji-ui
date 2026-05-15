@@ -74,6 +74,19 @@ describe('KjButton', () => {
     expect(btn).not.toHaveAttribute('data-disabled');
   });
 
+  it('sets data-full="true" when kjFullWidth is true', async () => {
+    const { getByRole } = await render(
+      `<button kjButton [kjFullWidth]="true">x</button>`,
+      { imports: [KjButton] },
+    );
+    expect(getByRole('button')).toHaveAttribute('data-full', 'true');
+  });
+
+  it('omits data-full when kjFullWidth is false (default)', async () => {
+    const { getByRole } = await render(`<button kjButton>x</button>`, { imports: [KjButton] });
+    expect(getByRole('button')).not.toHaveAttribute('data-full');
+  });
+
   it('loading=true sets aria-busy and forces aria-disabled true', async () => {
     const { getByRole } = await render(`<button kjButton [kjLoading]="true">x</button>`, {
       imports: [KjButton],

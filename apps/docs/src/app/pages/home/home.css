@@ -1,4 +1,18 @@
-/* ViewEncapsulation.None — rules target global DOM */
+/* ============================================================
+   kouji-ui — landing page
+   ViewEncapsulation.None: every rule targets `.kj-home*` classes
+   so it never bleeds into other routes. All visual values resolve
+   through theme tokens (--kj-bg-*, --kj-fg-*, --kj-border-*,
+   --kj-font-*, --kj-display-*, --kj-letter-spacing,
+   --kj-hover-translate, --kj-radius-*).
+   ============================================================ */
+
+/* SINGLE scroll owner: `app-home` is the only vertical scroller on the
+   landing route. `app-root` is `overflow: hidden`, so without this `app-home`
+   wouldn't scroll at all. Previously `.kj-home` ALSO set `min-height: 100dvh`,
+   which made the inner element taller than its host even on short pages and
+   produced a nested scrollbar inside `app-home`. The inner block now lets the
+   parent define height — content grows naturally and the host handles overflow. */
 app-home {
   display: flex;
   flex: 1;
@@ -7,327 +21,675 @@ app-home {
   overflow-y: auto;
 }
 
-.noise {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-/* ── Noise texture via SVG data URI ── */
-.noise::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 100;
-  mix-blend-mode: overlay;
-}
-
-.page {
-  min-height: 100dvh;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
-  font-family: var(--kj-font-mono);
+.kj-home {
+  display: flex;
+  flex-direction: column;
+  background: var(--kj-bg-body);
+  color: var(--kj-fg-default);
+  font-family: var(--kj-font-sans);
+  letter-spacing: var(--kj-letter-spacing);
   overflow-x: hidden;
 }
 
-/* ── Hero ── */
-.hero {
-  padding: var(--kj-space-6xl) var(--kj-space-3xl) var(--kj-space-5xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
+/* Flex column children default to flex-shrink:1, which collapses any
+   section taller than the available cross-axis room — that's how the
+   hero kept rendering at exactly `padding` height (160px) while the
+   wordmark inside overflowed at 320px. Pin every direct section to
+   its own intrinsic height. */
+.kj-home > * { flex-shrink: 0; }
+
+.kj-home__container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--kj-space-2xl);
+}
+
+@media (max-width: 720px) {
+  .kj-home__container { padding: 0 var(--kj-space-lg); }
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+.kj-home__hero {
   position: relative;
+  padding: var(--kj-space-4xl) 0 var(--kj-space-5xl);
+  overflow: hidden;
 }
 
-.hero-tag {
-  display: inline-block;
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--kj-color-primary);
-  border: 1px solid var(--kj-color-primary);
-  padding: var(--kj-space-xs) var(--kj-space-md);
-  margin-bottom: 2.5rem;
-  font-family: var(--kj-font-mono);
+/* Decorative grid background, masked into a soft ellipse so it
+   reads as texture, never wallpaper. Tokenized borders for color. */
+.kj-home__hero-grid {
+  position: absolute;
+  inset: 0;
+  /* Explicit z-index:0 keeps the grid as a true backdrop. Without it the
+     absolute layer would render above non-positioned siblings (pill,
+     hero-meta), so the grid lines bled through the yellow tagline marker
+     and washed out the position pill. */
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--kj-border-default) 1px, transparent 1px),
+    linear-gradient(90deg, var(--kj-border-default) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.18;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
 }
+/* Every direct child of .kj-home__hero stacks above the grid backdrop. */
+.kj-home__hero > .kj-home__container { position: relative; z-index: 1; }
+[data-theme="kouji"] .kj-home__hero-grid,
+[data-theme="terminal"] .kj-home__hero-grid,
+[data-theme="cyberpunk"] .kj-home__hero-grid,
+[data-theme="bauhaus"] .kj-home__hero-grid { opacity: 0.35; }
 
-.hero-title {
-  font-family: var(--kj-font-display);
-  font-weight: 800;
-  font-size: clamp(4rem, 12vw, 11rem);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  margin: 0 0 var(--kj-space-3xl);
-  color: var(--kj-color-base-content);
-  max-width: 14ch;
-}
-
-.hero-title em {
-  font-style: normal;
-  color: var(--kj-color-primary);
-  -webkit-text-stroke: 0px;
-}
-
-.hero-sub {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--kj-space-4xl);
-  max-width: 900px;
-}
-
-.hero-desc {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--kj-color-neutral);
-  max-width: 38ch;
-}
-
-.hero-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kj-space-lg);
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.hero-cta {
-  display: contents;
-}
-
-/* Override the kj-button defaults in the hero CTA context to recreate the
-   chunky landing-page button (production was 14px / 32px padding, plus a
-   small icon→text gap). */
-.hero-cta .kj-button {
-  --kj-button-padding-x: var(--kj-space-2xl);
-  --kj-button-padding-y: 0.875rem;
-  gap: var(--kj-space-md);
-}
-
-/* Hover-underline secondary CTA — the GitHub link in the hero. Keeps the
-   original "subtle hyperlink with bottom border" pattern. Uses kj theme
-   tokens so it restyles with the active theme. */
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--kj-space-md);
-  color: var(--kj-color-neutral);
-  font-family: var(--kj-font-mono);
-  font-size: 0.875rem;
-  text-decoration: none;
-  border-bottom: 1px solid var(--kj-color-neutral);
-  padding-bottom: 0.125rem;
-  transition: color 0.15s, border-color 0.15s;
-}
-.btn-secondary:hover {
-  color: var(--kj-color-base-content);
-  border-color: var(--kj-color-base-content);
-}
-
-/* ── Stats bar ── */
-.stats {
-  display: flex;
-  border-bottom: 1px solid var(--kj-color-base-300);
-}
-
-.stat {
-  flex: 1;
-  padding: var(--kj-space-2xl) var(--kj-space-3xl);
-  border-right: 1px solid var(--kj-color-base-300);
-}
-
-.stat:last-child {
-  border-right: none;
-}
-
-/* stat inner typography */
-.stat-num {
-  font-family: var(--kj-font-display);
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--kj-color-primary);
-  line-height: 1;
-  margin-bottom: var(--kj-space-sm);
-}
-
-.stat-label {
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--kj-color-neutral);
-}
-
-/* ── Features ── */
-.features {
-  padding: var(--kj-space-5xl) var(--kj-space-3xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
-}
-
-.section-label {
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--kj-color-neutral);
-  margin-bottom: var(--kj-space-3xl);
+.kj-home__hero-meta {
   display: flex;
   align-items: center;
   gap: var(--kj-space-lg);
-}
-
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--kj-color-base-300);
-  max-width: 200px;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-}
-
-.feature {
-  padding: 2.5rem;
-  border-right: 1px solid var(--kj-color-base-300);
-  border-bottom: 1px solid var(--kj-color-base-300);
-}
-
-.feature:nth-child(3n) {
-  border-right: none;
-}
-
-.feature:nth-last-child(-n+3) {
-  border-bottom: none;
-}
-
-/* feature inner typography */
-.feature-icon {
-  font-size: 1.5rem;
+  font-family: var(--kj-font-mono);
+  font-size: 0.8125rem;
+  color: var(--kj-fg-muted);
   margin-bottom: var(--kj-space-xl);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  flex-wrap: wrap;
+}
+.kj-home__pill {
+  border: 1px solid var(--kj-border-strong, var(--kj-border-default));
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--kj-radius-field);
+  background-color: var(--kj-bg-elevated, var(--kj-bg-surface));
+  color: var(--kj-fg-default);
+  /* Brighter / more saturated than the surrounding muted hero-meta text. */
+  font-weight: 600;
+}
+.kj-home__hero-note { flex: 1; min-width: 12ch; }
+.kj-home__hero-hint { font-size: 0.6875rem; }
+
+/* Big wordmark.
+   `key` (data-theme-key) forces an attribute re-mount on theme change,
+   which restarts the per-glyph entry animation defined below. */
+.kj-home__wordmark {
+  font-family: var(--kj-font-display);
+  font-weight: var(--kj-display-weight);
+  font-style: var(--kj-display-italic);
+  font-size: clamp(96px, 22vw, 320px);
+  line-height: 0.85;
+  letter-spacing: var(--kj-letter-spacing);
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  user-select: none;
+  color: var(--kj-fg-default);
+  /* Wordmark sits above the tagline marker so the J glyph visually
+     overlaps the "don't fight you" pill underneath. */
+  position: relative;
+  z-index: 3;
+}
+.kj-home__glyph { position: relative; z-index: 3; }
+.kj-home__glyph {
+  display: inline-block;
+  position: relative;
+  will-change: transform;
+  animation: kj-home-glyph-in 600ms cubic-bezier(.34,1.56,.64,1) backwards;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), color .55s ease;
+}
+.kj-home__glyph:hover { transform: translateY(-8px) rotate(-4deg); }
+.kj-home__glyph--accent { color: var(--kj-fg-primary); }
+@keyframes kj-home-glyph-in {
+  from { transform: translateY(40%); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.kj-home__tagline {
+  font-family: var(--kj-font-sans);
+  font-size: clamp(1.125rem, 2.2vw, 1.625rem);
+  line-height: 1.35;
+  margin: var(--kj-space-xl) 0 0;
+  max-width: 720px;
+  color: var(--kj-fg-default);
+  position: relative;
+  z-index: 1;
+}
+.kj-home__marker {
+  /* Solid primary fill per the design (app.css `.hero-tagline .marker`).
+     `box-decoration-break: clone` keeps the rectangle clean across line
+     wraps; `z-index: 2` keeps the marker above the decorative hero-grid
+     so the grid only bleeds through where we explicitly want it. */
+  background-color: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+  padding: 0 0.5rem;
+  border-radius: calc(var(--kj-radius-field) / 2);
+  position: relative;
+  z-index: 2;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Landing-only kouji override: keep the marker + the hero's default-variant
+   button at full brightness, but lay a faint dark line-grid on top so the
+   brutalist "stamped on graph paper" motif still reads. Previous attempt
+   used color-mix(... transparent) which darkened the yellow on the
+   near-black body. Layering preserves the bright fill. */
+[data-theme="kouji"] .kj-home__hero .kj-home__marker,
+[data-theme="kouji"] .kj-home__hero .kj-button[data-variant="default"] {
+  background-image:
+    repeating-linear-gradient(0deg,  transparent 0 31px, rgba(0, 0, 0, 0.18) 31px 32px),
+    repeating-linear-gradient(90deg, transparent 0 31px, rgba(0, 0, 0, 0.18) 31px 32px);
+}
+
+.kj-home__sub {
+  margin-top: 0.875rem;
+  color: var(--kj-fg-muted);
+  font-size: 0.9375rem;
+  font-family: var(--kj-font-mono);
+  max-width: 640px;
+}
+
+.kj-home__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kj-space-md);
+  margin-top: var(--kj-space-2xl);
+  align-items: center;
+  /* Landing hero is the one place the brutalist button shadow lives. Only
+     `kj-button[data-variant="default"]` reads these vars (see button.css);
+     outline / ghost CTAs stay flat. Values intentionally hardcoded so the
+     shadow keeps its kouji aesthetic regardless of the active theme. */
+  --kj-button-shadow:        6px 6px 0 #2a2a2a;
+  --kj-button-shadow-hover:  0 0 0 1.5px #2a2a2a;
+  --kj-button-shadow-active: 0 0 0 1.5px #2a2a2a;
+}
+/* `kj-button` host is display:contents — wrap router-link <a> in this
+   anchor to keep the focus ring on the inner native <button>. */
+.kj-home__cta-link {
+  display: inline-flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── Hero 2-col + theme-figure ───────────────────────────
+   Mirrors design-revamp/kouji-ui-v2/app.css: left wordmark/tagline,
+   right per-theme figure container. Stacks under 880px.
+   Wordmark shrinks when 2-col so it never overruns the left track. */
+.kj-home__hero-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 360px);
+  gap: 40px;
+  align-items: center;
+  margin-top: 4px;
+}
+.kj-home__hero-left { min-width: 0; }
+.kj-home__hero-figure-col { min-width: 0; }
+@media (min-width: 880px) {
+  .kj-home__hero-left .kj-home__wordmark {
+    font-size: clamp(64px, 12vw, 180px);
+  }
+}
+@media (max-width: 880px) {
+  .kj-home__hero-layout { grid-template-columns: 1fr; gap: 24px; }
+  .kj-home__hero-figure-col { max-width: 360px; margin: 8px auto 0; }
+}
+
+/* Theme-figure container — exact match to design `.theme-figure`. */
+.theme-figure {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-box-lg, var(--kj-radius-box));
+  overflow: hidden;
+  box-shadow: var(--kj-button-shadow, var(--kj-shadow-md));
+  background-color: var(--kj-bg-surface);
   display: block;
 }
+.figure-svg { display: block; width: 100%; height: 100%; }
 
-.feature-title {
-  font-family: var(--kj-font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0 0 var(--kj-space-md);
-  color: var(--kj-color-base-content);
-  letter-spacing: -0.01em;
+/* Per-figure ambient animations — ported 1:1 from design app.css. */
+.fig-pulse { animation: fig-pulse 2.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes fig-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+
+.fig-spin-slow   { animation: fig-spin 28s linear infinite; transform-origin: 200px 200px; transform-box: view-box; }
+.fig-spin-slower { animation: fig-spin 50s linear infinite reverse; transform-origin: 200px 200px; transform-box: view-box; }
+@keyframes fig-spin { to { transform: rotate(360deg); } }
+
+.fig-breathe { animation: fig-breathe 4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes fig-breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+.fig-enso-draw { stroke-dashoffset: 680; animation: fig-enso 1.6s cubic-bezier(.4,0,.2,1) forwards; }
+@keyframes fig-enso { to { stroke-dashoffset: 0; } }
+
+.fig-pulse-slow { animation: fig-pulse-slow 3.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes fig-pulse-slow { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.35);opacity:.7} }
+
+.fig-cyber-shadow { animation: fig-glitch-shadow 4s steps(1) infinite; }
+.fig-cyber-main { animation: fig-glitch-main 4s steps(1) infinite; }
+@keyframes fig-glitch-shadow {
+  0%,92%{transform:translate(8px,0)} 93%,94%{transform:translate(-7px,3px)}
+  95%{transform:translate(14px,-4px)} 96%,100%{transform:translate(8px,0)}
+}
+@keyframes fig-glitch-main {
+  0%,92%{transform:none} 93%{transform:translate(3px,-2px)}
+  94%{transform:translate(-2px,2px)} 95%{transform:translate(0,1px)}
 }
 
-.feature-desc {
-  font-size: 0.8rem;
-  line-height: 1.7;
-  color: var(--kj-color-neutral);
+.fig-bar { transform-origin: bottom center; transform-box: fill-box; animation: fig-bar-grow .9s cubic-bezier(.34,1.56,.64,1) backwards; }
+@keyframes fig-bar-grow { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+
+.fig-petal-fall { animation: fig-petal 7s linear infinite; transform-box: fill-box; }
+@keyframes fig-petal {
+  0%   { transform: translate(0, 0) rotate(0); opacity: 0; }
+  8%   { opacity: 0.9; }
+  100% { transform: translate(48px, 460px) rotate(540deg); opacity: 0; }
 }
 
-/* ── Install ── */
-.install {
-  padding: var(--kj-space-5xl) var(--kj-space-3xl);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--kj-space-5xl);
-  align-items: center;
+.fig-bauhaus-piece { transform-origin: center; transform-box: fill-box; animation: fig-piece 1s cubic-bezier(.34,1.56,.64,1) backwards; }
+@keyframes fig-piece { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+.fig-dune-sun { animation: fig-dune-sun 12s ease-in-out infinite alternate; }
+@keyframes fig-dune-sun { from{transform:translateY(0)} to{transform:translateY(38px)} }
+
+.fig-mint-sway { animation: fig-sway 5s ease-in-out infinite; transform-origin: 200px 200px; transform-box: view-box; }
+@keyframes fig-sway { 0%,100%{transform:rotate(-2deg)} 50%{transform:rotate(2deg)} }
+
+.fig-firefly { animation: fig-firefly 3.6s ease-in-out infinite; transform-box: fill-box; }
+@keyframes fig-firefly { 0%,100%{opacity:.25;transform:translateY(0)} 50%{opacity:1;transform:translateY(-8px)} }
+
+.fig-aurora-1 { animation: fig-aurora 9s ease-in-out infinite; }
+.fig-aurora-2 { animation: fig-aurora 13s ease-in-out infinite reverse; }
+@keyframes fig-aurora {
+  0%,100% { transform: translateX(-30px) skewX(-2deg); }
+  50%     { transform: translateX(30px) skewX(2deg); }
 }
 
-.install-title {
-  font-family: var(--kj-font-display);
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  color: var(--kj-color-base-content);
-  margin: 0 0 var(--kj-space-lg);
+.fig-cursor { animation: fig-cursor-blink 1s steps(1) infinite; }
+@keyframes fig-cursor-blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-figure *, .theme-figure *::before, .theme-figure *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
-.install-sub {
-  font-size: 0.85rem;
-  color: var(--kj-color-neutral);
-  line-height: 1.6;
+/* ── Theme switcher ──────────────────────────────────────── */
+.kj-home__switcher {
+  margin-top: var(--kj-space-4xl);
+  padding: var(--kj-space-xl);
+  border: 1px solid var(--kj-border-default);
+  background-color: var(--kj-bg-surface);
+  border-radius: var(--kj-radius-box-lg, var(--kj-radius-box));
+  /* Carries the theme's signature "card-shadow". On themes with a
+     brutalist offset block (kouji = 6px, bauhaus = 8px) this matches
+     the primary button's silhouette — same `--shadow-card` token the
+     design source uses for both. Falls back to `--kj-shadow-md` for
+     themes that don't ship a button shadow. */
+  box-shadow: var(--kj-button-shadow, var(--kj-shadow-md));
 }
-
-.code-block {
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
-  padding: var(--kj-space-2xl);
-}
-
-.code-block-header {
+.kj-home__switcher-head {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
-  padding-bottom: var(--kj-space-lg);
-  border-bottom: 1px solid var(--kj-color-base-300);
-}
-
-.code-block-title {
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  align-items: center;
+  margin-bottom: var(--kj-space-lg);
+  font-family: var(--kj-font-mono);
+  font-size: 0.75rem;
   text-transform: uppercase;
-  color: var(--kj-color-neutral);
+  letter-spacing: 0.12em;
+  color: var(--kj-fg-muted);
+  gap: var(--kj-space-md);
+  flex-wrap: wrap;
 }
-
-.code-lines {
-  display: flex;
-  flex-direction: column;
+.kj-home__switcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: var(--kj-space-sm);
 }
 
-.code-line {
-  font-family: var(--kj-font-mono);
-  font-size: 0.85rem;
-  color: var(--kj-color-neutral);
-}
-
-.code-line .prompt {
-  color: var(--kj-color-primary);
-  margin-right: var(--kj-space-md);
-  user-select: none;
-}
-
-.code-line .pkg {
-  color: var(--kj-color-base-content);
-}
-
-.code-line .flag {
-  color: var(--kj-color-primary);
-  opacity: 0.7;
-}
-
-/* ── Footer ── */
-footer {
-  padding: var(--kj-space-2xl) var(--kj-space-3xl);
+.kj-home__chip {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.625rem;
+  /* Touch target ≥ 44px — vertical padding + line-height land above 44. */
+  min-height: 44px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--kj-border-default);
+  background-color: var(--kj-bg-elevated, var(--kj-bg-surface));
+  border-radius: var(--kj-radius-field);
+  font-family: var(--kj-font-mono);
+  font-size: 0.8125rem;
+  color: var(--kj-fg-default);
+  cursor: pointer;
+  text-align: left;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .25s ease,
+              border-color .25s ease,
+              background-color .15s ease;
+}
+.kj-home__chip:hover {
+  transform: translateY(var(--kj-hover-translate));
+  border-color: var(--kj-border-strong, var(--kj-border-focus));
+}
+.kj-home__chip:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+.kj-home__chip--active {
+  background-color: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+  border-color: var(--kj-border-primary, var(--kj-bg-primary));
+}
+.kj-home__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--kj-radius-field);
+  border: 1px solid var(--kj-border-default);
+  flex-shrink: 0;
+}
+.kj-home__chip-name { flex: 1; }
+.kj-home__chip-num {
+  opacity: 0.5;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.footer-logo {
+/* ── Marquee tape ────────────────────────────────────────── */
+.kj-home__tape {
+  display: flex;
+  overflow: hidden;
+  border-top: 1px solid var(--kj-border-default);
+  border-bottom: 1px solid var(--kj-border-default);
+  background-color: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+  font-family: var(--kj-font-mono);
+  font-weight: 700;
+  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 0.875rem 0;
+  white-space: nowrap;
+}
+.kj-home__tape-track {
+  display: flex;
+  gap: 2rem;
+  padding-right: 2rem;
+  animation: kj-home-marquee 28s linear infinite;
+  flex-shrink: 0;
+}
+.kj-home__tape-item { display: inline-flex; align-items: center; gap: 0.875rem; }
+.kj-home__tape-sep { opacity: 0.5; }
+@keyframes kj-home-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ── Stats row ───────────────────────────────────────────── */
+/* Per design: a 4-column row constrained to the same 1240px container
+   as the rest of the page (not page-edge-bleed). Dividers between each
+   stat; centered numbers + labels so each stat reads as its own card. */
+.kj-home__stats-section {
+  border-top: 1px solid var(--kj-border-default);
+  border-bottom: 1px solid var(--kj-border-default);
+}
+.kj-home__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.kj-home__stat {
+  padding: var(--kj-space-2xl) var(--kj-space-xl);
+  border-right: 1px solid var(--kj-border-default);
+  /* Center the number + label horizontally — design intent. */
+  text-align: center;
+}
+.kj-home__stat:first-child { border-left: 1px solid var(--kj-border-default); }
+.kj-home__stat:last-child { border-right: 1px solid var(--kj-border-default); }
+.kj-home__stat-num {
   font-family: var(--kj-font-display);
-  font-weight: 800;
+  font-weight: var(--kj-display-weight);
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  letter-spacing: var(--kj-letter-spacing);
+  line-height: 1;
+  /* The design uses the theme's default text color here — bright on
+     dark themes (white-ish on kouji/dark/terminal), inked on light. */
+  color: var(--kj-fg-default);
+}
+.kj-home__stat-label {
+  font-family: var(--kj-font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--kj-fg-muted);
+  margin-top: var(--kj-space-sm);
+}
+@media (max-width: 720px) {
+  .kj-home__stats { grid-template-columns: repeat(2, 1fr); }
+  .kj-home__stat:nth-child(2) { border-right: 1px solid var(--kj-border-default); }
+  .kj-home__stat:nth-child(1),
+  .kj-home__stat:nth-child(2) { border-bottom: 1px solid var(--kj-border-default); }
+}
+
+/* ── Showcase ────────────────────────────────────────────── */
+.kj-home__showcase {
+  padding: var(--kj-space-5xl) 0 var(--kj-space-3xl);
+}
+.kj-home__showcase-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--kj-space-2xl);
+  gap: var(--kj-space-2xl);
+  flex-wrap: wrap;
+}
+.kj-home__eyebrow {
+  font-family: var(--kj-font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--kj-fg-muted);
+}
+.kj-home__section-title {
+  font-family: var(--kj-font-display);
+  font-weight: var(--kj-display-weight);
+  font-style: var(--kj-display-italic);
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: var(--kj-letter-spacing);
+  margin: 0.75rem 0 0;
+  color: var(--kj-fg-default);
+}
+.kj-home__section-title--space { margin-bottom: var(--kj-space-2xl); }
+
+/* Hide the empty kj-tab-panel chrome — we use the tabs purely as a
+   "view mode" toggle in the showcase head; content swaps elsewhere. */
+.kj-home__showcase-tabs kj-tab-panel { display: none; }
+
+.kj-home__showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  /* Larger gap so brutalist offset shadows on cards (6px/8px) don't
+     visually collide with neighboring cards. */
+  gap: var(--kj-space-2xl);
+}
+
+/* The kj-card host is the styled box. Span helpers map a card's column
+   width onto the showcase grid. */
+.kj-home__demo-card {
+  position: relative;
+  overflow: hidden;
+  padding: var(--kj-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-md);
+}
+.kj-home__demo-card--span-4 { grid-column: span 4; }
+.kj-home__demo-card--span-5 { grid-column: span 5; }
+.kj-home__demo-card--span-7 { grid-column: span 7; }
+
+@media (max-width: 980px) {
+  .kj-home__demo-card--span-4,
+  .kj-home__demo-card--span-5,
+  .kj-home__demo-card--span-7 { grid-column: span 12; }
+}
+
+.kj-home__card-label {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.875rem;
+  font-family: var(--kj-font-mono);
+  font-size: 0.6875rem;
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.kj-home__demo-title {
+  font-family: var(--kj-font-display);
+  font-weight: var(--kj-display-weight);
+  font-style: var(--kj-display-italic);
+  font-size: 1.375rem;
+  margin: 0 0 0.25rem;
+  letter-spacing: var(--kj-letter-spacing);
+  color: var(--kj-fg-default);
+}
+.kj-home__demo-desc {
+  margin: 0;
+  color: var(--kj-fg-muted);
+  font-size: 0.875rem;
+}
+.kj-home__demo-row {
+  display: flex;
+  gap: var(--kj-space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.kj-home__demo-stack {
+  display: grid;
+  gap: var(--kj-space-md);
+}
+
+.kj-home__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+.kj-home__field-label {
+  font-family: var(--kj-font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--kj-fg-muted);
+}
+
+.kj-home__toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-md);
+}
+.kj-home__toggle-label {
+  font-size: 0.875rem;
+  color: var(--kj-fg-default);
+}
+
+.kj-home__progress-block { margin-top: var(--kj-space-sm); }
+.kj-home__progress-label {
+  font-family: var(--kj-font-mono);
+  font-size: 0.6875rem;
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.625rem;
+}
+
+/* ── Install ─────────────────────────────────────────────── */
+.kj-home__install {
+  padding: var(--kj-space-5xl) 0 var(--kj-space-3xl);
+  border-top: 1px solid var(--kj-border-default);
+}
+.kj-home__install-block {
+  background-color: var(--kj-bg-surface);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-box-lg, var(--kj-radius-box));
+  box-shadow: var(--kj-shadow-md);
+  padding: var(--kj-space-xl);
+}
+.kj-home__terminal {
+  background-color: var(--kj-bg-body);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  /* Extra right padding reserves space for the absolute copy chip so the
+     install command never collides with it on narrow viewports. */
+  padding: 1.125rem 5.5rem 1.125rem 1.375rem;
+  font-family: var(--kj-font-mono);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  position: relative;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  color: var(--kj-fg-default);
+}
+.kj-home__term-prompt { color: var(--kj-fg-primary); user-select: none; }
+.kj-home__term-comment { color: var(--kj-fg-muted); }
+.kj-home__copy {
+  /* kj-button hosts are `display: contents`, so the inner native <button>
+     would inherit the terminal's text flow position. Wrapping the
+     kj-button in a positioned span anchors the copy affordance to the
+     top-right corner of the code panel — matching the design's
+     "copy chip floats inside the terminal". */
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  z-index: 1;
+  display: inline-flex;
+}
+
+/* ── FAQ ─────────────────────────────────────────────────── */
+.kj-home__faq {
+  padding: var(--kj-space-5xl) 0 var(--kj-space-6xl);
+  border-top: 1px solid var(--kj-border-default);
+}
+.kj-home__faq-list {
+  display: block;
+  border-top: 1px solid var(--kj-border-default);
+}
+.kj-home__faq-answer {
+  margin: 0.75rem 0 0.25rem;
+  max-width: 760px;
+  color: var(--kj-fg-muted);
   font-size: 1rem;
-  color: var(--kj-color-neutral);
-  letter-spacing: -0.02em;
+  line-height: 1.55;
 }
 
-.footer-copy {
-  font-size: 0.7rem;
-  color: var(--kj-color-neutral);
-  letter-spacing: 0.05em;
+/* ── Footer ──────────────────────────────────────────────── */
+.kj-home__footer {
+  padding: var(--kj-space-2xl) 0 var(--kj-space-3xl);
+  border-top: 1px solid var(--kj-border-default);
+  font-family: var(--kj-font-mono);
+  font-size: 0.8125rem;
+  color: var(--kj-fg-muted);
+}
+.kj-home__footer-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--kj-space-md);
 }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  .hero { padding: 4rem 1.5rem 3rem; }
-  .hero-sub { grid-template-columns: 1fr; gap: 2rem; }
-  .stats { flex-direction: column; }
-  .stat { border-right: none; border-bottom: 1px solid var(--kj-color-base-300); }
-  .features-grid { grid-template-columns: 1fr; }
-  .feature { border-right: none !important; }
-  .install { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }
-  footer { flex-direction: column; gap: 1rem; padding: 2rem 1.5rem; }
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .kj-home__hero { padding: var(--kj-space-3xl) 0 var(--kj-space-4xl); }
+  .kj-home__cta-row > * { width: 100%; }
+  .kj-home__cta-link { width: 100%; }
+  .kj-home__showcase-head { align-items: flex-start; }
+}
+
+/* Reduced motion: still readable, just calm. */
+@media (prefers-reduced-motion: reduce) {
+  .kj-home__glyph,
+  .kj-home__tape-track {
+    animation: none !important;
+  }
+  .kj-home__chip,
+  .kj-home__glyph { transition: none !important; }
 }

@@ -21,6 +21,16 @@ export async function runAxeAndFonts(browser: Browser, input: AxeRunInput): Prom
   try {
     await page.goto(input.url, { waitUntil: 'networkidle', timeout: 60_000 });
 
+    // The app shell mounts a splash screen and toggles a `.content-hidden`
+    // class on its root while Angular hydrates. Wait for it to clear so axe
+    // can actually see the page content (otherwise landmarks/regions read
+    // as missing because every descendant is `visibility: hidden`).
+    await page.waitForFunction(
+      () => !document.querySelector('.app-shell.content-hidden'),
+      undefined,
+      { timeout: 20_000 },
+    ).catch(() => { /* fall through — axe will catch what's there */ });
+
     const samples = await sampleFonts(page);
     const fonts = analyzeFonts(samples);
 

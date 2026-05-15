@@ -11,7 +11,7 @@ import { KjAvatarComponent } from './avatar';
   selector: 'kj-avatar-group-example',
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-avatar-group kjAriaLabel="collaborators">
       <kj-avatar content="AL" alt="Ada Lovelace" />

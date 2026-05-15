@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "theme": "nord",
+  "page": "/docs/components/dialog",
+  "url": "http://localhost:4200/docs/components/dialog?theme=nord",
+  "timestamp": "2026-05-13T20:14:45.872Z",
+  "axe": {
+    "violationsByImpact": {
+      "critical": 0,
+      "serious": 0,
+      "moderate": 0,
+      "minor": 0
+    },
+    "violations": [],
+    "passes": 38
+  },
+  "fonts": {
+    "samples": [
+      {
+        "selector": "body",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "h1",
+        "fontFamily": "Syne, system-ui, sans-serif",
+        "fontSize": 56,
+        "lineHeight": 56,
+        "weight": 800
+      },
+      {
+        "selector": "h2",
+        "fontFamily": "Syne, system-ui, sans-serif",
+        "fontSize": 24,
+        "lineHeight": 28.8,
+        "weight": 700
+      },
+      {
+        "selector": "h3",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 11.2,
+        "lineHeight": 13.44,
+        "weight": 500
+      },
+      {
+        "selector": "button",
+        "fontFamily": "Arial",
+        "fontSize": 13.3333,
+        "lineHeight": 15.999959999999998,
+        "weight": 400
+      },
+      {
+        "selector": "a",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 16,
+        "lineHeight": 19.2,
+        "weight": 400
+      },
+      {
+        "selector": "code",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 14,
+        "lineHeight": 16.8,
+        "weight": 400
+      },
+      {
+        "selector": "p",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 10,
+        "lineHeight": 12,
+        "weight": 400
+      },
+      {
+        "selector": "[role=\"status\"]",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": 12.8,
+        "lineHeight": 15.36,
+        "weight": 400
+      }
+    ],
+    "warnings": [
+      {
+        "selector": "h1",
+        "issue": "line-height ratio 1.00 below 1.2 (WCAG 1.4.12)"
+      },
+      {
+        "selector": "h3",
+        "issue": "fontSize 11.2px below 12px minimum (WCAG 1.4.4)"
+      },
+      {
+        "selector": "p",
+        "issue": "fontSize 10px below 12px minimum (WCAG 1.4.4)"
+      }
+    ]
+  },
+  "lighthouse": null,
+  "lighthouseError": "The \"start lh:prepare:navigationMode\" performance mark has not been set"
+}

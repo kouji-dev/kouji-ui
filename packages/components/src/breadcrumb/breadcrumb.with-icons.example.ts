@@ -23,7 +23,7 @@ import {
   ],
   styles: [
     `
-      :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+      :host { display: block; }
       .kj-icon { width: 1em; height: 1em; vertical-align: -0.125em; margin-inline-end: 0.25em; }
     `,
   ],

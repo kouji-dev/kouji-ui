@@ -47,15 +47,61 @@ import { KjList, KjListItem, type KjListAs, type KjListOrientation } from '@kouj
  * ```
  *
  * @doc-example Default
+ *   A settings list with five rows — anchors the chrome (no dividers, no hover).
  *   @doc-file list.example.ts
+ * @doc-example Usage
+ *   Common list shapes — divided, hoverable, and a nav landmark — assembled
+ *   as a copy-paste starting point.
+ *   @doc-file list.usage.example.ts
  * @doc-example Divided
+ *   `[divided]="true"` paints between-row separators via theme CSS.
  *   @doc-file list.divided.example.ts
  * @doc-example Nav landmark
+ *   `as="nav"` opts the host into the `navigation` landmark with a label.
  *   @doc-file list.nav.example.ts
  * @doc-example Interactive rows
+ *   Rows project `<a>` / `<button>` children that own focus and activation.
  *   @doc-file list.interactive.example.ts
  * @doc-example With icons and badges
+ *   Icon prefix + trailing badge combo for status-rich rows.
  *   @doc-file list.with-icons.example.ts
+ *
+ * @doc-keyboard
+ *   Tab        — Moves focus to the next interactive child (the row itself is not focusable)
+ *   Arrow up|down — Moves focus across rows when [arrowNavigation]="true" (roving tabindex)
+ *   Home|End   — Jump to the first / last row when [arrowNavigation]="true"
+ *
+ * @doc-aria
+ *   role         — "list" by default; "navigation" when as="nav"
+ *   aria-label   — Bound from [ariaLabel]; required when as="nav"
+ *   aria-labelledby — Bound from [ariaLabelledby] when an external heading labels the list
+ *   data-active  — Mirrors a list-item's [active] for theme CSS; consumers wire aria-current separately
+ *   data-disabled— Mirrors a list-item's [disabled] for theme CSS
+ *
+ * @doc-touch
+ *   `--kj-list-row-min-h` defaults to 44 px so each row already meets WCAG
+ *   2.5.5 when the row hosts an interactive child.
+ *
+ * @doc-a11y
+ *   The list never infers `aria-current` — consumers set the right token
+ *   (`page` / `step` / `date` / `true`) on the projected `<a>` or
+ *   `<button>` because the meaning is domain-specific. Disabled rows paint
+ *   chrome via `data-disabled`; the projected child still owns its own
+ *   `tabindex` / `aria-disabled` discipline.
+ *
+ * @doc-related divider,menubar,breadcrumb,card
+ *
+ * @doc-css-var
+ *   --kj-list-bg             — Background fill of the list container.
+ *   --kj-list-fg             — Foreground (text) color of the list.
+ *   --kj-list-border-color   — Border color for bordered + divided variants.
+ *   --kj-list-radius         — Outer corner radius of the list container.
+ *   --kj-list-row-gap        — Gap between rows. Zero by default (rows touch).
+ *   --kj-list-row-padding-x  — Horizontal padding inside each row. Sizes override.
+ *   --kj-list-row-padding-y  — Vertical padding inside each row. Sizes override.
+ *   --kj-list-row-radius     — Corner radius applied to each row's chrome.
+ *   --kj-list-row-min-h      — Minimum row height. Default 44px (WCAG 2.5.5).
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name list

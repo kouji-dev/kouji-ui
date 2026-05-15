@@ -11,7 +11,7 @@ import { KjSpinnerComponent } from './spinner';
   selector: 'kj-spinner-example',
   standalone: true,
   imports: [KjSpinnerComponent],
-  styles: [`:host { display: flex; align-items: center; justify-content: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: flex; align-items: center; justify-content: center; }`],
   template: `<kj-spinner />`,
 })
 export class KjSpinnerExample {}

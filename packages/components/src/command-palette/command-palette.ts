@@ -29,6 +29,12 @@ import {
  * Marker directive for projecting custom footer content into a
  * `<kj-command-palette>`. When present, the wrapper hides its default
  * keyboard-hint footer and renders the projected content instead.
+ *
+ * @doc-css-var
+ *   --kj-command-item-direction — Flex direction on each command row. Defaults to `row`; switch to `column` for stacked layouts.
+ *   --kj-command-item-align     — Cross-axis alignment of row contents. Defaults to `center`.
+ *   --kj-command-item-gap       — Gap between icon and label inside a row. Defaults to --kj-space-md.
+ *
  * @doc
  * @doc-name command-palette
  * @doc-description Themed Cmd-K modal command palette with fuzzy filtering, grouped results, and keyboard navigation.
@@ -74,15 +80,54 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
  * hotkey via `[kjHotkey]`.
  *
  * @doc-example Default
+ *   A trigger button opens the modal; type to filter the projected items.
  *   @doc-file command-palette.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common command-palette usages — Cmd-K hotkey,
+ *   grouped rows, and a trigger button.
+ *   @doc-file command-palette.usage.example.ts
  * @doc-example With trigger and hotkey
+ *   Bind a global `mod+k` chord that toggles the palette open and closed.
  *   @doc-file command-palette.dialog.example.ts
  * @doc-example With groups
+ *   `<kj-command-group>` clusters related commands under a label heading.
  *   @doc-file command-palette.groups.example.ts
  * @doc-example Async with item template
+ *   `[kjItems]` + `kjCommandPaletteItemTemplate` for remote search results.
  *   @doc-file command-palette.async.example.ts
  * @doc-example Fuzzy filter
+ *   Drop in a fuzzy `[kjFilter]` for typo-tolerant matching.
  *   @doc-file command-palette.fuzzy.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowDown|ArrowUp — Moves the active item through the visible list
+ *   Enter             — Activates the highlighted item (emits `kjValueChange`)
+ *   Escape            — Closes the palette and returns focus to the trigger
+ *   mod+k             — Default hotkey toggles open / closed (configurable via `[kjHotkey]`)
+ *   Printable keys    — Type into the search input to filter
+ *
+ * @doc-aria
+ *   role="dialog"     — On the panel; `aria-modal="true"` while open
+ *   aria-label        — Defaults to "Command palette"; override via `[kjAriaLabel]`
+ *   role="listbox"    — On the inner list (provided by `[kjCommandList]`)
+ *   role="option"     — On each `[kjCommandItem]`
+ *   aria-disabled     — Reflected per item when `[kjDisabled]` is true
+ *   aria-live         — The empty state announces "No results found" politely
+ *
+ * @doc-touch
+ *   Each command row enforces `min-height: 2.75rem` (44px) via CSS — every
+ *   row is a valid touch target. The footer keyboard hints are decorative.
+ *
+ * @doc-a11y
+ *   The palette is a modal dialog with backdrop and an inert siblings posture
+ *   while open. The search input keeps focus; the active item is tracked via
+ *   `aria-activedescendant`. When projected items are filtered out, groups
+ *   auto-hide so the announced "results found" count stays accurate. The
+ *   `[kjAutoCloseOnActivate]` posture (true by default) closes the palette
+ *   after activation and restores focus to the trigger.
+ *
+ * @doc-related dropdown-menu,dialog,menubar
+ *
  * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette

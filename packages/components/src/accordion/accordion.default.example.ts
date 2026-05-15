@@ -7,7 +7,7 @@ import {
   selector: 'kj-accordion-default-example',
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-accordion>
       <kj-accordion-item value="one" label="What is kouji-ui?">

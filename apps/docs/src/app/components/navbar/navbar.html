@@ -15,9 +15,9 @@
   }
   <a routerLink="/" class="kj-navbar-logo" aria-label="kouji home">
     <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
-      <line x1="10" y1="10" x2="10" y2="54" stroke="var(--kj-color-primary)" stroke-width="6" stroke-linecap="round"/>
-      <line x1="10" y1="32" x2="34" y2="10" stroke="var(--kj-color-primary)" stroke-width="6" stroke-linecap="round"/>
-      <line x1="10" y1="32" x2="34" y2="54" stroke="var(--kj-color-primary)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="10" x2="10" y2="54" stroke="var(--kj-fg-primary)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="34" y2="10" stroke="var(--kj-fg-primary)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="34" y2="54" stroke="var(--kj-fg-primary)" stroke-width="6" stroke-linecap="round"/>
       <path d="M50 24 L50 48 Q50 56 42 56 Q38 56 36 54" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       <circle cx="50" cy="14" r="4" fill="currentColor"/>
     </svg>
@@ -28,14 +28,6 @@
   <a routerLink="/theme-generator" routerLinkActive="active" class="kj-navbar-link">Theme Generator</a>
 
   <span class="kj-navbar-spacer"></span>
-
-  <kj-button kjVariant="outline" class="kj-navbar-search" (click)="openSearch()" kjAriaLabel="Search docs">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <span>Search docs</span>
-    <kbd>⌘K</kbd>
-  </kj-button>
 
   <span class="kj-navbar-version" aria-label="Library version">v{{ version }}</span>
 
@@ -66,8 +58,7 @@
         <button
           type="button"
           kjDropdownMenuItem
-          class="kj-navbar-theme-item"
-          [class.kj-navbar-theme-item--active]="t === currentTheme()"
+          [attr.aria-current]="t === currentTheme() ? 'true' : null"
           (kjSelect)="selectTheme(t)"
         >
           {{ t }}

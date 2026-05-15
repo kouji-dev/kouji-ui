@@ -2,13 +2,13 @@
   <div class="a11y-summary" id="tg-contrast-focus" tabindex="-1" aria-label="Accessibility summary">
     <div class="a11y-summary__badges" aria-live="polite">
       <kj-tag kjVariant="success" kjSize="sm">
-        AAA {{ scoreReport().summary.aaaNormalPass }}/{{ scoreReport().summary.aaaNormalTotal }}
+        AA {{ scoreReport().summary.aaNormalPass }}/{{ scoreReport().summary.aaNormalTotal }}
       </kj-tag>
       <kj-tag
         kjVariant="info"
         kjSize="sm"
         [attr.title]="
-          'Non-text / UI contrast (WCAG 3:1): pairs like base-300 on base surfaces — ' +
+          'Non-text / UI contrast (WCAG 3:1): ' +
           scoreReport().summary.nonTextPass +
           ' of ' +
           scoreReport().summary.nonTextTotal +
@@ -29,7 +29,7 @@
         Type warn {{ scoreReport().summary.typographyWarn }}
       </kj-tag>
       <kj-tag
-        kjVariant="secondary"
+        kjVariant="outline"
         kjSize="sm"
         [attr.title]="'Lowest ratio: ' + scoreReport().summary.worstRatio.toFixed(2) + ':1'"
       >
@@ -39,133 +39,81 @@
   </div>
 
   <p class="caption">
-    WCAG checks on draft tokens. Use shuffle and sync in the header toolbar; curated seed palettes open when you pick a color square below.
+    WCAG checks on the live draft. Tap any swatch to open its color picker; the ribbon shows the worst-case AAA contrast pair touching that slot.
   </p>
 
-  <h3 class="group-heading">Base</h3>
-  <div class="token-block token-block--base">
-    <div class="catalog-chips" role="group" aria-label="Base shades and text color">
-      <span class="catalog-tooltip-host">
-        <button
-          type="button"
-          kjTooltipTrigger
-          #tipB100="kjTooltipTrigger"
-          class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon"
-          [style.background-color]="hexFor('base-100')"
-          [style.--ribbon-accent]="ribbonBase().b100.accent"
-          (click)="openSemanticFill('base-100')"
-          aria-label="Edit base-100 canvas color"
-        >
-          <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
-          <span class="color-chip__mark">100</span>
-        </button>
-        <kj-tooltip-content [kjFor]="tipB100">
-          {{ ribbonBase().b100.overlayLine }} {{ ribbonBase().b100.tooltipDetail }}
-        </kj-tooltip-content>
-      </span>
-      <span class="catalog-tooltip-host">
-        <button
-          type="button"
-          kjTooltipTrigger
-          #tipB200="kjTooltipTrigger"
-          class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon"
-          [style.background-color]="hexForDerived('base-200')"
-          [style.--ribbon-accent]="ribbonBase().b200.accent"
-          (click)="openDerived('base-200')"
-          aria-label="Edit base-200 derived shade"
-        >
-          <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
-          <span class="color-chip__mark">200</span>
-        </button>
-        <kj-tooltip-content [kjFor]="tipB200">
-          {{ ribbonBase().b200.overlayLine }} {{ ribbonBase().b200.tooltipDetail }}
-        </kj-tooltip-content>
-      </span>
-      <span class="catalog-tooltip-host">
-        <button
-          type="button"
-          kjTooltipTrigger
-          #tipB300="kjTooltipTrigger"
-          class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon"
-          [style.background-color]="hexForDerived('base-300')"
-          [style.--ribbon-accent]="ribbonBase().b300.accent"
-          (click)="openDerived('base-300')"
-          aria-label="Edit base-300 derived shade"
-        >
-          <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
-          <span class="color-chip__mark">300</span>
-        </button>
-        <kj-tooltip-content [kjFor]="tipB300">
-          {{ ribbonBase().b300.overlayLine }} {{ ribbonBase().b300.tooltipDetail }}
-        </kj-tooltip-content>
-      </span>
-      <span class="catalog-tooltip-host">
-        <button
-          type="button"
-          kjTooltipTrigger
-          #tipBCt="kjTooltipTrigger"
-          class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon color-chip--content"
-          [style.background-color]="hexForDerived('base-content')"
-          [style.--ribbon-accent]="ribbonBase().bContent.accent"
-          (click)="openDerived('base-content')"
-          aria-label="Edit base text color"
-        >
-          <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
-          <span class="color-chip__mark">Aa</span>
-        </button>
-        <kj-tooltip-content [kjFor]="tipBCt">
-          {{ ribbonBase().bContent.overlayLine }} {{ ribbonBase().bContent.tooltipDetail }}
-        </kj-tooltip-content>
-      </span>
-    </div>
-  </div>
-
-  <h3 class="group-heading">Main</h3>
+  <h3 class="group-heading">Surfaces</h3>
   <div class="token-block token-block--catalog">
-    <div class="catalog-chips" role="group" aria-label="Semantic fill colors">
-      @for (c of mainFillChips; track c.slot) {
+    <div class="catalog-chips" role="group" aria-label="Neutral surface backgrounds">
+      @for (c of surfaceChips; track c.slot) {
         <span class="catalog-tooltip-host">
           <button
             type="button"
             kjTooltipTrigger
-            #chipMainTip="kjTooltipTrigger"
+            #tipBg="kjTooltipTrigger"
             class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon"
-            [style.background-color]="hexFor(c.slot)"
-            [style.--ribbon-accent]="ribbonMainFill().get(c.slot)!.accent"
-            (click)="openSemanticFill(c.slot)"
-            [attr.aria-label]="'Edit ' + c.slot + ' fill'"
+            [style.background-color]="hexForBg(c.slot)"
+            [style.--ribbon-accent]="bgRibbons().get(c.slot)!.accent"
+            (click)="openBg(c.slot)"
+            [attr.aria-label]="'Edit ' + c.slot"
           >
             <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
             <span class="color-chip__mark">{{ c.mark }}</span>
           </button>
-          <kj-tooltip-content [kjFor]="chipMainTip">
-            {{ ribbonMainFill().get(c.slot)!.overlayLine }} {{ ribbonMainFill().get(c.slot)!.tooltipDetail }}
+          <kj-tooltip-content [kjFor]="tipBg">
+            {{ bgRibbons().get(c.slot)!.overlayLine }} {{ bgRibbons().get(c.slot)!.tooltipDetail }}
           </kj-tooltip-content>
         </span>
       }
     </div>
   </div>
 
-  <h3 class="group-heading">Text</h3>
+  <h3 class="group-heading">Intents</h3>
   <div class="token-block token-block--catalog">
-    <div class="catalog-chips" role="group" aria-label="On-fill text colors">
-      @for (c of mainFillChips; track c.slot) {
+    <div class="catalog-chips" role="group" aria-label="Intent surface fills">
+      @for (c of intentChips; track c.slot) {
         <span class="catalog-tooltip-host">
           <button
             type="button"
             kjTooltipTrigger
-            #chipTextTip="kjTooltipTrigger"
-            class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon color-chip--text"
-            [style.background-color]="hexForSemanticContent(c.slot)"
-            [style.--ribbon-accent]="ribbonText().get(c.slot)!.accent"
-            (click)="openSemanticContent(c.slot)"
-            [attr.aria-label]="'Edit ' + c.slot + ' text color'"
+            #tipIntent="kjTooltipTrigger"
+            class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon"
+            [style.background-color]="hexForBg(c.slot)"
+            [style.--ribbon-accent]="bgRibbons().get(c.slot)!.accent"
+            (click)="openBg(c.slot)"
+            [attr.aria-label]="'Edit ' + c.slot"
           >
             <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
             <span class="color-chip__mark">{{ c.mark }}</span>
           </button>
-          <kj-tooltip-content [kjFor]="chipTextTip">
-            {{ ribbonText().get(c.slot)!.overlayLine }} {{ ribbonText().get(c.slot)!.tooltipDetail }}
+          <kj-tooltip-content [kjFor]="tipIntent">
+            {{ bgRibbons().get(c.slot)!.overlayLine }} {{ bgRibbons().get(c.slot)!.tooltipDetail }}
+          </kj-tooltip-content>
+        </span>
+      }
+    </div>
+  </div>
+
+  <h3 class="group-heading">Foregrounds</h3>
+  <div class="token-block token-block--catalog">
+    <div class="catalog-chips" role="group" aria-label="Foreground text colors">
+      @for (c of fgChips; track c.slot) {
+        <span class="catalog-tooltip-host">
+          <button
+            type="button"
+            kjTooltipTrigger
+            #tipFg="kjTooltipTrigger"
+            class="color-chip color-chip--shade color-chip--catalog color-chip--ribbon color-chip--text"
+            [style.background-color]="hexForFg(c.slot)"
+            [style.--ribbon-accent]="fgRibbons().get(c.slot)!.accent"
+            (click)="openFg(c.slot)"
+            [attr.aria-label]="'Edit ' + c.slot"
+          >
+            <span class="chip-aaa-ribbon-bar" aria-hidden="true"></span>
+            <span class="color-chip__mark">{{ c.mark }}</span>
+          </button>
+          <kj-tooltip-content [kjFor]="tipFg">
+            {{ fgRibbons().get(c.slot)!.overlayLine }} {{ fgRibbons().get(c.slot)!.tooltipDetail }}
           </kj-tooltip-content>
         </span>
       }

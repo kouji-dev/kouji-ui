@@ -4,16 +4,16 @@
 
   .kj-tab-list {
     display: flex;
-    border-bottom: 1px solid var(--kj-color-base-300);
+    border-bottom: 1px solid var(--kj-border-default);
     margin-bottom: var(--kj-space-lg);
   }
-  .kj-tabs[data-orientation="vertical"] .kj-tab-list { flex-direction: column; border-bottom: 0; border-right: 1px solid var(--kj-color-base-300); margin: 0; }
+  .kj-tabs[data-orientation="vertical"] .kj-tab-list { flex-direction: column; border-bottom: 0; border-right: 1px solid var(--kj-border-default); margin: 0; }
 
   .kj-tab {
     background: none;
     border: 0;
     border-bottom: 2px solid transparent;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     opacity: 0.6;
     padding: var(--kj-space-sm) var(--kj-space-md);
     font: 0.875rem var(--kj-font-sans);
@@ -21,25 +21,50 @@
     margin-bottom: -1px;
     transition: var(--kj-transition);
   }
-  .kj-tab[aria-selected="true"] { opacity: 1; border-bottom-color: var(--kj-color-primary); }
+  .kj-tab[aria-selected="true"] { opacity: 1; border-bottom-color: var(--kj-bg-primary); }
   .kj-tab:hover { opacity: 1; }
-  .kj-tab:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
+  .kj-tab:focus-visible { outline: 2px solid var(--kj-bg-primary); outline-offset: 2px; }
   .kj-tab:disabled, .kj-tab[aria-disabled="true"] { opacity: 0.3; cursor: not-allowed; }
 
-  .kj-tabs[data-variant="pills"] .kj-tab-list { border-bottom: 0; gap: 4px; }
+  /* Pills variant — a small "tray" container with each active tab popping
+     to the page-body color and an inset 1px ring. Matches the design's
+     showcase view-mode toggle. */
+  .kj-tabs[data-variant="pills"] {
+    /* The host becomes the tray itself when only a tab-list is rendered
+       (e.g. used purely as a view-mode toggle). */
+    display: inline-block;
+  }
+  .kj-tabs[data-variant="pills"] .kj-tab-list {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background-color: var(--kj-bg-surface);
+    border: 1px solid var(--kj-border-default);
+    border-radius: var(--kj-radius-field);
+    width: fit-content;
+    margin-bottom: 0;
+  }
   .kj-tabs[data-variant="pills"] .kj-tab {
     border-bottom: 0;
-    border-radius: var(--kj-radius-field);
+    border-radius: calc(var(--kj-radius-field) - 2px);
     margin: 0;
+    padding: var(--kj-space-xs, 0.375rem) var(--kj-space-md);
+    color: var(--kj-fg-muted);
+    opacity: 1;
+    transition: background-color var(--kj-transition),
+                color var(--kj-transition),
+                box-shadow var(--kj-transition);
   }
+  .kj-tabs[data-variant="pills"] .kj-tab:hover { color: var(--kj-fg-default); }
   .kj-tabs[data-variant="pills"] .kj-tab[aria-selected="true"] {
-    background: var(--kj-color-primary);
-    color: var(--kj-color-primary-content);
+    background-color: var(--kj-bg-body);
+    color: var(--kj-fg-default);
+    box-shadow: inset 0 0 0 1px var(--kj-border-default);
   }
 
   .kj-tabs[data-orientation="vertical"] .kj-tab { border-bottom: 0; border-right: 2px solid transparent; margin: 0 -1px 0 0; text-align: left; }
-  .kj-tabs[data-orientation="vertical"] .kj-tab[aria-selected="true"] { border-right-color: var(--kj-color-primary); }
+  .kj-tabs[data-orientation="vertical"] .kj-tab[aria-selected="true"] { border-right-color: var(--kj-bg-primary); }
 
-  .kj-tab-panel { color: var(--kj-color-base-content); font: 0.875rem var(--kj-font-sans); line-height: 1.5; }
+  .kj-tab-panel { color: var(--kj-fg-default); font: 0.875rem var(--kj-font-sans); line-height: 1.5; }
   .kj-tab-panel[hidden] { display: none; }
 }

@@ -5,7 +5,7 @@ import { KjToggleComponent } from './toggle';
   selector: 'kj-toggle-disabled-example',
   standalone: true,
   imports: [KjToggleComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-toggle [(pressed)]="off" [disabled]="true" ariaLabel="Off (disabled)">Off</kj-toggle>
     <kj-toggle [(pressed)]="on" [disabled]="true" ariaLabel="On (disabled)" style="margin-left:1rem">On</kj-toggle>

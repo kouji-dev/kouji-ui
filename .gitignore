@@ -56,6 +56,15 @@ apps/*/dist/
 # Claude Code transient state
 .claude/scheduled_tasks.lock
 
+# Local debug scratch — log captures + temporary HTML probes that
+# accumulate at the repo root during dev/a11y sessions.
+*.log
+/.tmp-*.html
+
+# Design handoff bundles — unzipped under design-revamp/ for reference,
+# never committed (would balloon the repo with PNG screenshots).
+/design-revamp/
+
 # Local worktrees + brainstorming session state
 .worktrees/
 .superpowers/

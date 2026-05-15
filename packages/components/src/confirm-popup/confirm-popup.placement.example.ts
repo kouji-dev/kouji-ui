@@ -33,9 +33,7 @@ import { KjButtonComponent } from '../button/button';
       display: flex;
       gap: var(--kj-space-md);
       flex-wrap: wrap;
-      padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
-      min-height: 16rem;
+      padding: var(--kj-space-2xl); min-height: 16rem;
     }
   `],
   template: `

@@ -8,15 +8,15 @@
 @layer kj.component {
   kj-field.kj-field {
     --kj-field-gap:               var(--kj-space-xs);
-    --kj-field-label-fg:          var(--kj-color-base-content);
+    --kj-field-label-fg:          var(--kj-fg-default);
     --kj-field-label-font:        var(--kj-font-sans);
     --kj-field-label-font-size:   var(--kj-text-sm);
     --kj-field-label-weight:      500;
-    --kj-field-help-fg:           var(--kj-color-neutral);
+    --kj-field-help-fg:           var(--kj-fg-muted);
     --kj-field-help-font-size:    var(--kj-text-xs);
-    --kj-field-error-fg:          var(--kj-color-destructive);
+    --kj-field-error-fg:          var(--kj-fg-danger);
     --kj-field-error-font-size:   var(--kj-text-xs);
-    --kj-field-required-fg:       var(--kj-color-destructive);
+    --kj-field-required-fg:       var(--kj-fg-danger);
     --kj-field-disabled-opacity:  0.55;
 
     display: flex;
@@ -66,12 +66,12 @@
 
   /* Compound input layout */
   .kj-field-group {
-    --kj-field-group-bg:           var(--kj-color-base-100);
-    --kj-field-group-fg:           var(--kj-color-base-content);
-    --kj-field-group-border-color: var(--kj-color-base-300);
+    --kj-field-group-bg:           var(--kj-bg-field);
+    --kj-field-group-fg:           var(--kj-fg-default);
+    --kj-field-group-border-color: var(--kj-border-default);
     --kj-field-group-radius:       var(--kj-radius-field);
-    --kj-field-group-addon-fg:     var(--kj-color-neutral);
-    --kj-field-group-addon-bg:     var(--kj-color-base-200);
+    --kj-field-group-addon-fg:     var(--kj-fg-muted);
+    --kj-field-group-addon-bg:     var(--kj-bg-surface);
     --kj-field-group-padding-x:    var(--kj-space-md);
 
     display: inline-flex;
@@ -85,12 +85,12 @@
     transition: var(--kj-transition);
   }
   .kj-field-group:focus-within {
-    border-color: var(--kj-color-primary);
-    outline: 2px solid var(--kj-color-primary);
+    border-color: var(--kj-border-focus, var(--kj-bg-primary));
+    outline: 2px solid var(--kj-bg-primary);
     outline-offset: -2px;
   }
   .kj-field-group[data-invalid] {
-    border-color: var(--kj-color-destructive);
+    border-color: var(--kj-border-danger, var(--kj-fg-danger));
   }
   .kj-field-group[data-disabled] {
     opacity: var(--kj-field-disabled-opacity);

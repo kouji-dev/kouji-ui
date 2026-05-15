@@ -5,7 +5,7 @@ import { KjAvatarComponent } from './avatar';
   selector: 'kj-avatar-default-example',
   standalone: true,
   imports: [KjAvatarComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-avatar content="JD" />
   `,

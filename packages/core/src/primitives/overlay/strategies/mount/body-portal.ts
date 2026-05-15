@@ -3,6 +3,24 @@ import type { KjMountStrategy } from '../../tokens';
 import { createOverlayWrapper } from '../../container';
 
 /**
+ * Walk up from `start` until we hit an element with `[data-theme]` set —
+ * that's the scope the trigger renders inside. We propagate that value to
+ * the portalled wrapper so theme tokens resolve against the local scope,
+ * not the global `<html data-theme>`. Critical for theme-generator
+ * previews where the preview pane carries `data-theme="custom-draft"` but
+ * the outer page is on the docs theme.
+ */
+function closestTheme(start: Element | null): string | null {
+  let el: Element | null = start;
+  while (el) {
+    const v = el.getAttribute?.('data-theme');
+    if (v) return v;
+    el = el.parentElement;
+  }
+  return null;
+}
+
+/**
  * Mount strategy for declarative overlays whose panel is rendered inline
  * in the consumer's template (popover, tooltip, dropdown-menu via
  * `[kjFor]`). On open the panel is portalled into a per-overlay wrapper
@@ -36,6 +54,11 @@ export function bodyPortal(): KjMountStrategy {
       if (panel.parentElement === w) return;
       originalParent = panel.parentElement;
       originalNextSibling = panel.nextSibling;
+      // Propagate the closest ancestor's `data-theme` so the portalled
+      // panel resolves theme tokens against the trigger's local scope.
+      const theme = closestTheme(ctx.triggerEl() ?? originalParent);
+      if (theme) w.setAttribute('data-theme', theme);
+      else w.removeAttribute('data-theme');
       w.appendChild(panel);
     },
     onClose() {

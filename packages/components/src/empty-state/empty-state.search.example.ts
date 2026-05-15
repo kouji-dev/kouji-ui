@@ -27,9 +27,9 @@ import { KjButtonComponent } from '../button/button';
     KjButtonComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     .search { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    input { padding: var(--kj-space-sm) var(--kj-space-md); border: 1px solid var(--kj-color-base-300); border-radius: var(--kj-radius-field, 0.5rem); }
+    input { padding: var(--kj-space-sm) var(--kj-space-md); border: 1px solid var(--kj-border-default); border-radius: var(--kj-radius-field, 0.5rem); }
   `],
   template: `
     <div class="search">

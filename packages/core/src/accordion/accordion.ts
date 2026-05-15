@@ -366,8 +366,11 @@ export class KjAccordionTrigger implements OnInit, OnDestroy {
 
 /**
  * Accordion content panel. Hosts `role="region"` + `aria-labelledby` to the
- * trigger's id, and toggles visibility via `[hidden]` when collapsed (which
- * removes the panel from the tab order and screen-reader tree).
+ * trigger's id. Visibility is signalled via `[data-state]` (`"open"` /
+ * `"closed"`) so consumers can CSS-animate the open/close transition. While
+ * closed, `aria-hidden="true"` and `inert` keep the panel out of the AT tree
+ * and tab sequence — the element stays in the DOM rather than being removed
+ * with `hidden`, which would interrupt the animation.
  *
  * @example
  * ```html
@@ -385,7 +388,11 @@ export class KjAccordionTrigger implements OnInit, OnDestroy {
     '[attr.id]': 'item.contentId()',
     '[attr.aria-labelledby]': 'item.headerId()',
     '[attr.data-state]': 'item.expanded() ? "open" : "closed"',
-    '[attr.hidden]': '!item.expanded() ? "" : null',
+    // `aria-hidden` keeps the closed panel out of the AT tree while leaving
+    // the element in the DOM so CSS can animate its open/close transition
+    // (driven by [data-state]). The visual hide is owned by the component CSS.
+    '[attr.aria-hidden]': '!item.expanded() ? "true" : null',
+    '[attr.inert]': '!item.expanded() ? "" : null',
   },
 })
 export class KjAccordionContent {

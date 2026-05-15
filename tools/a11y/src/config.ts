@@ -4,15 +4,17 @@ import type { PageDef, Theme } from './types.js';
 
 export const THEMES: readonly Theme[] = [
   'kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate',
+  'sakura', 'bauhaus', 'dune', 'mint',
+  'forest', 'nord', 'terminal',
 ] as const;
 
 export const PAGES: readonly PageDef[] = [
-  { path: '/',                slug: 'home' },
-  { path: '/getting-started', slug: 'getting-started' },
-  { path: '/docs/button',     slug: 'docs-button' },
-  { path: '/docs/list',       slug: 'docs-list' },
-  { path: '/docs/badge',      slug: 'docs-badge' },
-  { path: '/theme-generator', slug: 'theme-generator' },
+  { path: '/',                          slug: 'home' },
+  { path: '/docs/getting-started',      slug: 'getting-started' },
+  { path: '/docs/components/button',    slug: 'docs-button' },
+  { path: '/docs/components/tag',       slug: 'docs-tag' },
+  { path: '/docs/components/dialog',    slug: 'docs-dialog' },
+  { path: '/theme-generator',           slug: 'theme-generator' },
 ] as const;
 
 const here = fileURLToPath(new URL('.', import.meta.url));

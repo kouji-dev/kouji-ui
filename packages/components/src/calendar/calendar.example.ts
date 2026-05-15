@@ -10,7 +10,7 @@ import { KjCalendarComponent } from './calendar';
   standalone: true,
   imports: [KjCalendarComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-color-base-200, #f3f3f3); }
+    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-bg-surface, #f3f3f3); }
     .selected { margin-top: var(--kj-space-md, 0.75rem); font-family: monospace; }
   `],
   template: `

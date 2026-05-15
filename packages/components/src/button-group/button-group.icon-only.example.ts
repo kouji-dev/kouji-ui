@@ -11,7 +11,7 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-button-group-icon-only-example',
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-button-group kjAriaLabel="Alignment">
       <kj-button kjVariant="outline" kjSize="icon" kjAriaLabel="Align left">⟸</kj-button>

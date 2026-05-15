@@ -8,8 +8,8 @@
   flex-wrap: wrap;
   gap: var(--kj-space-md);
   padding: var(--kj-space-sm) var(--kj-space-lg);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-100);
+  border-bottom: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-body);
 }
 
 .name-wrap {
@@ -20,23 +20,23 @@
   min-width: 200px;
 }
 .name {
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   padding: var(--kj-space-xs) var(--kj-space-sm);
   font: var(--kj-text-sm) var(--kj-font-mono);
   min-height: 44px;
 }
 .name[aria-invalid='true'] {
-  border-color: var(--kj-color-destructive);
+  border-color: var(--kj-border-danger, var(--kj-bg-danger));
 }
 .name-helper {
   font: var(--kj-text-xs) var(--kj-font-mono);
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 .name-helper.error {
-  color: var(--kj-color-destructive);
+  color: var(--kj-fg-danger);
 }
 
 .palette,
@@ -53,8 +53,8 @@
   position: fixed;
   right: var(--kj-space-lg);
   bottom: var(--kj-space-lg);
-  background: var(--kj-color-base-300);
-  color: var(--kj-color-base-content);
+  background: var(--kj-bg-elevated);
+  color: var(--kj-fg-default);
   padding: var(--kj-space-sm) var(--kj-space-md);
   border-radius: var(--kj-radius-field);
   font: var(--kj-text-sm) var(--kj-font-mono);

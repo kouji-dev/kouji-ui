@@ -10,9 +10,9 @@ import { KjPasswordInputComponent } from './password-input';
   standalone: true,
   imports: [KjPasswordInputComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 360px; }
-    .state { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); }
+    .state { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
   `],
   template: `
     <div class="row">

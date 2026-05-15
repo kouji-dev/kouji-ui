@@ -42,13 +42,63 @@ import {
  * ```
  *
  * @doc-example Default
+ *   The bare-minimum recipe — a sign-in password input with the toggle button.
  *   @doc-file password-input.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — sign-in, sign-up with strength
+ *   meter, and a disabled state. Use this as the copy-paste starting point.
+ *   @doc-file password-input.usage.example.ts
  * @doc-example Show / hide toggle
+ *   Two-way bind `[(kjRevealed)]` to drive the inner icon from outside.
  *   @doc-file password-input.toggle.example.ts
  * @doc-example Strength meter
+ *   `[kjShowStrength]="true"` renders the four-segment estimator under the row.
  *   @doc-file password-input.strength.example.ts
  * @doc-example With validation rules
+ *   Live rule list bound to the value; pairs well with reactive forms.
  *   @doc-file password-input.with-rules.example.ts
+ *
+ * @doc-keyboard
+ *   Tab              — Moves focus into the input, then onto the toggle button
+ *   Enter            — Submits the parent <form> when present (native input behavior)
+ *   Space (on toggle) — Flips the reveal state
+ *
+ * @doc-aria
+ *   type="password"|"text" — Native attribute toggles when `kjRevealed` flips
+ *   aria-pressed     — Reflected on the toggle button (mirrors `kjRevealed`)
+ *   aria-label       — Wired from `kjShowLabel` / `kjHideLabel` per state
+ *   aria-invalid     — Reflected on the input when `kjInvalid` is true
+ *   aria-disabled    — Reflected on input and toggle when `kjDisabled` is true
+ *   role="status"    — Used by the optional Caps Lock warning paragraph
+ *
+ * @doc-touch
+ *   The toggle button uses `kjSize="icon"` (44×44) so it meets WCAG 2.5.5.
+ *   The input row matches `kj-input` height for form-row alignment.
+ *
+ * @doc-a11y
+ *   The toggle button never reads the password aloud — it only flips the
+ *   native input type. The Caps Lock warning is a live region so AT
+ *   announces the state change without stealing focus. Strength feedback is
+ *   rendered as decorative segments — pair with a textual cue if the score
+ *   is the only signal carrying meaning.
+ *
+ * @doc-related input,field,form
+ *
+ * @doc-css-var
+ *   --kj-password-input-bg                — Background fill. Inherits --kj-bg-field.
+ *   --kj-password-input-fg                — Foreground (text) color.
+ *   --kj-password-input-border-color      — Border color. Flips to danger when invalid.
+ *   --kj-password-input-border-style      — Border style. Defaults to solid.
+ *   --kj-password-input-border-width      — Border thickness. Inherits --kj-border.
+ *   --kj-password-input-radius            — Corner radius. Inherits --kj-radius-field.
+ *   --kj-password-input-padding-x         — Horizontal padding inside the field row.
+ *   --kj-password-input-padding-y         — Vertical padding inside the field row.
+ *   --kj-password-input-font              — Font family. Defaults to --kj-font-sans.
+ *   --kj-password-input-font-size         — Font size. Size attributes override.
+ *   --kj-password-input-placeholder-fg    — Placeholder text color.
+ *   --kj-password-input-toggle-fg         — Show/hide toggle icon color.
+ *   --kj-password-input-toggle-fg-hover   — Show/hide toggle icon color on hover or focus.
+ *   --kj-password-input-height            — Row height. Matches input/select for form alignment.
  *
  * @doc-category Library/Data input
  * @doc

@@ -9,18 +9,18 @@
   gap: var(--kj-space-lg);
   margin-top: var(--kj-space-lg);
   padding: var(--kj-space-lg) var(--kj-space-xl);
-  background: color-mix(in oklab, var(--kj-color-info) 12%, var(--kj-color-base-100));
+  background: color-mix(in oklab, var(--kj-bg-info) 12%, var(--kj-bg-body));
   border: var(--kj-border) solid transparent;
-  border-left: 3px solid var(--kj-color-info);
+  border-left: 3px solid var(--kj-bg-info);
   border-radius: var(--kj-radius-box);
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   font: var(--kj-text-base) / 1.5 var(--kj-font-sans);
 }
 
 .callout > .callout-icon {
   flex: 0 0 auto;
   font-size: var(--kj-text-base);
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   line-height: 1.5;
 }
 
@@ -30,33 +30,33 @@
 }
 
 .callout strong {
-  color: var(--kj-color-info);
+  color: var(--kj-fg-info);
   font-weight: 600;
 }
 
 .callout code {
   font-family: var(--kj-font-mono);
   font-size: 0.9em;
-  background: var(--kj-color-base-200);
+  background: var(--kj-bg-surface);
   padding: 0.1em 0.3em;
   border-radius: var(--kj-radius-selector);
 }
 
 /* Variant accents — change border-left, strong color, and bg tint */
 .callout[data-variant="success"] {
-  background: color-mix(in oklab, var(--kj-color-success) 12%, var(--kj-color-base-100));
-  border-left-color: var(--kj-color-success);
+  background: color-mix(in oklab, var(--kj-bg-success) 12%, var(--kj-bg-body));
+  border-left-color: var(--kj-bg-success);
 }
-.callout[data-variant="success"] strong { color: var(--kj-color-success); }
+.callout[data-variant="success"] strong { color: var(--kj-fg-success); }
 
 .callout[data-variant="warning"] {
-  background: color-mix(in oklab, var(--kj-color-warning) 12%, var(--kj-color-base-100));
-  border-left-color: var(--kj-color-warning);
+  background: color-mix(in oklab, var(--kj-bg-warning) 12%, var(--kj-bg-body));
+  border-left-color: var(--kj-bg-warning);
 }
-.callout[data-variant="warning"] strong { color: var(--kj-color-warning); }
+.callout[data-variant="warning"] strong { color: var(--kj-fg-warning); }
 
 .callout[data-variant="destructive"] {
-  background: color-mix(in oklab, var(--kj-color-destructive) 12%, var(--kj-color-base-100));
-  border-left-color: var(--kj-color-destructive);
+  background: color-mix(in oklab, var(--kj-bg-danger) 12%, var(--kj-bg-body));
+  border-left-color: var(--kj-bg-danger);
 }
-.callout[data-variant="destructive"] strong { color: var(--kj-color-destructive); }
+.callout[data-variant="destructive"] strong { color: var(--kj-fg-danger); }

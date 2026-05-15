@@ -2,7 +2,7 @@
   display: block;
   height: 100%;
   margin: -1rem;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   font-family: var(--kj-font-sans, system-ui, sans-serif);
 }
 
@@ -36,8 +36,8 @@
 }
 
 .chat__sidebar {
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-surface);
+  border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-box, 8px);
   padding: 0.75rem;
   display: flex;
@@ -83,12 +83,12 @@
 }
 
 .chat__row:hover {
-  background: var(--kj-color-base-100);
+  background: var(--kj-bg-surface);
 }
 
 .chat__row--active {
-  background: var(--kj-color-base-100);
-  border-color: var(--kj-color-base-300);
+  background: var(--kj-bg-surface);
+  border-color: var(--kj-border-default);
 }
 
 .chat__row-meta {
@@ -117,8 +117,8 @@
 .chat__pane {
   display: flex;
   flex-direction: column;
-  background: var(--kj-color-base-100);
-  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-surface);
+  border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-box, 8px);
   overflow: hidden;
   min-height: 0;
@@ -129,8 +129,8 @@
   align-items: center;
   gap: 0.625rem;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-200);
+  border-bottom: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-surface);
   min-height: 56px;
 }
 
@@ -151,8 +151,8 @@
   gap: 0.5rem;
   align-items: center;
   padding: 0.625rem 0.75rem;
-  border-top: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-200);
+  border-top: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-surface);
 }
 
 @media (max-width: 800px) {
@@ -168,8 +168,8 @@
   display: flex;
   align-items: center;
   min-height: 44px;
-  background: var(--kj-color-base-100);
-  border: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
   border-radius: var(--kj-radius-field, 6px);
   padding: 0 0.625rem;
 }

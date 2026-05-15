@@ -28,10 +28,7 @@ import {
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-      min-height: 10rem;
+      gap: var(--kj-space-md); min-height: 10rem;
     }
   `],
   template: `

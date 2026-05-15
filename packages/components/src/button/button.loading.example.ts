@@ -5,7 +5,7 @@ import { KjButtonComponent } from './button';
   selector: 'kj-button-loading-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-button [kjLoading]="busy()" (click)="run()">
       {{ busy() ? 'Saving…' : 'Save' }}

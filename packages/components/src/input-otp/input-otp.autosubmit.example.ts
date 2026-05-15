@@ -16,11 +16,8 @@ import { KjInputOtpComponent } from './input-otp';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--kj-space-lg);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
+      gap: var(--kj-space-lg); }
+    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
     .success {
       font-size: var(--kj-text-sm);
       color: #22c55e;
@@ -29,7 +26,7 @@ import { KjInputOtpComponent } from './input-otp';
     }
     .hint {
       font-size: var(--kj-text-xs);
-      color: var(--kj-color-neutral);
+      color: var(--kj-fg-muted);
       min-height: 1.5rem;
     }
   `],

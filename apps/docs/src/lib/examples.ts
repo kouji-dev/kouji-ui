@@ -2,7 +2,7 @@ import ts from 'typescript';
 import { tsquery } from '@phenomnomnominal/tsquery';
 import { join, resolve, dirname } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
-import type { ExampleFile, DocExample } from './docs-extractor.types';
+import type { ExampleFile, DocExample, ExampleBucket } from './docs-extractor.types';
 
 // ── Workspace root helper ─────────────────────────────────────────────────────
 
@@ -230,10 +230,21 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
   const exampleParts = cleanText.split(/(?:\n|^)(?=\s*@doc-example\s)/m);
 
   for (const part of exampleParts) {
-    const headerMatch = part.match(/^\s*@doc-example\s+(.+)/);
+    const headerMatch = part.match(/^\s*@doc-example[^\S\n]+([^\n]+)/);
     if (!headerMatch) continue;
     const label = headerMatch[1].trim();
     const body = part.slice(headerMatch.index! + headerMatch[0].length);
+
+    // Capture any prose between the label line and the first @doc-file /
+    // @doc-theme as the example description. Falls back to '' when absent.
+    const firstTagIdx = body.search(/\n\s*@(?:doc-file|doc-theme)\b/);
+    const descBlock = firstTagIdx === -1 ? body : body.slice(0, firstTagIdx);
+    const description = descBlock
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0)
+      .join(' ')
+      .trim();
 
     const themedFiles: Record<string, ExampleFile[]> = {};
 
@@ -255,9 +266,69 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
     }
 
     if (Object.keys(themedFiles).length) {
-      results.push({ label, themedFiles });
+      const slug = deriveExampleSlug(label, themedFiles);
+      results.push({
+        label,
+        ...(description ? { description } : {}),
+        slug,
+        bucket: deriveExampleBucket(slug, label),
+        themedFiles,
+      });
     }
   }
 
   return results;
+}
+
+/**
+ * The state axis — example slugs like `<comp>.<state>.example.ts` where
+ * `<state>` is in this set get bucketed into the States section.
+ */
+const STATE_KEYS = new Set([
+  'disabled', 'loading', 'pressed', 'checked', 'indeterminate',
+  'busy', 'readonly', 'invalid', 'active', 'hover', 'focus',
+]);
+
+/**
+ * Buckets an example based on its slug. The slug is `<comp>` or
+ * `<comp>.<variant>` (or deeper). The first segment after the component
+ * name determines the bucket; unknown segments fall through to recipe.
+ */
+export function deriveExampleBucket(slug: string, label: string): ExampleBucket {
+  const segments = slug.split('.');
+  if (segments.length <= 1) return 'playground';
+  const axis = segments[1];
+  if (axis === 'variants') return 'variants';
+  if (axis === 'sizes') return 'sizes';
+  if (STATE_KEYS.has(axis)) return 'states';
+  // Heuristic: a label of literally "Default" / "Playground" wins regardless
+  // of slug (handles components whose canonical example uses a deeper slug).
+  const labelLc = label.toLowerCase();
+  if (labelLc === 'default' || labelLc === 'playground') return 'playground';
+  return 'recipe';
+}
+
+/**
+ * Derives the example's URL-fragment slug. Strategy: scan `themedFiles` for the
+ * first `*.example.ts` filename and strip `.example.ts` (e.g.
+ * `button.size.example.ts` → `button.size`). Falls back to a slugified label
+ * if no `.example.ts` file is referenced (only inline `@doc-file foo.ts`
+ * entries that don't follow the convention).
+ */
+export function deriveExampleSlug(label: string, themedFiles: Record<string, ExampleFile[]>): string {
+  for (const files of Object.values(themedFiles)) {
+    for (const f of files) {
+      if (f.filename.endsWith('.example.ts')) {
+        // Normalise: drop directory portion AND any leading `./` so a
+        // `@doc-file ./examples/foo.example.ts` and a bare
+        // `@doc-file foo.example.ts` produce the same slug.
+        const base = f.filename.split(/[\\/]/).pop() ?? f.filename;
+        return base.slice(0, -'.example.ts'.length);
+      }
+    }
+  }
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

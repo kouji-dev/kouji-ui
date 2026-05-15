@@ -31,8 +31,48 @@ import {
  * - `Enter` / `Space` — select the focused date
  *
  * @doc-example Default
+ *   The default playground — inline single-date selection bound to a signal.
  *   @doc-file calendar.example.ts
+ * @doc-example Usage
+ *   The common shape — bound value, min/max bounds, and a disabled-dates
+ *   predicate. Use this as the copy-paste starting point.
+ *   @doc-file calendar.usage.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowLeft|ArrowRight   — Moves focus ±1 day
+ *   ArrowUp|ArrowDown      — Moves focus ±1 week
+ *   Home|End               — First / last day of the focused week
+ *   PageUp|PageDown        — ±1 month
+ *   Shift+PageUp|Shift+PageDown — ±1 year
+ *   Enter|Space            — Selects the focused date
+ *   Tab                    — Moves focus out of the grid (single grid tab stop)
+ *
+ * @doc-aria
+ *   role                — `grid` on the day matrix; `gridcell` on each day button
+ *   aria-label          — `"Calendar"` on the host; override via `kjAriaLabel`
+ *   aria-labelledby     — Grid references the caption heading id
+ *   aria-selected       — Reflected on the currently-selected day cell
+ *   aria-disabled       — Reflected on out-of-range and disabled day cells
+ *   aria-current        — `"date"` on today's cell
+ *
+ * @doc-touch
+ *   Day cells render real `<button>` elements; ensure the surrounding
+ *   container provides ≥ 44×44 cells (WCAG 2.5.5). The default grid spacing
+ *   meets this on most screen sizes — verify when scaling down.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA APG Date Picker (grid) pattern. A single tab
+ *   stop into the grid, then arrow keys roam without leaving — Tab takes
+ *   focus to the next region. Native `Date` only, locale-aware via
+ *   `Intl.DateTimeFormat` — no third-party date library.
+ *
+ * @doc-related date-picker,time-picker,input
+ *
  * @doc-category Library/Data input
+ * @doc
+ * @doc-name calendar
+ * @doc-description Themed inline calendar grid with min/max bounds, disabled dates, and full APG keyboard support.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-calendar',

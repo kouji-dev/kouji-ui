@@ -28,7 +28,7 @@ import {
     KjAvatarComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     kj-chat-log { max-height: 22rem; }
   `],
   template: `

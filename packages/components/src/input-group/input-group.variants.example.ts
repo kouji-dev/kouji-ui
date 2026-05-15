@@ -13,10 +13,7 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--kj-space-md);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
+      gap: var(--kj-space-md); }
   `],
   template: `
     <kj-input-group>

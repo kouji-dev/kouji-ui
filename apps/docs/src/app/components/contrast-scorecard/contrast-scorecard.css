@@ -1,5 +1,5 @@
 .scorecard {
-  border-top: 1px solid var(--kj-color-base-300);
+  border-top: 1px solid var(--kj-border-default);
   padding: 4px 2px;
 }
 
@@ -34,30 +34,30 @@
   min-height: 30px;
   background: transparent;
 }
-.row:hover, .row:focus-visible { background: var(--kj-color-base-200); }
-.row:focus-visible { outline: 2px solid var(--kj-color-primary); outline-offset: 2px; }
-.row--fail { background: color-mix(in oklab, var(--kj-color-destructive) 10%, transparent); }
+.row:hover, .row:focus-visible { background: var(--kj-bg-surface); }
+.row:focus-visible { outline: 2px solid var(--kj-bg-primary); outline-offset: 2px; }
+.row--fail { background: color-mix(in oklab, var(--kj-bg-danger) 10%, transparent); }
 .chip {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 0.1875rem;
-  border: 1px solid var(--kj-color-base-300);
+  border: 1px solid var(--kj-border-default);
 }
 .row__label { font-size: 0.6875rem; line-height: 1.25; }
 .row__ratio { font-variant-numeric: tabular-nums; font-size: 0.6875rem; }
 .row__verdict { font-weight: 600; font-size: 0.6875rem; }
-.row--fail .row__verdict { color: var(--kj-color-destructive); }
+.row--fail .row__verdict { color: var(--kj-fg-danger); }
 
 .group-heading {
   margin: 6px 0 2px;
   font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
+  color: var(--kj-fg-subtle);
 }
 .row--type { grid-template-columns: auto auto 1fr; }
 .row__message {
   font-size: 0.625rem;
   line-height: 1.3;
-  color: color-mix(in oklch, var(--kj-color-base-content) 75%, transparent);
+  color: var(--kj-fg-muted);
 }

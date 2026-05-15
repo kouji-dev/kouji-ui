@@ -39,15 +39,59 @@ import type { KjAlertMode } from '@kouji-ui/core';
  * </kj-alert>
  * ```
  * @doc-example Default
+ *   The default playground — `info` severity with icon, title, and description.
  *   @doc-file alert.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the common shapes — severity variants, dismissible flow,
+ *   and an action button row. Use this as the copy-paste starting point.
+ *   @doc-file alert.usage.example.ts
  * @doc-example Variants
+ *   Info / success / warning / error — severity drives the stripe and icon tint.
  *   @doc-file alert.variants.example.ts
  * @doc-example Dismissible
+ *   Project `<kj-alert-dismiss>` and listen to `(kjAlertDismissed)` to clear.
  *   @doc-file alert.dismissible.example.ts
  * @doc-example With actions
+ *   Drop `<kj-button>`s inside `<kj-alert-actions>` for retry / view-details flows.
  *   @doc-file alert.with-actions.example.ts
  * @doc-example Static banner
+ *   `kjAlertStatic` removes the live region — use for page-persistent notices.
  *   @doc-file alert.banner.example.ts
+ *
+ * @doc-keyboard
+ *   Tab           — Moves focus through interactive children (actions, dismiss)
+ *   Enter|Space   — Activates the focused dismiss button or action
+ *
+ * @doc-aria
+ *   role            — `alert` for error severity (assertive), `status` otherwise (polite); `kjAlertStatic` switches to `region`
+ *   aria-live       — `assertive` for error, `polite` for info/success/warning
+ *   aria-labelledby — Wired to the title id when `<kj-alert-title>` is projected
+ *   aria-describedby — Wired to the description id when `<kj-alert-description>` is projected
+ *   data-variant    — Mirrors the severity for theme/scope hooks
+ *
+ * @doc-touch
+ *   The dismiss button defaults to `size="icon"` (44×44) so it meets WCAG 2.5.5
+ *   out of the box. Action buttons inherit `<kj-button>` size rules.
+ *
+ * @doc-a11y
+ *   Severity drives the live region politeness so screen readers announce
+ *   errors immediately but don't interrupt for routine info. Dismiss is a
+ *   real `<button>` with `aria-label="Dismiss"`; consumers can swap the
+ *   label via `kjAlertDismissLabel`. Decorative icons are `aria-hidden="true"`.
+ *
+ * @doc-related toast,dialog,banner
+ *
+ * @doc-css-var
+ *   --kj-alert-bg            — Background fill. Defaults to --kj-bg-body.
+ *   --kj-alert-fg            — Foreground (body text) color. Defaults to --kj-fg-default.
+ *   --kj-alert-border-color  — Outer border color. Defaults to --kj-border-default.
+ *   --kj-alert-accent        — Severity stripe + icon + title color. Variants set this per severity.
+ *   --kj-alert-radius        — Corner radius. Inherits --kj-radius-box.
+ *   --kj-alert-padding-x     — Horizontal padding. Sizes override.
+ *   --kj-alert-padding-y     — Vertical padding. Sizes override.
+ *   --kj-alert-gap           — Gap between icon, body, and actions.
+ *   --kj-alert-font-size     — Body font size. Sizes override.
+ *
  * @doc-category Library/Feedback
  * @doc
  * @doc-name alert

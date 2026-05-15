@@ -1,8 +1,8 @@
 @layer kj.component {
   .kj-avatar {
     --kj-avatar-size:   2.5rem;
-    --kj-avatar-bg:     var(--kj-color-base-300);
-    --kj-avatar-fg:     var(--kj-color-base-content);
+    --kj-avatar-bg:     var(--kj-bg-field);
+    --kj-avatar-fg:     var(--kj-fg-default);
     --kj-avatar-radius: 9999px;
 
     position: relative;
@@ -19,7 +19,20 @@
     font-weight: 600;
   }
 
-  .kj-avatar[data-shape="rounded"] { --kj-avatar-radius: var(--kj-radius-box); }
+  /* `rounded` reads `--kj-radius-box-lg` (1rem default, declared in
+     `kj.base`) rather than `--kj-radius-box` because some themes (kouji,
+     bauhaus) set `--kj-radius-box` to 0 as a brutalist signature — falling
+     back to that would make `rounded` and `circle` look identical on those
+     themes. `--kj-radius-box-lg` stays unset by theme overrides, so the
+     toggle always produces a visible shape change. */
+  .kj-avatar[data-shape="rounded"] { --kj-avatar-radius: var(--kj-radius-box-lg); }
+
+  /* The host's `[hidden]` attribute (written by the avatar-group when a
+     child overflows `kjMax`) needs an explicit `display: none` because the
+     `inline-flex` declaration above wins against the UA `[hidden] { display:
+     none }` rule via selector specificity. Without this, "hidden" overflow
+     avatars still render and `kjMax` looks broken. */
+  .kj-avatar[hidden] { display: none; }
 
   .kj-avatar[data-size="xs"] { --kj-avatar-size: 1.5rem; font-size: 0.6875rem; }
   .kj-avatar[data-size="sm"] { --kj-avatar-size: 2rem;   font-size: 0.75rem; }

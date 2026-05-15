@@ -37,12 +37,12 @@
      daisyUI / lucide convention so a spinner inside a primary button
      picks up the button's text colour). */
   .kj-spinner[data-variant="neutral"]   { --kj-spinner-color: currentColor; }
-  .kj-spinner[data-variant="primary"]   { --kj-spinner-color: var(--kj-color-primary); }
-  .kj-spinner[data-variant="secondary"] { --kj-spinner-color: var(--kj-color-secondary, var(--kj-color-base-content)); }
-  .kj-spinner[data-variant="success"]   { --kj-spinner-color: var(--kj-color-success, #16a34a); }
-  .kj-spinner[data-variant="warning"]   { --kj-spinner-color: var(--kj-color-warning, #d97706); }
-  .kj-spinner[data-variant="error"]     { --kj-spinner-color: var(--kj-color-destructive, #dc2626); }
-  .kj-spinner[data-variant="info"]      { --kj-spinner-color: var(--kj-color-info, #2563eb); }
+  .kj-spinner[data-variant="primary"]   { --kj-spinner-color: var(--kj-fg-primary); }
+  .kj-spinner[data-variant="secondary"] { --kj-spinner-color: var(--kj-fg-default); }
+  .kj-spinner[data-variant="success"]   { --kj-spinner-color: var(--kj-fg-success, #16a34a); }
+  .kj-spinner[data-variant="warning"]   { --kj-spinner-color: var(--kj-fg-warning, #d97706); }
+  .kj-spinner[data-variant="error"]     { --kj-spinner-color: var(--kj-fg-danger, #dc2626); }
+  .kj-spinner[data-variant="info"]      { --kj-spinner-color: var(--kj-fg-info, #2563eb); }
 
   /* Glyph host — themes can repaint the inner element per data-animation. */
   .kj-spinner__glyph {

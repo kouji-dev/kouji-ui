@@ -16,7 +16,7 @@ import {
   selector: 'kj-cascade-select-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-cascade-select [(kjValue)]="selectedCity" placeholder="Select a city">
       <kj-cascade-option [kjValue]="'us'" kjLabel="USA">
@@ -63,7 +63,7 @@ import {
       </kj-cascade-option>
     </kj-cascade-select>
 
-    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--kj-color-base-content);">
+    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--kj-fg-default);">
       Selected: <strong>{{ selectedCity() ?? '—' }}</strong>
     </p>
   `,

@@ -12,9 +12,8 @@ import { KjColorPickerComponent } from './color-picker';
   standalone: true,
   imports: [KjColorPickerComponent, FormsModule],
   styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center;
-            padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 280px; }
-    code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-color-neutral); }
+    :host { display: flex; gap: var(--kj-space-md); align-items: center; min-height: 280px; }
+    code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-fg-muted); }
   `],
   template: `
     <kj-color-picker [(ngModel)]="hex" [kjShowAlpha]="true" />

@@ -1,0 +1,192 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.tg-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--kj-space-md) var(--kj-space-md) var(--kj-space-xl);
+  background: var(--kj-bg-body);
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ── fork row ── */
+.tg-fork-row {
+  display: flex;
+  gap: var(--kj-space-xs);
+  align-items: stretch;
+  margin-bottom: var(--kj-space-md);
+}
+.tg-fork-row .tg-fork-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ── section ── */
+.tg-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-xs);
+  padding: var(--kj-space-sm) 0 var(--kj-space-md);
+  border-bottom: 1px solid color-mix(in oklch, var(--kj-border-default) 70%, transparent);
+}
+.tg-section:last-of-type {
+  border-bottom: 0;
+}
+
+.tg-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-xs);
+  margin-bottom: var(--kj-space-xs);
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--kj-fg-muted);
+}
+.tg-section-head .step {
+  font-variant-numeric: tabular-nums;
+}
+.tg-section-head strong {
+  color: var(--kj-fg-default);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+/* mode toggle (Simple / Full) */
+.tg-mode {
+  display: flex;
+  margin-left: auto;
+  padding: 2px;
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+}
+.tg-mode button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--kj-fg-muted);
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: calc(var(--kj-radius-field) - 2px);
+  min-height: 28px;
+}
+.tg-mode button[aria-pressed='true'] {
+  background: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+}
+.tg-mode button:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
+/* ── field row ── */
+.tg-field {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  padding: 4px 0;
+  min-height: 36px;
+}
+.tg-field--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.tg-field .lbl {
+  flex: 1 1 auto;
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-default);
+  text-transform: lowercase;
+}
+.tg-field .val {
+  flex: 0 0 auto;
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--kj-fg-muted);
+  min-width: 48px;
+  text-align: right;
+}
+
+/* slider in row */
+.tg-slider {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* segmented radio */
+.tg-radio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tg-radio button {
+  appearance: none;
+  border: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-surface);
+  color: var(--kj-fg-default);
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  text-transform: lowercase;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: var(--kj-radius-field);
+  min-height: 32px;
+}
+.tg-radio button[aria-pressed='true'] {
+  background: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+  border-color: var(--kj-bg-primary);
+}
+.tg-radio button:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
+/* ── color row ── */
+.tg-color {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  padding: 4px 0;
+  min-height: 36px;
+}
+.tg-color kj-color-picker {
+  flex: 0 0 auto;
+}
+.tg-color .name {
+  flex: 1 1 auto;
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-default);
+}
+.tg-color .hex {
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--kj-fg-muted);
+  letter-spacing: 0.02em;
+}
+
+.tg-hint {
+  margin: var(--kj-space-xs) 0 0;
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  line-height: 1.4;
+}
+.tg-hint em {
+  font-style: italic;
+  color: var(--kj-fg-default);
+}
+
+.tg-subhead {
+  margin: var(--kj-space-sm) 0 4px;
+  font: var(--kj-text-xs) var(--kj-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--kj-fg-subtle);
+}

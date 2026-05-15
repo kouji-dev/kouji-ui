@@ -1,10 +1,10 @@
-import { DestroyRef, Injectable, effect, inject } from '@angular/core';
+import { DestroyRef, Injectable, inject } from '@angular/core';
 import { ThemeDraftService } from './theme-draft.service';
 import { DraftThemeSchema } from '../lib/theme/import-schema';
 import type { DraftTheme } from '../lib/theme/types';
 
 const HASH_PREFIX = 't=';
-const VERSION = 1;
+const VERSION = 2;
 
 function b64UrlEncode(bytes: Uint8Array): string {
   let s = '';
@@ -29,7 +29,6 @@ function b64UrlDecode(str: string): Uint8Array | null {
 export class ThemeUrlService {
   private readonly draftService = inject(ThemeDraftService);
   private readonly destroyRef = inject(DestroyRef);
-  private timer: number | null = null;
   private suppress = false;
   private started = false;
 
@@ -46,23 +45,24 @@ export class ThemeUrlService {
           this.draftService.load(d);
           this.suppress = false;
         }
+        // Always clear the URL hash after we've consumed (or failed to
+        // consume) it. The draft state now lives in memory + localStorage;
+        // the hash exists only as a one-shot share carrier. Without this,
+        // a leftover hash from a previous edit session keeps overriding
+        // fresh extractions when the user comes back to the route.
+        if (typeof window !== 'undefined' && location.hash) {
+          history.replaceState(null, '', `${location.pathname}${location.search}`);
+        }
       });
     }
 
-    effect(() => {
-      const draft = this.draftService.draft();
-      if (this.suppress) return;
-      if (typeof window === 'undefined') return;
-      if (this.timer !== null) window.clearTimeout(this.timer);
-      this.timer = window.setTimeout(async () => {
-        const hash = await this.encode(draft);
-        history.replaceState(null, '', `${location.pathname}${location.search}#${hash}`);
-      }, 250);
-    });
+    // No auto-write effect: the URL hash is a one-shot share carrier set
+    // only by the explicit "copy share link" action (via `copyShareLink()`
+    // below). Auto-writing on every draft change made the URL persist a
+    // snapshot of the previous session, which then overrode the
+    // freshly-extracted draft on revisit. Persistence across navigations
+    // now lives entirely in `localStorage` (handled by `ThemeDraftService`).
 
-    this.destroyRef.onDestroy(() => {
-      if (this.timer !== null && typeof window !== 'undefined') window.clearTimeout(this.timer);
-    });
   }
 
   async encode(draft: DraftTheme): Promise<string> {

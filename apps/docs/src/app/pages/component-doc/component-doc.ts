@@ -1,13 +1,36 @@
-import { ApplicationRef, Component, computed, inject, viewChild } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map, filter, take } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { switchMap, map } from 'rxjs/operators';
+import {
+  KjTabsComponent,
+  KjTabListComponent,
+  KjTabComponent,
+  KjTabPanelComponent,
+} from '@kouji-ui/components';
+import {
+  KjAlertComponent,
+  KjAlertTitleComponent,
+  KjAlertDescriptionComponent,
+} from '@kouji-ui/components';
+import { KjTagComponent } from '@kouji-ui/components';
 import { DocsService } from '../../services/docs.service';
-import type { DocItem } from '../../services/docs.service';
+import type { DocItem, DocPage } from '../../services/docs.service';
+import type {
+  CalloutKind,
+  PageExample,
+} from '../../../lib/docs-extractor.types';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
-import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
-import { PageTocComponent } from '../../components/page-toc/page-toc';
-import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-table/docs-table';
+import { CodeEditorComponent } from '../../components/code-editor/code-editor';
+import { PlaygroundComponent } from './playground';
+
+/** Maps Callout.kind to a kj-alert variant. */
+const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'error'> = {
+  note: 'info',
+  info: 'info',
+  warning: 'warning',
+  danger: 'error',
+};
 
 @Component({
   selector: 'app-component-doc',
@@ -15,9 +38,16 @@ import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-
   imports: [
     RouterLink,
     CodePreviewComponent,
-    PageTocDirective,
-    PageTocComponent,
-    DocsTableComponent,
+    CodeEditorComponent,
+    PlaygroundComponent,
+    KjTabsComponent,
+    KjTabListComponent,
+    KjTabComponent,
+    KjTabPanelComponent,
+    KjAlertComponent,
+    KjAlertTitleComponent,
+    KjAlertDescriptionComponent,
+    KjTagComponent,
   ],
   templateUrl: './component-doc.html',
   styleUrl: './component-doc.css',
@@ -25,111 +55,145 @@ import { DocsTableComponent, type DocsTableColumn } from '../../components/docs-
 export class ComponentDocComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly docs = inject(DocsService);
-  private readonly appRef = inject(ApplicationRef);
 
   protected readonly page = toSignal(
     this.route.url.pipe(
       switchMap((segs) => {
         // /docs/headless/<name> or /docs/components/<name>
-        const trackId = segs[0]?.path === 'components' ? 'components' as const
-                       : segs[0]?.path === 'headless'   ? 'core'       as const
-                       : undefined;
+        const trackId = segs[0]?.path === 'components' ? ('components' as const)
+                     : segs[0]?.path === 'headless'   ? ('core' as const)
+                     : undefined;
         const name = segs[1]?.path ?? '';
         return this.docs.loadManifest().pipe(map(() => this.docs.getPage(name, trackId)));
       }),
     ),
   );
 
-  private readonly pageToc = viewChild(PageTocDirective);
-
-  /** Definitions in render order (assembler already pinned the main first). */
-  protected readonly definitions = computed(() => this.page()?.definitions ?? []);
-
-  /** Flattened examples list (sourced from definitions). */
-  protected readonly pageExamples = computed(() => this.page()?.examples ?? []);
-
-  protected readonly inputColumns: DocsTableColumn[] = [
-    { key: 'name',         header: 'Name'        },
-    { key: 'type',         header: 'Type'        },
-    { key: 'defaultValue', header: 'Default'     },
-    { key: 'description',  header: 'Description' },
-  ];
-
-  protected readonly outputColumns: DocsTableColumn[] = [
-    { key: 'name',         header: 'Name'        },
-    { key: 'type',         header: 'Payload'     },
-    { key: 'description',  header: 'Description' },
-  ];
-
-  protected readonly modelColumns: DocsTableColumn[] = this.inputColumns;
-
-  protected readonly methodColumns: DocsTableColumn[] = [
-    { key: 'name',         header: 'Method'      },
-    { key: 'signature',    header: 'Signature'   },
-    { key: 'description',  header: 'Description' },
-  ];
-
-  protected readonly propertyColumns: DocsTableColumn[] = [
-    { key: 'name',         header: 'Name'        },
-    { key: 'type',         header: 'Type'        },
-    { key: 'description',  header: 'Description' },
-  ];
-
-  protected readonly paramColumns: DocsTableColumn[] = [
-    { key: 'name',         header: 'Param'       },
-    { key: 'type',         header: 'Type'        },
-    { key: 'optional',     header: 'Optional'    },
-    { key: 'description',  header: 'Description' },
-  ];
-
-  protected kindLabel(kind: DocItem['kind']): string {
-    switch (kind) {
-      case 'directive':   return 'Directive';
-      case 'service':     return 'Service';
-      case 'provider-fn': return 'Provider';
-      case 'inject-fn':   return 'Injector';
-      case 'function':    return 'Function';
-      case 'token':       return 'Injection token';
-      case 'type-alias':  return 'Type';
-      case 'const':       return 'Constant';
-    }
-  }
-
-  /** Section heading per kind (uppercase plural). */
-  protected groupLabel(kind: DocItem['kind']): string {
-    switch (kind) {
-      case 'directive':   return 'Directives';
-      case 'service':     return 'Services';
-      case 'provider-fn': return 'Providers';
-      case 'inject-fn':   return 'Injectors';
-      case 'function':    return 'Functions';
-      case 'token':       return 'Injection tokens';
-      case 'type-alias':  return 'Types';
-      case 'const':       return 'Constants';
-    }
-  }
-
-  /**
-   * Definitions grouped by kind in a fixed order so the page sections always
-   * appear in the same sequence regardless of source-file ordering. Each
-   * group preserves the assembler's intra-kind sort.
-   */
-  protected readonly definitionGroups = computed(() => {
-    const order: DocItem['kind'][] = [
-      'directive', 'service',
-      'provider-fn', 'inject-fn', 'function',
-      'token', 'const', 'type-alias',
-    ];
-    const defs = this.definitions();
-    return order
-      .map(kind => ({ kind, items: defs.filter(d => d.kind === kind) }))
-      .filter(g => g.items.length > 0);
+  /** The page's main item — carries the Docs-page metadata. */
+  protected readonly main = computed<DocItem | null>(() => {
+    const p = this.page();
+    if (!p) return null;
+    return p.definitions.find((d) => d.id === p.mainItemId) ?? p.definitions[0] ?? null;
   });
 
-  constructor() {
-    toObservable(this.page).pipe(
-      filter(Boolean),
-      switchMap(() => this.appRef.isStable.pipe(filter(Boolean), take(1))),
-    ).subscribe(() => this.pageToc()?.refresh());
+  /** Flattened example entries on the page. */
+  protected readonly pageExamples = computed<PageExample[]>(() => this.page()?.examples ?? []);
+
+  /**
+   * Usage example shown in the Overview tab's Import section. Looks for an
+   * example whose slug is `<page>.usage` (e.g. `button.usage`). The first
+   * `.ts` file in that example's default themed bundle is rendered live in
+   * the code editor. When no usage example exists, the page falls back to
+   * the auto-derived `importSnippet`.
+   */
+  protected readonly usageExample = computed<PageExample | null>(() => {
+    const examples = this.pageExamples();
+    const p = this.page();
+    if (!examples.length || !p) return null;
+    const targetSlug = `${p.name}.usage`;
+    return examples.find((e) => e.example.slug === targetSlug) ?? null;
+  });
+
+  /** Source of the usage `.ts` file rendered in the Overview's Import code editor. */
+  protected readonly usageSource = computed<string>(() => {
+    const ex = this.usageExample();
+    if (!ex) return '';
+    const files = ex.example.themedFiles['default'] ?? [];
+    const tsFile = files.find((f) => f.lang === 'ts') ?? files[0];
+    return tsFile?.content ?? '';
+  });
+
+  /**
+   * Flat list of non-playground, non-usage examples rendered on the Examples
+   * tab. Variants / sizes / states / recipes all live in a single grid — no
+   * per-bucket sub-sections, matching design-revamp/docs.jsx `ExamplesTab`.
+   * The usage example is hidden from the recipes grid (it owns the Overview
+   * code editor instead).
+   */
+  protected readonly recipeExamples = computed<PageExample[]>(() => {
+    const p = this.page();
+    const usageSlug = p ? `${p.name}.usage` : '';
+    return this.pageExamples().filter(
+      (e) => e.example.bucket !== 'playground' && e.example.slug !== usageSlug,
+    );
+  });
+
+  /** Auto-derived import snippet — uses `importOverride` when set. */
+  protected readonly importSnippet = computed<string>(() => {
+    const m = this.main();
+    const p = this.page();
+    if (!m || !p) return '';
+    if (m.importOverride) return m.importOverride;
+    const pkg = p.pkg === 'core' ? 'core' : 'components';
+    return `import { ${m.symbol} } from '@kouji-ui/${pkg}';`;
+  });
+
+  /** Whether to render the A11y tab body — false when every a11y field is empty. */
+  protected readonly hasA11y = computed<boolean>(() => {
+    const m = this.main();
+    if (!m) return false;
+    return !!(
+      (m.keyboard && m.keyboard.length)
+      || (m.aria && m.aria.length)
+      || m.touchTarget
+      || m.a11yProse
+    );
+  });
+
+  /** Whether any callout / prereq prose / import override should render. */
+  protected readonly hasCallouts = computed<boolean>(() => !!this.main()?.callouts?.length);
+  protected readonly hasPrereqs = computed<boolean>(() => !!this.main()?.prereqs);
+
+  /** Convert a Callout.kind to the kj-alert variant. */
+  protected calloutVariant(kind: CalloutKind): string {
+    return CALLOUT_VARIANT[kind] ?? 'info';
   }
+
+  /** Build the route segment for related cards (`/docs/<track>/<slug>`). */
+  protected relatedHref(slug: string, pkg: DocPage['pkg']): string {
+    const track = pkg === 'core' ? 'headless' : 'components';
+    return `/docs/${track}/${slug}`;
+  }
+
+  /** Tab count badges. */
+  protected readonly apiCount = computed<number>(() => {
+    const m = this.main();
+    if (!m) return 0;
+    const d = m.directive;
+    const s = m.service;
+    const f = m.function;
+    return (d?.inputs.length ?? 0)
+      + (d?.models.length ?? 0)
+      + (d?.outputs.length ?? 0)
+      + (s?.methods.length ?? 0)
+      + (s?.properties.length ?? 0)
+      + (f?.parameters.length ?? 0);
+  });
+
+  protected readonly examplesCount = computed<number>(() => this.recipeExamples().length);
+
+  /**
+   * Position of the CSS-variables section within the API tab — directives
+   * occupy `01..03` (Inputs/Models/Outputs), services occupy `01..02`
+   * (Methods/Properties), etc. CSS vars always land just after.
+   */
+  protected readonly cssVarsSectionNum = computed<string>(() => {
+    const m = this.main();
+    if (!m) return '01';
+    let occupied = 0;
+    if (m.directive) {
+      if (m.directive.inputs.length)  occupied += 1;
+      if (m.directive.models.length)  occupied += 1;
+      if (m.directive.outputs.length) occupied += 1;
+    }
+    if (m.service) {
+      if (m.service.methods.length)    occupied += 1;
+      if (m.service.properties.length) occupied += 1;
+    }
+    if (m.function) occupied += 1;
+    if (m.token)     occupied += 1;
+    if (m.typeAlias) occupied += 1;
+    if (m.const)     occupied += 1;
+    return String(occupied + 1).padStart(2, '0');
+  });
 }

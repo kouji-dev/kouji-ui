@@ -9,8 +9,8 @@
 @layer kj.component {
   .kj-button {
     /* component knobs — themes/users can override any of these */
-    --kj-button-bg:               var(--kj-color-primary);
-    --kj-button-fg:               var(--kj-color-primary-content);
+    --kj-button-bg:               var(--kj-bg-primary);
+    --kj-button-fg:               var(--kj-fg-on-primary);
     --kj-button-border-color:     transparent;
     --kj-button-border-style:     solid;
     --kj-button-border-width:     var(--kj-border);
@@ -19,22 +19,48 @@
     --kj-button-padding-y:        var(--kj-space-sm);
     --kj-button-font:             var(--kj-font-sans);
     --kj-button-font-size:        var(--kj-text-sm);
-    --kj-button-shadow:           none;
-    --kj-button-shadow-active:    none;
+    --kj-button-justify:          center;
+    --kj-button-gap:              var(--kj-space-sm);
+    --kj-button-min-width:        auto;
+    --kj-button-height:           auto;
     --kj-button-translate-active: none;
+    /* --kj-button-shadow / --kj-button-shadow-hover / --kj-button-shadow-active
+       are intentionally NOT declared here. Declaring them with element-level
+       specificity would win over the theme's `[data-theme="X"]` ancestor
+       declaration (e.g. kouji's `6px 6px 0 #2a2a2a` offset block), since
+       both selectors are (0,1,0) and same-layer source-order favours the
+       element. The hover/active rules below pull the value via
+       `var(name, fallback)` so the theme's inherited value reaches the
+       component AND the fallback (`none`) applies when no theme sets one. */
+    /* Typographic tone — themes override these for brand voice (e.g.
+       bauhaus bumps weight to 900; cyberpunk tightens tracking). */
+    --kj-button-font-weight:      600;
+    --kj-button-letter-spacing:  -0.01em;
+    /* Hover lift — pulls from the shared per-theme --kj-hover-translate
+       (bauhaus = -4px; everyone else = -2px). */
+    --kj-button-hover-translate:  var(--kj-hover-translate, -2px);
 
     /* the only place raw var(--kj-button-*) is read */
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--kj-space-sm);
+    justify-content: var(--kj-button-justify);
+    gap: var(--kj-button-gap);
+    min-width: var(--kj-button-min-width);
+    /* Explicit per-size height + align-self prevents flex parents
+       (align-items: stretch) from over-growing the button vertically. */
+    height: var(--kj-button-height);
+    align-self: center;
     background: var(--kj-button-bg);
     color: var(--kj-button-fg);
     border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
     border-radius: var(--kj-button-radius);
     padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
-    font: var(--kj-button-font-size) / 1.2 var(--kj-button-font);
-    box-shadow: var(--kj-button-shadow);
+    font: var(--kj-button-font-weight) var(--kj-button-font-size) / 1.2 var(--kj-button-font);
+    letter-spacing: var(--kj-button-letter-spacing);
+    /* Button shadow is opt-in PER PAGE CONTEXT (e.g. landing hero, docs
+       playground stage) AND restricted to the `default` (primary) variant
+       — never global. Pages set `--kj-button-shadow` at their scope; the
+       applying rules below only fire for `[data-variant="default"]`. */
     /* Transition only properties tied to user interaction (hover / active /
        focus). NOT background-color — variant-driven bg changes propagate
        through the wrapper input on the same tick as the host attribute, and
@@ -50,92 +76,136 @@
   /* Variants flip component tokens. Each variant owns its hover so the
      hover surface is designed per intent, not derived heuristically.
 
-     Filled variants (default, destructive) prefer a designed
-     `--kj-color-*-hover` token from the theme, falling back to a
-     base-content-mix that automatically darkens in light themes and
-     lightens in dark themes. Themes are encouraged to define the
-     `*-hover` tokens for a brand-correct shade. */
+     Filled variants (default, destructive) darken on hover via a fixed
+     8% color-mix toward black. Themes can override the variant rules
+     entirely for a brand-correct shade. */
 
   .kj-button[data-variant="destructive"] {
-    --kj-button-bg: var(--kj-color-destructive);
-    --kj-button-fg: var(--kj-color-destructive-content);
+    --kj-button-bg: var(--kj-bg-danger);
+    --kj-button-fg: var(--kj-fg-on-danger);
   }
   .kj-button[data-variant="destructive"]:hover {
-    --kj-button-bg: var(
-      --kj-color-destructive-hover,
-      color-mix(in oklab, var(--kj-color-destructive) 85%, var(--kj-color-base-content))
-    );
+    --kj-button-bg: color-mix(in oklch, var(--kj-bg-danger), black 8%);
   }
 
   .kj-button[data-variant="ghost"] {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-color-base-content);
+    --kj-button-fg: var(--kj-fg-default);
     --kj-button-border-color: transparent;
   }
   /* Use a foreground-tinted overlay rather than a static base-200 surface so
      the hover state stays visible even on themes where base-100 / base-200
      are nearly the same value (e.g. kouji's deep #0c0c0c / #141414 ramp). */
   .kj-button[data-variant="ghost"]:hover {
-    --kj-button-bg: color-mix(in oklab, var(--kj-color-base-content) 10%, transparent);
+    --kj-button-bg: color-mix(in oklab, var(--kj-fg-default) 10%, transparent);
   }
 
   .kj-button[data-variant="outline"] {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-color-base-content);
-    --kj-button-border-color: var(--kj-color-neutral);
+    --kj-button-fg: var(--kj-fg-default);
+    --kj-button-border-color: var(--kj-border-default);
   }
   .kj-button[data-variant="outline"]:hover {
-    --kj-button-bg: var(--kj-color-base-200);
+    --kj-button-bg: var(--kj-bg-surface);
   }
 
   .kj-button[data-variant="link"] {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-color-primary);
+    --kj-button-fg: var(--kj-fg-primary);
     --kj-button-padding-x: 0;
     --kj-button-padding-y: 0;
+    /* Link variant is plain underlined text — explicitly null out any
+       theme-set --kj-button-shadow so kouji/bauhaus offsets don't leak
+       onto inline text links. Ghost / outline / destructive keep theirs. */
+    --kj-button-shadow: none;
+    --kj-button-shadow-hover: none;
+    --kj-button-shadow-active: none;
     text-decoration: underline;
     text-underline-offset: 4px;
   }
   .kj-button[data-variant="link"]:hover {
     --kj-button-bg: transparent;
-    --kj-button-fg: var(
-      --kj-color-primary-hover,
-      color-mix(in oklab, var(--kj-color-primary) 80%, var(--kj-color-base-content))
-    );
+    --kj-button-fg: color-mix(in oklch, var(--kj-fg-primary), black 8%);
   }
 
-  /* sizes */
+  /* sizes — heights are explicit so flex parents can't stretch the button.
+     padding-y is kept for the `height: auto` (token-overridden) case and
+     for visual rhythm with content larger than the height. */
   .kj-button[data-size="sm"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: 0.25rem;
     --kj-button-font-size: 0.8125rem;
+    --kj-button-height:    2rem;       /*  32px */
+  }
+  .kj-button[data-size="md"] {
+    --kj-button-height:    2.25rem;    /*  36px */
   }
   .kj-button[data-size="lg"] {
     --kj-button-padding-x: var(--kj-space-lg);
     --kj-button-padding-y: 0.625rem;
     --kj-button-font-size: 1rem;
+    --kj-button-height:    2.75rem;    /*  44px (AAA touch target) */
+  }
+  .kj-button[data-size="xl"] {
+    --kj-button-padding-x: var(--kj-space-2xl);
+    --kj-button-padding-y: 0.875rem;
+    --kj-button-font-size: 1.0625rem;
+    --kj-button-gap:       var(--kj-space-md);
+    --kj-button-height:    3.25rem;    /*  52px */
   }
   .kj-button[data-size="icon"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: var(--kj-space-sm);
+    --kj-button-height:    2.25rem;
     aspect-ratio: 1;
+  }
+
+  /* Full-width: spans the parent (flex / block / grid track). */
+  .kj-button[data-full="true"] {
+    width: 100%;
   }
 
   /* Default-variant hover (catches the unset-or-`default` case). Specificity
      here is lower than the variant-specific rules above, so destructive /
-     ghost / outline / link override correctly. */
+     ghost / outline / link override correctly.
+
+     Themes can retarget the hover surface by setting
+     `--kj-button-bg-hover` (and optionally `--kj-button-fg-hover`) on
+     `[data-theme="X"]`. The fallbacks below preserve the default 8%
+     darken behaviour for any theme that doesn't customise. Defining the
+     defaults via `var(name, fallback)` instead of a `--kj-button-bg-hover:`
+     declaration on `.kj-button` keeps the theme's ancestor declaration
+     winning the cascade (an element-level default would override the
+     inherited value from `[data-theme]`). */
   .kj-button:hover {
-    --kj-button-bg: var(
-      --kj-color-primary-hover,
-      color-mix(in oklab, var(--kj-color-primary) 85%, var(--kj-color-base-content))
-    );
+    --kj-button-bg: var(--kj-button-bg-hover, color-mix(in oklch, var(--kj-bg-primary), black 8%));
+    /* Hover lift — themed via --kj-hover-translate. Bauhaus = -4px,
+       everyone else = -2px (default in :root). */
+    transform: translateY(var(--kj-button-hover-translate));
+  }
+  /* fg-hover only applies to the default variant; ghost/outline/link own
+     their hover fg already, and destructive keeps its on-danger fg. */
+  .kj-button[data-variant="default"]:hover {
+    --kj-button-fg: var(--kj-button-fg-hover, var(--kj-fg-on-primary));
+  }
+  /* Shadow application — `default` (primary) variant only. Themes leave
+     `--kj-button-shadow` unset by default; pages opt in by declaring it
+     at their scope (landing hero, docs playground stage). Hover/active
+     fall back to the static shadow so a single declaration is enough. */
+  .kj-button[data-variant="default"] {
+    box-shadow: var(--kj-button-shadow, none);
+  }
+  .kj-button[data-variant="default"]:hover {
+    box-shadow: var(--kj-button-shadow-hover, var(--kj-button-shadow, none));
+  }
+  .kj-button[data-variant="default"]:active {
+    box-shadow: var(--kj-button-shadow-active, var(--kj-button-shadow, none));
   }
   .kj-button:active {
     transform: var(--kj-button-translate-active);
-    box-shadow: var(--kj-button-shadow-active);
   }
   .kj-button:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
   .kj-button[aria-disabled="true"] {
@@ -155,22 +225,31 @@
 
   /* ── Busy / loading state ───────────────────────────────────────────── */
   .kj-button[aria-busy='true'] {
-    --kj-button-fg: color-mix(in srgb, var(--kj-color-base-content) 60%, transparent);
+    /* `opacity` dims the entire button (spinner + bg) uniformly. The
+       previous rule re-pointed --kj-button-fg at --kj-fg-default, which
+       on dark themes is the off-white page text — making the spinner
+       paint white over a yellow primary button. Opacity preserves the
+       variant's resolved fg so the spinner stays the same colour as
+       the would-be label. */
+    opacity: 0.7;
     cursor: progress;
   }
 
   /* ── Pressed (toggle) state ─────────────────────────────────────────── */
   .kj-button[aria-pressed='true'] {
-    --kj-button-bg: var(--kj-color-base-300);
+    --kj-button-bg: var(--kj-bg-field);
     box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.12);
   }
 
-  /* ── Spinner element (placeholder until KjSpinner ships) ───────────── */
+  /* ── Spinner element (placeholder until KjSpinner ships) ─────────────
+     The wrapper hides <ng-content> while loading and renders only this
+     spinner, so it should sit centred in the button (the host already
+     applies `justify-content: var(--kj-button-justify)` = center). No
+     trailing margin — there's nothing after it to push away. */
   .kj-button__spinner {
     display: inline-block;
     width: 1em;
     height: 1em;
-    margin-right: 0.5em;
     vertical-align: -0.125em;
     border: 2px solid currentColor;
     border-right-color: transparent;

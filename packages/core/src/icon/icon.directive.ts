@@ -14,10 +14,46 @@ import type { KjIconColor, KjIconSize } from './icon.types';
  * <span [kjIcon]="'check'" [kjIconColor]="'success'" [kjIconSize]="'lg'"></span>
  * ```
  *
+ * @doc-example Gallery
+ *   Browseable Lucide icon grid with a substring filter. Click any tile to
+ *   copy its `<i kjIcon="…">` snippet.
+ *   @doc-file ../../../components/src/icon/icon.gallery.example.ts
+ * @doc-example Usage
+ *   Common icon shapes — decorative inline, meaningful with a label, sized
+ *   variants, and semantic color tokens.
+ *   @doc-file ../../../components/src/icon/icon.usage.example.ts
+ *
+ * @doc-keyboard
+ *   None — the icon directive is non-interactive. Place inside a focusable parent (button/link) for activation semantics.
+ *
+ * @doc-aria
+ *   aria-hidden          — Set to "true" by default (decorative). Removed when [kjIconLabel] is provided
+ *   role="img"           — Set when [kjIconLabel] is provided (meaningful icon)
+ *   aria-label           — Bound to [kjIconLabel] when provided
+ *   data-kj-icon-mode    — Mirrors the resolved mode ("svg" | "font") for theme CSS
+ *
+ * @doc-css-var
+ *   --kj-icon            — CSS-ready resolved icon value (a url() for svg mode or a quoted glyph for font mode). Set by the directive.
+ *   --kj-icon-font       — Font family used in font mode. Consumers set this on a parent when shipping icon fonts.
+ *   --kj-color-icon-*    — Foreground color tokens for [kjIconColor] (muted/primary/success/warning/danger/info).
+ *   --kj-icon-size-*     — Em-relative size tokens for [kjIconSize] (xs/sm/md/lg/xl).
+ *
+ * @doc-touch
+ *   The icon is layout-only and does not require a 44×44 target on its own.
+ *   When the icon is the sole label of an interactive control, the parent
+ *   (`kj-button kjSize="icon"`, `<a>`, etc.) must meet WCAG 2.5.5.
+ *
+ * @doc-a11y
+ *   Decorative by default — `aria-hidden="true"` keeps the icon silent for
+ *   AT. Pass `[kjIconLabel]` only when the icon conveys meaning that is not
+ *   duplicated in adjacent text; this swaps in `role="img"` and the label.
+ *   Color tokens map to `--kj-color-icon-{token}` so theme palettes can
+ *   retarget per-mode without API churn.
+ *
+ * @doc-related button,link,badge
+ *
  * @doc-category Core/Icon
  * @doc
- * @doc-example Gallery
- *   @doc-file ../../../components/src/icon/icon.gallery.example.ts
  * @doc-name icon
  * @doc-description Renders an accessible icon on its host element by name with color and size tokens.
  * @doc-is-main

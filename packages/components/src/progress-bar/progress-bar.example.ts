@@ -10,7 +10,7 @@ import { KjProgressBarComponent } from './progress-bar';
   standalone: true,
   imports: [KjProgressBarComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
   `],
   template: `
     <kj-progress-bar [kjValue]="50" kjAriaLabel="Upload progress" />

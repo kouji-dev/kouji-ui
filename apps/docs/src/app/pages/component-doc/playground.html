@@ -1,0 +1,87 @@
+@if (playgroundFile(); as pf) {
+  <div class="playground">
+    <div class="playground-stage">
+      <ng-container #stage />
+    </div>
+
+    <div class="playground-controls">
+      @for (ctrl of pf.controls; track ctrl.name + ctrl.label) {
+        @switch (ctrl.kind) {
+          @case ('chips') {
+            <div class="pg-control">
+              <span class="pg-label">{{ ctrl.label }}</span>
+              <div class="pg-group" role="radiogroup" [attr.aria-label]="ctrl.label">
+                @for (opt of ctrl.options; track opt) {
+                  <button
+                    class="pg-chip"
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="chipPressed(ctrl, opt)"
+                    [attr.aria-pressed]="chipPressed(ctrl, opt)"
+                    (click)="setChip(ctrl, opt)"
+                  >{{ opt }}</button>
+                }
+              </div>
+            </div>
+          }
+          @case ('toggle') {
+            <div class="pg-row">
+              <label [attr.for]="'pg-' + ctrl.name">{{ ctrl.label }}</label>
+              <kj-toggle
+                appearance="switch"
+                [id]="'pg-' + ctrl.name"
+                [pressed]="toggleOn(ctrl)"
+                [ariaLabel]="ctrl.label"
+                (pressedChange)="toggle(ctrl)"
+              ></kj-toggle>
+            </div>
+          }
+          @case ('text') {
+            <div class="pg-control">
+              <label class="pg-label" [attr.for]="'pg-' + ctrl.name">{{ ctrl.label }}</label>
+              <kj-input
+                [id]="'pg-' + ctrl.name"
+                type="text"
+                [placeholder]="ctrl.placeholder ?? ''"
+                [ngModel]="$any(getValue(ctrl.name)) ?? ''"
+                (ngModelChange)="setText(ctrl, $any($event))"
+              />
+            </div>
+          }
+          @case ('number') {
+            <div class="pg-control">
+              <label class="pg-label" [attr.for]="'pg-' + ctrl.name">{{ ctrl.label }}</label>
+              <kj-number-input
+                [id]="'pg-' + ctrl.name"
+                [kjValue]="$any(getValue(ctrl.name)) ?? 0"
+                (kjValueChange)="setNumber(ctrl, $event)"
+                [kjMin]="$any(ctrl.min)"
+                [kjMax]="$any(ctrl.max)"
+                [kjStep]="ctrl.step ?? 1"
+              />
+            </div>
+          }
+        }
+      }
+    </div>
+  </div>
+
+  <div class="pg-snippet">
+    <pre class="pg-snippet-code"><code>{{ snippet() }}</code></pre>
+    <span class="pg-copy-wrap">
+      <kj-button
+        class="pg-copy-btn"
+        kjVariant="ghost"
+        kjSize="sm"
+        type="button"
+        (click)="copy()"
+        [kjAriaLabel]="copied() ? 'Copied to clipboard' : 'Copy code snippet'"
+      >
+        <span [kjIcon]="copied() ? 'check' : 'copy'" kjIconSize="sm"></span>
+        <span>{{ copied() ? 'copied' : 'copy' }}</span>
+      </kj-button>
+    </span>
+  </div>
+} @else {
+  <p class="empty-state">Playground not yet wired for this component.</p>
+}

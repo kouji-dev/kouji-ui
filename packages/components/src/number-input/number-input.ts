@@ -22,15 +22,70 @@ import {
  * `[(kjValue)]` model is two-way bindable.
  *
  * @doc-example Default
+ *   The bare-minimum recipe — a quantity stepper bound to a number signal.
  *   @doc-file number-input.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — quantity, bounded picker, and
+ *   currency formatting. Use this as the copy-paste starting point.
+ *   @doc-file number-input.usage.example.ts
  * @doc-example With explicit stepper buttons
+ *   `kjStepperLayout="flanking"` keeps the +/- buttons on either side.
  *   @doc-file number-input.with-stepper.example.ts
  * @doc-example Min / max / step
+ *   Bound the input via `kjMin` / `kjMax`; `kjStep` drives the +/- delta.
  *   @doc-file number-input.min-max.example.ts
  * @doc-example Decimal precision
+ *   `kjMinimumFractionDigits` and `kjMaximumFractionDigits` pin the display.
  *   @doc-file number-input.decimal.example.ts
  * @doc-example Currency formatting
+ *   `kjFormat="currency"` + `kjCurrency` + `kjLocale` — Intl.NumberFormat all the way.
  *   @doc-file number-input.currency.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowUp       — Increment by `kjStep`
+ *   ArrowDown     — Decrement by `kjStep`
+ *   PageUp        — Increment by `kjPageStep` (when > 0)
+ *   PageDown      — Decrement by `kjPageStep` (when > 0)
+ *   Home          — Jump to `kjMin`
+ *   End           — Jump to `kjMax`
+ *   Enter         — Commit the typed value and reformat
+ *
+ * @doc-aria
+ *   role="spinbutton"   — On the inner `<input>` (provided by the directive)
+ *   aria-valuemin       — Reflects `kjMin`
+ *   aria-valuemax       — Reflects `kjMax`
+ *   aria-valuenow       — Reflects the current numeric value
+ *   aria-invalid        — Reflects `kjInvalid`
+ *   aria-disabled       — Reflects `kjDisabled` on field + stepper buttons
+ *   aria-label          — Wired from `kjAriaLabel`; required for icon-only / no-label usage
+ *
+ * @doc-touch
+ *   The two stepper buttons render at `--kj-number-input-stepper-size`
+ *   (defaults to 2.75rem / 44px) — meets WCAG 2.5.5. The field row matches
+ *   `kj-input` height for form-row alignment.
+ *
+ * @doc-a11y
+ *   Composes a real `<input>` with the spinbutton role and locale-aware
+ *   formatting. Always pair with a visible `<label>` or set `kjAriaLabel` —
+ *   the directive does not synthesise an accessible name. The +/- buttons
+ *   own their own `kjDecrementLabel` / `kjIncrementLabel` for SR clarity.
+ *
+ * @doc-related input,slider,form
+ *
+ * @doc-css-var
+ *   --kj-number-input-bg            — Background fill. Inherits --kj-bg-field.
+ *   --kj-number-input-fg            — Foreground (text) color.
+ *   --kj-number-input-border-color  — Border color. Flips to danger when [data-invalid].
+ *   --kj-number-input-border-width  — Border thickness. Inherits --kj-border.
+ *   --kj-number-input-radius        — Corner radius. Inherits --kj-radius-field.
+ *   --kj-number-input-padding-x     — Horizontal padding on the inner field.
+ *   --kj-number-input-font          — Font family. Defaults to --kj-font-sans.
+ *   --kj-number-input-font-size     — Font size. Size attributes override.
+ *   --kj-number-input-height        — Row height. Matches input/select for form alignment.
+ *   --kj-number-input-stepper-bg    — Stepper button background fill.
+ *   --kj-number-input-stepper-fg    — Stepper button foreground color.
+ *   --kj-number-input-stepper-size  — Stepper button min width/height. Drives touch target.
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name number-input

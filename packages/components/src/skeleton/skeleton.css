@@ -10,8 +10,8 @@
 @layer kj.component {
   .kj-skeleton {
     /* component knobs — themes/users can override any of these */
-    --kj-skeleton-bg:           var(--kj-color-base-300, color-mix(in oklab, var(--kj-color-base-content, #000) 12%, transparent));
-    --kj-skeleton-highlight:    var(--kj-color-base-200, color-mix(in oklab, var(--kj-color-base-content, #000) 5%, transparent));
+    --kj-skeleton-bg:           var(--kj-bg-elevated, color-mix(in oklab, var(--kj-fg-default, #000) 12%, transparent));
+    --kj-skeleton-highlight:    var(--kj-bg-surface, color-mix(in oklab, var(--kj-fg-default, #000) 5%, transparent));
     --kj-skeleton-radius:       var(--kj-radius-field, 0.375rem);
     --kj-skeleton-line-height:  1em;
     --kj-skeleton-line-radius:  0.25rem;

@@ -1,8 +1,8 @@
 :host {
   display: block;
-  border: 1px solid var(--kj-color-base-300);
+  border: 1px solid var(--kj-border-default);
   overflow: hidden;
-  background: var(--kj-color-base-200);
+  background: var(--kj-bg-surface);
 }
 
 .editor-wrap { display: flex; flex-direction: column; height: 100%; }
@@ -12,8 +12,8 @@
   display: flex;
   align-items: center;
   padding: var(--kj-space-sm) var(--kj-space-lg);
-  background: var(--kj-color-base-100);
-  border-bottom: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-body);
+  border-bottom: 1px solid var(--kj-border-default);
   flex-shrink: 0;
 }
 
@@ -22,10 +22,10 @@
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--kj-color-primary);
-  background: color-mix(in oklab, var(--kj-color-primary) 8%, transparent);
+  color: var(--kj-fg-primary);
+  background: color-mix(in oklab, var(--kj-bg-primary) 8%, transparent);
   padding: 0.15rem var(--kj-space-sm);
-  border: 1px solid color-mix(in oklab, var(--kj-color-primary) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--kj-bg-primary) 22%, transparent);
 }
 
 .header-spacer { flex: 1; }
@@ -36,7 +36,7 @@
   gap: 0.3rem;
   background: none;
   border: none;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   font-family: var(--kj-font-mono);
   font-size: 0.65rem;
   letter-spacing: 0.06em;
@@ -44,7 +44,7 @@
   padding: 0.2rem var(--kj-space-sm);
   transition: color 0.15s;
 }
-.copy-btn:hover { color: var(--kj-color-base-content); }
+.copy-btn:hover { color: var(--kj-fg-default); }
 
 /* ── Monaco container ── */
 /* Height is set inline by code-editor.ts (auto-size to content) */
@@ -60,7 +60,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--kj-color-base-200);
+  background: var(--kj-bg-surface);
   z-index: 1;
 }
 
@@ -71,21 +71,21 @@
 .editor-host ::ng-deep .monaco-editor,
 .editor-host ::ng-deep .monaco-editor-background,
 .editor-host ::ng-deep .monaco-editor .margin {
-  background-color: var(--kj-color-base-200) !important;
+  background-color: var(--kj-bg-surface) !important;
 }
 .editor-host ::ng-deep .monaco-editor .line-numbers {
-  color: var(--kj-color-neutral) !important;
+  color: var(--kj-fg-muted) !important;
 }
 .editor-host ::ng-deep .monaco-editor .current-line ~ .line-numbers {
-  color: var(--kj-color-neutral) !important;
+  color: var(--kj-fg-muted) !important;
 }
 .editor-host ::ng-deep .monaco-editor .scrollbar .slider {
-  background: var(--kj-color-base-300) !important;
+  background: var(--kj-bg-field) !important;
 }
 .editor-host ::ng-deep .monaco-editor .scrollbar .slider:hover {
-  background: var(--kj-color-neutral) !important;
+  background: var(--kj-bg-elevated) !important;
 }
 .editor-host ::ng-deep .monaco-editor .cursor {
-  background: var(--kj-color-primary) !important;
-  color: var(--kj-color-primary) !important;
+  background: var(--kj-bg-primary) !important;
+  color: var(--kj-fg-primary) !important;
 }

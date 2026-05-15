@@ -28,15 +28,57 @@ import { KjProgressBar, KjProgressBarFill } from '@kouji-ui/core';
  * ```
  *
  * @doc-example Default
+ *   A determinate bar at 50% with an accessible label — the bare-minimum recipe.
  *   @doc-file progress-bar.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common usages — determinate upload,
+ *   indeterminate spinner replacement, and success completion. Use this as
+ *   the copy-paste starting point.
+ *   @doc-file progress-bar.usage.example.ts
  * @doc-example Indeterminate
+ *   `[kjValue]="null"` runs the CSS-only stripe animation.
  *   @doc-file progress-bar.indeterminate.example.ts
  * @doc-example Variants
+ *   `primary` / `success` / `warning` / `error` — pick the semantic color.
  *   @doc-file progress-bar.variants.example.ts
  * @doc-example Sizes
+ *   `xs` / `sm` / `md` / `lg` — drives the bar thickness via CSS tokens.
  *   @doc-file progress-bar.sizes.example.ts
  * @doc-example With value text
+ *   Pair `kjAriaValuetext` with a visible label for richer SR phrasing.
  *   @doc-file progress-bar.with-label.example.ts
+ *
+ * @doc-aria
+ *   role="progressbar"   — On the bar host (provided by the directive)
+ *   aria-valuenow        — Reflects the clamped numeric value; omitted in indeterminate mode
+ *   aria-valuemin        — Reflects `kjMin`
+ *   aria-valuemax        — Reflects `kjMax`
+ *   aria-valuetext       — Reflects `kjAriaValuetext` when set
+ *   aria-label           — Wired from `kjAriaLabel` (or use `kjAriaLabelledby`)
+ *   data-variant         — Mirrors the variant for theme hooks
+ *   data-size            — Mirrors the size for theme hooks
+ *   data-indeterminate   — Set when `kjValue` is null
+ *
+ * @doc-touch
+ *   The bar is non-interactive — no touch target rules apply. Pair with a
+ *   labelled cancel button (44×44) when the operation is cancellable.
+ *
+ * @doc-a11y
+ *   Always set `kjAriaLabel` or `kjAriaLabelledby` — a bare percentage
+ *   ("50 percent") with no context is useless to AT users. In indeterminate
+ *   mode the directive omits `aria-valuenow` per APG. The stripe animation
+ *   collapses under `prefers-reduced-motion: reduce`.
+ *
+ * @doc-related skeleton,spinner,toast
+ *
+ * @doc-css-var
+ *   --kj-progress-bar-track                  — Track (unfilled portion) background. Inherits --kj-bg-field.
+ *   --kj-progress-bar-fill                   — Fill color. Variants flip this per data-variant.
+ *   --kj-progress-bar-radius                 — Track and fill corner radius.
+ *   --kj-progress-bar-height                 — Bar thickness. Sizes (xs/sm/md/lg) override.
+ *   --kj-progress-bar-transition             — Transition timing for determinate fill changes.
+ *   --kj-progress-bar-indeterminate-duration — One-cycle duration of the indeterminate stripe.
+ *
  * @doc-category Library/Feedback
  * @doc
  * @doc-name progress-bar

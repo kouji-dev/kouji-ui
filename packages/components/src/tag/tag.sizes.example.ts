@@ -5,7 +5,7 @@ import { KjTagComponent } from './tag';
   selector: 'kj-tag-sizes-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: flex; gap: 0.5rem; align-items: center; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: flex; gap: 0.5rem; align-items: center; }`],
   template: `
     <kj-tag kjSize="xs">Extra small</kj-tag>
     <kj-tag kjSize="sm">Small</kj-tag>

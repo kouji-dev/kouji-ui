@@ -1,173 +1,620 @@
 <div class="page-with-toc">
-<main class="doc-main" kjPageToc #pageToc="kjPageToc">
-  @if (page(); as p) {
-    <header class="doc-header">
-      <span class="tag">{{ p.categoryPath[p.categoryPath.length - 1] || p.pkg }}</span>
-      <h1>{{ p.title }}</h1>
-      @if (p.description) {
-        <p class="desc">{{ p.description }}</p>
-      }
-    </header>
+  <div class="doc-main">
+    @if (page(); as p) {
+      <!-- ─────────── Header ─────────── -->
+      <header class="doc-header">
+        @if (p.categoryPath.length) {
+          <kj-tag class="doc-track-tag">
+            {{ p.categoryPath[p.categoryPath.length - 1] || p.pkg }}
+          </kj-tag>
+        }
+        <h1 class="doc-title">{{ p.title }}</h1>
+        @if (p.description) {
+          <p class="doc-tagline">{{ p.description }}</p>
+        }
+      </header>
 
-    <section class="definitions-section"
-             id="definitions"
-             data-toc-entry="Definitions"
-             data-toc-level="2">
-      <h2 class="section-title">Definitions</h2>
-
-      @for (group of definitionGroups(); track group.kind) {
-        <section
-          class="kind-group"
-          [id]="'group-' + group.kind"
-          [attr.data-toc-entry]="groupLabel(group.kind)"
-          data-toc-level="3"
-        >
-          <h3 class="kind-group-title">{{ groupLabel(group.kind) }}</h3>
-
-          @for (item of group.items; track item.id) {
-            <section
-              class="item-section"
-              [id]="item.symbol"
-              [attr.data-toc-entry]="item.symbol"
-              data-toc-level="4"
-            >
-              <div class="item-header">
-                @if (item.kind === 'directive' && item.directive) {
-                  <code class="directive-selector">{{ item.directive.selector }}</code>
-                } @else {
-                  <code class="item-name">{{ item.symbol }}</code>
-                }
-                @if (item.isMain) { <span class="main-badge" title="Main">main</span> }
-              </div>
-
-              @if (item.description) {
-                <p class="desc">{{ item.description }}</p>
-              }
-
-              @switch (item.kind) {
-                @case ('directive') {
-                  @if (item.directive; as d) {
-                    @if (d.inputs.length) {
-                      <div class="inputs-block">
-                        <h4 class="block-title">Inputs</h4>
-                        <app-docs-table [columns]="inputColumns" [rows]="$any(d.inputs)" label="Inputs" />
-                      </div>
-                    }
-                    @if (d.models.length) {
-                      <div class="inputs-block">
-                        <h4 class="block-title">Models</h4>
-                        <app-docs-table [columns]="modelColumns" [rows]="$any(d.models)" label="Models" />
-                      </div>
-                    }
-                    @if (d.outputs.length) {
-                      <div class="inputs-block">
-                        <h4 class="block-title">Outputs</h4>
-                        <app-docs-table [columns]="outputColumns" [rows]="$any(d.outputs)" label="Outputs" />
-                      </div>
-                    }
-                  }
-                }
-                @case ('service') {
-                  @if (item.service; as s) {
-                    @if (s.methods.length) {
-                      <div class="inputs-block">
-                        <h4 class="block-title">Methods</h4>
-                        <app-docs-table [columns]="methodColumns" [rows]="$any(s.methods)" label="Methods" />
-                      </div>
-                    }
-                    @if (s.properties.length) {
-                      <div class="inputs-block">
-                        <h4 class="block-title">Properties</h4>
-                        <app-docs-table [columns]="propertyColumns" [rows]="$any(s.properties)" label="Properties" />
-                      </div>
-                    }
-                  }
-                }
-                @case ('provider-fn') {
-                  @if (item.function; as f) {
-                    <pre class="signature"><code>{{ f.signature }}</code></pre>
-                    @if (f.parameters.length) {
-                      <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
-                    }
-                  }
-                }
-                @case ('inject-fn') {
-                  @if (item.function; as f) {
-                    <pre class="signature"><code>{{ f.signature }}</code></pre>
-                    @if (f.parameters.length) {
-                      <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
-                    }
-                  }
-                }
-                @case ('function') {
-                  @if (item.function; as f) {
-                    <pre class="signature"><code>{{ f.signature }}</code></pre>
-                    @if (f.parameters.length) {
-                      <app-docs-table [columns]="paramColumns" [rows]="$any(f.parameters)" label="Parameters" />
-                    }
-                  }
-                }
-                @case ('token') {
-                  @if (item.token; as t) {
-                    <p>Type: <code class="token-type">{{ t.type }}</code></p>
-                  }
-                }
-                @case ('type-alias') {
-                  @if (item.typeAlias; as t) {
-                    <pre class="signature"><code>{{ t.type }}</code></pre>
-                  }
-                }
-                @case ('const') {
-                  @if (item.const; as c) {
-                    <p>Type: <code class="const-type">{{ c.type }}</code></p>
-                    @if (c.literalValue) {
-                      <pre class="signature"><code>{{ c.literalValue }}</code></pre>
-                    }
-                  }
-                }
-              }
-            </section>
+      <!-- ─────────── Tabs ─────────── -->
+      <kj-tabs class="doc-tabs" value="overview">
+        <kj-tab-list>
+          <kj-tab value="overview">overview</kj-tab>
+          <kj-tab value="api">
+            api
+            @if (apiCount()) {
+              <span class="tab-count">{{ apiCount() }}</span>
+            }
+          </kj-tab>
+          <kj-tab value="examples">
+            examples
+            @if (examplesCount()) {
+              <span class="tab-count">{{ examplesCount() }}</span>
+            }
+          </kj-tab>
+          @if (hasA11y()) {
+            <kj-tab value="a11y">a11y</kj-tab>
           }
+        </kj-tab-list>
+
+        <!-- ─────────── Overview tab ─────────── -->
+        <kj-tab-panel value="overview">
+          <div class="tab-body">
+            @if (main(); as m) {
+              <!-- Prereqs (markdown rendered as preformatted text) -->
+              @if (hasPrereqs()) {
+                <section
+                  class="doc-section"
+                  id="prereqs"
+                  data-toc-entry="Prerequisites"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">01</span>
+                    <h2>Prerequisites</h2>
+                    <a class="anchor" href="#prereqs">#prereqs</a>
+                  </header>
+                  <div class="prose">
+                    <pre class="prose-block">{{ m.prereqs }}</pre>
+                  </div>
+                </section>
+              }
+
+              <!-- Callouts -->
+              @if (hasCallouts()) {
+                <section
+                  class="doc-section"
+                  id="notes"
+                  data-toc-entry="Notes"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">02</span>
+                    <h2>Notes</h2>
+                    <a class="anchor" href="#notes">#notes</a>
+                  </header>
+                  <div class="callouts">
+                    @for (callout of m.callouts; track $index) {
+                      <kj-alert [kjVariant]="calloutVariant(callout.kind)">
+                        <kj-alert-description>{{ callout.body }}</kj-alert-description>
+                      </kj-alert>
+                    }
+                  </div>
+                </section>
+              }
+
+              <!-- Import / Usage -->
+              <section
+                class="doc-section"
+                id="import"
+                data-toc-entry="Import"
+                data-toc-level="2"
+              >
+                <header class="doc-section-head">
+                  <span class="num">03</span>
+                  <h2>Import</h2>
+                    <a class="anchor" href="#import">#import</a>
+                </header>
+                <div class="prose">
+                  <p>Add the symbol to your component's <code>imports</code> array. The walkthrough below shows the most common usages — copy &amp; tweak.</p>
+                </div>
+                <pre class="code-block"><code>{{ importSnippet() }}</code></pre>
+                <!-- Usage walkthrough: rendered as a read-only Monaco editor
+                     fed by the `<page>.usage.example.ts` file when present.
+                     When no usage example exists we silently fall back to the
+                     auto-derived import line above. -->
+                @if (usageSource(); as src) {
+                  <div class="usage-editor">
+                    <kj-code-editor [code]="src" lang="ts" [readonly]="true" [showHeader]="false" />
+                  </div>
+                }
+              </section>
+
+              <!-- Playground — interactive form (right) that drives a live
+                   component (left) and a generated, copy-able template
+                   snippet (bottom). Registry-backed: pages whose symbol isn't
+                   wired show a placeholder. -->
+              <section
+                class="doc-section"
+                id="playground"
+                data-toc-entry="Playground"
+                data-toc-level="2"
+              >
+                <header class="doc-section-head">
+                  <span class="num">04</span>
+                  <h2>Playground</h2>
+                    <a class="anchor" href="#playground">#playground</a>
+                </header>
+                <app-playground [symbol]="m.symbol" />
+              </section>
+            }
+          </div>
+        </kj-tab-panel>
+
+        <!-- ─────────── API tab ─────────── -->
+        <kj-tab-panel value="api">
+          <div class="tab-body">
+            @if (main(); as m) {
+              @if (m.directive; as d) {
+                @if (d.inputs.length) {
+                  <section
+                    class="doc-section"
+                    id="inputs"
+                    data-toc-entry="Inputs"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">01</span>
+                      <h2>Inputs</h2>
+                    <a class="anchor" href="#inputs">#inputs</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Name</th>
+                          <th scope="col">Type</th>
+                          <th scope="col">Default</th>
+                          <th scope="col">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (input of d.inputs; track input.name) {
+                          <tr>
+                            <td>
+                              <span class="prop-name">{{ input.name }}</span>
+                              @if (input.required) {
+                                <span class="badge-req" aria-label="required">req</span>
+                              }
+                            </td>
+                            <td><code class="prop-type">{{ input.type }}</code></td>
+                            <td><code class="prop-default">{{ input.defaultValue || '—' }}</code></td>
+                            <td><span class="prop-desc">{{ input.description || '—' }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+
+                @if (d.models.length) {
+                  <section
+                    class="doc-section"
+                    id="models"
+                    data-toc-entry="Models"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">02</span>
+                      <h2>Models</h2>
+                    <a class="anchor" href="#models">#models</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Name</th>
+                          <th scope="col">Type</th>
+                          <th scope="col">Default</th>
+                          <th scope="col">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (model of d.models; track model.name) {
+                          <tr>
+                            <td><span class="prop-name">{{ model.name }}</span></td>
+                            <td><code class="prop-type">{{ model.type }}</code></td>
+                            <td><code class="prop-default">{{ model.defaultValue || '—' }}</code></td>
+                            <td><span class="prop-desc">{{ model.description || '—' }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+
+                @if (d.outputs.length) {
+                  <section
+                    class="doc-section"
+                    id="outputs"
+                    data-toc-entry="Outputs"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">03</span>
+                      <h2>Outputs</h2>
+                    <a class="anchor" href="#outputs">#outputs</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Event</th>
+                          <th scope="col">Payload</th>
+                          <th scope="col">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (output of d.outputs; track output.name) {
+                          <tr>
+                            <td><span class="prop-name">{{ output.name }}</span></td>
+                            <td><code class="prop-type">{{ output.type }}</code></td>
+                            <td><span class="prop-desc">{{ output.description || '—' }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+              }
+
+              @if (m.service; as s) {
+                @if (s.methods.length) {
+                  <section
+                    class="doc-section"
+                    id="methods"
+                    data-toc-entry="Methods"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">01</span>
+                      <h2>Methods</h2>
+                    <a class="anchor" href="#methods">#methods</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Method</th>
+                          <th scope="col">Signature</th>
+                          <th scope="col">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (method of s.methods; track method.name) {
+                          <tr>
+                            <td><span class="prop-name">{{ method.name }}</span></td>
+                            <td><code class="prop-type">{{ method.signature }}</code></td>
+                            <td><span class="prop-desc">{{ method.description || '—' }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+                @if (s.properties.length) {
+                  <section
+                    class="doc-section"
+                    id="properties"
+                    data-toc-entry="Properties"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">02</span>
+                      <h2>Properties</h2>
+                    <a class="anchor" href="#properties">#properties</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Name</th>
+                          <th scope="col">Type</th>
+                          <th scope="col">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (prop of s.properties; track prop.name) {
+                          <tr>
+                            <td><span class="prop-name">{{ prop.name }}</span></td>
+                            <td><code class="prop-type">{{ prop.type }}</code></td>
+                            <td><span class="prop-desc">{{ prop.description || '—' }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+              }
+
+              @if (m.function; as f) {
+                <section
+                  class="doc-section"
+                  id="signature"
+                  data-toc-entry="Signature"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">01</span>
+                    <h2>Signature</h2>
+                    <a class="anchor" href="#signature">#signature</a>
+                  </header>
+                  <pre class="code-block"><code>{{ f.signature }}</code></pre>
+                  @if (f.parameters.length) {
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Param</th>
+                          <th scope="col">Type</th>
+                          <th scope="col">Optional</th>
+                          <th scope="col">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (param of f.parameters; track param.name) {
+                          <tr>
+                            <td><span class="prop-name">{{ param.name }}</span></td>
+                            <td><code class="prop-type">{{ param.type }}</code></td>
+                            <td><span class="prop-desc">{{ param.optional ? 'yes' : 'no' }}</span></td>
+                            <td><span class="prop-desc">{{ param.description || '—' }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                </section>
+              }
+
+              @if (m.token; as t) {
+                <section
+                  class="doc-section"
+                  id="token"
+                  data-toc-entry="Type"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">01</span>
+                    <h2>Type</h2>
+                    <a class="anchor" href="#token">#token</a>
+                  </header>
+                  <pre class="code-block"><code>{{ t.type }}</code></pre>
+                </section>
+              }
+
+              @if (m.typeAlias; as t) {
+                <section
+                  class="doc-section"
+                  id="type-alias"
+                  data-toc-entry="Type"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">01</span>
+                    <h2>Type</h2>
+                    <a class="anchor" href="#type-alias">#type-alias</a>
+                  </header>
+                  <pre class="code-block"><code>{{ t.type }}</code></pre>
+                </section>
+              }
+
+              @if (m.const; as c) {
+                <section
+                  class="doc-section"
+                  id="const"
+                  data-toc-entry="Constant"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">01</span>
+                    <h2>Constant</h2>
+                    <a class="anchor" href="#const">#const</a>
+                  </header>
+                  <pre class="code-block"><code>{{ c.type }}</code></pre>
+                  @if (c.literalValue) {
+                    <pre class="code-block"><code>{{ c.literalValue }}</code></pre>
+                  }
+                </section>
+              }
+
+              @if (m.cssVars?.length) {
+                <section
+                  class="doc-section"
+                  id="css-vars"
+                  data-toc-entry="CSS variables"
+                  data-toc-level="2"
+                >
+                  <header class="doc-section-head">
+                    <span class="num">{{ cssVarsSectionNum() }}</span>
+                    <h2>CSS variables</h2>
+                    <a class="anchor" href="#css-vars">#css-vars</a>
+                  </header>
+                  <p class="prose">Override any of these custom properties at any scope (component-level inline style, page-level CSS, or a theme rule) to restyle the component without forking it.</p>
+                  <dl class="css-var-list" aria-label="CSS variables">
+                    @for (cssVar of m.cssVars; track cssVar.name) {
+                      <div class="css-var-row">
+                        <dt class="css-var-row__name">
+                          <code>{{ cssVar.name }}</code>
+                        </dt>
+                        <dd class="css-var-row__desc">{{ cssVar.description || '—' }}</dd>
+                      </div>
+                    }
+                  </dl>
+                </section>
+              }
+
+              @if (apiCount() === 0 && !m.cssVars?.length) {
+                <p class="empty-state">No API surface recorded.</p>
+              }
+            }
+          </div>
+        </kj-tab-panel>
+
+        <!-- ─────────── Examples tab ─────────── -->
+        <kj-tab-panel value="examples">
+          <div class="tab-body">
+            @if (page(); as p) {
+              @if (recipeExamples().length > 0) {
+                <!-- Flat 2-col grid — variants / sizes / states / recipes all
+                     live here side-by-side. Source: design-revamp/docs.jsx
+                     `ExamplesTab` + `RecipeCard`. -->
+                <div class="recipes-grid">
+                  @for (entry of recipeExamples(); track entry.example.slug) {
+                    <article
+                      class="recipe-card"
+                      [id]="entry.example.slug"
+                      [attr.data-toc-entry]="entry.example.label"
+                      data-toc-level="2"
+                    >
+                      <h4 class="recipe-card__title">{{ entry.example.label }}</h4>
+                      @if (entry.example.description) {
+                        <p class="recipe-card__desc">{{ entry.example.description }}</p>
+                      }
+                      <div class="recipe-card__preview">
+                        <kj-code-preview
+                          [docExamples]="[entry.example]"
+                          [componentName]="p.title"
+                          [previewOnly]="true"
+                        />
+                      </div>
+                    </article>
+                  }
+                </div>
+              } @else {
+                <p class="empty-state">No examples recorded yet.</p>
+              }
+            }
+          </div>
+        </kj-tab-panel>
+
+        <!-- ─────────── A11y tab ─────────── -->
+        <kj-tab-panel value="a11y">
+          <div class="tab-body">
+            @if (main(); as m) {
+              @if (hasA11y()) {
+                @if (m.keyboard && m.keyboard.length) {
+                  <section
+                    class="doc-section"
+                    id="keyboard"
+                    data-toc-entry="Keyboard"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">01</span>
+                      <h2>Keyboard</h2>
+                    <a class="anchor" href="#keyboard">#keyboard</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Keys</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (entry of m.keyboard; track entry.keys) {
+                          <tr>
+                            <td>
+                              @for (chord of entry.keys.split(/\s+/); track $index) {
+                                <kbd class="key">{{ chord }}</kbd>
+                              }
+                            </td>
+                            <td><span class="prop-desc">{{ entry.action }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+
+                @if (m.aria && m.aria.length) {
+                  <section
+                    class="doc-section"
+                    id="aria"
+                    data-toc-entry="ARIA"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">02</span>
+                      <h2>ARIA</h2>
+                    <a class="anchor" href="#aria">#aria</a>
+                    </header>
+                    <table class="api-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Attribute</th>
+                          <th scope="col">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (entry of m.aria; track entry.attr) {
+                          <tr>
+                            <td><code class="prop-type">{{ entry.attr }}</code></td>
+                            <td><span class="prop-desc">{{ entry.notes }}</span></td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </section>
+                }
+
+                @if (m.touchTarget) {
+                  <section
+                    class="doc-section"
+                    id="touch"
+                    data-toc-entry="Touch target"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">03</span>
+                      <h2>Touch target</h2>
+                    <a class="anchor" href="#touch">#touch</a>
+                    </header>
+                    <div class="prose">
+                      <p>{{ m.touchTarget }}</p>
+                    </div>
+                  </section>
+                }
+
+                @if (m.a11yProse) {
+                  <section
+                    class="doc-section"
+                    id="a11y-notes"
+                    data-toc-entry="Notes"
+                    data-toc-level="2"
+                  >
+                    <header class="doc-section-head">
+                      <span class="num">04</span>
+                      <h2>Notes</h2>
+                    <a class="anchor" href="#a11y-notes">#a11y-notes</a>
+                    </header>
+                    <div class="prose">
+                      <pre class="prose-block">{{ m.a11yProse }}</pre>
+                    </div>
+                  </section>
+                }
+              } @else {
+                <p class="empty-state">No accessibility notes recorded yet.</p>
+              }
+            }
+          </div>
+        </kj-tab-panel>
+      </kj-tabs>
+
+      <!-- ─────────── Related ─────────── -->
+      @if (main()?.related?.length) {
+        <section
+          class="doc-section related-section"
+          id="related"
+          data-toc-entry="Related"
+          data-toc-level="2"
+        >
+          <header class="doc-section-head">
+            <span class="num">99</span>
+            <h2>Related</h2>
+                    <a class="anchor" href="#related">#related</a>
+          </header>
+          <div class="related-grid">
+            @for (slug of main()!.related; track slug) {
+              <a class="related-card" [routerLink]="relatedHref(slug, p.pkg)">
+                <span class="name">{{ slug }}</span>
+                <span class="arr" aria-hidden="true">→</span>
+              </a>
+            }
+          </div>
         </section>
       }
-    </section>
-
-    @if (pageExamples().length) {
-      <section class="examples-section"
-               id="examples"
-               data-toc-entry="Examples"
-               data-toc-level="2">
-        <h2 class="section-title">Examples</h2>
-
-        @for (entry of pageExamples(); track entry.itemId + ':' + entry.example.label; let i = $index) {
-          <div
-            class="example-section"
-            [id]="entry.itemSymbol + '-ex-' + i"
-            [attr.data-toc-entry]="entry.example.label"
-            data-toc-level="3"
-          >
-            <div class="example-label">{{ entry.example.label }}</div>
-            <kj-code-preview
-              [docExamples]="[entry.example]"
-              [componentName]="p.title"
-            />
-          </div>
-        }
-      </section>
+    } @else if (page() === null) {
+      <div class="not-found">
+        <p>Page not found.</p>
+        <a routerLink="/docs">← Back to docs</a>
+      </div>
+    } @else {
+      <div class="loading" aria-live="polite">
+        <p>Loading…</p>
+      </div>
     }
-  } @else if (page() === null) {
-    <div class="not-found">
-      <p>Page not found.</p>
-      <a routerLink="/docs">← Back to docs</a>
-    </div>
-  } @else {
-    <div class="loading" aria-live="polite">
-      <p>Loading…</p>
-    </div>
-  }
-</main>
-
-<aside class="toc-col">
-  <kj-page-toc [toc]="pageToc" />
-</aside>
+  </div>
 </div>

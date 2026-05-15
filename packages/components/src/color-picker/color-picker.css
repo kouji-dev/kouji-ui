@@ -9,7 +9,7 @@
     width: 44px;
     height: 44px;
     padding: 0;
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
     cursor: pointer;
     /* Checkerboard backdrop for translucent colors. The current color is
@@ -23,7 +23,7 @@
     opacity: 0.5;
   }
   .kj-color-picker-trigger:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
 
@@ -32,14 +32,14 @@
     z-index: 1000;
     width: 280px;
     padding: var(--kj-space-md);
-    background: var(--kj-color-base-100);
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    background: var(--kj-bg-body);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
-    box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+    box-shadow: var(--kj-shadow-md);
     display: flex;
     flex-direction: column;
     gap: var(--kj-space-sm);
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
   }
   .kj-color-picker-panel[hidden] { display: none; }
 
@@ -58,7 +58,7 @@
     touch-action: none;
   }
   .kj-color-picker-area:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
   .kj-color-picker-area::after {
@@ -133,7 +133,7 @@
   }
   .kj-color-picker-hue-slider:focus-visible,
   .kj-color-picker-alpha-slider:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
 
@@ -141,14 +141,14 @@
     width: 100%;
     box-sizing: border-box;
     padding: var(--kj-space-xs) var(--kj-space-sm);
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
-    background: var(--kj-color-base-100);
-    color: var(--kj-color-base-content);
+    background: var(--kj-bg-body);
+    color: var(--kj-fg-default);
     font: 0.8125rem var(--kj-font-mono, monospace);
   }
   .kj-color-picker-input[aria-invalid="true"] {
-    border-color: var(--kj-color-error, #ef4444);
+    border-color: var(--kj-border-danger, #ef4444);
   }
 
   .kj-color-picker-presets {
@@ -160,16 +160,16 @@
     width: 24px;
     height: 24px;
     padding: 0;
-    border: var(--kj-border) solid var(--kj-color-base-300);
+    border: var(--kj-border) solid var(--kj-border-default);
     border-radius: 4px;
     cursor: pointer;
   }
   .kj-color-picker-preset[aria-selected="true"] {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 1px;
   }
   .kj-color-picker-preset:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
 

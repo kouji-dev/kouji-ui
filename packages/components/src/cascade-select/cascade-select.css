@@ -13,9 +13,9 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--kj-space-sm);
-    background: var(--kj-color-base-100);
-    color: var(--kj-color-base-content);
-    border: 1px solid var(--kj-color-base-300);
+    background: var(--kj-bg-field);
+    color: var(--kj-fg-default);
+    border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
     padding: var(--kj-space-sm) var(--kj-space-md);
     font: 0.875rem var(--kj-font-sans);
@@ -23,7 +23,7 @@
     min-height: 2.75rem; /* 44px touch target */
   }
   .kj-cascade-trigger:focus-visible {
-    outline: 2px solid var(--kj-color-primary);
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: 2px;
   }
   .kj-cascade-select[data-disabled] .kj-cascade-trigger {
@@ -35,10 +35,10 @@
   /* ── Root panel ──────────────────────────────────────────────────────── */
   .kj-cascade-panel {
     box-sizing: border-box;
-    background: var(--kj-color-base-100);
-    border: 1px solid var(--kj-color-base-300);
+    background: var(--kj-bg-elevated);
+    border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+    box-shadow: var(--kj-shadow-md);
     padding: 4px;
     min-width: 12rem;
     max-height: 20rem;
@@ -53,10 +53,10 @@
      based on the parent option's bounding rect. */
   .kj-cascade-sub-panel {
     position: fixed;
-    background: var(--kj-color-base-100);
-    border: 1px solid var(--kj-color-base-300);
+    background: var(--kj-bg-elevated);
+    border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-field);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+    box-shadow: var(--kj-shadow-md);
     padding: 4px;
     min-width: 12rem;
     max-height: 20rem;
@@ -73,18 +73,18 @@
     padding: var(--kj-space-sm) var(--kj-space-md);
     border-radius: var(--kj-radius-selector);
     cursor: pointer;
-    color: var(--kj-color-base-content);
+    color: var(--kj-fg-default);
     font: 0.875rem var(--kj-font-sans);
     min-height: 2.75rem; /* 44px touch target */
     position: relative;
   }
   .kj-cascade-option:hover,
   .kj-cascade-option[data-active] {
-    background: var(--kj-color-base-200);
+    background: var(--kj-bg-surface);
   }
   .kj-cascade-option[aria-selected="true"] {
-    background: var(--kj-color-primary-subtle, var(--kj-color-base-200));
-    color: var(--kj-color-primary, var(--kj-color-base-content));
+    background: var(--kj-bg-primary-subtle, var(--kj-bg-surface));
+    color: var(--kj-fg-primary, var(--kj-fg-default));
   }
   .kj-cascade-option[data-disabled] {
     opacity: 0.45;
@@ -108,7 +108,7 @@
   .kj-cascade-option-chevron {
     flex-shrink: 0;
     font-size: 1rem;
-    color: var(--kj-color-base-400, currentColor);
+    color: var(--kj-fg-muted, currentColor);
     opacity: 0.6;
     margin-left: var(--kj-space-sm);
   }

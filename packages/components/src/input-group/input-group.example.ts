@@ -10,14 +10,14 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from './input-group
   selector: 'kj-input-group-example',
   standalone: true,
   imports: [KjInputGroupComponent, KjInputGroupAddonComponent, KjInputComponent, FormsModule],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <kj-input-group>
       <kj-input-group-addon [kjAriaHidden]="true">$</kj-input-group-addon>
       <kj-input type="text" placeholder="Amount" [(ngModel)]="amount" aria-label="Amount in dollars" />
       <kj-input-group-addon [kjAriaHidden]="true">.00</kj-input-group-addon>
     </kj-input-group>
-    <p style="margin-top:0.75rem;font-size:0.8rem;color:var(--kj-color-neutral)">Value: {{ amount() || '—' }}</p>
+    <p style="margin-top:0.75rem;font-size:0.8rem;color:var(--kj-fg-muted)">Value: {{ amount() || '—' }}</p>
   `,
 })
 export class KjInputGroupExample {

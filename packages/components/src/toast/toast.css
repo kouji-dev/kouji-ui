@@ -69,9 +69,9 @@
     font: 0.875rem / 1.4 var(--kj-font-sans, sans-serif);
     border-radius: var(--kj-radius-box, 0.5rem);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.18), 0 1px 0 rgb(255 255 255 / 0.04) inset;
-    border: var(--kj-border, 1px) solid var(--kj-color-base-300, #e2e8f0);
-    background: var(--kj-color-base-100, #fff);
-    color: var(--kj-color-base-content, #1a202c);
+    border: var(--kj-border, 1px) solid var(--kj-border-default, #e2e8f0);
+    background: var(--kj-bg-elevated, #fff);
+    color: var(--kj-fg-default, #1a202c);
     animation: kj-toast-enter 0.35s cubic-bezier(0.21, 0.61, 0.35, 1);
   }
 
@@ -81,18 +81,18 @@
   }
 
   .kj-toast[data-variant="success"] {
-    background: var(--kj-color-success, #16a34a);
-    color: var(--kj-color-success-content, #fff);
+    background: var(--kj-bg-success, #16a34a);
+    color: var(--kj-fg-on-success, #fff);
     border-color: transparent;
   }
   .kj-toast[data-variant="warning"] {
-    background: var(--kj-color-warning, #d97706);
-    color: var(--kj-color-warning-content, #fff);
+    background: var(--kj-bg-warning, #d97706);
+    color: var(--kj-fg-on-warning, #fff);
     border-color: transparent;
   }
   .kj-toast[data-variant="destructive"] {
-    background: var(--kj-color-destructive, #dc2626);
-    color: var(--kj-color-destructive-content, #fff);
+    background: var(--kj-bg-danger, #dc2626);
+    color: var(--kj-fg-on-danger, #fff);
     border-color: transparent;
   }
 

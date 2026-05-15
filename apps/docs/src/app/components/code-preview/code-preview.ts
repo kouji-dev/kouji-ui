@@ -31,6 +31,13 @@ export class CodePreviewComponent {
   /** Component name for StackBlitz project title. */
   componentName = input<string>('Example');
 
+  /**
+   * When `true` the component renders only the live demo (no example tabs,
+   * theme strip, show-code toggle, file tabs, copy or StackBlitz buttons,
+   * and no code editor). Used by the docs page's recipe-cards.
+   */
+  previewOnly = input<boolean>(false);
+
   private readonly registrySvc = inject(ExampleRegistryService);
 
   protected readonly activeTheme = signal<PreviewTheme>('default');

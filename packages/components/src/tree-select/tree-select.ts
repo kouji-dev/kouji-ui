@@ -69,8 +69,6 @@ function flattenTree(
  * @doc-category Library/Data input
  * @doc
  * @doc-name tree-select
- * @doc-description Themed tree-select row with expand toggle, optional multi-select checkbox, and indentation.
- * @doc-is-main
  */
 @Component({
   selector: 'kj-tree-select-node',
@@ -152,18 +150,62 @@ export class KjTreeSelectNodeComponent {
  * ```
  *
  * @doc-example Default
+ *   The default playground — single-select tree with collapsed branches.
  *   @doc-file tree-select.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common tree-select usages — single-select with a
+ *   readout, multi-select with a count, and pre-expanded branches on mount.
+ *   @doc-file tree-select.usage.example.ts
  * @doc-example Multi-select
+ *   `kjSelectionMode="multiple"` renders a checkbox per row and emits an array.
  *   @doc-file tree-select.multi.example.ts
  * @doc-example Pre-expanded
+ *   `[(kjExpandedKeys)]` seeds the open branches on mount.
  *   @doc-file tree-select.expanded.example.ts
  * @doc-example In a field
+ *   Compose under `<kj-field>` for label / error / hint association.
  *   @doc-file tree-select.field.example.ts
  * @doc-example Disabled
+ *   `[disabled]="true"` removes the trigger from the tab order.
  *   @doc-file tree-select.disabled.example.ts
+ *
+ * @doc-keyboard
+ *   Enter|Space  — Opens the panel from the trigger; selects the focused node when open
+ *   ArrowDown    — Moves focus to the next visible node
+ *   ArrowUp      — Moves focus to the previous visible node
+ *   ArrowRight   — Expands the focused branch (or moves into its children)
+ *   ArrowLeft    — Collapses the focused branch (or moves to its parent)
+ *   Home|End     — Jumps to the first/last visible node
+ *   Escape       — Closes the panel and returns focus to the trigger
+ *   Type-ahead   — Letters/digits jump to the next matching visible label
+ *
+ * @doc-aria
+ *   role="combobox"   — applied to the trigger button
+ *   role="tree"       — applied to the panel content
+ *   role="treeitem"   — applied to each rendered node
+ *   aria-level / setsize / posinset — wired per node for AT tree semantics
+ *   aria-expanded     — set on branch nodes; mirrors expansion state
+ *   aria-selected     — set on selected nodes
+ *   aria-multiselectable — set on the tree when in multi mode
+ *   data-multi        — Mirrors multi-mode on the host for CSS hooks
+ *
+ * @doc-touch
+ *   Trigger and rows default to a 40px hit area at `md` density. For touch-first
+ *   surfaces, bump the parent's density token to reach the WCAG 2.5.5 floor.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA Tree APG pattern. All nodes stay in the DOM with
+ *   `[hidden]` toggling visibility so the ARIA tree structure (`aria-setsize`,
+ *   `aria-level`, `aria-posinset`) is stable across collapse/expand. Focus is
+ *   restored to the trigger when the panel closes.
+ *
+ * @doc-related select,cascade-select,combobox
+ *
  * @doc-category Library/Data input
  * @doc
  * @doc-name tree-select
+ * @doc-description Themed dropdown that surfaces a hierarchical tree of options with single or multi-select and arrow-key navigation.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-tree-select',

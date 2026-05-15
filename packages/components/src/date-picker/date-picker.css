@@ -1,25 +1,31 @@
 .kj-date-picker {
   display: inline-flex;
   align-items: center;
-  gap: var(--kj-space-xs, 0.25rem);
+  gap: var(--kj-space-xs);
   position: relative;
 }
 
 .kj-date-picker__input {
+  /* Explicit height contract (matches input.css / button.css) so the date
+     input lines up with sibling inputs in a form row. */
+  --kj-date-picker-input-height: 2.25rem;
   appearance: none;
-  border: 1px solid var(--kj-color-base-300, #e5e5e5);
-  border-radius: var(--kj-radius-sm, 0.375rem);
-  padding: 0.5rem 0.75rem;
+  border: var(--kj-border) solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  padding: 0 var(--kj-space-md);
+  height: var(--kj-date-picker-input-height);
   font: inherit;
-  background: var(--kj-color-base-100, #fff);
-  color: inherit;
+  background: var(--kj-bg-field);
+  color: var(--kj-fg-default);
   min-width: 12ch;
 }
+.kj-date-picker[data-size="sm"] .kj-date-picker__input { --kj-date-picker-input-height: 2rem;    font-size: 0.8125rem; }
+.kj-date-picker[data-size="lg"] .kj-date-picker__input { --kj-date-picker-input-height: 2.75rem; font-size: 1rem; }
 
 .kj-date-picker__input:focus {
-  outline: 2px solid var(--kj-color-primary, #2563eb);
+  outline: 2px solid var(--kj-border-focus);
   outline-offset: 2px;
-  border-color: var(--kj-color-primary, #2563eb);
+  border-color: var(--kj-border-focus);
 }
 
 .kj-date-picker__input[disabled] {
@@ -27,30 +33,25 @@
   cursor: not-allowed;
 }
 
-.kj-date-picker__toggle {
-  appearance: none;
-  border: 1px solid var(--kj-color-base-300, #e5e5e5);
-  background: var(--kj-color-base-100, #fff);
-  border-radius: var(--kj-radius-sm, 0.375rem);
-  width: 2.25rem;
-  height: 2.25rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.kj-date-picker__toggle:hover:not([disabled]) {
-  background: var(--kj-color-base-200, #f3f3f3);
-}
-
+/* Panel owns the elevated surface chrome (bg, border, radius, shadow,
+   inset padding). The projected `.kj-calendar` stays chrome-less so it
+   reads as a flat grid inside the panel. */
 .kj-date-picker__panel {
   box-sizing: border-box;
   z-index: 50;
-  background: var(--kj-color-base-100, #fff);
-  border: 1px solid var(--kj-color-base-300, #e5e5e5);
-  border-radius: var(--kj-radius-md, 0.5rem);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  display: inline-block;
+  background: var(--kj-bg-elevated);
+  color: var(--kj-fg-default);
+  border: var(--kj-border) solid var(--kj-border-default);
+  border-radius: var(--kj-radius-box);
+  box-shadow: var(--kj-shadow-md);
+  padding: var(--kj-space-sm);
+}
+
+/* When the calendar is projected into the panel it already gets padding
+   from above; collapse its own padding so the inner content lines up with
+   the panel's inset. */
+.kj-date-picker__panel .kj-calendar {
   padding: 0;
 }
 

@@ -23,24 +23,19 @@ import {
   styles: [
     `
       :host {
-        display: block;
-        padding: var(--kj-space-xl);
-        background: var(--kj-color-base-200);
-        max-width: 400px;
+        display: block; max-width: 400px;
       }
-      .kj-input {
-        background: var(--kj-color-base-100);
-        color: var(--kj-color-base-content);
-        border: var(--kj-border) solid var(--kj-color-base-300);
+      .kj-input { color: var(--kj-fg-default);
+        border: var(--kj-border) solid var(--kj-border-default);
         border-radius: var(--kj-radius-field);
         padding: var(--kj-space-sm) var(--kj-space-md);
         font: var(--kj-text-sm) / 1.4 var(--kj-font-sans);
         width: 100%;
       }
       .kj-input:focus-visible {
-        outline: 2px solid var(--kj-color-primary);
+        outline: 2px solid var(--kj-bg-primary);
         outline-offset: 2px;
-        border-color: var(--kj-color-primary);
+        border-color: var(--kj-bg-primary);
       }
     `,
   ],

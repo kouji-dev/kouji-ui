@@ -50,6 +50,10 @@ function startWatcher(): void {
   const paths = [
     resolve(root, 'packages/core/src'),
     resolve(root, 'packages/components/src'),
+    // Also watch the extractor itself — editing slug derivation, detectors,
+    // or doc-tag parsing should invalidate the cached manifest without
+    // requiring a dev-server restart.
+    resolve(root, 'apps/docs/src/lib'),
   ];
   let debounce: ReturnType<typeof setTimeout>;
 

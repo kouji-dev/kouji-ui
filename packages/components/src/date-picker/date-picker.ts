@@ -1,11 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  HostListener,
   ViewEncapsulation,
   booleanAttribute,
-  inject,
   input,
   model,
 } from '@angular/core';
@@ -35,16 +32,63 @@ import { KjCalendarComponent } from '../calendar/calendar';
  *   keyboard contract applies.
  *
  * @doc-example Default
+ *   Typed input plus a popover calendar bound to a `signal<Date>`.
  *   @doc-file date-picker.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common date-picker usages — two-way binding,
+ *   min / max bounds, and a read-only field.
+ *   @doc-file date-picker.usage.example.ts
  * @doc-example Min / max bounds
+ *   `[kjMin]` / `[kjMax]` block out-of-range days in the calendar.
  *   @doc-file date-picker.with-min-max.example.ts
  * @doc-example Disabled dates
+ *   `[kjDisabledDates]` predicate disables individual cells (e.g. weekends).
  *   @doc-file date-picker.disabled-dates.example.ts
  * @doc-example Locale
+ *   `kjLocale="fr-FR"` flips formatting, parsing, and first day of week.
  *   @doc-file date-picker.locale.example.ts
  * @doc-example Read-only
+ *   `[kjReadonly]="true"` displays the value but blocks typing and selection.
  *   @doc-file date-picker.readonly.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowDown|Alt+ArrowDown — Opens the calendar popover from the input
+ *   Escape                  — Closes the popover and restores focus to the input
+ *   Enter                   — Parses the typed value and commits it (or selects the focused day in the calendar)
+ *   ArrowLeft|ArrowRight    — In the calendar, moves the focused day by 1
+ *   ArrowUp|ArrowDown       — In the calendar, moves the focused day by 7 (one week)
+ *   PageUp|PageDown         — In the calendar, moves the focused day by 1 month
+ *   Home|End                — In the calendar, jumps to the first / last day of the week
+ *
+ * @doc-aria
+ *   role="combobox"   — On the input
+ *   aria-haspopup     — "dialog" on the input
+ *   aria-expanded     — Reflects open / closed state
+ *   aria-controls     — Links the input to the calendar dialog id
+ *   role="dialog"     — On the panel; `aria-modal="false"` (non-modal popup)
+ *   role="grid"       — On the day grid (inherited from `<kj-calendar>`)
+ *
+ * @doc-css-var
+ *   --kj-date-picker-input-height — Input height. `data-size="sm|lg"` overrides; default 2.25rem.
+ *
+ * @doc-touch
+ *   The default 2.25rem (36px) input relies on the inline-control exception
+ *   inside form rows. Use `kjSize="lg"` on the host (or override
+ *   `--kj-date-picker-input-height`) to reach the full 44px touch target.
+ *
+ * @doc-a11y
+ *   Follows the APG combobox + dialog pattern — the input is the focusable
+ *   form control, the popover is non-modal (Esc / outside-click close), and
+ *   focus is restored to the input on close. Min / max / disabled-dates
+ *   predicates apply to both keyboard navigation and pointer selection.
+ *
+ * @doc-related calendar,time-picker,field
+ *
  * @doc-category Library/Data input
+ * @doc
+ * @doc-name date-picker
+ * @doc-description Themed single-date picker pairing a typed input with a popover calendar and locale-aware parsing.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-date-picker',
@@ -77,16 +121,6 @@ import { KjCalendarComponent } from '../calendar/calendar';
         class="kj-date-picker__input"
         [placeholder]="kjPlaceholder()"
       />
-      <button
-        type="button"
-        class="kj-date-picker__toggle"
-        aria-label="Open calendar"
-        [attr.aria-haspopup]="'dialog'"
-        [attr.aria-expanded]="picker.open()"
-        [attr.aria-controls]="picker.panelId"
-        [disabled]="kjDisabled() || kjReadonly()"
-        (click)="picker.toggle()"
-      >📅</button>
       <div
         kjDatePickerCalendar
         [kjFor]="trig"
@@ -110,8 +144,6 @@ import { KjCalendarComponent } from '../calendar/calendar';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjDatePickerComponent {
-  private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
-
   /** Currently selected date. Two-way bindable — `[(kjValue)]`. `null` clears. */
   readonly kjValue = model<Date | null>(null);
 
@@ -145,15 +177,5 @@ export class KjDatePickerComponent {
   /** @internal — wired from the projected calendar. */
   onCalendarSelect(date: Date | null, picker: KjDatePicker): void {
     if (date) picker.selectDate(date);
-  }
-
-  /** Outside-click coordinator — closes the popover when a click lands outside. */
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.kjOpen()) return;
-    const root = this.elRef.nativeElement;
-    if (!root.contains(event.target as Node)) {
-      this.kjOpen.set(false);
-    }
   }
 }

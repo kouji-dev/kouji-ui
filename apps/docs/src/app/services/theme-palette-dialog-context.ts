@@ -1,11 +1,10 @@
 import { Injectable, signal } from '@angular/core';
-import type { ColorSlot, ContentSlot } from '../lib/theme/types';
+import type { BgSlot, FgSlot } from '../lib/theme/types';
 
 /** What the palette modal is editing — set before `KjDialogService.open`, cleared after close. */
 export type ThemePalettePayload =
-  | { kind: 'semantic-fill'; slot: ColorSlot }
-  | { kind: 'semantic-content'; slot: ColorSlot }
-  | { kind: 'derived'; slot: ContentSlot };
+  | { kind: 'bg'; slot: BgSlot }
+  | { kind: 'fg'; slot: FgSlot };
 
 @Injectable({ providedIn: 'root' })
 export class ThemePaletteDialogContext {

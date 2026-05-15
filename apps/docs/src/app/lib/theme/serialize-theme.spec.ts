@@ -28,20 +28,37 @@ describe('serializeToScopedBlock', () => {
   test('includes every required token', () => {
     const css = serializeToScopedBlock('x', deriveTokens(DRAFT));
     const required = [
-      '--kj-color-base-100', '--kj-color-base-200', '--kj-color-base-300', '--kj-color-base-content',
-      '--kj-color-primary', '--kj-color-primary-content',
-      '--kj-color-secondary', '--kj-color-secondary-content',
-      '--kj-color-accent', '--kj-color-accent-content',
-      '--kj-color-neutral', '--kj-color-neutral-content',
-      '--kj-color-info', '--kj-color-info-content',
-      '--kj-color-success', '--kj-color-success-content',
-      '--kj-color-warning', '--kj-color-warning-content',
-      '--kj-color-destructive', '--kj-color-destructive-content',
       '--kj-radius-box', '--kj-radius-field', '--kj-radius-selector',
       '--kj-border', '--kj-depth',
       '--kj-font-sans', '--kj-font-mono', '--kj-font-display',
       '--kj-transition',
       '--kj-text-body', '--kj-text-small',
+      // ─── new token system ───
+      // Neutral surfaces
+      '--kj-bg-body', '--kj-bg-surface', '--kj-bg-field',
+      '--kj-bg-elevated', '--kj-bg-overlay', '--kj-bg-inverse', '--kj-bg-disabled',
+      // Intent surfaces
+      '--kj-bg-primary', '--kj-bg-primary-subtle',
+      '--kj-bg-accent', '--kj-bg-accent-subtle',
+      '--kj-bg-info', '--kj-bg-info-subtle',
+      '--kj-bg-success', '--kj-bg-success-subtle',
+      '--kj-bg-warning', '--kj-bg-warning-subtle',
+      '--kj-bg-danger', '--kj-bg-danger-subtle',
+      // FG Class A
+      '--kj-fg-default', '--kj-fg-muted', '--kj-fg-subtle', '--kj-fg-disabled',
+      // FG Class B
+      '--kj-fg-on-primary', '--kj-fg-on-accent',
+      '--kj-fg-on-info', '--kj-fg-on-success', '--kj-fg-on-warning', '--kj-fg-on-danger',
+      '--kj-fg-on-inverse',
+      // FG Class C
+      '--kj-fg-primary', '--kj-fg-accent',
+      '--kj-fg-info', '--kj-fg-success', '--kj-fg-warning', '--kj-fg-danger',
+      // Borders
+      '--kj-border-default', '--kj-border-muted', '--kj-border-strong',
+      '--kj-border-focus', '--kj-border-disabled',
+      '--kj-border-primary', '--kj-border-danger',
+      // Shadows
+      '--kj-shadow-sm', '--kj-shadow-md', '--kj-shadow-lg', '--kj-shadow-focus',
     ];
     for (const t of required) expect(css).toContain(t);
   });

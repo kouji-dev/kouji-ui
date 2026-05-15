@@ -30,17 +30,66 @@ import { Directive } from '@angular/core';
  * </article>
  * ```
  * @doc-example Prose container
+ *   The default playground — drop `.kj-prose` on an `<article>` to restyle
+ *   every descendant flow element with the kouji type system.
  *   @doc-file typography.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common typography usages — prose container,
+ *   `kjLead` paragraph, `kjMuted` aside, inline `kjCode`, and a `kjTruncate`
+ *   block clamped to two lines.
+ *   @doc-file typography.usage.example.ts
  * @doc-example Lead paragraph
+ *   `kjLead` reflects `data-tone="lead"` on a paragraph — softer tone, larger size.
  *   @doc-file typography.lead.example.ts
  * @doc-example Muted text
+ *   `kjMuted` reflects `data-tone="muted"` — dims the foreground for secondary copy.
  *   @doc-file typography.muted.example.ts
  * @doc-example Inline code
+ *   `kjCode` styles inline `<code>` runs with the mono token + a subtle surface.
  *   @doc-file typography.code.example.ts
  * @doc-example Blockquote
+ *   `kjBlockquote` applies the pull-quote treatment to a `<blockquote>`.
  *   @doc-file typography.blockquote.example.ts
  * @doc-example Truncate (multi-line)
+ *   `[kjTruncate]="n"` clamps text to `n` lines via the line-clamp tokens.
  *   @doc-file typography.truncate.example.ts
+ *
+ * @doc-keyboard
+ *   — — Typography is non-interactive. Inline `<a>` anchors keep native
+ *     Tab / Enter behaviour from the browser.
+ *
+ * @doc-aria
+ *   data-tone     — Reflected by `kjLead` / `kjMuted` so the same styling
+ *                   applies whether the consumer used the directive or
+ *                   hand-typed the attribute on a span
+ *   data-truncate — Reflected by `kjTruncate` with the line count, e.g. "2"
+ *
+ * @doc-touch
+ *   — — Non-interactive surface. Inline links inherit the page's link tokens
+ *     which meet the 24×24 / 44×44 floors per theme.
+ *
+ * @doc-a11y
+ *   The directives carry no role or focus — they're purely visual. Headings
+ *   inside `.kj-prose` keep their native `<h1>`–`<h6>` semantics so AT users
+ *   can navigate by heading level. `kjTruncate` does not hide content from
+ *   AT — the full text remains in the accessibility tree, only the visual
+ *   clamp applies.
+ *
+ * @doc-related card,field,divider
+ *
+ * @doc-css-var
+ *   --kj-prose-fg           — Default foreground (body copy) inside `.kj-prose`.
+ *   --kj-prose-fg-muted     — Foreground for `kjMuted` runs and secondary copy.
+ *   --kj-prose-link         — Link color inside prose blocks.
+ *   --kj-prose-code-bg      — Background for inline `kjCode` runs.
+ *   --kj-prose-code-fg      — Foreground for inline `kjCode` runs.
+ *   --kj-prose-quote-border — Left rule color on `kjBlockquote`.
+ *   --kj-prose-h1-size      — Font size for `<h1>` inside `.kj-prose`.
+ *   --kj-prose-h2-size      — Font size for `<h2>` inside `.kj-prose`.
+ *   --kj-prose-h3-size      — Font size for `<h3>` inside `.kj-prose`.
+ *   --kj-prose-line-height  — Line height for body copy inside `.kj-prose`.
+ *   --kj-prose-measure      — Maximum line length (CSS `max-width`) for prose blocks.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name typography

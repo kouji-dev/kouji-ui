@@ -20,7 +20,7 @@
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
+  color: var(--kj-fg-subtle);
 }
 .control-row {
   display: flex;
@@ -33,7 +33,7 @@
 .control-label {
   flex: 1 1 100px;
   font: var(--kj-text-xs) var(--kj-font-mono);
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
 }
 .control-row__field {
   flex: 1 1 auto;
@@ -41,15 +41,12 @@
   max-width: min(100%, 220px);
 }
 
-.typography-strip.kj-tag-list {
+.typography-strip {
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
-  align-items: center;
   margin: 0 0 6px;
   padding: 0 0 6px;
-  border-bottom: 1px dashed color-mix(in oklch, var(--kj-color-base-300) 78%, transparent);
-  background: transparent;
+  border-bottom: 1px dashed var(--kj-border-muted);
 }
 
 .control-row--with-meta {
@@ -63,7 +60,7 @@
   font-size: 0.625rem;
   font-family: var(--kj-font-mono);
   line-height: 1.2;
-  color: color-mix(in oklch, var(--kj-color-base-content) 55%, transparent);
+  color: var(--kj-fg-subtle);
   padding-top: 2px;
 }
 

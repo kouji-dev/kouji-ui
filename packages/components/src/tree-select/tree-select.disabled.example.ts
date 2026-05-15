@@ -12,8 +12,8 @@ import type { KjTreeNode } from '@kouji-ui/core';
   standalone: true,
   imports: [KjTreeSelectComponent],
   styles: [
-    `:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); display: flex; flex-direction: column; gap: var(--kj-space-lg); }`,
-    `label { font: 0.75rem var(--kj-font-sans); color: var(--kj-color-base-content); opacity: 0.7; margin-bottom: var(--kj-space-xs); display: block; }`,
+    `:host { display: block; display: flex; flex-direction: column; gap: var(--kj-space-lg); }`,
+    `label { font: 0.75rem var(--kj-font-sans); color: var(--kj-fg-default); opacity: 0.7; margin-bottom: var(--kj-space-xs); display: block; }`,
   ],
   template: `
     <div>

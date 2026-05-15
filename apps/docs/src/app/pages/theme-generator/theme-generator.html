@@ -1,16 +1,84 @@
-<kj-theme-toolbar (requestImport)="openImport()" />
+<div class="theme-generator-main">
+  <h1 kjVisuallyHidden>Theme generator</h1>
 
-<div class="generator-body">
-  <div class="generator-preview" data-theme="custom-draft">
-    <kj-theme-generator-preview />
+  <!-- ── Subheader ── -->
+  <header class="tg-subheader" role="banner">
+    <div class="tg-subheader-left">
+      <span class="tg-eyebrow">// theme generator</span>
+      <h2 class="tg-h1">fork. tweak. ship.</h2>
+    </div>
+
+    <div class="tg-subheader-right">
+      <div class="tg-name-wrap">
+        <input
+          class="tg-name-input"
+          type="text"
+          placeholder="my-theme"
+          [value]="draft().name"
+          [attr.aria-invalid]="nameError() !== null"
+          aria-describedby="tg-name-helper"
+          aria-label="Theme name"
+          (input)="onNameChange($event)"
+        />
+        <span id="tg-name-helper" class="tg-name-helper" [class.error]="nameError() !== null">
+          {{ nameError() ?? 'kebab-case, max 32 chars' }}
+        </span>
+      </div>
+
+      <div class="tg-actions">
+        <kj-button kjVariant="outline" kjSize="sm" type="button" (click)="share()">share</kj-button>
+        <kj-button kjVariant="outline" kjSize="sm" type="button" (click)="exportCss()">export css</kj-button>
+        <kj-button kjVariant="outline" kjSize="sm" type="button" (click)="openImport()">import</kj-button>
+        <kj-button
+          kjVariant="default"
+          kjSize="sm"
+          type="button"
+          [kjDisabled]="saveDisabled()"
+          (click)="save()"
+        >save</kj-button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Body: 320px controls | flex right pane ── -->
+  <div class="tg-shell">
+    <kj-theme-controls-panel class="tg-shell-controls" />
+
+    <div class="tg-right">
+      <kj-theme-a11y-bar
+        [(cbSim)]="cbSim"
+        [(reducedMotion)]="reducedMotion"
+        [(focusTest)]="focusTest"
+      />
+
+      <div
+        class="tg-stage-wrap generator-preview"
+        data-theme="custom-draft"
+        [attr.data-cb-sim]="cbSim()"
+        [attr.data-reduced-motion]="reducedMotion() ? '' : null"
+        [attr.data-focus-test]="focusTest() ? '' : null"
+      >
+        <kj-theme-generator-preview />
+      </div>
+    </div>
   </div>
-  <aside class="generator-config" aria-label="Theme configuration">
-    <kj-theme-config-panel />
-  </aside>
+
+  @if (toast(); as msg) {
+    <div class="tg-toast" role="status" aria-live="polite">{{ msg }}</div>
+  }
+
+  <kj-theme-import-dialog [open]="importOpen()" (closed)="onImportClosed($event)" />
+
+  <!-- ── SVG colorblind simulation filters ── -->
+  <!-- Matrix values are the Coblis / Brettel-Viénot approximations used
+       widely for CSS-filter-based colorblind simulations. They are
+       deterministic and have no script dependencies. -->
+  <svg aria-hidden="true" class="tg-cb-svg" width="0" height="0" focusable="false">
+    <defs>
+      <filter id="cb-protanopia"><feColorMatrix in="SourceGraphic" type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/></filter>
+      <filter id="cb-deuteranopia"><feColorMatrix in="SourceGraphic" type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0"/></filter>
+      <filter id="cb-tritanopia"><feColorMatrix in="SourceGraphic" type="matrix" values="0.95 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0"/></filter>
+      <filter id="cb-achromatopsia"><feColorMatrix in="SourceGraphic" type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"/></filter>
+    </defs>
+  </svg>
 </div>
-
-@if (toast(); as msg) {
-  <div class="generator-toast" role="status" aria-live="polite">{{ msg }}</div>
-}
-
-<kj-theme-import-dialog [open]="importOpen()" (closed)="onImportClosed($event)" />

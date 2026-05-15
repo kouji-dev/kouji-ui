@@ -1,0 +1,88 @@
+/* ─────────────────────────────────────────────────────────────
+   bauhaus theme — light
+   Primary blocks of red, blue, and yellow on warm cream. Sharp
+   geometry, no rounding, thick borders. Hard offset shadows
+   instead of soft drop-shadows (neo-brutalist signature).
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="bauhaus"] {
+    /* ── shape — sharp, geometric ── */
+    --kj-radius-box:      var(--kj-base-radius-0);
+    --kj-radius-field:    var(--kj-base-radius-0);
+    --kj-radius-selector: var(--kj-base-radius-0);
+    --kj-border:          var(--kj-base-border-2);
+    --kj-depth:           0;
+    /* ── type — Archivo Black for display (constructivist block letters).
+       Heaviest weight, tight tracking, deeper hover lift for the
+       neo-brutalist offset-shadow motif. */
+    --kj-font-display:    var(--kj-base-font-block);
+    --kj-display-weight:  900;
+    --kj-letter-spacing: -0.04em;
+    --kj-hover-translate: -4px;
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-fast);
+
+    --kj-bg-body:        #f5efe1;
+    --kj-bg-surface:     #fffaef;
+    --kj-bg-field:       #efe7d4;
+    --kj-bg-elevated:    #ffffff;
+    --kj-bg-overlay:     rgba(26, 26, 26, 0.55);
+    --kj-bg-inverse:     #1a1a1a;
+    --kj-bg-disabled:    #e8e0cc;
+
+    /* Iconic Bauhaus primaries, darkened only as needed to clear AA when
+       used as text-on-fill. The red is the iconic note; blue holds the
+       accent slot; yellow is reserved for warning (with black text). */
+    --kj-bg-primary:         #b81728;
+    --kj-bg-primary-subtle:  #fcd9dd;
+    --kj-bg-accent:          #1d3aff;
+    --kj-bg-accent-subtle:   #d8dcff;
+
+    --kj-bg-info:            #1d3aff;
+    --kj-bg-info-subtle:     #d8dcff;
+    --kj-bg-success:         #1a7a3d;
+    --kj-bg-success-subtle:  #cde6d4;
+    --kj-bg-warning:         #f4c20d;
+    --kj-bg-warning-subtle:  #fcefb8;
+    --kj-bg-danger:          #b81728;
+    --kj-bg-danger-subtle:   #fcd9dd;
+
+    --kj-fg-default:    #1a1a1a;
+    --kj-fg-muted:      #3a3a3a;
+    --kj-fg-subtle:     #5a5a5a;
+    --kj-fg-disabled:   #b8b0a0;
+
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #ffffff;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #1a1a1a;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #f5efe1;
+
+    --kj-fg-primary:    #b81728;
+    --kj-fg-accent:     #1d3aff;
+    --kj-fg-info:       #1d3aff;
+    --kj-fg-success:    #156033;
+    --kj-fg-warning:    #6b4a00;
+    --kj-fg-danger:     #b81728;
+
+    --kj-border-default:   #1a1a1a;
+    --kj-border-muted:     #4a4a4a;
+    --kj-border-strong:    #1a1a1a;
+    --kj-border-focus:     #1d3aff;
+    --kj-border-disabled:  #b8b0a0;
+    --kj-border-primary:   #b81728;
+    --kj-border-danger:    #b81728;
+
+    /* Hard offset shadow — neo-brutalist signature. No blur. */
+    --kj-shadow-sm:     2px 2px 0 #1a1a1a;
+    --kj-shadow-md:     4px 4px 0 #1a1a1a;
+    --kj-shadow-lg:     8px 8px 0 #1a1a1a;
+    --kj-shadow-focus:  0 0 0 3px #1d3aff;
+
+    --kj-button-bg-hover: #8e0f1d;
+  }
+}

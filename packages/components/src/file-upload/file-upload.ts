@@ -44,16 +44,70 @@ import {
  * ```
  *
  * @doc-example Default (single)
+ *   A single-file picker with a styled drop-zone and a toolbar trigger.
  *   @doc-file file-upload.example.ts
+ * @doc-example Usage
+ *   Common upload shapes — single, multiple with image preview, and a wired
+ *   simulated progress lifecycle.
+ *   @doc-file file-upload.usage.example.ts
  * @doc-example Multiple
+ *   `[kjMultiple]="true"` accepts a batch and renders one row per file.
  *   @doc-file file-upload.multiple.example.ts
  * @doc-example Drop-zone
+ *   Highlights the drag-and-drop affordance with hint text and an accept-list.
  *   @doc-file file-upload.dropzone.example.ts
  * @doc-example Simulated upload progress
+ *   Drives `pending → uploading → done` via `setFileStatus(id, status, progress)`.
  *   @doc-file file-upload.with-progress.example.ts
  * @doc-example Image preview
+ *   `[kjShowPreview]="true"` renders a thumbnail per image file.
  *   @doc-file file-upload.image-preview.example.ts
+ *
+ * @doc-keyboard
+ *   Tab           — Moves focus to the drop-zone, then to the trigger button, then to per-row Remove buttons
+ *   Enter|Space   — Activates the drop-zone (opens picker) or the trigger / Remove button
+ *
+ * @doc-aria
+ *   role="button"     — Set on the drop-zone for keyboard activation
+ *   aria-label        — Drop-zone reads from [kjDropzoneLabel]; Remove buttons read "Remove <filename> from list"
+ *   aria-live         — Selection, rejection, and removal are announced via a polite live region
+ *   role="progressbar"— Per-file progress row when [progress()] is non-null
+ *   data-status       — Mirrors the row's status (preparing/pending/uploading/done/error/cancelled)
+ *
+ * @doc-touch
+ *   Drop-zone and trigger render at ≥ 44×44 px to satisfy WCAG 2.5.5. The
+ *   per-row Remove button uses default `kj-button` chrome — keep it at `md`
+ *   or larger when it is the primary touch target.
+ *
+ * @doc-a11y
+ *   `KjFileUpload` owns the state machine (selection, validation, drag-and-drop,
+ *   live announcements). The wrapper provides the visible shape but never
+ *   re-implements the directive's `aria-*` plumbing. Always pair the drop-zone
+ *   with an explicit `[kjDropzoneLabel]` — that string is both the heading and
+ *   the accessible name.
+ *
+ * @doc-css-var
+ *   --kj-file-upload-bg               — Background fill of the drop-zone surface.
+ *   --kj-file-upload-fg               — Foreground (text) color inside the upload.
+ *   --kj-file-upload-border-color     — Drop-zone border color. Drag-over and invalid retarget this.
+ *   --kj-file-upload-border-style     — Drop-zone border style. Defaults to dashed.
+ *   --kj-file-upload-border-width     — Drop-zone border thickness. Inherits --kj-border.
+ *   --kj-file-upload-radius           — Drop-zone corner radius. Inherits --kj-radius-field.
+ *   --kj-file-upload-padding          — Padding inside the drop-zone.
+ *   --kj-file-upload-row-bg           — Background fill for each per-file row.
+ *   --kj-file-upload-row-border-color — Border color between rows in the list.
+ *   --kj-file-upload-row-padding-x    — Horizontal padding inside each row.
+ *   --kj-file-upload-row-padding-y    — Vertical padding inside each row.
+ *   --kj-file-upload-thumb-size       — Thumbnail square size for image previews.
+ *   --kj-file-upload-thumb-radius     — Thumbnail corner radius.
+ *
+ * @doc-related field,input,progress-bar
+ *
  * @doc-category Library/Data input
+ * @doc
+ * @doc-name file-upload
+ * @doc-description Themed file picker with drag-and-drop, multi-file list, per-row progress, image previews, and rejection.
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-file-upload',

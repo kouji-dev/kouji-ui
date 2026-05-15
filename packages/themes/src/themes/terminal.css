@@ -1,0 +1,86 @@
+/* ─────────────────────────────────────────────────────────────
+   terminal theme — dark
+   Pure black with phosphor green. Monospace everywhere, sharp
+   geometry, no rounding. Hacker terminal / CRT aesthetic.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="terminal"] {
+    /* ── shape — sharp, hard-edged ── */
+    --kj-radius-box:      var(--kj-base-radius-0);
+    --kj-radius-field:    var(--kj-base-radius-0);
+    --kj-radius-selector: var(--kj-base-radius-0);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           0;
+
+    /* ── type — mono everywhere. Phosphor terminals don't kern; keep
+       letter-spacing at 0 and weight medium for that CRT readout look. */
+    --kj-font-sans:    var(--kj-base-font-mono);
+    --kj-font-display: var(--kj-base-font-mono);
+    --kj-display-weight: 500;
+    --kj-letter-spacing: 0;
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-fast);
+
+    --kj-bg-body:        #000000;
+    --kj-bg-surface:     #050505;
+    --kj-bg-field:       #0a0a0a;
+    --kj-bg-elevated:    #0f0f0f;
+    --kj-bg-overlay:     rgba(0, 0, 0, 0.75);
+    --kj-bg-inverse:     #b6ffce;
+    --kj-bg-disabled:    #1a1a1a;
+
+    --kj-bg-primary:         #00ff66;
+    --kj-bg-primary-subtle:  #0a2010;
+    --kj-bg-accent:          #00ff66;
+    --kj-bg-accent-subtle:   #0a2010;
+
+    --kj-bg-info:            #00d4ff;
+    --kj-bg-info-subtle:     #0a1820;
+    --kj-bg-success:         #00ff66;
+    --kj-bg-success-subtle:  #0a2010;
+    --kj-bg-warning:         #ffd000;
+    --kj-bg-warning-subtle:  #1f1a05;
+    --kj-bg-danger:          #ff5050;
+    --kj-bg-danger-subtle:   #2a0a0a;
+
+    --kj-fg-default:    #b6ffce;
+    --kj-fg-muted:      #86cc9a;
+    --kj-fg-subtle:     #5a9b6c;
+    --kj-fg-disabled:   #2a3a30;
+
+    /* Bright fills + black text — phosphor-on-CRT inversion. */
+    --kj-fg-on-primary:   #000000;
+    --kj-fg-on-accent:    #000000;
+    --kj-fg-on-info:      #000000;
+    --kj-fg-on-success:   #000000;
+    --kj-fg-on-warning:   #000000;
+    --kj-fg-on-danger:    #000000;
+    --kj-fg-on-inverse:   #000000;
+
+    --kj-fg-primary:    #00ff66;
+    --kj-fg-accent:     #00ff66;
+    --kj-fg-info:       #00d4ff;
+    --kj-fg-success:    #00ff66;
+    --kj-fg-warning:    #ffd000;
+    --kj-fg-danger:     #ff7575;
+
+    --kj-border-default:   #1a3325;
+    --kj-border-muted:     #0a1f10;
+    --kj-border-strong:    #2a5535;
+    --kj-border-focus:     #00ff66;
+    --kj-border-disabled:  #1a1a1a;
+    --kj-border-primary:   #00ff66;
+    --kj-border-danger:    #ff5050;
+
+    /* Green phosphor glow instead of soft drop-shadow. */
+    --kj-shadow-sm:     0 0 4px rgba(0, 255, 102, 0.20);
+    --kj-shadow-md:     0 0 12px rgba(0, 255, 102, 0.28);
+    --kj-shadow-lg:     0 0 32px rgba(0, 255, 102, 0.40);
+    --kj-shadow-focus:  0 0 0 2px #00ff66;
+
+    /* Dim the phosphor green on hover (slight green-down) instead of
+       black-mixing — keeps the CRT look. */
+    --kj-button-bg-hover: #00cc52;
+  }
+}

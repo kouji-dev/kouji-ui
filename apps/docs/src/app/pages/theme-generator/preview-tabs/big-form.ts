@@ -20,6 +20,9 @@ import {
   KjSelectComponent,
   KjOptionComponent,
   KjNumberInputComponent,
+  KjStepperComponent,
+  KjStepComponent,
+  KjStepLabelComponent,
   KjTextareaComponent,
   KjTimePickerComponent,
 } from '@kouji-ui/components';
@@ -60,6 +63,9 @@ const STEPS: readonly FormStep[] = [
     KjSelectComponent,
     KjOptionComponent,
     KjNumberInputComponent,
+    KjStepperComponent,
+    KjStepComponent,
+    KjStepLabelComponent,
     KjTextareaComponent,
     KjTimePickerComponent,
   ],
@@ -69,7 +75,8 @@ const STEPS: readonly FormStep[] = [
 })
 export class PreviewBigForm {
   protected readonly steps = STEPS;
-  protected readonly currentStep = signal<FormStep['id']>('identity');
+  /** Index-tracked stepper state — drives kj-stepper's `kjActiveStep`. */
+  protected readonly activeStep = signal(0);
 
   protected readonly fullName = signal('');
   protected readonly dateOfBirth = signal<Date | null>(null);
@@ -82,13 +89,4 @@ export class PreviewBigForm {
   protected readonly languages = signal<string[]>([]);
   protected readonly budget = signal<number>(50_000);
   protected readonly otp = signal('');
-
-  protected stepStatus(id: FormStep['id']): 'done' | 'current' | 'todo' {
-    const order = this.steps.map((s) => s.id);
-    const currentIndex = order.indexOf(this.currentStep());
-    const idx = order.indexOf(id);
-    if (idx < currentIndex) return 'done';
-    if (idx === currentIndex) return 'current';
-    return 'todo';
-  }
 }

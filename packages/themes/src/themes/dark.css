@@ -5,69 +5,87 @@
 
 @layer kj.shared {
   [data-theme="dark"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     var(--kj-base-gray-950);
-    --kj-color-base-200:     var(--kj-base-gray-900);
-    --kj-color-base-300:     var(--kj-base-gray-800);
-    --kj-color-base-content: var(--kj-base-gray-50);
-
-    --kj-color-primary:         var(--kj-base-blue-500);
-    --kj-color-primary-content: var(--kj-base-gray-50);
-    --kj-color-primary-hover:   var(--kj-base-blue-400);
-
-    --kj-color-secondary:         var(--kj-base-gray-700);
-    --kj-color-secondary-content: var(--kj-base-gray-50);
-
-    --kj-color-accent:         var(--kj-base-blue-400);
-    --kj-color-accent-content: var(--kj-base-gray-950);
-
-    --kj-color-neutral:         var(--kj-base-gray-200);
-    --kj-color-neutral-content: var(--kj-base-gray-900);
-
-    --kj-color-info:         var(--kj-base-blue-400);
-    --kj-color-info-content: var(--kj-base-gray-950);
-
-    --kj-color-success:         var(--kj-base-green-500);
-    --kj-color-success-content: var(--kj-base-gray-950);
-
-    --kj-color-warning:         var(--kj-base-yellow-500);
-    --kj-color-warning-content: var(--kj-base-gray-950);
-
-    --kj-color-destructive:         var(--kj-base-red-500);
-    --kj-color-destructive-content: var(--kj-base-gray-50);
-    --kj-color-destructive-hover:   var(--kj-base-red-400);
-
     /* ── shape ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
     --kj-radius-selector: var(--kj-base-radius-1);
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           1;
-
-    /* ── type ── */
-    --kj-font-sans: var(--kj-base-font-sans);
-    --kj-font-mono:    var(--kj-base-font-mono);
-    --kj-font-display: var(--kj-base-font-display);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
+    /* ── type — crisp modern sans for headlines (Space Grotesk via
+       --kj-base-font-sans). Cobalt mono's identity is the palette, not
+       a decorative typeface. */
+    --kj-display-weight:  600;
+    --kj-letter-spacing: -0.04em;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    /* Pure neutral charcoal. The single cobalt accent below carries the
+       brand colour; everything else stays grey or semantic. */
+    --kj-bg-body:        #1a1a1a;
+    --kj-bg-surface:     #232323;
+    --kj-bg-field:       #232323;
+    --kj-bg-elevated:    #383838;
+    --kj-bg-overlay:     rgba(0, 0, 0, 0.7);
+    --kj-bg-inverse:     var(--kj-base-gray-50);
+    --kj-bg-disabled:    #232323;
+
+    /* "Cobalt mono" dark palette — single signature cobalt blue is reused
+       for primary/accent/info. Success/warning/danger remain semantically
+       distinct but at low chroma so the cobalt stays the hero. White text
+       passes AA 4.5:1 on every fill except warning, which carries dark text. */
+    --kj-bg-primary:         #2b62db;
+    --kj-bg-primary-subtle:  #16243d;
+    --kj-bg-accent:          #2b62db;
+    --kj-bg-accent-subtle:   #16243d;
+
+    --kj-bg-info:            #2b62db;
+    --kj-bg-info-subtle:     #16243d;
+    --kj-bg-success:         #1f7a4a;
+    --kj-bg-success-subtle:  #14271c;
+    --kj-bg-warning:         #d59930;
+    --kj-bg-warning-subtle:  #2a2114;
+    --kj-bg-danger:          #c83026;
+    --kj-bg-danger-subtle:   #2a1414;
+
+    --kj-fg-default:    var(--kj-base-gray-50);
+    --kj-fg-muted:      var(--kj-base-gray-300);
+    /* gray-500 (oklch 60%) renders as #808080 and only hits 4.40:1 on
+       bg-body; bump to oklch 65% (~#8e8e8e) so subtle labels pass AA. */
+    --kj-fg-subtle:     oklch(65% 0 0);
+    --kj-fg-disabled:   var(--kj-base-gray-700);
+
+    /* Synthwave palette uses #fff on deep saturated fills; only warning
+       (gold, lightest) keeps near-black text. */
+    --kj-fg-on-primary:   #ffffff;
+    --kj-fg-on-accent:    #ffffff;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   var(--kj-base-gray-950);
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   var(--kj-base-gray-950);
+
+    /* Class C — intent as text against body. Lifted versions of bg-{intent}
+       so they read on the dark body. Cobalt-as-text uses a lighter sky
+       shade for readability. */
+    --kj-fg-primary:    #6ea1ff;
+    --kj-fg-accent:     #6ea1ff;
+    --kj-fg-info:       #6ea1ff;
+    --kj-fg-success:    #5fbf8a;
+    --kj-fg-warning:    #e0b266;
+    --kj-fg-danger:     #ee7d6e;
+
+    --kj-border-default:   var(--kj-base-gray-700);
+    --kj-border-muted:     var(--kj-base-gray-800);
+    --kj-border-strong:    var(--kj-base-gray-500);
+    --kj-border-focus:     #2b62db;
+    --kj-border-disabled:  var(--kj-base-gray-700);
+    --kj-border-primary:   #2b62db;
+    --kj-border-danger:    #c83026;
+
+    --kj-shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.4);
+    --kj-shadow-md:     0 4px 12px rgba(0, 0, 0, 0.5);
+    --kj-shadow-lg:     0 16px 40px rgba(0, 0, 0, 0.6);
+    --kj-shadow-focus:  0 0 0 3px rgba(43, 98, 219, 0.5);
   }
 }

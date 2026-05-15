@@ -36,15 +36,59 @@ import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/
  * <kj-spinner kjVariant="primary" kjSize="lg" kjAnimation="dots" kjAriaLabel="Sending" />
  * ```
  * @doc-example Default
+ *   The default playground — `spin` animation, `md` size, neutral variant,
+ *   default `aria-label="Loading"`.
  *   @doc-file spinner.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common spinner usages — size, variant,
+ *   animation glyph, and inline placement next to copy.
+ *   @doc-file spinner.usage.example.ts
  * @doc-example Sizes
+ *   `xs` / `sm` / `md` / `lg` presets. There is intentionally no `xl` — that
+ *   size almost always wants a determinate Progress Bar instead.
  *   @doc-file spinner.sizes.example.ts
  * @doc-example Variants
+ *   `neutral` (inherits `currentColor`), `primary`, `success`, `warning`,
+ *   `error`, `info`.
  *   @doc-file spinner.variants.example.ts
  * @doc-example Animations
+ *   Animation shape preset — `spin`, `dots`, `bars`, etc. Themes own the
+ *   keyframes per value.
  *   @doc-file spinner.animations.example.ts
  * @doc-example Inside a button
+ *   Embed the spinner inline next to a label to communicate in-flight work.
  *   @doc-file spinner.in-button.example.ts
+ *
+ * @doc-keyboard
+ *   — — Non-interactive. The spinner is purely a status indicator.
+ *
+ * @doc-aria
+ *   role="status"     — set on the host so AT announces it as a live status region
+ *   aria-live         — "polite" so the label is read without interrupting the user
+ *   aria-atomic       — "true" so the full label is announced on change
+ *   aria-label        — Defaults to "Loading"; override per context (e.g. "Sending")
+ *   data-animation    — Mirrors the resolved animation for theme hooks
+ *   data-variant      — Mirrors the resolved variant for theme hooks
+ *   data-size         — Mirrors the resolved size for theme hooks
+ *
+ * @doc-touch
+ *   — — Non-interactive; no touch target required.
+ *
+ * @doc-a11y
+ *   Indeterminate-only — answers "something is happening", with no value model.
+ *   Honours `prefers-reduced-motion` via `data-reduced-motion` on the host, so
+ *   themes can swap a calmer animation. When the consumer authors
+ *   `aria-labelledby` on the host the wrapper skips the visually-hidden label
+ *   to avoid double-naming.
+ *
+ * @doc-related progress-bar,skeleton,toast
+ *
+ * @doc-css-var
+ *   --kj-spinner-size      — Glyph diameter. Sizes (xs/sm/md/lg) override.
+ *   --kj-spinner-color     — Foreground color of the glyph. Variants set this; neutral inherits currentColor.
+ *   --kj-spinner-track     — Track/background color for the spin arc.
+ *   --kj-spinner-duration  — Base animation duration. Other animations scale off this.
+ *
  * @doc-category Library/Feedback
  * @doc
  * @doc-name spinner

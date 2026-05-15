@@ -1,7 +1,7 @@
 .loading-screen {
   position: fixed;
   inset: 0;
-  background: var(--kj-color-base-100);
+  background: var(--kj-bg-body);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,7 +21,7 @@
   font-weight: 800;
   font-size: 1.5rem;
   letter-spacing: -0.03em;
-  color: var(--kj-color-neutral);
+  color: var(--kj-fg-muted);
   opacity: 0;
   animation: fade-up 0.4s ease-out 0.8s forwards;
 }

@@ -28,15 +28,61 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
  * </kj-tabs>
  * ```
  *
+ * @doc-keyboard
+ *   ArrowRight|ArrowLeft — Moves focus between tabs when orientation is "horizontal" (off-axis arrows are swallowed)
+ *   ArrowDown|ArrowUp    — Moves focus between tabs when orientation is "vertical"
+ *   Home                 — Moves focus to the first tab
+ *   End                  — Moves focus to the last tab
+ *   Enter|Space          — Activates the focused tab (always honoured; required in `activationMode="manual"`)
+ *   Delete               — Fires `kjClose` when the tab has `kjClosable="true"`
+ *   Tab                  — Single tab stop: leaves the tablist and moves to the active panel (roving tabindex)
+ *
+ * @doc-aria
+ *   role="tablist"       — on `<kj-tab-list>`
+ *   aria-orientation     — reflects [orientation] ("horizontal" | "vertical")
+ *   role="tab"           — on each `<kj-tab>` host button
+ *   aria-selected        — "true" on the active tab, "false" otherwise
+ *   aria-controls        — links each tab to the id of its panel
+ *   aria-disabled        — set to "true" when [disabled] is true on a tab
+ *   role="tabpanel"      — on each `<kj-tab-panel>`
+ *   aria-labelledby      — links each panel to the id of its tab
+ *   hidden               — set on inactive panels (toggled, not destroyed, after first mount)
+ *   data-state           — "active" | "inactive" mirror for CSS targeting
+ *
+ * @doc-touch
+ *   Default tab padding produces a ~32–36px hit area. For touch-first layouts, increase tab padding to reach 44px or pair tabs with a larger pill variant — the WCAG 2.5.5 "inline" exception applies when tabs sit inside a horizontal navigation strip with labels.
+ *
+ * @doc-a11y
+ *   Implements the WAI-ARIA Tabs APG pattern. Roving tabindex via
+ *   `KjRovingTabindex` keeps the tablist as a single Tab stop; arrow keys move
+ *   focus among tabs. `activationMode="automatic"` (default) activates the tab
+ *   as focus lands on it; `activationMode="manual"` separates focus from
+ *   activation so screen reader users can browse tab labels before committing
+ *   to a panel. Panels use a lazy-then-persistent mount: content is created on
+ *   first activation and kept thereafter (only `hidden` toggles), preserving
+ *   form state and aria live regions across tab switches.
+ *
+ * @doc-related tab-list,segmented,stepper
+ *
  * @doc-example Default
+ *   The default playground — three tabs, automatic activation, horizontal.
  *   @doc-file tabs.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common tabs usages — controlled value, default
+ *   active, disabled tab, and a panel that reads from the active value.
+ *   @doc-file tabs.usage.example.ts
  * @doc-example Vertical
+ *   `[orientation]="'vertical'"` stacks the tabs and panels side-by-side.
  *   @doc-file tabs.vertical.example.ts
  * @doc-example Manual activation
+ *   `[activationMode]="'manual'"` separates focus from activation — useful
+ *   for tabs that swap heavy content.
  *   @doc-file tabs.manual-activation.example.ts
  * @doc-example Disabled tab
+ *   `[disabled]="true"` on a `<kj-tab>` removes it from activation; arrow keys skip it.
  *   @doc-file tabs.disabled.example.ts
  * @doc-example Controlled
+ *   Two-way bind `[(value)]` to drive activation from outside the strip.
  *   @doc-file tabs.controlled.example.ts
  * @doc-category Library/Navigation
  * @doc

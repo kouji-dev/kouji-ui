@@ -1,10 +1,10 @@
 @layer kj.component {
   .kj-alert {
     /* component knobs — themes/users override any of these */
-    --kj-alert-bg:           var(--kj-color-base-100);
-    --kj-alert-fg:           var(--kj-color-base-content);
-    --kj-alert-border-color: var(--kj-color-base-300);
-    --kj-alert-accent:       var(--kj-color-info);
+    --kj-alert-bg:           var(--kj-bg-body);
+    --kj-alert-fg:           var(--kj-fg-default);
+    --kj-alert-border-color: var(--kj-border-default);
+    --kj-alert-accent:       var(--kj-fg-info);
     --kj-alert-radius:       var(--kj-radius-box, 0.5rem);
     --kj-alert-padding-x:    var(--kj-space-lg, 1rem);
     --kj-alert-padding-y:    var(--kj-space-md, 0.75rem);
@@ -30,11 +30,11 @@
   }
 
   /* Severity variants — flip accent + (optionally) bg/fg. */
-  .kj-alert[data-variant="info"]    { --kj-alert-accent: var(--kj-color-info, #2563eb); }
-  .kj-alert[data-variant="success"] { --kj-alert-accent: var(--kj-color-success, #16a34a); }
-  .kj-alert[data-variant="warning"] { --kj-alert-accent: var(--kj-color-warning, #d97706); }
-  .kj-alert[data-variant="error"]   { --kj-alert-accent: var(--kj-color-error, #dc2626); }
-  .kj-alert[data-variant="neutral"] { --kj-alert-accent: var(--kj-color-neutral, #6b7280); }
+  .kj-alert[data-variant="info"]    { --kj-alert-accent: var(--kj-fg-info, #2563eb); }
+  .kj-alert[data-variant="success"] { --kj-alert-accent: var(--kj-fg-success, #16a34a); }
+  .kj-alert[data-variant="warning"] { --kj-alert-accent: var(--kj-fg-warning, #d97706); }
+  .kj-alert[data-variant="error"]   { --kj-alert-accent: var(--kj-fg-danger, #dc2626); }
+  .kj-alert[data-variant="neutral"] { --kj-alert-accent: var(--kj-fg-muted, #6b7280); }
 
   /* Static / banner mode — span full width, sticky-friendly chrome. */
   .kj-alert[data-mode="static"] {

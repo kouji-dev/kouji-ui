@@ -11,7 +11,7 @@
 
 .docs-nav-tree--nested {
   padding-left: 10px;
-  border-left: 1px solid var(--kj-color-base-300);
+  border-left: 1px solid var(--kj-border-default);
   margin-top: 2px;
   margin-bottom: 4px;
 }
@@ -31,7 +31,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
   font: inherit;
   font-size: 13px;
   text-align: left;
@@ -39,11 +39,11 @@
 }
 
 .docs-nav-tree__folder-toggle:hover {
-  background: var(--kj-color-base-200);
+  background: var(--kj-bg-surface);
 }
 
 .docs-nav-tree__folder-toggle:focus-visible {
-  outline: 2px solid var(--kj-color-primary);
+  outline: 2px solid var(--kj-bg-primary);
   outline-offset: 2px;
 }
 
@@ -72,23 +72,23 @@
   min-height: 44px;
   padding: 8px 10px 8px 28px;
   border-radius: 6px;
-  color: color-mix(in oklch, var(--kj-color-base-content) 85%, transparent);
+  color: var(--kj-fg-muted);
   font-size: 13px;
   text-decoration: none;
 }
 
 .docs-nav-tree__link:hover {
-  background: var(--kj-color-base-200);
-  color: var(--kj-color-base-content);
+  background: var(--kj-bg-surface);
+  color: var(--kj-fg-default);
 }
 
 .docs-nav-tree__link:focus-visible {
-  outline: 2px solid var(--kj-color-primary);
+  outline: 2px solid var(--kj-bg-primary);
   outline-offset: 2px;
 }
 
 .docs-nav-tree__link--active {
-  background: color-mix(in oklch, var(--kj-color-primary) 12%, transparent);
-  color: var(--kj-color-primary);
+  background: color-mix(in oklch, var(--kj-bg-primary) 12%, transparent);
+  color: var(--kj-fg-primary);
   font-weight: 500;
 }

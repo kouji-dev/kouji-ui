@@ -6,45 +6,6 @@
 
 @layer kj.shared {
   [data-theme="kouji"] {
-    /* ── color slots ── */
-    /* Literal hex values to recreate the original kouji-ui docs exactly:
-       - #0c0c0c page bg, #141414 elevated surface, #1a1a1a borders/separators,
-       - #f0ede6 warm-white text. These are slightly darker / warmer than the
-       generic dark theme's gray ramp, so we override at the slot level. */
-    --kj-color-base-100:     #0c0c0c;
-    --kj-color-base-200:     #141414;
-    --kj-color-base-300:     #1a1a1a;
-    --kj-color-base-content: #f0ede6;
-
-    --kj-color-primary:         #b8f500;
-    --kj-color-primary-content: #0c0c0c;
-
-    --kj-color-secondary:         var(--kj-base-gray-700);
-    --kj-color-secondary-content: var(--kj-base-gray-50);
-
-    --kj-color-accent:         #b8f500;
-    --kj-color-accent-content: #0c0c0c;
-
-    /* #666 matches the original docs' dominant muted-text color
-       (was --text-secondary). #888 was reserved for the lightest hover
-       affordances and is rare; mapping both onto neutral is acceptable. */
-    --kj-color-neutral:         #666666;
-    --kj-color-neutral-content: #f0ede6;
-
-    --kj-color-info:         var(--kj-base-blue-400);
-    --kj-color-info-content: var(--kj-base-gray-950);
-
-    --kj-color-success:         var(--kj-base-lime-500);
-    --kj-color-success-content: var(--kj-base-gray-950);
-
-    /* Amber instead of yellow so warning reads distinct from the lime
-       brand (#b8f500) — yellow at 90° was too close to lime at 124°. */
-    --kj-color-warning:         var(--kj-base-amber-500);
-    --kj-color-warning-content: var(--kj-base-gray-950);
-
-    --kj-color-destructive:         var(--kj-base-red-500);
-    --kj-color-destructive-content: var(--kj-base-gray-50);
-
     /* ── shape — brutalist (no radius) ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -52,32 +13,91 @@
     --kj-border:          var(--kj-base-border-1);
     --kj-depth:           0;
 
-    /* ── type — mono for body / nav, Syne for display headings (matches
-       the original kouji-ui docs identity) ── */
+    /* ── type — mono everywhere. Brutalist identity statement: even
+       headlines use JetBrains Mono, no decorative display face. ── */
     --kj-font-sans:    var(--kj-base-font-mono);
-    --kj-font-mono:    var(--kj-base-font-mono);
-    --kj-font-display: var(--kj-base-font-display);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
+    --kj-font-display: var(--kj-base-font-mono);
+    --kj-display-weight:  700;
+    --kj-letter-spacing: -0.02em;
 
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    /* Neutral surfaces (7) */
+    --kj-bg-body:        #0c0c0c;
+    --kj-bg-surface:     #141414;
+    /* Field sits LIGHTER than both `bg-body` and `bg-surface` so an input
+       reads as a distinct interactive slot whether it's on the page body
+       or nested inside a card. Going darker doesn't work here because
+       body is already near-black — fields would just merge into the page. */
+    --kj-bg-field:       #1f1f1f;
+    --kj-bg-elevated:    #1a1a1a;
+    --kj-bg-overlay:     rgba(0, 0, 0, 0.7);
+    --kj-bg-inverse:     #f0ede6;
+    --kj-bg-disabled:    #1a1a1a;
+
+    /* Intent surfaces — primary */
+    --kj-bg-primary:         #c4ff3d;
+    --kj-bg-primary-subtle:  #2a3300;
+
+    /* Intent surfaces — accent (kouji: same as primary) */
+    --kj-bg-accent:          #c4ff3d;
+    --kj-bg-accent-subtle:   #2a3300;
+
+    /* Intent surfaces — info */
+    --kj-bg-info:            var(--kj-base-blue-400);
+    --kj-bg-info-subtle:     #0a1a2a;
+
+    /* Intent surfaces — success */
+    --kj-bg-success:         var(--kj-base-lime-500);
+    --kj-bg-success-subtle:  #1a2a00;
+
+    /* Intent surfaces — warning */
+    --kj-bg-warning:         var(--kj-base-amber-500);
+    --kj-bg-warning-subtle:  #2a1a00;
+
+    /* Intent surfaces — danger. red-600 (l=55%) gives 5.44:1 vs white,
+       passing AA 4.5:1; red-500 (l=63%) only hit 3.91:1. */
+    --kj-bg-danger:          var(--kj-base-red-600);
+    --kj-bg-danger-subtle:   #2a0a0a;
+
+    /* FG Class A — independent */
+    --kj-fg-default:    #f0ede6;
+    --kj-fg-muted:      #b8b3a3;
+    --kj-fg-subtle:     #8a8578;
+    --kj-fg-disabled:   #5a5648;
+
+    /* FG Class B — paired */
+    --kj-fg-on-primary:   #0c0c0c;
+    --kj-fg-on-accent:    #0c0c0c;
+    --kj-fg-on-info:      var(--kj-base-gray-950);
+    --kj-fg-on-success:   var(--kj-base-gray-950);
+    --kj-fg-on-warning:   var(--kj-base-gray-950);
+    --kj-fg-on-danger:    var(--kj-base-gray-50);
+    --kj-fg-on-inverse:   #0c0c0c;
+
+    /* FG Class C — intent as text */
+    --kj-fg-primary:    #c4ff3d;
+    --kj-fg-accent:     #c4ff3d;
+    --kj-fg-info:       var(--kj-base-blue-400);
+    --kj-fg-success:    var(--kj-base-lime-500);
+    --kj-fg-warning:    var(--kj-base-amber-500);
+    --kj-fg-danger:     var(--kj-base-red-400);
+
+    /* Borders */
+    --kj-border-default:   #1a1a1a;
+    --kj-border-muted:     #141414;
+    --kj-border-strong:    #2a2a2a;
+    --kj-border-focus:     #c4ff3d;
+    --kj-border-disabled:  #1a1a1a;
+    --kj-border-primary:   #c4ff3d;
+    --kj-border-danger:    var(--kj-base-red-600);
+
+    /* Shadows — kouji is brutalist/flat (depth 0) */
+    --kj-shadow-sm:     0 0 0 1px #1a1a1a;
+    --kj-shadow-md:     0 0 0 1px #1a1a1a;
+    --kj-shadow-lg:     0 0 0 2px #1a1a1a;
+    --kj-shadow-focus:  0 0 0 2px #c4ff3d;
   }
 }
 
@@ -89,12 +109,20 @@
 
    `default` and `destructive` are the only variants whose surface is
    filled with brand color in this theme; brightening only those leaves
-   the secondary variants untouched. */
+   the secondary variants untouched.
+
+   Scoped via `@scope` so the override stops at the nearest nested
+   `[data-theme]` boundary. Without it, a preview swatch with
+   `data-theme="dark"` nested inside `<html data-theme="kouji">` would
+   still receive the lime hover because it remains a descendant of the
+   outer kouji theme. */
 @layer kj.component {
-  [data-theme="kouji"] .kj-button[data-variant="default"]:hover,
-  [data-theme="kouji"] .kj-button[data-variant="destructive"]:hover {
-    --kj-button-bg: #d4ff00;
-    --kj-button-fg: #0c0c0c;
-    transform: translateY(-2px);
+  @scope ([data-theme="kouji"]) to ([data-theme]:not([data-theme="kouji"])) {
+    .kj-button[data-variant="default"]:hover,
+    .kj-button[data-variant="destructive"]:hover {
+      --kj-button-bg: #d4ff00;
+      --kj-button-fg: #0c0c0c;
+      transform: translateY(-2px);
+    }
   }
 }

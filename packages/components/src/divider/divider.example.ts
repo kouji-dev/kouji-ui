@@ -10,7 +10,7 @@ import { KjDividerComponent } from './divider';
   selector: 'kj-divider-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <p>Above the divider — the first paragraph of content.</p>
     <kj-divider />

@@ -5,38 +5,6 @@
 
 @layer kj.shared {
   [data-theme="cyberpunk"] {
-    /* ── color slots ── */
-    --kj-color-base-100:     #ffee00;
-    --kj-color-base-200:     #f0d808;
-    --kj-color-base-300:     #d6c008;
-    --kj-color-base-content: #0a0a0a;
-
-    --kj-color-primary:         #ff007f;
-    --kj-color-primary-content: #ffee00;
-    --kj-color-primary-hover:   #ff3399;
-
-    --kj-color-secondary:         #00f0ff;
-    --kj-color-secondary-content: #0a0a0a;
-
-    --kj-color-accent:         #4d00b8;
-    --kj-color-accent-content: #ffee00;
-
-    --kj-color-neutral:         #1a1a1a;
-    --kj-color-neutral-content: #ffee00;
-
-    --kj-color-info:         #00f0ff;
-    --kj-color-info-content: #0a0a0a;
-
-    --kj-color-success:         #39ff14;
-    --kj-color-success-content: #0a0a0a;
-
-    --kj-color-warning:         #ff8c00;
-    --kj-color-warning-content: #0a0a0a;
-
-    --kj-color-destructive:         #ff0040;
-    --kj-color-destructive-content: #ffee00;
-    --kj-color-destructive-hover: #ff3366;
-
     /* ── shape — sharp, no rounding ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -44,30 +12,71 @@
     --kj-border:          var(--kj-base-border-2);
     --kj-depth:           0;
 
-    /* ── type ── */
+    /* ── type — mono everywhere. Heavy weight + tight tracking gives
+       the headlines an aggressive techno-poster feel. */
     --kj-font-sans:    var(--kj-base-font-mono);
-    --kj-font-mono:    var(--kj-base-font-mono);
     --kj-font-display: var(--kj-base-font-mono);
-    --kj-text-xs:   var(--kj-base-text-xs);
-    --kj-text-sm:   var(--kj-base-text-sm);
-    --kj-text-base: var(--kj-base-text-base);
-    --kj-text-lg:   var(--kj-base-text-lg);
-    --kj-text-xl:   var(--kj-base-text-xl);
-    --kj-text-2xl:  var(--kj-base-text-2xl);
-
-    /* ── spacing (semantic) ── */
-    --kj-space-xs:  var(--kj-base-space-xs);
-    --kj-space-sm:  var(--kj-base-space-sm);
-    --kj-space-md:  var(--kj-base-space-md);
-    --kj-space-lg:  var(--kj-base-space-lg);
-    --kj-space-xl:  var(--kj-base-space-xl);
-    --kj-space-2xl: var(--kj-base-space-2xl);
-    --kj-space-3xl: var(--kj-base-space-3xl);
-    --kj-space-4xl: var(--kj-base-space-4xl);
-    --kj-space-5xl: var(--kj-base-space-5xl);
-    --kj-space-6xl: var(--kj-base-space-6xl);
-
+    --kj-display-weight: 800;
+    --kj-letter-spacing: -0.04em;
     /* ── motion ── */
     --kj-transition: var(--kj-base-transition-fast);
+
+    --kj-bg-body:        #ffee00;
+    --kj-bg-surface:     #f0d808;
+    --kj-bg-field:       #f8e604;
+    --kj-bg-elevated:    #fff84e;
+    --kj-bg-overlay:     rgba(10, 10, 10, 0.7);
+    --kj-bg-inverse:     #0a0a0a;
+    --kj-bg-disabled:    #d6c008;
+
+    --kj-bg-primary:         #ff007f;
+    --kj-bg-primary-subtle:  #ffd1e6;
+    --kj-bg-accent:          #4d00b8;
+    --kj-bg-accent-subtle:   #d8c4f2;
+
+    --kj-bg-info:            #00f0ff;
+    --kj-bg-info-subtle:     #c4f8fb;
+    --kj-bg-success:         #39ff14;
+    --kj-bg-success-subtle:  #d4f8ce;
+    --kj-bg-warning:         #ff8c00;
+    --kj-bg-warning-subtle:  #ffe1c4;
+    --kj-bg-danger:          #ff0040;
+    --kj-bg-danger-subtle:   #ffd2dc;
+
+    --kj-fg-default:    #0a0a0a;
+    --kj-fg-muted:      #1a1a1a;
+    --kj-fg-subtle:     #3a3a3a;
+    --kj-fg-disabled:   #8a8000;
+
+    /* Yellow on hot-pink/red fails AA (3.14:1); swap to near-black on
+       primary + danger. Accent stays yellow (8.71:1 on deep violet). */
+    --kj-fg-on-primary:   #0a0a0a;
+    --kj-fg-on-accent:    #ffee00;
+    --kj-fg-on-info:      #0a0a0a;
+    --kj-fg-on-success:   #0a0a0a;
+    --kj-fg-on-warning:   #0a0a0a;
+    --kj-fg-on-danger:    #0a0a0a;
+    --kj-fg-on-inverse:   #ffee00;
+
+    /* fg.primary must meet AA on yellow body — pink darkened from #ff007f */
+    --kj-fg-primary:    #8c003f;
+    --kj-fg-accent:     #2a0066;
+    --kj-fg-info:       #006670;
+    --kj-fg-success:    #1a7a08;
+    --kj-fg-warning:    #6b3a00;
+    --kj-fg-danger:     #8c0024;
+
+    --kj-border-default:   #0a0a0a;
+    --kj-border-muted:     #d6c008;
+    --kj-border-strong:    #0a0a0a;
+    --kj-border-focus:     #ff007f;
+    --kj-border-disabled:  #d6c008;
+    --kj-border-primary:   #ff007f;
+    --kj-border-danger:    #ff0040;
+
+    --kj-shadow-sm:     2px 2px 0 #0a0a0a;
+    --kj-shadow-md:     4px 4px 0 #0a0a0a;
+    --kj-shadow-lg:     8px 8px 0 #0a0a0a;
+    --kj-shadow-focus:  0 0 0 3px #ff007f;
   }
 }

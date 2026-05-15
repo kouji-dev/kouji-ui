@@ -1,3 +1,10 @@
+/* ============================================================
+   Docs sidebar — layered tray nav
+
+   Design source: design-revamp/kouji-ui/project/docs.css L25-160.
+   Tokens come from packages/themes via `--kj-*` CSS variables.
+   ============================================================ */
+
 :host {
   display: contents;
 }
@@ -7,71 +14,251 @@
   flex-direction: column;
   align-self: stretch;
   flex-shrink: 0;
-  background: var(--kj-color-base-100);
-  border-right: 1px solid var(--kj-color-base-300);
+  background: var(--kj-bg-body);
+  border-right: 1px solid var(--kj-border-default);
   min-height: 0;
-  width: 280px;
+  width: 240px;
 }
 
 .kj-docs-sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 10px;
+  padding: 28px 0 32px 20px;
   overflow-y: auto;
   height: 100%;
 }
 
-.kj-docs-sidebar__label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
-  margin: 0 0 8px;
-  padding: 0 8px;
+/* ─────────── search row ─────────── */
+
+.kj-docs-sidebar__search {
+  appearance: none;
+  width: calc(100% - 16px);
+  margin: 0 16px 22px 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-bg-surface);
+  font-family: var(--kj-font-mono);
+  font-size: 11px;
+  color: var(--kj-fg-muted);
+  cursor: pointer;
+  text-align: left;
+  min-height: 36px;
 }
+
+.kj-docs-sidebar__search:hover {
+  border-color: var(--kj-border-primary);
+  color: var(--kj-fg-default);
+}
+
+.kj-docs-sidebar__search:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
+.kj-docs-sidebar__search-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.kj-docs-sidebar__kbd {
+  margin-left: auto;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-family: var(--kj-font-mono);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-selector);
+  background: var(--kj-bg-elevated);
+  color: var(--kj-fg-default);
+}
+
+/* ─────────── quick link (getting started) ─────────── */
 
 .kj-docs-sidebar__quick {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 12px;
+  margin: 0 16px 18px 0;
 }
 
 .kj-docs-sidebar__quick-link {
   display: flex;
   align-items: center;
   min-height: 44px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: var(--kj-color-base-content);
-  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-bg-surface);
+  color: var(--kj-fg-default);
+  font-family: var(--kj-font-mono);
+  font-size: 12px;
   text-decoration: none;
 }
 
 .kj-docs-sidebar__quick-link:hover {
-  background: var(--kj-color-base-200);
+  border-color: var(--kj-border-primary);
 }
 
 .kj-docs-sidebar__quick-link:focus-visible {
-  outline: 2px solid var(--kj-color-primary);
+  outline: 2px solid var(--kj-border-focus);
   outline-offset: 2px;
 }
 
 .kj-docs-sidebar__quick-link--active {
-  background: color-mix(in oklch, var(--kj-color-primary) 12%, transparent);
-  color: var(--kj-color-primary);
-  font-weight: 500;
+  border-color: var(--kj-border-primary);
+  color: var(--kj-fg-primary);
 }
 
+/* ─────────── browse heading (visually hidden, keeps a11y label) ─────────── */
+
 .kj-docs-sidebar__browse-heading {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: color-mix(in oklch, var(--kj-color-base-content) 60%, transparent);
-  margin: 0 0 6px;
-  padding: 0 8px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
+
+/* ─────────── layered tray ─────────── */
+
+.kj-docs-sidebar__tree {
+  display: flex;
+  flex-direction: column;
+}
+
+.kj-docs-sidebar__layer {
+  margin-bottom: 18px;
+}
+
+.kj-docs-sidebar__layer-head {
+  appearance: none;
+  width: calc(100% - 12px);
+  margin-right: 12px;
+  background: var(--kj-bg-surface);
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--kj-font-mono);
+  margin-bottom: 10px;
+  min-height: 44px;
+  color: var(--kj-fg-default);
+}
+
+.kj-docs-sidebar__layer-head:hover {
+  border-color: var(--kj-border-primary);
+}
+
+.kj-docs-sidebar__layer-head:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
+.kj-docs-sidebar__layer-mark {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+  border-radius: var(--kj-radius-selector);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+.kj-docs-sidebar__layer-lbl {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--kj-fg-default);
+  text-transform: lowercase;
+  letter-spacing: 0;
+}
+
+.kj-docs-sidebar__layer-caret {
+  font-size: 11px;
+  color: var(--kj-fg-muted);
+  transition: transform .25s;
+  transform: rotate(-90deg);
+}
+
+.kj-docs-sidebar__layer-caret--open {
+  transform: rotate(0deg);
+}
+
+.kj-docs-sidebar__layer-body {
+  padding-left: 4px;
+}
+
+/* ─────────── nav groups inside a layer ─────────── */
+
+.kj-docs-sidebar__nav-group {
+  margin-bottom: 16px;
+}
+
+.kj-docs-sidebar__nav-label {
+  font-family: var(--kj-font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--kj-fg-muted);
+  padding: 0 16px 6px 8px;
+}
+
+.kj-docs-sidebar__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 12px;
+  font-family: var(--kj-font-mono);
+  font-size: 12px;
+  color: var(--kj-fg-default);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-right: 12px;
+  border-radius: 0;
+  cursor: pointer;
+  min-height: 32px;
+  position: relative;
+}
+
+.kj-docs-sidebar__nav-item:hover {
+  color: var(--kj-fg-primary);
+}
+
+.kj-docs-sidebar__nav-item:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: -2px;
+}
+
+.kj-docs-sidebar__nav-item--active {
+  border-left-color: var(--kj-border-primary);
+  color: var(--kj-fg-primary);
+  background: var(--kj-bg-surface);
+  font-weight: 700;
+}
+
+.kj-docs-sidebar__nav-name {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─────────── mobile ─────────── */
 
 @media (max-width: 767px) {
   :host {
@@ -79,7 +266,7 @@
     position: fixed;
     inset: 56px 0 0 0;
     z-index: 40;
-    background: var(--kj-color-base-100);
+    background: var(--kj-bg-body);
     transform: translateX(-100%);
     transition: transform 200ms ease-out;
     overflow-y: auto;

@@ -8,9 +8,9 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * `<kj-card-cover>` sub-components for structured layouts.
  *
  * Variants:
- * - `default` — base surface (background `--kj-color-base-200`)
+ * - `default` — base surface (background `--kj-bg-surface`)
  * - `outline` — transparent background, neutral border
- * - `subtle`  — slightly elevated surface (background `--kj-color-base-300`), no border
+ * - `subtle`  — slightly elevated surface (background `--kj-bg-field`), no border
  *
  * @example
  * ```html
@@ -18,11 +18,48 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
  * <kj-card variant="outline">Outlined</kj-card>
  * ```
  * @doc-example Default
+ *   The default playground — a single card with title and body text.
  *   @doc-file card.example.ts
+ * @doc-example Usage
+ *   The common shape — header / content / footer with action buttons. Use this
+ *   as the copy-paste starting point.
+ *   @doc-file card.usage.example.ts
  * @doc-example Full
+ *   Full composition — cover, header, content, and footer actions.
  *   @doc-file card.full.example.ts
  * @doc-example Cover
+ *   `<kj-card-cover>` for full-bleed media at the top of the card.
  *   @doc-file card.cover.example.ts
+ *
+ * @doc-aria
+ *   data-variant  — Mirrors the resolved variant for theme/scope hooks
+ *   data-shadow   — Optional `"lift"` attribute pulls in --kj-button-shadow for brutalist offsets
+ *
+ * @doc-touch
+ *   Cards are surfaces, not tap targets. When the entire card is interactive
+ *   (clickable tile) wrap the content in a `<button>` or `<a>` and ensure the
+ *   target spans ≥ 44×44.
+ *
+ * @doc-a11y
+ *   Renders a plain `<div>` surface — no implicit role. Use `<kj-card-title>`
+ *   (which mounts an `<h3>`) so the card's heading lands in the document
+ *   outline. For clickable cards, wrap interactive content in a real link or
+ *   button so keyboard activation works without extra wiring.
+ *
+ * @doc-related list,empty-state,skeleton
+ *
+ * @doc-css-var
+ *   --kj-card-bg            — Background fill. Variant rules set this; override to brand-paint a one-off.
+ *   --kj-card-fg            — Foreground (body text) color. Defaults to --kj-fg-default.
+ *   --kj-card-border-color  — Border color. Outline variant sets this; subtle/default keep transparent.
+ *   --kj-card-border-width  — Border thickness. Inherits --kj-border.
+ *   --kj-card-radius        — Corner radius. Inherits --kj-radius-box.
+ *   --kj-card-padding-x     — Horizontal padding for header/content/footer bands.
+ *   --kj-card-padding-y     — Vertical padding for header/content/footer bands.
+ *   --kj-card-shadow        — Box shadow. `data-shadow="lift"` borrows --kj-button-shadow for brutalist offsets.
+ *   --kj-card-cover-height  — Height of the cover slot. Sizes (sm/md/lg) override.
+ *   --kj-card-cover-fit     — object-fit for media in the cover slot. `cover` (default) or `contain`.
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name card

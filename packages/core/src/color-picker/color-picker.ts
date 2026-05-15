@@ -182,6 +182,14 @@ export class KjColorPicker implements KjColorPickerContext {
   // Track the last value we *emitted* so writeValue → state → emit doesn't
   // loop. We compare against the currentValue projection.
   private _suppressEmit = false;
+  // The state-projection effect runs once on subscription with the picker's
+  // DEFAULT HSV state (which projects to `#000000`). That used to fire
+  // `notifyChange` BEFORE the form's initial `writeValue(...)` reached us,
+  // so a `[ngModel]`-bound consumer received `#000000` ahead of its real
+  // value — corrupting the bound state. Swallow the bootstrap pass so
+  // emissions only flow after either an external write or a real user
+  // interaction.
+  private _initialEmitConsumed = false;
 
   constructor() {
     const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
@@ -202,6 +210,10 @@ export class KjColorPicker implements KjColorPickerContext {
     effect(() => {
       const next = this.currentValue();
       if (this._suppressEmit) return;
+      if (!this._initialEmitConsumed) {
+        this._initialEmitConsumed = true;
+        return;
+      }
       const current = this.formCtrl.value();
       // Avoid spamming when the value is structurally unchanged.
       if (sameValue(current, next)) return;

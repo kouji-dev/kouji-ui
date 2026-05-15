@@ -11,9 +11,9 @@ import { KjTimePickerComponent } from './time-picker';
   standalone: true,
   imports: [KjTimePickerComponent],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     .row { display: flex; gap: var(--kj-space-md); align-items: center; flex-wrap: wrap; }
-    label { font: 0.875rem var(--kj-font-sans); color: var(--kj-color-base-content); }
+    label { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-default); }
   `],
   template: `
     <div class="row">

@@ -12,7 +12,7 @@ import { KjLead } from '@kouji-ui/core';
   selector: 'kj-typography-lead-example',
   standalone: true,
   imports: [KjLead],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }`],
+  styles: [`:host { display: block; }`],
   template: `
     <article>
       <h1>Atlas — quarterly roadmap planning</h1>

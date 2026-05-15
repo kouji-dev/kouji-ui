@@ -110,30 +110,6 @@ export class PreviewSearch {
   protected readonly allTags = ALL_TAGS;
   protected readonly allStatus = ALL_STATUS;
 
-  private readonly tagTones: Record<string, string> = {
-    Engineering: 'var(--kj-color-primary)',
-    Design: 'var(--kj-color-secondary)',
-    Ops: 'var(--kj-color-info)',
-    Research: 'var(--kj-color-accent)',
-    Marketing: 'var(--kj-color-warning)',
-  };
-
-  private readonly tagToneContents: Record<string, string> = {
-    Engineering: 'var(--kj-color-primary-content)',
-    Design: 'var(--kj-color-secondary-content)',
-    Ops: 'var(--kj-color-info-content)',
-    Research: 'var(--kj-color-accent-content)',
-    Marketing: 'var(--kj-color-warning-content)',
-  };
-
-  protected toneFor(tag: string): string {
-    return this.tagTones[tag] ?? 'var(--kj-color-base-content)';
-  }
-
-  protected toneContentFor(tag: string): string {
-    return this.tagToneContents[tag] ?? 'var(--kj-color-base-100)';
-  }
-
   protected readonly type = signal<ResultType>('all');
   protected readonly statusOpen = signal(true);
   protected readonly statusReview = signal(false);

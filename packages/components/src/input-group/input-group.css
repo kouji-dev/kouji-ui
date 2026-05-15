@@ -5,11 +5,11 @@
 
 @layer kj.component {
   .kj-input-group {
-    --kj-input-group-border-color: var(--kj-color-base-300);
+    --kj-input-group-border-color: var(--kj-border-default);
     --kj-input-group-border-width: var(--kj-border, 1px);
     --kj-input-group-radius:       var(--kj-radius-field);
-    --kj-input-group-addon-bg:     var(--kj-color-base-100);
-    --kj-input-group-addon-fg:     var(--kj-color-base-content);
+    --kj-input-group-addon-bg:     var(--kj-bg-surface);
+    --kj-input-group-addon-fg:     var(--kj-fg-default);
     --kj-input-group-addon-font:   var(--kj-font-sans);
     --kj-input-group-addon-size:   var(--kj-text-sm);
     --kj-input-group-padding-x:    var(--kj-space-md);

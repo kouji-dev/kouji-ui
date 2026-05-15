@@ -25,7 +25,7 @@ import {
     KjPaginationInfoComponent,
   ],
   styles: [`
-    :host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: block; }
     kj-pagination { width: 100%; justify-content: space-between; }
   `],
   template: `

@@ -22,7 +22,7 @@ import type { KjTreeNode } from '@kouji-ui/core';
     KjTreeSelectComponent,
   ],
   styles: [
-    `:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); max-width: 400px; }`,
+    `:host { display: block; max-width: 400px; }`,
     `.kj-tree-select { width: 100%; }`,
   ],
   template: `

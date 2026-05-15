@@ -21,9 +21,9 @@ import {
     KjCommandSeparatorComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 16rem; }
-  kbd { background: var(--kj-color-base-200); border: 1px solid var(--kj-color-base-300); color: var(--kj-color-neutral); font-family: var(--kj-font-mono); font-size: 0.7rem; padding: 0.1rem 0.35rem; margin-inline-start: var(--kj-space-md); }
-  .activated { font-family: var(--kj-font-mono); font-size: 0.75rem; color: var(--kj-color-neutral); }`],
+  styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; min-height: 16rem; }
+  kbd { border: 1px solid var(--kj-border-default); color: var(--kj-fg-muted); font-family: var(--kj-font-mono); font-size: 0.7rem; padding: 0.1rem 0.35rem; margin-inline-start: var(--kj-space-md); }
+  .activated { font-family: var(--kj-font-mono); font-size: 0.75rem; color: var(--kj-fg-muted); }`],
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">
       Search commands… <kbd>⌘K</kbd>

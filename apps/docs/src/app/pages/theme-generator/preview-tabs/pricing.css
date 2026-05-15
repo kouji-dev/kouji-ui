@@ -1,0 +1,97 @@
+.pricing-scene {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-lg);
+  padding: var(--kj-space-md);
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.pricing-scene__head { text-align: center; }
+.pricing-scene__title {
+  margin: 0;
+  font-family: var(--kj-font-display, var(--kj-font-sans));
+  font-weight: 700;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--kj-fg-default);
+}
+.pricing-scene__lede {
+  margin: var(--kj-space-xs) 0 0;
+  font: var(--kj-text-sm) var(--kj-font-sans);
+  color: var(--kj-fg-muted);
+}
+
+.pricing-scene__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--kj-space-md);
+  align-items: stretch;
+}
+
+.pricing-scene__tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-xs);
+  padding: var(--kj-space-lg);
+}
+.pricing-scene__tier--featured {
+  border-color: var(--kj-bg-primary);
+  border-width: calc(var(--kj-border) * 2);
+}
+.pricing-scene__pill {
+  position: absolute;
+  top: -0.625rem;
+  left: var(--kj-space-md);
+}
+
+.pricing-scene__tier-name {
+  margin: 0;
+  font-family: var(--kj-font-display, var(--kj-font-sans));
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--kj-fg-default);
+}
+.pricing-scene__tier-desc {
+  margin: 0 0 var(--kj-space-sm);
+  font: var(--kj-text-xs) var(--kj-font-sans);
+  color: var(--kj-fg-muted);
+}
+
+.pricing-scene__price {
+  margin: 0;
+  font-family: var(--kj-font-display, var(--kj-font-sans));
+  font-weight: 700;
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--kj-fg-default);
+}
+.pricing-scene__cadence {
+  font: var(--kj-text-xs) var(--kj-font-sans);
+  color: var(--kj-fg-muted);
+  font-weight: 400;
+  margin-left: 0.125rem;
+}
+
+.pricing-scene__feats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kj-space-xs);
+}
+.pricing-scene__feat {
+  display: flex;
+  gap: var(--kj-space-sm);
+  font: var(--kj-text-sm) var(--kj-font-sans);
+  color: var(--kj-fg-default);
+}
+.pricing-scene__check {
+  color: var(--kj-bg-primary);
+  font-weight: 700;
+}
+
+.pricing-scene__cta { margin-top: auto; }

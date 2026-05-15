@@ -20,13 +20,63 @@ import {
  * kjMenubarItem>` directly.
  *
  * @doc-example Default
+ *   The canonical File / Edit / View bar — the bare-minimum recipe.
  *   @doc-file menubar.example.ts
+ * @doc-example Usage
+ *   A walkthrough of the most common menubar usages — action items and a
+ *   disabled item. Use this as the copy-paste starting point.
+ *   @doc-file menubar.usage.example.ts
  * @doc-example With shortcuts
+ *   Trailing `<kj-kbd>` hints render aligned to the right of each item label.
  *   @doc-file menubar.with-shortcuts.example.ts
  * @doc-example With submenu
+ *   Nested submenu trigger pattern (pending overlay-migration follow-up).
  *   @doc-file menubar.with-submenu.example.ts
  * @doc-example Disabled item
+ *   `[kjDisabled]="true"` drops the item from the keyboard cycle and dims it.
  *   @doc-file menubar.disabled-item.example.ts
+ *
+ * @doc-keyboard
+ *   ArrowLeft|ArrowRight — Moves focus between menubar items (wraps when [kjLoop]="true")
+ *   Home                 — Moves focus to the first menubar item
+ *   End                  — Moves focus to the last menubar item
+ *   Enter|Space          — Activates the focused item
+ *   Tab                  — Moves focus out of the bar to the next focusable element
+ *
+ * @doc-aria
+ *   role="menubar"     — On the host `<nav>` (provided by the directive)
+ *   aria-label         — Wired from `kjAriaLabel` so AT announces the bar's purpose
+ *   aria-orientation   — Reflects horizontal orientation
+ *   aria-disabled      — Reflected on items when `kjDisabled` is true
+ *   data-active        — Mirrors the active/open state for theme hooks
+ *
+ * @doc-touch
+ *   Items use a 2.75rem (44px) min-height by default — meets WCAG 2.5.5 for
+ *   touch-first surfaces. Override `--kj-menubar-item-min-height` for denser
+ *   keyboard-only desktop chrome.
+ *
+ * @doc-a11y
+ *   Follows the WAI-ARIA menubar pattern. Focus cycles left/right within the
+ *   bar; submenu disclosure is opt-in via `kjAutoDisclose`. The bar always
+ *   exposes a programmatic name — supply `kjAriaLabel` even when a visible
+ *   heading is nearby.
+ *
+ * @doc-related dropdown-menu,command-palette,tabs
+ *
+ * @doc-css-var
+ *   --kj-menubar-bg                — Bar background fill. Defaults to --kj-bg-body.
+ *   --kj-menubar-fg                — Bar foreground (label) color. Defaults to --kj-fg-default.
+ *   --kj-menubar-border-color      — Bar outer border color. Inherits --kj-border-default.
+ *   --kj-menubar-radius            — Bar corner radius. Inherits --kj-radius-box.
+ *   --kj-menubar-padding           — Inner padding around the item row.
+ *   --kj-menubar-gap               — Gap between adjacent menubar items.
+ *   --kj-menubar-item-padding-x    — Per-item horizontal padding.
+ *   --kj-menubar-item-padding-y    — Per-item vertical padding.
+ *   --kj-menubar-item-min-height   — Per-item min height. 2.75rem for WCAG 2.5.5.
+ *   --kj-menubar-item-radius       — Per-item corner radius. Inherits --kj-radius-field.
+ *   --kj-menubar-item-hover-bg     — Item hover background fill.
+ *   --kj-menubar-item-active-bg    — Item background when its menu is open.
+ *
  * @doc-category Library/Navigation
  * @doc
  * @doc-name menubar

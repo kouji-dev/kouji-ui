@@ -8,21 +8,23 @@
 
 @layer kj.component {
   .kj-number-input {
-    --kj-number-input-bg:               var(--kj-color-base-100);
-    --kj-number-input-fg:               var(--kj-color-base-content);
-    --kj-number-input-border-color:     var(--kj-color-base-300);
+    --kj-number-input-bg:               var(--kj-bg-field);
+    --kj-number-input-fg:               var(--kj-fg-default);
+    --kj-number-input-border-color:     var(--kj-border-default);
     --kj-number-input-border-width:     var(--kj-border);
     --kj-number-input-radius:           var(--kj-radius-field);
     --kj-number-input-padding-x:        var(--kj-space-md);
-    --kj-number-input-padding-y:        var(--kj-space-sm);
     --kj-number-input-font:             var(--kj-font-sans);
     --kj-number-input-font-size:        var(--kj-text-sm);
-    --kj-number-input-stepper-bg:       var(--kj-color-base-200);
-    --kj-number-input-stepper-fg:       var(--kj-color-base-content);
-    --kj-number-input-stepper-size:     2.75rem; /* 44px touch target — WCAG 2.5.5 */
+    --kj-number-input-stepper-bg:       var(--kj-bg-surface);
+    --kj-number-input-stepper-fg:       var(--kj-fg-default);
+    --kj-number-input-stepper-size:     2.25rem;
+    /* Same height contract as .kj-input — keep form rows aligned. */
+    --kj-number-input-height:           2.25rem;
 
     display: inline-flex;
     align-items: stretch;
+    height: var(--kj-number-input-height);
     background: var(--kj-number-input-bg);
     color: var(--kj-number-input-fg);
     border: var(--kj-number-input-border-width) solid var(--kj-number-input-border-color);
@@ -31,15 +33,17 @@
     font: var(--kj-number-input-font-size) / 1.4 var(--kj-number-input-font);
     transition: var(--kj-transition);
   }
+  .kj-number-input[data-size="sm"] { --kj-number-input-height: 2rem;    --kj-number-input-stepper-size: 2rem;    --kj-number-input-font-size: 0.8125rem; }
+  .kj-number-input[data-size="lg"] { --kj-number-input-height: 2.75rem; --kj-number-input-stepper-size: 2.75rem; --kj-number-input-font-size: 1rem; }
 
   .kj-number-input:focus-within {
-    --kj-number-input-border-color: var(--kj-color-primary);
-    outline: 2px solid var(--kj-color-primary);
+    --kj-number-input-border-color: var(--kj-fg-primary);
+    outline: 2px solid var(--kj-fg-primary);
     outline-offset: 2px;
   }
 
   .kj-number-input[data-invalid] {
-    --kj-number-input-border-color: var(--kj-color-destructive);
+    --kj-number-input-border-color: var(--kj-fg-danger);
   }
 
   .kj-number-input[data-disabled] {
@@ -50,15 +54,16 @@
   .kj-number-input__field {
     flex: 1 1 auto;
     min-width: 0;
+    height: 100%;
     background: transparent;
     color: inherit;
     border: 0;
-    padding: var(--kj-number-input-padding-y) var(--kj-number-input-padding-x);
+    padding: 0 var(--kj-number-input-padding-x);
     font: inherit;
     text-align: right;
   }
   .kj-number-input__field:focus { outline: none; }
-  .kj-number-input__field::placeholder { color: var(--kj-color-neutral); }
+  .kj-number-input__field::placeholder { color: var(--kj-fg-muted); }
 
   .kj-number-input__stepper {
     display: inline-flex;
@@ -75,7 +80,7 @@
     transition: background var(--kj-transition), color var(--kj-transition), opacity var(--kj-transition);
   }
   .kj-number-input__stepper:hover {
-    background: color-mix(in oklab, var(--kj-color-base-content) 8%, var(--kj-number-input-stepper-bg));
+    background: color-mix(in oklab, var(--kj-fg-default) 8%, var(--kj-number-input-stepper-bg));
   }
   .kj-number-input__stepper[aria-disabled="true"] {
     opacity: 0.4;

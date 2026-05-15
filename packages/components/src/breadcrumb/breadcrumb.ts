@@ -36,15 +36,54 @@ import {
  * ```
  *
  * @doc-example Default
+ *   The default playground — three-crumb trail with auto `/` separator.
  *   @doc-file breadcrumb.example.ts
+ * @doc-example Usage
+ *   The common shape — Home → section → page with a current cell. Use this as
+ *   the copy-paste starting point.
+ *   @doc-file breadcrumb.usage.example.ts
  * @doc-example With icons
+ *   Project a Home glyph (or any icon) inside the first link for a compact trail.
  *   @doc-file breadcrumb.with-icons.example.ts
  * @doc-example Truncated
+ *   `kjMaxItems` clips the middle of long trails and renders an ellipsis cell.
  *   @doc-file breadcrumb.truncated.example.ts
  * @doc-example Custom separator
+ *   Swap `--kj-breadcrumb-separator-content` for `›`, `→`, or any glyph.
  *   @doc-file breadcrumb.custom-separator.example.ts
  * @doc-example Long path
+ *   How a 6+ level trail collapses with the default overflow behaviour.
  *   @doc-file breadcrumb.long-path.example.ts
+ *
+ * @doc-keyboard
+ *   Tab           — Moves focus to the next breadcrumb link
+ *   Enter         — Activates the focused link (native anchor semantics)
+ *
+ * @doc-aria
+ *   aria-label    — `"Breadcrumb"` on the nav landmark; override via `kjAriaLabel`
+ *   aria-current  — `"page"` on the terminal `<kj-breadcrumb-current>` cell
+ *   role          — `navigation` on the host
+ *
+ * @doc-touch
+ *   Links inherit `<kj-link>` sizing — the `sm` default keeps the trail
+ *   compact. Bump `kjSize` on the host or individual links when the trail is
+ *   the primary navigation target on mobile.
+ *
+ * @doc-a11y
+ *   Renders a `<nav aria-label="Breadcrumb">` landmark with an ordered list
+ *   inside. The current page cell carries `aria-current="page"` (not a link)
+ *   so AT users know they're already on it. Separators are decorative — the
+ *   default CSS pseudo-element keeps them out of the accessibility tree.
+ *
+ * @doc-related link,navigation,tabs
+ *
+ * @doc-css-var
+ *   --kj-breadcrumb-gap                — Gap between crumbs and separators.
+ *   --kj-breadcrumb-separator-content  — Content for the auto CSS separator. Defaults to `'/'`; swap for `'›'` or any glyph.
+ *   --kj-breadcrumb-overflow-pad       — Horizontal padding on the ellipsis cell.
+ *   --kj-color-breadcrumb-muted        — Color for non-current crumbs and separators. Inherits --kj-fg-muted.
+ *   --kj-color-breadcrumb-current      — Color for the current-page cell. Inherits --kj-fg-default.
+ *
  * @doc-category Library/Navigation
  * @doc
  * @doc-name breadcrumb

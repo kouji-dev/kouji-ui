@@ -5,8 +5,12 @@ import {
 } from './config.js';
 
 describe('config', () => {
-  it('lists six themes', () => {
-    expect(THEMES).toEqual(['kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate']);
+  it('lists every shipped theme', () => {
+    expect(THEMES).toEqual([
+      'kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate',
+      'sakura', 'bauhaus', 'dune', 'mint',
+      'forest', 'nord', 'terminal',
+    ]);
   });
 
   it('lists six pages each with path and slug', () => {

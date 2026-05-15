@@ -1,13 +1,15 @@
 import { parseArgs } from 'node:util';
+import { chromium } from '@playwright/test';
 import {
   BASE_URL, OUTPUT_DIR,
   validatePageFilter, validateThemeFilter,
 } from './config.js';
 import { ensureDevServer } from './dev-server.js';
-import { runAxeAndFonts, withChromium } from './runners/axe.js';
-import { runLighthouse } from './runners/lighthouse.js';
+import { runAxeAndFonts } from './runners/axe.js';
+import { launchLighthouseChrome, runLighthouse } from './runners/lighthouse.js';
 import { buildPageReport, buildSummary } from './aggregator.js';
 import { writePageReport, writeSummary } from './report-writer.js';
+import { runContrastCli } from './contrast.js';
 import type { PageDef, PageReport, Theme } from './types.js';
 
 interface Args {
@@ -28,6 +30,7 @@ function parseCliArgs(): Args {
 
 async function runOnePage(
   browser: import('@playwright/test').Browser,
+  lighthousePort: number,
   theme: Theme,
   page: PageDef,
 ): Promise<PageReport> {
@@ -47,7 +50,7 @@ async function runOnePage(
   }
 
   try {
-    lighthouse = await runLighthouse(url);
+    lighthouse = await runLighthouse(url, lighthousePort);
   } catch (err) {
     lighthouseError = (err as Error).message;
   }
@@ -86,19 +89,24 @@ async function main(): Promise<void> {
   const pages = validatePageFilter(args.page);
 
   const server = await ensureDevServer();
+  /* Launch ONE Playwright Chromium and ONE lighthouse-driven Chrome for the
+     whole pipeline. Previously each theme spawned its own Chromium (6×) and
+     each page launched a fresh Lighthouse-CLI Chrome (36×) — the new model
+     boots Chrome twice total. axe creates a fresh BrowserContext per page so
+     state doesn't leak between themes/URLs. */
+  const browser = await chromium.launch();
+  const lighthouseChrome = await launchLighthouseChrome();
   try {
     const reports: PageReport[] = [];
 
     const themeTasks = themes.map(async (theme) => {
       const themeReports: PageReport[] = [];
-      await withChromium(async (browser) => {
-        for (const page of pages) {
-          const report = await runOnePage(browser, theme, page);
-          await writePageReport(OUTPUT_DIR, theme, page.slug, report);
-          themeReports.push(report);
-          console.log(`  ✓ ${theme}/${page.slug}`);
-        }
-      });
+      for (const page of pages) {
+        const report = await runOnePage(browser, lighthouseChrome.port, theme, page);
+        await writePageReport(OUTPUT_DIR, theme, page.slug, report);
+        themeReports.push(report);
+        console.log(`  ✓ ${theme}/${page.slug}`);
+      }
       return themeReports;
     });
 
@@ -110,11 +118,22 @@ async function main(): Promise<void> {
 
     printSummary(reports);
   } finally {
+    await lighthouseChrome.kill();
+    await browser.close();
     if (server.spawned) await server.stop();
   }
 }
 
-main().catch((err) => {
-  console.error('\n[a11y] fatal:', (err as Error).message);
-  process.exit(1);
-});
+if (process.argv[2] === 'contrast') {
+  try {
+    process.exit(runContrastCli(process.argv.slice(3)));
+  } catch (err) {
+    console.error('[a11y] contrast:', (err as Error).message);
+    process.exit(2);
+  }
+} else {
+  main().catch((err) => {
+    console.error('\n[a11y] fatal:', (err as Error).message);
+    process.exit(1);
+  });
+}

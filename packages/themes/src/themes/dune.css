@@ -1,0 +1,85 @@
+/* ─────────────────────────────────────────────────────────────
+   dune theme — light
+   Desert warmth: coral cream body, terracotta surfaces, deep
+   indigo ink, burnt-orange accent. Earthy, hand-printed feel.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.shared {
+  [data-theme="dune"] {
+    /* ── shape — soft, hand-made ── */
+    --kj-radius-box:      var(--kj-base-radius-2);
+    --kj-radius-field:    var(--kj-base-radius-1);
+    --kj-radius-selector: var(--kj-base-radius-1);
+    --kj-border:          var(--kj-base-border-1);
+    --kj-depth:           1;
+
+    /* ── type — light serif headlines on a sans body; warm hand-printed
+       feel without being overwrought. */
+    --kj-font-display:   var(--kj-base-font-serif);
+    --kj-display-weight: 400;
+    --kj-letter-spacing: -0.02em;
+
+    /* ── motion ── */
+    --kj-transition: var(--kj-base-transition-base);
+
+    --kj-bg-body:        #f5e9d6;
+    --kj-bg-surface:     #ead4b3;
+    --kj-bg-field:       #f0dcc0;
+    --kj-bg-elevated:    #faf0db;
+    --kj-bg-overlay:     rgba(42, 26, 64, 0.55);
+    --kj-bg-inverse:     #2a1a40;
+    --kj-bg-disabled:    #ddc5a3;
+
+    --kj-bg-primary:         #3a2862;
+    --kj-bg-primary-subtle:  #d4ccdf;
+    --kj-bg-accent:          #a8401a;
+    --kj-bg-accent-subtle:   #f5d8c8;
+
+    --kj-bg-info:            #1e3a8a;
+    --kj-bg-info-subtle:     #d4dcec;
+    --kj-bg-success:         #4a6b2b;
+    --kj-bg-success-subtle:  #dde4c8;
+    --kj-bg-warning:         #b8841f;
+    --kj-bg-warning-subtle:  #f5dfb8;
+    --kj-bg-danger:          #8b1818;
+    --kj-bg-danger-subtle:   #f3d8d4;
+
+    --kj-fg-default:    #2a1a40;
+    --kj-fg-muted:      #4a3258;
+    --kj-fg-subtle:     #6a5278;
+    --kj-fg-disabled:   #b8a085;
+
+    --kj-fg-on-primary:   #f5e9d6;
+    --kj-fg-on-accent:    #ffffff;
+    --kj-fg-on-info:      #ffffff;
+    --kj-fg-on-success:   #ffffff;
+    --kj-fg-on-warning:   #2a1a40;
+    --kj-fg-on-danger:    #ffffff;
+    --kj-fg-on-inverse:   #f5e9d6;
+
+    --kj-fg-primary:    #3a2862;
+    --kj-fg-accent:     #8a3415;
+    --kj-fg-info:       #1e3a8a;
+    --kj-fg-success:    #4a6b2b;
+    --kj-fg-warning:    #6b4a0e;
+    --kj-fg-danger:     #8b1818;
+
+    --kj-border-default:   #d4c2a0;
+    --kj-border-muted:     #e0d2b8;
+    --kj-border-strong:    #ad9468;
+    --kj-border-focus:     #3a2862;
+    --kj-border-disabled:  #ddc5a3;
+    --kj-border-primary:   #3a2862;
+    --kj-border-danger:    #8b1818;
+
+    /* Warm earth-tinted shadows. */
+    --kj-shadow-sm:     0 1px 3px rgba(80, 50, 20, 0.12);
+    --kj-shadow-md:     0 6px 16px rgba(80, 50, 20, 0.18);
+    --kj-shadow-lg:     0 20px 48px rgba(80, 50, 20, 0.26);
+    --kj-shadow-focus:  0 0 0 3px rgba(58, 40, 98, 0.35);
+
+    /* Indigo deepens on hover; fg stays cream to match the desert tone
+       (already the default fg-on-primary, so no fg-hover needed). */
+    --kj-button-bg-hover: #281a48;
+  }
+}

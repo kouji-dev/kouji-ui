@@ -87,9 +87,86 @@ export interface ExampleFile {
   exportName?: string;
 }
 
+/**
+ * Buckets an example into one of the rendered sections of the Docs page's
+ * Examples tab. Derived from the example's slug (the canonical filename
+ * minus `.example.ts`):
+ *
+ *   `<comp>.example.ts`                    → 'playground'
+ *   `<comp>.variants.example.ts`           → 'variants'
+ *   `<comp>.sizes.example.ts`              → 'sizes'
+ *   `<comp>.<state>.example.ts` where      → 'states'
+ *     state ∈ STATE_KEYS
+ *   anything else                          → 'recipe'
+ *
+ * STATE_KEYS (see examples.ts): disabled | loading | pressed | checked |
+ *   indeterminate | busy | readonly | invalid | active | hover | focus.
+ */
+export type ExampleBucket =
+  | 'playground'
+  | 'variants'
+  | 'sizes'
+  | 'states'
+  | 'recipe';
+
 export interface DocExample {
   label: string;
+  /**
+   * Optional short prose shown under the recipe card's title. Captured from
+   * the lines between the `@doc-example <label>` line and the first `@doc-file`
+   * / `@doc-theme` in the same example block. May be empty.
+   */
+  description?: string;
+  /**
+   * Stable URL-fragment slug for this example, derived from the canonical
+   * `*.example.ts` filename with `.example.ts` stripped (e.g.
+   * `button.size.example.ts` → `button.size`). Used as the anchor `id`
+   * on the example section so deep links survive label rewrites and
+   * example reordering. Falls back to a slugified label if no
+   * `.example.ts` file is referenced.
+   */
+  slug: string;
+  /** Which section of the Examples tab this card renders in. */
+  bucket: ExampleBucket;
   themedFiles: Record<string, ExampleFile[]>;
+}
+
+/** A `@doc-callout <kind>` block — rendered as an alert above the import row. */
+export type CalloutKind = 'note' | 'info' | 'warning' | 'danger';
+export interface Callout {
+  kind: CalloutKind;
+  body: string;
+}
+
+/** A `@doc-keyboard` entry — one line, key chord(s) + what they do. */
+export interface KeyboardEntry {
+  /** Key chord, e.g. `Enter`, `Space`, `Esc`, `Arrow Down`, `Ctrl+K`. */
+  keys: string;
+  /** What the key does. */
+  action: string;
+}
+
+/** A `@doc-aria` entry — one line, attribute name + description. */
+export interface AriaEntry {
+  /** Attribute, e.g. `aria-pressed`, `role`, `aria-controls`. */
+  attr: string;
+  /** Notes — when it's set, what value, why. */
+  notes: string;
+}
+
+/**
+ * A `@doc-css-var` entry — one line, CSS custom property name + description.
+ *
+ * Authored as `--kj-button-bg — background color of the button` (em-dash,
+ * en-dash, double-hyphen, single-hyphen, or `:` accepted as separator).
+ * Listed in the API tab so consumers know which vars they can override
+ * at any scope to restyle the component.
+ */
+export interface CssVarEntry {
+  /** Custom property name including the leading `--`, e.g. `--kj-button-bg`. */
+  name: string;
+  /** Short prose explaining what the var controls. */
+  description: string;
 }
 
 export interface DocItem {
@@ -120,6 +197,27 @@ export interface DocItem {
   typeAlias?: TypeAliasDef;
   const?: ConstDef;
   examples?: DocExample[];
+
+  /* ── Optional Docs-page metadata (typically on the main item) ───── */
+
+  /** `@doc-prereqs` — markdown block, rendered in Overview before Import. */
+  prereqs?: string;
+  /** `@doc-callout <kind>` blocks, rendered above Import in Overview. */
+  callouts?: Callout[];
+  /** `@doc-import` — overrides the auto-derived import snippet. */
+  importOverride?: string;
+  /** `@doc-keyboard` — structured key-chord → action contract. */
+  keyboard?: KeyboardEntry[];
+  /** `@doc-aria` — ARIA attributes the directive/component manages. */
+  aria?: AriaEntry[];
+  /** `@doc-css-var` — CSS custom properties consumers can override. */
+  cssVars?: CssVarEntry[];
+  /** `@doc-touch` — single-line touch-target compliance note. */
+  touchTarget?: string;
+  /** `@doc-a11y` — free-form a11y prose (markdown). */
+  a11yProse?: string;
+  /** `@doc-related foo,bar,baz` — slugs of related doc pages. */
+  related?: string[];
 }
 
 /**

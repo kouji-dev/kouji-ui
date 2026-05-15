@@ -6,6 +6,25 @@
 
 @layer kj.reset, kj.base, kj.shared, kj.component;
 
+@layer kj.reset {
+  /**
+   * Theme-scoped resets. Every `[data-theme]` block starts from these so
+   * nesting one theme inside another (e.g. the theme-generator preview
+   * stage rendered inside the docs `data-theme="kouji"` root) doesn't
+   * inherit brutalist defaults. Themes opt back in by declaring the var
+   * in `kj.shared` — kj.shared wins over kj.reset via layer ordering,
+   * regardless of selector specificity.
+   *
+   * Button shadow: defaults to `none`; kouji + bauhaus set their offset
+   * blocks in their own `[data-theme="X"]` declarations.
+   */
+  [data-theme] {
+    --kj-button-shadow:        none;
+    --kj-button-shadow-hover:  none;
+    --kj-button-shadow-active: none;
+  }
+}
+
 @layer kj.base {
   :root {
     /* ── color palette ── */
@@ -56,9 +75,17 @@
     --kj-base-space-6xl: 8rem;      /* 128px */
 
     /* ── type ── */
-    --kj-base-font-sans:    system-ui, -apple-system, sans-serif;
+    /* Base font families. Themes alias their --kj-font-{sans,mono,display}
+       to one of these. `font-sans` is the workhorse; `font-mono` is for
+       code/kbd/tabular numerics; `font-display` is the brand/headline
+       face (set per theme, defaults to sans). `font-serif` and
+       `font-block` are alternate display options used by editorial /
+       brutalist themes (paper/sakura/retro use serif; bauhaus uses block). */
+    --kj-base-font-sans:    'Space Grotesk', system-ui, -apple-system, sans-serif;
     --kj-base-font-mono:    'JetBrains Mono', 'Fira Code', monospace;
     --kj-base-font-display: 'Syne', system-ui, sans-serif;
+    --kj-base-font-serif:   'DM Serif Display', 'Times New Roman', Georgia, serif;
+    --kj-base-font-block:   'Archivo Black', system-ui, sans-serif;
     --kj-base-text-xs:   0.75rem;
     --kj-base-text-sm:   0.875rem;
     --kj-base-text-base: 1rem;
@@ -66,10 +93,73 @@
     --kj-base-text-xl:   1.25rem;
     --kj-base-text-2xl:  1.5rem;
 
+    /* ── Semantic defaults (inherited by every theme) ─────────────────
+       Themes only redeclare these when they need to differ. The contract
+       spec no longer requires per-theme declarations.
+
+       font-display defaults to sans — the safer, brand-neutral choice.
+       Themes that want a real display face (kouji/dark/retro/bauhaus/
+       nord → Syne; cyberpunk/terminal → mono) override. */
+    --kj-font-sans:    var(--kj-base-font-sans);
+    --kj-font-mono:    var(--kj-base-font-mono);
+    --kj-font-display: var(--kj-base-font-sans);
+
+    --kj-text-xs:   var(--kj-base-text-xs);
+    --kj-text-sm:   var(--kj-base-text-sm);
+    --kj-text-base: var(--kj-base-text-base);
+    --kj-text-lg:   var(--kj-base-text-lg);
+    --kj-text-xl:   var(--kj-base-text-xl);
+    --kj-text-2xl:  var(--kj-base-text-2xl);
+
+    --kj-space-xs:  var(--kj-base-space-xs);
+    --kj-space-sm:  var(--kj-base-space-sm);
+    --kj-space-md:  var(--kj-base-space-md);
+    --kj-space-lg:  var(--kj-base-space-lg);
+    --kj-space-xl:  var(--kj-base-space-xl);
+    --kj-space-2xl: var(--kj-base-space-2xl);
+    --kj-space-3xl: var(--kj-base-space-3xl);
+    --kj-space-4xl: var(--kj-base-space-4xl);
+    --kj-space-5xl: var(--kj-base-space-5xl);
+    --kj-space-6xl: var(--kj-base-space-6xl);
+
     /* ── borders & motion ── */
     --kj-base-border-1: 1px;
     --kj-base-border-2: 2px;
     --kj-base-transition-fast: 0.12s ease;
     --kj-base-transition-base: 0.2s ease;
+
+    /* ── Display-tone primitives (per-theme overridable, sane defaults)
+       Themes only redeclare when their identity calls for it (e.g. retro
+       wants italic display; bauhaus wants extra-heavy weight; sakura
+       wants light + tighter tracking). Components read these from the
+       resolved `--kj-display-*` cascade, not directly from base. */
+    --kj-display-weight:   600;
+    --kj-display-italic:   normal;
+    --kj-letter-spacing:  -0.02em;
+    --kj-hover-translate: -2px;
+
+    /* Companion radius for box-level chrome (cards, panels, dialogs).
+       Distinct from --kj-radius-box so a theme can have small box radius
+       (`box`) and a larger hero radius (`box-lg`). Defaults to box. */
+    --kj-radius-box-lg:   var(--kj-base-radius-3);
+
+    /* ── Icon tokens ────────────────────────────────────────────
+       Map [kjIconColor] semantic tokens to the existing --kj-fg-*
+       palette so colored icons inherit theme tone. [kjIconSize]
+       resolves to em-relative steps so icons scale with surrounding
+       text by default. Themes can override any of these to pin a
+       brand-specific icon palette. */
+    --kj-color-icon-muted:   var(--kj-fg-muted);
+    --kj-color-icon-primary: var(--kj-fg-primary);
+    --kj-color-icon-success: var(--kj-fg-success);
+    --kj-color-icon-warning: var(--kj-fg-warning);
+    --kj-color-icon-danger:  var(--kj-fg-danger);
+    --kj-color-icon-info:    var(--kj-fg-info);
+
+    --kj-icon-size-xs: 0.75em;
+    --kj-icon-size-sm: 0.875em;
+    --kj-icon-size-md: 1em;
+    --kj-icon-size-lg: 1.25em;
+    --kj-icon-size-xl: 1.5em;
   }
 }

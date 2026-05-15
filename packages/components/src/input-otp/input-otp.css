@@ -14,9 +14,9 @@
   .kj-input-otp__group {
     --kj-otp-cell-size:         2.75rem; /* 44px — WCAG 2.5.5 touch target */
     --kj-otp-cell-gap:          0.5rem;
-    --kj-otp-cell-bg:           var(--kj-color-base-100);
-    --kj-otp-cell-fg:           var(--kj-color-base-content);
-    --kj-otp-cell-border-color: var(--kj-color-base-300);
+    --kj-otp-cell-bg:           var(--kj-bg-field);
+    --kj-otp-cell-fg:           var(--kj-fg-default);
+    --kj-otp-cell-border-color: var(--kj-border-default);
     --kj-otp-cell-border-width: var(--kj-border);
     --kj-otp-cell-radius:       var(--kj-radius-field);
     --kj-otp-cell-font:         var(--kj-font-sans);
@@ -41,7 +41,7 @@
     border-radius: var(--kj-otp-cell-radius);
     font:          var(--kj-otp-cell-font-size) / 1 var(--kj-otp-cell-font);
     text-align:    center;
-    caret-color:   var(--kj-color-primary);
+    caret-color:   var(--kj-fg-primary);
     transition:    border-color var(--kj-transition), box-shadow var(--kj-transition);
     /* Remove default browser padding so content stays centred */
     padding: 0;
@@ -50,15 +50,15 @@
   /* Focus ring via data-focus-visible (KjFocusRing on each cell) */
   .kj-input-otp__cell[data-focus-visible],
   .kj-input-otp__cell:focus-visible {
-    outline:        2px solid var(--kj-color-primary);
+    outline:        2px solid var(--kj-fg-primary);
     outline-offset: 2px;
-    --kj-otp-cell-border-color: var(--kj-color-primary);
+    --kj-otp-cell-border-color: var(--kj-fg-primary);
   }
 
   /* Invalid state */
   .kj-input-otp__group[data-invalid] .kj-input-otp__cell,
   .kj-input-otp__group[aria-invalid="true"] .kj-input-otp__cell {
-    --kj-otp-cell-border-color: var(--kj-color-destructive);
+    --kj-otp-cell-border-color: var(--kj-fg-danger);
   }
 
   /* Disabled state */
@@ -66,12 +66,12 @@
   .kj-input-otp__cell:disabled {
     opacity:    0.55;
     cursor:     not-allowed;
-    background: var(--kj-color-base-200);
+    background: var(--kj-bg-surface);
   }
 
   /* Readonly */
   .kj-input-otp__cell:read-only {
-    background: var(--kj-color-base-200);
+    background: var(--kj-bg-surface);
     cursor:     default;
   }
 
@@ -79,7 +79,7 @@
   .kj-input-otp__separator {
     display:     inline-flex;
     align-items: center;
-    color:       var(--kj-color-neutral);
+    color:       var(--kj-fg-muted);
     font-size:   var(--kj-text-sm);
     user-select: none;
     padding:     0 0.125rem;

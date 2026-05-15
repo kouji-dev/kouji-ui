@@ -15,12 +15,9 @@ import { KjInputOtpComponent } from './input-otp';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--kj-space-lg);
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-200);
-    }
-    label { font-size: var(--kj-text-sm); color: var(--kj-color-base-content); }
-    .hint { font-size: var(--kj-text-xs); color: var(--kj-color-neutral); }
+      gap: var(--kj-space-lg); }
+    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
+    .hint { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
   `],
   template: `
     <label for="input-otp-masked">Enter your PIN</label>

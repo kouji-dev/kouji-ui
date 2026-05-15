@@ -12,7 +12,7 @@ import { KjAvatarComponent } from './avatar';
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
   styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); padding: var(--kj-space-xl); background: var(--kj-color-base-200); }
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
   `],
   template: `
     <kj-avatar-group kjSize="sm" kjAriaLabel="small collaborators">

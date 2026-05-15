@@ -7,10 +7,10 @@
   max-height: min(94vh, calc(100vh - 2rem));
   min-height: 0;
   padding: 0;
-  background: var(--kj-color-base-100);
-  color: var(--kj-color-base-content);
+  background: var(--kj-bg-elevated);
+  color: var(--kj-fg-default);
   border-radius: var(--kj-radius-box);
-  border: 1px solid var(--kj-color-base-300);
+  border: 1px solid var(--kj-border-default);
   box-shadow: var(--kj-shadow-lg);
   overflow-x: hidden;
   overflow-y: auto;
@@ -26,8 +26,8 @@
 .palette-dialog__header {
   flex-shrink: 0;
   padding: var(--kj-space-sm) var(--kj-space-lg) var(--kj-space-sm);
-  border-bottom: 1px solid var(--kj-color-base-300);
-  background: color-mix(in oklch, var(--kj-color-base-200) 35%, var(--kj-color-base-100));
+  border-bottom: 1px solid var(--kj-border-default);
+  background: color-mix(in oklch, var(--kj-bg-surface) 35%, var(--kj-bg-elevated));
 }
 
 .palette-dialog__title-row {
@@ -50,15 +50,15 @@
   letter-spacing: 0.04em;
   padding: 0.125rem 0.5rem;
   border-radius: var(--kj-radius-field);
-  background: var(--kj-color-base-200);
-  border: 1px solid var(--kj-color-base-300);
-  color: color-mix(in oklch, var(--kj-color-base-content) 88%, transparent);
+  background: var(--kj-bg-field);
+  border: 1px solid var(--kj-border-default);
+  color: var(--kj-fg-default);
 }
 
 .palette-dialog__hint {
   margin: var(--kj-space-sm) 0 0;
   font: var(--kj-text-xs) var(--kj-font-sans);
-  color: color-mix(in oklch, var(--kj-color-base-content) 62%, transparent);
+  color: var(--kj-fg-subtle);
   line-height: 1.45;
 }
 
@@ -81,14 +81,14 @@
   margin: 0;
   font: var(--kj-text-sm) var(--kj-font-sans);
   font-weight: 600;
-  color: var(--kj-color-base-content);
+  color: var(--kj-fg-default);
 }
 
 .palette-dialog__footer {
   flex-shrink: 0;
   padding: var(--kj-space-sm) var(--kj-space-lg) var(--kj-space-md);
-  border-top: 1px solid var(--kj-color-base-300);
-  background: var(--kj-color-base-100);
+  border-top: 1px solid var(--kj-border-default);
+  background: var(--kj-bg-elevated);
 }
 
 .palette-dialog__fine {
@@ -102,7 +102,7 @@
   flex: 0 0 auto;
   font: var(--kj-text-sm) var(--kj-font-sans);
   font-weight: 500;
-  color: color-mix(in oklch, var(--kj-color-base-content) 78%, transparent);
+  color: var(--kj-fg-muted);
 }
 
 .palette-dialog__fine kj-input {

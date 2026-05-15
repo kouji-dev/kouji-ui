@@ -26,17 +26,12 @@ import {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: var(--kj-space-2xl);
-      padding: var(--kj-space-2xl);
-      background: var(--kj-color-base-200);
-      min-height: 22rem;
+      padding: var(--kj-space-2xl); min-height: 22rem;
     }
     .kj-speed-dial-directions__cell {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: var(--kj-space-xl);
-      background: var(--kj-color-base-100);
-      border-radius: var(--kj-radius-box);
+      justify-content: center; border-radius: var(--kj-radius-box);
       min-height: 8rem;
     }
   `],

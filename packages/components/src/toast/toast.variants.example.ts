@@ -8,7 +8,7 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
   selector: 'kj-toast-variants-example',
   standalone: true,
   imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
-  styles: [`:host { display: block; padding: var(--kj-space-xl); background: var(--kj-color-base-200); min-height: 8rem; }`],
+  styles: [`:host { display: block; min-height: 8rem; }`],
   template: `
     <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
       <kj-button (click)="show('default')">Default</kj-button>
