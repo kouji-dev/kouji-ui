@@ -7,5 +7,4 @@ export {
   kjContainsFilter,
   kjStartsWithFilter,
   type KjComboboxContext,
-  type KjComboboxOptionRegistration,
 } from './combobox.context';

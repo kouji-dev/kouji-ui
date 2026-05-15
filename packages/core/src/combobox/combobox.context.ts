@@ -1,4 +1,5 @@
 import { InjectionToken, Signal } from '@angular/core';
+import type { KjListNavigator } from '../primitives/list';
 
 /**
  * Shared state contract between [kjCombobox] root, [kjComboboxInput],
@@ -21,8 +22,6 @@ export interface KjComboboxContext {
   loading: Signal<boolean>;
   /** Whether free-text values (typed strings not in the option set) are allowed. */
   allowFreeText: Signal<boolean>;
-  /** Filter function used for synchronous filtering. */
-  filter: Signal<(query: string, label: string) => boolean>;
   /** Whether the directive should run its built-in filter. `false` for async. */
   shouldFilter: Signal<boolean>;
   /** id of the currently active descendant option (for `aria-activedescendant`). */
@@ -48,25 +47,10 @@ export interface KjComboboxContext {
   move(delta: 1 | -1): void;
   /** Commit the currently active option (if any). When free-text + no active option, commits the query. */
   commitActive(): void;
-
-  /** @internal — register an option element with the controller. */
-  registerOption(opt: KjComboboxOptionRegistration): void;
-  /** @internal — unregister an option. */
-  unregisterOption(id: string): void;
-  /** @internal — set the active option by id. */
-  setActiveId(id: string | null): void;
   /** @internal — record the input element so listbox can anchor to it. */
   setInputElement(el: HTMLElement | null): void;
-}
-
-/** @internal */
-export interface KjComboboxOptionRegistration {
-  id: string;
-  el: HTMLElement;
-  value: () => unknown;
-  label: () => string;
-  disabled: () => boolean;
-  setVisible: (visible: boolean) => void;
+  /** @internal — set / clear the navigator reference owned by KjComboboxInput. */
+  _setNavigator(n: KjListNavigator | null): void;
 }
 
 export const KJ_COMBOBOX = new InjectionToken<KjComboboxContext>('KjCombobox');
