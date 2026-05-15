@@ -1,15 +1,28 @@
 import {
   computed,
+  contentChildren,
   Directive,
   effect,
+  forwardRef,
   inject,
   input,
   model,
   output,
   signal,
   untracked,
+  type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { KjOverlayController } from '../primitives/overlay/controller';
+import {
+  KJ_LIST_NAVIGATOR_CONFIG,
+  KjListItem,
+  KjSelectionModel,
+  type KjCompareFn,
+  type KjListNavigatorConfig,
+  type KjListSelectionMode,
+  type KjTreeShape,
+} from '../primitives/list';
 import { KJ_TREE_SELECT, type KjTreeNode, type KjTreeSelectContext } from './tree-select.context';
 
 let _treeSelectIdCounter = 0;
@@ -33,6 +46,12 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
  * - `'multiple'` — selecting toggles the value in the selection set; the panel
  *   stays open.
  *
+ * Implements {@link KjListNavigatorConfig}: descendants (`KjListNavigator`,
+ * `KjSelectionModel`) read the canonical `value`, `mode`, `compareBy`, and
+ * optional `treeShape` from the same root via `KJ_LIST_NAVIGATOR_CONFIG`.
+ * The legacy {@link KjTreeSelectContext} surface is preserved as a thin
+ * delegate so existing node/toggle directives keep working.
+ *
  * @example
  * ```html
  * <div kjTreeSelect [(kjValue)]="selected" [kjNodes]="categories">
@@ -51,10 +70,12 @@ function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
   standalone: true,
   providers: [
     { provide: KJ_TREE_SELECT, useExisting: KjTreeSelect },
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjTreeSelect) },
+    KjSelectionModel,
     KjOverlayController,
   ],
 })
-export class KjTreeSelect implements KjTreeSelectContext {
+export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext {
   /** @internal — shared overlay controller; trigger + content + nodes all see this same instance. */
   private readonly controller = inject(KjOverlayController);
 
@@ -69,6 +90,14 @@ export class KjTreeSelect implements KjTreeSelectContext {
    * one value (or `undefined`); in `'multiple'` mode it holds an array.
    */
   readonly kjValue = model<unknown>(undefined);
+
+  /**
+   * Optional tree topology used by `KjSelectionModel` in `'leaf'` /
+   * `'cascade'` selection modes. Exposed as a signal so the model can
+   * follow it reactively without `KjTreeSelect` having to inject the
+   * model (that would re-introduce the NG0200 cycle).
+   */
+  readonly kjTreeShape = input<KjTreeShape<unknown> | null>(null);
 
   /** Set of node IDs that are currently expanded (two-way bindable). */
   readonly kjExpandedKeys = model<readonly unknown[]>([]);
@@ -88,6 +117,47 @@ export class KjTreeSelect implements KjTreeSelectContext {
   private readonly _expandedIds = signal<Set<string>>(new Set());
   private readonly _expandedValues = signal<Set<unknown>>(new Set());
   private readonly _selectedValues = signal<readonly unknown[]>([]);
+
+  // ── KjListNavigatorConfig implementation ────────────────────────────
+
+  /**
+   * Items contributed by `KjListItem` instances under this root. Empty
+   * until node-level wiring lands (Task 3 of the migration plan); kept
+   * here now so the config contract is satisfied today.
+   */
+  readonly items = contentChildren(KjListItem, { descendants: true });
+
+  /**
+   * Single canonical value signal. Shared with the legacy `kjValue`
+   * model — `KjSelectionModel` reads / writes through this signal.
+   */
+  readonly value = this.kjValue as unknown as WritableSignal<
+    unknown | readonly unknown[] | null
+  >;
+
+  /**
+   * `KjListSelectionMode` view of {@link kjSelectionMode} (which uses
+   * `'single' | 'multiple'`). Translates `'multiple'` → `'multi'` for
+   * the primitives layer; the public input keeps its existing shape.
+   */
+  readonly mode: Signal<KjListSelectionMode> = computed(() =>
+    this.kjSelectionMode() === 'multiple' ? 'multi' : 'single',
+  );
+
+  /** Equality fn used by `KjSelectionModel`. Defaults to `Object.is`. */
+  readonly compareBy = signal<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);
+
+  /** Re-exposes `kjTreeShape` under the {@link KjListNavigatorConfig} key. */
+  readonly treeShape = this.kjTreeShape;
+
+  /**
+   * Hook called by `KjListItem` after it toggles the shared selection
+   * model. In single mode (the only mode that returns `closeRequested:
+   * true`) we close the overlay; multi keeps the panel open.
+   */
+  afterSelect(_: unknown, closeRequested: boolean): void {
+    if (closeRequested) this.controller.close('programmatic');
+  }
 
   // ── KjTreeSelectContext implementation ──────────────────────────────
 
@@ -115,6 +185,13 @@ export class KjTreeSelect implements KjTreeSelectContext {
 
   // ── Selection ops ────────────────────────────────────────────────────
 
+  /**
+   * Manual selection path used by `KjTreeSelectNode` while node-level
+   * `KjListItem` composition hasn't landed yet. Mirrors the previous
+   * behavior: writes to `kjValue`, emits `kjNodeSelect`, closes in
+   * single mode. Task 3 of the migration plan replaces this with a
+   * `KjListItem`-driven toggle on the shared `KjSelectionModel`.
+   */
   selectNode(value: unknown): void {
     if (this.kjSelectionMode() === 'single') {
       this.kjValue.set(value);

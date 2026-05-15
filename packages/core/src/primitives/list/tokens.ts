@@ -33,6 +33,13 @@ export interface KjListNavigatorConfig {
    */
   readonly compareBy?: Signal<KjCompareFn<unknown>>;
   /**
+   * Tree topology signal. When provided, `KjSelectionModel` follows it
+   * reactively, so the consumer never needs to inject the model just
+   * to call `setTreeShape()`. Required for `'leaf'` / `'cascade'`
+   * selection modes; optional otherwise.
+   */
+  readonly treeShape?: Signal<KjTreeShape<unknown> | null>;
+  /**
    * Consumer-side hook invoked by `KjListItem` immediately after it
    * toggles the shared `KjSelectionModel`. Lets the consumer do its
    * post-selection work (close an overlay, set an input query, emit a

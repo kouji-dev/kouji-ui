@@ -44,6 +44,7 @@ export class KjSelectionModel<T = unknown> {
     const cfg = inject(KJ_LIST_NAVIGATOR_CONFIG);
     if (cfg.mode)      effect(() => this._mode.set(cfg.mode!()));
     if (cfg.compareBy) effect(() => { this._compareBy = cfg.compareBy!() as KjCompareFn<T>; });
+    if (cfg.treeShape) effect(() => { this._treeShape = cfg.treeShape!() as KjTreeShape<T> | null; });
   }
 
   /** Current mode. */

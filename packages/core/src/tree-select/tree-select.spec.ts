@@ -1,4 +1,5 @@
 import { render, fireEvent } from '@testing-library/angular';
+import { By } from '@angular/platform-browser';
 import { toHaveNoViolations } from 'jest-axe';
 import {
   KjTreeSelect,
@@ -7,6 +8,7 @@ import {
 } from './tree-select';
 import { KjTreeSelectTrigger } from './tree-select-trigger';
 import { KjTreeSelectContent } from './tree-select-content';
+import { KJ_LIST_NAVIGATOR_CONFIG } from '../primitives/list';
 
 expect.extend(toHaveNoViolations);
 
@@ -319,6 +321,21 @@ describe('KjTreeSelect – disabled node', () => {
     fixture.detectChanges();
     const node = container.querySelector('[kjTreeSelectNode]')!;
     expect(node).toHaveAttribute('aria-selected', 'false');
+  });
+});
+
+describe('KjTreeSelect – KjListNavigatorConfig integration', () => {
+  it('provides KJ_LIST_NAVIGATOR_CONFIG that reads/writes the kjValue model', async () => {
+    const { fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    const rootDe = fixture.debugElement.query(By.directive(KjTreeSelect));
+    const cfg = rootDe.injector.get(KJ_LIST_NAVIGATOR_CONFIG);
+    expect(cfg.value).toBeDefined();
+    cfg.value!.set('apple');
+    fixture.detectChanges();
+    expect((fixture.componentInstance as { selected: unknown }).selected).toBe('apple');
   });
 });
 
