@@ -1,7 +1,6 @@
 // packages/core/src/primitives/list/navigator.ts
 import {
   Directive,
-  ElementRef,
   computed,
   inject,
   input,
@@ -48,7 +47,6 @@ export class KjListNavigator {
 
   private readonly cfg = inject(KJ_LIST_NAVIGATOR_CONFIG);
   private readonly typeAhead = inject(KjTypeAhead, { optional: true });
-  private readonly el = inject(ElementRef<HTMLElement>);
 
   private readonly _activeId = signal<string | null>(null);
   /**
@@ -73,22 +71,13 @@ export class KjListNavigator {
   });
 
   /**
-   * Set the active item by id.
-   * No-op when the id is unchanged; emits `kjActiveChange` on change.
-   * Also imperatively updates `aria-activedescendant` on the host element
-   * so the DOM reflects the change synchronously (before change detection).
+   * Set the active item by id. No-op when unchanged; emits `kjActiveChange`.
+   * The `[attr.aria-activedescendant]` host binding flushes the change to
+   * the DOM on the next change-detection cycle.
    */
   setActive(id: string | null): void {
     if (this._activeId() === id) return;
     this._activeId.set(id);
-    // Imperatively sync the DOM attribute so tests and zoneless consumers
-    // see the update without waiting for a CD cycle.
-    const host = this.el.nativeElement;
-    if (id) {
-      host.setAttribute('aria-activedescendant', id);
-    } else {
-      host.removeAttribute('aria-activedescendant');
-    }
     this.kjActiveChange.emit(id);
   }
 

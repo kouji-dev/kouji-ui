@@ -1,6 +1,6 @@
 // packages/core/src/primitives/list/navigator.spec.ts
-import { Component, signal } from '@angular/core';
-import { render } from '@testing-library/angular';
+import { signal } from '@angular/core';
+import { render, type RenderResult } from '@testing-library/angular';
 import { describe, it, expect } from 'vitest';
 import { KjListNavigator } from './navigator';
 import { KjTypeAhead } from './type-ahead';
@@ -37,6 +37,14 @@ function setup(items: ReturnType<typeof fakeItem>[], opts: { wrap?: boolean; ori
   );
 }
 
+/** Dispatch a keydown and flush change detection so host bindings reach the DOM. */
+function press(host: HTMLElement, fixture: RenderResult<unknown>['fixture'], key: string): KeyboardEvent {
+  const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  host.dispatchEvent(e);
+  fixture.detectChanges();
+  return e;
+}
+
 describe('KjListNavigator', () => {
   it('starts with no active item', async () => {
     const { container } = await setup([fakeItem('1', 'A'), fakeItem('2', 'B')]);
@@ -46,107 +54,105 @@ describe('KjListNavigator', () => {
 
   it('ArrowDown moves to next item, wraps past last when kjWrap=true', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('1');
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('2');
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('1');
   });
 
   it('ArrowUp wraps to last item from first', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    press(host, fixture, 'ArrowUp');
     expect(host.getAttribute('aria-activedescendant')).toBe('2');
   });
 
   it('skips disabled items during navigation', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B', true), fakeItem('3', 'C')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('1');
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('3');
   });
 
   it('Home moves to first, End moves to last', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B'), fakeItem('3', 'C')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    press(host, fixture, 'End');
     expect(host.getAttribute('aria-activedescendant')).toBe('3');
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    press(host, fixture, 'Home');
     expect(host.getAttribute('aria-activedescendant')).toBe('1');
   });
 
   it('Enter calls _activate on the current item and preventDefaults', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-    const e = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
-    host.dispatchEvent(e);
+    press(host, fixture, 'ArrowDown');
+    const e = press(host, fixture, 'Enter');
     expect((items[0] as any).activated).toBe(1);
     expect(e.defaultPrevented).toBe(true);
   });
 
   it('Enter does NOT preventDefault when there is no active item', async () => {
     const items = [fakeItem('1', 'A')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    const e = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
-    host.dispatchEvent(e);
+    const e = press(host, fixture, 'Enter');
     expect(e.defaultPrevented).toBe(false);
     expect((items[0] as any).activated).toBe(0);
   });
 
   it('Space activates current item', async () => {
     const items = [fakeItem('1', 'A')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
+    press(host, fixture, ' ');
     expect((items[0] as any).activated).toBe(1);
   });
 
   it('PageDown moves by kjPageSize (default 10)', async () => {
     const items = Array.from({ length: 15 }, (_, i) => fakeItem(String(i + 1), 'Item ' + (i + 1)));
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
+    press(host, fixture, 'PageDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('11');
   });
 
   it('delegates single-char keys to KjTypeAhead and activates the match', async () => {
     const items = [fakeItem('1', 'Apple'), fakeItem('2', 'Banana')];
-    const { container } = await setup(items);
+    const { container, fixture } = await setup(items);
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', bubbles: true }));
+    press(host, fixture, 'b');
     expect(host.getAttribute('aria-activedescendant')).toBe('2');
   });
 
   it('kjOrientation="horizontal" responds to ArrowLeft/Right not Up/Down', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B')];
-    const { container } = await setup(items, { orientation: 'horizontal' });
+    const { container, fixture } = await setup(items, { orientation: 'horizontal' });
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'ArrowDown');
     expect(host.hasAttribute('aria-activedescendant')).toBe(false);
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    press(host, fixture, 'ArrowRight');
     expect(host.getAttribute('aria-activedescendant')).toBe('1');
   });
 
   it('kjWrap=false clamps at last item instead of wrapping', async () => {
     const items = [fakeItem('1', 'A'), fakeItem('2', 'B')];
-    const { container } = await setup(items, { wrap: false });
+    const { container, fixture } = await setup(items, { wrap: false });
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
-    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    press(host, fixture, 'End');
+    press(host, fixture, 'ArrowDown');
     expect(host.getAttribute('aria-activedescendant')).toBe('2');
   });
 });
