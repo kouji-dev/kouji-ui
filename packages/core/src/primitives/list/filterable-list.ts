@@ -1,5 +1,5 @@
 // packages/core/src/primitives/list/filterable-list.ts
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, Injector, computed, effect, inject, signal } from '@angular/core';
 import { KJ_LIST_NAVIGATOR_CONFIG, type KjFilterFn } from './tokens';
 import type { KjListItem } from './item';
 
@@ -25,7 +25,13 @@ const defaultSubstring: KjFilterFn = (q, hs) => {
  */
 @Injectable()
 export class KjFilterableList<T = unknown> {
-  private readonly cfg = inject(KJ_LIST_NAVIGATOR_CONFIG);
+  private readonly injector = inject(Injector);
+
+  /** Lazily resolved to break the circular dep when both KjFilterableList
+   *  and KJ_LIST_NAVIGATOR_CONFIG are provided on the same element. */
+  private get cfg() {
+    return this.injector.get(KJ_LIST_NAVIGATOR_CONFIG);
+  }
 
   private readonly _query = signal<string>('');
   private readonly _filterFn = signal<KjFilterFn>(defaultSubstring);

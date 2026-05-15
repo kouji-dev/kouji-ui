@@ -2,20 +2,22 @@ import {
   Directive,
   ElementRef,
   HostListener,
-  computed,
+  OnDestroy,
+  OnInit,
   inject,
 } from '@angular/core';
+import { KjListNavigator } from '../primitives/list';
 import { KJ_COMMAND_PALETTE } from './command-palette.context';
 
 /**
- * Search input for the command palette. Place on an `<input>` element inside
- * the palette. Wires the combobox ARIA pattern: `role="combobox"`,
- * `aria-controls` → listbox, `aria-activedescendant` → active item.
+ * Search input inside the command palette. Composes `KjListNavigator`
+ * — `aria-activedescendant` and the APG combobox 1.2 keyboard contract
+ * live here, not on the listbox.
  *
  * Keyboard contract:
- * - `ArrowDown` / `ArrowUp` — move active item
- * - `Home` / `End` — jump to first/last
- * - `Enter` — activate active item
+ * - `ArrowDown` / `ArrowUp` — move active item (handled by `KjListNavigator`)
+ * - `Home` / `End` — jump to first/last (handled by `KjListNavigator`)
+ * - `Enter` — activate active item (handled by `KjListNavigator`)
  * - `Escape` — first press clears query; second press propagates to dialog
  *
  * @doc-category Core/Actions
@@ -26,71 +28,43 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
   selector: 'input[kjCommandInput]',
   standalone: true,
   exportAs: 'kjCommandInput',
+  hostDirectives: [KjListNavigator],
   host: {
     'role': 'combobox',
-    'aria-expanded': 'true',
-    '[attr.aria-controls]': 'ctx.listId',
-    '[attr.aria-activedescendant]': 'activeItemId()',
-    'aria-autocomplete': 'list',
-    'aria-haspopup': 'listbox',
     'autocomplete': 'off',
     'autocorrect': 'off',
     'spellcheck': 'false',
-    '(input)': 'onInput($event)',
+    'aria-autocomplete': 'list',
+    'aria-haspopup': 'listbox',
+    '[attr.aria-controls]': 'palette.listId',
+    '[attr.aria-expanded]': '"true"',
+    '[attr.aria-busy]': 'palette.loading() ? "true" : null',
+    '(input)': 'palette.setQuery($any($event.target).value)',
   },
 })
-export class KjCommandInput {
-  readonly ctx = inject(KJ_COMMAND_PALETTE);
+export class KjCommandInput implements OnInit, OnDestroy {
+  protected readonly palette = inject(KJ_COMMAND_PALETTE);
+  private readonly nav = inject(KjListNavigator);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
-  /** The id of the currently active item, used for `aria-activedescendant`. */
-  readonly activeItemId = computed(() => {
-    const activeVal = this.ctx.activeValue();
-    const item = this.ctx.visibleItems().find(i => i.resolveValue() === activeVal);
-    return item?.id ?? null;
-  });
+  ngOnInit(): void {
+    this.palette._setNavigator(this.nav);
+  }
 
-  onInput(event: Event): void {
-    this.ctx.setQuery((event.target as HTMLInputElement).value);
+  ngOnDestroy(): void {
+    this.palette._setNavigator(null);
   }
 
   @HostListener('keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        this.ctx.moveActive(1);
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        this.ctx.moveActive(-1);
-        break;
-      case 'Home':
-        event.preventDefault();
-        this.ctx.setActiveTo('first');
-        break;
-      case 'End':
-        event.preventDefault();
-        this.ctx.setActiveTo('last');
-        break;
-      case 'Enter': {
-        event.preventDefault();
-        const activeVal = this.ctx.activeValue();
-        if (activeVal !== null && activeVal !== undefined) {
-          this.ctx.activate(activeVal);
-        }
-        break;
+    if (event.key === 'Escape') {
+      // First press: clear query. Second press propagates to the dialog.
+      if (this.palette.query()) {
+        event.stopPropagation();
+        this.palette.setQuery('');
+        this.el.nativeElement.value = '';
       }
-      case 'Escape': {
-        // First press: clear query. Second press propagates to the dialog.
-        if (this.ctx.query()) {
-          event.stopPropagation();
-          this.ctx.setQuery('');
-          this.el.nativeElement.value = '';
-        }
-        // If query is already empty, let the event bubble to KjDialog's Escape handler
-        break;
-      }
+      // If query is already empty, let the event bubble to KjDialog's Escape handler
     }
   }
 }
