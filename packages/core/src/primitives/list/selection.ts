@@ -1,5 +1,5 @@
 // packages/core/src/primitives/list/selection.ts
-import { Injectable, signal, type WritableSignal } from '@angular/core';
+import { Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import type { KjCompareFn, KjListSelectionMode, KjTreeShape } from './tokens';
 
 /**
@@ -43,9 +43,12 @@ export class KjSelectionModel<T = unknown> {
   readonly mode  = this._mode.asReadonly();
   /**
    * Current selection. `single` → `T | null`; multi-style → `readonly T[]`.
-   * Reactive — tracks the bound signal once {@link bindValue} has run.
+   * Reactive — returns the readonly view of the currently bound storage,
+   * so subscribers track the bound signal after {@link bindValue} runs.
    */
-  readonly value: () => T | readonly T[] | null = () => this._value();
+  get value(): Signal<T | readonly T[] | null> {
+    return this._value.asReadonly();
+  }
 
   /**
    * Bind a consumer-owned writable signal as the storage for `value`.
