@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/components",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Opinionated styled Angular components built on @kouji-ui/core directives. Themed at runtime via @kouji-ui/themes.",
   "license": "MIT",
   "repository": {
@@ -9,9 +9,20 @@
     "directory": "packages/components"
   },
   "homepage": "https://kouji-ui.onrender.com",
-  "bugs": { "url": "https://github.com/kouji-dev/kouji-ui/issues" },
-  "keywords": ["angular", "ui", "components", "themed", "kouji"],
-  "publishConfig": { "access": "public", "provenance": true },
+  "bugs": {
+    "url": "https://github.com/kouji-dev/kouji-ui/issues"
+  },
+  "keywords": [
+    "angular",
+    "ui",
+    "components",
+    "themed",
+    "kouji"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "peerDependencies": {
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0",

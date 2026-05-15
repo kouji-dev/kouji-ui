@@ -1,4 +1,4 @@
-# @kouji-ui/core
+# @kouji-ui/themes
 
 ## 0.0.6
 
@@ -36,7 +36,6 @@
   - **Input group examples** — updated to use `<kj-input>` component instead of bare `[kjInput]` directive, consistent with components-layer convention
   - **E2E coverage** — new Playwright specs verifying input-group visual parity and command-palette modal flow + Ctrl/Cmd+K hotkey
 
-- 58b3b98: Fix command palette ArrowUp/Down: stop resetting highlight when async results update the list; resolve item values dynamically for stable activation.
 - f93e535: Expand `@kouji-ui/components` from 5 wrappers to 16, with code+preview docs and daisyUI-style sidebar grouping.
 
   **New components** (each ships multiple `@doc-example` panels):
@@ -95,8 +94,6 @@
     reference so server-side rendering no longer throws
     `ReferenceError: document is not defined` while pre-rendering the
     time-picker.
-- 884c5a1: Prerender/SSR: avoid `document` ReferenceError in time-picker segment and calendar day (browser guard + `inject(DOCUMENT)` for `activeElement`).
-- a015b14: Theme generator (docs app): accessibility tooling and configurator-related updates in components/core — `@docCategory` on directives, tag `xs` size, tooltip `[hidden]` guard, calendar SSR guard, overlay/command-palette/browser DOM safety.
 - 7f95f75: `kj-input` now supports `type="color"` and a new `value` input that forwards to the underlying native input via property binding. Includes a `data-type` host attribute (mirrors `type`) and a small built-in style normalization for color swatches (44×32px). Existing `type` values and form-control bindings continue to work unchanged.
 
   Core fix in `kjInput`: the directive's CVA-to-DOM reflection now skips writing when the form control's value is null/undefined, so external `[value]` bindings work for non-form usage. Form-bound usage is unchanged (callers clear via `setValue('')`).
@@ -106,23 +103,3 @@
 - 1968274: Workspace resolution metadata: `@kouji-ui/core`'s `package.json` now declares `module`, `typings`, `exports`, and `type: "module"` so other workspace packages (`@kouji-ui/components`, future packages) can resolve `@kouji-ui/core` via Node module resolution after `ng build kj-core` runs. Workspace-only paths point at `../../dist/kj-core/...`; a `publishConfig` override rewrites them to in-package paths (`./fesm2022/...`, `./types/...`) for the published npm artifact, so consumers see the same shape as before.
 
   No public API change. Pure infrastructure for the upcoming `@kouji-ui/components` package (Wave 0 of the themes & components architecture).
-
-## 0.0.4
-
-### Patch Changes
-
-- 202d9de: CI fix: husky pre-push hook now skips in CI environments (`$CI` or `$GITHUB_ACTIONS` set). Prevents the Changesets action's automated push from being blocked by the changeset-status gate. No runtime effect on the published package.
-- dc0fe0f: Test-only fix: rewrite `KjToastService` test suite to use `TestBed.inject()` so `inject(KJ_TOAST_STRATEGY)` resolves through Angular DI (was crashing with `new KjToastService()` outside an injection context). No runtime change.
-- d6b40e1: Internal lint cleanup — replace `any` casts in select option storage with typed `HTMLElement & { __kjOptionValue?: unknown }` and convert ternary statement to if/else in overlay toggle. No public API or behavior change.
-
-## 0.0.3
-
-### Patch Changes
-
-- c177d1e: Rewrite README with real install/usage docs, primitive index, and design principles. Replaces the Angular CLI scaffold placeholder.
-
-## 0.0.2
-
-### Patch Changes
-
-- 1813d21: Initial publish — headless Angular 21 UI primitives over CDK with WCAG 2.1 AAA semantics and zero CSS.
