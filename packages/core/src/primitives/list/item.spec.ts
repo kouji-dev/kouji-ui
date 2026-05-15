@@ -17,6 +17,14 @@ describe('KjListItem', () => {
     expect(el.id).toMatch(/^kj-list-item-\d+$/);
   });
 
+  it('respects existing host id attribute over the auto-generated id', async () => {
+    const { container } = await render(
+      `<div role="option" id="markup-id" kjListItem [kjItemValue]="'a'">A</div>`,
+      { imports: [KjListItem] },
+    );
+    expect(container.querySelector('[kjListItem]')!.id).toBe('markup-id');
+  });
+
   it('reflects aria-disabled from composed KjDisabled', async () => {
     const { container } = await render(
       `<div role="option" kjListItem [kjDisabled]="true" [kjItemValue]="'a'">A</div>`,

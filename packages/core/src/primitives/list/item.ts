@@ -30,7 +30,6 @@ let _id = 0;
   standalone: true,
   hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
   host: {
-    '[id]': 'id',
     '[hidden]': '!visible()',
     '[attr.tabindex]': '"-1"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
@@ -56,10 +55,21 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   /** Fires when the item is activated (click / Enter / Space) and not disabled. Emits `value()`. */
   readonly activate = output<T | undefined>();
 
-  readonly id = `kj-list-item-${++_id}`;
+  /**
+   * Stable id used by `aria-activedescendant`. Resolved at construction.
+   * Priority: existing host `id` attribute (static markup) → generated
+   * `kj-list-item-N`. To pin an id, write `<el id="my-id" kjListItem>`.
+   */
+  readonly id: string;
 
   private readonly el = inject(ElementRef<HTMLElement>);
   readonly disabled = inject(KjDisabled).disabled;
+
+  constructor() {
+    const host = this.el.nativeElement;
+    this.id = host.id || `kj-list-item-${++_id}`;
+    host.id = this.id;
+  }
 
   private readonly _elText = signal('');
   readonly value     = computed<T | undefined>(() => this.kjItemValue());
