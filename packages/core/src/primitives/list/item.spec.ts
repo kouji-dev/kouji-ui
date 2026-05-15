@@ -41,6 +41,28 @@ describe('KjListItem', () => {
     expect(container.querySelector('[kjListItem]')!.hasAttribute('aria-selected')).toBe(false);
   });
 
+  it('binds aria-checked from KjSelectionModel.cascadeState when mode is cascade', async () => {
+    const { KjSelectionModel } = await import('./selection');
+    const { container, fixture } = await render(
+      `<div role="treeitem" kjListItem [kjItemValue]="'A1'">A1</div>`,
+      { imports: [KjListItem], providers: [KjSelectionModel] },
+    );
+    const m = fixture.debugElement.injector.get(KjSelectionModel);
+    m.setMode('cascade');
+    m.setTreeShape({
+      getParent: () => null,
+      getChildren: () => [],
+      isLeaf: () => true,
+    });
+    fixture.detectChanges();
+    const el = container.querySelector('[kjListItem]')!;
+    expect(el.getAttribute('aria-checked')).toBe('false');
+    expect(el.hasAttribute('aria-selected')).toBe(false);
+    m.toggle('A1' as unknown as never);
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-checked')).toBe('true');
+  });
+
   it('emits activate on click with the value', async () => {
     @Component({
       standalone: true,

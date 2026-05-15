@@ -34,6 +34,7 @@ let _id = 0;
     '[attr.tabindex]': '"-1"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-selected]': 'ariaSelected()',
+    '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-posinset]': 'posInSet()',
     '[attr.aria-setsize]': 'setSize()',
     '[attr.aria-keyshortcuts]': 'kjShortcut() || null',
@@ -94,11 +95,31 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   readonly setSize  = signal<number | null>(null);
 
   private readonly selection = inject(KjSelectionModel, { optional: true }) as KjSelectionModel<T> | null;
+
+  /**
+   * `aria-selected` driven by the injected selection model. `null` when
+   * no model is provided, the value is undefined, or the mode is
+   * `'cascade'` (which uses `aria-checked` instead, per WAI-ARIA tree).
+   */
   readonly ariaSelected = computed<'true' | 'false' | null>(() => {
     if (!this.selection) return null;
+    if (this.selection.mode() === 'cascade') return null;
     const v = this.value();
     if (v === undefined) return null;
     return this.selection.isSelected(v) ? 'true' : 'false';
+  });
+
+  /**
+   * `aria-checked` driven by `KjSelectionModel.cascadeState()` when the
+   * mode is `'cascade'`. Returns `'true'` / `'false'` / `'mixed'` per
+   * the WAI-ARIA tree checkbox tri-state pattern. `null` (attribute
+   * omitted) in any other mode.
+   */
+  readonly ariaChecked = computed<'true' | 'false' | 'mixed' | null>(() => {
+    if (!this.selection || this.selection.mode() !== 'cascade') return null;
+    const v = this.value();
+    if (v === undefined) return null;
+    return this.selection.cascadeState(v);
   });
 
   ngAfterContentInit(): void {
