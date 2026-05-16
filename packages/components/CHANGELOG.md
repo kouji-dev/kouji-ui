@@ -1,4 +1,4 @@
-# @kouji-ui/core
+# @kouji-ui/components
 
 ## 0.0.6
 
@@ -36,7 +36,6 @@
   - **Input group examples** — updated to use `<kj-input>` component instead of bare `[kjInput]` directive, consistent with components-layer convention
   - **E2E coverage** — new Playwright specs verifying input-group visual parity and command-palette modal flow + Ctrl/Cmd+K hotkey
 
-- 58b3b98: Fix command palette ArrowUp/Down: stop resetting highlight when async results update the list; resolve item values dynamically for stable activation.
 - f93e535: Expand `@kouji-ui/components` from 5 wrappers to 16, with code+preview docs and daisyUI-style sidebar grouping.
 
   **New components** (each ships multiple `@doc-example` panels):
@@ -59,6 +58,8 @@
   - The docs extractor adds the daisyUI-style category union (`actions` / `data-input` / `data-display` / `navigation` / `feedback`) for the components track. The core track keeps its existing categories.
   - Manifest dev-watcher now invalidates on `packages/components/src` changes too.
 
+- 78d5e83: - Docs app (ignored by changesets): unified sidebar built from `@doc-category` paths — expandable category tree, single Getting Started shortcut, `DocsService.unifiedNavTree` + `build-docs-nav-tree`; Playwright/unit tests updated.
+  - List component CSS tweaks aligned with docs/theme usage.
 - 51422f1: Use `forwardRef` for the self-referential `KJ_ROVING_TABINDEX` provider on `KjRovingTabindex`. Behavior is unchanged in normal Angular builds (the compiler already handles the self-reference); this prevents a temporal-dead-zone error when the file is loaded by tooling that runs the raw decorator metadata (e.g. Playwright's TS loader sweeping spec files).
 - 2484383: Add `@kouji-ui/core/icon` — provider-agnostic icon layer:
   - `KjIconDirective` (`[span,i][kjIcon]`) renders icons via CSS custom
@@ -113,7 +114,6 @@
     reference so server-side rendering no longer throws
     `ReferenceError: document is not defined` while pre-rendering the
     time-picker.
-- 884c5a1: Prerender/SSR: avoid `document` ReferenceError in time-picker segment and calendar day (browser guard + `inject(DOCUMENT)` for `activeElement`).
 - a015b14: Theme generator (docs app): accessibility tooling and configurator-related updates in components/core — `@docCategory` on directives, tag `xs` size, tooltip `[hidden]` guard, calendar SSR guard, overlay/command-palette/browser DOM safety.
 - 7f95f75: `kj-input` now supports `type="color"` and a new `value` input that forwards to the underlying native input via property binding. Includes a `data-type` host attribute (mirrors `type`) and a small built-in style normalization for color swatches (44×32px). Existing `type` values and form-control bindings continue to work unchanged.
 
@@ -121,26 +121,24 @@
 
   These changes power the new in-app theme generator at `/theme-generator` in the docs site — fork built-in themes, edit colors with the native picker, tweak shape/font/motion controls, save multiple drafts to localStorage, export as CSS or JSON, import JSON back.
 
+- 20bd644: Add `@doc` on `KjTooltipComponent` so the docs extractor includes the Tooltip page (manifest + search).
+- 6ee4f26: Docs extractor requires `@doc` on `KjTooltipComponent` so Tooltip appears in manifest, sidebar, and search.
 - 1968274: Workspace resolution metadata: `@kouji-ui/core`'s `package.json` now declares `module`, `typings`, `exports`, and `type: "module"` so other workspace packages (`@kouji-ui/components`, future packages) can resolve `@kouji-ui/core` via Node module resolution after `ng build kj-core` runs. Workspace-only paths point at `../../dist/kj-core/...`; a `publishConfig` override rewrites them to in-package paths (`./fesm2022/...`, `./types/...`) for the published npm artifact, so consumers see the same shape as before.
 
   No public API change. Pure infrastructure for the upcoming `@kouji-ui/components` package (Wave 0 of the themes & components architecture).
 
-## 0.0.4
-
-### Patch Changes
-
-- 202d9de: CI fix: husky pre-push hook now skips in CI environments (`$CI` or `$GITHUB_ACTIONS` set). Prevents the Changesets action's automated push from being blocked by the changeset-status gate. No runtime effect on the published package.
-- dc0fe0f: Test-only fix: rewrite `KjToastService` test suite to use `TestBed.inject()` so `inject(KJ_TOAST_STRATEGY)` resolves through Angular DI (was crashing with `new KjToastService()` outside an injection context). No runtime change.
-- d6b40e1: Internal lint cleanup — replace `any` casts in select option storage with typed `HTMLElement & { __kjOptionValue?: unknown }` and convert ternary statement to if/else in overlay toggle. No public API or behavior change.
-
-## 0.0.3
-
-### Patch Changes
-
-- c177d1e: Rewrite README with real install/usage docs, primitive index, and design principles. Replaces the Angular CLI scaffold placeholder.
-
-## 0.0.2
-
-### Patch Changes
-
-- 1813d21: Initial publish — headless Angular 21 UI primitives over CDK with WCAG 2.1 AAA semantics and zero CSS.
+- Updated dependencies [625e81a]
+- Updated dependencies [9acdb07]
+- Updated dependencies [58b3b98]
+- Updated dependencies [f93e535]
+- Updated dependencies [51422f1]
+- Updated dependencies [2484383]
+- Updated dependencies [4b7487f]
+- Updated dependencies [8406d0f]
+- Updated dependencies [2484383]
+- Updated dependencies [a485472]
+- Updated dependencies [884c5a1]
+- Updated dependencies [a015b14]
+- Updated dependencies [7f95f75]
+- Updated dependencies [1968274]
+  - @kouji-ui/core@0.0.6

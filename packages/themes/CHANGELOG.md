@@ -1,4 +1,4 @@
-# @kouji-ui/core
+# @kouji-ui/themes
 
 ## 0.0.6
 
@@ -36,7 +36,6 @@
   - **Input group examples** — updated to use `<kj-input>` component instead of bare `[kjInput]` directive, consistent with components-layer convention
   - **E2E coverage** — new Playwright specs verifying input-group visual parity and command-palette modal flow + Ctrl/Cmd+K hotkey
 
-- 58b3b98: Fix command palette ArrowUp/Down: stop resetting highlight when async results update the list; resolve item values dynamically for stable activation.
 - f93e535: Expand `@kouji-ui/components` from 5 wrappers to 16, with code+preview docs and daisyUI-style sidebar grouping.
 
   **New components** (each ships multiple `@doc-example` panels):
@@ -73,24 +72,6 @@
     rendering for monochrome SVG and `content` for font glyphs.
 
 - 4b7487f: Restore nullable input types on component wrappers (kjValue, kjMin, kjMax, kjReferenceDate, etc.) to match the headless directives' contracts. Sentinel-default approach was producing broken 2-way binding chains and incorrect runtime behaviour on null. Time-picker core now caches a stable per-instance reference Date so `serialise()` doesn't churn new Date() on every commit.
-- 8406d0f: Finalize the listbox-primitives migration for cascade-select, tree-select, menubar, and combobox.
-
-  **`@kouji-ui/core`**
-  - `KjSelectionModel` now receives its source signals via a `bind()` call from the consumer root (replacing the older inject-the-config pattern). The model auto-derives a tree shape from each `KjListItem`'s parent DI pointer when the consumer doesn't supply one explicitly — DOM-nested clusters (cascade-select, sub-menus) are tree-aware out of the box. `'single'` mode now respects the shape and blocks branch commits at the model layer.
-  - `KjListItem` exposes a `parent` reference (nearest ancestor `KjListItem` via `skipSelf` element-injector lookup) and gates activation through `KjSelectionModel.canActivate(value)` — branch options serve purely as disclosure controls without leaking values.
-  - `KjCascadeSelectOption` migrates to mode `'single'` (was `'leaf'`) for a clean string value rather than an array; aliases `KjListItem` inputs as `kjValue`/`kjLabel`/`kjDisabled` (was `kjOptionValue`/`kjOptionLabel`/`kjDisabled`) to match `KjTreeSelectNode`'s convention. Branch detection switched from imperative `_registerSubPanel()` to a `contentChildren(KjCascadeSelectSubPanel)` query.
-  - `KjCascadeSelect` removes the required `kjTreeShape` input — the consumer-supplied shape is optional now (defaults to the auto-derived one). Path derivation moves to `KjSelectionModel.pathTo()`.
-  - `KjMenubarItem` gains a `kjActivate` output (bridged from `KjListItem.activate`) and now early-returns from its open/close toggle when `kjDropdownMenuTriggerFor` is unset, so a sibling `[kjDropdownMenuTrigger]` on the same element can own the overlay state without the item's toggle handler closing the dropdown that just opened (the two directives share a single per-element `KjOverlayController`).
-
-  **`@kouji-ui/components`**
-  - `KjCascadeOptionComponent` now extends `KjCascadeSelectOption` directly and registers itself under the directive's token via `useExisting` so projected sub-panels resolve their parent option through normal element-injector DI. This works around Angular 21's NG2017 rule (chained hostDirective alias forwarding is forbidden) while keeping the markup-driven recursive API.
-  - Cascade-option public inputs renamed to `kjValue`/`kjLabel`/`kjDisabled` to match tree-select-node and the new core aliases.
-  - `kj-menubar-item` wrapper forwards the new `(kjActivate)` output.
-  - Menubar examples rewritten (the previous files were placeholders): `default`, `disabled-item`, `with-shortcuts` (composes `<kj-kbd>`), `with-submenu` (uses the standard `kjDropdownMenuTrigger` + `<kj-dropdown-menu-content [kjFor]>` idiom).
-  - Dropdown-menu playground gains a "Last selected" readout wired through `(kjSelect)` on each item; menubar playground gets the same readout wired through the new `(kjActivate)`.
-  - `kj-option` (select) selected-state styling now uses a tinted primary token (`color-mix(in oklab, var(--kj-bg-primary) 12%, transparent)` + `var(--kj-fg-primary)` + `font-weight: 600`), mirroring `kj-tree-select-node` so the listbox family stays visually consistent across themes.
-  - New `packages/components/src/overlay/` aggregator stylesheet so consumers register a single overlay CSS entry rather than per-component overlays in `angular.json`.
-
 - 2484383: Overlay primitive refactor and select-family alignment.
 
   **`@kouji-ui/core`**
@@ -113,8 +94,6 @@
     reference so server-side rendering no longer throws
     `ReferenceError: document is not defined` while pre-rendering the
     time-picker.
-- 884c5a1: Prerender/SSR: avoid `document` ReferenceError in time-picker segment and calendar day (browser guard + `inject(DOCUMENT)` for `activeElement`).
-- a015b14: Theme generator (docs app): accessibility tooling and configurator-related updates in components/core — `@docCategory` on directives, tag `xs` size, tooltip `[hidden]` guard, calendar SSR guard, overlay/command-palette/browser DOM safety.
 - 7f95f75: `kj-input` now supports `type="color"` and a new `value` input that forwards to the underlying native input via property binding. Includes a `data-type` host attribute (mirrors `type`) and a small built-in style normalization for color swatches (44×32px). Existing `type` values and form-control bindings continue to work unchanged.
 
   Core fix in `kjInput`: the directive's CVA-to-DOM reflection now skips writing when the form control's value is null/undefined, so external `[value]` bindings work for non-form usage. Form-bound usage is unchanged (callers clear via `setValue('')`).
@@ -124,23 +103,3 @@
 - 1968274: Workspace resolution metadata: `@kouji-ui/core`'s `package.json` now declares `module`, `typings`, `exports`, and `type: "module"` so other workspace packages (`@kouji-ui/components`, future packages) can resolve `@kouji-ui/core` via Node module resolution after `ng build kj-core` runs. Workspace-only paths point at `../../dist/kj-core/...`; a `publishConfig` override rewrites them to in-package paths (`./fesm2022/...`, `./types/...`) for the published npm artifact, so consumers see the same shape as before.
 
   No public API change. Pure infrastructure for the upcoming `@kouji-ui/components` package (Wave 0 of the themes & components architecture).
-
-## 0.0.4
-
-### Patch Changes
-
-- 202d9de: CI fix: husky pre-push hook now skips in CI environments (`$CI` or `$GITHUB_ACTIONS` set). Prevents the Changesets action's automated push from being blocked by the changeset-status gate. No runtime effect on the published package.
-- dc0fe0f: Test-only fix: rewrite `KjToastService` test suite to use `TestBed.inject()` so `inject(KJ_TOAST_STRATEGY)` resolves through Angular DI (was crashing with `new KjToastService()` outside an injection context). No runtime change.
-- d6b40e1: Internal lint cleanup — replace `any` casts in select option storage with typed `HTMLElement & { __kjOptionValue?: unknown }` and convert ternary statement to if/else in overlay toggle. No public API or behavior change.
-
-## 0.0.3
-
-### Patch Changes
-
-- c177d1e: Rewrite README with real install/usage docs, primitive index, and design principles. Replaces the Angular CLI scaffold placeholder.
-
-## 0.0.2
-
-### Patch Changes
-
-- 1813d21: Initial publish — headless Angular 21 UI primitives over CDK with WCAG 2.1 AAA semantics and zero CSS.
