@@ -5,8 +5,6 @@ version: "?"
 date: "?"
 category: component
 status: idea
-issues: 27
-prs: 0
 candor: Not soon. Want kj's Angular story to be airtight first.
 ---
 

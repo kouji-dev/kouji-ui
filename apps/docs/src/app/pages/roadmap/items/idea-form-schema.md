@@ -6,8 +6,6 @@ date: Q4 2026
 category: component
 status: idea
 candidate: true
-issues: 6
-prs: 0
 candor: Not committed. Need to validate the API against 3+ real apps first.
 ---
 

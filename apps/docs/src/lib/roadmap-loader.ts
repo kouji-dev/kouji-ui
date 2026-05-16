@@ -92,8 +92,6 @@ function parseItem(id: string, raw: string): RoadmapItem {
     date:        need('date', 'string') as string,
     category,
     status,
-    issues:      need('issues', 'number') as number,
-    prs:         need('prs', 'number') as number,
     ...(typeof fm['candor']   === 'string'  ? { candor:   fm['candor']   as string } : {}),
     ...(typeof fm['progress'] === 'number'  ? { progress: fm['progress'] as number } : {}),
     ...(fm['candidate']       === true      ? { candidate: true } : {}),

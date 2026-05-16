@@ -79,7 +79,6 @@ export class RoadmapPage {
       case 'date-asc':     arr.sort((a, b) => versionSort(a.version) - versionSort(b.version)); break;
       case 'version-desc': arr.sort((a, b) => b.version.localeCompare(a.version)); break;
       case 'version-asc':  arr.sort((a, b) => a.version.localeCompare(b.version)); break;
-      case 'issues':       arr.sort((a, b) => (b.issues || 0) - (a.issues || 0)); break;
     }
     return arr;
   });

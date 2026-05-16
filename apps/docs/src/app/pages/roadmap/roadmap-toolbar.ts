@@ -72,7 +72,6 @@ import {
       <kj-option [value]="'date-asc'">sort: oldest first</kj-option>
       <kj-option [value]="'version-desc'">sort: version desc</kj-option>
       <kj-option [value]="'version-asc'">sort: version asc</kj-option>
-      <kj-option [value]="'issues'">sort: most discussed</kj-option>
     </kj-select>
   `,
   styles: `

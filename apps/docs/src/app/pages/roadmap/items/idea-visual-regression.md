@@ -6,8 +6,6 @@ date: Q4 2026
 category: perf
 status: idea
 candidate: true
-issues: 4
-prs: 0
 candor: Storage cost of N components × 13 themes × multiple states is real — need a sampling strategy.
 ---
 

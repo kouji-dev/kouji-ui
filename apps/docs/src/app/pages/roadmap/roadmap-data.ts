@@ -19,8 +19,7 @@ export type SortMode =
   | 'date-desc'
   | 'date-asc'
   | 'version-desc'
-  | 'version-asc'
-  | 'issues';
+  | 'version-asc';
 
 export interface RoadmapItem {
   readonly id: string;
@@ -31,8 +30,6 @@ export interface RoadmapItem {
   readonly date: string;
   readonly category: CategoryId;
   readonly status: StatusId;
-  readonly issues: number;
-  readonly prs: number;
   readonly candor?: string | null;
   readonly progress?: number;
   readonly candidate?: boolean;

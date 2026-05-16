@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import {
   KjBadgeComponent,
-  KjLinkComponent,
   KjProgressBarComponent,
 } from '@kouji-ui/components';
 import { RoadmapItem } from './roadmap-data';
@@ -15,7 +14,7 @@ import { RoadmapItem } from './roadmap-data';
 @Component({
   selector: 'kj-roadmap-card',
   standalone: true,
-  imports: [KjBadgeComponent, KjLinkComponent, KjProgressBarComponent],
+  imports: [KjBadgeComponent, KjProgressBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'role': 'button',
@@ -58,24 +57,11 @@ import { RoadmapItem } from './roadmap-data';
 
     <div class="foot">
       <span class="cat" [attr.data-cat]="item().category">{{ item().category }}</span>
-      <span class="issues">
-        <span title="open issues">{{ item().issues }}↯</span>
-        @if (item().prs > 0) {
-          <span title="open pull requests">{{ item().prs }}⤴</span>
-        }
-      </span>
     </div>
 
     <div class="details">
       <div>
         <p class="long">{{ item().longDesc }}</p>
-        <div class="link-row" (click)="$event.stopPropagation()">
-          <kj-link kjHref="#" kjTarget="_blank">{{ item().issues }} issues ↗</kj-link>
-          @if (item().prs > 0) {
-            <kj-link kjHref="#" kjTarget="_blank">{{ item().prs }} PRs ↗</kj-link>
-          }
-          <kj-link kjHref="#" kjTarget="_blank">rfc thread ↗</kj-link>
-        </div>
       </div>
     </div>
   `,

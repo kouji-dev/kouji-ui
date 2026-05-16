@@ -5,8 +5,6 @@ version: "?"
 date: "?"
 category: docs
 status: idea
-issues: 1
-prs: 0
 candor: Speculative. Waiting for the dust to settle on agent-tool standards before locking a shape.
 ---
 

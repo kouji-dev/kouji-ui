@@ -5,8 +5,6 @@ version: "?"
 date: "?"
 category: theme
 status: idea
-issues: 4
-prs: 0
 candor: Fun toy. Real value depends on how good the extracted palettes actually look in real components.
 ---
 
