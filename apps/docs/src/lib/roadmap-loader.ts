@@ -31,22 +31,19 @@ function findItemsDir(start: string): string {
   throw new Error(`Roadmap: could not find items/ directory starting from ${start}`);
 }
 
-let _cache: readonly RoadmapItem[] | null = null;
-
-/** Returns the parsed roadmap, caching after the first call. */
+/**
+ * Returns the parsed roadmap. No cache: each call re-reads the `items/`
+ * directory and re-parses every file. ~20 small markdown files take <5ms
+ * to parse in total, and the no-cache path means edits to `.md` content
+ * show up on the very next request — no dev-server restart, no file
+ * watcher, no stale TransferState.
+ */
 export function getRoadmap(): readonly RoadmapItem[] {
-  if (_cache) return _cache;
   const itemsDir = findItemsDir(process.cwd());
   const files = readdirSync(itemsDir).filter(f => f.endsWith('.md'));
-  _cache = files
+  return files
     .map(f => parseItem(f.replace(/\.md$/, ''), readFileSync(join(itemsDir, f), 'utf8')))
     .sort((a, b) => a.id.localeCompare(b.id));
-  return _cache;
-}
-
-/** Invalidate the cache (dev hot-reload uses this). */
-export function invalidateRoadmap(): void {
-  _cache = null;
 }
 
 function parseItem(id: string, raw: string): RoadmapItem {
