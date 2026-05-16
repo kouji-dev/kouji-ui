@@ -1,0 +1,32 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/components — overlay-family aggregator
+   --------------------------------------------------------------
+   Single global stylesheet entry for every overlay-based piece in
+   the kit. Re-exports:
+
+   - The core overlay primitive's container/wrapper/backdrop CSS
+     (`@kouji-ui/core/src/primitives/overlay/overlay.css`).
+   - Every themed overlay-family component stylesheet
+     (popover, tooltip, dropdown-menu, dialog, drawer, toast,
+     confirm-popup).
+
+   Each themed file is also imported by its wrapper component's
+   `styleUrl`, so the wrapper-component path keeps working. This
+   aggregator exists so the directive-level API (e.g.
+   `<kj-dropdown-menu-content>` straight from `@kouji-ui/core`)
+   is styled without forcing consumers to instantiate the wrapper
+   component.
+
+   Register this file once in your build configuration (e.g. via
+   `angular.json` `styles`) alongside `@kouji-ui/themes`.
+   ──────────────────────────────────────────────────────────── */
+
+@import "../../../core/src/primitives/overlay/overlay.css";
+
+@import "../popover/popover.css";
+@import "../tooltip/tooltip.css";
+@import "../dropdown-menu/dropdown-menu.css";
+@import "../dialog/dialog.css";
+@import "../drawer/drawer.css";
+@import "../toast/toast.css";
+@import "../confirm-popup/confirm-popup.css";

@@ -1,16 +1,23 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { KjMenubarComponent, KjMenubarItemComponent } from './menubar';
 
 /**
- * Menubar with a disabled top-level item.
- *
- * TODO(overlay-migration): rewrite using the new dropdown-menu primitives
- * (KjDropdownMenuTrigger / KjDropdownMenuContent) and the menubar wrappers.
+ * Menubar with a disabled top-level item. `[kjDisabled]="true"` drops the
+ * item from the keyboard cycle, dims it, and prevents activation.
  */
 @Component({
   selector: 'kj-menubar-disabled-item-example',
   standalone: true,
-  imports: [],
-  styles: [`:host { display: block; padding: var(--kj-space-2xl); min-height: 18rem; }`],
-  template: `<p>Menubar disabled-item example pending rewrite onto overlay primitives.</p>`,
+  imports: [KjMenubarComponent, KjMenubarItemComponent],
+  styles: [`:host { display: block; }`],
+  template: `
+    <kj-menubar kjAriaLabel="Application">
+      <kj-menubar-item>File</kj-menubar-item>
+      <kj-menubar-item>Edit</kj-menubar-item>
+      <kj-menubar-item [kjDisabled]="true">View</kj-menubar-item>
+      <kj-menubar-item>Help</kj-menubar-item>
+    </kj-menubar>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarDisabledItemExample {}

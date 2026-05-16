@@ -89,6 +89,18 @@ export class KjSelect implements KjListNavigatorConfig {
   /** Whether the overlay is open. */
   readonly open = this.controller.isOpen;
 
+  /** Directly-injected selection model; wired via `bind()` below. */
+  private readonly _selection = inject(KjSelectionModel);
+
+  constructor() {
+    this._selection.bind({
+      value:     this.value,
+      items:     this.items,
+      mode:      this.mode,
+      compareBy: this.compareBy,
+    });
+  }
+
   /**
    * Implements `KjListNavigatorConfig.afterSelect`. Called by
    * `KjListItem` right after it toggles the shared selection model.

@@ -30,26 +30,28 @@ import { KjCascadeSelectOption } from './cascade-select-option';
 
 /**
  * Root cascade-select container. Implements
- * {@link KjListNavigatorConfig} (items, value, mode, compareBy, treeShape,
- * afterSelect) and provides itself under `KJ_LIST_NAVIGATOR_CONFIG` via
- * `forwardRef`. Each cascade panel + sub-panel hosts its own
- * `KjListNavigator` (vertical + activedescendant); `KjListItem` instances
- * composed on `KjCascadeSelectOption` toggle the shared `KjSelectionModel`
- * in `'leaf'` mode, so branch clicks are no-ops at the model layer and
- * only leaf activations enter `kjValue`.
+ * {@link KjListNavigatorConfig} (items, value, mode, compareBy,
+ * treeShape, afterSelect) and provides itself under
+ * `KJ_LIST_NAVIGATOR_CONFIG` via `forwardRef`. Each cascade panel +
+ * sub-panel hosts its own `KjListNavigator` (vertical +
+ * activedescendant). All tree-walking logic — branch gating, path
+ * derivation, isLeaf — lives in the shared `KjSelectionModel`, which
+ * auto-derives the tree shape from each `KjListItem.parent` DI pointer.
+ * The root just owns cascade-specific UX: the sub-panel open-chain and
+ * the overlay close-on-commit behavior.
  *
- * Like `KjSelect`, the root does NOT `inject(KjSelectionModel)` — doing
- * so at construction creates a runtime cycle (the model's
- * `inject(KJ_LIST_NAVIGATOR_CONFIG)` would resolve to a not-yet-built
- * `KjCascadeSelect` instance, regardless of `forwardRef`). The model is
- * constructed lazily when a child `KjListItem` first asks for it.
+ * Like `KjSelect`, the root does NOT inject `KjSelectionModel` at
+ * construction — doing so creates a runtime cycle (the model's
+ * `inject(KJ_LIST_NAVIGATOR_CONFIG)` would resolve to a still-
+ * constructing root). Lazy access via the element `Injector` resolves
+ * the model after construction finishes.
  *
  * @example
  * ```html
- * <div kjCascadeSelect [(kjValue)]="city" [kjTreeShape]="shape">
+ * <div kjCascadeSelect [(kjValue)]="city">
  *   <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger">Pick</button>
  *   <div kjCascadeSelectPanel [kjFor]="t">
- *     <div kjCascadeSelectOption [kjOptionValue]="'us'" kjOptionLabel="USA">…</div>
+ *     <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">…</div>
  *   </div>
  * </div>
  * ```
@@ -83,10 +85,12 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
   readonly kjCascadePath = model<readonly unknown[]>([]);
 
   /**
-   * Tree topology used by `KjSelectionModel` in `'leaf'` mode (branch
-   * clicks become no-ops automatically when the shape is known). Also
-   * used by `afterSelect` to derive the cascade path from the selected
-   * leaf value.
+   * Optional consumer-supplied tree topology. When omitted, the
+   * selection model auto-derives one from each `KjListItem.parent`
+   * pointer (which Angular resolves via the element injector — the
+   * outer cascade option of a sub-panel's contents). Supply this only
+   * when the consumer's data model isn't a faithful match for the
+   * projected DOM (rare).
    */
   readonly kjTreeShape = input<KjTreeShape<unknown> | null>(null);
 
@@ -136,17 +140,37 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
   >;
 
   /**
-   * Cascade is leaf-only: branch options never enter `kjValue`. The
-   * `KjSelectionModel` in `'leaf'` mode no-ops on branch toggles when a
-   * `treeShape` is provided.
+   * Cascade is single-leaf select: exactly one leaf value lives in
+   * `kjValue`. The selection model's `'single'` + tree-shape branch
+   * gate blocks non-leaf commits automatically — branches only toggle
+   * their own sub-panel via `KjCascadeSelectOption.handleClick`.
    */
-  readonly mode: Signal<KjListSelectionMode> = signal<KjListSelectionMode>('leaf');
+  readonly mode: Signal<KjListSelectionMode> = signal<KjListSelectionMode>('single');
 
   /** Implements `KjListNavigatorConfig.compareBy`. */
   readonly compareBy = signal<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);
 
   /** Re-exposes `kjTreeShape` under the {@link KjListNavigatorConfig} key. */
   readonly treeShape = this.kjTreeShape;
+
+  /**
+   * Selection model is injected directly. The model uses a {@link
+   * KjSelectionModel.bind} call to receive this root's canonical
+   * signals — that pattern keeps the DI graph acyclic (the model does
+   * not inject `KJ_LIST_NAVIGATOR_CONFIG` back, so providing both on
+   * the same element no longer collides).
+   */
+  private readonly _selection = inject(KjSelectionModel);
+
+  constructor() {
+    this._selection.bind({
+      value:     this.value,
+      items:     this.items,
+      mode:      this.mode,
+      compareBy: this.compareBy,
+      treeShape: this.treeShape,
+    });
+  }
 
   // ── KjSelectContext-compatible surface ──────────────────────────────
   /** Open state — drives `KjSelect.open` for downstream consumers. */
@@ -179,59 +203,28 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
   readonly subPanelCloseDelayMs = computed(() => this.kjSubPanelCloseDelayMs());
 
   /**
-   * Implements `KjListNavigatorConfig.afterSelect`. Invoked by
-   * `KjListItem` after it toggles the shared selection model. In
-   * leaf mode the model always returns `closeRequested: false`, but
-   * cascade-select's existing behavior closes the panel after every
-   * leaf commit — so we ignore `closeRequested` and close
-   * unconditionally when a real (defined) value was toggled. Branch
-   * clicks bypass the model toggle (no-op in leaf mode when a
-   * `treeShape` is known) and the panel stays open so the user can
-   * keep traversing.
+   * Implements `KjListNavigatorConfig.afterSelect`. The selection model
+   * already gated branches before reaching here (see
+   * `KjSelectionModel.canActivate`), so any defined `value` is a leaf
+   * commit: derive the path from the model, surface it on
+   * `kjCascadePath`, close every sub-panel, and dismiss the overlay.
    */
   afterSelect(value: unknown, _closeRequested: boolean): void {
     if (value === undefined) return;
-    const shape = this.kjTreeShape();
-    if (shape && !shape.isLeaf(value)) return;
-    // Derive the path from tree shape (if any) by walking parents from
-    // the selected leaf up to the root. Without a shape, we can't
-    // reconstruct ancestry — fall back to a single-element path.
-    if (shape) {
-      const reverse: unknown[] = [value];
-      let cur: unknown | null = shape.getParent(value);
-      while (cur !== null) {
-        reverse.unshift(cur);
-        cur = shape.getParent(cur);
-      }
-      this.kjCascadePath.set(reverse);
-    } else {
-      this.kjCascadePath.set([value]);
-    }
+    this.kjCascadePath.set(this._selection.pathTo(value));
     this._openSubPanels.set([]);
     this._controller.close('programmatic');
   }
 
   /**
-   * Programmatic commit used by code paths that don't flow through
-   * `KjListItem._activate` (e.g. trigger-level shortcuts).
-   */
-  selectLeaf(value: unknown, path: readonly unknown[]): void {
-    this.kjValue.set(value);
-    this.kjCascadePath.set(path);
-    this._openSubPanels.set([]);
-    this._controller.close('programmatic');
-  }
-
-  /**
-   * Open the sub-panel for `ownerOptionId`. The full chain is rebuilt
-   * from the option's ancestry — walking `parentSubPanel.parentOption`
-   * up to the root — so siblings at any depth become mutually
-   * exclusive. Without this, opening sibling B with sibling A still in
-   * the chain leaves both panels in `_openSubPanels`, and A's pending
-   * close timer (queued when the cursor crossed out of A) then fires
-   * and `slice(0, idx)` strips B too. Rebuilding from ancestry makes
-   * the chain authoritative: stale entries can't slice through fresh
-   * ones because the fresh open already removed them.
+   * Open the sub-panel chain ending at `ownerOptionId`. Walking the
+   * target's ancestry on every open is the trick that keeps sibling
+   * sub-panels mutually exclusive: any stale entries from a prior
+   * branch get replaced atomically with the fresh chain, so a
+   * mouseleave-queued close timer on a sibling can no longer slice
+   * through the new chain after it fires. The walk also cancels any
+   * pending close timers along the new chain so a brief inter-option
+   * cursor crossing doesn't dismiss a freshly-opened panel.
    */
   openSubPanel(ownerOptionId: string): void {
     const target = this.findOption(ownerOptionId);
@@ -243,14 +236,6 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
       );
       return;
     }
-    // Walk the target's ancestry once: build the new chain AND cancel
-    // any pending close timer along it. The second part fixes a
-    // hover-transition glitch where, after the cursor moves from
-    // sibling A to sibling B, a spurious close timer queued on B
-    // during the inter-option crossing would fire 300ms later and
-    // dismiss B's freshly-opened sub-panel. Cancelling on open makes
-    // the new chain authoritative — only an actual mouseleave on the
-    // current chain can schedule a fresh close.
     const chain: string[] = [];
     let current: typeof target | null = target;
     while (current) {

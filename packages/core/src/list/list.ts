@@ -11,12 +11,9 @@ import {
 } from '@angular/core';
 import { KjRovingTabindex } from '../a11y/roving-tabindex';
 import { KjSize, KjVariant } from '../presets';
+import type { KjListOrientation } from '../primitives/list/tokens';
 
-/**
- * Orientation axis for a list. Drives `aria-orientation` on the root and a
- * `data-orientation` mirror that wrapper CSS hangs flex-direction off.
- */
-export type KjListOrientation = 'vertical' | 'horizontal';
+export type { KjListOrientation };
 
 /**
  * Host element kind the consumer chose for the list root. The directive does
@@ -37,11 +34,11 @@ export interface KjListContext {
 /** Context token for the parent `KjList`, injected by descendants. */
 export const KJ_LIST = new InjectionToken<KjListContext>('KjList');
 
-/** Context token for the parent `KjListItem`, injected by descendants. */
-export const KJ_LIST_ITEM = new InjectionToken<KjListItemContext>('KjListItem');
+/** Context token for the parent `KjListRow`, injected by descendants. */
+export const KJ_LIST_ROW = new InjectionToken<KjListRowContext>('KjListRow');
 
 /** @internal Public shape of the per-row context exposed to descendants. */
-export interface KjListItemContext {
+export interface KjListRowContext {
   readonly active: Signal<boolean>;
   readonly disabled: Signal<boolean>;
 }
@@ -66,18 +63,18 @@ export interface KjListItemContext {
  * @example
  * ```html
  * <ul kjList kjOrientation="vertical" aria-label="Recent files">
- *   <li kjListItem>Item A</li>
- *   <li kjListItem>Item B</li>
+ *   <li kjListRow>Item A</li>
+ *   <li kjListRow>Item B</li>
  * </ul>
  * ```
  *
  * @example Sidebar nav with arrow-key navigation
  * ```html
  * <nav kjList kjAs="nav" kjArrowNavigation aria-label="Primary">
- *   <div kjListItem [kjActive]="true">
+ *   <div kjListRow [kjActive]="true">
  *     <a kjLink kjRovingTabindexItem aria-current="page">Home</a>
  *   </div>
- *   <div kjListItem>
+ *   <div kjListRow>
  *     <a kjLink kjRovingTabindexItem>Settings</a>
  *   </div>
  * </nav>
@@ -140,7 +137,7 @@ export class KjList implements KjListContext {
   /**
    * Whether the list draws between-row borders. Theme CSS reads
    * `data-divided` on the root and applies a `:not(:last-child)` border on
-   * `KjListItem`. Pure CSS effect — no JS.
+   * `KjListRow`. Pure CSS effect — no JS.
    */
   readonly kjDivided = input<boolean>(false);
 
@@ -207,20 +204,26 @@ export class KjList implements KjListContext {
 }
 
 /**
- * Per-row directive. Owns the listitem ARIA role and reflects active /
- * disabled state to data attributes the wrapper CSS reads to paint chrome.
- * Provides a tiny `KJ_LIST_ITEM` token so descendants (e.g. an icon button
- * inside the row) can read the parent's active/disabled signals.
+ * Per-row directive for themed list surfaces (settings panels, sidebar nav).
+ * Owns the listitem ARIA role and reflects active / disabled state to data
+ * attributes the wrapper CSS reads to paint chrome. Provides a tiny
+ * `KJ_LIST_ROW` token so descendants (e.g. an icon button inside the row) can
+ * read the parent's active/disabled signals.
  *
- * The list-item host is **not** a focus stop. Keyboard reachability lives on
- * the projected interactive child (`<a kjLink>`, `<button kjButton>`). The
+ * Distinct from the listbox/menu/tree primitive `KjListItem` in
+ * `primitives/list` — that one drives selection, ARIA `aria-selected`, and
+ * activation, whereas this directive is purely a presentational row in a
+ * navigation/list surface.
+ *
+ * The row host is **not** a focus stop. Keyboard reachability lives on the
+ * projected interactive child (`<a kjLink>`, `<button kjButton>`). The
  * directive's `kjDisabled` only paints the chrome via `data-disabled`; it
  * does **not** wire `aria-disabled` on the projected child — that is the
  * projected child's responsibility (via `KjDisabled`).
  *
  * @example
  * ```html
- * <li kjListItem [kjActive]="route === '/home'">
+ * <li kjListRow [kjActive]="route === '/home'">
  *   <a kjLink href="/home" aria-current="page">Home</a>
  * </li>
  * ```
@@ -230,17 +233,17 @@ export class KjList implements KjListContext {
  * @doc-name list
  */
 @Directive({
-  selector: '[kjListItem]',
+  selector: '[kjListRow]',
   standalone: true,
-  providers: [{ provide: KJ_LIST_ITEM, useExisting: KjListItem }],
-  exportAs: 'kjListItem',
+  providers: [{ provide: KJ_LIST_ROW, useExisting: KjListRow }],
+  exportAs: 'kjListRow',
   host: {
     '[attr.role]': 'roleAttr()',
     '[attr.data-active]': 'kjActive() ? "" : null',
     '[attr.data-disabled]': 'kjDisabled() ? "" : null',
   },
 })
-export class KjListItem implements KjListItemContext {
+export class KjListRow implements KjListRowContext {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
@@ -260,10 +263,10 @@ export class KjListItem implements KjListItemContext {
    */
   readonly kjDisabled = input<boolean>(false);
 
-  /** @internal Mirrors `kjActive` for descendant-side reads via `KJ_LIST_ITEM`. */
+  /** @internal Mirrors `kjActive` for descendant-side reads via `KJ_LIST_ROW`. */
   readonly active = this.kjActive;
 
-  /** @internal Mirrors `kjDisabled` for descendant-side reads via `KJ_LIST_ITEM`. */
+  /** @internal Mirrors `kjDisabled` for descendant-side reads via `KJ_LIST_ROW`. */
   readonly disabled = this.kjDisabled;
 
   /** @internal Computes the role to host-bind, omitting when the host is `<li>`. */

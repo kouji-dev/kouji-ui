@@ -41,13 +41,6 @@ export interface KjCascadeSelectContext<T = unknown> {
   readonly subPanelCloseDelayMs: Signal<number>;
 
   /**
-   * Commit a leaf value programmatically. The typical click / Enter /
-   * Space path goes through `KjListItem._activate` → `KjSelectionModel`
-   * → `afterSelect` instead.
-   */
-  selectLeaf(value: T, path: readonly T[]): void;
-
-  /**
    * Open the sub-panel associated with the given owner-option id.
    * Automatically closes any sub-panels at deeper levels.
    */

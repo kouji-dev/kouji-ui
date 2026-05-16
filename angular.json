@@ -102,6 +102,7 @@
             "styles": [
               "packages/themes/src/index.css",
               "packages/core/src/styles.css",
+              "packages/components/src/overlay/overlay.css",
               "apps/docs/src/styles.css"
             ],
             "server": "apps/docs/src/main.server.ts",

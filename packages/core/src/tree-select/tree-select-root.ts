@@ -142,19 +142,56 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
   >;
 
   /**
-   * `KjListSelectionMode` view of {@link kjSelectionMode} (which uses
-   * `'single' | 'multiple'`). Translates `'multiple'` → `'multi'` for
-   * the primitives layer; the public input keeps its existing shape.
+   * `KjListSelectionMode` view of {@link kjSelectionMode}:
+   * - `'single'` → `'single'` (one value, closes panel)
+   * - `'multiple'` → `'cascade'` (tri-state tree selection: toggling a
+   *   parent selects/deselects every leaf descendant; parent renders
+   *   `aria-checked="mixed"` when only some descendants are selected).
+   *
+   * Cascade mode requires a tree shape; {@link treeShape} falls back to
+   * a shape auto-derived from {@link kjNodes} when the consumer does
+   * not supply one.
    */
   readonly mode: Signal<KjListSelectionMode> = computed(() =>
-    this.kjSelectionMode() === 'multiple' ? 'multi' : 'single',
+    this.kjSelectionMode() === 'multiple' ? 'cascade' : 'single',
   );
 
   /** Equality fn used by `KjSelectionModel`. Defaults to `Object.is`. */
   readonly compareBy = signal<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);
 
-  /** Re-exposes `kjTreeShape` under the {@link KjListNavigatorConfig} key. */
-  readonly treeShape = this.kjTreeShape;
+  /**
+   * Effective tree topology. Consumer-supplied `kjTreeShape` takes
+   * precedence; otherwise an auto-built shape is derived from the
+   * `kjNodes` input so cascade mode works out of the box for the
+   * canonical data-driven usage.
+   */
+  readonly treeShape = computed<KjTreeShape<unknown> | null>(() =>
+    this.kjTreeShape() ?? this._nodeShape(),
+  );
+
+  /**
+   * @internal Tree shape built from the `kjNodes` data structure. Walks
+   * each branch once to populate parent / children / leaf maps keyed by
+   * `node.value`.
+   */
+  private readonly _nodeShape = computed<KjTreeShape<unknown> | null>(() => {
+    const roots = this.kjNodes();
+    if (roots.length === 0) return null;
+    const parentOf = new Map<unknown, unknown | null>();
+    const childrenOf = new Map<unknown, unknown[]>();
+    const walk = (node: KjTreeNode, parent: unknown | null): void => {
+      parentOf.set(node.value, parent);
+      const kids = node.children ?? [];
+      childrenOf.set(node.value, kids.map(c => c.value));
+      for (const c of kids) walk(c, node.value);
+    };
+    for (const r of roots) walk(r, null);
+    return {
+      getParent:  (n) => parentOf.get(n) ?? null,
+      getChildren:(n) => childrenOf.get(n) ?? [],
+      isLeaf:     (n) => (childrenOf.get(n)?.length ?? 0) === 0,
+    };
+  });
 
   /**
    * Hook called by `KjListItem` after it toggles the shared selection
@@ -182,7 +219,18 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
   );
   readonly nodes = computed(() => this.kjNodes());
 
+  /** Directly-injected selection model; wired via `bind()` below. */
+  private readonly _selection = inject(KjSelectionModel);
+
   constructor() {
+    this._selection.bind({
+      value:     this.value,
+      items:     this.items,
+      mode:      this.mode,
+      compareBy: this.compareBy,
+      treeShape: this.treeShape,
+    });
+
     // Sync kjExpandedKeys (controlled input) → _expandedValues
     effect(() => {
       const keys = this.kjExpandedKeys();

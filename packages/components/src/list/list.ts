@@ -6,7 +6,7 @@ import {
   computed,
   input,
 } from '@angular/core';
-import { KjList, KjListItem, type KjListAs, type KjListOrientation } from '@kouji-ui/core';
+import { KjList, KjListRow, type KjListAs, type KjListOrientation } from '@kouji-ui/core';
 
 /**
  * Themed wrapper around the headless `KjList` directive. Re-maps the directive's
@@ -200,7 +200,7 @@ export class KjListComponent {
   standalone: true,
   hostDirectives: [
     {
-      directive: KjListItem,
+      directive: KjListRow,
       inputs: ['kjActive: active', 'kjDisabled: disabled'],
     },
   ],

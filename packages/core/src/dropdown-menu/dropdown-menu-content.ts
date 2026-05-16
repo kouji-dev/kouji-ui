@@ -189,7 +189,7 @@ export class KjDropdownMenuContent implements KjDropdownMenuContext, KjListNavig
   }
 
   /** Escape key — closes the menu. KjListNavigator does not own Escape. */
-  protected onEscape(event: KeyboardEvent): void {
+  protected onEscape(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
     this.hide('escape');

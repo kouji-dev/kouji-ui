@@ -1,12 +1,11 @@
 export {
   KjList,
-  KjListItem,
+  KjListRow,
   KJ_LIST,
-  KJ_LIST_ITEM,
+  KJ_LIST_ROW,
 } from './list';
 export type {
   KjListAs,
   KjListContext,
-  KjListItemContext,
-  KjListOrientation,
+  KjListRowContext,
 } from './list';

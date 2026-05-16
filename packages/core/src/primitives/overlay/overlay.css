@@ -6,9 +6,12 @@
    created by `createOverlayWrapper()`, plus the default visual
    for `kj-backdrop` (the `solidBackdrop()` strategy's class).
 
-   Consumers register this file once (typically alongside their
-   theme tokens) — every overlay-based component (dialog, drawer,
-   popover, tooltip, dropdown-menu, toast) relies on it.
+   The themed overlay-family components (popover, tooltip,
+   dropdown-menu, dialog, drawer, toast, confirm-popup) live in
+   `@kouji-ui/components` and re-export this file plus their own
+   stylesheets via `packages/components/src/overlay/overlay.css`.
+   Consumers register that single aggregator — no need to list
+   each overlay component CSS in `angular.json`.
    ──────────────────────────────────────────────────────────── */
 
 @layer kj.component {

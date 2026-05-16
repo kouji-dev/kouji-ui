@@ -28,9 +28,9 @@ import { KjCascadeSelectOption } from './cascade-select-option';
  *
  * @example
  * ```html
- * <div kjCascadeSelectOption [kjOptionValue]="'us'" kjOptionLabel="USA">
+ * <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">
  *   <div kjCascadeSelectSubPanel>
- *     <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="San Francisco" />
+ *     <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="San Francisco" />
  *   </div>
  * </div>
  * ```
@@ -129,10 +129,6 @@ export class KjCascadeSelectSubPanel {
         onResize = onScroll = null;
       }
     });
-
-    // Register with the parent so it knows it's a branch (drives
-    // `isBranch` / `aria-haspopup` / `aria-expanded` on the option host).
-    this.parentOption?._registerSubPanel();
   }
 
   /**

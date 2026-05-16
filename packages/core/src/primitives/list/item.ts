@@ -77,6 +77,19 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   private readonly el = inject(ElementRef<HTMLElement>);
   readonly disabled = this.kjDisabled;
 
+  /**
+   * Nearest ancestor `KjListItem` resolved via the element injector
+   * (`skipSelf`, `optional`). Surfaces the DOM-nested parent → child
+   * relationship to the selection model, which auto-derives a tree
+   * shape from these pointers when the consumer does not supply one
+   * via `cfg.treeShape`. Flat consumers (e.g. data-driven tree-select)
+   * pass an explicit shape and this pointer is ignored.
+   */
+  readonly parent = inject<KjListItem<unknown> | null>(KjListItem, {
+    skipSelf: true,
+    optional: true,
+  });
+
   // Optional — only present when this item lives inside a
   // `[kjListNavigator]` (the common case). Read by `tabIndex()` so the
   // item can reactively re-bind its host `tabindex` as activeId moves.
@@ -175,13 +188,21 @@ export class KjListItem<T = unknown> implements AfterContentInit {
 
   _activate(event?: Event): void {
     if (this.disabled()) return;
+    const v = this.value();
+    // Branch gate owned by the selection model: in `'single'` mode
+    // with a tree shape (consumer-supplied or auto-derived from
+    // KjListItem parent DI), non-leaf targets must not commit a value
+    // — they exist purely as disclosure controls (e.g. cascade-select
+    // branch options that only toggle their own sub-panel). Runs
+    // before `stopPropagation` so a blocked click can still reach the
+    // consumer's own host listener.
+    if (v !== undefined && this.selection && !this.selection.canActivate(v)) return;
     // Stop bubbling so a click on a nested `kjListItem` doesn't also
     // activate the ancestor item (matters for tree-style consumers
     // where leaf nodes are rendered inside their parent branch's host
     // element — without this, the leaf activation would be followed
     // by the branch's `_activate` overriding the selection).
     event?.stopPropagation();
-    const v = this.value();
     // Selection toggle + consumer hook live here — not in the option
     // wrapper — because every list-style cluster that wires a
     // `KjSelectionModel` repeats the same two steps after activation:

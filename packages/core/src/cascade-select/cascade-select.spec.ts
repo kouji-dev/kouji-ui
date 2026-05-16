@@ -49,7 +49,7 @@ describe('KjCascadeSelect (root panel ARIA)', () => {
         <div kjCascadeSelect>
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="SF"></div>
+            <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="SF"></div>
           </div>
         </div>
       `,
@@ -72,7 +72,7 @@ describe('KjCascadeSelect (root panel ARIA)', () => {
         <div kjCascadeSelect>
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="SF"></div>
+            <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="SF"></div>
           </div>
         </div>
       `,
@@ -94,7 +94,7 @@ describe('KjCascadeSelect (root panel ARIA)', () => {
         <div kjCascadeSelect>
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="SF"></div>
+            <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="SF"></div>
           </div>
         </div>
       `,
@@ -114,7 +114,7 @@ describe('KjCascadeSelect (root panel ARIA)', () => {
         <div kjCascadeSelect>
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="San Francisco"></div>
+            <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="San Francisco"></div>
           </div>
         </div>
       `,
@@ -143,7 +143,7 @@ describe('KjCascadeSelect – KjListNavigatorConfig integration', () => {
         <div kjCascadeSelect [(kjValue)]="city" [kjTreeShape]="shape">
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="SF"></div>
+            <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="SF"></div>
           </div>
         </div>
       `,
@@ -162,7 +162,7 @@ describe('KjCascadeSelect – KjListNavigatorConfig integration', () => {
     expect(fixture.componentInstance.city).toBe('sf');
   });
 
-  it('selection model in leaf mode no-ops on branches and toggles leaves', () => {
+  it('selection model in single mode no-ops on branches and commits leaves', () => {
     @Component({
       standalone: true,
       imports: allDirectives,
@@ -170,9 +170,9 @@ describe('KjCascadeSelect – KjListNavigatorConfig integration', () => {
         <div kjCascadeSelect [(kjValue)]="city" [kjTreeShape]="shape">
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'us'" kjOptionLabel="USA">
+            <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">
               <div kjCascadeSelectSubPanel>
-                <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="SF"></div>
+                <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="SF"></div>
               </div>
             </div>
           </div>
@@ -188,14 +188,13 @@ describe('KjCascadeSelect – KjListNavigatorConfig integration', () => {
     const rootDe = fixture.debugElement.query(By.directive(KjCascadeSelect));
     const model = rootDe.injector.get(KjSelectionModel);
 
-    // Branch click: no-op in leaf mode (shape says 'us' is not a leaf).
+    // Branch toggle: blocked by the single-mode shape gate ('us' is not a leaf).
     model.toggle('us');
     expect(fixture.componentInstance.city).toBe(undefined);
 
-    // Leaf toggle: enters value as an array (multi-style toggle for leaf mode).
+    // Leaf toggle: replaces kjValue with the leaf value (single-select).
     model.toggle('sf');
-    expect(Array.isArray(fixture.componentInstance.city)).toBe(true);
-    expect(fixture.componentInstance.city).toContain('sf');
+    expect(fixture.componentInstance.city).toBe('sf');
   });
 });
 
@@ -218,7 +217,7 @@ describe('KjCascadeSelect – afterSelect derives path from tree shape', () => {
         >
           <button kjCascadeSelectTrigger #t="kjCascadeSelectTrigger" type="button">Open</button>
           <div kjCascadeSelectPanel [kjFor]="t">
-            <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="SF"></div>
+            <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="SF"></div>
           </div>
         </div>
       `,

@@ -38,6 +38,7 @@ import { KjCommandPalette } from './command-palette';
         'kjItemLabel:kjLabel',
         'kjItemKeywords:kjKeywords',
         'kjShortcut:kjShortcut',
+        'kjDisabled:kjDisabled',
       ],
     },
   ],

@@ -169,7 +169,7 @@
     text-overflow: ellipsis;
   }
 
-  /* ── Checkbox (multi mode) ─────────────────────────────────────────── */
+  /* ── Checkbox (multi mode — tri-state via aria-checked) ─────────────── */
   .kj-tree-select-checkbox {
     flex-shrink: 0;
     width: 1rem;
@@ -180,13 +180,41 @@
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
+    line-height: 1;
+    /* Visual breathing room between the checkbox and the label so the
+       glyph never butts up against the text. The container's `gap`
+       handles the toggle ↔ checkbox spacing; this rule owns checkbox ↔
+       label specifically. */
+    margin-inline-end: var(--kj-space-sm);
   }
-  .kj-tree-select-node[aria-selected='true'] .kj-tree-select-checkbox {
+  /* Checked (cascade: all leaf descendants selected, or this is a
+     selected leaf). */
+  .kj-tree-select-node[aria-checked='true'] .kj-tree-select-checkbox {
     background: var(--kj-bg-primary);
     border-color: var(--kj-bg-primary);
     color: var(--kj-fg-on-primary);
   }
-  .kj-tree-select-node[aria-selected='true'] .kj-tree-select-checkbox::before {
+  .kj-tree-select-node[aria-checked='true'] .kj-tree-select-checkbox::before {
     content: '✓';
+  }
+  /* Indeterminate (cascade: some — but not all — leaf descendants
+     selected). Renders a dash glyph and keeps the primary fill so
+     screen-reader users hearing `aria-checked="mixed"` see the same
+     state visually. */
+  .kj-tree-select-node[aria-checked='mixed'] .kj-tree-select-checkbox {
+    background: var(--kj-bg-primary);
+    border-color: var(--kj-bg-primary);
+    color: var(--kj-fg-on-primary);
+  }
+  .kj-tree-select-node[aria-checked='mixed'] .kj-tree-select-checkbox::before {
+    content: '−'; /* U+2212 minus, not a hyphen */
+  }
+  /* Row highlight for fully checked branches/leaves in cascade mode. */
+  .kj-tree-select-node[aria-checked='true'] {
+    background: color-mix(in oklab, var(--kj-bg-primary) 12%, transparent);
+    color: var(--kj-fg-primary);
+  }
+  .kj-tree-select-node[aria-checked='true']:hover {
+    background: color-mix(in oklab, var(--kj-bg-primary) 18%, transparent);
   }
 }

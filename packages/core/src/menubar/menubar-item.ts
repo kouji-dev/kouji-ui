@@ -12,6 +12,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -72,6 +73,15 @@ export class KjMenubarItem implements KjMenubarItemContext {
    */
   readonly kjDropdownMenuTriggerFor = input<TemplateRef<unknown> | null>(null);
 
+  /**
+   * Fires when the item is activated (click / Enter / Space), bridged from
+   * the composed `KjListItem.activate` output. `KjListItem._activate` calls
+   * `event.stopPropagation()` before this fires, so a `(click)` listener
+   * placed on a parent element would not see the event — consumers wiring
+   * an activation listener must use `(kjActivate)` instead.
+   */
+  readonly kjActivate = output<void>();
+
   // ── KjMenubarItemContext ─────────────────────────────────────────
 
   get el(): HTMLElement { return this.elRef.nativeElement; }
@@ -104,8 +114,18 @@ export class KjMenubarItem implements KjMenubarItemContext {
     // `afterSelect` only knows the currently-focused item, which doesn't
     // identify the item that was actually clicked (focus may not have
     // moved yet, e.g. mouse click before focusin handling).
+    //
+    // When `kjDropdownMenuTriggerFor` is unset the item owns no popup of
+    // its own; skip the toggle entirely so that a sibling
+    // `[kjDropdownMenuTrigger]` directive composed on the same element can
+    // own the overlay state without us racing it. (Both directives provide
+    // `KjOverlayController` and Angular merges them into a single per-
+    // element instance — calling `controller.close()` here would
+    // immediately undo the trigger's `open()` from the same click.)
     const listItem = injectListItem<unknown>();
     listItem.activate.subscribe(() => {
+      this.kjActivate.emit();
+      if (!this.kjDropdownMenuTriggerFor()) return;
       if (this.controller.isOpen()) this.closePopup();
       else this.openPopup();
     });

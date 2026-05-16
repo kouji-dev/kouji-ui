@@ -120,6 +120,10 @@ export class KjCombobox implements KjListNavigatorConfig {
 
   private readonly controller = inject(KjOverlayController);
   private readonly filter     = inject(KjFilterableList);
+  private readonly _selection = inject(KjSelectionModel);
+
+  /** Implements `KjListNavigatorConfig.compareBy`. */
+  readonly compareBy = signal((a: unknown, b: unknown) => Object.is(a, b));
 
   /** Stable listbox id for `aria-controls` wiring. */
   readonly listboxId = nextId();
@@ -165,6 +169,12 @@ export class KjCombobox implements KjListNavigatorConfig {
       filterFn:          this.adaptedFilter,
       shouldFilter:      this.kjShouldFilter,
       autoActivateFirst: this.kjAutoActivateFirst,
+    });
+    this._selection.bind({
+      value:     this.value,
+      items:     this.items,
+      mode:      this.mode,
+      compareBy: this.compareBy,
     });
     effect(() => this.kjQueryChange.emit(this.kjQuery()));
 

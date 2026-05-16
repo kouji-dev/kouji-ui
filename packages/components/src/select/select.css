@@ -46,8 +46,18 @@
     color: var(--kj-fg-default);
     font: 0.875rem var(--kj-font-sans);
   }
-  /* Option hover uses bg-field (sunken slot), not bg-surface. In themes where
+  /* Hover uses bg-field (sunken slot), not bg-surface. In themes where
      elevated == surface (light/corporate, both white) a bg-surface hover would
      be invisible on the bg-elevated panel. */
-  .kj-option:hover, .kj-option[aria-selected="true"] { background: var(--kj-bg-field); }
+  .kj-option:hover { background: var(--kj-bg-field); }
+  /* Selected option — tinted primary mirrors tree-select / cascade-select so
+     the listbox family looks consistent across themes. */
+  .kj-option[aria-selected="true"] {
+    background: color-mix(in oklab, var(--kj-bg-primary) 12%, transparent);
+    color: var(--kj-fg-primary);
+    font-weight: 600;
+  }
+  .kj-option[aria-selected="true"]:hover {
+    background: color-mix(in oklab, var(--kj-bg-primary) 18%, transparent);
+  }
 }

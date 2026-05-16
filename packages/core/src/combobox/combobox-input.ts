@@ -118,7 +118,7 @@ export class KjComboboxInput implements OnInit, OnDestroy {
    * — we exit early. Otherwise this is the no-active-item case — commit the
    * query only when `kjFreeText` is enabled.
    */
-  onEnter(e: KeyboardEvent): void {
+  onEnter(e: Event): void {
     if (e.defaultPrevented) return;
     if (this.ctx.open() || this.ctx.allowFreeText()) {
       if (this.ctx.allowFreeText()) {
@@ -129,7 +129,7 @@ export class KjComboboxInput implements OnInit, OnDestroy {
   }
 
   /** @internal */
-  onEscape(e: KeyboardEvent): void {
+  onEscape(e: Event): void {
     if (this.ctx.open()) {
       e.preventDefault();
       this.ctx.hide();

@@ -1,12 +1,10 @@
 import {
-  booleanAttribute,
   computed,
+  contentChildren,
   Directive,
   forwardRef,
   inject,
-  input,
   OnDestroy,
-  signal,
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
 import { KJ_CASCADE_SELECT } from './cascade-select.context';
@@ -39,12 +37,12 @@ import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
  *
  * @example Leaf
  * ```html
- * <div kjCascadeSelectOption [kjOptionValue]="'sf'" kjOptionLabel="San Francisco" />
+ * <div kjCascadeSelectOption [kjValue]="'sf'" kjLabel="San Francisco" />
  * ```
  *
  * @example Branch
  * ```html
- * <div kjCascadeSelectOption [kjOptionValue]="'us'" kjOptionLabel="USA">
+ * <div kjCascadeSelectOption [kjValue]="'us'" kjLabel="USA">
  *   <div kjCascadeSelectSubPanel>…</div>
  * </div>
  * ```
@@ -54,13 +52,14 @@ import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
  */
 @Directive({
   selector: '[kjCascadeSelectOption]',
+  exportAs: 'kjCascadeSelectOption',
   standalone: true,
   hostDirectives: [
     {
       directive: KjListItem,
       inputs: [
-        'kjItemValue:kjOptionValue',
-        'kjItemLabel:kjOptionLabel',
+        'kjItemValue:kjValue',
+        'kjItemLabel:kjLabel',
         'kjDisabled:kjDisabled',
       ],
     },
@@ -101,36 +100,24 @@ export class KjCascadeSelectOption implements OnDestroy {
     { optional: true },
   );
 
-  /**
-   * The value this option represents. Forwarded to the composed
-   * `KjListItem.kjItemValue`.
-   */
-  readonly kjOptionValue = input.required<unknown>({ alias: 'kjOptionValue' });
+  // `kjValue`, `kjLabel`, `kjDisabled` are exposed via the composed
+  // `KjListItem` host directive above. Don't redeclare them on this
+  // class — duplicate public-name inputs route to the local declaration
+  // and leave `KjListItem.kjItemValue` unset. Read values back through
+  // `this.item.value()` / `this.item.label()`.
 
   /**
-   * Display label — used by typeahead and the trigger default rendering.
-   * Forwarded to the composed `KjListItem.kjItemLabel`.
+   * @internal Sub-panels projected as content of this option. Any
+   * `[kjCascadeSelectSubPanel]` declared inside the option's content
+   * makes it a branch — Angular keeps this signal in sync.
    */
-  readonly kjOptionLabel = input<string>('', { alias: 'kjOptionLabel' });
-
-  /** Whether this option is disabled. */
-  readonly kjDisabled = input(false, { transform: booleanAttribute });
-
-  /**
-   * @internal Number of `KjCascadeSelectSubPanel` directives declared
-   * inside this option. Incremented by each sub-panel's constructor
-   * (which injects this directive via the element injector). When
-   * non-zero, this option is a branch.
-   */
-  private readonly _subPanelCount = signal(0);
-
-  /** @internal — called by `KjCascadeSelectSubPanel` from its constructor. */
-  _registerSubPanel(): void {
-    this._subPanelCount.update(n => n + 1);
-  }
+  private readonly _subPanels = contentChildren(
+    forwardRef(() => KjCascadeSelectSubPanel),
+    { descendants: true },
+  );
 
   /** @internal Whether this option is a branch node. */
-  readonly isBranch = computed(() => this._subPanelCount() > 0);
+  readonly isBranch = computed(() => this._subPanels().length > 0);
 
   /** @internal Inverse of `isBranch` for the `data-leaf` attribute. */
   readonly isLeaf = computed(() => !this.isBranch());
@@ -148,7 +135,8 @@ export class KjCascadeSelectOption implements OnDestroy {
   /** @internal True when the selected value is in this option's sub-tree. */
   readonly isOnActivePath = computed(() => {
     const path = this.ctx.path();
-    return path.includes(this.kjOptionValue());
+    const v = this.item.value();
+    return v !== undefined && path.includes(v);
   });
 
   ngOnDestroy(): void {
@@ -164,7 +152,7 @@ export class KjCascadeSelectOption implements OnDestroy {
    * shape is provided, so we don't need to gate that here.
    */
   handleClick(): void {
-    if (this.kjDisabled()) return;
+    if (this.item.disabled()) return;
     if (!this.isBranch()) return;
     clearTimeout(this._openTimer);
     clearTimeout(this._closeTimer);
@@ -174,7 +162,7 @@ export class KjCascadeSelectOption implements OnDestroy {
 
   /** @internal */
   handleMouseEnter(): void {
-    if (this.kjDisabled() || !this.isBranch()) return;
+    if (this.item.disabled() || !this.isBranch()) return;
     clearTimeout(this._closeTimer);
     const delay = this.ctx.subPanelOpenDelayMs();
     this._openTimer = setTimeout(() => {
@@ -184,7 +172,7 @@ export class KjCascadeSelectOption implements OnDestroy {
 
   /** @internal */
   handleMouseLeave(): void {
-    if (this.kjDisabled() || !this.isBranch()) return;
+    if (this.item.disabled() || !this.isBranch()) return;
     clearTimeout(this._openTimer);
     this._scheduleClose();
   }
