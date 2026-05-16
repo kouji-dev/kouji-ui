@@ -9,11 +9,19 @@
   <!-- Installation -->
   <section id="installation" class="section">
     <h2 id="installation">Installation</h2>
-    <p>Install the headless core for custom styling:</p>
-    <kj-code-editor [showHeader]="false" [code]="installCore" lang="ts" />
+    <p>Two paths — pick one, mix as you grow.</p>
+
+    <h3>Styled</h3>
+    <p>Drop-in ready. Behaviour, styled wrappers, and the 13 themes. Pick a theme with <code>[data-theme="kouji"]</code> on <code>&lt;html&gt;</code> and ship.</p>
+    <kj-code-editor [showHeader]="false" [code]="installFull" lang="ts" />
+
+    <h3>Headless</h3>
+    <p>Just the behaviour layer. Directives expose ARIA semantics and <code>data-*</code> hooks; you bring the CSS (Tailwind, design tokens, plain stylesheets — anything).</p>
+    <kj-code-editor [showHeader]="false" [code]="installHeadless" lang="ts" />
+
     <kj-docs-callout variant="info">
       <span class="callout-icon">◈</span>
-      <p><strong>Requires Angular 21.</strong> The library uses signal inputs, <code>afterNextRender</code>, and <code>inject()</code> — all Angular 21+ features.</p>
+      <p><strong>Angular 21+ only.</strong> Standalone components, signals throughout, zero peer dependencies.</p>
     </kj-docs-callout>
   </section>
 
@@ -41,12 +49,12 @@
   <!-- Accessibility -->
   <section id="accessibility" class="section">
     <h2 id="accessibility">Accessibility</h2>
-    <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are handled by the CDK primitives under the hood.</p>
+    <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are baked into the headless primitives.</p>
     <p>Use the a11y utilities to enhance your own components:</p>
     <kj-code-editor [showHeader]="false" [code]="a11yImports" lang="ts" />
     <kj-docs-callout variant="success">
       <span class="callout-icon">♿</span>
-      <p>All overlay components (Dialog, Menu, Select) use Angular CDK's <code>FocusTrap</code>, <code>FocusKeyManager</code>, and <code>LiveAnnouncer</code> for full keyboard and screen reader support.</p>
+      <p>All overlay components (Dialog, Menu, Select) compose <code>KjFocusTrap</code>, <code>KjRovingTabindex</code>, and <code>KjLiveRegion</code> from <code>&#64;kouji-ui/core</code> for full keyboard + screen-reader support — verified against NVDA, JAWS, and VoiceOver.</p>
     </kj-docs-callout>
   </section>
 

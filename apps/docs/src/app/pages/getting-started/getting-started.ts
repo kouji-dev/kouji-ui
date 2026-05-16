@@ -13,7 +13,8 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
   styleUrl: './getting-started.css',
 })
 export class GettingStartedComponent {
-  readonly installCore = `pnpm add @kouji-ui/core`;
+  readonly installFull = `pnpm add @kouji-ui/core @kouji-ui/components @kouji-ui/themes`;
+  readonly installHeadless = `pnpm add @kouji-ui/core`;
 
   readonly quickStartTs = `import { Component } from '@angular/core';
 import { KjButton } from '@kouji-ui/core';
