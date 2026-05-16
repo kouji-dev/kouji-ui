@@ -40,24 +40,8 @@
   display: block;
   margin-bottom: var(--kj-base-space-sm);
 }
-.rm-h1 {
-  font-family: var(--kj-font-display);
-  font-weight: var(--kj-display-weight);
-  font-style: var(--kj-display-italic);
-  font-size: clamp(2.25rem, 6vw, 4.5rem);
-  letter-spacing: var(--kj-letter-spacing);
-  line-height: 0.95;
-  margin: 0 0 var(--kj-base-space-md);
-}
-.rm-tagline {
-  font-family: var(--kj-font-sans);
-  font-size: var(--kj-text-base);
-  color: var(--kj-fg-muted);
-  max-width: 45rem;
-  margin: 0 0 var(--kj-base-space-lg);
-  line-height: 1.45;
-}
-.rm-tagline strong { color: var(--kj-fg-default); }
+/* h1 + p inside .rm-intro get their typography from `.kj-prose`
+   (see packages/core/src/typography/prose.css). No local overrides. */
 
 /* ─────────── chrome (sticky stats + toolbar wrapper) ─────────── */
 /* Single sticky parent — stats and toolbar are normal-flow inside, so their
