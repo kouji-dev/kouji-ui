@@ -8,29 +8,30 @@
       sketchpad; the ones marked <strong>candidate</strong> have a real shot at
       the next version.
     </p>
-    <div class="rm-stats">
-      <div class="rm-stat">
-        <div class="num">{{ stats().idea }}</div>
-        <div class="lbl">ideas · {{ stats().candidate }} candidates</div>
-      </div>
-      <div class="rm-stat">
-        <div class="num">{{ stats().next }}</div>
-        <div class="lbl">next up</div>
-      </div>
-      <div class="rm-stat">
-        <div class="num">{{ stats().wip }}</div>
-        <div class="lbl">in progress</div>
-      </div>
-      <div class="rm-stat">
-        <div class="num">{{ stats().shipped }}</div>
-        <div class="lbl">shipped</div>
-      </div>
-      <div class="rm-stat">
-        <div class="num">v1.0</div>
-        <div class="lbl">target · q4 2026</div>
-      </div>
-    </div>
   </section>
+
+  <div class="rm-stats">
+    <div class="rm-stat">
+      <div class="num">{{ stats().idea }}</div>
+      <div class="lbl">ideas · {{ stats().candidate }} candidates</div>
+    </div>
+    <div class="rm-stat">
+      <div class="num">{{ stats().next }}</div>
+      <div class="lbl">next up</div>
+    </div>
+    <div class="rm-stat">
+      <div class="num">{{ stats().wip }}</div>
+      <div class="lbl">in progress</div>
+    </div>
+    <div class="rm-stat">
+      <div class="num">{{ stats().shipped }}</div>
+      <div class="lbl">shipped</div>
+    </div>
+    <div class="rm-stat">
+      <div class="num">v1.0</div>
+      <div class="lbl">target · q4 2026</div>
+    </div>
+  </div>
 
   <kj-roadmap-toolbar
     [activeCats]="activeCats()"

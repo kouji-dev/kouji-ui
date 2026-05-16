@@ -52,10 +52,17 @@ kj-roadmap-page {
 .rm-tagline strong { color: var(--kj-fg-default); }
 
 /* ─────────── stats strip ─────────── */
+/* Sticky chrome stack from top: stats (0) → toolbar (60) → column heads (120).
+   Each layer's offset matches the previous layer's intrinsic height. */
 .rm-stats {
   display: flex;
   gap: 0;
-  margin: 18px 0 4px;
+  padding: 12px 32px;
+  background-color: var(--kj-bg-body);
+  border-bottom: 1px solid var(--kj-border-default);
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 .rm-stat {
   flex: 0 0 auto;
@@ -82,9 +89,7 @@ kj-roadmap-page {
 }
 
 /* ─────────── toolbar ─────────── */
-/* `top: 0` because the scroll container is `kj-roadmap-page` itself (see
-   the host rule above). The navbar sits OUTSIDE that container in the
-   app-shell flex column, so we don't need to offset for it. */
+/* Sticks below the stats strip (intrinsic height ≈ 60px). */
 .rm-toolbar {
   padding: 16px 32px;
   display: flex;
@@ -94,7 +99,7 @@ kj-roadmap-page {
   background-color: var(--kj-bg-body);
   border-bottom: 1px solid var(--kj-border-default);
   position: sticky;
-  top: 0;
+  top: 60px;
   z-index: 20;
 }
 .rm-filter-group {
@@ -201,13 +206,13 @@ kj-roadmap-column {
   padding: 12px 4px;
   border-bottom: 2px solid var(--kj-border-default);
   margin-bottom: 4px;
-  /* Stick the four column heads right below the toolbar. Each head is in its
-     own grid cell — visually they form a continuous header row. The fixed
-     offset matches the toolbar's intrinsic height (padding 16+16 + chip 28
-     ≈ 60). If the toolbar wraps on narrow viewports this can be off, but the
-     mobile layout drops the sticky behavior anyway via the @media block below. */
+  /* Stick the four column heads right below the stats + toolbar stack. Each
+     head is in its own grid cell — visually they form a continuous header row.
+     Offset = stats (60) + toolbar (60) = 120. If the toolbar wraps on narrow
+     viewports this can be off, but the mobile layout shrinks the chrome via
+     the @media block below. */
   position: sticky;
-  top: 60px;
+  top: 120px;
   background-color: var(--kj-bg-body);
   z-index: 10;
 }
