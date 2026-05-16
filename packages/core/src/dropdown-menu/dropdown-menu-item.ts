@@ -1,6 +1,5 @@
 import {
   Directive,
-  inject,
   output,
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';

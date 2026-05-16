@@ -10,7 +10,7 @@ expect.extend(toHaveNoViolations);
 describe('KjListItem', () => {
   it('mints a stable id at construction (no afterNextRender race)', async () => {
     const { container } = await render(
-      `<div role="option" kjListItem [kjItemValue]="'a'">A</div>`,
+      `<div role="option" aria-selected="false" kjListItem [kjItemValue]="'a'">A</div>`,
       { imports: [KjListItem] },
     );
     const el = container.querySelector('[kjListItem]')!;
@@ -27,7 +27,7 @@ describe('KjListItem', () => {
 
   it('reflects aria-disabled from composed KjDisabled', async () => {
     const { container } = await render(
-      `<div role="option" kjListItem [kjDisabled]="true" [kjItemValue]="'a'">A</div>`,
+      `<div role="option" aria-selected="false" kjListItem [kjDisabled]="true" [kjItemValue]="'a'">A</div>`,
       { imports: [KjListItem] },
     );
     expect(container.querySelector('[kjListItem]')!.getAttribute('aria-disabled')).toBe('true');
@@ -35,7 +35,7 @@ describe('KjListItem', () => {
 
   it('omits aria-selected when no KjSelectionModel is provided', async () => {
     const { container } = await render(
-      `<div role="option" kjListItem [kjItemValue]="'a'">A</div>`,
+      `<div role="option" aria-selected="false" kjListItem [kjItemValue]="'a'">A</div>`,
       { imports: [KjListItem] },
     );
     expect(container.querySelector('[kjListItem]')!.hasAttribute('aria-selected')).toBe(false);
@@ -76,7 +76,7 @@ describe('KjListItem', () => {
     @Component({
       standalone: true,
       imports: [KjListItem],
-      template: `<div role="option" kjListItem [kjItemValue]="'apple'" (activate)="last = $event">A</div>`,
+      template: `<div role="option" aria-selected="false" kjListItem [kjItemValue]="'apple'" (activate)="last = $event">A</div>`,
     })
     class Host { last: unknown = null; }
     const { container, fixture } = await render(Host);
@@ -88,7 +88,7 @@ describe('KjListItem', () => {
     @Component({
       standalone: true,
       imports: [KjListItem],
-      template: `<div role="option" kjListItem [kjDisabled]="true" [kjItemValue]="'apple'" (activate)="fired = true">A</div>`,
+      template: `<div role="option" aria-selected="false" kjListItem [kjDisabled]="true" [kjItemValue]="'apple'" (activate)="fired = true">A</div>`,
     })
     class Host { fired = false; }
     const { container, fixture } = await render(Host);
@@ -100,7 +100,7 @@ describe('KjListItem', () => {
     @Component({
       standalone: true,
       imports: [KjListItem],
-      template: `<div role="option" kjListItem [kjItemValue]="'a'" (activate)="count = count + 1">A</div>`,
+      template: `<div role="option" aria-selected="false" kjListItem [kjItemValue]="'a'" (activate)="count = count + 1">A</div>`,
     })
     class Host { count = 0; }
     const { container, fixture } = await render(Host);
@@ -114,7 +114,7 @@ describe('KjListItem', () => {
     @Component({
       standalone: true,
       imports: [KjListItem],
-      template: `<div role="option" kjListItem #i="kjListItem" [kjItemValue]="'a'">  Apple </div>
+      template: `<div role="option" aria-selected="false" kjListItem #i="kjListItem" [kjItemValue]="'a'">  Apple </div>
                  <span data-test>{{ i.label() }}</span>`,
     })
     class Host {}
@@ -126,7 +126,7 @@ describe('KjListItem', () => {
     @Component({
       standalone: true,
       imports: [KjListItem],
-      template: `<div role="option" kjListItem [kjItemValue]="'a'">A</div>`,
+      template: `<div role="option" aria-selected="false" kjListItem [kjItemValue]="'a'">A</div>`,
     })
     class Host {}
     const { container, fixture } = await render(Host);
@@ -138,7 +138,7 @@ describe('KjListItem', () => {
 
   it('binds aria-keyshortcuts when kjShortcut is set', async () => {
     const { container } = await render(
-      `<div role="option" kjListItem [kjItemValue]="'a'" [kjShortcut]="'Mod+P'">A</div>`,
+      `<div role="option" aria-selected="false" kjListItem [kjItemValue]="'a'" [kjShortcut]="'Mod+P'">A</div>`,
       { imports: [KjListItem] },
     );
     expect(container.querySelector('[kjListItem]')!.getAttribute('aria-keyshortcuts')).toBe('Mod+P');
@@ -148,7 +148,7 @@ describe('KjListItem', () => {
     @Component({
       standalone: true,
       imports: [KjListItem],
-      template: `<div role="option" kjListItem #i="kjListItem" [kjItemValue]="'a'">A</div>`,
+      template: `<div role="option" aria-selected="false" kjListItem #i="kjListItem" [kjItemValue]="'a'">A</div>`,
     })
     class Host {}
     const { container, fixture } = await render(Host);
@@ -164,7 +164,7 @@ describe('KjListItem', () => {
   it('passes axe accessibility audit', async () => {
     const { container } = await render(
       `<ul role="listbox" aria-label="Options">
-         <li role="option" kjListItem [kjItemValue]="'a'">A</li>
+         <li role="option" aria-selected="false" kjListItem [kjItemValue]="'a'">A</li>
        </ul>`,
       { imports: [KjListItem] },
     );

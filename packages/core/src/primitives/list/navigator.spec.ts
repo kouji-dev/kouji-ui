@@ -14,7 +14,7 @@ import { KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
  * KjSelect / KjCombobox. Used by the focus-mode tests below.
  */
 @Directive({
-  selector: '[testListRoot]',
+  selector: '[kjTestListRoot]',
   standalone: true,
   providers: [
     { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => TestListRoot) },
@@ -115,7 +115,7 @@ describe('KjListNavigator', () => {
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
     press(host, fixture, 'ArrowDown');
     const e = press(host, fixture, 'Enter');
-    expect((items[0] as any).activated).toBe(1);
+    expect((items[0] as { activated: number }).activated).toBe(1);
     expect(e.defaultPrevented).toBe(true);
   });
 
@@ -125,7 +125,7 @@ describe('KjListNavigator', () => {
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
     const e = press(host, fixture, 'Enter');
     expect(e.defaultPrevented).toBe(false);
-    expect((items[0] as any).activated).toBe(0);
+    expect((items[0] as { activated: number }).activated).toBe(0);
   });
 
   it('Space activates current item', async () => {
@@ -134,7 +134,7 @@ describe('KjListNavigator', () => {
     const host = container.querySelector('[kjListNavigator]') as HTMLElement;
     press(host, fixture, 'ArrowDown');
     press(host, fixture, ' ');
-    expect((items[0] as any).activated).toBe(1);
+    expect((items[0] as { activated: number }).activated).toBe(1);
   });
 
   it('PageDown moves by kjPageSize (default 10)', async () => {
@@ -180,9 +180,9 @@ describe('KjListNavigator focus modes', () => {
       standalone: true,
       imports: [KjListNavigator, KjListItem, TestListRoot],
       template: `
-        <div testListRoot kjListNavigator>
-          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
-          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+        <div kjTestListRoot kjListNavigator>
+          <div role="option" aria-selected="false" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" aria-selected="false" kjListItem id="b" [kjItemValue]="'b'">B</div>
         </div>
       `,
     })
@@ -197,10 +197,10 @@ describe('KjListNavigator focus modes', () => {
       standalone: true,
       imports: [KjListNavigator, KjListItem, TestListRoot],
       template: `
-        <div testListRoot kjListNavigator [kjFocusMode]="'roving'">
-          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
-          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
-          <div role="option" kjListItem id="c" [kjItemValue]="'c'">C</div>
+        <div kjTestListRoot kjListNavigator [kjFocusMode]="'roving'">
+          <div role="option" aria-selected="false" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" aria-selected="false" kjListItem id="b" [kjItemValue]="'b'">B</div>
+          <div role="option" aria-selected="false" kjListItem id="c" [kjItemValue]="'c'">C</div>
         </div>
       `,
     })
@@ -220,9 +220,9 @@ describe('KjListNavigator focus modes', () => {
       standalone: true,
       imports: [KjListNavigator, KjListItem, TestListRoot],
       template: `
-        <div testListRoot kjListNavigator [kjFocusMode]="'roving'" #nav="kjListNavigator">
-          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
-          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+        <div kjTestListRoot kjListNavigator [kjFocusMode]="'roving'" #nav="kjListNavigator">
+          <div role="option" aria-selected="false" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" aria-selected="false" kjListItem id="b" [kjItemValue]="'b'">B</div>
         </div>
       `,
     })
@@ -243,10 +243,10 @@ describe('KjListNavigator focus modes', () => {
       standalone: true,
       imports: [KjListNavigator, KjListItem, TestListRoot],
       template: `
-        <div testListRoot kjListNavigator [kjFocusMode]="'roving'">
-          <div role="option" kjListItem id="a" [kjDisabled]="true" [kjItemValue]="'a'">A</div>
-          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
-          <div role="option" kjListItem id="c" [kjItemValue]="'c'">C</div>
+        <div kjTestListRoot kjListNavigator [kjFocusMode]="'roving'">
+          <div role="option" aria-selected="false" kjListItem id="a" [kjDisabled]="true" [kjItemValue]="'a'">A</div>
+          <div role="option" aria-selected="false" kjListItem id="b" [kjItemValue]="'b'">B</div>
+          <div role="option" aria-selected="false" kjListItem id="c" [kjItemValue]="'c'">C</div>
         </div>
       `,
     })
@@ -267,9 +267,9 @@ describe('KjListNavigator focus modes', () => {
       standalone: true,
       imports: [KjListNavigator, KjListItem, TestListRoot],
       template: `
-        <div testListRoot kjListNavigator [kjFocusMode]="'roving'">
-          <div role="option" kjListItem id="a" [kjItemValue]="'a'">A</div>
-          <div role="option" kjListItem id="b" [kjItemValue]="'b'">B</div>
+        <div kjTestListRoot kjListNavigator [kjFocusMode]="'roving'">
+          <div role="option" aria-selected="false" kjListItem id="a" [kjItemValue]="'a'">A</div>
+          <div role="option" aria-selected="false" kjListItem id="b" [kjItemValue]="'b'">B</div>
         </div>
       `,
     })
