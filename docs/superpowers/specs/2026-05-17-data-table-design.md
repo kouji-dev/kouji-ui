@@ -477,7 +477,9 @@ All four are optional; render if projected. Sensible default toolbar + paginatio
 
 ## Testing strategy
 
-### Unit (`packages/core/src/table/*.spec.ts`)
+> **Scope rule for implementation agents:** all test runs invoked during this work MUST target only table-related specs. Do not run the full project test suite — it's slow and noise from unrelated specs masks real failures. See the scoped commands below.
+
+### Unit (`packages/core/src/table/*.spec.ts` + `packages/components/src/table/*.spec.ts`)
 
 - Column helpers — `kjColumn()` type inference, meta storage.
 - Storage adapters — localStorage, sessionStorage, in-memory round-trip.
@@ -486,6 +488,19 @@ All four are optional; render if projected. Sensible default toolbar + paginatio
 - Sort / filter / pagination — accumulators, multi-sort with shift, page clamping.
 - Export formatters — CSV escaping, JSON shape, TSV.
 - `kjTableResource()` — state-to-request wiring, abort on state change, error → retry.
+
+**Scoped invocation** (run ONLY table specs, not the whole project):
+
+```bash
+# Core package, table specs only
+pnpm --filter @kouji-ui/core exec vitest run packages/core/src/table
+
+# Components package, table specs only
+pnpm --filter @kouji-ui/components exec vitest run packages/components/src/table
+
+# Both at once via turbo with a path filter
+pnpm exec turbo run test --filter='@kouji-ui/core' --filter='@kouji-ui/components' -- packages/*/src/table
+```
 
 ### E2E (`apps/docs/e2e/data-table.spec.ts`)
 
@@ -511,9 +526,58 @@ One block per major feature:
 - Keyboard nav: Arrow / Home / End / Tab / Enter / F2 / Esc / Space / Cmd+A.
 - Export: CSV file download, JSON file, clipboard.
 
-### Playgrounds (`/docs/components/data-table`)
+**Scoped invocation** (run ONLY the table e2e file):
 
-One `@doc-example` per feature: default, sortable, filterable, server-mode, virtualized, pinned, selectable, density toggle, custom cell template, custom editor, row detail, exported, persisted.
+```bash
+pnpm exec playwright test apps/docs/e2e/data-table.spec.ts --reporter=list
+```
+
+### Docs examples — REQUIRED playgrounds
+
+Every feature in this spec ships an interactive playground at `/docs/components/data-table`. Each playground:
+
+- Lives next to its `kj-data-table` example file under `packages/components/src/table/data-table.<example>.example.ts`.
+- Is registered as a `@doc-example` on the `KjDataTable` component TSDoc block (already-established convention; see `button.ts` and `tag.ts` for templates).
+- Is a self-contained component using only `kj-data-table` + the kj-component dependencies it actually needs.
+- Has terse, opinionated copy that explains *why* the example is interesting (not just *what* it shows).
+
+Required playgrounds (one `@doc-example` per row):
+
+| File suffix | Showcases |
+|---|---|
+| `data-table.example.ts` | default playground — single column, sortable, no chrome |
+| `data-table.usage.example.ts` | the canonical "drop it in and ship" example — 4–6 columns, sort, filter, selection, pagination |
+| `data-table.sortable.example.ts` | single + multi-sort with shift |
+| `data-table.filterable.example.ts` | column filters (text + number + select + date) + global quick filter |
+| `data-table.selection.example.ts` | single, multi, range select, bulk-action toolbar |
+| `data-table.editable.example.ts` | inline editing — built-in editors + a custom component editor |
+| `data-table.column-visibility.example.ts` | toolbar menu to show/hide columns |
+| `data-table.column-resize.example.ts` | drag + keyboard resize, persisted widths |
+| `data-table.column-pinning.example.ts` | pin left + right, scroll horizontally |
+| `data-table.row-pinning.example.ts` | sticky top + bottom summary rows |
+| `data-table.grouping.example.ts` | drag-to-group + aggregation |
+| `data-table.master-detail.example.ts` | row detail panel via `kjRowDetail` template |
+| `data-table.virtualized.example.ts` | 10k-row dataset with virtual scroll |
+| `data-table.density.example.ts` | compact / standard / comfortable toggle |
+| `data-table.theming.example.ts` | bordered / striped / clean variants across themes |
+| `data-table.server-mode.example.ts` | `kjTableResource` with a mock async loader (artificial 600ms delay) |
+| `data-table.persistence.example.ts` | demonstrates state survival across refresh via `kjTableId` |
+| `data-table.export.example.ts` | CSV + JSON + clipboard export buttons in toolbar |
+| `data-table.empty-and-error.example.ts` | empty state + error state slots |
+| `data-table.keyboard.example.ts` | annotated keyboard map with a focusable demo grid |
+
+Every playground:
+- Is exported from `packages/components/src/table/index.ts`.
+- Renders cleanly in all 13 themes (no hardcoded colors).
+- Passes axe-core in the docs page's automated a11y pipeline.
+
+## Implementation guidance
+
+This is a single large PR. The writing-plans step that follows should:
+
+- **Parallelize aggressively.** Many tasks have no shared state — the storage adapter unit specs, the column-helper type tests, the various playground examples, the keyboard-nav directive, the editor wrappers, the filter wrappers — these can all be dispatched in parallel via the `superpowers:dispatching-parallel-agents` skill. The implementation plan should explicitly mark which tasks block which.
+- **Stay scoped when running tests.** Use the scoped invocations above. A full-project test run pays a 30-second penalty for noise from unrelated changes and slows the iteration loop.
+- **Land the headless layer (`@kouji-ui/core/src/table`) first, in one slice.** The styled wrapper, sub-components, editors, filters, and playgrounds can fan out in parallel once the directive surface is stable.
 
 ## Verification plan
 
