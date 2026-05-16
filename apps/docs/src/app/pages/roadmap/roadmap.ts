@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
   CATEGORIES,
   CategoryId,
@@ -19,7 +19,6 @@ import { RoadmapColumn } from './roadmap-column';
   templateUrl: './roadmap.html',
   styleUrl: './roadmap.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
 })
 export class RoadmapPage {
   private readonly roadmapService = inject(RoadmapService);
