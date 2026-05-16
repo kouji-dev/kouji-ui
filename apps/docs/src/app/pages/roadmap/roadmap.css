@@ -3,6 +3,18 @@
    Ported 1:1 from design-revamp/kouji-ui-v3/roadmap.css.
    ============================================================ */
 
+/* Host is the single scroll owner for this route (mirrors `app-home` in
+   home.css). Without flex:1/min-height:0/overflow-y:auto, the navbar
+   above gets squished by tall board content because the flex column at
+   `.app-shell` distributes height to its children. */
+kj-roadmap-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .page { display: block; }
 
 /* ─────────── intro ─────────── */
