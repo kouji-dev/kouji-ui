@@ -47,5 +47,9 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'roadmap',
+    loadComponent: () => import('./pages/roadmap/roadmap').then(m => m.RoadmapPage),
+  },
   { path: '**', redirectTo: '' },
 ];
