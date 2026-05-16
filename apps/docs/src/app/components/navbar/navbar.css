@@ -16,14 +16,25 @@
 .kj-navbar-logo {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--kj-fg-default);
   text-decoration: none;
+  /* slight right padding so the version chip doesn't crowd the first nav link */
+  padding-right: 4px;
+}
+.kj-navbar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kj-bg-primary);
+  flex: 0 0 auto;
 }
 .kj-navbar-brand {
-  font-weight: 800;
-  font-size: 16px;
-  letter-spacing: -0.5px;
+  font-family: var(--kj-font-mono, ui-monospace, monospace);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0;
+  color: var(--kj-fg-default);
 }
 
 .kj-navbar-link {
@@ -47,10 +58,12 @@
   background: var(--kj-bg-surface);
   border: 1px solid var(--kj-border-default);
   border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  color: var(--kj-fg-primary);
+  padding: 2px 8px;
+  font-size: 10px;
+  color: var(--kj-fg-muted);
   font-family: var(--kj-font-mono, monospace);
+  letter-spacing: 0.04em;
+  margin-left: 2px;
 }
 
 .kj-navbar-icon {

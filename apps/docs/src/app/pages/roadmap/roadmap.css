@@ -1,0 +1,107 @@
+/* ============================================================
+   Roadmap PAGE layout — host scroll, intro, stats strip, board grid.
+
+   Per-component visuals live in their own component files:
+     - roadmap-toolbar.ts  (filter chips + sort)
+     - roadmap-column.ts   (column head + empty state + status accents)
+     - roadmap-card.ts     (card + candidate badge + progress + candor)
+
+   Spacing rule: ALL margin/padding/gap/inset values must use a
+   `--kj-base-space-*` token. Off-token raw values get rounded to the
+   nearest token (xs 4 / sm 8 / md 12 / lg 16 / xl 24 / 2xl 32 / 3xl 48
+   / 4xl 64 / 5xl 96).
+   ============================================================ */
+
+/* Host is the single scroll owner for this route (mirrors `app-home` in
+   home.css). Without flex:1/min-height:0/overflow-y:auto, the navbar
+   above gets squished by tall board content. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.page { display: block; }
+
+/* ─────────── intro ─────────── */
+.rm-intro {
+  padding: var(--kj-base-space-2xl) var(--kj-base-space-2xl) var(--kj-base-space-sm);
+  border-bottom: 1px solid var(--kj-border-default);
+  background-color: var(--kj-bg-body);
+}
+.rm-eyebrow {
+  font-family: var(--kj-font-mono);
+  font-size: 0.6875rem;
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  display: block;
+  margin-bottom: var(--kj-base-space-sm);
+}
+/* h1 + p inside .rm-intro get their typography from `.kj-prose`
+   (see packages/core/src/typography/prose.css). No local overrides. */
+
+/* ─────────── chrome (sticky stats + toolbar wrapper) ─────────── */
+/* Single sticky parent — stats and toolbar are normal-flow inside, so their
+   combined height is what sticks. The page publishes the measured height on
+   `--rm-chrome-h`; column heads consume it for their own sticky offset. */
+.rm-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: var(--kj-bg-body);
+}
+
+/* ─────────── stats strip ─────────── */
+.rm-stats {
+  display: flex;
+  gap: 0;
+  padding: var(--kj-base-space-md) var(--kj-base-space-2xl);
+  background-color: var(--kj-bg-body);
+  border-bottom: 1px solid var(--kj-border-default);
+}
+.rm-stat {
+  flex: 0 0 auto;
+  padding-right: var(--kj-base-space-xl);
+  margin-right: var(--kj-base-space-xl);
+  border-right: 1px solid var(--kj-border-default);
+}
+.rm-stat:last-child { border-right: 0; }
+.rm-stat .num {
+  font-family: var(--kj-font-display);
+  font-weight: var(--kj-display-weight);
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--kj-fg-default);
+  letter-spacing: var(--kj-letter-spacing);
+}
+.rm-stat .lbl {
+  font-family: var(--kj-font-mono);
+  font-size: 0.625rem;
+  color: var(--kj-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-top: var(--kj-base-space-xs);
+}
+
+/* ─────────── kanban board grid ─────────── */
+.rm-board-wrap {
+  padding: var(--kj-base-space-xl) 0 var(--kj-base-space-4xl);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.rm-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(17.5rem, 1fr));
+  gap: var(--kj-base-space-lg);
+  padding: 0 var(--kj-base-space-2xl);
+  align-items: start;
+}
+@media (max-width: 80rem) {
+  .rm-board { grid-template-columns: repeat(4, 20rem); }
+}
+@media (max-width: 47.5rem) {
+  .rm-board { padding: 0 var(--kj-base-space-xl); }
+}

@@ -1,6 +1,13 @@
-<div class="loading-screen">
-  <div class="logo-wrap">
-    <kj-logo [size]="80" [animate]="animateLogo()" />
-    <span class="wordmark">kouji</span>
+<div class="loading-screen" [attr.data-theme]="theme()" aria-hidden="true">
+  <div class="ls-stage">
+    <div class="lf-figure-wrap">
+      <kj-loader-figure [themeId]="theme()" />
+    </div>
+    <div class="lf-caption">
+      <span class="lf-name">kouji/ui</span>
+      <span class="lf-dot" aria-hidden="true"></span>
+      <span class="lf-status">loading <em>{{ theme() }}</em> workspace</span>
+      <span class="lf-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+    </div>
   </div>
 </div>

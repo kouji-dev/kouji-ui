@@ -1,0 +1,70 @@
+<div class="page">
+  <section class="rm-intro kj-prose">
+    <span class="rm-eyebrow">// what's next</span>
+    <h1>roadmap.</h1>
+    <p>
+      what we're building, what we're thinking about, and what's already shipped.
+      <strong>dates slip</strong> — we'll be honest about it. ideas are a public
+      sketchpad; the ones marked <strong>candidate</strong> have a real shot at
+      the next version.
+    </p>
+  </section>
+
+  <!-- Sticky chrome stack: stats + toolbar share a single sticky parent so
+       there is no inter-layer gap. The chrome's measured height is published
+       as `--rm-chrome-h` on this page (see roadmap.ts), and the column heads
+       use that variable for their own sticky offset — so layout stays correct
+       no matter how the toolbar wraps. -->
+  <div #chrome class="rm-chrome">
+    <div class="rm-stats">
+      <div class="rm-stat">
+        <div class="num">{{ stats().idea }}</div>
+        <div class="lbl">ideas · {{ stats().candidate }} candidates</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().next }}</div>
+        <div class="lbl">next up</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().wip }}</div>
+        <div class="lbl">in progress</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().shipped }}</div>
+        <div class="lbl">shipped</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">v0.1</div>
+        <div class="lbl">next milestone · jul 2026</div>
+      </div>
+    </div>
+
+    <kj-roadmap-toolbar
+      [activeCats]="activeCats()"
+      [activeStatuses]="activeStatuses()"
+      [totalsByCategory]="totalsByCategory()"
+      [totalsByStatus]="totalsByStatus()"
+      [sort]="sort()"
+      [filterActive]="filterActive()"
+      [visibleCount]="sorted().length"
+      (toggleCat)="toggleCat($event)"
+      (toggleStatus)="toggleStatus($event)"
+      (clearFilters)="clearFilters()"
+      (sortChange)="setSort($event)"
+    />
+  </div>
+
+  <div class="rm-board-wrap">
+    <div class="rm-board">
+      @for (col of columns; track col.id) {
+        <kj-roadmap-column
+          [col]="col"
+          [items]="itemsByStatus()[col.id]"
+          [total]="totalsByStatus()[col.id]"
+          [expanded]="expanded()"
+          (toggleExpand)="toggleExpand($event)"
+        />
+      }
+    </div>
+  </div>
+</div>

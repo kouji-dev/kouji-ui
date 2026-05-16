@@ -1,18 +1,16 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { LogoComponent } from '../logo/logo';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ThemeService } from '../../services/theme.service';
+import { KjLoaderFigure } from './loader-figures';
 
 @Component({
   selector: 'kj-loading-screen',
   standalone: true,
-  imports: [LogoComponent],
+  imports: [KjLoaderFigure],
   templateUrl: './loading-screen.html',
   styleUrl: './loading-screen.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoadingScreenComponent implements OnInit {
-  protected readonly animateLogo = signal(false);
-
-  ngOnInit(): void {
-    // Trigger logo animation on next tick
-    setTimeout(() => this.animateLogo.set(true), 50);
-  }
+export class LoadingScreenComponent {
+  private readonly themeService = inject(ThemeService);
+  protected readonly theme = this.themeService.theme;
 }
