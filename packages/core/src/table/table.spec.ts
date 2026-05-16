@@ -1,8 +1,10 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, signal } from '@angular/core';
 import { ColumnDef } from '@tanstack/angular-table';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
 import { KjTable, KjTableHeader } from './table';
+import { kjColumn } from './column-helpers';
 
 expect.extend(toHaveNoViolations);
 
@@ -109,5 +111,54 @@ describe('KjTable', () => {
     const th = container.querySelector('th')!;
     expect(th.style.cursor).not.toBe('pointer');
     expect(th.hasAttribute('data-sort')).toBe(false);
+  });
+});
+
+interface Row { id: string; name: string; }
+
+@Component({
+  standalone: true,
+  imports: [KjTable],
+  template: `<table [kjTable]="cols" [kjTableData]="data()" #t="kjTable"></table>`,
+})
+class Host {
+  protected readonly cols = [kjColumn<Row>({ accessorKey: 'name', header: 'Name' })];
+  protected readonly data = signal<Row[]>([{ id: '1', name: 'alice' }, { id: '2', name: 'bob' }]);
+}
+
+describe('KjTable (extended)', () => {
+  it('exposes every state slice as a readonly signal', async () => {
+    const { fixture } = await render(Host);
+    const dir = fixture.debugElement.children[0].injector.get(KjTable);
+    expect(dir.sorting()).toEqual([]);
+    expect(dir.columnFilters()).toEqual([]);
+    expect(dir.globalFilter()).toBe('');
+    expect(dir.pagination()).toEqual({ pageIndex: 0, pageSize: 25 });
+    expect(dir.rowSelection()).toEqual({});
+    expect(dir.columnSizing()).toEqual({});
+    expect(dir.columnVisibility()).toEqual({});
+    expect(dir.columnOrder()).toEqual([]);
+    expect(dir.columnPinning()).toEqual({ left: [], right: [] });
+    expect(dir.expanded()).toEqual({});
+    expect(dir.grouping()).toEqual([]);
+    expect(dir.density()).toBe('standard');
+  });
+
+  it('getState returns full bundle, setState merges', async () => {
+    const { fixture } = await render(Host);
+    const dir = fixture.debugElement.children[0].injector.get(KjTable);
+    dir.setState({ density: 'compact', globalFilter: 'al' });
+    expect(dir.density()).toBe('compact');
+    expect(dir.globalFilter()).toBe('al');
+    expect(dir.getState().density).toBe('compact');
+  });
+
+  it('resetState clears all slices', async () => {
+    const { fixture } = await render(Host);
+    const dir = fixture.debugElement.children[0].injector.get(KjTable);
+    dir.setState({ density: 'compact', globalFilter: 'x' });
+    dir.resetState();
+    expect(dir.density()).toBe('standard');
+    expect(dir.globalFilter()).toBe('');
   });
 });
