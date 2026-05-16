@@ -31,4 +31,18 @@
       </div>
     </div>
   </section>
+
+  <kj-roadmap-toolbar
+    [activeCats]="activeCats()"
+    [activeStatuses]="activeStatuses()"
+    [totalsByCategory]="totalsByCategory()"
+    [totalsByStatus]="totalsByStatus()"
+    [sort]="sort()"
+    [filterActive]="filterActive()"
+    [visibleCount]="sorted().length"
+    (toggleCat)="toggleCat($event)"
+    (toggleStatus)="toggleStatus($event)"
+    (clearFilters)="clearFilters()"
+    (sortChange)="setSort($event)"
+  />
 </div>
