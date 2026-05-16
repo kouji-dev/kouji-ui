@@ -6,6 +6,8 @@ import { provideLucideIcons } from '@kouji-ui/components';
 import { routes } from './app.routes';
 import { DocsManifestProvider } from './services/docs-manifest.provider';
 import { BrowserDocsManifestProvider } from './services/docs-manifest.browser';
+import { RoadmapDataProvider } from './services/roadmap-data.provider';
+import { BrowserRoadmapDataProvider } from './services/roadmap-data.browser';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,5 +17,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideLucideIcons(),
     { provide: DocsManifestProvider, useClass: BrowserDocsManifestProvider },
+    { provide: RoadmapDataProvider, useClass: BrowserRoadmapDataProvider },
   ],
 };

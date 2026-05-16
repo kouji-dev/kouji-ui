@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, signal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, ViewEncapsulation } from '@angular/core';
 import {
   CATEGORIES,
   CategoryId,
   COLUMNS,
-  ROADMAP,
   RoadmapItem,
   SortMode,
   StatusId,
   versionSort,
 } from './roadmap-data';
+import { RoadmapService } from '../../services/roadmap.service';
 import { RoadmapToolbar } from './roadmap-toolbar';
 import { RoadmapColumn } from './roadmap-column';
 
@@ -22,6 +22,9 @@ import { RoadmapColumn } from './roadmap-column';
   encapsulation: ViewEncapsulation.None,
 })
 export class RoadmapPage {
+  private readonly roadmapService = inject(RoadmapService);
+  protected readonly items = this.roadmapService.items;
+
   protected readonly activeCats     = signal<ReadonlySet<CategoryId>>(new Set());
   protected readonly activeStatuses = signal<ReadonlySet<StatusId>>(new Set());
   protected readonly sort           = signal<SortMode>('date-desc');
@@ -30,7 +33,7 @@ export class RoadmapPage {
   protected readonly filtered = computed<readonly RoadmapItem[]>(() => {
     const cats = this.activeCats();
     const stats = this.activeStatuses();
-    return ROADMAP.filter(i => {
+    return this.items().filter(i => {
       if (cats.size > 0 && !cats.has(i.category)) return false;
       if (stats.size > 0 && !stats.has(i.status)) return false;
       return true;
@@ -59,13 +62,13 @@ export class RoadmapPage {
 
   protected readonly totalsByStatus = computed<Readonly<Record<StatusId, number>>>(() => {
     const m: Record<StatusId, number> = { idea: 0, next: 0, wip: 0, shipped: 0 };
-    for (const i of ROADMAP) m[i.status]++;
+    for (const i of this.items()) m[i.status]++;
     return m;
   });
 
   protected readonly totalsByCategory = computed<Readonly<Record<CategoryId, number>>>(() => {
     const m: Record<CategoryId, number> = { component: 0, theme: 0, a11y: 0, perf: 0, docs: 0 };
-    for (const i of ROADMAP) m[i.category]++;
+    for (const i of this.items()) m[i.category]++;
     return m;
   });
 
@@ -73,13 +76,16 @@ export class RoadmapPage {
     () => this.activeCats().size > 0 || this.activeStatuses().size > 0,
   );
 
-  protected readonly stats = computed(() => ({
-    shipped:   ROADMAP.filter(i => i.status === 'shipped').length,
-    wip:       ROADMAP.filter(i => i.status === 'wip').length,
-    next:      ROADMAP.filter(i => i.status === 'next').length,
-    idea:      ROADMAP.filter(i => i.status === 'idea').length,
-    candidate: ROADMAP.filter(i => i.candidate).length,
-  }));
+  protected readonly stats = computed(() => {
+    const list = this.items();
+    return {
+      shipped:   list.filter(i => i.status === 'shipped').length,
+      wip:       list.filter(i => i.status === 'wip').length,
+      next:      list.filter(i => i.status === 'next').length,
+      idea:      list.filter(i => i.status === 'idea').length,
+      candidate: list.filter(i => i.candidate).length,
+    };
+  });
 
   protected readonly columns = COLUMNS;
   protected readonly categories = CATEGORIES;

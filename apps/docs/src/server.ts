@@ -7,10 +7,19 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 import { getManifest } from './lib/manifest';
+import { getRoadmap } from './lib/roadmap-loader';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+app.get('/api/roadmap', (_req, res) => {
+  try {
+    res.json(getRoadmap());
+  } catch (e) {
+    res.status(500).json({ error: 'Roadmap parse failed', detail: String(e) });
+  }
+});
 
 app.get('/api/docs/manifest', (_req, res) => {
   try {
