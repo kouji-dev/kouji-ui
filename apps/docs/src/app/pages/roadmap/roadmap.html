@@ -45,4 +45,18 @@
     (clearFilters)="clearFilters()"
     (sortChange)="setSort($event)"
   />
+
+  <div class="rm-board-wrap">
+    <div class="rm-board">
+      @for (col of columns; track col.id) {
+        <kj-roadmap-column
+          [col]="col"
+          [items]="itemsByStatus()[col.id]"
+          [total]="totalsByStatus()[col.id]"
+          [expanded]="expanded()"
+          (toggleExpand)="toggleExpand($event)"
+        />
+      }
+    </div>
+  </div>
 </div>

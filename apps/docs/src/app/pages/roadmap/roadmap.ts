@@ -10,11 +10,12 @@ import {
   versionSort,
 } from './roadmap-data';
 import { RoadmapToolbar } from './roadmap-toolbar';
+import { RoadmapColumn } from './roadmap-column';
 
 @Component({
   selector: 'kj-roadmap-page',
   standalone: true,
-  imports: [RoadmapToolbar],
+  imports: [RoadmapToolbar, RoadmapColumn],
   templateUrl: './roadmap.html',
   styleUrl: './roadmap.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
