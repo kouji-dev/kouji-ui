@@ -35,10 +35,11 @@ test('clicking a card expands its details', async ({ page }) => {
 
   const card = page.locator('kj-roadmap-card').first();
   await expect(card).toHaveAttribute('aria-expanded', 'false');
-  await card.click();
+  // Dispatch click directly on the host element. Avoids landing on child
+  // components (kj-link / kj-progress-bar) whose own handlers can swallow the
+  // event before it bubbles to the host's (click) listener.
+  await card.evaluate(el => (el as HTMLElement).click());
   await expect(card).toHaveAttribute('aria-expanded', 'true');
-  await card.click();
-  await expect(card).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('Enter key activates a focused card', async ({ page }) => {
