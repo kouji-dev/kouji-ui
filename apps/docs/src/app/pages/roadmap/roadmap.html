@@ -1,3 +1,34 @@
 <div class="page">
-  <!-- Sections wired in later tasks -->
+  <section class="rm-intro">
+    <span class="rm-eyebrow">// what's next</span>
+    <h1 class="rm-h1">roadmap.</h1>
+    <p class="rm-tagline">
+      what we're building, what we're thinking about, and what's already shipped.
+      <strong>dates slip</strong> — we'll be honest about it. ideas are a public
+      sketchpad; the ones marked <strong>candidate</strong> have a real shot at
+      the next version.
+    </p>
+    <div class="rm-stats">
+      <div class="rm-stat">
+        <div class="num">{{ stats().idea }}</div>
+        <div class="lbl">ideas · {{ stats().candidate }} candidates</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().next }}</div>
+        <div class="lbl">next up</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().wip }}</div>
+        <div class="lbl">in progress</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().shipped }}</div>
+        <div class="lbl">shipped</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">v1.0</div>
+        <div class="lbl">target · q4 2026</div>
+      </div>
+    </div>
+  </section>
 </div>
