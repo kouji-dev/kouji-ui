@@ -7,19 +7,17 @@ import { LoadingScreenComponent } from './components/loading-screen/loading-scre
 import { LoadingService } from './services/loading.service';
 import { SearchComponent } from './components/search/search.component';
 import { ThemeService } from './services/theme.service';
-import { NavbarComponent } from './components/navbar/navbar';
 import { ProgressBarComponent } from './components/progress-bar/progress-bar';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, LoadingScreenComponent, SearchComponent, NavbarComponent, ProgressBarComponent],
+  imports: [RouterOutlet, LoadingScreenComponent, SearchComponent, ProgressBarComponent],
   template: `
     @if (loading.isLoading()) {
       <kj-loading-screen />
     }
     <div class="app-shell" [class.content-hidden]="loading.isLoading()">
-      <kj-navbar />
       <router-outlet />
     </div>
     @defer (when isBrowser) {

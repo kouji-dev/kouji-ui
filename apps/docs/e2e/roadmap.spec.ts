@@ -14,7 +14,8 @@ test('clicking a category chip filters cards', async ({ page }) => {
   const before = await page.locator('kj-roadmap-card').count();
   expect(before).toBeGreaterThan(0);
 
-  const a11yChip = page.locator('.rm-chip', { hasText: 'a11y' });
+  // Filter chips are kj-tag selectable elements — find by text.
+  const a11yChip = page.locator('kj-tag', { hasText: /^\s*a11y/ }).first();
   await a11yChip.click();
   await expect(a11yChip).toHaveAttribute('aria-pressed', 'true');
 
@@ -22,8 +23,10 @@ test('clicking a category chip filters cards', async ({ page }) => {
   expect(after).toBeLessThan(before);
   expect(after).toBeGreaterThan(0);
 
-  await expect(page.locator('.rm-clear')).toBeVisible();
-  await page.locator('.rm-clear').click();
+  // The clear control is rendered as a kj-button with "clear · showing N" text.
+  const clear = page.getByRole('button', { name: /^clear/i });
+  await expect(clear).toBeVisible();
+  await clear.click();
   await expect(a11yChip).toHaveAttribute('aria-pressed', 'false');
 });
 
