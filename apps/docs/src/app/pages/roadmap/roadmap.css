@@ -82,6 +82,9 @@ kj-roadmap-page {
 }
 
 /* ─────────── toolbar ─────────── */
+/* `top: 0` because the scroll container is `kj-roadmap-page` itself (see
+   the host rule above). The navbar sits OUTSIDE that container in the
+   app-shell flex column, so we don't need to offset for it. */
 .rm-toolbar {
   padding: 16px 32px;
   display: flex;
@@ -91,7 +94,7 @@ kj-roadmap-page {
   background-color: var(--kj-bg-body);
   border-bottom: 1px solid var(--kj-border-default);
   position: sticky;
-  top: 56px;
+  top: 0;
   z-index: 20;
 }
 .rm-filter-group {
@@ -195,9 +198,18 @@ kj-roadmap-column {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 4px 4px 12px;
+  padding: 12px 4px;
   border-bottom: 2px solid var(--kj-border-default);
   margin-bottom: 4px;
+  /* Stick the four column heads right below the toolbar. Each head is in its
+     own grid cell — visually they form a continuous header row. The fixed
+     offset matches the toolbar's intrinsic height (padding 16+16 + chip 28
+     ≈ 60). If the toolbar wraps on narrow viewports this can be off, but the
+     mobile layout drops the sticky behavior anyway via the @media block below. */
+  position: sticky;
+  top: 60px;
+  background-color: var(--kj-bg-body);
+  z-index: 10;
 }
 .rm-column-title {
   display: flex;
