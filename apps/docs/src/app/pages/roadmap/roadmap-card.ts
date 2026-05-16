@@ -22,7 +22,7 @@ import { RoadmapItem } from './roadmap-data';
     '[class.open]': 'open()',
     '[class.candidate]': 'item().candidate',
     '[attr.aria-expanded]': 'open()',
-    '(click)': 'toggle.emit()',
+    '(click)': 'toggled.emit()',
     '(keydown.enter)': 'onKey($event)',
     '(keydown.space)': 'onKey($event)',
   },
@@ -226,7 +226,7 @@ import { RoadmapItem } from './roadmap-data';
 export class RoadmapCard {
   readonly item = input.required<RoadmapItem>();
   readonly open = input.required<boolean>();
-  readonly toggle = output<void>();
+  readonly toggled = output<void>();
 
   protected readonly progressPct = computed<number | null>(() => {
     const p = this.item().progress;
@@ -235,6 +235,6 @@ export class RoadmapCard {
 
   protected onKey(event: Event): void {
     event.preventDefault();
-    this.toggle.emit();
+    this.toggled.emit();
   }
 }

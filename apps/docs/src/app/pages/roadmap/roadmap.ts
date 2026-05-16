@@ -123,12 +123,12 @@ export class RoadmapPage {
 
   protected toggleCat(id: CategoryId): void {
     const next = new Set(this.activeCats());
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) next.delete(id); else next.add(id);
     this.activeCats.set(next);
   }
   protected toggleStatus(id: StatusId): void {
     const next = new Set(this.activeStatuses());
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) next.delete(id); else next.add(id);
     this.activeStatuses.set(next);
   }
   protected clearFilters(): void {
@@ -137,7 +137,7 @@ export class RoadmapPage {
   }
   protected toggleExpand(id: string): void {
     const next = new Set(this.expanded());
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) next.delete(id); else next.add(id);
     this.expanded.set(next);
   }
   protected setSort(mode: SortMode): void {

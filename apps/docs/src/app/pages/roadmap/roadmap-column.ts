@@ -36,7 +36,7 @@ import { RoadmapCard } from './roadmap-card';
         <kj-roadmap-card
           [item]="item"
           [open]="expanded().has(item.id)"
-          (toggle)="toggleExpand.emit(item.id)"
+          (toggled)="toggleExpand.emit(item.id)"
         />
       }
     }

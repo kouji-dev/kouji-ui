@@ -47,7 +47,7 @@ export function getRoadmap(): readonly RoadmapItem[] {
 }
 
 function parseItem(id: string, raw: string): RoadmapItem {
-  const fmMatch = raw.replace(/^﻿/, '').match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+  const fmMatch = raw.replace(/^\uFEFF/, '').match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!fmMatch) throw new Error(`Roadmap: file "${id}.md" is missing frontmatter`);
   const [, fmBlock, body] = fmMatch;
 
