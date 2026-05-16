@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal, ViewEncapsulation } from '@angular/core';
 import {
   CATEGORIES,
   CategoryId,
@@ -19,6 +19,7 @@ import { RoadmapColumn } from './roadmap-column';
   templateUrl: './roadmap.html',
   styleUrl: './roadmap.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class RoadmapPage {
   protected readonly activeCats     = signal<ReadonlySet<CategoryId>>(new Set());
