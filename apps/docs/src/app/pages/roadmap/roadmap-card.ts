@@ -5,11 +5,17 @@ import {
   input,
   output,
 } from '@angular/core';
+import {
+  KjBadgeComponent,
+  KjLinkComponent,
+  KjProgressBarComponent,
+} from '@kouji-ui/components';
 import { RoadmapItem } from './roadmap-data';
 
 @Component({
   selector: 'kj-roadmap-card',
   standalone: true,
+  imports: [KjBadgeComponent, KjLinkComponent, KjProgressBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'role': 'button',
@@ -30,23 +36,20 @@ import { RoadmapItem } from './roadmap-data';
 
     <h3 class="title">
       @if (item().candidate) {
-        <span class="candidate-badge" title="candidate for upcoming version">candidate</span>
+        <kj-badge kjVariant="outline" class="candidate-badge" title="candidate for upcoming version">
+          candidate
+        </kj-badge>
       }
       {{ item().title }}
     </h3>
     <p class="desc">{{ item().description }}</p>
 
     @if (progressPct() !== null) {
-      <div
+      <kj-progress-bar
         class="progress"
-        role="progressbar"
-        [attr.aria-valuenow]="progressPct()"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        [attr.aria-label]="'Progress ' + progressPct() + '%'"
-      >
-        <div class="progress-fill" [style.width.%]="progressPct()"></div>
-      </div>
+        [kjValue]="progressPct() ?? 0"
+        [kjAriaLabel]="'Progress ' + progressPct() + '%'"
+      />
     }
 
     @if (item().candor) {
@@ -66,18 +69,12 @@ import { RoadmapItem } from './roadmap-data';
     <div class="details">
       <div>
         <p class="long">{{ item().longDesc }}</p>
-        <div class="link-row">
-          <a class="link" href="#" (click)="$event.preventDefault(); $event.stopPropagation()">
-            {{ item().issues }} issues ↗
-          </a>
+        <div class="link-row" (click)="$event.stopPropagation()">
+          <kj-link kjHref="#" kjTarget="_blank">{{ item().issues }} issues ↗</kj-link>
           @if (item().prs > 0) {
-            <a class="link" href="#" (click)="$event.preventDefault(); $event.stopPropagation()">
-              {{ item().prs }} PRs ↗
-            </a>
+            <kj-link kjHref="#" kjTarget="_blank">{{ item().prs }} PRs ↗</kj-link>
           }
-          <a class="link" href="#" (click)="$event.preventDefault(); $event.stopPropagation()">
-            rfc thread ↗
-          </a>
+          <kj-link kjHref="#" kjTarget="_blank">rfc thread ↗</kj-link>
         </div>
       </div>
     </div>
@@ -124,6 +121,10 @@ import { RoadmapItem } from './roadmap-data';
       color: var(--kj-fg-default);
       line-height: 1.3;
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     .desc {
       font-family: var(--kj-font-sans);
@@ -133,19 +134,11 @@ import { RoadmapItem } from './roadmap-data';
       margin: 0;
     }
 
+    /* Tighter / louder candidate badge variant */
     .candidate-badge {
-      display: inline-block;
-      margin-right: 6px;
-      padding: 1px 6px;
       background-color: var(--kj-bg-accent);
       color: var(--kj-fg-on-primary);
-      font-family: var(--kj-font-mono);
-      font-size: 0.5625rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      border-radius: 2px;
-      vertical-align: 2px;
+      border-color: var(--kj-bg-accent);
     }
 
     .foot {
@@ -154,6 +147,8 @@ import { RoadmapItem } from './roadmap-data';
       gap: 8px;
       margin-top: 2px;
     }
+    /* Category badge keeps the colored dot prefix — kj-tag/badge don't ship a
+       slot for that so we render a small custom pill. */
     .cat {
       display: inline-flex;
       align-items: center;
@@ -192,19 +187,7 @@ import { RoadmapItem } from './roadmap-data';
     }
     .issues span { font-variant-numeric: tabular-nums; }
 
-    .progress {
-      width: 100%;
-      height: 4px;
-      background-color: var(--kj-bg-elevated);
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 4px;
-    }
-    .progress-fill {
-      height: 100%;
-      background-color: var(--kj-bg-primary);
-      transition: width .35s ease;
-    }
+    .progress { width: 100%; margin-top: 4px; }
 
     .candor {
       display: block;
@@ -243,27 +226,13 @@ import { RoadmapItem } from './roadmap-data';
     }
     .link-row {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       flex-wrap: wrap;
       margin-top: 8px;
-    }
-    .link {
-      appearance: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      background-color: var(--kj-bg-body);
-      border: 1px solid var(--kj-border-default);
-      border-radius: var(--kj-radius-field);
-      color: var(--kj-fg-default);
       font-family: var(--kj-font-mono);
       font-size: 0.625rem;
       text-transform: lowercase;
-      text-decoration: none;
-      cursor: pointer;
     }
-    .link:hover { border-color: var(--kj-bg-primary); color: var(--kj-fg-primary); }
   `,
 })
 export class RoadmapCard {
