@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ViewEncapsulation,
   input,
 } from '@angular/core';
 import { Theme } from '../../services/theme.service';
@@ -25,8 +24,32 @@ import { Theme } from '../../services/theme.service';
   selector: 'kj-loader-figure',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
-  host: { class: 'loader-fig-svg-wrap', 'aria-hidden': 'true' },
+  host: { 'aria-hidden': 'true' },
+  styles: `
+    :host { display: block; width: 100%; height: 100%; }
+    .lf-svg { display: block; width: 100%; height: 100%; }
+    /* Mint leaf — transform-origin-anchored grow/shrink (SVG attr alone
+       can't animate to a px point). Lives here because it targets a class
+       inside this component's template; the parent loading-screen no longer
+       reaches across the encapsulation boundary. */
+    .lfmint-leaf {
+      transform-box: view-box;
+      transform-origin: 200px 348px;
+      animation: lfmint-unfurl 3s cubic-bezier(.4, 0, .2, 1) infinite;
+    }
+    @keyframes lfmint-unfurl {
+      0%       { transform: scale(0.05); }
+      35%, 70% { transform: scale(1); }
+      100%     { transform: scale(0.05); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lfmint-leaf,
+      .lf-svg * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  `,
   template: `
     @switch (themeId()) {
       @case ('kouji') {

@@ -42,29 +42,31 @@ import { RoadmapCard } from './roadmap-card';
     }
   `,
   styles: `
+    /* Spacing rule: --kj-base-space-* tokens only.
+       Token table: xs 4 / sm 8 / md 12 / lg 16 / xl 24 / 2xl 32 / 3xl 48. */
     :host {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: var(--kj-base-space-md);
     }
 
     .head {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      padding: 12px 4px;
+      gap: var(--kj-base-space-xs);
+      padding: var(--kj-base-space-md) var(--kj-base-space-xs);
       border-bottom: 2px solid var(--kj-border-default);
-      margin-bottom: 4px;
+      margin-bottom: var(--kj-base-space-xs);
       /* Sticks at top: stats(60) + toolbar(60) = 120 in the page scroller. */
       position: sticky;
-      top: 120px;
+      top: 7.5rem;
       background-color: var(--kj-bg-body);
       z-index: 10;
     }
     .title {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: var(--kj-base-space-sm);
     }
     .label {
       font-family: var(--kj-font-display);
@@ -80,7 +82,7 @@ import { RoadmapCard } from './roadmap-card';
       color: var(--kj-fg-muted);
       font-variant-numeric: tabular-nums;
       margin-left: auto;
-      padding: 2px 8px;
+      padding: var(--kj-base-space-xs) var(--kj-base-space-sm);
       border: 1px solid var(--kj-border-default);
       border-radius: var(--kj-radius-field);
       background-color: var(--kj-bg-surface);
@@ -101,7 +103,7 @@ import { RoadmapCard } from './roadmap-card';
     :host([data-status="shipped"]) .head  { border-bottom-color: var(--kj-bg-accent); }
 
     .empty {
-      padding: 32px 16px;
+      padding: var(--kj-base-space-2xl) var(--kj-base-space-lg);
       text-align: center;
       font-family: var(--kj-font-mono);
       font-size: 0.6875rem;

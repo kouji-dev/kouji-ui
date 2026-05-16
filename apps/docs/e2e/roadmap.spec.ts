@@ -45,8 +45,10 @@ test('clicking a card expands its details', async ({ page }) => {
 test('Enter key activates a focused card', async ({ page }) => {
   await page.goto('/roadmap');
   const card = page.locator('kj-roadmap-card').first();
-  await card.focus();
-  await page.keyboard.press('Enter');
+  // `locator.press` focuses the element and dispatches the key on it — more
+  // reliable than focus()+page.keyboard.press when child kj components can
+  // steal focus.
+  await card.press('Enter');
   await expect(card).toHaveAttribute('aria-expanded', 'true');
 });
 

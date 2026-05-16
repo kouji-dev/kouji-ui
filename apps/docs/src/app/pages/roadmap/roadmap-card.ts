@@ -83,11 +83,11 @@ import { RoadmapItem } from './roadmap-data';
     :host {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--kj-base-space-sm);
       background-color: var(--kj-bg-surface);
       border: 1px solid var(--kj-border-default);
       border-radius: var(--kj-radius-field);
-      padding: 14px 16px;
+      padding: var(--kj-base-space-md) var(--kj-base-space-lg);
       cursor: pointer;
       box-shadow: var(--kj-shadow-md);
       transition: transform .15s cubic-bezier(.34,1.56,.64,1), border-color .15s ease;
@@ -103,7 +103,7 @@ import { RoadmapItem } from './roadmap-data';
     .meta {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: var(--kj-base-space-sm);
       font-family: var(--kj-font-mono);
       font-size: 0.625rem;
       color: var(--kj-fg-muted);
@@ -123,7 +123,7 @@ import { RoadmapItem } from './roadmap-data';
       margin: 0;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: var(--kj-base-space-sm);
       flex-wrap: wrap;
     }
     .desc {
@@ -144,20 +144,22 @@ import { RoadmapItem } from './roadmap-data';
     .foot {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 2px;
+      gap: var(--kj-base-space-sm);
+      margin-top: var(--kj-base-space-xs);
     }
     /* Category badge keeps the colored dot prefix — kj-tag/badge don't ship a
        slot for that so we render a small custom pill. */
+    /* Category pill — sized to match kj-tag's "sm" density (12px font,
+       sm/md padding) so it visually pairs with the toolbar's filter chips. */
     .cat {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 2px 7px;
+      gap: var(--kj-base-space-xs);
+      padding: var(--kj-base-space-xs) var(--kj-base-space-md);
       border: 1px solid var(--kj-border-default);
       border-radius: var(--kj-radius-field);
       font-family: var(--kj-font-mono);
-      font-size: 0.5625rem;
+      font-size: var(--kj-text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--kj-fg-default);
@@ -165,8 +167,8 @@ import { RoadmapItem } from './roadmap-data';
     }
     .cat::before {
       content: "";
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background-color: var(--kj-bg-primary);
     }
@@ -180,19 +182,19 @@ import { RoadmapItem } from './roadmap-data';
       margin-left: auto;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--kj-base-space-sm);
       font-family: var(--kj-font-mono);
       font-size: 0.625rem;
       color: var(--kj-fg-muted);
     }
     .issues span { font-variant-numeric: tabular-nums; }
 
-    .progress { width: 100%; margin-top: 4px; }
+    .progress { width: 100%; margin-top: var(--kj-base-space-xs); }
 
     .candor {
       display: block;
-      margin-top: 2px;
-      padding: 8px 10px;
+      margin-top: var(--kj-base-space-xs);
+      padding: var(--kj-base-space-sm) var(--kj-base-space-md);
       background-color: var(--kj-bg-elevated);
       border-left: 2px solid var(--kj-bg-accent);
       font-family: var(--kj-font-sans);
@@ -205,7 +207,7 @@ import { RoadmapItem } from './roadmap-data';
       content: "✱ ";
       color: var(--kj-fg-accent);
       font-style: normal;
-      margin-right: 2px;
+      margin-right: var(--kj-base-space-xs);
     }
 
     .details {
@@ -220,15 +222,15 @@ import { RoadmapItem } from './roadmap-data';
       font-size: var(--kj-text-xs);
       line-height: 1.5;
       color: var(--kj-fg-default);
-      margin: 8px 0 4px;
-      padding-top: 8px;
+      margin: var(--kj-base-space-sm) 0 var(--kj-base-space-xs);
+      padding-top: var(--kj-base-space-sm);
       border-top: 1px solid var(--kj-border-default);
     }
     .link-row {
       display: flex;
-      gap: 12px;
+      gap: var(--kj-base-space-md);
       flex-wrap: wrap;
-      margin-top: 8px;
+      margin-top: var(--kj-base-space-sm);
       font-family: var(--kj-font-mono);
       font-size: 0.625rem;
       text-transform: lowercase;

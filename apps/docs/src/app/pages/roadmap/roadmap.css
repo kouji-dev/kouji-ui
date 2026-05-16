@@ -1,9 +1,15 @@
 /* ============================================================
    Roadmap PAGE layout — host scroll, intro, stats strip, board grid.
+
    Per-component visuals live in their own component files:
      - roadmap-toolbar.ts  (filter chips + sort)
      - roadmap-column.ts   (column head + empty state + status accents)
      - roadmap-card.ts     (card + candidate badge + progress + candor)
+
+   Spacing rule: ALL margin/padding/gap/inset values must use a
+   `--kj-base-space-*` token. Off-token raw values get rounded to the
+   nearest token (xs 4 / sm 8 / md 12 / lg 16 / xl 24 / 2xl 32 / 3xl 48
+   / 4xl 64 / 5xl 96).
    ============================================================ */
 
 /* Host is the single scroll owner for this route (mirrors `app-home` in
@@ -21,7 +27,7 @@
 
 /* ─────────── intro ─────────── */
 .rm-intro {
-  padding: 28px 32px 8px;
+  padding: var(--kj-base-space-2xl) var(--kj-base-space-2xl) var(--kj-base-space-sm);
   border-bottom: 1px solid var(--kj-border-default);
   background-color: var(--kj-bg-body);
 }
@@ -32,7 +38,7 @@
   text-transform: uppercase;
   letter-spacing: 0.16em;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: var(--kj-base-space-sm);
 }
 .rm-h1 {
   font-family: var(--kj-font-display);
@@ -41,14 +47,14 @@
   font-size: clamp(2.25rem, 6vw, 4.5rem);
   letter-spacing: var(--kj-letter-spacing);
   line-height: 0.95;
-  margin: 0 0 12px;
+  margin: 0 0 var(--kj-base-space-md);
 }
 .rm-tagline {
   font-family: var(--kj-font-sans);
   font-size: var(--kj-text-base);
   color: var(--kj-fg-muted);
-  max-width: 720px;
-  margin: 0 0 18px;
+  max-width: 45rem;
+  margin: 0 0 var(--kj-base-space-lg);
   line-height: 1.45;
 }
 .rm-tagline strong { color: var(--kj-fg-default); }
@@ -58,7 +64,7 @@
 .rm-stats {
   display: flex;
   gap: 0;
-  padding: 12px 32px;
+  padding: var(--kj-base-space-md) var(--kj-base-space-2xl);
   background-color: var(--kj-bg-body);
   border-bottom: 1px solid var(--kj-border-default);
   position: sticky;
@@ -67,8 +73,8 @@
 }
 .rm-stat {
   flex: 0 0 auto;
-  padding-right: 26px;
-  margin-right: 26px;
+  padding-right: var(--kj-base-space-xl);
+  margin-right: var(--kj-base-space-xl);
   border-right: 1px solid var(--kj-border-default);
 }
 .rm-stat:last-child { border-right: 0; }
@@ -86,25 +92,25 @@
   color: var(--kj-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  margin-top: 4px;
+  margin-top: var(--kj-base-space-xs);
 }
 
 /* ─────────── kanban board grid ─────────── */
 .rm-board-wrap {
-  padding: 24px 0 80px;
+  padding: var(--kj-base-space-xl) 0 var(--kj-base-space-4xl);
   overflow-x: auto;
   scrollbar-width: thin;
 }
 .rm-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(280px, 1fr));
-  gap: 16px;
-  padding: 0 32px;
+  grid-template-columns: repeat(4, minmax(17.5rem, 1fr));
+  gap: var(--kj-base-space-lg);
+  padding: 0 var(--kj-base-space-2xl);
   align-items: start;
 }
-@media (max-width: 1280px) {
-  .rm-board { grid-template-columns: repeat(4, 320px); }
+@media (max-width: 80rem) {
+  .rm-board { grid-template-columns: repeat(4, 20rem); }
 }
-@media (max-width: 760px) {
-  .rm-board { padding: 0 20px; }
+@media (max-width: 47.5rem) {
+  .rm-board { padding: 0 var(--kj-base-space-xl); }
 }

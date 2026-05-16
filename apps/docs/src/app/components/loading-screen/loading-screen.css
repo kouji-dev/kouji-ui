@@ -1,3 +1,5 @@
+/* Spacing rule: --kj-base-space-* tokens; xs 4 / sm 8 / md 12 / lg 16. */
+
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -14,30 +16,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: var(--kj-base-space-lg);
 }
 
 .lf-figure-wrap {
-  width: min(64vw, 320px);
+  width: min(64vw, 20rem);
   aspect-ratio: 1;
   position: relative;
-  border-radius: 4px;
+  border-radius: var(--kj-radius-field);
   overflow: hidden;
   animation: lf-figure-in 0.6s cubic-bezier(.34, 1.56, .64, 1) both;
 }
-.loader-fig-svg-wrap { width: 100%; height: 100%; display: block; }
-.lf-svg { display: block; width: 100%; height: 100%; }
 
 .lf-caption {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--kj-base-space-md);
   font-family: var(--kj-font-mono);
-  font-size: clamp(10px, 1.4cqw, 12px);
+  font-size: clamp(0.625rem, 1.4cqw, 0.75rem);
   color: var(--kj-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  margin-top: 4px;
+  margin-top: var(--kj-base-space-xs);
 }
 .lf-name { color: var(--kj-fg-default); font-weight: 700; }
 .lf-dot {
@@ -53,8 +53,8 @@
 .lf-dots {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  margin-left: 2px;
+  gap: var(--kj-base-space-xs);
+  margin-left: var(--kj-base-space-xs);
 }
 .lf-dots span {
   width: 3px; height: 3px;
@@ -64,18 +64,6 @@
 }
 .lf-dots span:nth-child(2) { animation-delay: 0.2s; }
 .lf-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-/* Mint leaf — transform-origin-anchored grow/shrink (SVG attr can't be animated to a px point) */
-.lfmint-leaf {
-  transform-box: view-box;
-  transform-origin: 200px 348px;
-  animation: lfmint-unfurl 3s cubic-bezier(.4, 0, .2, 1) infinite;
-}
-@keyframes lfmint-unfurl {
-  0%       { transform: scale(0.05); }
-  35%, 70% { transform: scale(1); }
-  100%     { transform: scale(0.05); }
-}
 
 @keyframes ls-appear {
   from { opacity: 0; }
@@ -93,9 +81,7 @@
 @media (prefers-reduced-motion: reduce) {
   .loading-screen,
   .lf-figure-wrap,
-  .lfmint-leaf,
-  .lf-dots span,
-  .loader-fig-svg-wrap * {
+  .lf-dots span {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }

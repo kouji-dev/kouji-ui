@@ -29,7 +29,7 @@ import {
       @for (c of categories; track c.id) {
         <kj-tag
           kjVariant="outline"
-          kjSize="xs"
+          kjSize="sm"
           [kjTagSelectable]="true"
           [kjTagSelected]="activeCats().has(c.id)"
           (kjTagSelectedChange)="toggleCat.emit(c.id)"
@@ -45,7 +45,7 @@ import {
       @for (s of columns; track s.id) {
         <kj-tag
           kjVariant="outline"
-          kjSize="xs"
+          kjSize="sm"
           [kjTagSelectable]="true"
           [kjTagSelected]="activeStatuses().has(s.id)"
           (kjTagSelectedChange)="toggleStatus.emit(s.id)"
@@ -76,22 +76,24 @@ import {
     </kj-select>
   `,
   styles: `
+    /* Spacing rule: --kj-base-space-* where the value matches a token
+       (xs 4 / sm 8 / md 12 / lg 16 / xl 24 / 2xl 32); otherwise rem literal. */
     :host {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 16px;
-      padding: 16px 32px;
+      gap: var(--kj-base-space-lg);
+      padding: var(--kj-base-space-lg) var(--kj-base-space-2xl);
       background-color: var(--kj-bg-body);
       border-bottom: 1px solid var(--kj-border-default);
       position: sticky;
-      top: 60px;
+      top: 3.75rem;
       z-index: 20;
     }
     .filter-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--kj-base-space-sm);
     }
     .filter-label {
       font-family: var(--kj-font-mono);
@@ -99,13 +101,13 @@ import {
       text-transform: uppercase;
       letter-spacing: 0.14em;
       color: var(--kj-fg-muted);
-      margin-right: 4px;
+      margin-right: var(--kj-base-space-xs);
     }
     /* Tag-internal count chip — small, muted; brightens when the tag is pressed. */
     .count {
       font-size: 0.625rem;
       opacity: 0.6;
-      margin-left: 4px;
+      margin-left: var(--kj-base-space-xs);
       font-variant-numeric: tabular-nums;
     }
     kj-tag[aria-pressed="true"] .count { opacity: 0.85; }
@@ -115,8 +117,8 @@ import {
       min-width: 12rem;
     }
 
-    @media (max-width: 760px) {
-      :host { padding: 12px 20px; }
+    @media (max-width: 47.5rem) {
+      :host { padding: var(--kj-base-space-md) var(--kj-base-space-xl); }
     }
   `,
 })
