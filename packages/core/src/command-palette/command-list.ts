@@ -1,10 +1,9 @@
 import { Directive, inject } from '@angular/core';
-import { KJ_COMMAND_PALETTE } from './command-palette.context';
+import { KjCommandPalette } from './command-palette';
 
 /**
- * Listbox host for the command palette. Place on the scrollable container
- * that wraps `[kjCommandItem]`s. Sets `role="listbox"` and wires the id
- * used by `[kjCommandInput]`'s `aria-controls`.
+ * Listbox panel for the command palette. Role-only — keyboard nav
+ * lives on `KjCommandInput` per APG combobox 1.2.
  *
  * @doc-category Core/Actions
  * @doc
@@ -15,10 +14,12 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
   standalone: true,
   host: {
     'role': 'listbox',
-    '[id]': 'ctx.listId',
+    '[id]': 'palette.listId',
+    'class': 'kj-command-list',
     '[attr.aria-label]': '"Commands"',
   },
 })
 export class KjCommandList {
-  readonly ctx = inject(KJ_COMMAND_PALETTE);
+  /** @internal — for the [id] host binding. */
+  protected readonly palette = inject(KjCommandPalette);
 }

@@ -101,17 +101,9 @@
             ],
             "styles": [
               "packages/themes/src/index.css",
-              "packages/core/src/primitives/overlay/overlay.css",
-              "packages/core/src/typography/prose.css",
-              "apps/docs/src/styles.css",
-              "packages/core/src/icon/icon.css",
-              "packages/components/src/popover/popover.css",
-              "packages/components/src/tooltip/tooltip.css",
-              "packages/components/src/dropdown-menu/dropdown-menu.css",
-              "packages/components/src/dialog/dialog.css",
-              "packages/components/src/drawer/drawer.css",
-              "packages/components/src/toast/toast.css",
-              "packages/components/src/confirm-popup/confirm-popup.css"
+              "packages/core/src/styles.css",
+              "packages/components/src/overlay/overlay.css",
+              "apps/docs/src/styles.css"
             ],
             "server": "apps/docs/src/main.server.ts",
             "outputMode": "server",

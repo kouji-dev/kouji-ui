@@ -1,0 +1,222 @@
+import {
+  AfterContentInit,
+  Directive,
+  ElementRef,
+  booleanAttribute,
+  computed,
+  forwardRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { KjListNavigator } from './navigator';
+import { KjSelectionModel } from './selection';
+import { KJ_LIST_FOCUS_MODE, KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
+
+let _id = 0;
+
+/**
+ * Behavior primitive for any item rendered inside a listbox / menu / tree.
+ * Composes `KjDisabled`; mints a stable id; exposes value/label/haystacks;
+ * binds `aria-disabled`, `aria-selected` (via injected `KjSelectionModel`),
+ * `aria-posinset`/`aria-setsize` (stamped by `KjFilterableList`), and
+ * `aria-keyshortcuts`. Activation (click / Enter / Space) fires an
+ * `activate` output the consumer subscribes to. Role is set by the
+ * consumer's outer directive — varies per cluster.
+ *
+ * @doc-category Core/Primitives
+ */
+@Directive({
+  selector: '[kjListItem]',
+  exportAs: 'kjListItem',
+  standalone: true,
+  host: {
+    '[hidden]': '!visible()',
+    '[attr.tabindex]': 'tabIndex()',
+    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.data-disabled]': 'disabled() ? "" : null',
+    '[attr.aria-selected]': 'ariaSelected()',
+    '[attr.aria-checked]': 'ariaChecked()',
+    '[attr.aria-posinset]': 'posInSet()',
+    '[attr.aria-setsize]': 'setSize()',
+    '[attr.aria-keyshortcuts]': 'kjShortcut() || null',
+    '(click)': '_activate($event)',
+    '(keydown.enter)': '$event.preventDefault(); _activate($event)',
+    '(keydown.space)': '$event.preventDefault(); _activate($event)',
+  },
+})
+export class KjListItem<T = unknown> implements AfterContentInit {
+  /** Typed value emitted on activation. `undefined` when unset. */
+  readonly kjItemValue    = input<T | undefined>(undefined);
+  /** Display label. Falls back to element text content when empty. */
+  readonly kjItemLabel    = input<string>('');
+  /** Extra search terms merged into `haystacks` for type-ahead / filter matching. */
+  readonly kjItemKeywords = input<readonly string[]>([]);
+  /** ARIA keyboard shortcut string bound to `aria-keyshortcuts`. Omit to suppress the attribute. */
+  readonly kjShortcut     = input<string | null>(null);
+  /**
+   * Disabled flag. Declared as a top-level input (rather than as a
+   * `hostDirective` forward) so consumers that compose `KjListItem`
+   * inside their own `hostDirectives` (`KjOption`, `KjTreeSelectNode`,
+   * …) can re-forward it without falling foul of NG0311. The composed
+   * `KjDisabled` instance follows this signal via an effect below.
+   */
+  readonly kjDisabled     = input<boolean, unknown>(false, { transform: booleanAttribute });
+
+  /** Fires when the item is activated (click / Enter / Space) and not disabled. Emits `value()`. */
+  readonly activate = output<T | undefined>();
+
+  /**
+   * Stable id used by `aria-activedescendant`. Resolved at construction.
+   * Priority: existing host `id` attribute (static markup) → generated
+   * `kj-list-item-N`. To pin an id, write `<el id="my-id" kjListItem>`.
+   */
+  readonly id: string;
+
+  private readonly el = inject(ElementRef<HTMLElement>);
+  readonly disabled = this.kjDisabled;
+
+  /**
+   * Nearest ancestor `KjListItem` resolved via the element injector
+   * (`skipSelf`, `optional`). Surfaces the DOM-nested parent → child
+   * relationship to the selection model, which auto-derives a tree
+   * shape from these pointers when the consumer does not supply one
+   * via `cfg.treeShape`. Flat consumers (e.g. data-driven tree-select)
+   * pass an explicit shape and this pointer is ignored.
+   */
+  readonly parent = inject<KjListItem<unknown> | null>(KjListItem, {
+    skipSelf: true,
+    optional: true,
+  });
+
+  // Optional — only present when this item lives inside a
+  // `[kjListNavigator]` (the common case). Read by `tabIndex()` so the
+  // item can reactively re-bind its host `tabindex` as activeId moves.
+  // forwardRef avoids the navigator <-> item circular reference issue.
+  private readonly navigator = inject<KjListNavigator | null>(
+    forwardRef(() => KjListNavigator),
+    { optional: true },
+  );
+  // Focus mode signal provided by the navigator. Optional: when no
+  // navigator hosts this item, fall back to activedescendant behavior
+  // (always `-1`) — matches the legacy tabindex output.
+  private readonly focusMode = inject(KJ_LIST_FOCUS_MODE, { optional: true });
+
+  constructor() {
+    const host = this.el.nativeElement;
+    this.id = host.id || `kj-list-item-${++_id}`;
+    host.id = this.id;
+  }
+
+  /** @internal Native host element. Used by `KjListNavigator` to call `.focus()` in roving mode. */
+  _host(): HTMLElement {
+    return this.el.nativeElement;
+  }
+
+  /**
+   * Reactive `tabindex` for the host element:
+   * - No navigator / `'activedescendant'`: always `-1` — the navigator
+   *   host owns the Tab stop and signals activation via
+   *   `aria-activedescendant`.
+   * - `'roving'`: `0` for the currently active (focused) item and `-1`
+   *   for the rest. Disabled items are never active because
+   *   `KjListNavigator.navigable` filters them out, so they naturally
+   *   read `-1` here.
+   */
+  readonly tabIndex = computed<string>(() => {
+    const mode = this.focusMode?.();
+    if (mode !== 'roving') return '-1';
+    if (this.disabled()) return '-1';
+    return this.navigator?.activeId() === this.id ? '0' : '-1';
+  });
+
+  private readonly _elText = signal('');
+  readonly value     = computed<T | undefined>(() => this.kjItemValue());
+  readonly label     = computed(() => (this.kjItemLabel() || this._elText()).trim());
+  readonly haystacks = computed<readonly string[]>(() => [this.label(), ...this.kjItemKeywords()]);
+
+  private readonly _visible = signal(true);
+  readonly visible = this._visible.asReadonly();
+  setVisible(v: boolean): void { this._visible.set(v); }
+
+  /**
+   * Position in the visible (filter-aware) set, bound to `aria-posinset`.
+   * Writable for internal use by `KjFilterableList` only; consumers
+   * should treat it as read-only.
+   */
+  readonly posInSet = signal<number | null>(null);
+  /**
+   * Total size of the visible (filter-aware) set, bound to `aria-setsize`.
+   * Writable for internal use by `KjFilterableList` only; consumers
+   * should treat it as read-only.
+   */
+  readonly setSize  = signal<number | null>(null);
+
+  private readonly selection = inject(KjSelectionModel, { optional: true }) as KjSelectionModel<T> | null;
+  private readonly cfg       = inject(KJ_LIST_NAVIGATOR_CONFIG, { optional: true });
+
+  /**
+   * `aria-selected` driven by the injected selection model. `null` when
+   * no model is provided, the value is undefined, or the mode is
+   * `'cascade'` (which uses `aria-checked` instead, per WAI-ARIA tree).
+   */
+  readonly ariaSelected = computed<'true' | 'false' | null>(() => {
+    if (!this.selection) return null;
+    if (this.selection.mode() === 'cascade') return null;
+    const v = this.value();
+    if (v === undefined) return null;
+    return this.selection.isSelected(v) ? 'true' : 'false';
+  });
+
+  /**
+   * `aria-checked` driven by `KjSelectionModel.cascadeState()` when the
+   * mode is `'cascade'`. Returns `'true'` / `'false'` / `'mixed'` per
+   * the WAI-ARIA tree checkbox tri-state pattern. `null` (attribute
+   * omitted) in any other mode.
+   */
+  readonly ariaChecked = computed<'true' | 'false' | 'mixed' | null>(() => {
+    if (!this.selection || this.selection.mode() !== 'cascade') return null;
+    const v = this.value();
+    if (v === undefined) return null;
+    return this.selection.cascadeState(v);
+  });
+
+  ngAfterContentInit(): void {
+    this._elText.set(this.el.nativeElement.textContent ?? '');
+  }
+
+  _activate(event?: Event): void {
+    if (this.disabled()) return;
+    const v = this.value();
+    // Branch gate owned by the selection model: in `'single'` mode
+    // with a tree shape (consumer-supplied or auto-derived from
+    // KjListItem parent DI), non-leaf targets must not commit a value
+    // — they exist purely as disclosure controls (e.g. cascade-select
+    // branch options that only toggle their own sub-panel). Runs
+    // before `stopPropagation` so a blocked click can still reach the
+    // consumer's own host listener.
+    if (v !== undefined && this.selection && !this.selection.canActivate(v)) return;
+    // Stop bubbling so a click on a nested `kjListItem` doesn't also
+    // activate the ancestor item (matters for tree-style consumers
+    // where leaf nodes are rendered inside their parent branch's host
+    // element — without this, the leaf activation would be followed
+    // by the branch's `_activate` overriding the selection).
+    event?.stopPropagation();
+    // Selection toggle + consumer hook live here — not in the option
+    // wrapper — because every list-style cluster that wires a
+    // `KjSelectionModel` repeats the same two steps after activation:
+    // (1) toggle the value, (2) run consumer-specific side-effects
+    // (close the overlay, set an input query, emit a commit event).
+    // Centralizing both removes the per-option `activate.subscribe(...)`
+    // boilerplate. `afterSelect` is invoked even when the toggle was a
+    // no-op (e.g. leaf-mode branch click) so consumers can decide what
+    // counts as "select" — they receive `closeRequested` to gate on.
+    let closeRequested = false;
+    if (this.selection && v !== undefined) {
+      ({ closeRequested } = this.selection.toggle(v));
+    }
+    this.cfg?.afterSelect?.(v, closeRequested);
+    this.activate.emit(v);
+  }
+}

@@ -20,6 +20,14 @@ export interface KjTreeNode<T = unknown> {
  * Context interface exposed by `KjTreeSelect` to descendant directives
  * (panel, nodes, toggle buttons) via the `KJ_TREE_SELECT` injection token.
  *
+ * Selection state (current value, membership checks, toggles) is **not**
+ * part of this context — it lives on the shared `KjSelectionModel`
+ * provided by the root and consumed by `KjListItem` via the
+ * `KJ_LIST_NAVIGATOR_CONFIG` plumbing. This interface only carries the
+ * **tree-specific** surface: node data, expansion state, and the public
+ * `selectionMode` input value (used by panel ARIA to drive
+ * `aria-multiselectable`).
+ *
  * Open/close state lives on the overlay primitives and is not part of this
  * context — descendants that need it inject `KjOverlayController` directly.
  */
@@ -28,8 +36,6 @@ export interface KjTreeSelectContext<T = unknown> {
   readonly panelId: string;
   /** Current selection mode: `'single'` or `'multiple'`. */
   readonly selectionMode: Signal<'single' | 'multiple'>;
-  /** Currently selected values. Single mode: 0 or 1 item; multi: N items. */
-  readonly selectedValues: Signal<readonly T[]>;
   /** Set of node IDs that are currently expanded. */
   readonly expandedIds: Signal<ReadonlySet<string>>;
   /** Set of node **values** that are currently expanded. */
@@ -37,12 +43,6 @@ export interface KjTreeSelectContext<T = unknown> {
   /** The full tree data. */
   readonly nodes: Signal<readonly KjTreeNode<T>[]>;
 
-  /**
-   * Select a node. In single mode closes the panel (via overlay controller);
-   * in multiple mode toggles the value in the selection set and keeps the
-   * panel open.
-   */
-  selectNode(value: T): void;
   /**
    * Toggle expand/collapse for the given node DOM id. Does nothing for leaf
    * nodes (those without children).
@@ -57,8 +57,6 @@ export interface KjTreeSelectContext<T = unknown> {
   isExpanded(nodeId: string): boolean;
   /** Returns `true` when the given value is in the expanded values set. */
   isValueExpanded(value: T): boolean;
-  /** Returns `true` when the given value is in the current selection set. */
-  isSelected(value: T): boolean;
 }
 
 /** Injection token providing the nearest `KjTreeSelect` context to descendants. */

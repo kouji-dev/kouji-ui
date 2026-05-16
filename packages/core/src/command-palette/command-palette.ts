@@ -2,15 +2,31 @@ import {
   Directive,
   booleanAttribute,
   computed,
+  contentChildren,
   effect,
+  forwardRef,
+  inject,
   input,
   model,
   output,
   signal,
   untracked,
 } from '@angular/core';
-import { KJ_COMMAND_PALETTE, type KjCommandItemRegistration, type KjCommandPaletteContext, nextCommandListId } from './command-palette.context';
-import { type KjCommandFilter, kjSubstringFilter } from './command-palette.filters';
+import {
+  KJ_LIST_NAVIGATOR_CONFIG,
+  KjFilterableList,
+  KjListItem,
+  KjListNavigator,
+  KjTypeAhead,
+  type KjFilterFn,
+  type KjListNavigatorConfig,
+} from '../primitives/list';
+
+let _listIdCounter = 0;
+/** Allocate a stable command list id. */
+export function nextCommandListId(): string {
+  return `kj-command-list-${++_listIdCounter}`;
+}
 
 /** Payload for the `kjActivate` output. */
 export interface KjCommandActivateEvent {
@@ -19,17 +35,9 @@ export interface KjCommandActivateEvent {
 }
 
 /**
- * Root state container for the command palette. Manages item registration,
- * filtering, active-descendant tracking, and activation. Provides the
- * `KJ_COMMAND_PALETTE` context token to child directives.
- *
- * Compose with `[kjCommandInput]`, `[kjCommandList]`, `[kjCommandItem]`,
- * `[kjCommandGroup]`, `[kjCommandSeparator]`, `[kjCommandEmpty]` for a
- * fully accessible combobox-with-listbox palette.
- *
- * For the modal (Cmd-K) pattern use `<kj-command-palette-dialog>` which
- * composes the overlay primitives (portal, viewport-centered position,
- * solid backdrop, focus trap, scroll lock) with an `onHotkey` trigger.
+ * Root state container for the command palette. Provides
+ * KJ_LIST_NAVIGATOR_CONFIG (items via contentChildren), KjFilterableList,
+ * and KjTypeAhead. Children inject `KjCommandPalette` directly.
  *
  * @doc
  * @doc-example Inline
@@ -51,116 +59,122 @@ export interface KjCommandActivateEvent {
   selector: '[kjCommandPalette]',
   standalone: true,
   exportAs: 'kjCommandPalette',
-  providers: [{ provide: KJ_COMMAND_PALETTE, useExisting: KjCommandPalette }],
+  providers: [
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjCommandPalette) },
+    KjFilterableList,
+    KjTypeAhead,
+  ],
 })
-export class KjCommandPalette implements KjCommandPaletteContext {
-
-  // ── Inputs ──────────────────────────────────────────────────────────
-
-  /** Pluggable filter function. Default: case- and diacritic-insensitive substring. */
-  readonly kjFilter = input<KjCommandFilter>(kjSubstringFilter);
-
+export class KjCommandPalette implements KjListNavigatorConfig {
+  /** Pluggable filter function. */
+  readonly kjFilter = input<KjFilterFn | null>(null);
   /** When `false`, internal filtering is skipped (server-side / consumer-controlled). */
-  readonly kjShouldFilter = input<boolean, unknown>(true, { transform: booleanAttribute });
+  readonly kjShouldFilter      = input<boolean, unknown>(true,  { transform: booleanAttribute });
+  /** Show the loading state. */
+  readonly kjLoading           = input<boolean, unknown>(false, { transform: booleanAttribute });
+  /** Reset the active item to the first visible item on query change. */
+  readonly kjAutoActivateFirst = input<boolean, unknown>(true,  { transform: booleanAttribute });
+  /** Close the host dialog on activation. */
+  readonly kjDismissOnActivate = input<boolean, unknown>(true,  { transform: booleanAttribute });
 
-  /** Show the loading state. Exposes `loading()` on the context. */
-  readonly kjLoading = input<boolean, unknown>(false, { transform: booleanAttribute });
-
-  /**
-   * Reset the active item to the first visible item whenever the query changes.
-   * Default `true`.
-   */
-  readonly kjAutoActivateFirst = input<boolean, unknown>(true, { transform: booleanAttribute });
-
-  /**
-   * Close the host dialog on activation. Default `true`.
-   * Requires the palette to be inside a `<kj-command-palette-dialog>` or
-   * for the consumer to wire close logic via the `kjActivate` output.
-   */
-  readonly kjDismissOnActivate = input<boolean, unknown>(true, { transform: booleanAttribute });
-
-  // ── Models ───────────────────────────────────────────────────────────
-
-  /** Two-way bindable active value (the highlighted item, not a committed value). */
+  /** Two-way bindable active value (highlighted item, not committed). */
   readonly kjValue = model<unknown>(null);
-
   /** Two-way bindable query text. */
   readonly kjQuery = model<string>('');
 
-  // ── Outputs ──────────────────────────────────────────────────────────
-
-  /**
-   * Fires when an item is activated (click, Enter, programmatic).
-   * Payload: `{ value, query }`.
-   */
+  /** Fires when an item is activated. */
   readonly kjActivate = output<KjCommandActivateEvent>();
 
-  // ── Internal state ───────────────────────────────────────────────────
-
-  /** @internal All registered items in declaration order. */
-  readonly _items = signal<KjCommandItemRegistration[]>([]);
-
-  // ── KjCommandPaletteContext ──────────────────────────────────────────
-
-  /** The auto-generated listbox id used for `aria-controls` wiring. */
+  /** Stable listbox id for `aria-controls` wiring. */
   readonly listId = nextCommandListId();
+  /** All `KjListItem`s under this palette. Source of truth for nav + filter. */
+  readonly items = contentChildren(KjListItem, { descendants: true });
 
-  readonly query = computed(() => this.kjQuery());
-  readonly activeValue = computed(() => this.kjValue());
-  readonly loading = computed(() => this.kjLoading());
+  private readonly filterSvc = inject(KjFilterableList);
 
-  /** Items that pass the current filter. */
-  readonly visibleItems = computed(() => {
-    const items = this._items();
-    const shouldFilter = this.kjShouldFilter();
+  /** Visible (filter-passing) items. */
+  readonly visibleItems = computed(() => this.filterSvc.visibleItems() as readonly KjListItem<unknown>[]);
+  readonly query        = computed(() => this.kjQuery());
+  readonly activeValue  = computed(() => this.kjValue());
+  readonly loading      = computed(() => this.kjLoading());
 
-    if (!shouldFilter) {
-      return items;
-    }
+  /** Default filter — substring match across haystacks. */
+  private readonly defaultFilter: KjFilterFn = (q, hs) => {
+    if (!q) return 1;
+    const needle = q.toLowerCase();
+    return hs.some(h => h.toLowerCase().includes(needle)) ? 1 : 0;
+  };
 
-    const filter = this.kjFilter();
-    const q = this.kjQuery();
-    return items.filter(item => filter(q, item.haystacks()) > 0);
-  });
+  /** Bound source: custom filter when provided, else default. */
+  private readonly resolvedFilter = computed<KjFilterFn>(
+    () => this.kjFilter() ?? this.defaultFilter,
+  );
+
+  /** @internal — set by `KjCommandInput`'s lifecycle. */
+  private readonly _nav = signal<KjListNavigator | null>(null);
+
+  /** @internal */
+  _setNavigator(n: KjListNavigator | null): void { this._nav.set(n); }
+
+  /** Currently active descendant id (or null). Wired to input's `aria-activedescendant`. */
+  readonly activeId = computed(() => this._nav()?.activeId() ?? null);
 
   constructor() {
-    // When the query (or auto-first mode) changes, jump to the first visible item.
-    // Do not subscribe to `visibleItems` itself: async result updates would re-run
-    // this effect and reset keyboard navigation (arrow selection).
+    this.filterSvc.bind({
+      items:             this.items,
+      query:             this.kjQuery,
+      filterFn:          this.resolvedFilter,
+      shouldFilter:      this.kjShouldFilter,
+      autoActivateFirst: this.kjAutoActivateFirst,
+    });
+
+    // Auto-activate first visible item on query change.
     effect(() => {
       this.kjQuery();
       const autoFirst = this.kjAutoActivateFirst();
       if (!autoFirst) return;
       untracked(() => {
         const visible = this.visibleItems();
+        const nav = this._nav();
         if (visible.length > 0) {
-          this.kjValue.set(visible[0].resolveValue());
+          this.kjValue.set(visible[0].value());
+          if (nav) nav.setActive(visible[0].id);
         } else {
           this.kjValue.set(null);
+          if (nav) nav.setActive(null);
         }
       });
     });
 
-    // When items register asynchronously (same query), pick the first row once nothing is highlighted yet.
+    // When items register asynchronously (same query), pick first if nothing highlighted.
     effect(() => {
       const visible = this.visibleItems();
       const active = this.kjValue();
       const autoFirst = this.kjAutoActivateFirst();
       if (!autoFirst || visible.length === 0 || active !== null) return;
       untracked(() => {
-        this.kjValue.set(visible[0].resolveValue());
+        const nav = this._nav();
+        this.kjValue.set(visible[0].value());
+        if (nav) nav.setActive(visible[0].id);
       });
     });
-  }
 
-  // ── Context methods ──────────────────────────────────────────────────
-
-  registerItem(item: KjCommandItemRegistration): void {
-    this._items.update(items => [...items, item]);
-  }
-
-  unregisterItem(item: KjCommandItemRegistration): void {
-    this._items.update(items => items.filter(i => i !== item));
+    // When the navigator is registered (ngOnInit of KjCommandInput), seed
+    // the active item so aria-activedescendant is correct from first render.
+    effect(() => {
+      const nav = this._nav();
+      if (!nav) return;
+      const autoFirst = this.kjAutoActivateFirst();
+      if (!autoFirst) return;
+      untracked(() => {
+        if (nav.activeId() !== null) return;
+        const visible = this.visibleItems();
+        if (visible.length > 0) {
+          nav.setActive(visible[0].id);
+          this.kjValue.set(visible[0].value());
+        }
+      });
+    });
   }
 
   setQuery(q: string): void {
@@ -168,37 +182,23 @@ export class KjCommandPalette implements KjCommandPaletteContext {
   }
 
   activate(value: unknown): void {
-    const item = this._items().find(i => i.resolveValue() === value);
-    if (item?.disabled()) return;
-
     this.kjValue.set(value);
+    const nav = this._nav();
+    if (nav) {
+      const item = this.items().find(i => i.value() === value);
+      if (item) nav.setActive(item.id);
+    }
     this.kjActivate.emit({ value, query: this.kjQuery() });
   }
 
-  moveActive(delta: number): void {
-    const visible = this.visibleItems();
-    if (!visible.length) return;
-    const currentIndex = visible.findIndex(i => i.resolveValue() === this.kjValue());
-    let nextIndex: number;
-    if (currentIndex < 0) {
-      nextIndex = delta > 0 ? 0 : visible.length - 1;
-    } else {
-      nextIndex = (currentIndex + delta + visible.length) % visible.length;
-    }
-    this.kjValue.set(visible[nextIndex].resolveValue());
-  }
-
-  setActiveTo(target: 'first' | 'last'): void {
-    const visible = this.visibleItems();
-    if (!visible.length) return;
-    this.kjValue.set(
-      target === 'first'
-        ? visible[0].resolveValue()
-        : visible[visible.length - 1].resolveValue(),
-    );
-  }
-
-  setActiveValue(value: unknown): void {
-    this.kjValue.set(value);
+  /**
+   * Implements `KjListNavigatorConfig.afterSelect`. The palette has no
+   * `KjSelectionModel`, so `closeRequested` is always `false` here —
+   * we use this purely as the central "an item was activated" hook
+   * called from `KjListItem`, which lets `KjCommandItem` skip the
+   * `activate.subscribe(...)` boilerplate.
+   */
+  afterSelect(value: unknown): void {
+    this.activate(value);
   }
 }

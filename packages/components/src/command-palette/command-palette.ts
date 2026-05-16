@@ -9,6 +9,7 @@ import {
   PLATFORM_ID,
   afterNextRender,
   booleanAttribute,
+  computed,
   contentChild,
   effect,
   inject,
@@ -19,10 +20,11 @@ import {
   KjCommandPalette,
   KjCommandInput,
   KjCommandList,
-  KjCommandItem,
   KjCommandGroup,
   KjCommandSeparator,
   KjCommandEmpty,
+  KjListItem,
+  injectListItem,
 } from '@kouji-ui/core';
 
 /**
@@ -298,22 +300,36 @@ export class KjCommandPaletteComponent {
 @Component({
   selector: 'kj-command-item',
   standalone: true,
-  imports: [KjCommandItem],
-  template: `
-    <button
-      type="button"
-      kjCommandItem
-      class="kj-command-item"
-      [kjValue]="kjValue()"
-      [kjKeywords]="kjKeywords()"
-      [kjDisabled]="kjDisabled()"
-    >
-      <ng-content />
-    </button>
-  `,
+  // Compose `KjListItem` directly on the wrapper host so that
+  // `KjCommandPalette.items = contentChildren(KjListItem)` resolves to
+  // the wrapper element itself — content queries do not cross into a
+  // child component's view template, so the previous shape (an inner
+  // `<button kjCommandItem>` inside this view) left the palette's
+  // `items()` empty and the empty-state slot permanently visible.
+  //
+  // The `role`, `data-active`, and `aria-selected` semantics that the
+  // `KjCommandItem` directive ordinarily contributes are inlined below
+  // because Angular's `hostDirectives` input-forwarding does not chain
+  // transitively (composing `KjCommandItem` here and re-forwarding its
+  // forwarded inputs fails the NG2017 check).
+  hostDirectives: [{
+    directive: KjListItem,
+    inputs: [
+      'kjItemValue:kjValue',
+      'kjItemKeywords:kjKeywords',
+      'kjShortcut',
+      'kjDisabled',
+    ],
+  }],
+  template: `<ng-content />`,
   styleUrl: './command-palette.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-command-item',
+    'role': 'option',
+    '[attr.aria-selected]': 'isActive() ? "true" : "false"',
+    '[attr.data-active]': 'isActive() ? "" : null',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCommandItemComponent {
@@ -321,8 +337,18 @@ export class KjCommandItemComponent {
   readonly kjValue = input<unknown>(undefined);
   /** Extra filter keywords. */
   readonly kjKeywords = input<readonly string[]>([]);
+  /** ARIA keyboard shortcut hint (bound to `aria-keyshortcuts`). */
+  readonly kjShortcut = input<string | null>(null);
   /** Disable this item. */
   readonly kjDisabled = input<boolean, unknown>(false, { transform: booleanAttribute });
+
+  private readonly _item = injectListItem<unknown>();
+  private readonly _palette = inject(KjCommandPalette);
+
+  /** Whether this item is the active (highlighted) one in the palette. */
+  protected readonly isActive = computed(() =>
+    this._palette.activeId() !== null && this._palette.activeId() === this._item.id,
+  );
 }
 
 /**

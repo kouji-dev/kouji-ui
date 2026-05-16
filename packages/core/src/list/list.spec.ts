@@ -2,17 +2,17 @@ import { Component, signal } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KJ_ROVING_TABINDEX } from '../a11y/roving-tabindex';
-import { KjList, KjListItem } from './list';
+import { KjList, KjListRow } from './list';
 
 expect.extend(toHaveNoViolations);
 
-const imports = [KjList, KjListItem];
+const imports = [KjList, KjListRow];
 
 describe('KjList', () => {
   describe('container role', () => {
     it('emits role="list" on a <ul> host (defeats Safari list-style:none stripping)', async () => {
       const { container } = await render(
-        `<ul kjList aria-label="Recent files"><li kjListItem>A</li></ul>`,
+        `<ul kjList aria-label="Recent files"><li kjListRow>A</li></ul>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -22,7 +22,7 @@ describe('KjList', () => {
 
     it('emits role="list" on a <ol> host as well', async () => {
       const { container } = await render(
-        `<ol kjList kjAs="ol" aria-label="Steps"><li kjListItem>A</li></ol>`,
+        `<ol kjList kjAs="ol" aria-label="Steps"><li kjListRow>A</li></ol>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -32,7 +32,7 @@ describe('KjList', () => {
 
     it('emits role="list" on a <div> host', async () => {
       const { container } = await render(
-        `<div kjList kjAs="div" aria-label="Stats"><div kjListItem>A</div></div>`,
+        `<div kjList kjAs="div" aria-label="Stats"><div kjListRow>A</div></div>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -43,7 +43,7 @@ describe('KjList', () => {
   describe('as="nav" landmark', () => {
     it('switches the host to a <nav> landmark and omits role="list"', async () => {
       const { container } = await render(
-        `<nav kjList kjAs="nav" aria-label="Primary"><div kjListItem>A</div></nav>`,
+        `<nav kjList kjAs="nav" aria-label="Primary"><div kjListRow>A</div></nav>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -55,7 +55,7 @@ describe('KjList', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       try {
         await render(
-          `<nav kjList kjAs="nav"><div kjListItem>A</div></nav>`,
+          `<nav kjList kjAs="nav"><div kjListRow>A</div></nav>`,
           { imports },
         );
         expect(warn).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('KjList', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       try {
         await render(
-          `<nav kjList kjAs="nav" aria-label="Primary"><div kjListItem>A</div></nav>`,
+          `<nav kjList kjAs="nav" aria-label="Primary"><div kjListRow>A</div></nav>`,
           { imports },
         );
         const navWarnings = warn.mock.calls
@@ -87,7 +87,7 @@ describe('KjList', () => {
   describe('orientation propagation', () => {
     it('reflects vertical (default) on data-orientation', async () => {
       const { container } = await render(
-        `<ul kjList aria-label="L"><li kjListItem>A</li></ul>`,
+        `<ul kjList aria-label="L"><li kjListRow>A</li></ul>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -96,7 +96,7 @@ describe('KjList', () => {
 
     it('reflects horizontal when kjOrientation="horizontal"', async () => {
       const { container } = await render(
-        `<ul kjList kjOrientation="horizontal" aria-label="L"><li kjListItem>A</li></ul>`,
+        `<ul kjList kjOrientation="horizontal" aria-label="L"><li kjListRow>A</li></ul>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -105,7 +105,7 @@ describe('KjList', () => {
 
     it('does not bind aria-orientation (axe aria-allowed-attr forbids it on role="list")', async () => {
       const { container } = await render(
-        `<ul kjList kjOrientation="horizontal" aria-label="L"><li kjListItem>A</li></ul>`,
+        `<ul kjList kjOrientation="horizontal" aria-label="L"><li kjListRow>A</li></ul>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -114,7 +114,7 @@ describe('KjList', () => {
 
     it('reflects data-divided and data-hoverable when toggled', async () => {
       const { container } = await render(
-        `<ul kjList [kjDivided]="true" [kjHoverable]="true" aria-label="L"><li kjListItem>A</li></ul>`,
+        `<ul kjList [kjDivided]="true" [kjHoverable]="true" aria-label="L"><li kjListRow>A</li></ul>`,
         { imports },
       );
       const root = container.querySelector('[kjList]')!;
@@ -134,7 +134,7 @@ describe('KjList', () => {
         imports,
         template: `
           <ul kjList kjArrowNavigation aria-label="Primary">
-            <li kjListItem>A</li>
+            <li kjListRow>A</li>
           </ul>
         `,
       })
@@ -151,16 +151,16 @@ describe('KjList', () => {
     });
   });
 
-  describe('KjListItem', () => {
+  describe('KjListRow', () => {
     it('omits role on <li> and emits role="listitem" on <div>', async () => {
       const { container } = await render(
         `<ul kjList aria-label="L">
-           <li kjListItem>A</li>
-           <div kjListItem>B</div>
+           <li kjListRow>A</li>
+           <div kjListRow>B</div>
          </ul>`,
         { imports },
       );
-      const items = Array.from(container.querySelectorAll('[kjListItem]'));
+      const items = Array.from(container.querySelectorAll('[kjListRow]'));
       expect(items[0].tagName).toBe('LI');
       expect(items[0]).not.toHaveAttribute('role');
       expect(items[1].tagName).toBe('DIV');
@@ -173,7 +173,7 @@ describe('KjList', () => {
         imports,
         template: `
           <ul kjList aria-label="L">
-            <li kjListItem [kjActive]="active()">A</li>
+            <li kjListRow [kjActive]="active()">A</li>
           </ul>
         `,
       })
@@ -182,7 +182,7 @@ describe('KjList', () => {
       }
 
       const { container, fixture } = await render(Host);
-      const item = container.querySelector('[kjListItem]')!;
+      const item = container.querySelector('[kjListRow]')!;
       expect(item).toHaveAttribute('data-active', '');
 
       fixture.componentInstance.active.set(false);
@@ -193,11 +193,11 @@ describe('KjList', () => {
     it('reflects kjDisabled to data-disabled', async () => {
       const { container } = await render(
         `<ul kjList aria-label="L">
-           <li kjListItem [kjDisabled]="true">A</li>
+           <li kjListRow [kjDisabled]="true">A</li>
          </ul>`,
         { imports },
       );
-      const item = container.querySelector('[kjListItem]')!;
+      const item = container.querySelector('[kjListRow]')!;
       expect(item).toHaveAttribute('data-disabled', '');
     });
   });
@@ -206,9 +206,9 @@ describe('KjList', () => {
     it('passes axe audit on a basic <ul> list', async () => {
       const { container } = await render(
         `<ul kjList aria-label="Recent files">
-           <li kjListItem>A</li>
-           <li kjListItem>B</li>
-           <li kjListItem>C</li>
+           <li kjListRow>A</li>
+           <li kjListRow>B</li>
+           <li kjListRow>C</li>
          </ul>`,
         { imports },
       );
@@ -223,10 +223,10 @@ describe('KjList', () => {
       const { container } = await render(
         `<nav aria-label="Primary">
            <ul kjList>
-             <li kjListItem [kjActive]="true">
+             <li kjListRow [kjActive]="true">
                <a href="/home" aria-current="page">Home</a>
              </li>
-             <li kjListItem><a href="/about">About</a></li>
+             <li kjListRow><a href="/about">About</a></li>
            </ul>
          </nav>`,
         { imports },

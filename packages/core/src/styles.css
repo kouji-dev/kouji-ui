@@ -1,0 +1,17 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/core — aggregated global stylesheet
+   --------------------------------------------------------------
+   Single entry-point for the core-only global CSS pieces that
+   ship without a corresponding Angular component (prose + icon
+   attribute styles).
+
+   Overlay container chrome ships separately through
+   `packages/components/src/overlay/overlay.css`, which re-exports
+   the core overlay primitive plus every themed overlay-family
+   component (popover, tooltip, dropdown-menu, dialog, drawer,
+   toast, confirm-popup). Register that one file alongside this
+   one in your build.
+   ──────────────────────────────────────────────────────────── */
+
+@import "./typography/prose.css";
+@import "./icon/icon.css";

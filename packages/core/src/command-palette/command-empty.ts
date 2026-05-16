@@ -1,5 +1,5 @@
 import { Directive, computed, inject } from '@angular/core';
-import { KJ_COMMAND_PALETTE } from './command-palette.context';
+import { KjCommandPalette } from './command-palette';
 
 /**
  * Slot shown when the palette has no visible items and is not loading.
@@ -27,7 +27,7 @@ import { KJ_COMMAND_PALETTE } from './command-palette.context';
   },
 })
 export class KjCommandEmpty {
-  private readonly ctx = inject(KJ_COMMAND_PALETTE);
+  private readonly ctx = inject(KjCommandPalette);
 
   /** Hidden unless there are no visible items and loading is false. */
   readonly isHidden = computed(() =>

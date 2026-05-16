@@ -107,4 +107,32 @@ describe('KjSelect', () => {
     expect(opts.length).toBe(2);
     opts.forEach(o => expect(o.getAttribute('role')).toBe('option'));
   });
+
+  it('ArrowDown sets aria-activedescendant on the listbox panel', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjSelect, KjSelectTrigger, KjSelectContent, KjOption],
+      template: `
+        <div kjSelect>
+          <button kjSelectTrigger #t="kjSelectTrigger">Open</button>
+          <kj-select-content [kjFor]="t">
+            <div kjOption [kjOptionValue]="'a'">A</div>
+            <div kjOption [kjOptionValue]="'b'">B</div>
+          </kj-select-content>
+        </div>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    // open the overlay
+    const trigger = container.querySelector('button') as HTMLElement;
+    trigger.click();
+    fixture.detectChanges();
+    // body-portal puts panel into document.body; fall back to container if null
+    let panel = document.querySelector('kj-select-content') as HTMLElement | null;
+    if (!panel) panel = container.querySelector('kj-select-content') as HTMLElement;
+    panel.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    fixture.detectChanges();
+    expect(panel.getAttribute('aria-activedescendant')).toMatch(/^kj-list-item-\d+$/);
+  });
 });

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  forwardRef,
   inject,
   input,
   ViewEncapsulation,
@@ -150,28 +151,30 @@ export class KjCascadeSelectComponent {
 @Component({
   selector: 'kj-cascade-option',
   standalone: true,
+  // Extends `KjCascadeSelectOption` so this component IS the option
+  // directive: inherits its inputs (`kjValue`/`kjLabel`/`kjDisabled` via the
+  // inner `KjListItem` aliases), its host bindings (role, click handler,
+  // hover timers, `data-*`), and its `KjListItem` hostDirective composition
+  // — all without going through outer `hostDirectives` forwarding (Angular
+  // 21 NG2017 forbids that for alias-exposed inputs). The `useExisting`
+  // provider routes `inject(KjCascadeSelectOption)` from projected
+  // sub-panels to this same instance.
   imports: [KjIconDirective],
-  hostDirectives: [
-    {
-      directive: KjCascadeSelectOption,
-      inputs: ['kjValue', 'kjLabel', 'kjDisabled'],
-    },
+  providers: [
+    { provide: KjCascadeSelectOption, useExisting: forwardRef(() => KjCascadeOptionComponent) },
   ],
   template: `
-    <span class="kj-cascade-option-label">{{ option.kjLabel() }}</span>
-    <i class="kj-cascade-option-chevron" kjIcon="chevron-right"></i>
+    <span class="kj-cascade-option-label">{{ item.label() }}</span>
+    @if (isBranch()) {
+      <i class="kj-cascade-option-chevron" kjIcon="chevron-right"></i>
+    }
     <ng-content />
   `,
   encapsulation: ViewEncapsulation.None,
-  host: {
-    'class': 'kj-cascade-option',
-  },
+  host: { 'class': 'kj-cascade-option' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCascadeOptionComponent {
-  /** @internal — read kjLabel from the composed host directive for rendering. */
-  protected readonly option = inject(KjCascadeSelectOption);
-}
+export class KjCascadeOptionComponent extends KjCascadeSelectOption {}
 
 /**
  * Sub-panel container for child options of a `<kj-cascade-option>`.

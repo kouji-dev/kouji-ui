@@ -317,7 +317,12 @@ export class KjTreeSelectComponent {
   /** @internal — display label shown in the trigger button. */
   readonly displayLabel = computed(() => {
     const mode = this.ts.selectionMode();
-    const selected = this.ts.selectedValues();
+    const raw = this.ts.value();
+    const selected: readonly unknown[] = Array.isArray(raw)
+      ? raw
+      : raw === null || raw === undefined
+        ? []
+        : [raw];
     if (selected.length === 0) return this.placeholder();
     if (mode === 'multiple') {
       return `${selected.length} selected`;

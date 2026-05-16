@@ -2,27 +2,38 @@ import {
   DestroyRef,
   Directive,
   ElementRef,
+  EmbeddedViewRef,
+  Injector,
+  PLATFORM_ID,
+  TemplateRef,
+  ViewContainerRef,
   booleanAttribute,
   computed,
   effect,
   inject,
   input,
+  output,
+  signal,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { KjListItem, injectListItem } from '../primitives/list';
 import { KjOverlayController } from '../primitives/overlay/controller';
-import { KjDropdownMenuTrigger } from '../dropdown-menu/dropdown-menu-trigger';
+import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
+import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
 import { KJ_MENUBAR } from './menubar.context';
 import type { KjMenubarItemContext } from './menubar.context';
 
+let _menubarPanelId = 0;
+
 /**
  * A top-level item in a `[kjMenubar]` — `role="menuitem"` with
- * `aria-haspopup="menu"`. Composes the new `[kjDropdownMenuTrigger]`
- * directive so the popup contract — open / close, `aria-expanded`,
- * `aria-controls`, focus restoration — is reused unchanged.
+ * `aria-haspopup="menu"`. Composes `KjListItem` so id, click + Enter/Space
+ * activation, `aria-disabled`, and (via the bar's `KjListNavigator` in
+ * roving mode) `tabindex` are owned by the primitive layer.
  *
- * **Note (overlay primitives migration):** The menubar coordination layer
- * (auto-disclose, cross-bar navigation, focus targeting) was simplified
- * during the primitives migration. The wrapper now exposes minimal
- * registration / focus hooks; richer popup orchestration is a follow-up.
+ * Optionally opens a submenu via `[kjDropdownMenuTriggerFor]` — a
+ * `TemplateRef` pointing at a `[kjDropdownMenu]` panel. The bar's
+ * `afterSelect` opens this item's submenu on activation.
  *
  * @doc-category Core/Navigation
  * @doc
@@ -33,107 +44,161 @@ import type { KjMenubarItemContext } from './menubar.context';
   standalone: true,
   exportAs: 'kjMenubarItem',
   hostDirectives: [
-    {
-      directive: KjDropdownMenuTrigger,
-      inputs: ['kjDisabled', 'kjCloseOnSelect'],
-      outputs: ['kjMenuClosed'],
-    },
+    { directive: KjListItem, inputs: ['kjDisabled:kjDisabled'] },
   ],
+  providers: [KjOverlayController],
   host: {
     'role': 'menuitem',
-    '[attr.tabindex]': 'tabIndexAttr()',
+    'aria-haspopup': 'menu',
+    '[attr.aria-expanded]': 'open() ? "true" : "false"',
+    '[attr.aria-controls]': 'panelId() || null',
     '[attr.data-state]': 'open() ? "active" : "inactive"',
-    '[attr.aria-disabled]': 'kjDisabled() ? "true" : null',
-    '(pointerenter)': 'onPointerEnter($event)',
-    '(pointerleave)': 'onPointerLeave($event)',
-    '(focus)': 'onFocus()',
   },
 })
 export class KjMenubarItem implements KjMenubarItemContext {
-  /** @internal Available to host bindings. */
-  protected readonly trigger = inject(KjDropdownMenuTrigger, { self: true });
-  private readonly controller = inject(KjOverlayController, { self: true, optional: true });
   private readonly bar = inject(KJ_MENUBAR);
   private readonly destroyRef = inject(DestroyRef);
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly vcr = inject(ViewContainerRef);
+  private readonly injector = inject(Injector);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly controller = inject(KjOverlayController, { self: true });
 
   /** Disable the item. Reflects `aria-disabled`; popup never opens. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
+  /**
+   * Template projecting the submenu panel. Activation renders the template
+   * into a body portal anchored to this item's host element.
+   */
+  readonly kjDropdownMenuTriggerFor = input<TemplateRef<unknown> | null>(null);
+
+  /**
+   * Fires when the item is activated (click / Enter / Space), bridged from
+   * the composed `KjListItem.activate` output. `KjListItem._activate` calls
+   * `event.stopPropagation()` before this fires, so a `(click)` listener
+   * placed on a parent element would not see the event — consumers wiring
+   * an activation listener must use `(kjActivate)` instead.
+   */
+  readonly kjActivate = output<void>();
+
   // ── KjMenubarItemContext ─────────────────────────────────────────
 
-  /** This item's host element. */
-  get el(): HTMLElement {
-    return this.elRef.nativeElement;
-  }
-
-  /** Disabled signal, for the bar coordinator. */
+  get el(): HTMLElement { return this.elRef.nativeElement; }
   readonly disabled = this.kjDisabled;
+  readonly open = computed(() => this.controller.isOpen());
+  readonly panelId = computed(() => this.controller.panelEl()?.id ?? null);
 
-  /** Whether this item's popup is currently open. */
-  readonly open = computed(() => this.controller?.isOpen() ?? false);
+  private _view: EmbeddedViewRef<unknown> | null = null;
+  private _strategiesReady = false;
 
-  openPopup(_focus: 'first' | 'last' | 'none'): void {
-    if (this.kjDisabled()) return;
-    this.controller?.open();
+  openPopup(): void {
+    if (this.kjDisabled() || this.controller.isOpen()) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+    const tpl = this.kjDropdownMenuTriggerFor();
+    if (!tpl) return;
+    this._ensurePanelMounted(tpl);
+    this._ensureStrategiesAttached();
+    this.controller.open();
   }
 
   closePopup(): void {
-    this.controller?.close('programmatic');
+    if (this.controller.isOpen()) this.controller.close('programmatic');
   }
-
-  focusItem(): void {
-    try {
-      this.el.focus();
-    } catch {
-      /* element may be detached */
-    }
-  }
-
-  // ── Roving tabindex attribute ────────────────────────────────────
-
-  protected readonly tabIndexAttr = computed(() => {
-    return (this.bar as unknown as {
-      isActive(item: KjMenubarItemContext): boolean;
-    }).isActive(this) ? '0' : '-1';
-  });
 
   constructor() {
     this.bar.registerItem(this);
 
-    // Mirror the controller's open / close into the bar's open-item tracker.
+    // Route this item's own activation (click / Enter / Space, surfaced
+    // by the composed `KjListItem`) to its own submenu — the bar's
+    // `afterSelect` only knows the currently-focused item, which doesn't
+    // identify the item that was actually clicked (focus may not have
+    // moved yet, e.g. mouse click before focusin handling).
+    //
+    // When `kjDropdownMenuTriggerFor` is unset the item owns no popup of
+    // its own; skip the toggle entirely so that a sibling
+    // `[kjDropdownMenuTrigger]` directive composed on the same element can
+    // own the overlay state without us racing it. (Both directives provide
+    // `KjOverlayController` and Angular merges them into a single per-
+    // element instance — calling `controller.close()` here would
+    // immediately undo the trigger's `open()` from the same click.)
+    const listItem = injectListItem<unknown>();
+    listItem.activate.subscribe(() => {
+      this.kjActivate.emit();
+      if (!this.kjDropdownMenuTriggerFor()) return;
+      if (this.controller.isOpen()) this.closePopup();
+      else this.openPopup();
+    });
+
+    // Mirror the controller's open/close state into the bar's tracker —
+    // single source of truth for kjOpenChange and single-open invariant.
+    // Tracked across two cycles so a stale 'closed' from before the first
+    // open doesn't fire `notifyItemClosed` and clobber the bar's state.
+    let last: boolean | null = null;
     effect(() => {
-      const isOpen = this.open();
-      if (isOpen) {
-        this.bar.notifyItemOpened(this);
-      } else {
-        this.bar.notifyItemClosed(this);
+      const isOpen = this.controller.isOpen();
+      if (last === isOpen) return;
+      last = isOpen;
+      if (isOpen) this.bar.notifyItemOpened(this);
+      else this.bar.notifyItemClosed(this);
+      // Tag the panel's overlay-surface marker only while open. The
+      // body-portal mount strategy returns the panel to its original
+      // parent on close — leaving `data-kj-overlay` on a hidden panel
+      // would let test introspection + ARIA queries find a stale
+      // "open" overlay that is in fact closed.
+      const panel = this._panelRoot();
+      if (panel) {
+        if (isOpen) panel.setAttribute('data-kj-overlay', '');
+        else panel.removeAttribute('data-kj-overlay');
       }
     });
 
     this.destroyRef.onDestroy(() => {
       this.bar.unregisterItem(this);
+      try { this.controller.dispose(); } catch { /* already disposed */ }
+      this._view?.destroy();
+      this._view = null;
     });
   }
 
-  // ── Pointer / focus host handlers ────────────────────────────────
+  // ── Internal — panel mount + strategy wiring ─────────────────────
 
-  protected onPointerEnter(_event: PointerEvent): void {
-    this.bar.notifyItemPointerEnter(this);
+  private _ensurePanelMounted(tpl: TemplateRef<unknown>): void {
+    if (this._view) return;
+    this._view = this.vcr.createEmbeddedView(tpl);
+    this._view.detectChanges();
+    const panel = this._panelRoot();
+    if (!panel) return;
+    // The projected `<div kjDropdownMenu>` is just a config provider — it
+    // does not set `role="menu"` (only the service-launched
+    // `<kj-dropdown-menu-content>` does, via `KJ_OVERLAY_PANEL_ROLE`).
+    // The menubar projects raw templates, so stamp the role + an id
+    // here so consumers and `aria-controls` work out of the box.
+    if (!panel.hasAttribute('role')) panel.setAttribute('role', 'menu');
+    if (!panel.id) panel.id = `kj-menubar-panel-${++_menubarPanelId}`;
+    this.controller.bindPanel(panel);
   }
 
-  protected onPointerLeave(_event: PointerEvent): void {
-    this.bar.notifyItemPointerLeave(this);
+  private _ensureStrategiesAttached(): void {
+    if (this._strategiesReady) return;
+    const triggerSig = signal<HTMLElement | null>(this.elRef.nativeElement);
+    this.controller.bindTrigger(this.elRef.nativeElement);
+    this.controller.attachStrategies({
+      mount: bodyPortal(),
+      position: anchoredTo({
+        trigger: triggerSig,
+        side: 'bottom',
+        align: 'start',
+      }),
+    });
+    this._strategiesReady = true;
   }
 
-  protected onFocus(): void {
-    const items = (this.bar as unknown as { items?: { (): KjMenubarItemContext[] } }).items;
-    if (typeof items === 'function') {
-      const idx = items().indexOf(this);
-      if (idx >= 0) {
-        const active = (this.bar as unknown as { activeIndex?: { set(n: number): void } }).activeIndex;
-        active?.set?.(idx);
-      }
+  private _panelRoot(): HTMLElement | null {
+    if (!this._view) return null;
+    for (const node of this._view.rootNodes) {
+      if (node instanceof HTMLElement) return node;
     }
+    return null;
   }
 }

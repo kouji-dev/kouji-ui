@@ -1,16 +1,12 @@
-import {
-  Directive,
-  computed,
-  contentChild,
-} from '@angular/core';
-import { KjDropdownMenuLabel } from './dropdown-menu-label';
+import { Directive } from '@angular/core';
+import { KjListGroup } from '../primitives/list';
 
 /**
  * A logical grouping of items inside a `[kjDropdownMenu]` panel.
  *
- * Sets `role="group"` on the host. If a `[kjDropdownMenuLabel]` is projected
- * as a content child, its auto-generated id is wired to `aria-labelledby` so
- * AT announces the group's label.
+ * Composes the shared `KjListGroup` primitive — `role="group"`,
+ * auto-`aria-labelledby` wiring to a child `[kjDropdownMenuLabel]`, and
+ * auto-hide when every child item is filter-hidden.
  *
  * @example
  * ```html
@@ -25,15 +21,11 @@ import { KjDropdownMenuLabel } from './dropdown-menu-label';
 @Directive({
   selector: '[kjDropdownMenuGroup]',
   standalone: true,
+  hostDirectives: [
+    { directive: KjListGroup, inputs: ['kjId'] },
+  ],
   host: {
     'class': 'kj-dropdown-menu-group',
-    'role': 'group',
-    '[attr.aria-labelledby]': 'labelledBy()',
   },
 })
-export class KjDropdownMenuGroup {
-  private readonly label = contentChild(KjDropdownMenuLabel, { descendants: true });
-
-  /** Auto-resolved labelledby — the projected `[kjDropdownMenuLabel]`'s id, or null. */
-  protected readonly labelledBy = computed(() => this.label()?.id ?? null);
-}
+export class KjDropdownMenuGroup {}

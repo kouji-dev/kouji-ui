@@ -19,12 +19,24 @@ const ITEMS = ['File', 'Edit', 'View', 'Help', 'Window'] as const;
   selector: 'kj-menubar-playground',
   standalone: true,
   imports: [KjMenubarComponent, KjMenubarItemComponent],
+  styles: [`
+    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; }
+    .kj-menubar-playground-readout { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-muted); }
+    .kj-menubar-playground-readout strong { color: var(--kj-fg-default); font-weight: 600; }
+  `],
   template: `
     <kj-menubar [kjLoop]="loop()" [kjAriaLabel]="ariaLabel()">
       @for (item of visibleItems(); track item; let last = $last) {
-        <kj-menubar-item [kjDisabled]="disableLast() && last">{{ item }}</kj-menubar-item>
+        <kj-menubar-item
+          [kjDisabled]="disableLast() && last"
+          (kjActivate)="lastSelected.set(item)"
+        >{{ item }}</kj-menubar-item>
       }
     </kj-menubar>
+
+    <p class="kj-menubar-playground-readout">
+      Last selected: <strong>{{ lastSelected() ?? '—' }}</strong>
+    </p>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -33,10 +45,12 @@ export class KjMenubarPlaygroundDemo {
   protected readonly disableLast = disableLast;
   protected readonly loop = loop;
   protected readonly ariaLabel = ariaLabel;
+  protected readonly lastSelected = signal<string | null>(null);
 
   protected readonly visibleItems = computed(() =>
     ITEMS.slice(0, itemCount()),
   );
+
 }
 
 export const PLAYGROUND: PlaygroundFile = {
@@ -66,9 +80,17 @@ export const PLAYGROUND: PlaygroundFile = {
       .map((label, i, arr) => {
         const isLast = i === arr.length - 1;
         const disabled = s.disableLast && isLast ? ' [kjDisabled]="true"' : '';
-        return `  <kj-menubar-item${disabled}>${label}</kj-menubar-item>`;
+        return `  <kj-menubar-item${disabled} (kjActivate)="lastSelected.set('${label}')">${label}</kj-menubar-item>`;
       })
       .join('\n');
-    return `<kj-menubar\n  ${attrs.join('\n  ')}\n>\n${rows}\n</kj-menubar>`;
+    return [
+      `<kj-menubar`,
+      `  ${attrs.join('\n  ')}`,
+      `>`,
+      rows,
+      `</kj-menubar>`,
+      '',
+      `<p>Last selected: <strong>{{ lastSelected() ?? '—' }}</strong></p>`,
+    ].join('\n');
   },
 };

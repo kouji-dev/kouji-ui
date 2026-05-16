@@ -4,7 +4,7 @@ import {
   ViewEncapsulation,
   booleanAttribute,
   input,
-  numberAttribute,
+  output,
 } from '@angular/core';
 import {
   KjMenubar,
@@ -86,29 +86,37 @@ import {
 @Component({
   selector: 'kj-menubar',
   standalone: true,
-  imports: [KjMenubar],
-  template: `
-    <nav
-      kjMenubar
-      class="kj-menubar"
-      [kjLoop]="kjLoop()"
-      [kjAutoDisclose]="kjAutoDisclose()"
-      [kjAutoDiscloseDelayMs]="kjAutoDiscloseDelayMs()"
-      [kjAriaLabel]="kjAriaLabel()"
-    >
-      <ng-content />
-    </nav>
-  `,
+  // KjMenubar must live on this component's host element (not on an
+  // inner `<nav>`) so projected `<kj-menubar-item>` children can
+  // resolve KJ_MENUBAR through their declaration-tree element-injector
+  // walk. Composing via hostDirectives places the directive — and the
+  // KJ_MENUBAR provider — exactly there.
+  hostDirectives: [
+    {
+      directive: KjMenubar,
+      inputs: [
+        'kjLoop',
+        'kjAutoDisclose',
+        'kjAutoDiscloseDelayMs',
+        'kjAriaLabel',
+      ],
+    },
+  ],
+  template: `<ng-content />`,
   styleUrl: './menubar.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-menubar',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarComponent {
-  readonly kjLoop = input(false, { transform: booleanAttribute });
-  readonly kjAutoDisclose = input(true, { transform: booleanAttribute });
-  readonly kjAutoDiscloseDelayMs = input(0, { transform: numberAttribute });
-  readonly kjAriaLabel = input<string>('Application');
+  // Inputs (kjLoop, kjAutoDisclose, kjAutoDiscloseDelayMs, kjAriaLabel)
+  // are exposed via the composed `KjMenubar` host directive above.
+  // Re-declaring them on this class would register them twice in the
+  // component's input metadata, which the docs extractor renders as
+  // duplicated rows and which triggers NG0955 (duplicate track keys)
+  // when the `@for` walking the inputs uses the input name as its key.
 }
 
 /**
@@ -134,6 +142,7 @@ export class KjMenubarComponent {
       kjMenubarItem
       class="kj-menubar-item"
       [kjDisabled]="kjDisabled()"
+      (kjActivate)="kjActivate.emit()"
     >
       <ng-content />
     </button>
@@ -144,5 +153,8 @@ export class KjMenubarComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarItemComponent {
+  /** Disable the item. Reflects `aria-disabled`; popup never opens. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /** Fires when the item is activated (click / Enter / Space). */
+  readonly kjActivate = output<void>();
 }

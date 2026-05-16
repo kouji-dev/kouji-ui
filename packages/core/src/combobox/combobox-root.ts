@@ -1,32 +1,53 @@
 import {
+  Directive,
   booleanAttribute,
   computed,
-  Directive,
+  contentChildren,
   effect,
+  forwardRef,
   inject,
   input,
   model,
   output,
   signal,
+  untracked,
+  type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { KjDisabled } from '../primitives';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
-  KJ_COMBOBOX,
-  type KjComboboxContext,
-  type KjComboboxOptionRegistration,
-  kjContainsFilter,
-} from './combobox.context';
+  KJ_LIST_NAVIGATOR_CONFIG,
+  KjFilterableList,
+  KjListItem,
+  KjListNavigator,
+  KjSelectionModel,
+  type KjFilterFn,
+  type KjListNavigatorConfig,
+  type KjListSelectionMode,
+} from '../primitives/list';
 
 let _idCounter = 0;
 const nextId = (): string => `kj-combobox-${++_idCounter}`;
 
+/** Default substring filter — case-insensitive contains match. */
+export const kjContainsFilter = (query: string, label: string): boolean => {
+  if (!query) return true;
+  return label.toLowerCase().includes(query.toLowerCase());
+};
+
+/** Case-insensitive prefix match. */
+export const kjStartsWithFilter = (query: string, label: string): boolean => {
+  if (!query) return true;
+  return label.toLowerCase().startsWith(query.toLowerCase());
+};
+
 /**
- * Root combobox / autocomplete container. Manages the committed value, live
- * query string, the active-descendant pointer, and (optionally) the
- * synchronous filter. The actual open/closed state is owned by the overlay
- * primitive `KjOverlayController` provided on `KjComboboxInput`; this
- * directive mirrors that signal so option/filter logic stays reactive.
+ * Root combobox / autocomplete container. Provides
+ * KJ_LIST_NAVIGATOR_CONFIG via contentChildren(KjListItem),
+ * KjSelectionModel (single mode), KjFilterableList, and the shared
+ * KjOverlayController. Children (`KjComboboxInput`, `KjComboboxListbox`,
+ * `KjComboboxOption`) inject `KjCombobox` directly.
  *
  * Compound shape — pair with [kjComboboxInput], [kjComboboxListbox] and
  * [kjComboboxOption]:
@@ -49,16 +70,29 @@ const nextId = (): string => `kj-combobox-${++_idCounter}`;
   exportAs: 'kjCombobox',
   hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }],
   providers: [
-    { provide: KJ_COMBOBOX, useExisting: KjCombobox },
+    { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjCombobox) },
+    KjSelectionModel,
+    KjFilterableList,
     KjOverlayController,
   ],
   host: {
     '[attr.data-state]': "open() ? 'open' : 'closed'",
   },
 })
-export class KjCombobox implements KjComboboxContext {
+export class KjCombobox implements KjListNavigatorConfig {
   /** The currently selected value. Two-way bindable. */
   readonly kjValue = model<unknown>(null);
+
+  /**
+   * Implements `KjListNavigatorConfig.value`. The selection model reads
+   * and writes through this same signal — one source of truth.
+   */
+  readonly value = this.kjValue as unknown as WritableSignal<
+    unknown | readonly unknown[] | null
+  >;
+
+  /** Implements `KjListNavigatorConfig.mode`. Combobox is always single. */
+  readonly mode: Signal<KjListSelectionMode> = signal('single');
 
   /** The current query string typed into the input. Two-way bindable. */
   readonly kjQuery = model<string>('');
@@ -84,147 +118,161 @@ export class KjCombobox implements KjComboboxContext {
   /** Emitted on commit (option selected, free-text submitted). */
   readonly kjCommit = output<unknown>();
 
-  // ── Internal state ──────────────────────────────────────────────────
-
-  private readonly _activeId = signal<string | null>(null);
-  private readonly _inputEl = signal<HTMLElement | null>(null);
-  private readonly _options = signal<readonly KjComboboxOptionRegistration[]>([]);
-  private readonly _visibleIds = signal<readonly string[]>([]);
-
-  /** @internal — shared overlay controller; input + listbox + options all see this same instance. */
   private readonly controller = inject(KjOverlayController);
+  private readonly filter     = inject(KjFilterableList);
+  private readonly _selection = inject(KjSelectionModel);
 
-  /** Stable id used by the listbox / aria-controls. */
+  /** Implements `KjListNavigatorConfig.compareBy`. */
+  readonly compareBy = signal((a: unknown, b: unknown) => Object.is(a, b));
+
+  /** Stable listbox id for `aria-controls` wiring. */
   readonly listboxId = nextId();
 
-  // ── Public reactive surface (KjComboboxContext) ─────────────────────
+  /** All `KjListItem`s under this combobox — source for nav + filter. */
+  readonly items = contentChildren(KjListItem, { descendants: true });
 
-  readonly value = this.kjValue.asReadonly();
-  readonly query = this.kjQuery.asReadonly();
-  readonly open = this.controller.isOpen;
-  readonly loading = this.kjLoading;
+  /** Filter-aware visible items, exposed for KjListNavigatorConfig. */
+  readonly visibleItems = computed(
+    () => this.filter.visibleItems() as readonly KjListItem<unknown>[],
+  );
+
+  /** Public surface read by children. */
+  readonly query         = this.kjQuery.asReadonly();
+  readonly open          = this.controller.isOpen;
+  readonly loading       = this.kjLoading;
   readonly allowFreeText = this.kjFreeText;
-  readonly shouldFilter = this.kjShouldFilter;
-  readonly filter = this.kjFilter;
-  readonly activeId = this._activeId.asReadonly();
+  readonly shouldFilter  = this.kjShouldFilter;
+  readonly visibleCount  = computed(() => this.filter.visibleCount());
+
+  private readonly _inputEl = signal<HTMLElement | null>(null);
   readonly inputElement = this._inputEl.asReadonly();
-  readonly visibleCount = computed(() => this._visibleIds().length);
+
+  /** @internal — set by KjComboboxInput's lifecycle. Signal so auto-activate
+   *  effects can re-run when the navigator becomes available. */
+  private readonly _nav = signal<KjListNavigator | null>(null);
+  _setNavigator(n: KjListNavigator | null): void { this._nav.set(n); }
+
+  /** Currently active descendant id (or null). */
+  readonly activeId = computed(() => this._nav()?.activeId() ?? null);
+
+  /** Adapts the consumer `(query, label) => boolean` shape into the
+   *  primitive's `KjFilterFn` shape. Derived; no effect/setter needed. */
+  private readonly adaptedFilter = computed<KjFilterFn>(() => {
+    const userFn = this.kjFilter();
+    return (q, hs) => (hs.some(h => userFn(q, h)) ? 1 : 0);
+  });
 
   constructor() {
-    // Re-run synchronous filter whenever the query, options, or filter fn changes.
+    this.filter.bind({
+      items:             this.items,
+      query:             this.kjQuery,
+      filterFn:          this.adaptedFilter,
+      shouldFilter:      this.kjShouldFilter,
+      autoActivateFirst: this.kjAutoActivateFirst,
+    });
+    this._selection.bind({
+      value:     this.value,
+      items:     this.items,
+      mode:      this.mode,
+      compareBy: this.compareBy,
+    });
+    effect(() => this.kjQueryChange.emit(this.kjQuery()));
+
+    // Auto-activate first visible item on query change so Enter can
+    // commit it without an explicit ArrowDown press. APG combobox 1.2
+    // discoverability pattern.
     effect(() => {
-      const q = this.kjQuery();
-      const opts = this._options();
-      const fn = this.kjFilter();
-      const sync = this.kjShouldFilter();
-
-      if (!sync) {
-        const visible = opts.map(o => o.id);
-        opts.forEach(o => o.setVisible(true));
-        this._visibleIds.set(visible);
-        return;
-      }
-
-      const visible: string[] = [];
-      for (const opt of opts) {
-        const ok = fn(q, opt.label());
-        opt.setVisible(ok);
-        if (ok) visible.push(opt.id);
-      }
-      this._visibleIds.set(visible);
+      this.kjQuery();
+      const autoFirst = this.kjAutoActivateFirst();
+      const nav = this._nav();
+      if (!autoFirst || !nav) return;
+      untracked(() => {
+        const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
+        nav.setActive(visible.length ? visible[0].id : null);
+      });
     });
 
-    // If active option becomes hidden, jump to the first visible.
+    // Seed the active item once the navigator attaches (input mounts).
     effect(() => {
-      const active = this._activeId();
-      const visible = this._visibleIds();
-      const q = this.kjQuery();
-      if (active && visible.includes(active)) return;
-      if (visible.length === 0) {
-        this._activeId.set(null);
-        return;
-      }
-      const shouldAuto = this.kjAutoActivateFirst() && q.length > 0;
-      if (shouldAuto || active) {
-        this._activeId.set(visible[0]);
-      }
+      const nav = this._nav();
+      if (!nav || !this.kjAutoActivateFirst()) return;
+      if (nav.activeId() !== null) return;
+      untracked(() => {
+        const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
+        if (visible.length > 0) nav.setActive(visible[0].id);
+      });
     });
 
-    // Forward query changes to the output.
+    // Seed `kjQuery` from the selected item's label whenever the input
+    // would otherwise render blank. Covers the case where `kjValue` is
+    // bound up-front (preset) but no query text has been typed yet.
     effect(() => {
-      const q = this.kjQuery();
-      this.kjQueryChange.emit(q);
+      const items = this.items();
+      const v = this.kjValue();
+      if (v === null || v === undefined) return;
+      if (this.kjQuery() !== '') return;
+      untracked(() => {
+        const match = items.find(i => i.value() === v);
+        if (match) this.kjQuery.set(match.label());
+      });
     });
   }
-
-  // ── KjComboboxContext mutations ─────────────────────────────────────
 
   setQuery(value: string): void {
     if (this.kjQuery() !== value) this.kjQuery.set(value);
     this.controller.open();
   }
 
+  /**
+   * Programmatic select used by `commitActive()` (Enter on the input
+   * with a navigator-active item) and the free-text Enter fallback in
+   * `KjComboboxInput`. Sets the value through the shared signal, then
+   * runs the same post-selection side-effects `afterSelect()` runs for
+   * option clicks — keeping both paths converged.
+   */
   select(value: unknown): void {
     this.kjValue.set(value);
+    this._finishSelect(value);
+  }
+
+  /**
+   * Implements `KjListNavigatorConfig.afterSelect`. Called by
+   * `KjListItem` after it toggles the shared selection model, so option
+   * clicks / Enter / Space don't need a per-option `activate.subscribe`.
+   */
+  afterSelect(value: unknown, closeRequested: boolean): void {
+    if (!closeRequested) return;
+    this._finishSelect(value);
+  }
+
+  private _finishSelect(value: unknown): void {
     this.controller.close('programmatic');
+    // Reflect the chosen item's label in the input so the combobox
+    // reads as a picker (e.g. "France") instead of leaving the user's
+    // typed query text behind. Matches the autocomplete UX of
+    // `kj-select`.
+    const match = this.items().find(i => i.value() === value);
+    this.kjQuery.set(match ? match.label() : String(value ?? ''));
     this.kjCommit.emit(value);
   }
 
-  show(): void {
-    this.controller.open();
-  }
-
-  hide(): void {
-    this.controller.close('programmatic');
-  }
-
-  toggle(): void {
-    this.controller.toggle();
-  }
+  show():   void { this.controller.open(); }
+  hide():   void { this.controller.close('programmatic'); }
+  toggle(): void { this.controller.toggle(); }
 
   move(delta: 1 | -1): void {
-    const visible = this._visibleIds();
-    if (!visible.length) return;
     if (!this.controller.isOpen()) this.controller.open();
-    const current = this._activeId();
-    const idx = current ? visible.indexOf(current) : -1;
-    let next = idx + delta;
-    if (next < 0) next = visible.length - 1;
-    if (next >= visible.length) next = 0;
-    this._activeId.set(visible[next]);
+    this._nav()?.moveBy(delta);
   }
 
   commitActive(): void {
-    const active = this._activeId();
-    if (active) {
-      const opt = this._options().find(o => o.id === active);
-      if (opt && !opt.disabled()) {
-        this.select(opt.value());
-        return;
-      }
+    const item = this._nav()?.activeItem();
+    if (item && !item.disabled()) {
+      const v = item.value();
+      if (v !== undefined) { this.select(v); return; }
     }
-    if (this.kjFreeText()) {
-      const q = this.kjQuery();
-      this.select(q);
-    }
+    if (this.kjFreeText()) this.select(this.kjQuery());
   }
 
-  // ── Option registry (internal) ──────────────────────────────────────
-
-  registerOption(opt: KjComboboxOptionRegistration): void {
-    this._options.update(list => [...list, opt]);
-  }
-
-  unregisterOption(id: string): void {
-    this._options.update(list => list.filter(o => o.id !== id));
-    if (this._activeId() === id) this._activeId.set(null);
-  }
-
-  setActiveId(id: string | null): void {
-    this._activeId.set(id);
-  }
-
-  setInputElement(el: HTMLElement | null): void {
-    this._inputEl.set(el);
-  }
+  setInputElement(el: HTMLElement | null): void { this._inputEl.set(el); }
 }

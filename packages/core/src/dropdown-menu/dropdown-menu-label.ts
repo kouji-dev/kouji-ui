@@ -1,21 +1,16 @@
-import {
-  Directive,
-  ElementRef,
-  afterNextRender,
-  inject,
-} from '@angular/core';
-import { nextDropdownMenuLabelId } from './dropdown-menu-trigger';
+import { Directive, inject } from '@angular/core';
+import { KjListGroupLabel } from '../primitives/list';
 
 /**
  * A non-interactive heading inside a `[kjDropdownMenu]` panel.
  *
- * Auto-generates a stable id (`kj-dropdown-menu-label-{n}`); a wrapping
- * `[kjDropdownMenuGroup]` picks it up via `contentChild` and binds
- * `aria-labelledby` on the group host so AT announces the group with the
- * label's text content.
+ * Composes the shared `KjListGroupLabel` primitive, which mints a stable
+ * id and registers it with the surrounding `[kjDropdownMenuGroup]`
+ * (composing `KjListGroup`) so screen readers announce the group with
+ * the label's text content via `aria-labelledby`.
  *
- * `role="presentation"` on the host — the label is heading text, not a
- * focusable item, and the roving navigator skips it.
+ * Sets `role="presentation"` — the label is heading text, not a
+ * focusable item, and the surrounding navigator skips it.
  *
  * @example
  * ```html
@@ -27,23 +22,20 @@ import { nextDropdownMenuLabelId } from './dropdown-menu-trigger';
   selector: '[kjDropdownMenuLabel]',
   standalone: true,
   exportAs: 'kjDropdownMenuLabel',
+  hostDirectives: [
+    { directive: KjListGroupLabel, inputs: ['kjId'] },
+  ],
   host: {
     'class': 'kj-dropdown-menu-label',
     'role': 'presentation',
   },
 })
 export class KjDropdownMenuLabel {
-  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  /** Composed label primitive — exposes the resolved id. */
+  private readonly label = inject(KjListGroupLabel, { self: true });
 
   /** Stable id used by a wrapping `[kjDropdownMenuGroup]` for `aria-labelledby`. */
-  readonly id = nextDropdownMenuLabelId();
-
-  constructor() {
-    afterNextRender(() => {
-      // Don't clobber a consumer-supplied id.
-      if (!this.el.nativeElement.id) {
-        this.el.nativeElement.id = this.id;
-      }
-    });
+  get id(): string {
+    return this.label.id();
   }
 }

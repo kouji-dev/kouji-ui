@@ -1,10 +1,13 @@
 import { Directive } from '@angular/core';
+import { KjListSeparator } from '../primitives/list';
 
 /**
  * A non-focusable horizontal divider between groups of menu items.
  *
- * Sets `role="separator"`, `aria-orientation="horizontal"`, `tabindex="-1"`.
- * The roving tabindex / type-ahead inside `[kjDropdownMenu]` skips it.
+ * Composes the shared `KjListSeparator` primitive — sets
+ * `role="separator"` and `aria-orientation="horizontal"`. The roving
+ * navigator / type-ahead in `[kjDropdownMenu]` skips it because it isn't
+ * a `KjListItem`.
  *
  * @example
  * ```html
@@ -15,10 +18,9 @@ import { Directive } from '@angular/core';
 @Directive({
   selector: '[kjDropdownMenuSeparator]',
   standalone: true,
+  hostDirectives: [KjListSeparator],
   host: {
     'class': 'kj-dropdown-menu-separator',
-    'role': 'separator',
-    'aria-orientation': 'horizontal',
     'tabindex': '-1',
   },
 })
