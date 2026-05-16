@@ -44,10 +44,21 @@ import { RoadmapCard } from './roadmap-card';
   styles: `
     /* Spacing rule: --kj-base-space-* tokens only.
        Token table: xs 4 / sm 8 / md 12 / lg 16 / xl 24 / 2xl 32 / 3xl 48. */
+
+    /* Each column is its own scroll container. The page scrolls just enough
+       to push the intro out of view; once the chrome is stuck at the top,
+       cards scroll INSIDE their column instead of pushing the page taller —
+       Trello-style. Height = viewport minus the page's chrome (stats +
+       toolbar), measured and published as --rm-chrome-h by RoadmapPage. */
     :host {
       display: flex;
       flex-direction: column;
       gap: var(--kj-base-space-md);
+      max-height: calc(100dvh - var(--rm-chrome-h, 8.5rem));
+      overflow-y: auto;
+      /* The column already scrolls — pad the bottom so the last card isn't
+         flush against the scroll edge. */
+      padding-bottom: var(--kj-base-space-xl);
     }
 
     .head {
@@ -57,11 +68,11 @@ import { RoadmapCard } from './roadmap-card';
       padding: var(--kj-base-space-md) var(--kj-base-space-xs);
       border-bottom: 2px solid var(--kj-border-default);
       margin-bottom: var(--kj-base-space-xs);
-      /* Sticks right below the page's .rm-chrome (stats + toolbar). The
-         offset is published as --rm-chrome-h by RoadmapPage's afterNextRender
-         + ResizeObserver, so the head adapts when the toolbar wraps. */
+      /* Sticky at the top of the column's own scroll container — no need to
+         offset for the page chrome anymore, since this scroll context starts
+         right below it. */
       position: sticky;
-      top: var(--rm-chrome-h, 8.5rem);
+      top: 0;
       background-color: var(--kj-bg-body);
       z-index: 10;
     }
