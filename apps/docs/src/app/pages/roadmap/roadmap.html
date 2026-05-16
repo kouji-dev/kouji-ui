@@ -10,42 +10,49 @@
     </p>
   </section>
 
-  <div class="rm-stats">
-    <div class="rm-stat">
-      <div class="num">{{ stats().idea }}</div>
-      <div class="lbl">ideas · {{ stats().candidate }} candidates</div>
+  <!-- Sticky chrome stack: stats + toolbar share a single sticky parent so
+       there is no inter-layer gap. The chrome's measured height is published
+       as `--rm-chrome-h` on this page (see roadmap.ts), and the column heads
+       use that variable for their own sticky offset — so layout stays correct
+       no matter how the toolbar wraps. -->
+  <div #chrome class="rm-chrome">
+    <div class="rm-stats">
+      <div class="rm-stat">
+        <div class="num">{{ stats().idea }}</div>
+        <div class="lbl">ideas · {{ stats().candidate }} candidates</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().next }}</div>
+        <div class="lbl">next up</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().wip }}</div>
+        <div class="lbl">in progress</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">{{ stats().shipped }}</div>
+        <div class="lbl">shipped</div>
+      </div>
+      <div class="rm-stat">
+        <div class="num">v1.0</div>
+        <div class="lbl">target · q4 2026</div>
+      </div>
     </div>
-    <div class="rm-stat">
-      <div class="num">{{ stats().next }}</div>
-      <div class="lbl">next up</div>
-    </div>
-    <div class="rm-stat">
-      <div class="num">{{ stats().wip }}</div>
-      <div class="lbl">in progress</div>
-    </div>
-    <div class="rm-stat">
-      <div class="num">{{ stats().shipped }}</div>
-      <div class="lbl">shipped</div>
-    </div>
-    <div class="rm-stat">
-      <div class="num">v1.0</div>
-      <div class="lbl">target · q4 2026</div>
-    </div>
-  </div>
 
-  <kj-roadmap-toolbar
-    [activeCats]="activeCats()"
-    [activeStatuses]="activeStatuses()"
-    [totalsByCategory]="totalsByCategory()"
-    [totalsByStatus]="totalsByStatus()"
-    [sort]="sort()"
-    [filterActive]="filterActive()"
-    [visibleCount]="sorted().length"
-    (toggleCat)="toggleCat($event)"
-    (toggleStatus)="toggleStatus($event)"
-    (clearFilters)="clearFilters()"
-    (sortChange)="setSort($event)"
-  />
+    <kj-roadmap-toolbar
+      [activeCats]="activeCats()"
+      [activeStatuses]="activeStatuses()"
+      [totalsByCategory]="totalsByCategory()"
+      [totalsByStatus]="totalsByStatus()"
+      [sort]="sort()"
+      [filterActive]="filterActive()"
+      [visibleCount]="sorted().length"
+      (toggleCat)="toggleCat($event)"
+      (toggleStatus)="toggleStatus($event)"
+      (clearFilters)="clearFilters()"
+      (sortChange)="setSort($event)"
+    />
+  </div>
 
   <div class="rm-board-wrap">
     <div class="rm-board">

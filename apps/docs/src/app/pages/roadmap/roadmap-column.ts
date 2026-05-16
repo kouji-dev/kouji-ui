@@ -57,9 +57,11 @@ import { RoadmapCard } from './roadmap-card';
       padding: var(--kj-base-space-md) var(--kj-base-space-xs);
       border-bottom: 2px solid var(--kj-border-default);
       margin-bottom: var(--kj-base-space-xs);
-      /* Sticks at top: stats(60) + toolbar(60) = 120 in the page scroller. */
+      /* Sticks right below the page's .rm-chrome (stats + toolbar). The
+         offset is published as --rm-chrome-h by RoadmapPage's afterNextRender
+         + ResizeObserver, so the head adapts when the toolbar wraps. */
       position: sticky;
-      top: 7.5rem;
+      top: var(--rm-chrome-h, 8.5rem);
       background-color: var(--kj-bg-body);
       z-index: 10;
     }

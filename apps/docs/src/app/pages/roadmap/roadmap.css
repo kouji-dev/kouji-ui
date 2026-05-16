@@ -59,17 +59,24 @@
 }
 .rm-tagline strong { color: var(--kj-fg-default); }
 
+/* ─────────── chrome (sticky stats + toolbar wrapper) ─────────── */
+/* Single sticky parent — stats and toolbar are normal-flow inside, so their
+   combined height is what sticks. The page publishes the measured height on
+   `--rm-chrome-h`; column heads consume it for their own sticky offset. */
+.rm-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: var(--kj-bg-body);
+}
+
 /* ─────────── stats strip ─────────── */
-/* Top of the sticky chrome stack: stats(0) → toolbar(60) → column heads(120). */
 .rm-stats {
   display: flex;
   gap: 0;
   padding: var(--kj-base-space-md) var(--kj-base-space-2xl);
   background-color: var(--kj-bg-body);
   border-bottom: 1px solid var(--kj-border-default);
-  position: sticky;
-  top: 0;
-  z-index: 30;
 }
 .rm-stat {
   flex: 0 0 auto;

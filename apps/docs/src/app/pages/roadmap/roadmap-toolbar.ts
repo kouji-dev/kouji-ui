@@ -78,6 +78,9 @@ import {
   styles: `
     /* Spacing rule: --kj-base-space-* where the value matches a token
        (xs 4 / sm 8 / md 12 / lg 16 / xl 24 / 2xl 32); otherwise rem literal. */
+    /* Stickiness is delegated to the parent .rm-chrome wrapper on the
+       roadmap page — the toolbar is normal-flow inside that wrapper so its
+       height contributes to the chrome's measured height. */
     :host {
       display: flex;
       align-items: center;
@@ -86,9 +89,6 @@ import {
       padding: var(--kj-base-space-lg) var(--kj-base-space-2xl);
       background-color: var(--kj-bg-body);
       border-bottom: 1px solid var(--kj-border-default);
-      position: sticky;
-      top: 3.75rem;
-      z-index: 20;
     }
     .filter-group {
       display: flex;

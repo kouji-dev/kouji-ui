@@ -30,8 +30,21 @@ test('clicking a category chip filters cards', async ({ page }) => {
   await expect(a11yChip).toHaveAttribute('aria-pressed', 'false');
 });
 
+/**
+ * Wait for client hydration: the RoadmapPage publishes `--rm-chrome-h` on
+ * its host after Angular's afterNextRender hook fires. That happens AFTER
+ * event listeners are wired, so it's a reliable "interactive" marker.
+ */
+async function waitForRoadmapHydrated(page: import('@playwright/test').Page) {
+  await page.waitForFunction(() => {
+    const host = document.querySelector('kj-roadmap-page') as HTMLElement | null;
+    return !!host && host.style.getPropertyValue('--rm-chrome-h').length > 0;
+  });
+}
+
 test('clicking a card expands its details', async ({ page }) => {
   await page.goto('/roadmap');
+  await waitForRoadmapHydrated(page);
 
   const card = page.locator('kj-roadmap-card').first();
   await expect(card).toHaveAttribute('aria-expanded', 'false');
@@ -44,6 +57,7 @@ test('clicking a card expands its details', async ({ page }) => {
 
 test('Enter key activates a focused card', async ({ page }) => {
   await page.goto('/roadmap');
+  await waitForRoadmapHydrated(page);
   const card = page.locator('kj-roadmap-card').first();
   // `locator.press` focuses the element and dispatches the key on it — more
   // reliable than focus()+page.keyboard.press when child kj components can

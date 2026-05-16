@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import {
   CATEGORIES,
   CategoryId,
@@ -22,7 +32,30 @@ import { RoadmapColumn } from './roadmap-column';
 })
 export class RoadmapPage {
   private readonly roadmapService = inject(RoadmapService);
+  private readonly host = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly items = this.roadmapService.items;
+
+  /** Sticky-chrome wrapper (`<div #chrome class="rm-chrome">`). Its measured
+   *  height drives the column-head sticky offset via the `--rm-chrome-h`
+   *  custom property published on the page host. */
+  private readonly chromeRef = viewChild.required<ElementRef<HTMLElement>>('chrome');
+
+  constructor() {
+    afterNextRender(() => {
+      const chrome = this.chromeRef().nativeElement;
+      const host = this.host.nativeElement as HTMLElement;
+      // (host is `app-roadmap-page`'s element)
+      const publish = () => {
+        host.style.setProperty('--rm-chrome-h', `${chrome.offsetHeight}px`);
+      };
+      publish();
+      // Toolbar can wrap on narrow viewports → chrome height changes. Watch.
+      const ro = new ResizeObserver(publish);
+      ro.observe(chrome);
+      this.destroyRef.onDestroy(() => ro.disconnect());
+    });
+  }
 
   protected readonly activeCats     = signal<ReadonlySet<CategoryId>>(new Set());
   protected readonly activeStatuses = signal<ReadonlySet<StatusId>>(new Set());
