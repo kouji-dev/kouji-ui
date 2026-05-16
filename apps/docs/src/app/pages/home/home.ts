@@ -166,7 +166,7 @@ export class HomeComponent {
   );
 
   // ── Hero install command ──────────────────────────────────────────────
-  protected readonly installCmd = 'pnpm add @kouji-ui/core @angular/cdk';
+  protected readonly installCmd = 'pnpm add @kouji-ui/core @kouji-ui/components @kouji-ui/themes';
   protected readonly copied = signal(false);
 
   // ── Showcase demo state ───────────────────────────────────────────────
