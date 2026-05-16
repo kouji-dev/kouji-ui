@@ -18,8 +18,8 @@ import { RoadmapItem } from './roadmap-data';
     '[class.open]': 'open()',
     '[attr.aria-expanded]': 'open()',
     '(click)': 'toggle.emit()',
-    '(keydown.enter)': '$event.preventDefault(); toggle.emit()',
-    '(keydown.space)': '$event.preventDefault(); toggle.emit()',
+    '(keydown.enter)': 'onKey($event)',
+    '(keydown.space)': 'onKey($event)',
   },
   template: `
     <div class="rm-card-meta">
@@ -92,4 +92,9 @@ export class RoadmapCard {
     const p = this.item().progress;
     return p == null ? null : Math.round(p * 100);
   });
+
+  protected onKey(event: Event): void {
+    event.preventDefault();
+    this.toggle.emit();
+  }
 }
