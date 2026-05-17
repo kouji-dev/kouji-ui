@@ -26,11 +26,11 @@ export function kjColumn<TData extends RowData>(def: KjColumnDef<TData>): Column
       rest[k] = v;
     }
   }
-  const existingMeta = (rest.meta ?? {}) as Record<string, unknown>;
+  const existingMeta = (rest['meta'] ?? {}) as Record<string, unknown>;
   const meta = Object.keys(kjMeta).length === 0
     ? existingMeta
     : { ...existingMeta, kj: kjMeta };
-  return { ...rest, meta } as ColumnDef<TData>;
+  return { ...rest, meta } as unknown as ColumnDef<TData>;
 }
 
 /** Define a column group (header grouping). Children are `kjColumn()` defs. */
