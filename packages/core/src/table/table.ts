@@ -6,7 +6,7 @@ import {
   getPaginationRowModel, getExpandedRowModel, getGroupedRowModel,
   type Table,
 } from '@tanstack/angular-table';
-import { Directive, InjectionToken, computed, input, signal } from '@angular/core';
+import { Directive, InjectionToken, input, signal } from '@angular/core';
 import type { KjTableState } from './table.types';
 
 /** Injection token providing the TanStack table instance to child directives. */
@@ -170,61 +170,4 @@ function set<T>(sig: { set: (v: T) => void; (): T }, updater: T | ((prev: T) => 
   sig.set(next);
 }
 
-/** Sort direction for table columns. */
-export type KjSortDirection = 'asc' | 'desc';
-
-/**
- * Marks a `<th>` as a sortable column header. Sets `aria-sort` based on TanStack sort state.
- * Clicking toggles sort direction only when the column has sorting enabled.
- * If `enableSorting: false` is set on the column def, the header renders as plain text.
- *
- * @example
- * ```html
- * <th kjTableHeader [kjHeader]="header" scope="col">Name</th>
- * ```
- * @doc-category Core/Data
- * @doc
- * @doc-name table
- */
-@Directive({
-  selector: '[kjTableHeader]',
-  standalone: true,
-  host: {
-    '[style.cursor]':   'canSort() ? "pointer" : null',
-    '[attr.tabindex]':  'canSort() ? "0" : null',
-    '[attr.aria-sort]': 'canSort() ? ariaSort() : null',
-    '[attr.data-sort]': 'canSort() ? sortDir() : null',
-    '(click)':          'onHeaderClick()',
-    '(keydown.enter)':  'onHeaderClick()',
-    '(keydown.space)':  '$event.preventDefault(); onHeaderClick()',
-  },
-})
-export class KjTableHeader<TData extends RowData = unknown> {
-  /** The TanStack header object for this column. Pass from the table's getHeaderGroups(). */
-  kjHeader = input<ReturnType<Table<TData>['getHeaderGroups']>[0]['headers'][0] | undefined>(undefined);
-
-  /** Whether this column supports sorting, derived from TanStack column state. */
-  readonly canSort = computed(() => this.kjHeader()?.column.getCanSort() ?? false);
-
-  /** Current sort direction, or null when unsorted. */
-  readonly sortDir = computed((): KjSortDirection | null => {
-    const h = this.kjHeader();
-    if (!h) return null;
-    const sorted = h.column.getIsSorted();
-    if (sorted === 'asc') return 'asc';
-    if (sorted === 'desc') return 'desc';
-    return null;
-  });
-
-  /** ARIA sort attribute value derived from sort direction. */
-  readonly ariaSort = computed(() => {
-    const d = this.sortDir();
-    if (d === 'asc')  return 'ascending';
-    if (d === 'desc') return 'descending';
-    return 'none';
-  });
-
-  onHeaderClick(): void {
-    if (this.canSort()) this.kjHeader()?.column.toggleSorting();
-  }
-}
+export { KjTableHeader, type KjSortDirection } from './table-header';
