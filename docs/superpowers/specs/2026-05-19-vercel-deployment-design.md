@@ -47,29 +47,41 @@ Out of scope:
 
 `vercel.json` at repo root pins these so they're version-controlled and survive dashboard edits. Keeping the Root Directory at the repo root avoids `cd ../..` hacks and lets pnpm + turbo run naturally from the workspace root.
 
-### How SSR is wired up
+### Architecture: fully-static prerender (no SSR runtime)
 
-`apps/docs` runs with `outputMode: 'server'` (verified in `angular.json`). The build emits:
+The Vercel free tier caps serverless functions at **250 MB unzipped**. Angular's `outputMode: 'server'` build produces a `dist/docs/server/` bundle that weighs **264 MB** for this project — every prerendered route gets its own ~2.2 MB chunk in `server/assets-chunks/`, and 120+ routes blow past the cap. Pro tier has the same 250 MB limit, so paying does not solve this.
 
-- `dist/docs/browser/` — static assets + prerendered HTML for routes listed in `prerendered-routes.json` (every `/docs/components/*` page is prerendered).
-- `dist/docs/server/server.mjs` — Express app exporting `reqHandler = createNodeRequestHandler(app)`. The Express app handles `/api/roadmap`, `/api/docs/manifest`, `/api/docs/components/:slug`, plus Angular SSR for any non-prerendered route.
+Therefore: `apps/docs` switches to `outputMode: 'static'`. Angular prerenders every route at build time into `dist/docs/browser/` and emits no server bundle. The data layer is already wired for this — `DocsService` and `RoadmapService` use a `Server*Provider` during prerender that reads source via ts-morph / Node fs, then stash results in `TransferState`. Browser-side `Browser*Provider`s read straight from `TransferState`, so prerendered pages never make an HTTP call. The previous `/api/*` Express routes in `apps/docs/src/server.ts` are dev-mode fallback only and are not deployed to Vercel.
 
-Vercel does NOT auto-detect this layout. We wire it explicitly:
+### Vercel project settings (final)
 
-- **`api/index.mjs`** (committed at repo root) imports `reqHandler` from the built `server.mjs` and exports it as the Vercel function entry. Its dependency on `dist/docs/server/**` is bundled via `includeFiles`.
-- **`vercel.json` `rewrites`**: `"/(.*)" → "/api"` sends all unmatched requests to the function. Vercel checks the filesystem first, so prerendered HTML and JS chunks are served as static from `dist/docs/browser/` and only the dynamic routes reach the function.
-- **`outputDirectory: dist/docs/browser`** so static files (including prerendered HTML) serve at the URL root, not under `/browser/*`.
+| Setting | Value |
+|---|---|
+| Framework Preset | Angular |
+| Root Directory | _(repo root — default)_ |
+| Install Command | `pnpm install --frozen-lockfile` |
+| Build Command | `pnpm build:docs` |
+| Output Directory | `dist/docs/browser` |
+| Node.js Version | 24.x (Vercel default, confirmed working) |
+| Production Branch | `main` |
+
+`cleanUrls: true` strips `.html` suffixes so prerendered `docs/components/button/index.html` serves at `/docs/components/button`. The single rewrite `"/(.*)" → "/index.csr.html"` is an SPA fallback for routes Angular could not prerender (notably `/theme-generator`, which has Browser-only initialization) — Angular's router takes over client-side and navigates to the correct component.
 
 ### Route flow
 
 | URL | Source |
 |---|---|
-| `/` | Prerendered `dist/docs/browser/index.html` (static) |
-| `/docs/components/button` | Prerendered `dist/docs/browser/docs/components/button/index.html` (static) |
-| `/chunk-XXXX.js` | `dist/docs/browser/chunk-XXXX.js` (static, CDN-cached) |
-| `/api/roadmap` | `api/index.mjs` → Express → `getRoadmap()` |
-| `/api/docs/manifest` | `api/index.mjs` → Express → `getManifest()` |
-| any other dynamic route | `api/index.mjs` → Angular SSR |
+| `/` | Prerendered `dist/docs/browser/index.html` |
+| `/docs/components/button` | Prerendered `dist/docs/browser/docs/components/button/index.html` (via cleanUrls) |
+| `/roadmap`, `/docs/getting-started`, etc. | Prerendered static HTML |
+| `/chunk-XXXX.js`, CSS, assets | Static, CDN-cached |
+| `/theme-generator` and any non-prerendered route | Rewrite → `/index.csr.html` → Angular SPA bootstrap |
+
+### Known follow-ups (out of scope for this branch)
+
+- Each prerendered HTML embeds the full docs manifest via `TransferState`, weighing ~2 MB per page (~240 MB total in `dist/docs/browser/docs/`). Trim TransferState to per-page data to shrink bandwidth.
+- Dev-mode `pnpm dev` may need rework: removing `ssr.entry` from `angular.json` orphans `apps/docs/src/server.ts` and its `/api/*` routes; the `DocsService` / `RoadmapService` HTTP fallbacks would fail in dev. Either reintroduce SSR for dev via a build configuration, or kill the HTTP fallback paths entirely.
+- Prerender `/theme-generator` properly (or accept the SPA-fallback round trip).
 
 ### Alternatives considered
 

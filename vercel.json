@@ -3,13 +3,9 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build:docs",
   "outputDirectory": "dist/docs/browser",
-  "functions": {
-    "api/index.mjs": {
-      "includeFiles": "dist/docs/server/**",
-      "maxDuration": 30
-    }
-  },
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
+    { "source": "/(.*)", "destination": "/index.csr.html" }
   ]
 }
