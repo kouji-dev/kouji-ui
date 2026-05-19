@@ -1,0 +1,15 @@
+.angular
+.turbo
+node_modules
+**/node_modules
+**/.angular
+**/.turbo
+.worktrees
+e2e
+playwright-report
+test-results
+coverage
+**/*.spec.ts
+**/*.spec.tsx
+apps/a11y
+docs/superpowers

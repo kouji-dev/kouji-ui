@@ -38,14 +38,18 @@ Out of scope:
 | Setting | Value |
 |---|---|
 | Framework Preset | Angular |
-| Root Directory | `apps/docs` |
-| Install Command | `cd ../.. && pnpm install --frozen-lockfile` |
-| Build Command | `cd ../.. && pnpm build:docs` |
-| Output Directory | `../../dist/apps/docs` |
+| Root Directory | _(repo root — default)_ |
+| Install Command | `pnpm install --frozen-lockfile` |
+| Build Command | `pnpm build:docs` |
+| Output Directory | `dist/docs` |
 | Node.js Version | 20.x (matches local `@types/node: ^20`) |
 | Production Branch | `main` |
 
-`vercel.json` at repo root mirrors the build/install commands so they are version-controlled and survive dashboard edits.
+`vercel.json` at repo root pins these so they're version-controlled and survive dashboard edits. Keeping the Root Directory at the repo root avoids `cd ../..` hacks and lets pnpm + turbo run naturally from the workspace root.
+
+### Why `outputMode: 'server'` matters
+
+`apps/docs` runs with `outputMode: 'server'` (verified in `angular.json`): the build emits `dist/docs/browser/` for static assets and `dist/docs/server/server.mjs` as the SSR entry. Vercel's Angular preset detects this layout and wraps `server.mjs` as a Node serverless function automatically — no custom adapter needed, no extra `vercel.json` routing.
 
 ### Alternatives considered
 
@@ -58,8 +62,8 @@ Out of scope:
 1. Create worktree `.worktrees/vercel-deploy` off `main` on branch `chore/vercel-deploy`. *(done)*
 2. Write this spec in the worktree.
 3. Add `vercel.json` at repo root with the build/install/output commands above.
-4. Add `.vercelignore` covering: `**/.angular`, `**/node_modules`, `**/dist` (except `dist/apps/docs`), `**/.turbo`, `apps/a11y`, `packages/*/src/**/*.spec.ts`, `e2e`.
-5. Local sanity check: `pnpm install && pnpm build:docs` from the worktree must succeed and emit `dist/apps/docs/{browser,server}/`.
+4. Add `.vercelignore` covering: `**/.angular`, `**/node_modules`, `**/dist` (except `dist/docs`), `**/.turbo`, `apps/a11y`, `packages/*/src/**/*.spec.ts`, `e2e`.
+5. Local sanity check: `pnpm install && pnpm build:docs` from the worktree must succeed and emit `dist/docs/{browser,server}/`.
 6. Commit changes on `chore/vercel-deploy` (do NOT push until user validates).
 7. Walk through Vercel signup + project creation using Chrome MCP (Chrome, not Opera). Link `kouji-dev/kouji-ui`, set the project settings above, pick `chore/vercel-deploy` as the deploy target for the first preview.
 8. Push the branch only after the user confirms config locally.
