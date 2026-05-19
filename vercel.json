@@ -6,6 +6,6 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/:match*", "destination": "/index.csr.html" }
+    { "source": "/(.*)", "destination": "/index.csr" }
   ]
 }
