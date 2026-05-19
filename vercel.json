@@ -1,7 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "angular",
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build:docs",
-  "outputDirectory": "dist/docs"
+  "outputDirectory": "dist/docs/browser",
+  "functions": {
+    "api/index.mjs": {
+      "includeFiles": "dist/docs/server/**",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ]
 }
