@@ -47,9 +47,29 @@ Out of scope:
 
 `vercel.json` at repo root pins these so they're version-controlled and survive dashboard edits. Keeping the Root Directory at the repo root avoids `cd ../..` hacks and lets pnpm + turbo run naturally from the workspace root.
 
-### Why `outputMode: 'server'` matters
+### How SSR is wired up
 
-`apps/docs` runs with `outputMode: 'server'` (verified in `angular.json`): the build emits `dist/docs/browser/` for static assets and `dist/docs/server/server.mjs` as the SSR entry. Vercel's Angular preset detects this layout and wraps `server.mjs` as a Node serverless function automatically — no custom adapter needed, no extra `vercel.json` routing.
+`apps/docs` runs with `outputMode: 'server'` (verified in `angular.json`). The build emits:
+
+- `dist/docs/browser/` — static assets + prerendered HTML for routes listed in `prerendered-routes.json` (every `/docs/components/*` page is prerendered).
+- `dist/docs/server/server.mjs` — Express app exporting `reqHandler = createNodeRequestHandler(app)`. The Express app handles `/api/roadmap`, `/api/docs/manifest`, `/api/docs/components/:slug`, plus Angular SSR for any non-prerendered route.
+
+Vercel does NOT auto-detect this layout. We wire it explicitly:
+
+- **`api/index.mjs`** (committed at repo root) imports `reqHandler` from the built `server.mjs` and exports it as the Vercel function entry. Its dependency on `dist/docs/server/**` is bundled via `includeFiles`.
+- **`vercel.json` `rewrites`**: `"/(.*)" → "/api"` sends all unmatched requests to the function. Vercel checks the filesystem first, so prerendered HTML and JS chunks are served as static from `dist/docs/browser/` and only the dynamic routes reach the function.
+- **`outputDirectory: dist/docs/browser`** so static files (including prerendered HTML) serve at the URL root, not under `/browser/*`.
+
+### Route flow
+
+| URL | Source |
+|---|---|
+| `/` | Prerendered `dist/docs/browser/index.html` (static) |
+| `/docs/components/button` | Prerendered `dist/docs/browser/docs/components/button/index.html` (static) |
+| `/chunk-XXXX.js` | `dist/docs/browser/chunk-XXXX.js` (static, CDN-cached) |
+| `/api/roadmap` | `api/index.mjs` → Express → `getRoadmap()` |
+| `/api/docs/manifest` | `api/index.mjs` → Express → `getManifest()` |
+| any other dynamic route | `api/index.mjs` → Angular SSR |
 
 ### Alternatives considered
 
