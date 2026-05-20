@@ -1,9 +1,21 @@
 /* ============================================================
-   Component doc page — full redesign
+   Component doc page
 
-   Layout owned here:
-     .page-with-toc → single main column (right TOC removed).
-   Visual tokens come from packages/themes via CSS variables.
+   Visual tokens come from @kouji-ui/themes via CSS variables.
+   This file should reach for tokens before hardcoding values:
+
+     space:   --kj-space-{xs,sm,md,lg,xl,2xl,3xl,4xl,5xl}
+     type:    --kj-text-{xs,sm,base,lg,xl,2xl}, --kj-font-{sans,mono,display}
+     color:   --kj-fg-{default,muted,subtle,primary,accent,danger}
+              --kj-bg-{body,surface,field,elevated,primary}
+              --kj-border-{default,muted,strong,focus,primary,danger}
+     shape:   --kj-radius-{box,field,selector}, --kj-border
+     motion:  --kj-transition
+
+   The fluid headline `clamp(...)` values are intentional design
+   choices (kept literal) and the few sub-xs sizes (~0.6-0.7rem)
+   used for tab counts, code chrome and tag pills are also kept
+   literal — they sit below `--kj-text-xs` (0.75rem) on purpose.
    ============================================================ */
 
 .page-with-toc {
@@ -12,7 +24,7 @@
 }
 
 .doc-main {
-  padding: var(--kj-space-4xl) 3.5rem var(--kj-space-5xl);
+  padding: var(--kj-space-4xl) var(--kj-space-3xl) var(--kj-space-5xl);
   min-width: 0;
   max-width: 60rem;
   margin-inline: auto;
@@ -32,7 +44,7 @@
 .doc-header {
   margin-bottom: var(--kj-space-2xl);
   padding-bottom: var(--kj-space-2xl);
-  border-bottom: 1px solid var(--kj-border-default);
+  border-bottom: var(--kj-border) solid var(--kj-border-default);
 }
 
 .doc-track-tag {
@@ -51,7 +63,7 @@
 
 .doc-tagline {
   font-family: var(--kj-font-sans);
-  font-size: 1.05rem;
+  font-size: var(--kj-text-base);
   line-height: 1.5;
   color: var(--kj-fg-muted);
   max-width: 36rem;
@@ -95,12 +107,12 @@
   gap: var(--kj-space-lg);
   margin-bottom: var(--kj-space-xl);
   padding-bottom: var(--kj-space-md);
-  border-bottom: 1px solid var(--kj-border-default);
+  border-bottom: var(--kj-border) solid var(--kj-border-default);
 }
 
 .doc-section-head .num {
   font-family: var(--kj-font-mono);
-  font-size: 0.7rem;
+  font-size: var(--kj-text-xs);
   letter-spacing: 0.14em;
   color: var(--kj-fg-muted);
   font-variant-numeric: tabular-nums;
@@ -116,13 +128,11 @@
   margin: 0;
 }
 
-/* Right-pinned in-page anchor link. Pulls to the end of the flex
-   baseline row via margin-left:auto (design source docs.css:267-274).
-   Mono / muted by default; brightens to --kj-fg-primary on hover. */
+/* Right-pinned in-page anchor link. */
 .doc-section-head .anchor {
   margin-left: auto;
   font-family: var(--kj-font-mono);
-  font-size: 0.7rem;
+  font-size: var(--kj-text-xs);
   color: var(--kj-fg-muted);
   text-decoration: none;
   transition: color var(--kj-transition);
@@ -139,7 +149,7 @@
 /* ── Prose ──────────────────────────────────────────────────── */
 .prose p {
   font-family: var(--kj-font-sans);
-  font-size: 0.95rem;
+  font-size: var(--kj-text-sm);
   line-height: 1.55;
   color: var(--kj-fg-default);
   max-width: 64ch;
@@ -150,14 +160,14 @@
   font-family: var(--kj-font-mono);
   font-size: 0.85em;
   background: var(--kj-bg-field);
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   padding: 1px 5px;
   border-radius: var(--kj-radius-selector);
 }
 
 .prose-block {
   font-family: var(--kj-font-sans);
-  font-size: 0.9rem;
+  font-size: var(--kj-text-sm);
   line-height: 1.6;
   color: var(--kj-fg-default);
   white-space: pre-wrap;
@@ -169,11 +179,11 @@
 /* ── Code blocks ────────────────────────────────────────────── */
 .code-block {
   background: var(--kj-bg-body);
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   padding: var(--kj-space-lg);
   font-family: var(--kj-font-mono);
-  font-size: 0.8rem;
+  font-size: var(--kj-text-sm);
   line-height: 1.55;
   color: var(--kj-fg-default);
   overflow-x: auto;
@@ -194,11 +204,11 @@
 .api-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   overflow: hidden;
   font-family: var(--kj-font-mono);
-  font-size: 0.8rem;
+  font-size: var(--kj-text-sm);
   margin-bottom: var(--kj-space-lg);
 }
 
@@ -211,15 +221,15 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.65rem;
+  font-size: var(--kj-text-xs);
   color: var(--kj-fg-muted);
   padding: var(--kj-space-md) var(--kj-space-lg);
-  border-bottom: 1px solid var(--kj-border-default);
+  border-bottom: var(--kj-border) solid var(--kj-border-default);
 }
 
 .api-table td {
   padding: var(--kj-space-md) var(--kj-space-lg);
-  border-bottom: 1px solid var(--kj-border-default);
+  border-bottom: var(--kj-border) solid var(--kj-border-default);
   vertical-align: top;
   background: var(--kj-bg-body);
   color: var(--kj-fg-default);
@@ -238,7 +248,7 @@
   background: transparent;
   border: 0;
   padding: 0;
-  font-size: 0.75rem;
+  font-size: var(--kj-text-xs);
   font-family: var(--kj-font-mono);
 }
 
@@ -248,27 +258,22 @@
   background: transparent;
   border: 0;
   padding: 0;
-  font-size: 0.75rem;
+  font-size: var(--kj-text-xs);
   font-family: var(--kj-font-mono);
 }
 
 .api-table .prop-desc {
   font-family: var(--kj-font-sans);
   color: var(--kj-fg-default);
-  font-size: 0.8rem;
+  font-size: var(--kj-text-sm);
   line-height: 1.5;
   display: block;
 }
 
-/* ── CSS variables (distinct from the api-table) ─────────────
-   Two-column definition list. The var name lives in a monospace
-   token chip with a primary-accented left border; the description
-   sits in a sans-serif right column. No row strokes — just a
-   subtle border between rows so the chips read as the dominant
-   element of each line. */
+/* ── CSS variables ──────────────────────────────────────────── */
 .css-var-list {
   display: grid;
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   overflow: hidden;
   margin: 0 0 var(--kj-space-lg);
@@ -281,7 +286,7 @@
   gap: var(--kj-space-lg);
   align-items: baseline;
   padding: var(--kj-space-md) var(--kj-space-lg);
-  border-bottom: 1px solid var(--kj-border-muted);
+  border-bottom: var(--kj-border) solid var(--kj-border-muted);
 }
 
 .css-var-row:last-child { border-bottom: 0; }
@@ -297,13 +302,13 @@
   display: inline-flex;
   align-items: center;
   font-family: var(--kj-font-mono);
-  font-size: 0.78rem;
+  font-size: var(--kj-text-sm);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--kj-fg-primary);
   background: var(--kj-bg-surface);
   border-left: 3px solid var(--kj-fg-primary);
-  padding: 0.35rem 0.55rem 0.35rem 0.65rem;
+  padding: var(--kj-space-xs) var(--kj-space-sm) var(--kj-space-xs) 0.65rem;
   max-width: 100%;
   overflow-wrap: anywhere;
 }
@@ -311,7 +316,7 @@
 .css-var-row__desc {
   margin: 0;
   font-family: var(--kj-font-sans);
-  font-size: 0.82rem;
+  font-size: var(--kj-text-sm);
   line-height: 1.55;
   color: var(--kj-fg-default);
 }
@@ -331,29 +336,25 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--kj-fg-danger, var(--kj-fg-accent));
-  border: 1px solid var(--kj-fg-danger, var(--kj-fg-accent));
+  border: var(--kj-border) solid var(--kj-fg-danger, var(--kj-fg-accent));
   border-radius: var(--kj-radius-selector);
 }
 
-/* ── Recipes grid — flat 2-col layout for ALL non-playground examples ──
-   Source: design-revamp/.../docs.css L652-691 (`.recipes-grid` + `.recipe-card`
-   + `.recipe-card .preview`). One uniform tile grid; the previous per-bucket
-   (Variants / Sizes / States / Recipes) sub-sections are gone — see
-   design-revamp/docs.jsx `ExamplesTab`. */
+/* ── Recipes grid ───────────────────────────────────────────── */
 .recipes-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--kj-space-lg);
 }
 
 @media (max-width: 720px) {
   .recipes-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .recipe-card {
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   background: var(--kj-bg-surface);
   padding: var(--kj-space-xl);
@@ -361,6 +362,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--kj-space-xs);
+  min-width: 0;
+}
+
+/* `@doc-example <label> [full]` — card spans the full grid row.
+   The grid track uses `minmax(0, 1fr)` so spanning never widens the card
+   past its container; wide content scrolls inside `.preview-frame`. */
+.recipe-card--full {
+  grid-column: 1 / -1;
 }
 
 .recipe-card__title {
@@ -368,7 +377,7 @@
   font-family: var(--kj-font-display);
   font-weight: var(--kj-display-weight, 700);
   letter-spacing: var(--kj-letter-spacing, -0.02em);
-  font-size: 1.25rem;
+  font-size: var(--kj-text-xl);
   line-height: 1.15;
   color: var(--kj-fg-default);
 }
@@ -376,7 +385,7 @@
 .recipe-card__desc {
   margin: 0 0 var(--kj-space-md);
   font-family: var(--kj-font-sans);
-  font-size: 0.8125rem;
+  font-size: var(--kj-text-sm);
   line-height: 1.45;
   color: var(--kj-fg-muted);
 }
@@ -384,11 +393,15 @@
 .recipe-card__preview {
   /* Surface for the live demo. The kj-code-preview ([previewOnly]) renders
      just the demo (no editor / toolbar / theme strip) so this wrapper owns
-     the inner padding + centering. min-height: 88px from the design source. */
+     the inner padding + centering.
+
+     `min-width: 0` lets the flex item shrink below its intrinsic content size;
+     wide content (data tables, code blocks) scrolls inside `.preview-frame`
+     rather than blowing out the card. */
   margin-top: var(--kj-space-sm);
   padding: var(--kj-space-xl);
   background: var(--kj-bg-body);
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   display: flex;
   align-items: center;
@@ -396,20 +409,26 @@
   gap: var(--kj-space-sm);
   flex-wrap: wrap;
   min-height: 88px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
-.recipe-card__preview kj-code-preview {
+.recipe-card__preview > kj-code-preview {
   display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 /* ── A11y keyboard chord chips ──────────────────────────────── */
 .key {
   display: inline-block;
   font-family: var(--kj-font-mono);
-  font-size: 0.7rem;
-  padding: 2px 8px;
+  font-size: var(--kj-text-xs);
+  padding: 2px var(--kj-space-sm);
   background: var(--kj-bg-field);
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-selector);
   margin: 0 2px;
   min-width: 1.75rem; /* keep narrow chord boxes legible */
@@ -417,25 +436,21 @@
   color: var(--kj-fg-default);
 }
 
-/* ── Related grid — design-revamp/docs.css L738-760 ─────────────
-   Flat 3-col grid; each card is a single-row anchor with the
-   slug on the left and a right-aligned arrow glyph. Mono font,
-   border hovers to --kj-border-focus. WCAG 2.5.5: 18px padding +
-   15px line-height keeps the hit target ≥ 44px tall. */
+/* ── Related grid ───────────────────────────────────────────── */
 .related-section {
   margin-top: var(--kj-space-5xl);
   padding-top: var(--kj-space-2xl);
-  border-top: 1px solid var(--kj-border-default);
+  border-top: var(--kj-border) solid var(--kj-border-default);
 }
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--kj-space-md);
 }
 
 @media (max-width: 720px) {
-  .related-grid { grid-template-columns: 1fr; }
+  .related-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 .related-card {
@@ -443,7 +458,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--kj-space-lg);
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   background: var(--kj-bg-surface);
   text-decoration: none;
@@ -463,20 +478,20 @@
 }
 
 .related-card .name {
-  font-size: 0.9375rem; /* 15px */
+  font-size: var(--kj-text-sm);
   font-weight: 700;
   color: var(--kj-fg-default);
 }
 
 .related-card .arr {
   color: var(--kj-fg-muted);
-  font-size: 1rem;
+  font-size: var(--kj-text-base);
 }
 
 /* ── Usage code editor (Overview / Import) ──────────────────── */
 .usage-editor {
   margin-top: var(--kj-space-lg);
-  border: 1px solid var(--kj-border-default);
+  border: var(--kj-border) solid var(--kj-border-default);
   border-radius: var(--kj-radius-field);
   overflow: hidden;
   background: var(--kj-bg-body);
@@ -487,7 +502,7 @@
 /* ── Empty / fallback states ────────────────────────────────── */
 .empty-state {
   font-family: var(--kj-font-sans);
-  font-size: 0.875rem;
+  font-size: var(--kj-text-sm);
   color: var(--kj-fg-muted);
   padding: var(--kj-space-xl) 0;
   margin: 0;
@@ -495,9 +510,9 @@
 
 .not-found,
 .loading {
-  padding: 4rem 0;
+  padding: var(--kj-space-4xl) 0;
   color: var(--kj-fg-muted);
-  font-size: 0.875rem;
+  font-size: var(--kj-text-sm);
 }
 
 .loading { opacity: 0.6; }
@@ -511,15 +526,15 @@
 /* ── Mobile ─────────────────────────────────────────────────── */
 @media (max-width: 767px) {
   .doc-main {
-    padding: var(--kj-space-2xl) 1.25rem var(--kj-space-4xl);
+    padding: var(--kj-space-2xl) var(--kj-space-lg) var(--kj-space-4xl);
   }
 
   .doc-section {
-    scroll-margin-top: calc(56px + 1rem);
+    scroll-margin-top: calc(56px + var(--kj-space-lg));
   }
 
   .api-table {
-    font-size: 0.75rem;
+    font-size: var(--kj-text-xs);
   }
 
   .api-table th,

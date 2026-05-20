@@ -42,6 +42,21 @@ describe('kjColumn', () => {
     const col = kjColumn<User>({ accessorKey: 'name' });
     expect((col.meta as any)?.kj).toBeUndefined();
   });
+
+  it('auto-wires filterFn from kjType so the built-in filter UIs round-trip', () => {
+    const text   = kjColumn<User>({ accessorKey: 'name',  kjType: 'text'   });
+    const number = kjColumn<User>({ accessorKey: 'age',   kjType: 'number' });
+    const sel    = kjColumn<User>({ accessorKey: 'email', kjType: 'select' });
+    expect(typeof (text as any).filterFn).toBe('function');
+    expect(typeof (number as any).filterFn).toBe('function');
+    expect(typeof (sel as any).filterFn).toBe('function');
+  });
+
+  it('respects a user-supplied filterFn over the auto-wired default', () => {
+    const custom = () => true;
+    const col = kjColumn<User>({ accessorKey: 'age', kjType: 'number', filterFn: custom });
+    expect((col as any).filterFn).toBe(custom);
+  });
 });
 
 describe('kjColumnGroup', () => {

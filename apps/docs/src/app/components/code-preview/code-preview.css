@@ -1,9 +1,18 @@
-:host { display: block; }
+:host {
+  display: block;
+  /* `min-width: 0` lets the host shrink below its intrinsic content width when
+     placed in a flex/grid track; wide demos (tables, code blocks) then scroll
+     inside `.preview-frame` instead of pushing the card past its column. */
+  min-width: 0;
+  max-width: 100%;
+}
 
 .preview-wrap {
   border: 1px solid var(--kj-border-default);
   overflow: visible;
   /* overflow: hidden would clip absolutely-positioned overlay content (tooltips, popovers) */
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ── Preview-only mode ───────────────────────────────────────
@@ -107,7 +116,21 @@
   padding: var(--kj-space-xl);
   border-bottom: 1px solid var(--kj-border-default);
   position: relative;
-  overflow: visible;
+  /* `overflow-x: auto` keeps wide content (data tables, charts) scrollable
+     inside the frame so it never exceeds the surrounding card width.
+     `overflow-y: visible` preserves the original behaviour for overlay
+     content (tooltips, popovers) that floats above the frame edge. */
+  overflow-x: auto;
+  overflow-y: visible;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* `preview-only` mode (used inside docs recipe-cards) — let the card own
+   alignment + padding so we don't double-pad. Scrolling rules from
+   `.preview-frame` still apply. */
+.preview-wrap.preview-only .preview-frame {
+  overflow-x: auto;
 }
 
 .strip-spacer { flex: 1; }

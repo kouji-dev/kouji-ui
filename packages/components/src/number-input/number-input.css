@@ -33,8 +33,16 @@
     font: var(--kj-number-input-font-size) / 1.4 var(--kj-number-input-font);
     transition: var(--kj-transition);
   }
+  .kj-number-input[data-size="xs"] { --kj-number-input-height: 1.75rem; --kj-number-input-stepper-size: 1.75rem; --kj-number-input-font-size: 0.75rem;   --kj-number-input-padding-x: var(--kj-space-sm); }
   .kj-number-input[data-size="sm"] { --kj-number-input-height: 2rem;    --kj-number-input-stepper-size: 2rem;    --kj-number-input-font-size: 0.8125rem; }
   .kj-number-input[data-size="lg"] { --kj-number-input-height: 2.75rem; --kj-number-input-stepper-size: 2.75rem; --kj-number-input-font-size: 1rem; }
+
+  /* At `xs` we hide the stepper buttons — at 28px the +/- glyphs become
+     too cramped to hit accurately, and the typical xs context (filter rows,
+     inline editors) doesn't want a stepper anyway. The keyboard contract
+     (Arrow/Page/Home/End) still works on the inner <input>. */
+  .kj-number-input[data-size="xs"] .kj-number-input__stepper { display: none; }
+  .kj-number-input[data-size="xs"] .kj-number-input__field { text-align: left; }
 
   .kj-number-input:focus-within {
     --kj-number-input-border-color: var(--kj-fg-primary);

@@ -52,7 +52,15 @@ export type KjColumnDef<TData extends RowData = RowData> =
     kjPersist?: boolean;
   };
 
-/** Complete table state — exposed via signals and emitted via (stateChange). */
+/** Density preset applied to the styled wrapper. */
+export type KjTableDensity = 'compact' | 'standard' | 'comfortable';
+
+/**
+ * Persistent table state — exposed as a single `DeepSignal<KjTableState>` and
+ * emitted via `(stateChange)`. Transient drag state (`columnSizingInfo`) is
+ * tracked separately on the directive and intentionally excluded here so it
+ * never round-trips through storage adapters or change-detection emissions.
+ */
 export interface KjTableState {
   readonly sorting: SortingState;
   readonly columnFilters: ColumnFiltersState;
@@ -65,7 +73,7 @@ export interface KjTableState {
   readonly columnPinning: ColumnPinningState;
   readonly expanded: ExpandedState;
   readonly grouping: GroupingState;
-  readonly density: 'compact' | 'standard' | 'comfortable';
+  readonly density: KjTableDensity;
 }
 
 /** Loader return value for kjTableResource. Matches TanStack manualPagination + rowCount. */

@@ -14,9 +14,6 @@ export type KjSortDirection = 'asc' | 'desc';
  * ```html
  * <th kjTableHeader [kjHeader]="header" scope="col">Name</th>
  * ```
- * @doc-category Core/Data
- * @doc
- * @doc-name table
  */
 @Directive({
   selector: '[kjTableHeader]',
@@ -43,7 +40,7 @@ export class KjTableHeader<TData extends RowData = unknown> {
   /** Current sort direction, or null when unsorted. */
   readonly sortDir = computed((): KjSortDirection | null => {
     // Track parent table sorting signal so this computed re-runs on sort changes.
-    this._table?.sorting();
+    this._table?.state.sorting();
     const h = this.kjHeader();
     if (!h) return null;
     const sorted = h.column.getIsSorted();

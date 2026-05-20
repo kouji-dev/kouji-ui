@@ -3,7 +3,8 @@ import { ColumnDef } from '@tanstack/angular-table';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
-import { KjTable, KjTableHeader } from './table';
+import { KjTable } from './table';
+import { KjTableHeader } from './table-header';
 import { kjColumn } from './column-helpers';
 
 expect.extend(toHaveNoViolations);
@@ -127,30 +128,30 @@ class Host {
 }
 
 describe('KjTable (extended)', () => {
-  it('exposes every state slice as a readonly signal', async () => {
+  it('exposes every state slice via the deep state signal', async () => {
     const { fixture } = await render(Host);
     const dir = fixture.debugElement.children[0].injector.get(KjTable);
-    expect(dir.sorting()).toEqual([]);
-    expect(dir.columnFilters()).toEqual([]);
-    expect(dir.globalFilter()).toBe('');
-    expect(dir.pagination()).toEqual({ pageIndex: 0, pageSize: 25 });
-    expect(dir.rowSelection()).toEqual({});
-    expect(dir.columnSizing()).toEqual({});
-    expect(dir.columnVisibility()).toEqual({});
-    expect(dir.columnOrder()).toEqual([]);
-    expect(dir.columnPinning()).toEqual({ left: [], right: [] });
-    expect(dir.expanded()).toEqual({});
-    expect(dir.grouping()).toEqual([]);
-    expect(dir.density()).toBe('standard');
+    expect(dir.state.sorting()).toEqual([]);
+    expect(dir.state.columnFilters()).toEqual([]);
+    expect(dir.state.globalFilter()).toBe('');
+    expect(dir.state.pagination()).toEqual({ pageIndex: 0, pageSize: 25 });
+    expect(dir.state.rowSelection()).toEqual({});
+    expect(dir.state.columnSizing()).toEqual({});
+    expect(dir.state.columnVisibility()).toEqual({});
+    expect(dir.state.columnOrder()).toEqual([]);
+    expect(dir.state.columnPinning()).toEqual({ left: [], right: [] });
+    expect(dir.state.expanded()).toEqual({});
+    expect(dir.state.grouping()).toEqual([]);
+    expect(dir.state.density()).toBe('standard');
   });
 
-  it('getState returns full bundle, setState merges', async () => {
+  it('state() returns the full bundle and setState merges', async () => {
     const { fixture } = await render(Host);
     const dir = fixture.debugElement.children[0].injector.get(KjTable);
     dir.setState({ density: 'compact', globalFilter: 'al' });
-    expect(dir.density()).toBe('compact');
-    expect(dir.globalFilter()).toBe('al');
-    expect(dir.getState().density).toBe('compact');
+    expect(dir.state.density()).toBe('compact');
+    expect(dir.state.globalFilter()).toBe('al');
+    expect(dir.state().density).toBe('compact');
   });
 
   it('resetState clears all slices', async () => {
@@ -158,7 +159,7 @@ describe('KjTable (extended)', () => {
     const dir = fixture.debugElement.children[0].injector.get(KjTable);
     dir.setState({ density: 'compact', globalFilter: 'x' });
     dir.resetState();
-    expect(dir.density()).toBe('standard');
-    expect(dir.globalFilter()).toBe('');
+    expect(dir.state.density()).toBe('standard');
+    expect(dir.state.globalFilter()).toBe('');
   });
 });

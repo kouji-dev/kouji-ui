@@ -1,10 +1,26 @@
-import type { ColumnDef, RowData } from '@tanstack/angular-table';
-import type { KjColumnDef, KjColumnMeta } from './table.types';
+import type { ColumnDef, FilterFn, RowData } from '@tanstack/angular-table';
+import {
+  kjDateFilterFn,
+  kjNumberFilterFn,
+  kjSetFilterFn,
+  kjTextFilterFn,
+} from './filter-fns';
+import type { KjColumnDef, KjColumnMeta, KjColumnType } from './table.types';
 
 const KJ_KEYS = [
   'kjType', 'kjEditable', 'kjFilterable', 'kjPin', 'kjGroup', 'kjAgg',
   'kjEditor', 'kjFilterUi', 'kjSelectOptions', 'kjExportable', 'kjPersist',
 ] as const;
+
+/** Auto-wired matcher per `kjType`. Picked up only when the column def
+ *  doesn't already supply its own `filterFn`. */
+const DEFAULT_FILTER_FNS: Readonly<Record<KjColumnType, FilterFn<unknown>>> = {
+  text:    kjTextFilterFn   as unknown as FilterFn<unknown>,
+  number:  kjNumberFilterFn as unknown as FilterFn<unknown>,
+  date:    kjDateFilterFn   as unknown as FilterFn<unknown>,
+  select:  kjSetFilterFn    as unknown as FilterFn<unknown>,
+  boolean: kjSetFilterFn    as unknown as FilterFn<unknown>,
+};
 
 /** Strip leading 'kj' and lowercase first char. */
 function unprefix(k: string): keyof KjColumnMeta {
@@ -30,6 +46,15 @@ export function kjColumn<TData extends RowData>(def: KjColumnDef<TData>): Column
   const meta = Object.keys(kjMeta).length === 0
     ? existingMeta
     : { ...existingMeta, kj: kjMeta };
+
+  // Auto-wire `filterFn` from `kjType` so columns built with `kjColumn({ ... })`
+  // actually understand the structured `KjFilterModel` the built-in filter UIs
+  // write. User-supplied `filterFn` always wins.
+  if (rest['filterFn'] === undefined && kjMeta.type) {
+    const fn = DEFAULT_FILTER_FNS[kjMeta.type as KjColumnType];
+    if (fn) rest['filterFn'] = fn as unknown as FilterFn<TData>;
+  }
+
   return { ...rest, meta } as unknown as ColumnDef<TData>;
 }
 

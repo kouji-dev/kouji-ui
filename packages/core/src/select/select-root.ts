@@ -1,5 +1,6 @@
 import {
   Directive,
+  ElementRef,
   InjectionToken,
   computed,
   contentChildren,
@@ -72,6 +73,21 @@ export class KjSelect implements KjListNavigatorConfig {
   readonly _multiple = signal(false);
   /** Whether multi-select is enabled. */
   readonly multiple = this._multiple.asReadonly();
+
+  /** @internal — set by `KjSelectTrigger` at construction time. */
+  readonly _triggerEl = signal<ElementRef<HTMLElement> | null>(null);
+  /**
+   * Element ref of the registered trigger button. Resolves the moment
+   * `KjSelectTrigger` constructs (no view-query lifecycle wait), so
+   * consumers can call `focus()` synchronously from `effect()` blocks
+   * even when the select is mounted dynamically.
+   */
+  readonly triggerEl = this._triggerEl.asReadonly();
+
+  /** Move keyboard focus to the trigger. No-op if no trigger registered. */
+  focus(): void {
+    this._triggerEl()?.nativeElement.focus();
+  }
 
   /** All `KjListItem`s under this select — source for navigator + type-ahead. */
   readonly items = contentChildren(KjListItem, { descendants: true });

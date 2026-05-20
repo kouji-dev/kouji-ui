@@ -125,6 +125,12 @@
   }
 
   /* ── Sizes ─────────────────────────────────────────────────── */
+  .kj-pagination-item[data-size='xs'],
+  .kj-pagination-action[data-size='xs'] {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    --kj-pagination-item-font-size: 0.75rem;
+  }
   .kj-pagination-item[data-size='sm'],
   .kj-pagination-action[data-size='sm'] {
     min-width: 2rem;

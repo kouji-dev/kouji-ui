@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, contentChildren, forwardRef, input, inject, computed } from '@angular/core';
 import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/core';
 
 /**
@@ -91,6 +91,7 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
     'class': 'kj-select',
     '[attr.data-disabled]': "disabled() ? '' : null",
     '[attr.data-multiple]': "multiple() ? '' : null",
+    '[attr.data-size]': "kjSize() === 'md' ? null : kjSize()",
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -98,15 +99,55 @@ export class KjSelectComponent {
   readonly placeholder = input<string>('Select…');
   readonly disabled = input(false);
   readonly multiple = input(false);
+  readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 
   private readonly select = inject(KjSelect);
+
+  /**
+   * Trigger element signal — sourced from the headless `KjSelect` root,
+   * which is set the moment the inner `KjSelectTrigger` directive
+   * constructs. No view-query lifecycle wait, so callers reading this
+   * inside an `effect()` see it resolve as soon as the select is mounted.
+   */
+  readonly triggerEl = this.select.triggerEl;
+
+  /** Focus the trigger button. Delegates to the headless root. */
+  focus(): void {
+    this.select.focus();
+  }
+
+  /** Direct projection-child query — every `<kj-option>` placed inside this
+   *  `<kj-select>` registers here. `forwardRef` is required because
+   *  `KjOptionComponent` is declared later in the same file. We resolve the
+   *  trigger label by matching the active value against each option's
+   *  `value` input, not by reading `KjListItem.label()` from the select's
+   *  deeper content (which doesn't reliably descend into a projected
+   *  component's view). */
+  private readonly options = contentChildren<KjOptionComponent>(
+    forwardRef(() => KjOptionComponent) as unknown as typeof KjOptionComponent,
+  );
+
+  /** Resolve a value to its matching option's label. Falls back to
+   *  `String(v)` only when no option has registered for that value yet. */
+  private labelFor(v: unknown): string {
+    for (const opt of this.options()) {
+      if (Object.is(opt.value(), v)) {
+        const explicit = opt.kjLabel();
+        return explicit || String(v);
+      }
+    }
+    return String(v);
+  }
+
   readonly displayLabel = computed(() => {
     const v = this.select.value();
     if (v === undefined || v === null || v === '') return this.placeholder();
     if (Array.isArray(v)) {
-      return v.length === 0 ? this.placeholder() : v.map(String).join(', ');
+      return v.length === 0
+        ? this.placeholder()
+        : v.map((entry) => this.labelFor(entry)).join(', ');
     }
-    return String(v);
+    return this.labelFor(v);
   });
 }
 
@@ -119,11 +160,17 @@ export class KjSelectComponent {
   selector: 'kj-option',
   standalone: true,
   imports: [KjOption],
-  template: `<div kjOption [kjOptionValue]="value()" class="kj-option"><ng-content /></div>`,
+  template: `<div kjOption [kjOptionValue]="value()" [kjOptionLabel]="kjLabel()" class="kj-option"><ng-content /></div>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjOptionComponent {
   readonly value = input.required<unknown>();
+
+  /** Explicit label for the trigger's displayed text. The select wrapper
+   *  reads this via its own `contentChildren(KjOptionComponent)` query for
+   *  reliable label resolution that doesn't depend on KjListItem's
+   *  textContent-after-content-init lifecycle. */
+  readonly kjLabel = input<string>('');
 }

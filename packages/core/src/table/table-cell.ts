@@ -1,4 +1,4 @@
-import { Directive, computed, input } from '@angular/core';
+import { Directive, ElementRef, computed, inject, input } from '@angular/core';
 import type { RowData, Table } from '@tanstack/angular-table';
 
 type Cell<T> = ReturnType<Table<T>['getRowModel']>['rows'][number]['getVisibleCells'] extends () => infer R
@@ -16,6 +16,13 @@ type Cell<T> = ReturnType<Table<T>['getRowModel']>['rows'][number]['getVisibleCe
 export class KjTableCell<TData extends RowData = unknown> {
   /** TanStack cell instance — pass from row.getVisibleCells(). */
   kjCell = input.required<Cell<TData>>();
+
+  private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
+
+  /** Public host element handle — used by `KjTableKeyboardNav` to focus cells. */
+  get hostElement(): HTMLElement {
+    return this.elementRef.nativeElement;
+  }
 
   /** 1-based ARIA index for the column. */
   readonly ariaColIndex = computed(() => {

@@ -19,8 +19,10 @@
     font: 0.875rem var(--kj-font-sans);
     cursor: pointer;
   }
+  .kj-select[data-size="xs"] .kj-select-trigger { --kj-select-trigger-height: 1.75rem; font-size: 0.75rem;   padding-inline: var(--kj-space-sm); gap: var(--kj-space-xs); }
   .kj-select[data-size="sm"] .kj-select-trigger { --kj-select-trigger-height: 2rem;    font-size: 0.8125rem; }
   .kj-select[data-size="lg"] .kj-select-trigger { --kj-select-trigger-height: 2.75rem; font-size: 1rem; }
+  .kj-select[data-size="xs"] { min-width: 0; }
   .kj-select-trigger:focus-visible { outline: 2px solid var(--kj-fg-primary); outline-offset: 2px; }
   .kj-select[data-disabled] .kj-select-trigger { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 

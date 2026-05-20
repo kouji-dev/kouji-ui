@@ -46,6 +46,10 @@ component or directive. Roll your own only when nothing fits.
   / 4xl 64 / 5xl 96 / 6xl 128`). Round off-token values to the nearest token —
   never ship raw `px`/`rem` for spacing. The only escape hatch is geometry
   that is meaningful at a specific px (icon hit area, hairline divider).
+  This applies to **every** stylesheet under `packages/components/src/**` —
+  including the table family (`table.css`, `table-toolbar` styles, filter /
+  editor surfaces). Reach for the token first; only fall back to a literal
+  with a comment explaining why a token doesn't apply.
 - **Typography sizes**: prefer `--kj-text-*` (`xs / sm / base / lg / xl / 2xl`).
   For label-mono sizes below `xs` (12px) keep a rem literal — they have no
   token yet.
