@@ -80,7 +80,7 @@ export class KjBulkAction {}
     KjDropdownMenuSeparator,
   ],
   template: `
-    <label class="kj-table-toolbar__filter">
+    <div class="kj-table-toolbar__filter">
       <span class="kj-visually-hidden">Quick filter</span>
       <kj-input
         type="search"
@@ -88,7 +88,7 @@ export class KjBulkAction {}
         [value]="globalFilter()"
         (input)="onFilter($event)"
       />
-    </label>
+    </div>
 
     <kj-button-group
       class="kj-table-toolbar__density"

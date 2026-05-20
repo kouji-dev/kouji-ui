@@ -103,7 +103,7 @@ import { KjSelectComponent, KjOptionComponent } from '../select';
     }
   `],
   template: `
-    <label class="kj-table-pagination__page-size">
+    <div class="kj-table-pagination__page-size">
       <span class="kj-table-pagination__page-size-label">Rows per page</span>
       <kj-select
         class="kj-table-pagination__select"
@@ -115,7 +115,7 @@ import { KjSelectComponent, KjOptionComponent } from '../select';
           <kj-option [value]="size">{{ size }}</kj-option>
         }
       </kj-select>
-    </label>
+    </div>
 
     @if (kjShowSummary()) {
       <span class="kj-table-pagination__summary" aria-live="polite">

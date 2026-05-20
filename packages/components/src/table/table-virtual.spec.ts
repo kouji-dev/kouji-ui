@@ -34,12 +34,12 @@ beforeAll(() => {
   imports: [KjTableVirtual],
   template: `
     <div
-      KjTableVirtual
+      kjTableVirtual
       [kjCount]="count()"
       [kjEstimateSize]="estimate()"
       [kjOverscan]="overscan()"
       style="height: 200px; overflow: auto;"
-      #v="KjTableVirtual"
+      #v="kjTableVirtual"
     >
       <div [style.height.px]="v.totalSize()"></div>
     </div>

@@ -57,9 +57,9 @@ import {
  * @doc-description Row virtualization adapter on @tanstack/virtual-core. Exposes virtualRows / paddingTop / paddingBottom / totalSize signals for the styled data table.
  */
 @Directive({
-  selector: '[KjTableVirtual]',
+  selector: '[kjTableVirtual]',
   standalone: true,
-  exportAs: 'KjTableVirtual',
+  exportAs: 'kjTableVirtual',
 })
 export class KjTableVirtual {
   /** Total number of rows in the underlying dataset. */

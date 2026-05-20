@@ -1,4 +1,4 @@
-import { Component, Injector, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { beforeAll, describe, expect, it, vi } from 'vitest';

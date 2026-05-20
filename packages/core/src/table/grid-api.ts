@@ -188,7 +188,7 @@ export interface KjPaginationApi {
 }
 
 /** Row expansion model. */
-export interface KjExpansionApi<TData = unknown> {
+export interface KjExpansionApi<_TData = unknown> {
   /** Current expansion state. `true` = every row expanded. */
   get(): ExpandedState;
   /** Replace expansion state. */

@@ -79,7 +79,7 @@ export function toDeepSignal<T>(source: Signal<T>): DeepSignal<T> {
   }) as DeepSignal<T>;
 }
 
-const nonRecords: ReadonlyArray<Function> = [
+const nonRecords: ReadonlyArray<new (...args: unknown[]) => unknown> = [
   WeakSet,
   WeakMap,
   Promise,

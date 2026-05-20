@@ -40,7 +40,7 @@ const ALL_VALUE = '__kj_filter_all__';
     class: 'kj-select-filter',
   },
   template: `
-    <label class="kj-select-filter__label">
+    <div class="kj-select-filter__label">
       <span kjVisuallyHidden>{{ ariaLabel() }}</span>
       <kj-select
         class="kj-select-filter__control"
@@ -53,7 +53,7 @@ const ALL_VALUE = '__kj_filter_all__';
           <kj-option [value]="keyOf($index)" [kjLabel]="opt.label">{{ opt.label }}</kj-option>
         }
       </kj-select>
-    </label>
+    </div>
   `,
 })
 export class KjSelectFilter<TData = unknown> {

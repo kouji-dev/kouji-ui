@@ -36,7 +36,7 @@ export type KjDateRange = [from: string | undefined, to: string | undefined];
     class: 'kj-date-filter',
   },
   template: `
-    <label class="kj-date-filter__label kj-date-filter__label--from">
+    <div class="kj-date-filter__label kj-date-filter__label--from">
       <span kjVisuallyHidden class="kj-date-filter__caption">{{ fromAriaLabel() }}</span>
       <kj-date-picker
         class="kj-date-filter__input kj-date-filter__input--from"
@@ -44,8 +44,8 @@ export type KjDateRange = [from: string | undefined, to: string | undefined];
         [kjValue]="fromDate()"
         (kjValueChange)="onFromChange($event)"
       />
-    </label>
-    <label class="kj-date-filter__label kj-date-filter__label--to">
+    </div>
+    <div class="kj-date-filter__label kj-date-filter__label--to">
       <span kjVisuallyHidden class="kj-date-filter__caption">{{ toAriaLabel() }}</span>
       <kj-date-picker
         class="kj-date-filter__input kj-date-filter__input--to"
@@ -53,7 +53,7 @@ export type KjDateRange = [from: string | undefined, to: string | undefined];
         [kjValue]="toDate()"
         (kjValueChange)="onToChange($event)"
       />
-    </label>
+    </div>
   `,
 })
 export class KjDateFilter<TData = unknown> {

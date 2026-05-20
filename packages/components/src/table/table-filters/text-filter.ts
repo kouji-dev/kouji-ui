@@ -60,7 +60,7 @@ const DEFAULT_DEBOUNCE_MS = 300;
     class: 'kj-text-filter',
   },
   template: `
-    <label class="kj-text-filter__label">
+    <div class="kj-text-filter__label">
       <span kjVisuallyHidden>{{ ariaLabel() }}</span>
       <kj-input
         class="kj-text-filter__input"
@@ -68,7 +68,7 @@ const DEFAULT_DEBOUNCE_MS = 300;
         kjSize="xs"
         [formControl]="control"
       />
-    </label>
+    </div>
   `,
 })
 export class KjTextFilter<TData = unknown> {

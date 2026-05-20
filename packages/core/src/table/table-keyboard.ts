@@ -33,7 +33,7 @@ export class KjTableKeyboardNav {
     if (!pos) return;
     const { rowIdx, colIdx } = pos;
 
-    let target: HTMLElement | null = null;
+    let target: HTMLElement | null;
 
     switch (event.key) {
       case 'ArrowLeft':  target = matrix[rowIdx]?.[colIdx - 1] ?? null; break;

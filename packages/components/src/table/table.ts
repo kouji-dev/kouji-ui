@@ -24,7 +24,6 @@ import {
   KjTableKeyboardNav,
   KjIconDirective,
   KJ_TABLE_STORAGE,
-  type KjColumnDef,
   type KjColumnMeta,
   type KjResourceResult,
   type KjStorageAdapter,
@@ -330,7 +329,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                           [kjValue]="c.getValue()"
                           [kjMeta]="editorMetaFor(c)"
                           (commit)="onEditorCommit(c, $event)"
-                          (cancel)="onEditorCancel()"
+                          (editCancel)="onEditorCancel()"
                         ></span>
                       } @else {
                         {{ c.getValue() }}
@@ -344,10 +343,10 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
 
           @if (shouldVirtualize()) {
             <tbody
-              KjTableVirtual
+              kjTableVirtual
               [kjCount]="centerRows().length"
               [kjEstimateSize]="kjEstimatedRowSize()"
-              #v="KjTableVirtual"
+              #v="kjTableVirtual"
             >
               @if (v.paddingTop() > 0) {
                 <tr aria-hidden="true">
@@ -386,7 +385,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                             [kjValue]="c.getValue()"
                             [kjMeta]="editorMetaFor(c)"
                             (commit)="onEditorCommit(c, $event)"
-                            (cancel)="onEditorCancel()"
+                            (editCancel)="onEditorCancel()"
                           ></span>
                         } @else {
                           {{ c.getValue() }}
@@ -446,7 +445,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                           [kjValue]="c.getValue()"
                           [kjMeta]="editorMetaFor(c)"
                           (commit)="onEditorCommit(c, $event)"
-                          (cancel)="onEditorCancel()"
+                          (editCancel)="onEditorCancel()"
                         ></span>
                       } @else if (c.getIsGrouped?.()) {
                         <button type="button"

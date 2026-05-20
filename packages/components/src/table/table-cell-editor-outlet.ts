@@ -57,7 +57,7 @@ export class KjCellEditorOutlet {
   readonly commit = output<unknown>();
 
   /** Fired when the editor calls `contract.cancel()`. */
-  readonly cancel = output<void>();
+  readonly editCancel = output<void>();
 
   private readonly vcr = inject(ViewContainerRef);
   private readonly envInjector = inject(EnvironmentInjector);
@@ -81,7 +81,7 @@ export class KjCellEditorOutlet {
       const contract: KjEditorContract<unknown> = {
         value: initialValue,
         commit: (next: unknown) => this.commit.emit(next),
-        cancel: () => this.cancel.emit(),
+        cancel: () => this.editCancel.emit(),
         meta,
       };
       const childInjector = Injector.create({

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { kjColumn, kjColumnGroup } from './column-helpers';
-import type { KjColumnDef } from './table.types';
 
 interface User { id: string; name: string; email: string; age: number; }
+type AnyRec = Record<string, unknown>;
 
 describe('kjColumn', () => {
   it('returns a ColumnDef compatible with TanStack', () => {
@@ -18,44 +18,44 @@ describe('kjColumn', () => {
       kjEditable: true,
       kjPin: 'left',
     });
-    expect((col.meta as any)?.kj).toEqual({
+    expect((col.meta as AnyRec)?.kj).toEqual({
       type: 'text',
       editable: true,
       pin: 'left',
     });
     // top-level kj* fields are stripped — TanStack sees only its native fields.
-    expect((col as any).kjType).toBeUndefined();
-    expect((col as any).kjEditable).toBeUndefined();
+    expect((col as AnyRec).kjType).toBeUndefined();
+    expect((col as AnyRec).kjEditable).toBeUndefined();
   });
 
   it('preserves existing meta', () => {
     const col = kjColumn<User>({
       accessorKey: 'name',
-      meta: { foo: 'bar' } as any,
+      meta: { foo: 'bar' } as AnyRec,
       kjEditable: true,
     });
-    expect((col.meta as any).foo).toBe('bar');
-    expect((col.meta as any).kj.editable).toBe(true);
+    expect((col.meta as AnyRec).foo).toBe('bar');
+    expect(((col.meta as AnyRec).kj as AnyRec).editable).toBe(true);
   });
 
   it('omits meta.kj when no kj* knobs are passed', () => {
     const col = kjColumn<User>({ accessorKey: 'name' });
-    expect((col.meta as any)?.kj).toBeUndefined();
+    expect((col.meta as AnyRec)?.kj).toBeUndefined();
   });
 
   it('auto-wires filterFn from kjType so the built-in filter UIs round-trip', () => {
     const text   = kjColumn<User>({ accessorKey: 'name',  kjType: 'text'   });
     const number = kjColumn<User>({ accessorKey: 'age',   kjType: 'number' });
     const sel    = kjColumn<User>({ accessorKey: 'email', kjType: 'select' });
-    expect(typeof (text as any).filterFn).toBe('function');
-    expect(typeof (number as any).filterFn).toBe('function');
-    expect(typeof (sel as any).filterFn).toBe('function');
+    expect(typeof (text as AnyRec).filterFn).toBe('function');
+    expect(typeof (number as AnyRec).filterFn).toBe('function');
+    expect(typeof (sel as AnyRec).filterFn).toBe('function');
   });
 
   it('respects a user-supplied filterFn over the auto-wired default', () => {
     const custom = () => true;
     const col = kjColumn<User>({ accessorKey: 'age', kjType: 'number', filterFn: custom });
-    expect((col as any).filterFn).toBe(custom);
+    expect((col as AnyRec).filterFn).toBe(custom);
   });
 });
 
@@ -69,6 +69,6 @@ describe('kjColumnGroup', () => {
       ],
     });
     expect(grp.header).toBe('Identity');
-    expect((grp as any).columns).toHaveLength(2);
+    expect((grp as AnyRec).columns).toHaveLength(2);
   });
 });

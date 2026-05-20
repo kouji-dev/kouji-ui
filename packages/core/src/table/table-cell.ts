@@ -26,12 +26,13 @@ export class KjTableCell<TData extends RowData = unknown> {
 
   /** 1-based ARIA index for the column. */
   readonly ariaColIndex = computed(() => {
-    const cell = this.kjCell() as any;
-    return cell.column?.getIndex?.() != null ? cell.column.getIndex() + 1 : null;
+    const cell = this.kjCell() as { column?: { getIndex?: () => number } };
+    const idx = cell.column?.getIndex?.();
+    return idx != null ? idx + 1 : null;
   });
 
   readonly pin = computed(() => {
-    const cell = this.kjCell() as any;
+    const cell = this.kjCell() as { column?: { getIsPinned?: () => unknown } };
     return cell.column?.getIsPinned?.() ?? null;
   });
 }

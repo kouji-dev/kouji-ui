@@ -13,7 +13,7 @@ describe('exportCsv', () => {
     const csv = exportCsv({
       rows: [{ name: 'Alice' }],
       columns: ['name'],
-      getValue: (row, col) => col === 'name' ? (row as any).name.toUpperCase() : '',
+      getValue: (row, col) => col === 'name' ? (row as { name: string }).name.toUpperCase() : '',
     });
     expect(csv).toBe('name\nALICE');
   });
