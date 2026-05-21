@@ -1,4 +1,4 @@
-import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild, untracked } from '@angular/core';
 import { CodeEditorComponent } from '../code-editor/code-editor';
 import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
@@ -91,13 +91,15 @@ export class CodePreviewComponent {
     return Object.keys(this.themedExamples()).filter(k => k !== 'default').length > 0;
   });
 
-  readonly demoComponent = computed((): Type<unknown> | null => {
-    const files = this.activeFiles();
-    if (!files.length) return null;
-    const exportName = files[0]?.exportName;
-    if (!exportName) return null;
-    return this.registrySvc.get(exportName);
-  });
+  /**
+   * Resolved demo component for the active example. Initially `null` while
+   * the per-component chunk loads; the effect below kicks off the async
+   * lookup whenever the active exportName changes.
+   */
+  readonly demoComponent = signal<Type<unknown> | null>(null);
+
+  /** True until the registry has answered for the current exportName. */
+  protected readonly resolvingDemo = signal(false);
 
   protected readonly hasDemo = computed(() => !!this.demoComponent());
 
@@ -105,8 +107,31 @@ export class CodePreviewComponent {
   private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', { read: ViewContainerRef });
 
   constructor() {
-    // Runs whenever demoComponent() OR previewHost() changes (including when it first becomes available).
-    // viewChild() returns undefined until the @if(hasDemo()) block renders the ng-container.
+    // React to the active example's exportName: clear the current demo and
+    // kick off the async chunk load. We track via the files() signal so the
+    // effect re-runs on tab / theme switch.
+    effect(() => {
+      const files = this.activeFiles();
+      const exportName = files[0]?.exportName;
+      if (!exportName) {
+        untracked(() => this.demoComponent.set(null));
+        return;
+      }
+      untracked(() => this.resolvingDemo.set(true));
+      this.registrySvc.get(exportName).then((cmp) => {
+        // Bail if the active example changed while we awaited the chunk —
+        // a newer effect cycle will have written the latest demo.
+        const latest = this.activeFiles()[0]?.exportName;
+        if (latest !== exportName) return;
+        this.demoComponent.set(cmp);
+        this.resolvingDemo.set(false);
+      }).catch(() => {
+        this.demoComponent.set(null);
+        this.resolvingDemo.set(false);
+      });
+    });
+
+    // Mount/unmount the resolved component into #previewHost.
     effect(() => {
       const vcr = this.previewHost();
       const comp = this.demoComponent();

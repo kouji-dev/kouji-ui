@@ -128,6 +128,19 @@ export interface DocExample {
   slug: string;
   /** Which section of the Examples tab this card renders in. */
   bucket: ExampleBucket;
+  /**
+   * Layout hint for the Examples tab.
+   *
+   * - `'grid'` (default) — the example renders as a half-width card in the
+   *   2-col recipe grid.
+   * - `'full'` — the card spans the full grid width (one row). Use for examples
+   *   that need horizontal room (data tables, wide forms, charts).
+   *
+   * Authored via a bracketed modifier on the `@doc-example` line, e.g.
+   * `@doc-example Sortable [full]` or `@doc-example Default [singleLine]`
+   * (`singleLine` is accepted as an alias for `full`).
+   */
+  layout?: 'grid' | 'full';
   themedFiles: Record<string, ExampleFile[]>;
 }
 

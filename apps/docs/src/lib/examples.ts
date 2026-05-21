@@ -91,29 +91,45 @@ export function extractExportName(content: string): string | undefined {
   return match?.[1];
 }
 
-/** Reads a co-located example file. If it references docs-themes.css, appends it as an extra tab. */
+/**
+ * Reads a co-located example file. Looks in `<dirPath>/_examples/<filename>`
+ * first (the new layout — examples are isolated inside a `_examples/` subfolder
+ * to keep the component folder clean and chunkable), and falls back to
+ * `<dirPath>/<filename>` for any component that hasn't been migrated yet.
+ *
+ * If the example references docs-themes.css, it is appended as an extra tab.
+ */
 export function readExampleFiles(dirPath: string, filename: string): ExampleFile[] {
-  const fullPath = join(dirPath, filename);
-  try {
-    const content = readFileSync(fullPath, 'utf-8');
-    const ext = filename.split('.').pop()?.toLowerCase() ?? 'ts';
-    const lang: ExampleFile['lang'] = (['ts', 'html', 'css'] as string[]).includes(ext)
-      ? (ext as ExampleFile['lang'])
-      : 'ts';
-    const exportName = extractExportName(content);
-    const files: ExampleFile[] = [{ lang, filename, content, exportName }];
-
-    if (content.includes('docs-themes.css')) {
+  const candidates = [
+    join(dirPath, '_examples', filename),
+    join(dirPath, filename),
+  ];
+  let content: string | null = null;
+  for (const p of candidates) {
+    if (existsSync(p)) {
       try {
-        const cssContent = readFileSync(DOCS_THEMES_CSS_PATH, 'utf-8');
-        files.push({ lang: 'css', filename: 'docs-themes.css', content: cssContent });
-      } catch { /* skip silently */ }
+        content = readFileSync(p, 'utf-8');
+        break;
+      } catch { /* try next */ }
     }
-
-    return files;
-  } catch {
-    return [];
   }
+  if (content == null) return [];
+
+  const ext = filename.split('.').pop()?.toLowerCase() ?? 'ts';
+  const lang: ExampleFile['lang'] = (['ts', 'html', 'css'] as string[]).includes(ext)
+    ? (ext as ExampleFile['lang'])
+    : 'ts';
+  const exportName = extractExportName(content);
+  const files: ExampleFile[] = [{ lang, filename, content, exportName }];
+
+  if (content.includes('docs-themes.css')) {
+    try {
+      const cssContent = readFileSync(DOCS_THEMES_CSS_PATH, 'utf-8');
+      files.push({ lang: 'css', filename: 'docs-themes.css', content: cssContent });
+    } catch { /* skip silently */ }
+  }
+
+  return files;
 }
 
 /** Shared helper: extracts @doc-file entries from clean (stripped) JSDoc text. */
@@ -232,8 +248,24 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
   for (const part of exampleParts) {
     const headerMatch = part.match(/^\s*@doc-example[^\S\n]+([^\n]+)/);
     if (!headerMatch) continue;
-    const label = headerMatch[1].trim();
+    const rawLabel = headerMatch[1].trim();
     const body = part.slice(headerMatch.index! + headerMatch[0].length);
+
+    // Parse a trailing `[flag, flag]` modifier off the label. Recognised flags:
+    //   full | singleLine  → layout = 'full' (card spans the full grid width)
+    let label = rawLabel;
+    let layout: 'grid' | 'full' = 'grid';
+    const modMatch = rawLabel.match(/^(.*?)\s*\[([^\]]+)\]\s*$/);
+    if (modMatch) {
+      label = modMatch[1].trim();
+      const flags = modMatch[2]
+        .split(/[,\s]+/)
+        .map((f) => f.trim().toLowerCase())
+        .filter(Boolean);
+      if (flags.includes('full') || flags.includes('singleline')) {
+        layout = 'full';
+      }
+    }
 
     // Capture any prose between the label line and the first @doc-file /
     // @doc-theme as the example description. Falls back to '' when absent.
@@ -272,6 +304,7 @@ export function getDocExamples(node: ts.Node, sourceFile: ts.SourceFile, sourceD
         ...(description ? { description } : {}),
         slug,
         bucket: deriveExampleBucket(slug, label),
+        ...(layout !== 'grid' ? { layout } : {}),
         themedFiles,
       });
     }

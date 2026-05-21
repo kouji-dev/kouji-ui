@@ -1,0 +1,38 @@
+import { Directive, ElementRef, computed, inject, input } from '@angular/core';
+import type { RowData, Table } from '@tanstack/angular-table';
+
+type Cell<T> = ReturnType<Table<T>['getRowModel']>['rows'][number]['getVisibleCells'] extends () => infer R
+  ? R extends Array<infer C> ? C : never : never;
+
+@Directive({
+  selector: '[kjTableCell]',
+  standalone: true,
+  host: {
+    'role': 'gridcell',
+    '[attr.aria-colindex]': 'ariaColIndex()',
+    '[attr.data-pin]': 'pin()',
+  },
+})
+export class KjTableCell<TData extends RowData = unknown> {
+  /** TanStack cell instance — pass from row.getVisibleCells(). */
+  kjCell = input.required<Cell<TData>>();
+
+  private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
+
+  /** Public host element handle — used by `KjTableKeyboardNav` to focus cells. */
+  get hostElement(): HTMLElement {
+    return this.elementRef.nativeElement;
+  }
+
+  /** 1-based ARIA index for the column. */
+  readonly ariaColIndex = computed(() => {
+    const cell = this.kjCell() as { column?: { getIndex?: () => number } };
+    const idx = cell.column?.getIndex?.();
+    return idx != null ? idx + 1 : null;
+  });
+
+  readonly pin = computed(() => {
+    const cell = this.kjCell() as { column?: { getIsPinned?: () => unknown } };
+    return cell.column?.getIsPinned?.() ?? null;
+  });
+}

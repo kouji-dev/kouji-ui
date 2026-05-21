@@ -43,7 +43,7 @@ export interface KjPaginationConfig {
  */
 export const KJ_PAGINATION_DEFAULTS: KjPaginationConfig = {
   variants: ['default', 'outline', 'ghost'],
-  sizes: ['sm', 'md', 'lg'],
+  sizes: ['xs', 'sm', 'md', 'lg'],
   defaults: { variant: 'default', size: 'md', siblingCount: 1, boundaryCount: 1 },
   navigationLabel: 'Pagination',
   previousLabel: 'Previous page',

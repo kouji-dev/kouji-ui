@@ -1,0 +1,468 @@
+/* Density + variant tokens. All spacing via --kj-base-space-*.
+ *
+ * Sizing contract: the table is container-driven. If a parent gives `<kj-table>`
+ * a fixed height (`height: 400px`, a flex/grid track, etc.) the body fills
+ * the remaining space inside the wrapper and the row-scroll happens INSIDE
+ * `.kj-table-body`. If no parent constraint is set, the table grows to its
+ * natural content height — no internal scroll. `min-height: 0` / `min-width: 0`
+ * are the magic flex pieces that let the body actually shrink past content
+ * to honour an outer constraint. The same applies for width: the wrapper
+ * fills the host's width and the body scrolls horizontally when columns
+ * overflow.
+ */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  font-family: var(--kj-font-sans);
+  font-size: var(--kj-text-sm);
+  /* Default row height — predictable + virtualization-friendly. Density
+     variants below override; consumers can also write the var directly
+     (`<kj-table style="--kj-table-row-height: 2.75rem">…</kj-table>`). */
+  --kj-table-row-height: 2.25rem;
+}
+:host([data-density="compact"])     { --kj-table-row-height: 1.75rem; }
+:host([data-density="comfortable"]) { --kj-table-row-height: 2.75rem; }
+
+.kj-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.kj-table-body {
+  position: relative;
+  overflow: auto;
+  /* Use block layout (not flex) for the body so the `<table>` keeps its
+     natural row-height behaviour. With flex, a child `<table>` stretched
+     to fill the body — that made a single row balloon to fill the entire
+     viewport when filters narrowed the result set. Block layout lets the
+     table size to its content; the body's `overflow: auto` still scrolls
+     when there are many rows, and the leftover space appears below the
+     last row when there are few. */
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.kj-table-body > table {
+  /* Table never flex-grows; row heights stay content-driven (or row-height
+     CSS var-driven if the consumer sets `--kj-table-row-height`). */
+  min-width: 100%;
+}
+
+:host th,
+:host td {
+  height: var(--kj-table-row-height);
+}
+
+:host table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--kj-bg-surface);
+  color: var(--kj-fg-default);
+}
+
+:host th,
+:host td {
+  text-align: left;
+  padding: var(--kj-base-space-sm) var(--kj-base-space-md);
+  border-bottom: 1px solid var(--kj-border-default);
+  position: relative;
+}
+
+:host th {
+  font-weight: 600;
+  background: var(--kj-bg-elevated);
+}
+
+/* ── Sort indicator ─────────────────────────────────────────────
+   The wrapper template renders a `<i kjIcon>` after the header label
+   when the column is sortable. CSS here just owns layout + tint:
+     - default       → muted (unsorted/sortable)
+     - data-sort=…   → brand primary
+   The icon sits inline so it survives the resize handle on the right
+   edge of the cell. */
+:host th[aria-sort] {
+  user-select: none;
+}
+.kj-table-sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--kj-base-space-xs, 0.25rem);
+  color: var(--kj-fg-subtle, var(--kj-fg-muted));
+  transition: color var(--kj-transition);
+  vertical-align: middle;
+}
+:host th[data-sort="asc"] .kj-table-sort-indicator,
+:host th[data-sort="desc"] .kj-table-sort-indicator {
+  color: var(--kj-fg-primary);
+}
+:host th[aria-sort]:hover .kj-table-sort-indicator,
+:host th[aria-sort]:focus-visible .kj-table-sort-indicator {
+  color: var(--kj-fg-default);
+}
+
+:host([data-density="compact"]) th,
+:host([data-density="compact"]) td {
+  padding: var(--kj-base-space-xs) var(--kj-base-space-sm);
+}
+
+:host([data-density="comfortable"]) th,
+:host([data-density="comfortable"]) td {
+  padding: var(--kj-base-space-md) var(--kj-base-space-lg);
+}
+
+:host([data-variant="striped"]) tbody tr:nth-child(even) td {
+  background: var(--kj-bg-elevated);
+}
+
+:host([data-variant="clean"]) th,
+:host([data-variant="clean"]) td {
+  border-bottom-color: transparent;
+}
+
+:host td:focus-visible,
+:host th:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: -2px;
+}
+
+/* Inline cell editors must NOT push the column wider than its existing
+   content. A bare `<input>` (and the styled select trigger) has an
+   intrinsic min-content width — ~20 chars from `size` for inputs, the
+   selected label for triggers — that table auto-layout uses to size the
+   column.
+
+   Trick: render an invisible "ghost" of the cell's value so the cell
+   keeps its natural content width, then lift every editor host out of
+   the in-flow stacking context with `position: absolute`. Editors use
+   `display: contents` by default — we override that while editing so
+   they actually get a box that can be positioned. */
+:host td.kj-table-cell--editing {
+  position: relative;
+}
+:host td .kj-table-cell-ghost {
+  visibility: hidden;
+  white-space: pre;
+  display: inline-block;
+  pointer-events: none;
+}
+/* `::ng-deep` is required because the editor components are created
+   dynamically via `ViewContainerRef.createComponent` from inside the
+   `kjCellEditorOutlet` directive. Dynamic elements don't inherit the
+   parent template's emulated-encapsulation attributes, so a scoped
+   selector wouldn't match. */
+/* `!important` is needed to override the editor / input components'
+   inline `style="display: contents"` host bindings (those win over
+   stylesheets). `::ng-deep` reaches the dynamically-created editor
+   components, which don't inherit the parent template's emulated
+   encapsulation attributes. */
+:host td.kj-table-cell--editing ::ng-deep kj-text-editor,
+:host td.kj-table-cell--editing ::ng-deep kj-number-editor,
+:host td.kj-table-cell--editing ::ng-deep kj-select-editor,
+:host td.kj-table-cell--editing ::ng-deep kj-date-editor,
+:host td.kj-table-cell--editing ::ng-deep kj-boolean-editor {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: inherit !important;
+  background: var(--kj-bg-surface);
+  z-index: 1;
+}
+:host td.kj-table-cell--editing ::ng-deep kj-input,
+:host td.kj-table-cell--editing ::ng-deep kj-number-input,
+:host td.kj-table-cell--editing ::ng-deep kj-select {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+:host td.kj-table-cell--editing ::ng-deep input,
+:host td.kj-table-cell--editing ::ng-deep .kj-select-trigger {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+/* The anchor span itself contributes nothing to layout — the directive
+   creates the editor as its NEXT SIBLING in the cell, not as a child. */
+:host td .kj-table-editor-anchor {
+  display: none;
+}
+
+/* Selected rows get a brand-accent tint + a left border stripe so a
+   keyboard user can tell which row is selected at a glance, even when
+   the row is not focused. */
+:host tr[data-selected] td {
+  background: color-mix(in oklab, var(--kj-bg-primary, var(--kj-bg-accent, currentColor)) 12%, var(--kj-bg-surface));
+}
+:host tr[data-selected] td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--kj-bg-primary, var(--kj-fg-primary));
+}
+
+/* ── Pinned columns ─────────────────────────────────────────────
+   Sticky positioning + a visible boundary (border + soft shadow) so the
+   pinned edge reads as a separate region from the scrolling middle. The
+   :host([data-variant]) toggles don't affect pin borders — they're a
+   structural cue, not a visual variant. */
+:host td[data-pin="left"],
+:host th[data-pin="left"] {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--kj-bg-surface);
+}
+:host td[data-pin="right"],
+:host th[data-pin="right"] {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--kj-bg-surface);
+}
+
+/* Boundary indicator on the inside edge of each pinned region.
+
+   Last LEFT-pinned cell: a `[data-pin="left"]` whose next sibling is NOT
+   also left-pinned — uses `:not(:has(+ ...))`.
+
+   First RIGHT-pinned cell: a `[data-pin="right"]` whose previous sibling
+   is NOT right-pinned — uses the `:not([..]) + [data-pin="right"]` pattern.
+
+   Both are purely declarative; no JS bookkeeping. */
+:host td[data-pin="left"]:not(:has(+ td[data-pin="left"])),
+:host th[data-pin="left"]:not(:has(+ th[data-pin="left"])) {
+  border-right: 1px solid var(--kj-border-strong, var(--kj-border-default));
+  box-shadow: 4px 0 6px -4px rgba(0, 0, 0, 0.25);
+}
+:host tr > :not([data-pin="right"]) + td[data-pin="right"],
+:host tr > :not([data-pin="right"]) + th[data-pin="right"] {
+  border-left: 1px solid var(--kj-border-strong, var(--kj-border-default));
+  box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.25);
+}
+
+/* Striped variant: pinned cells still get the alternate background so the
+   sticky cell doesn't visually float over a coloured row beneath it. */
+:host([data-variant="striped"]) tbody tr:nth-child(even) td[data-pin] {
+  background: var(--kj-bg-elevated);
+}
+
+/* ── Resize handle ──────────────────────────────────────────────
+   Always-visible thin track on the right edge of each `<th>`; widens
+   and brightens to the focus color on hover/focus so users can tell
+   it's draggable. Hidden when no resize is enabled (the host doesn't
+   render the element). */
+.kj-table-resize-handle {
+  position: absolute;
+  top: 25%;
+  right: 0;
+  width: 6px;
+  height: 50%;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  background: transparent;
+  border-right: 2px solid var(--kj-border-strong, var(--kj-border-default));
+  transition: border-color var(--kj-transition), background var(--kj-transition), width var(--kj-transition);
+}
+.kj-table-resize-handle:hover,
+.kj-table-resize-handle:focus-visible {
+  border-right-color: var(--kj-border-focus);
+  background: color-mix(in srgb, var(--kj-border-focus) 20%, transparent);
+  width: 8px;
+  outline: none;
+}
+
+/* ── Resize preview guide ───────────────────────────────────────
+   While a column is being resized (TanStack `onEnd` mode), the
+   wrapper sets `data-resizing` on the header and pipes the live
+   cursor delta into `--kj-resize-delta`. The handle becomes a
+   tall vertical line anchored to the column's current right edge
+   and translated by the delta — it visually tracks where the new
+   edge will land before the column actually reflows on mouseup.
+
+   `top: 0; height: 9999px` overflows the `<th>`; the surrounding
+   `.kj-table-body` has `overflow: auto`, so the visible portion
+   is naturally clipped to the table's height. */
+:host th[data-resizing] .kj-table-resize-handle {
+  top: 0;
+  height: 9999px;
+  width: 0;
+  background: transparent;
+  border-right: 2px solid var(--kj-border-focus, var(--kj-bg-primary));
+  transform: translateX(var(--kj-resize-delta, 0px));
+  pointer-events: none;
+  z-index: 3;
+  transition: none;
+}
+
+/* ── Selection column ───────────────────────────────────────────
+   Leading checkbox column auto-rendered when `kjSelectionMode` is
+   `'single'` or `'multi'`. Narrow fixed-width column so the row
+   data starts at a predictable horizontal position. */
+:host th.kj-table-select-cell,
+:host td.kj-table-select-cell {
+  width: 2.5rem;
+  padding-inline: var(--kj-base-space-sm);
+  text-align: center;
+  vertical-align: middle;
+}
+.kj-table-select-cell kj-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Filter row beneath the header row ──────────────────────────
+   Each cell hosts a styled filter input (text / number / date / select)
+   mounted by the wrapper. We keep the row visually distinct from headers
+   with a lighter background + thinner padding, and let the input fill
+   the cell width so filters feel column-anchored. */
+.kj-table-filter-row > th {
+  font-weight: 400;
+  background: var(--kj-bg-surface);
+  border-top: 1px solid var(--kj-border-muted, var(--kj-border-default));
+}
+.kj-table-filter-cell {
+  padding-top: var(--kj-base-space-xs);
+  padding-bottom: var(--kj-base-space-xs);
+  vertical-align: middle;
+}
+.kj-table-filter-cell .kj-table-filter-anchor + *,
+.kj-table-filter-cell kj-input,
+.kj-table-filter-cell kj-number-input,
+.kj-table-filter-cell kj-date-picker,
+.kj-table-filter-cell kj-select {
+  width: 100%;
+}
+.kj-table-filter-anchor {
+  display: block;
+  width: 100%;
+}
+
+/* Inline editors get the same compact xs treatment as filter cells. The
+   filter inputs already bind `kjSize="xs"` themselves; this rule covers the
+   editor anchors that mount unsized primitives at runtime. */
+:host .kj-table-editor-anchor .kj-input,
+:host .kj-table-editor-anchor .kj-select {
+  --kj-input-height: 1.75rem;
+  --kj-input-font-size: var(--kj-text-xs);
+  --kj-input-padding-x: var(--kj-base-space-sm);
+  --kj-input-padding-y: 0;
+  --kj-input-radius: var(--kj-radius-selector);
+}
+
+/* Empty / error / loading panes. */
+.kj-table-empty,
+.kj-table-error,
+.kj-table-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--kj-base-space-lg);
+  color: var(--kj-fg-muted);
+}
+
+/* ── Loading state ──────────────────────────────────────────────
+   Two modes:
+   - Initial load (`data-has-rows="false"`): full-pane overlay with
+     a centered "Loading…" message. The user has nothing to look at
+     yet so we cover the empty body.
+   - Subsequent reloads (`data-has-rows="true"`): a slim 2px brand
+     stripe at the top of the body. The stale rows stay readable
+     and pointer events keep working — the user can sort/scroll/
+     paginate again while the refresh is in flight. */
+.kj-table-loading {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--kj-bg-surface) 70%, transparent);
+  pointer-events: none;
+}
+.kj-table-loading[data-has-rows] {
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--kj-bg-primary);
+  padding: 0;
+  animation: kj-table-loading-pulse 1.4s ease-in-out infinite;
+}
+.kj-table-loading[data-has-rows] .kj-table-loading-fallback,
+.kj-table-loading[data-has-rows] ::ng-deep [kjLoading] {
+  display: none;
+}
+
+@keyframes kj-table-loading-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1;    }
+}
+.kj-table-error {
+  color: var(--kj-fg-error, var(--kj-fg-default));
+}
+.kj-table-loading-fallback {
+  font-size: var(--kj-text-sm);
+}
+
+/* Row expansion. */
+.kj-table-expansion-row > td {
+  background: var(--kj-bg-elevated);
+}
+
+/* ── Pinned-row tbody segments ──────────────────────────────────
+   Use the brand accent so pinned rows visually pop out of the center
+   body; sticky positioning lets them stay anchored at the top/bottom
+   even when the body scrolls. */
+.kj-table-tbody-pinned[data-pin="top"] > tr > td {
+  background: var(--kj-bg-elevated);
+  border-bottom: 2px solid var(--kj-border-primary, var(--kj-border-strong, var(--kj-border-default)));
+  box-shadow: 0 4px 6px -4px rgba(0, 0, 0, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.kj-table-tbody-pinned[data-pin="bottom"] > tr > td {
+  background: var(--kj-bg-elevated);
+  border-top: 2px solid var(--kj-border-primary, var(--kj-border-strong, var(--kj-border-default)));
+  box-shadow: 0 -4px 6px -4px rgba(0, 0, 0, 0.25);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* ── Grouping row ───────────────────────────────────────────────
+   Rows where a column is grouped show a toggle-able header chip on the
+   grouped cell + count of subRows. */
+.kj-table-group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kj-base-space-xs, 0.25rem);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.kj-table-group-toggle__chevron {
+  display: inline-block;
+  width: 0.75rem;
+  font-family: var(--kj-font-mono);
+  color: var(--kj-fg-muted);
+  transition: transform var(--kj-transition);
+}
+.kj-table-group-toggle[aria-expanded="true"] .kj-table-group-toggle__chevron {
+  transform: rotate(90deg);
+}
+.kj-table-group-toggle__count {
+  margin-inline-start: var(--kj-base-space-xs, 0.25rem);
+  font-size: 0.75em;
+  color: var(--kj-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+:host tbody tr[data-row-grouped] td {
+  background: var(--kj-bg-elevated);
+  font-weight: 600;
+}

@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   ModelSignal,
   ViewEncapsulation,
   booleanAttribute,
   input,
   model,
+  viewChild,
 } from '@angular/core';
 import {
   KjNumberInput,
@@ -101,6 +103,7 @@ import {
       kjNumberInputGroup
       class="kj-number-input"
       [attr.data-stepper-layout]="kjStepperLayout()"
+      [attr.data-size]="kjSize() === 'md' ? null : kjSize()"
       [attr.data-disabled]="kjDisabled() ? '' : null"
     >
       <button
@@ -112,6 +115,7 @@ import {
         [kjDisabled]="kjDisabled()"
       >−</button>
       <input
+        #nativeInput
         kjNumberInput
         class="kj-number-input__field"
         [(kjValue)]="kjValue"
@@ -157,6 +161,16 @@ export class KjNumberInputComponent {
   /** Two-way bindable numeric model. `null` for empty. */
   readonly kjValue: ModelSignal<number> = model<number>(0);
 
+  /** Native `<input>` element queried via template-ref. Exposed so callers
+   *  (cell editors, form managers) can move focus without reaching into
+   *  the DOM. */
+  readonly nativeInput = viewChild<ElementRef<HTMLInputElement>>('nativeInput');
+
+  /** Focus the underlying `<input>`. No-op until the view renders. */
+  focus(): void {
+    this.nativeInput()?.nativeElement.focus();
+  }
+
   readonly kjMin = input<number>(Number.NEGATIVE_INFINITY);
   readonly kjMax = input<number>(Number.POSITIVE_INFINITY);
   readonly kjStep = input<number>(1);
@@ -185,6 +199,10 @@ export class KjNumberInputComponent {
 
   /** Layout for the stepper buttons. */
   readonly kjStepperLayout = input<'flanking' | 'stacked'>('flanking');
+
+  /** Size tier — matches `KjInput`. `xs` (28px) hides the steppers so the
+   *  control collapses to a bare numeric field for filter rows / inline edits. */
+  readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 
   /** Accessible label for the decrement button. */
   readonly kjDecrementLabel = input<string>('Decrease value');

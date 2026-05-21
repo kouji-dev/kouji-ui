@@ -1,0 +1,53 @@
+/*
+ * Filter-row layout. All sizing flows from `kjSize="xs"` applied to the inner
+ * primitives (kj-input, kj-number-input, kj-select, kj-date-picker) — no more
+ * CSS-var override fakery here. This file owns the *layout* of the filter
+ * shells (flex direction, gap, child width), nothing else.
+ */
+
+.kj-text-filter,
+.kj-number-filter,
+.kj-date-filter,
+.kj-select-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-base-space-xs, 0.25rem);
+  width: 100%;
+}
+
+/* The text filter wraps its <kj-input> in a <label>; let the label own the
+   row so the visually-hidden caption stays in flow without inflating width. */
+.kj-text-filter__label,
+.kj-select-filter__label {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+/* Number filter: operator picker keeps natural width, each number input
+   takes equal share of the rest. */
+.kj-number-filter__operator {
+  flex: 0 0 auto;
+  min-width: 4.25rem;
+}
+.kj-number-filter__input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Date filter: both pickers split the row evenly. */
+.kj-date-filter__label {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+}
+.kj-date-filter .kj-date-picker {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Select filter: trigger fills the cell. */
+.kj-select-filter .kj-select {
+  width: 100%;
+}

@@ -1,5 +1,6 @@
 import {
   Directive,
+  ElementRef,
   booleanAttribute,
   effect,
   inject,
@@ -71,12 +72,18 @@ export class KjSelectTrigger {
   /** Disabled state (advisory; downstream styling). */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+
   constructor() {
     // Forward kjMultiple onto the parent KjSelect (when present) so options
     // and content can read a single source of truth.
     effect(() => {
       this.select?._multiple.set(this.kjMultiple());
     });
+    // Register the trigger's host element with the parent KjSelect so
+    // consumers (cell editors, dialogs, custom integrations) can call
+    // `KjSelect.focus()` without a view-query round-trip.
+    this.select?._triggerEl.set(this.hostEl);
   }
 
   private readonly _overlayTrigger = inject(KjOverlayTrigger, { self: true });

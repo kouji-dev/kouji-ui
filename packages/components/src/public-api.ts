@@ -47,6 +47,7 @@ export * from './slider/index';
 export * from './speed-dial/index';
 export * from './spinner/index';
 export * from './stepper/index';
+export * from './table/index';
 export * from './tabs/index';
 export * from './tag/index';
 export * from './textarea/index';

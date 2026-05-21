@@ -1,7 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map } from 'rxjs/operators';
+import { ExampleRegistryService } from '../../services/example-registry.service';
 import {
   KjTabsComponent,
   KjTabListComponent,
@@ -55,6 +56,26 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
 export class ComponentDocComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly docs = inject(DocsService);
+  private readonly registry = inject(ExampleRegistryService);
+
+  constructor() {
+    // Warm every example chunk owned by the current page once we know what
+    // the page contains. The registry de-duplicates by folder, so this
+    // typically fetches exactly one chunk per page even when the page lists
+    // 20 examples. Preload is itself async (returns immediately, fetch
+    // continues in the background) so it never blocks anything.
+    let warmedFor: string | null = null;
+    effect(() => {
+      const p = this.page();
+      if (!p || warmedFor === p.name) return;
+      warmedFor = p.name;
+      for (const e of p.examples) {
+        for (const file of Object.values(e.example.themedFiles).flat()) {
+          if (file.exportName) this.registry.preload(file.exportName);
+        }
+      }
+    });
+  }
 
   protected readonly page = toSignal(
     this.route.url.pipe(

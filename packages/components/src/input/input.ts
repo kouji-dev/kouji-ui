@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   ViewChild,
   ViewEncapsulation,
   forwardRef,
   input,
+  viewChild,
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { KjInput } from '@kouji-ui/core';
@@ -15,6 +17,11 @@ export type KjInputType = 'text' | 'email' | 'password' | 'number'
 /** Visual variants — `default` uses the field surface; `sunken` drops to
  *  body bg so the input pops against a card/surface parent. */
 export type KjInputVariant = 'default' | 'sunken';
+
+/** Size tier — `xs` (28px) for filter rows / inline editors, `sm` (32px)
+ *  for dense forms, `md` (36px, default) for standard rows, `lg` (44px)
+ *  for touch-first primary inputs. */
+export type KjInputSize = 'xs' | 'sm' | 'md' | 'lg';
 
 /**
  * Styled wrapper around the headless KjInput directive.
@@ -94,12 +101,14 @@ export type KjInputVariant = 'default' | 'sunken';
   ],
   template: `
     <input
+      #nativeInput
       kjInput
       class="kj-input"
       [type]="type()"
       [value]="value()"
       [placeholder]="placeholder()"
       [attr.data-variant]="variant()"
+      [attr.data-size]="kjSize() === 'md' ? null : kjSize()"
       [kjInvalid]="invalid()"
       [kjDisabled]="disabled()"
     />
@@ -115,6 +124,7 @@ export type KjInputVariant = 'default' | 'sunken';
 export class KjInputComponent implements ControlValueAccessor {
   readonly type = input<KjInputType>('text');
   readonly variant = input<KjInputVariant>('default');
+  readonly kjSize = input<KjInputSize>('md');
   readonly value = input<string>('');
   readonly placeholder = input<string>('');
   readonly invalid = input(false);
@@ -122,6 +132,16 @@ export class KjInputComponent implements ControlValueAccessor {
 
   @ViewChild(KjInput, { static: true })
   protected innerInput?: KjInput;
+
+  /** Native `<input>` element, queried via template-ref. Used by callers
+   *  (cell editors, focus-trapping consumers) that need to move keyboard
+   *  focus into the input without reaching into the DOM. */
+  readonly nativeInput = viewChild<ElementRef<HTMLInputElement>>('nativeInput');
+
+  /** Focus the underlying `<input>`. No-op until the view renders. */
+  focus(): void {
+    this.nativeInput()?.nativeElement.focus();
+  }
 
   writeValue(val: unknown): void {
     this.innerInput?.formCtrl.writeValue(val);

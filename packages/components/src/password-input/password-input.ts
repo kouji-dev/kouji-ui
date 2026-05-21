@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  type OnInit,
   ViewEncapsulation,
   booleanAttribute,
   computed,
@@ -174,7 +175,7 @@ import {
   host: { 'style': 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjPasswordInputComponent {
+export class KjPasswordInputComponent implements OnInit {
   /**
    * Native `autocomplete` attribute. Restricted to `'current-password'` |
    * `'new-password'` | `'off'`.

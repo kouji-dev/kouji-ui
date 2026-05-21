@@ -104,6 +104,7 @@ import { KjCalendarComponent } from '../calendar/calendar';
       kjDatePicker
       class="kj-date-picker"
       #picker="kjDatePicker"
+      [attr.data-size]="kjSize() === 'md' ? null : kjSize()"
       [kjValue]="kjValue() ?? null!"
       (kjValueChange)="kjValue.set($event)"
       [(kjOpen)]="kjOpen"
@@ -173,6 +174,9 @@ export class KjDatePickerComponent {
 
   /** Disable the entire picker. */
   readonly kjDisabled = input<boolean, boolean | string>(false, { transform: booleanAttribute });
+
+  /** Size tier — matches `KjInput`. `xs` (28px) for filter rows / inline editors. */
+  readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 
   /** @internal — wired from the projected calendar. */
   onCalendarSelect(date: Date | null, picker: KjDatePicker): void {

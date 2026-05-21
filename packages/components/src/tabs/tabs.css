@@ -65,6 +65,16 @@
   .kj-tabs[data-orientation="vertical"] .kj-tab { border-bottom: 0; border-right: 2px solid transparent; margin: 0 -1px 0 0; text-align: left; }
   .kj-tabs[data-orientation="vertical"] .kj-tab[aria-selected="true"] { border-right-color: var(--kj-bg-primary); }
 
-  .kj-tab-panel { color: var(--kj-fg-default); font: 0.875rem var(--kj-font-sans); line-height: 1.5; }
+  .kj-tab-panel {
+    /* Default `display: block` — without it the host renders as inline
+       (default for unknown custom elements), which collapses any block
+       child's width to the inline flow width. That broke the virtualized
+       table demo: `.kj-table-body` couldn't get a non-zero ResizeObserver
+       rect, so the virtualizer rendered 0 visible rows. */
+    display: block;
+    color: var(--kj-fg-default);
+    font: 0.875rem var(--kj-font-sans);
+    line-height: 1.5;
+  }
   .kj-tab-panel[hidden] { display: none; }
 }

@@ -1,11 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test } from 'vitest';
-import { KjTypographyExample } from './typography.example';
-import { KjTypographyLeadExample } from './typography.lead.example';
-import { KjTypographyMutedExample } from './typography.muted.example';
-import { KjTypographyCodeExample } from './typography.code.example';
-import { KjTypographyBlockquoteExample } from './typography.blockquote.example';
-import { KjTypographyTruncateExample } from './typography.truncate.example';
+import {
+  KjTypographyExample,
+  KjTypographyLeadExample,
+  KjTypographyMutedExample,
+  KjTypographyCodeExample,
+  KjTypographyBlockquoteExample,
+  KjTypographyTruncateExample,
+} from './_examples';
 
 /**
  * Smoke tests for the Typography live-preview examples. The component-side

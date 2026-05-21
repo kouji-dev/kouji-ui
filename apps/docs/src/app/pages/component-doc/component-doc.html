@@ -444,6 +444,7 @@
                   @for (entry of recipeExamples(); track entry.example.slug) {
                     <article
                       class="recipe-card"
+                      [class.recipe-card--full]="entry.example.layout === 'full'"
                       [id]="entry.example.slug"
                       [attr.data-toc-entry]="entry.example.label"
                       data-toc-level="2"
