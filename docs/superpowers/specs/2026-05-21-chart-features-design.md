@@ -73,12 +73,12 @@ Exposes:
 - **`matchMedia('prefers-reduced-motion: reduce')`** subscribed at init. When matched (or changes), all option applications run through a merge that forces `animation: false` (and `animationDuration: 0`) on the option object before `setOption`.
 - **`MutationObserver`** on `document.documentElement` watching `class` and `data-theme` attributes. On change → re-resolve palette via `chart-tokens.ts` → re-apply the current option (which merges the new `color` array).
 - **Theme palette resolution** (`chart-tokens.ts`): reads `getComputedStyle(host)` for these vars in order:
-  - `--color-primary`
-  - `--color-accent`
-  - `--color-success`
-  - `--color-warning`
-  - `--color-destructive`
-  - `--chart-scale-1` … `--chart-scale-6` (new vars added to the kj theme tokens)
+  - `--kj-bg-primary`
+  - `--kj-bg-accent`
+  - `--kj-bg-success`
+  - `--kj-bg-warning`
+  - `--kj-bg-danger`
+  - `--kj-chart-1` … `--kj-chart-6` (new vars added to the kj theme tokens)
 - Empty / missing values are filtered out. Result becomes the default `color` array merged into the option unless `kjChartPalette()` is explicitly set.
 
 ### New sibling files
@@ -143,9 +143,9 @@ Verification: `pnpm --filter docs start`, navigate to `/docs/chart` — page ren
 
 ## Theme tokens
 
-Add `--chart-scale-1` … `--chart-scale-6` to every theme in the kj theme registry (location TBD during implementation — likely `packages/themes/src/<theme>/tokens.css` or the central tokens file). Values: 6 visually-distinct shades that harmonize with the existing color tokens; sourced from each theme's existing palette.
+Add `--kj-chart-1` … `--kj-chart-6` to every theme file in `packages/themes/src/themes/*.css` (13 themes). Six visually-distinct shades per theme, sourced from each theme's existing palette so charts inherit identity.
 
-If the theme tokens file structure makes adding 6 vars × N themes too noisy, the implementation plan may swap to a single CSS variable holding a comma-separated palette (e.g. `--chart-scale: "#aaa,#bbb,..."`) parsed by `chart-tokens.ts`. Decision deferred to writing-plans.
+Implementation: each theme's `[data-theme="<name>"]` block gets a `/* ── chart palette ── */` section with the 6 vars. `chart-tokens.ts` reads them via `getComputedStyle(host).getPropertyValue('--kj-chart-N')` and falls back to the intent-color vars (`--kj-bg-primary`, `--kj-bg-accent`, `--kj-bg-success`, `--kj-bg-warning`, `--kj-bg-danger`) for any chart var that resolves empty.
 
 ## Tests
 
@@ -163,7 +163,7 @@ New cases:
 9. With `*kjChartTableFallback`: canvas wrapper has `aria-hidden="true"`; rendered `<table>` is in the DOM and is not `aria-hidden`
 10. axe audit passes on a variant with description + table fallback
 
-`chart-tokens.spec.ts` — palette resolution: filters empties, honors all 11 vars (`--color-*` + `--chart-scale-1..6`).
+`chart-tokens.spec.ts` — palette resolution: returns array, filters empties, falls back to `--kj-bg-*` intent vars when `--kj-chart-N` are absent.
 
 `chart-table-fallback.spec.ts` — structural directive renders its template; multiple instances render their own templates.
 
@@ -191,7 +191,7 @@ New cases:
 - `packages/core/src/chart/chart.spec.ts`
 - `packages/core/src/chart/index.ts`
 - `packages/core/src/example-components.ts`
-- kj theme token files (add `--chart-scale-1..6` per theme)
+- `packages/themes/src/themes/*.css` × 13 (add `--kj-chart-1..6` per theme)
 
 ## Verification before PR
 
