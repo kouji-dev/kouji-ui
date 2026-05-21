@@ -37,4 +37,39 @@ describe('KjChart', () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it('calls chart.resize() when ResizeObserver fires', async () => {
+    let roCb: (() => void) | undefined;
+    const OriginalRO = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      constructor(cb: ResizeObserverCallback) { roCb = () => cb([], this as unknown as ResizeObserver); }
+      observe() {} unobserve() {} disconnect() {}
+    } as unknown as typeof ResizeObserver;
+
+    const resizeSpy = vi.fn();
+    vi.doMock('echarts', () => ({
+      init: () => ({
+        setOption: vi.fn(),
+        resize: resizeSpy,
+        on: vi.fn(),
+        dispose: vi.fn(),
+        showLoading: vi.fn(),
+        hideLoading: vi.fn(),
+        getOption: vi.fn(),
+        dispatchAction: vi.fn(),
+      }),
+    }));
+
+    const { KjChart: Fresh } = await import('./chart');
+    await render(`<div kjChart [kjChartOption]="{}" kjChartLabel="x"></div>`, { imports: [Fresh] });
+    await new Promise(r => setTimeout(r, 0));
+
+    roCb?.();
+    await new Promise(r => requestAnimationFrame(() => r(null)));
+
+    expect(resizeSpy).toHaveBeenCalledTimes(1);
+
+    globalThis.ResizeObserver = OriginalRO;
+    vi.doUnmock('echarts');
+  });
 });

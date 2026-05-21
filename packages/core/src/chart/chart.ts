@@ -77,6 +77,21 @@ export class KjChart {
         this.chart = echarts.init(this.el.nativeElement);
         this.chart.setOption(this.kjChartOption());
         this.kjChartReady.emit(this.chart);
+
+        let pendingRaf = 0;
+        const ro = new ResizeObserver(() => {
+          if (pendingRaf) return;
+          pendingRaf = requestAnimationFrame(() => {
+            pendingRaf = 0;
+            this.chart?.resize();
+          });
+        });
+        ro.observe(this.el.nativeElement);
+        this.destroyRef.onDestroy(() => {
+          if (pendingRaf) cancelAnimationFrame(pendingRaf);
+          ro.disconnect();
+        });
+
         this.destroyRef.onDestroy(() => this.chart?.dispose());
       } catch {
         // ECharts cannot initialize in non-browser environments (jsdom, SSR)
