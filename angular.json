@@ -106,12 +106,9 @@
               "apps/docs/src/styles.css"
             ],
             "server": "apps/docs/src/main.server.ts",
-            "outputMode": "server",
+            "outputMode": "static",
             "security": {
               "allowedHosts": ["*.onrender.com", "localhost"]
-            },
-            "ssr": {
-              "entry": "apps/docs/src/server.ts"
             },
             "externalDependencies": [
               "ts-morph",
