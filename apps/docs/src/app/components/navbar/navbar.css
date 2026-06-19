@@ -66,6 +66,29 @@
   margin-left: 2px;
 }
 
+/* `× Kouji.dev ↗` — links to the kouji.dev site (matches the landing topbar).
+   Dim/monospace to sit quietly beside the version chip; brightens on hover. */
+.kj-navbar-kouji-dev {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-family: var(--kj-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--kj-fg-muted);
+  text-decoration: none;
+}
+.kj-navbar-kouji-dev:hover {
+  color: var(--kj-fg-default);
+  text-decoration: underline;
+}
+.kj-navbar-kouji-dev:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+}
+
 .kj-navbar-icon {
   display: inline-flex;
   align-items: center;
@@ -107,6 +130,7 @@
 @media (max-width: 767px) {
   .kj-navbar-burger { display: inline-flex; }
   .kj-navbar-version,
+  .kj-navbar-kouji-dev,
   .kj-navbar-icon[aria-label="GitHub repository"],
   .kj-navbar-icon[aria-label="npm package"] { display: none; }
   .kj-navbar-link { padding: 4px 6px; font-size: 12px; }
