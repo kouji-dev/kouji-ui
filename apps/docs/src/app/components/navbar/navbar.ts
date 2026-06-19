@@ -40,6 +40,7 @@ export class NavbarComponent {
   protected readonly version = corePackage.version;
   protected readonly githubUrl = 'https://github.com/kouji-dev/kouji-ui';
   protected readonly npmUrl = 'https://www.npmjs.com/package/@kouji-ui/core';
+  protected readonly koujiDevUrl = 'https://kouji.dev';
 
   protected readonly hasSidebar = computed(() => {
     const u = this.url();

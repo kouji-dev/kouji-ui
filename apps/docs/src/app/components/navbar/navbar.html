@@ -19,6 +19,18 @@
     <span class="kj-navbar-version" aria-label="Library version">v{{ version }}</span>
   </a>
 
+  <a
+    [href]="koujiDevUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="kj-navbar-kouji-dev"
+    aria-label="Kouji.dev, opens in a new tab"
+  >
+    <span aria-hidden="true">×</span>
+    Kouji.dev
+    <span aria-hidden="true">↗</span>
+  </a>
+
   <a routerLink="/docs" routerLinkActive="active" class="kj-navbar-link">Docs</a>
   <a routerLink="/theme-generator" routerLinkActive="active" class="kj-navbar-link">Theme Generator</a>
   <a routerLink="/roadmap" routerLinkActive="active" class="kj-navbar-link">Roadmap</a>

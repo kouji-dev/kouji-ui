@@ -24,6 +24,14 @@ describe('NavbarComponent', () => {
     expect(screen.getByRole('link', { name: /theme generator/i })).toHaveAttribute('href', '/theme-generator');
   });
 
+  test('renders the Kouji.dev link opening in a new tab', async () => {
+    await render(NavbarComponent, { providers: baseProviders });
+    const link = screen.getByRole('link', { name: /kouji\.dev/i });
+    expect(link).toHaveAttribute('href', 'https://kouji.dev');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   test('does not render a search trigger (moved to sidebar)', async () => {
     await render(NavbarComponent, { providers: baseProviders });
     expect(screen.queryByRole('button', { name: /search docs/i })).toBeNull();
