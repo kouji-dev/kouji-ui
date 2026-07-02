@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonGroupComponent } from '../button-group';
 import { KjButtonComponent } from '../../button/button';
 
@@ -13,9 +13,16 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-button-group-variants-example',
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button-group kjVariant="outline" kjAriaLabel="Outline group">
       <kj-button kjVariant="outline">Day</kj-button>

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
 
 /**
@@ -9,7 +9,14 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
   selector: 'kj-combobox-example',
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-combobox [(value)]="country" placeholder="Search countries…">
       <kj-combobox-option [value]="'fr'">France</kj-combobox-option>

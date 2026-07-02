@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjAlertComponent,
   KjAlertDescriptionComponent,
@@ -20,12 +20,16 @@ import {
     KjAlertTitleComponent,
     KjAlertDescriptionComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-alert kjVariant="info">
       <kj-alert-icon>i</kj-alert-icon>
@@ -48,7 +52,9 @@ import {
     <kj-alert kjVariant="error">
       <kj-alert-icon>✕</kj-alert-icon>
       <kj-alert-title>Could not save</kj-alert-title>
-      <kj-alert-description>Network request timed out. Resolves to assertive automatically.</kj-alert-description>
+      <kj-alert-description
+        >Network request timed out. Resolves to assertive automatically.</kj-alert-description
+      >
     </kj-alert>
 
     <kj-alert kjVariant="neutral">

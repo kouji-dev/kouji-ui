@@ -1,10 +1,5 @@
-import { Component } from '@angular/core';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from '../tabs';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from '../tabs';
 
 /**
  * Vertical orientation example — the tab strip flips to a column and the
@@ -14,7 +9,14 @@ import {
   selector: 'kj-tabs-vertical-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tabs orientation="vertical">
       <kj-tab-list>

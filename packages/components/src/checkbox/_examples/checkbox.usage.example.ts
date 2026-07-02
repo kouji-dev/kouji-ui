@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjCheckboxComponent } from '../checkbox';
 
 /**
@@ -10,10 +10,22 @@ import { KjCheckboxComponent } from '../checkbox';
   selector: 'kj-checkbox-usage-example',
   standalone: true,
   imports: [KjCheckboxComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-md); flex-wrap: wrap; align-items: center; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-checkbox [(checked)]="terms">Accept terms</kj-checkbox>

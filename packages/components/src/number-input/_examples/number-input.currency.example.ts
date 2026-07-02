@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjNumberInputComponent } from '../number-input';
 
 /**
@@ -10,7 +10,14 @@ import { KjNumberInputComponent } from '../number-input';
   selector: 'kj-number-input-currency-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-number-input
       [(kjValue)]="price"

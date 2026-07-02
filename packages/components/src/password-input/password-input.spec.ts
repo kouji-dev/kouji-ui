@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, test } from 'vitest';
 import { KjPasswordInputComponent } from './password-input';
@@ -6,6 +6,7 @@ import { KjPasswordInputComponent } from './password-input';
 @Component({
   standalone: true,
   imports: [KjPasswordInputComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-password-input
       [kjAutocomplete]="autocomplete"
@@ -15,7 +16,8 @@ import { KjPasswordInputComponent } from './password-input';
       [kjPlaceholder]="placeholder"
       [kjShowToggle]="showToggle"
       [kjShowStrength]="showStrength"
-      [kjShowCapsLockWarning]="showCapsLock" />
+      [kjShowCapsLockWarning]="showCapsLock"
+    />
   `,
 })
 class HostComponent {
@@ -93,7 +95,7 @@ describe('KjPasswordInputComponent', () => {
     expect(input.getAttribute('type')).toBe('password');
     button.click();
     fixture.detectChanges();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
     fixture.detectChanges();
     expect(input.getAttribute('type')).toBe('text');
   });

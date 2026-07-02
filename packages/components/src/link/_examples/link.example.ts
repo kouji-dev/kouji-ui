@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjLinkComponent } from '../link';
 
 /**
@@ -9,11 +9,17 @@ import { KjLinkComponent } from '../link';
   selector: 'kj-link-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <p>
-      Visit <kj-link kjHref="/about">our about page</kj-link> for more
-      information about kouji-ui.
+      Visit <kj-link kjHref="/about">our about page</kj-link> for more information about kouji-ui.
     </p>
   `,
 })

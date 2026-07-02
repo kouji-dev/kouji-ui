@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach, vi } from 'vitest';
 import {
@@ -28,6 +28,7 @@ const directives = [
 @Component({
   standalone: true,
   imports: directives,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       kjCarousel
@@ -37,7 +38,9 @@ const directives = [
       [kjOrientation]="orientation"
       #c="kjCarousel"
     >
-      <button kjCarouselPrevious type="button" data-testid="prev" aria-label="Previous slide">‹</button>
+      <button kjCarouselPrevious type="button" data-testid="prev" aria-label="Previous slide">
+        ‹
+      </button>
       <div kjCarouselViewport data-testid="viewport">
         <div kjCarouselSlide kjSlideValue="a" kjSlideLabel="Alpha" data-testid="slide-a">A</div>
         <div kjCarouselSlide kjSlideValue="b" kjSlideLabel="Bravo" data-testid="slide-b">B</div>
@@ -50,9 +53,27 @@ const directives = [
         kjAriaLabel="Slide controls"
         data-testid="indicators"
       >
-        <button kjCarouselIndicator kjForValue="a" type="button" data-testid="dot-a" aria-label="Slide 1"></button>
-        <button kjCarouselIndicator kjForValue="b" type="button" data-testid="dot-b" aria-label="Slide 2"></button>
-        <button kjCarouselIndicator kjForValue="c" type="button" data-testid="dot-c" aria-label="Slide 3"></button>
+        <button
+          kjCarouselIndicator
+          kjForValue="a"
+          type="button"
+          data-testid="dot-a"
+          aria-label="Slide 1"
+        ></button>
+        <button
+          kjCarouselIndicator
+          kjForValue="b"
+          type="button"
+          data-testid="dot-b"
+          aria-label="Slide 2"
+        ></button>
+        <button
+          kjCarouselIndicator
+          kjForValue="c"
+          type="button"
+          data-testid="dot-c"
+          aria-label="Slide 3"
+        ></button>
       </div>
     </div>
   `,
@@ -68,9 +89,15 @@ class HostComponent {
 @Component({
   standalone: true,
   imports: directives,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjCarousel kjLabel="Auto" [kjLoop]="true" #c="kjCarousel">
-      <div kjCarouselAutoplay [kjAutoplayDelay]="50" [kjPauseOnHover]="false" [kjPauseOnFocus]="false"></div>
+      <div
+        kjCarouselAutoplay
+        [kjAutoplayDelay]="50"
+        [kjPauseOnHover]="false"
+        [kjPauseOnFocus]="false"
+      ></div>
       <div kjCarouselViewport>
         <div kjCarouselSlide kjSlideValue="x">X</div>
         <div kjCarouselSlide kjSlideValue="y">Y</div>
@@ -136,7 +163,7 @@ describe('KjCarousel (core)', () => {
     fixture.detectChanges();
 
     const carouselEl = fixture.nativeElement.querySelector('[kjCarousel]') as HTMLElement;
-    const ref = (carouselEl as unknown as { __kjCarousel?: KjCarousel });
+    const ref = carouselEl as unknown as { __kjCarousel?: KjCarousel };
     void ref;
     // Reach the directive instance via the harness; simpler to drive via the model.
     fixture.componentInstance.active.set('a');
@@ -221,7 +248,9 @@ describe('KjCarousel (core)', () => {
     await flush();
     fixture.detectChanges();
 
-    const indicators: HTMLElement = fixture.nativeElement.querySelector('[data-testid="indicators"]');
+    const indicators: HTMLElement = fixture.nativeElement.querySelector(
+      '[data-testid="indicators"]',
+    );
     const dotA: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="dot-a"]');
     const dotB: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="dot-b"]');
     const slideA: HTMLElement = fixture.nativeElement.querySelector('[data-testid="slide-a"]');
@@ -258,7 +287,9 @@ describe('KjCarousel (core)', () => {
     await flush();
 
     const root: HTMLElement = fixture.nativeElement.querySelector('[kjCarousel]');
-    const indicators: HTMLElement = fixture.nativeElement.querySelector('[data-testid="indicators"]');
+    const indicators: HTMLElement = fixture.nativeElement.querySelector(
+      '[data-testid="indicators"]',
+    );
     expect(root.getAttribute('aria-orientation')).toBe('vertical');
     expect(root.getAttribute('data-orientation')).toBe('vertical');
     expect(indicators.getAttribute('aria-orientation')).toBe('vertical');

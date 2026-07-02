@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjToggleComponent } from '../toggle';
 
 /**
@@ -10,11 +10,26 @@ import { KjToggleComponent } from '../toggle';
   selector: 'kj-toggle-usage-example',
   standalone: true,
   imports: [KjToggleComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-md); align-items: center; flex-wrap: wrap; }
-    .label { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .label {
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-toggle [(pressed)]="bold" ariaLabel="Bold">B</kj-toggle>

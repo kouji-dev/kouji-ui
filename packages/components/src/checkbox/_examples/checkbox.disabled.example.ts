@@ -1,11 +1,20 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjCheckboxComponent } from '../checkbox';
 
 @Component({
   selector: 'kj-checkbox-disabled-example',
   standalone: true,
   imports: [KjCheckboxComponent],
-  styles: [`:host { display: block; display: flex; gap: 1rem; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+        display: flex;
+        gap: 1rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-checkbox [(checked)]="off" [disabled]="true">Disabled off</kj-checkbox>
     <kj-checkbox [(checked)]="on" [disabled]="true">Disabled on</kj-checkbox>

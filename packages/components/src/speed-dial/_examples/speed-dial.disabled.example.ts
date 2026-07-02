@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjSpeedDialActionComponent,
   KjSpeedDialActionsComponent,
@@ -23,23 +23,30 @@ import {
     KjSpeedDialActionsComponent,
     KjSpeedDialActionComponent,
   ],
-  styles: [`
-    :host {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--kj-space-2xl);
-      padding: var(--kj-space-2xl); min-height: 18rem;
-    }
-    .kj-speed-dial-disabled__cell {
-      display: flex;
-      align-items: center;
-      justify-content: center; border-radius: var(--kj-radius-box);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--kj-space-2xl);
+        padding: var(--kj-space-2xl);
+        min-height: 18rem;
+      }
+      .kj-speed-dial-disabled__cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--kj-radius-box);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="kj-speed-dial-disabled__cell">
       <kj-speed-dial [kjDisabled]="true" kjPosition="static">
-        <kj-speed-dial-trigger kjAriaLabel="Open (disabled)" [kjDisabled]="true">+</kj-speed-dial-trigger>
+        <kj-speed-dial-trigger kjAriaLabel="Open (disabled)" [kjDisabled]="true"
+          >+</kj-speed-dial-trigger
+        >
         <kj-speed-dial-actions>
           <kj-speed-dial-action kjAriaLabel="A">A</kj-speed-dial-action>
           <kj-speed-dial-action kjAriaLabel="B">B</kj-speed-dial-action>
@@ -52,7 +59,9 @@ import {
         <kj-speed-dial-trigger kjAriaLabel="Open">+</kj-speed-dial-trigger>
         <kj-speed-dial-actions>
           <kj-speed-dial-action kjAriaLabel="Edit">E</kj-speed-dial-action>
-          <kj-speed-dial-action kjAriaLabel="Archive (disabled)" [kjDisabled]="true">A</kj-speed-dial-action>
+          <kj-speed-dial-action kjAriaLabel="Archive (disabled)" [kjDisabled]="true"
+            >A</kj-speed-dial-action
+          >
           <kj-speed-dial-action kjAriaLabel="Share">S</kj-speed-dial-action>
         </kj-speed-dial-actions>
       </kj-speed-dial>

@@ -1,13 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
-  KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent,
+  KjAccordionComponent,
+  KjAccordionItemComponent,
+  KjAccordionContentComponent,
 } from '../accordion';
 
 @Component({
   selector: 'kj-accordion-multiple-example',
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-accordion type="multiple">
       <kj-accordion-item value="a" label="Section A">

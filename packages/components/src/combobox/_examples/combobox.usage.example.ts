@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
 
 /**
@@ -9,11 +9,25 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
   selector: 'kj-combobox-usage-example',
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-md); align-items: center; }
-    code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      code {
+        font: 0.8125rem/1 var(--kj-font-mono, monospace);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-combobox [(value)]="framework" placeholder="Pick a framework…">

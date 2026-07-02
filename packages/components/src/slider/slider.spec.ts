@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjSliderComponent } from './slider';
@@ -6,6 +6,7 @@ import { KjSliderComponent } from './slider';
 @Component({
   standalone: true,
   imports: [KjSliderComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-slider
       [(kjValue)]="value"
@@ -30,6 +31,7 @@ class SingleHost {
 @Component({
   standalone: true,
   imports: [KjSliderComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-slider
       [(kjRange)]="range"

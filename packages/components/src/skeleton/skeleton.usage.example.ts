@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjSkeletonComponent } from './skeleton';
 
 /**
@@ -10,11 +10,27 @@ import { KjSkeletonComponent } from './skeleton';
   selector: 'kj-skeleton-usage-example',
   standalone: true,
   imports: [KjSkeletonComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-xl); }
-    .row { display: flex; align-items: center; gap: var(--kj-space-md); }
-    .stack { display: flex; flex-direction: column; gap: var(--kj-space-xs); flex: 1; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xl);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: var(--kj-space-md);
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xs);
+        flex: 1;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row" aria-busy="true" role="status">
       <kj-skeleton kjSkeletonShape="circle" kjWidth="2.5rem" kjHeight="2.5rem" />

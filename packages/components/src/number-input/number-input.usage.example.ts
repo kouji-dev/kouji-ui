@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjNumberInputComponent } from './number-input';
 
 /**
@@ -10,11 +10,28 @@ import { KjNumberInputComponent } from './number-input';
   selector: 'kj-number-input-usage-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-md); flex-wrap: wrap; align-items: center; }
-    label { font-size: 0.875rem; color: var(--kj-fg-default); display: grid; gap: var(--kj-space-xs); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      label {
+        font-size: 0.875rem;
+        color: var(--kj-fg-default);
+        display: grid;
+        gap: var(--kj-space-xs);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
@@ -30,7 +47,8 @@ import { KjNumberInputComponent } from './number-input';
           [kjMin]="1"
           [kjMax]="12"
           [kjStep]="1"
-          kjAriaLabel="Servings" />
+          kjAriaLabel="Servings"
+        />
       </label>
       <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
       <label>
@@ -42,7 +60,8 @@ import { KjNumberInputComponent } from './number-input';
           kjLocale="en-US"
           [kjMinimumFractionDigits]="2"
           [kjMaximumFractionDigits]="2"
-          kjAriaLabel="Price" />
+          kjAriaLabel="Price"
+        />
       </label>
     </div>
   `,

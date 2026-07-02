@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjInputComponent } from './input';
@@ -6,7 +6,14 @@ import { KjInputComponent } from './input';
 @Component({
   standalone: true,
   imports: [KjInputComponent],
-  template: `<kj-input [type]="type" [value]="value" [placeholder]="placeholder" [invalid]="invalid" [disabled]="disabled" />`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-input
+    [type]="type"
+    [value]="value"
+    [placeholder]="placeholder"
+    [invalid]="invalid"
+    [disabled]="disabled"
+  />`,
 })
 class HostComponent {
   type: 'text' | 'email' | 'password' | 'number' | 'search' | 'tel' | 'url' | 'color' = 'text';
@@ -17,7 +24,9 @@ class HostComponent {
 }
 
 describe('KjInputComponent', () => {
-  beforeEach(() => { TestBed.configureTestingModule({ imports: [HostComponent] }); });
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [HostComponent] });
+  });
 
   test('renders an inner <input> with the .kj-input class', () => {
     const fixture = TestBed.createComponent(HostComponent);
@@ -29,14 +38,18 @@ describe('KjInputComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.type = 'email';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('type')).toBe('email');
+    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('type')).toBe(
+      'email',
+    );
   });
 
   test('renders <input type="color"> when type=color', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.type = 'color';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('type')).toBe('color');
+    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('type')).toBe(
+      'color',
+    );
   });
 
   test('mirrors type to data-type attr on host', () => {
@@ -59,7 +72,9 @@ describe('KjInputComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.placeholder = 'you@example.com';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('placeholder')).toBe('you@example.com');
+    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('placeholder')).toBe(
+      'you@example.com',
+    );
   });
 
   test('forwards invalid → aria-invalid (after blur)', () => {
@@ -76,6 +91,8 @@ describe('KjInputComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.disabled = true;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('kj-input input').getAttribute('aria-disabled')).toBe('true');
+    expect(
+      fixture.nativeElement.querySelector('kj-input input').getAttribute('aria-disabled'),
+    ).toBe('true');
   });
 });

@@ -1,4 +1,4 @@
-import { Component, TemplateRef, inject, viewChild } from '@angular/core';
+import { Component, TemplateRef, inject, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { KjToastService } from '@kouji-ui/core';
 import type { KjToastTemplateContext } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
@@ -13,14 +13,28 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
   selector: 'kj-toast-usage-example',
   standalone: true,
   imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); min-height: 10rem; }
-    .row { display: flex; gap: var(--kj-space-sm); flex-wrap: wrap; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        min-height: 10rem;
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-sm);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-button (click)="show('default', 'Saved')">Default</kj-button>
-      <kj-button kjVariant="destructive" (click)="show('destructive', 'Save failed')">Error</kj-button>
+      <kj-button kjVariant="destructive" (click)="show('destructive', 'Save failed')"
+        >Error</kj-button
+      >
       <kj-button (click)="show('success', 'Uploaded — view file')">With action</kj-button>
     </div>
     <kj-toast-viewport />

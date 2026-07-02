@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjConfirmPopupActionComponent,
   KjConfirmPopupActionsComponent,
@@ -28,15 +28,27 @@ import { KjButtonComponent } from '../../button/button';
     KjConfirmPopupActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); min-height: 14rem; }
-    .kj-confirm-popup-example__status { margin-top: var(--kj-space-md); color: var(--kj-fg-default); opacity: 0.85; font-size: 0.875rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        padding: var(--kj-space-2xl);
+        min-height: 14rem;
+      }
+      .kj-confirm-popup-example__status {
+        margin-top: var(--kj-space-md);
+        color: var(--kj-fg-default);
+        opacity: 0.85;
+        font-size: 0.875rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-confirm-popup
-      [kjDestructive]="true"
-      (kjResult)="onResult($event)">
-      <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="destructive">Delete row</kj-button>
+    <kj-confirm-popup [kjDestructive]="true" (kjResult)="onResult($event)">
+      <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="destructive"
+        >Delete row</kj-button
+      >
       <kj-confirm-popup-content [kjFor]="trig">
         <p kjConfirmPopupMessage>Delete this row? This cannot be undone.</p>
         <kj-confirm-popup-actions>

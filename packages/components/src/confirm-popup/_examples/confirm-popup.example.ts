@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjConfirmPopupActionComponent,
   KjConfirmPopupActionsComponent,
@@ -32,16 +32,32 @@ import { KjButtonComponent } from '../../button/button';
     KjConfirmPopupActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl); min-height: 14rem; }
-    .kj-confirm-popup-example__row { display: flex; align-items: center; gap: var(--kj-space-md); }
-    .kj-confirm-popup-example__status { color: var(--kj-fg-default); opacity: 0.85; font-size: 0.875rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        padding: var(--kj-space-2xl);
+        min-height: 14rem;
+      }
+      .kj-confirm-popup-example__row {
+        display: flex;
+        align-items: center;
+        gap: var(--kj-space-md);
+      }
+      .kj-confirm-popup-example__status {
+        color: var(--kj-fg-default);
+        opacity: 0.85;
+        font-size: 0.875rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="kj-confirm-popup-example__row">
-      <kj-confirm-popup
-        (kjResult)="onResult($event)">
-        <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="default">Delete item</kj-button>
+      <kj-confirm-popup (kjResult)="onResult($event)">
+        <kj-button kjConfirmPopupTrigger #trig="kjConfirmPopupTrigger" kjVariant="default"
+          >Delete item</kj-button
+        >
         <kj-confirm-popup-content [kjFor]="trig">
           <p kjConfirmPopupMessage class="kj-confirm-popup-message">Delete this item?</p>
           <kj-confirm-popup-actions>

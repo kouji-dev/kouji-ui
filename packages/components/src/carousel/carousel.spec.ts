@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
@@ -26,13 +26,20 @@ const imports = [
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-carousel [(value)]="active" [label]="label" [loop]="loop" [orientation]="orientation">
       <kj-carousel-previous aria-label="Previous slide" />
       <kj-carousel-viewport>
-        <kj-carousel-slide value="one"   label="One"><div data-testid="content-one">One body</div></kj-carousel-slide>
-        <kj-carousel-slide value="two"   label="Two"><div data-testid="content-two">Two body</div></kj-carousel-slide>
-        <kj-carousel-slide value="three" label="Three"><div data-testid="content-three">Three body</div></kj-carousel-slide>
+        <kj-carousel-slide value="one" label="One"
+          ><div data-testid="content-one">One body</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="two" label="Two"
+          ><div data-testid="content-two">Two body</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="three" label="Three"
+          ><div data-testid="content-three">Three body</div></kj-carousel-slide
+        >
       </kj-carousel-viewport>
       <kj-carousel-next aria-label="Next slide" />
       <kj-carousel-indicators ariaLabel="Slide controls" [controlPattern]="controlPattern" />
@@ -50,6 +57,7 @@ class HostComponent {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-carousel label="Auto">
       <kj-carousel-autoplay [delay]="5000" />
@@ -120,7 +128,9 @@ describe('KjCarouselComponent (wrapper)', () => {
     await flush();
     fixture.detectChanges();
 
-    const dots = fixture.nativeElement.querySelectorAll<HTMLButtonElement>('button.kj-carousel-indicator');
+    const dots = fixture.nativeElement.querySelectorAll<HTMLButtonElement>(
+      'button.kj-carousel-indicator',
+    );
     expect(dots.length).toBe(3);
     expect(dots[0].getAttribute('aria-current')).toBe('true');
     expect(dots[1].getAttribute('aria-current')).toBeNull();
@@ -141,7 +151,9 @@ describe('KjCarouselComponent (wrapper)', () => {
 
     const indicators = fixture.nativeElement.querySelector('kj-carousel-indicators')!;
     expect(indicators.getAttribute('role')).toBe('tablist');
-    const dots = fixture.nativeElement.querySelectorAll<HTMLButtonElement>('button.kj-carousel-indicator');
+    const dots = fixture.nativeElement.querySelectorAll<HTMLButtonElement>(
+      'button.kj-carousel-indicator',
+    );
     dots.forEach((d) => expect(d.getAttribute('role')).toBe('tab'));
     expect(dots[0].getAttribute('aria-selected')).toBe('true');
     expect(dots[1].getAttribute('aria-selected')).toBe('false');
@@ -177,7 +189,9 @@ describe('KjCarouselComponent (wrapper)', () => {
     fixture.detectChanges();
     await flush();
 
-    const pause: HTMLButtonElement = fixture.nativeElement.querySelector('button.kj-carousel-pause');
+    const pause: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'button.kj-carousel-pause',
+    );
     expect(pause.getAttribute('aria-pressed')).toBe('false');
     pause.click();
     fixture.detectChanges();

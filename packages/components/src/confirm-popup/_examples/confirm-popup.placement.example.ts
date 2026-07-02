@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjConfirmPopupActionComponent,
   KjConfirmPopupActionsComponent,
@@ -28,21 +28,27 @@ import { KjButtonComponent } from '../../button/button';
     KjConfirmPopupActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      gap: var(--kj-space-md);
-      flex-wrap: wrap;
-      padding: var(--kj-space-2xl); min-height: 16rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        flex-wrap: wrap;
+        padding: var(--kj-space-2xl);
+        min-height: 16rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-confirm-popup>
       <kj-button kjConfirmPopupTrigger #t1="kjConfirmPopupTrigger">Top</kj-button>
       <kj-confirm-popup-content [kjFor]="t1">
         <p kjConfirmPopupMessage>Confirm action above the trigger.</p>
         <kj-confirm-popup-actions>
-          <kj-confirm-popup-cancel><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel>
+          <kj-confirm-popup-cancel
+            ><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel
+          >
           <kj-confirm-popup-action><kj-button>OK</kj-button></kj-confirm-popup-action>
         </kj-confirm-popup-actions>
       </kj-confirm-popup-content>
@@ -53,7 +59,9 @@ import { KjButtonComponent } from '../../button/button';
       <kj-confirm-popup-content [kjFor]="t2">
         <p kjConfirmPopupMessage>Confirm action to the right.</p>
         <kj-confirm-popup-actions>
-          <kj-confirm-popup-cancel><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel>
+          <kj-confirm-popup-cancel
+            ><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel
+          >
           <kj-confirm-popup-action><kj-button>OK</kj-button></kj-confirm-popup-action>
         </kj-confirm-popup-actions>
       </kj-confirm-popup-content>
@@ -64,7 +72,9 @@ import { KjButtonComponent } from '../../button/button';
       <kj-confirm-popup-content [kjFor]="t3">
         <p kjConfirmPopupMessage>Confirm action below the trigger.</p>
         <kj-confirm-popup-actions>
-          <kj-confirm-popup-cancel><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel>
+          <kj-confirm-popup-cancel
+            ><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel
+          >
           <kj-confirm-popup-action><kj-button>OK</kj-button></kj-confirm-popup-action>
         </kj-confirm-popup-actions>
       </kj-confirm-popup-content>
@@ -75,7 +85,9 @@ import { KjButtonComponent } from '../../button/button';
       <kj-confirm-popup-content [kjFor]="t4">
         <p kjConfirmPopupMessage>Confirm action to the left.</p>
         <kj-confirm-popup-actions>
-          <kj-confirm-popup-cancel><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel>
+          <kj-confirm-popup-cancel
+            ><kj-button kjVariant="ghost">Cancel</kj-button></kj-confirm-popup-cancel
+          >
           <kj-confirm-popup-action><kj-button>OK</kj-button></kj-confirm-popup-action>
         </kj-confirm-popup-actions>
       </kj-confirm-popup-content>

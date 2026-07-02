@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjPasswordInputComponent } from '../password-input';
 
 /**
@@ -10,11 +10,24 @@ import { KjPasswordInputComponent } from '../password-input';
   selector: 'kj-password-input-strength-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: block; }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 360px; }
-    label { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+        max-width: 360px;
+      }
+      label {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <label for="signup-pw">Choose a password</label>
@@ -22,7 +35,8 @@ import { KjPasswordInputComponent } from '../password-input';
         kjAutocomplete="new-password"
         kjPlaceholder="Mix letters, numbers, symbols"
         [kjShowStrength]="true"
-        [(kjValue)]="value" />
+        [(kjValue)]="value"
+      />
     </div>
   `,
 })

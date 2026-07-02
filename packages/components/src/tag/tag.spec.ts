@@ -1,21 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import {
-  KjTagComponent,
-  KjTagListComponent,
-  KjTagRemoveComponent,
-} from './tag';
+import { KjTagComponent, KjTagListComponent, KjTagRemoveComponent } from './tag';
 
 @Component({
   standalone: true,
   imports: [KjTagComponent, KjTagRemoveComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-tag
-      [kjTagDisabled]="disabled"
-      [kjTagSelectable]="selectable"
-      [(kjTagSelected)]="selected"
-    >{{ label }}<kj-tag-remove [kjTagRemoveLabel]="removeLabel">×</kj-tag-remove></kj-tag>
+    <kj-tag [kjTagDisabled]="disabled" [kjTagSelectable]="selectable" [(kjTagSelected)]="selected"
+      >{{ label }}<kj-tag-remove [kjTagRemoveLabel]="removeLabel">×</kj-tag-remove></kj-tag
+    >
   `,
 })
 class TagHost {
@@ -29,6 +24,7 @@ class TagHost {
 @Component({
   standalone: true,
   imports: [KjTagComponent, KjTagListComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tag-list
       [kjTagListRole]="role"
@@ -88,8 +84,9 @@ describe('KjTagComponent', () => {
     fixture.componentInstance.disabled = true;
     fixture.componentInstance.selectable = true;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('kj-tag').getAttribute('aria-disabled'))
-      .toBe('true');
+    expect(fixture.nativeElement.querySelector('kj-tag').getAttribute('aria-disabled')).toBe(
+      'true',
+    );
   });
 });
 
@@ -111,8 +108,9 @@ describe('KjTagRemoveComponent', () => {
     const fixture = TestBed.createComponent(TagHost);
     fixture.componentInstance.removeLabel = 'Dismiss filter';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('kj-tag-remove').getAttribute('aria-label'))
-      .toBe('Dismiss filter');
+    expect(fixture.nativeElement.querySelector('kj-tag-remove').getAttribute('aria-label')).toBe(
+      'Dismiss filter',
+    );
   });
 });
 

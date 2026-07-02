@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KjColorPickerComponent, type KjColorPreset } from '../color-picker';
 
@@ -10,11 +10,25 @@ import { KjColorPickerComponent, type KjColorPreset } from '../color-picker';
   selector: 'kj-color-picker-usage-example',
   standalone: true,
   imports: [KjColorPickerComponent, FormsModule],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-md); align-items: center; }
-    code { font: 0.8125rem/1 var(--kj-font-mono, monospace); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      code {
+        font: 0.8125rem/1 var(--kj-font-mono, monospace);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-color-picker [(ngModel)]="brand" />

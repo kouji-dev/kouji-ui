@@ -1,10 +1,5 @@
-import { Component, signal } from '@angular/core';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from '../tabs';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from '../tabs';
 
 /**
  * A walkthrough of the most common tabs usages — controlled value, a disabled
@@ -15,10 +10,20 @@ import {
   selector: 'kj-tabs-usage-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .readout { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .readout {
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <p class="readout">Active: {{ active() }}</p>
     <kj-tabs [(value)]="active">

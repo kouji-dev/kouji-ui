@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjKbdComponent } from '../kbd';
 
 /**
@@ -9,7 +9,14 @@ import { KjKbdComponent } from '../kbd';
   selector: 'kj-kbd-example',
   standalone: true,
   imports: [KjKbdComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<p>Press <kj-kbd>K</kj-kbd> to focus search.</p>`,
 })
 export class KjKbdExample {}

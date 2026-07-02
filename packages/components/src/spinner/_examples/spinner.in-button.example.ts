@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import { KjSpinnerComponent } from '../spinner';
 
@@ -13,9 +13,16 @@ import { KjSpinnerComponent } from '../spinner';
   selector: 'kj-spinner-in-button-example',
   standalone: true,
   imports: [KjButtonComponent, KjSpinnerComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button (click)="run()" [kjDisabled]="busy()">
       @if (busy()) {

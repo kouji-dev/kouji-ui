@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
   KjCascadeOptionComponent,
@@ -14,17 +14,23 @@ interface GeoNode extends KjCascadeNode<string> {
 
 const REGIONS: readonly GeoNode[] = [
   {
-    value: 'na', label: 'North America', children: [
+    value: 'na',
+    label: 'North America',
+    children: [
       {
-        value: 'us', label: 'United States', children: [
-          { value: 'sf',  label: 'San Francisco' },
-          { value: 'la',  label: 'Los Angeles' },
+        value: 'us',
+        label: 'United States',
+        children: [
+          { value: 'sf', label: 'San Francisco' },
+          { value: 'la', label: 'Los Angeles' },
           { value: 'chi', label: 'Chicago' },
           { value: 'nyc', label: 'New York City' },
         ],
       },
       {
-        value: 'ca', label: 'Canada', children: [
+        value: 'ca',
+        label: 'Canada',
+        children: [
           { value: 'tor', label: 'Toronto' },
           { value: 'van', label: 'Vancouver' },
         ],
@@ -32,15 +38,21 @@ const REGIONS: readonly GeoNode[] = [
     ],
   },
   {
-    value: 'eu', label: 'Europe', children: [
+    value: 'eu',
+    label: 'Europe',
+    children: [
       {
-        value: 'de', label: 'Germany', children: [
+        value: 'de',
+        label: 'Germany',
+        children: [
           { value: 'ber', label: 'Berlin' },
           { value: 'mun', label: 'Munich' },
         ],
       },
       {
-        value: 'fr', label: 'France', children: [
+        value: 'fr',
+        label: 'France',
+        children: [
           { value: 'par', label: 'Paris' },
           { value: 'lyo', label: 'Lyon' },
         ],
@@ -48,7 +60,9 @@ const REGIONS: readonly GeoNode[] = [
     ],
   },
   {
-    value: 'as', label: 'Asia', children: [
+    value: 'as',
+    label: 'Asia',
+    children: [
       { value: 'tok', label: 'Tokyo' },
       { value: 'bei', label: 'Beijing' },
       { value: 'sin', label: 'Singapore' },
@@ -64,12 +78,15 @@ const REGIONS: readonly GeoNode[] = [
 @Component({
   selector: 'kj-cascade-select-data-driven-example',
   standalone: true,
-  imports: [
-    KjCascadeSelectComponent,
-    KjCascadeOptionComponent,
-    KjCascadeSubPanelComponent,
+  imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
   ],
-  styles: [`:host { display: block; }`],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-cascade-select [(kjValue)]="selected" placeholder="Select a location">
       @for (region of regions; track region.value) {
@@ -80,10 +97,7 @@ const REGIONS: readonly GeoNode[] = [
                 @if (country.children?.length) {
                   <kj-cascade-sub-panel [kjOwnerOptionId]="country.value">
                     @for (city of country.children; track city.value) {
-                      <kj-cascade-option
-                        [kjValue]="city.value"
-                        [kjLabel]="city.label"
-                      />
+                      <kj-cascade-option [kjValue]="city.value" [kjLabel]="city.label" />
                     }
                   </kj-cascade-sub-panel>
                 }

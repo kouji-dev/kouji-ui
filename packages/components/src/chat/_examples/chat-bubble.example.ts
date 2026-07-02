@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarComponent } from '../../avatar/avatar';
 import {
   KjChatAvatarComponent,
@@ -27,10 +27,17 @@ import {
     KjChatFooterComponent,
     KjAvatarComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    kj-chat-log { max-height: 22rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      kj-chat-log {
+        max-height: 22rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-chat-log kjChatLogLabel="Conversation with Alice">
       <kj-chat kjSide="start" kjChatAuthor="alice">

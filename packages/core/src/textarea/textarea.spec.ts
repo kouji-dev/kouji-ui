@@ -1,4 +1,4 @@
-import { Component, type DebugElement } from '@angular/core';
+import { Component, type DebugElement, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { describe, expect, test, beforeEach } from 'vitest';
@@ -7,6 +7,7 @@ import { KjTextarea } from './textarea';
 @Component({
   standalone: true,
   imports: [KjTextarea, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <textarea
       kjTextarea
@@ -19,7 +20,8 @@ import { KjTextarea } from './textarea';
       [kjMaxLength]="maxLength"
       [kjVariant]="variant"
       [kjSize]="size"
-      [kjDisabled]="disabled"></textarea>
+      [kjDisabled]="disabled"
+    ></textarea>
   `,
 })
 class HostComponent {

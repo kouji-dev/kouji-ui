@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjDividerComponent } from '../divider';
 
 /**
@@ -11,9 +11,16 @@ import { KjDividerComponent } from '../divider';
   selector: 'kj-divider-with-content-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div>
       <p>Sign in with your password.</p>

@@ -1,13 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../button';
 
 @Component({
   selector: 'kj-button-sizes-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-sm); align-items: center; flex-wrap: wrap; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-sm);
+        align-items: center;
+        flex-wrap: wrap;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjSize="sm">Small</kj-button>
     <kj-button kjSize="md">Medium</kj-button>

@@ -1,12 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjButtonComponent } from '../../button/button';
 import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
 import { KjInputComponent } from '../../input/input';
-import {
-  KjFormActionsComponent,
-  KjFormComponent,
-} from '../form';
+import { KjFormActionsComponent, KjFormComponent } from '../form';
 
 /**
  * Async submit example — the handler returns a Promise, so `<form kj-form>`
@@ -25,17 +22,21 @@ import {
     KjButtonComponent,
     ReactiveFormsModule,
   ],
-  styles: [`
-    :host { display: block; }
-    .status { font-size: 0.8125rem; opacity: 0.7; margin-top: 0.5rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .status {
+        font-size: 0.8125rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <form
-      kj-form
-      [formGroup]="form"
-      [kjAsyncSubmit]="submitHandler"
-      kjResetOnSuccess
-    >
+    <form kj-form [formGroup]="form" [kjAsyncSubmit]="submitHandler" kjResetOnSuccess>
       <kj-field>
         <kj-field-label>Title</kj-field-label>
         <kj-input type="text" formControlName="title" />

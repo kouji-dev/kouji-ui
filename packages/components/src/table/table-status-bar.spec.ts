@@ -1,14 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable, kjColumn } from '@kouji-ui/core';
 import { KjTableStatusBarComponent } from './table-status-bar';
 
-interface Row { id: string; name: string; }
+interface Row {
+  id: string;
+  name: string;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable, KjTableStatusBarComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()">
       <kj-table-status-bar />

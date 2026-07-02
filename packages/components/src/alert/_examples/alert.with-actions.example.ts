@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjAlertActionsComponent,
@@ -26,7 +26,14 @@ import {
     KjAlertDismissComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-alert kjVariant="error">
       <kj-alert-icon>!</kj-alert-icon>
@@ -41,6 +48,10 @@ import {
   `,
 })
 export class KjAlertWithActionsExample {
-  onRetry(): void { /* example: trigger retry */ }
-  onDetails(): void { /* example: open details */ }
+  onRetry(): void {
+    /* example: trigger retry */
+  }
+  onDetails(): void {
+    /* example: open details */
+  }
 }

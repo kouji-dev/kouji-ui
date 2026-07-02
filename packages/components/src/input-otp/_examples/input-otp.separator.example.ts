@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KjInputOtpComponent } from '../input-otp';
 
@@ -11,20 +11,27 @@ import { KjInputOtpComponent } from '../input-otp';
   selector: 'kj-input-otp-separator-example',
   standalone: true,
   imports: [KjInputOtpComponent, FormsModule],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--kj-space-lg); }
-    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
-    .value {
-      font-family: var(--kj-font-mono);
-      font-size: var(--kj-text-sm);
-      color: var(--kj-fg-muted);
-      letter-spacing: 0.1em;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kj-space-lg);
+      }
+      label {
+        font-size: var(--kj-text-sm);
+        color: var(--kj-fg-default);
+      }
+      .value {
+        font-family: var(--kj-font-mono);
+        font-size: var(--kj-text-sm);
+        color: var(--kj-fg-muted);
+        letter-spacing: 0.1em;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <label for="input-otp-separator">Verification code</label>
     <kj-input-otp

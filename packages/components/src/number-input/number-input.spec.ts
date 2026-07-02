@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjNumberInputComponent } from './number-input';
@@ -6,6 +6,7 @@ import { KjNumberInputComponent } from './number-input';
 @Component({
   standalone: true,
   imports: [KjNumberInputComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-number-input
       [(kjValue)]="value"
@@ -28,7 +29,9 @@ class HostComponent {
 }
 
 describe('KjNumberInputComponent', () => {
-  beforeEach(() => { TestBed.configureTestingModule({ imports: [HostComponent] }); });
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [HostComponent] });
+  });
 
   test('renders a wrapper with two stepper buttons and an internal input', () => {
     const fixture = TestBed.createComponent(HostComponent);
@@ -50,7 +53,9 @@ describe('KjNumberInputComponent', () => {
   test('clicking the increment button increases the value', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const up = fixture.nativeElement.querySelector('.kj-number-input__stepper--up') as HTMLButtonElement;
+    const up = fixture.nativeElement.querySelector(
+      '.kj-number-input__stepper--up',
+    ) as HTMLButtonElement;
     up.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.value()).toBe(4);
@@ -59,7 +64,9 @@ describe('KjNumberInputComponent', () => {
   test('clicking the decrement button decreases the value', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const down = fixture.nativeElement.querySelector('.kj-number-input__stepper--down') as HTMLButtonElement;
+    const down = fixture.nativeElement.querySelector(
+      '.kj-number-input__stepper--down',
+    ) as HTMLButtonElement;
     down.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.value()).toBe(2);
@@ -69,7 +76,9 @@ describe('KjNumberInputComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.value.set(10);
     fixture.detectChanges();
-    const up = fixture.nativeElement.querySelector('.kj-number-input__stepper--up') as HTMLButtonElement;
+    const up = fixture.nativeElement.querySelector(
+      '.kj-number-input__stepper--up',
+    ) as HTMLButtonElement;
     expect(up.getAttribute('aria-disabled')).toBe('true');
   });
 
@@ -77,7 +86,9 @@ describe('KjNumberInputComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.value.set(0);
     fixture.detectChanges();
-    const down = fixture.nativeElement.querySelector('.kj-number-input__stepper--down') as HTMLButtonElement;
+    const down = fixture.nativeElement.querySelector(
+      '.kj-number-input__stepper--down',
+    ) as HTMLButtonElement;
     expect(down.getAttribute('aria-disabled')).toBe('true');
   });
 

@@ -1,20 +1,26 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { afterEach, describe, expect, it } from 'vitest';
 import { KjTable, kjColumn } from '@kouji-ui/core';
 import { KjTableSidePanelComponent } from './table-side-panel';
 
-interface User { id: string; name: string; email: string; role: string; }
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 const COLS = [
-  kjColumn<User>({ accessorKey: 'name',  header: 'Name', id: 'name' }),
+  kjColumn<User>({ accessorKey: 'name', header: 'Name', id: 'name' }),
   kjColumn<User>({ accessorKey: 'email', header: 'Email', id: 'email' }),
-  kjColumn<User>({ accessorKey: 'role',  header: 'Role', id: 'role' }),
+  kjColumn<User>({ accessorKey: 'role', header: 'Role', id: 'role' }),
 ];
 
 @Component({
   standalone: true,
   imports: [KjTable, KjTableSidePanelComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()">
       <kj-table-side-panel [(kjOpen)]="open" [kjTitle]="title()" />
@@ -23,7 +29,7 @@ const COLS = [
 })
 class Host {
   readonly data = signal<User[]>([
-    { id: '1', name: 'Ada',  email: 'a@x', role: 'admin' },
+    { id: '1', name: 'Ada', email: 'a@x', role: 'admin' },
     { id: '2', name: 'Linus', email: 'l@x', role: 'user' },
   ]);
   readonly cols = COLS;
@@ -43,7 +49,8 @@ function getDrawerOrThrow(): HTMLElement {
 }
 
 function cleanupOverlays(): void {
-  document.body.querySelectorAll('kj-drawer-shell, kj-overlay-wrapper, .kj-overlay-container')
+  document.body
+    .querySelectorAll('kj-drawer-shell, kj-overlay-wrapper, .kj-overlay-container')
     .forEach((el) => el.remove());
   document.body.querySelectorAll('kj-drawer').forEach((el) => el.remove());
   document.documentElement.style.overflow = '';
@@ -96,7 +103,9 @@ describe('KjTableSidePanelComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const after = getDrawerOrThrow().querySelectorAll('input[type="checkbox"]')[1] as HTMLInputElement;
+    const after = getDrawerOrThrow().querySelectorAll(
+      'input[type="checkbox"]',
+    )[1] as HTMLInputElement;
     expect(after.checked).toBe(false);
   });
 
@@ -107,12 +116,16 @@ describe('KjTableSidePanelComponent', () => {
     await fixture.whenStable();
 
     const drawer = getDrawerOrThrow();
-    const pinLeftBtn = drawer.querySelectorAll('button[data-action="pin-left"]')[0] as HTMLButtonElement;
+    const pinLeftBtn = drawer.querySelectorAll(
+      'button[data-action="pin-left"]',
+    )[0] as HTMLButtonElement;
     fireEvent.click(pinLeftBtn);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const after = getDrawerOrThrow().querySelectorAll('button[data-action="pin-left"]')[0] as HTMLButtonElement;
+    const after = getDrawerOrThrow().querySelectorAll(
+      'button[data-action="pin-left"]',
+    )[0] as HTMLButtonElement;
     expect(after.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -125,7 +138,7 @@ describe('KjTableSidePanelComponent', () => {
     const findRoleGroupBtn = (): HTMLButtonElement => {
       const drawer = getDrawerOrThrow();
       const rows = Array.from(drawer.querySelectorAll('.kj-table-side-panel-row'));
-      const roleRow = rows.find(r => r.textContent?.includes('Role'));
+      const roleRow = rows.find((r) => r.textContent?.includes('Role'));
       if (!roleRow) throw new Error('Role row missing');
       return roleRow.querySelector('button[data-action="group"]') as HTMLButtonElement;
     };

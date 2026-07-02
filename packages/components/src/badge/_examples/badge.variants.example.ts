@@ -1,11 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjBadgeComponent } from '../badge';
 
 @Component({
   selector: 'kj-badge-variants-example',
   standalone: true,
   imports: [KjBadgeComponent],
-  styles: [`:host { display: flex; gap: 0.5rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: 0.5rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-badge variant="default">Default</kj-badge>
     <kj-badge variant="secondary">Secondary</kj-badge>

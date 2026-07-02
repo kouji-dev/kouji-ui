@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { render } from '@testing-library/angular';
 import { toHaveNoViolations } from 'jest-axe';
@@ -9,7 +9,13 @@ expect.extend(toHaveNoViolations);
 @Component({
   standalone: true,
   imports: [KjFormControl, ReactiveFormsModule],
-  template: `<input kjFormControl [formControl]="ctrl" (input)="onInput($event)" (blur)="onBlur()" />`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<input
+    kjFormControl
+    [formControl]="ctrl"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  />`,
 })
 class TestHostComponent {
   ctrl = new FormControl('');
@@ -44,7 +50,9 @@ describe('KjFormControl', () => {
     const { fixture } = await render(TestHostComponent);
     const directive = fixture.debugElement.children[0].injector.get(KjFormControl);
     let emitted: unknown;
-    directive.registerOnChange((v) => { emitted = v; });
+    directive.registerOnChange((v) => {
+      emitted = v;
+    });
     directive.notifyChange('test');
     expect(directive.value()).toBe('test');
     expect(emitted).toBe('test');

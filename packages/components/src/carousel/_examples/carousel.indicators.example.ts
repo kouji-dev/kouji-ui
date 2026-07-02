@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCarouselComponent,
   KjCarouselViewportComponent,
@@ -24,18 +24,37 @@ import {
     KjCarouselNextComponent,
     KjCarouselIndicatorsComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    .slide { display: grid; place-items: center; min-height: 12rem; font-weight: 600; font-size: 1.125rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .slide {
+        display: grid;
+        place-items: center;
+        min-height: 12rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-carousel label="Trip ideas">
       <kj-carousel-previous aria-label="Previous slide" />
       <kj-carousel-viewport>
-        <kj-carousel-slide value="city"     label="City breaks"><div class="slide">City breaks</div></kj-carousel-slide>
-        <kj-carousel-slide value="beach"    label="Beach weeks"><div class="slide">Beach weeks</div></kj-carousel-slide>
-        <kj-carousel-slide value="mountain" label="Mountain hikes"><div class="slide">Mountain hikes</div></kj-carousel-slide>
-        <kj-carousel-slide value="culture"  label="Culture trails"><div class="slide">Culture trails</div></kj-carousel-slide>
+        <kj-carousel-slide value="city" label="City breaks"
+          ><div class="slide">City breaks</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="beach" label="Beach weeks"
+          ><div class="slide">Beach weeks</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="mountain" label="Mountain hikes"
+          ><div class="slide">Mountain hikes</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="culture" label="Culture trails"
+          ><div class="slide">Culture trails</div></kj-carousel-slide
+        >
       </kj-carousel-viewport>
       <kj-carousel-next aria-label="Next slide" />
       <kj-carousel-indicators ariaLabel="Trip slide controls" />

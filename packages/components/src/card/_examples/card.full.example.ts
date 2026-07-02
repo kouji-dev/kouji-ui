@@ -1,12 +1,34 @@
-import { Component } from '@angular/core';
-import { KjCardComponent, KjCardHeaderComponent, KjCardTitleComponent, KjCardSubtitleComponent, KjCardContentComponent, KjCardFooterComponent } from '../card';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+  KjCardComponent,
+  KjCardHeaderComponent,
+  KjCardTitleComponent,
+  KjCardSubtitleComponent,
+  KjCardContentComponent,
+  KjCardFooterComponent,
+} from '../card';
 import { KjButtonComponent } from '../../button/button';
 
 @Component({
   selector: 'kj-card-full-example',
   standalone: true,
-  imports: [KjCardComponent, KjCardHeaderComponent, KjCardTitleComponent, KjCardSubtitleComponent, KjCardContentComponent, KjCardFooterComponent, KjButtonComponent],
-  styles: [`:host { display: block; }`],
+  imports: [
+    KjCardComponent,
+    KjCardHeaderComponent,
+    KjCardTitleComponent,
+    KjCardSubtitleComponent,
+    KjCardContentComponent,
+    KjCardFooterComponent,
+    KjButtonComponent,
+  ],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-card style="max-width: 24rem;">
       <kj-card-header>
@@ -14,7 +36,10 @@ import { KjButtonComponent } from '../../button/button';
         <kj-card-subtitle>Status: in progress</kj-card-subtitle>
       </kj-card-header>
       <kj-card-content>
-        <p>Atlas is the planning tool used by the platform team. It supports drafts, comments, and shared boards.</p>
+        <p>
+          Atlas is the planning tool used by the platform team. It supports drafts, comments, and
+          shared boards.
+        </p>
       </kj-card-content>
       <kj-card-footer>
         <kj-button kjVariant="ghost">Dismiss</kj-button>

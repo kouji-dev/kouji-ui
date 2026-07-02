@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjListComponent, KjListItemComponent } from '../list';
 
 /**
@@ -16,7 +16,14 @@ import { KjListComponent, KjListItemComponent } from '../list';
   selector: 'kj-list-nav-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-list as="nav" ariaLabel="Primary" [hoverable]="true">
       <kj-list-item [active]="true">

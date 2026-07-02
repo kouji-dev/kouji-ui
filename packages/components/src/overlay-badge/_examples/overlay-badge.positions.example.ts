@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import { KjOverlayBadgeComponent } from '../overlay-badge';
 
@@ -10,13 +10,17 @@ import { KjOverlayBadgeComponent } from '../overlay-badge';
   selector: 'kj-overlay-badge-positions-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjButtonComponent],
-  styles: [`
-    :host {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--kj-space-2xl);
-      padding: var(--kj-space-2xl); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--kj-space-2xl);
+        padding: var(--kj-space-2xl);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-overlay-badge [kjValue]="3" kjPosition="top-end" kjDescription="3 unread">
       <kj-button kjVariant="secondary">top-end</kj-button>

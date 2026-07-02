@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjCardComponent } from './card';
@@ -6,6 +6,7 @@ import { KjCardComponent } from './card';
 @Component({
   standalone: true,
   imports: [KjCardComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-card [variant]="variant">Content</kj-card>`,
 })
 class HostComponent {

@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component, effect, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjCommandPaletteComponent,
@@ -33,13 +33,30 @@ const ALL_RESULTS: SearchResult[] = [
     KjCommandPaletteItemTemplate,
     KjButtonComponent,
   ],
-  styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; min-height: 16rem; }
-  .activated { font-family: var(--kj-font-mono); font-size: 0.75rem; color: var(--kj-fg-muted); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        align-items: flex-start;
+        min-height: 16rem;
+      }
+      .activated {
+        font-family: var(--kj-font-mono);
+        font-size: 0.75rem;
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">Search Angular docs…</kj-button>
 
     @if (lastActivated()) {
-      <p class="activated">Activated: <strong>{{ lastActivated() }}</strong></p>
+      <p class="activated">
+        Activated: <strong>{{ lastActivated() }}</strong>
+      </p>
     }
 
     <kj-command-palette
@@ -73,9 +90,7 @@ export class KjCommandPaletteAsyncExample {
       this.loading.set(true);
       this.results.set([]);
       this.searchTimer = setTimeout(() => {
-        const filtered = ALL_RESULTS.filter(r =>
-          r.label.toLowerCase().includes(q.toLowerCase())
-        );
+        const filtered = ALL_RESULTS.filter((r) => r.label.toLowerCase().includes(q.toLowerCase()));
         this.results.set(filtered);
         this.loading.set(false);
       }, 300);

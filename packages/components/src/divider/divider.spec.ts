@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjDividerComponent } from './divider';
@@ -17,6 +17,7 @@ async function flushAfterNextRender(): Promise<void> {
 @Component({
   standalone: true,
   imports: [KjDividerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-divider />`,
 })
 class RuleOnlyHost {}
@@ -24,6 +25,7 @@ class RuleOnlyHost {}
 @Component({
   standalone: true,
   imports: [KjDividerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-divider>OR</kj-divider>`,
 })
 class WithTextHost {}
@@ -31,6 +33,7 @@ class WithTextHost {}
 @Component({
   standalone: true,
   imports: [KjDividerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-divider><span class="probe">OR</span></kj-divider>`,
 })
 class WithElementHost {}
@@ -38,7 +41,15 @@ class WithElementHost {}
 @Component({
   standalone: true,
   imports: [KjDividerComponent],
-  template: `<kj-divider [kjOrientation]="orientation" [kjStructural]="structural" [kjAlign]="align" [kjVariant]="variant" [kjSize]="size">{{ label }}</kj-divider>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-divider
+    [kjOrientation]="orientation"
+    [kjStructural]="structural"
+    [kjAlign]="align"
+    [kjVariant]="variant"
+    [kjSize]="size"
+    >{{ label }}</kj-divider
+  >`,
 })
 class ConfigurableHost {
   orientation: 'horizontal' | 'vertical' = 'horizontal';
@@ -52,6 +63,7 @@ class ConfigurableHost {
 @Component({
   standalone: true,
   imports: [KjDividerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-divider [kjStructural]="true" [kjOrientation]="'vertical'" />`,
 })
 class StructuralVerticalHost {}

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjCalendarComponent } from './calendar';
@@ -6,6 +6,7 @@ import { KjCalendarComponent } from './calendar';
 @Component({
   standalone: true,
   imports: [KjCalendarComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-calendar [(kjValue)]="value" />`,
 })
 class HostComponent {
@@ -26,7 +27,9 @@ describe('KjCalendarComponent', () => {
   test('renders the prev/next nav buttons with aria-label', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button[aria-label="Previous month"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('button[aria-label="Previous month"]'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('button[aria-label="Next month"]')).not.toBeNull();
   });
 

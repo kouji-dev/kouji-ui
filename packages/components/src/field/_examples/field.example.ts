@@ -1,10 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAriaDescribedBy } from '@kouji-ui/core';
-import {
-  KjFieldComponent,
-  KjFieldHelpComponent,
-  KjFieldLabelComponent,
-} from '../field';
+import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '../field';
 
 /**
  * Default usage example for `kj-field` — label + input + help text.
@@ -14,18 +10,15 @@ import {
 @Component({
   selector: 'kj-field-default-example',
   standalone: true,
-  imports: [
-    KjFieldComponent,
-    KjFieldLabelComponent,
-    KjFieldHelpComponent,
-    KjAriaDescribedBy,
-  ],
+  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjAriaDescribedBy],
   styles: [
     `
       :host {
-        display: block; max-width: 400px;
+        display: block;
+        max-width: 400px;
       }
-      .kj-input { color: var(--kj-fg-default);
+      .kj-input {
+        color: var(--kj-fg-default);
         border: var(--kj-border) solid var(--kj-border-default);
         border-radius: var(--kj-radius-field);
         padding: var(--kj-space-sm) var(--kj-space-md);
@@ -39,6 +32,7 @@ import {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-field #f="kjField">
       <kj-field-label>Email</kj-field-label>

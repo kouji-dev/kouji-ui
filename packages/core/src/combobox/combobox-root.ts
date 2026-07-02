@@ -7,6 +7,7 @@ import {
   forwardRef,
   inject,
   input,
+  linkedSignal,
   model,
   output,
   signal,
@@ -95,7 +96,9 @@ export class KjCombobox implements KjListNavigatorConfig {
   readonly mode: Signal<KjListSelectionMode> = signal('single');
 
   /** The current query string typed into the input. Two-way bindable. */
-  readonly kjQuery = model<string>('');
+  // eslint-disable-next-line @angular-eslint/no-input-rename -- alias keeps the public `kjQuery` name distinct from this internal linkedSignal-backed property
+  readonly kjQueryInput = input<string>('', { alias: 'kjQuery' });
+  readonly kjQuery: WritableSignal<string> = linkedSignal(this.kjQueryInput);
 
   /** Whether the directive should run its built-in synchronous filter. Default `true`. */
   readonly kjShouldFilter = input(true, { transform: booleanAttribute });

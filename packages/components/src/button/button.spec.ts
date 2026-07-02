@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjButtonComponent } from './button';
@@ -6,7 +6,16 @@ import { KjButtonComponent } from './button';
 @Component({
   standalone: true,
   imports: [KjButtonComponent],
-  template: `<kj-button [kjVariant]="variant" [kjSize]="size" [kjDisabled]="disabled" [kjLoading]="loading" [kjPressed]="pressed" [kjAriaLabel]="ariaLabel">{{ label }}</kj-button>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-button
+    [kjVariant]="variant"
+    [kjSize]="size"
+    [kjDisabled]="disabled"
+    [kjLoading]="loading"
+    [kjPressed]="pressed"
+    [kjAriaLabel]="ariaLabel"
+    >{{ label }}</kj-button
+  >`,
 })
 class HostComponent {
   variant: string = 'default';
@@ -33,24 +42,27 @@ describe('KjButtonComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.variant = 'destructive';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-variant'))
-      .toBe('destructive');
+    expect(
+      fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-variant'),
+    ).toBe('destructive');
   });
 
   test('forwards size via [kjSize] (data-size attr)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.size = 'sm';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-size'))
-      .toBe('sm');
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-size')).toBe(
+      'sm',
+    );
   });
 
   test('forwards disabled (aria-disabled attr on inner button)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.disabled = true;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-disabled'))
-      .toBe('true');
+    expect(
+      fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-disabled'),
+    ).toBe('true');
   });
 
   test('forwards loading: aria-busy on inner button + spinner element rendered', () => {
@@ -72,15 +84,17 @@ describe('KjButtonComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.pressed = true;
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-pressed'))
-      .toBe('true');
+    expect(
+      fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-pressed'),
+    ).toBe('true');
   });
 
   test('forwards ariaLabel to the inner button', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.ariaLabel = 'Save changes';
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-label'))
-      .toBe('Save changes');
+    expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('aria-label')).toBe(
+      'Save changes',
+    );
   });
 });

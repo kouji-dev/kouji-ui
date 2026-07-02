@@ -1,11 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarComponent } from '../avatar';
 
 @Component({
   selector: 'kj-avatar-sizes-example',
   standalone: true,
   imports: [KjAvatarComponent],
-  styles: [`:host { display: flex; gap: 0.75rem; align-items: center; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-avatar size="xs" content="XS" />
     <kj-avatar size="sm" content="SM" />

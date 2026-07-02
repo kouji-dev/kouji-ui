@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDrawer, KjDrawerService, type KjDrawerSide } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,6 +7,7 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-drawer-sides-body',
   standalone: true,
   imports: [KjDrawer],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-drawer><h2>Drawer</h2></kj-drawer>`,
 })
 class Body {}
@@ -15,6 +16,7 @@ class Body {}
   selector: 'kj-drawer-sides-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button (click)="open('left')">Left</kj-button>
     <kj-button (click)="open('right')">Right</kj-button>
@@ -24,5 +26,7 @@ class Body {}
 })
 export class KjDrawerSidesExample {
   private readonly drawer = inject(KjDrawerService);
-  open(side: KjDrawerSide): void { this.drawer.open(Body, { side }); }
+  open(side: KjDrawerSide): void {
+    this.drawer.open(Body, { side });
+  }
 }

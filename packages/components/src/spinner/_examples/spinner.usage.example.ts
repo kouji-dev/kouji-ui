@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjSpinnerComponent } from '../spinner';
 
 /**
@@ -9,11 +9,26 @@ import { KjSpinnerComponent } from '../spinner';
   selector: 'kj-spinner-usage-example',
   standalone: true,
   imports: [KjSpinnerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-lg); align-items: center; }
-    .inline { display: inline-flex; gap: var(--kj-space-xs); align-items: center; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-lg);
+        align-items: center;
+      }
+      .inline {
+        display: inline-flex;
+        gap: var(--kj-space-xs);
+        align-items: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-spinner kjAriaLabel="Loading" />

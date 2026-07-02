@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverClose } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,8 +7,11 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-popover-modal-example',
   standalone: true,
   imports: [KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverClose, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-button kjPopoverTrigger #t="kjPopoverTrigger" kjVariant="destructive">Delete account</kj-button>
+    <kj-button kjPopoverTrigger #t="kjPopoverTrigger" kjVariant="destructive"
+      >Delete account</kj-button
+    >
     <kj-popover-content [kjFor]="t" [kjTrap]="true">
       <h3 kjPopoverTitle>Delete account?</h3>
       <p>This action is permanent.</p>

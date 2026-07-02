@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, map } from 'rxjs/operators';
@@ -17,10 +17,7 @@ import {
 import { KjTagComponent } from '@kouji-ui/components';
 import { DocsService } from '../../services/docs.service';
 import type { DocItem, DocPage } from '../../services/docs.service';
-import type {
-  CalloutKind,
-  PageExample,
-} from '../../../lib/docs-extractor.types';
+import type { CalloutKind, PageExample } from '../../../lib/docs-extractor.types';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PlaygroundComponent } from './playground';
@@ -51,6 +48,7 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
     KjTagComponent,
   ],
   templateUrl: './component-doc.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './component-doc.css',
 })
 export class ComponentDocComponent {
@@ -81,9 +79,12 @@ export class ComponentDocComponent {
     this.route.url.pipe(
       switchMap((segs) => {
         // /docs/headless/<name> or /docs/components/<name>
-        const trackId = segs[0]?.path === 'components' ? ('components' as const)
-                     : segs[0]?.path === 'headless'   ? ('core' as const)
-                     : undefined;
+        const trackId =
+          segs[0]?.path === 'components'
+            ? ('components' as const)
+            : segs[0]?.path === 'headless'
+              ? ('core' as const)
+              : undefined;
         const name = segs[1]?.path ?? '';
         return this.docs.loadManifest().pipe(map(() => this.docs.getPage(name, trackId)));
       }),
@@ -154,10 +155,10 @@ export class ComponentDocComponent {
     const m = this.main();
     if (!m) return false;
     return !!(
-      (m.keyboard && m.keyboard.length)
-      || (m.aria && m.aria.length)
-      || m.touchTarget
-      || m.a11yProse
+      (m.keyboard && m.keyboard.length) ||
+      (m.aria && m.aria.length) ||
+      m.touchTarget ||
+      m.a11yProse
     );
   });
 
@@ -183,12 +184,14 @@ export class ComponentDocComponent {
     const d = m.directive;
     const s = m.service;
     const f = m.function;
-    return (d?.inputs.length ?? 0)
-      + (d?.models.length ?? 0)
-      + (d?.outputs.length ?? 0)
-      + (s?.methods.length ?? 0)
-      + (s?.properties.length ?? 0)
-      + (f?.parameters.length ?? 0);
+    return (
+      (d?.inputs.length ?? 0) +
+      (d?.models.length ?? 0) +
+      (d?.outputs.length ?? 0) +
+      (s?.methods.length ?? 0) +
+      (s?.properties.length ?? 0) +
+      (f?.parameters.length ?? 0)
+    );
   });
 
   protected readonly examplesCount = computed<number>(() => this.recipeExamples().length);
@@ -203,18 +206,18 @@ export class ComponentDocComponent {
     if (!m) return '01';
     let occupied = 0;
     if (m.directive) {
-      if (m.directive.inputs.length)  occupied += 1;
-      if (m.directive.models.length)  occupied += 1;
+      if (m.directive.inputs.length) occupied += 1;
+      if (m.directive.models.length) occupied += 1;
       if (m.directive.outputs.length) occupied += 1;
     }
     if (m.service) {
-      if (m.service.methods.length)    occupied += 1;
+      if (m.service.methods.length) occupied += 1;
       if (m.service.properties.length) occupied += 1;
     }
     if (m.function) occupied += 1;
-    if (m.token)     occupied += 1;
+    if (m.token) occupied += 1;
     if (m.typeAlias) occupied += 1;
-    if (m.const)     occupied += 1;
+    if (m.const) occupied += 1;
     return String(occupied + 1).padStart(2, '0');
   });
 }

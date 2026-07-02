@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjNumberInputComponent } from '../number-input';
 
 /**
@@ -9,11 +9,23 @@ import { KjNumberInputComponent } from '../number-input';
   selector: 'kj-number-input-with-stepper-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`
-    :host { display: block; }
-    .row { display: flex; gap: var(--kj-space-md); align-items: center; }
-    label { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      label {
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <label for="number-input-servings">Servings</label>

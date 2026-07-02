@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjTooltipTrigger, KjTooltipContent } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -11,11 +11,26 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-tooltip-usage-example',
   standalone: true,
   imports: [KjTooltipTrigger, KjTooltipContent, KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); flex-wrap: wrap; align-items: center; padding: var(--kj-space-2xl); }
-    .rich { display: flex; flex-direction: column; gap: var(--kj-space-2xs); }
-    .rich strong { font-weight: 600; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        flex-wrap: wrap;
+        align-items: center;
+        padding: var(--kj-space-2xl);
+      }
+      .rich {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-2xs);
+      }
+      .rich strong {
+        font-weight: 600;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjTooltipTrigger #saveTrig="kjTooltipTrigger">Save</kj-button>
     <kj-tooltip-content [kjFor]="saveTrig">Save the document</kj-tooltip-content>

@@ -1,4 +1,4 @@
-import { Component, TemplateRef, inject, viewChild } from '@angular/core';
+import { Component, TemplateRef, inject, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { KjToastService } from '@kouji-ui/core';
 import type { KjToastContext, KjToastTemplateContext } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
@@ -8,14 +8,24 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
   selector: 'kj-toast-with-action-example',
   standalone: true,
   imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
-  styles: [`:host { display: block; min-height: 8rem; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 8rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjVariant="destructive" (click)="deleteItem()">Delete item</kj-button>
     <kj-toast-viewport />
     <ng-template #tpl let-ctx>
       <kj-toast [variant]="ctx.variant" [id]="ctx.id">
         <span>{{ ctx.title }}</span>
-        <kj-button kjSize="sm" kjVariant="ghost" style="margin-left:auto" (click)="undo(ctx)">Undo</kj-button>
+        <kj-button kjSize="sm" kjVariant="ghost" style="margin-left:auto" (click)="undo(ctx)"
+          >Undo</kj-button
+        >
         <kj-toast-close [toastId]="ctx.id">×</kj-toast-close>
       </kj-toast>
     </ng-template>

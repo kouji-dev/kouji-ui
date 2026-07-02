@@ -1,4 +1,12 @@
-import { ApplicationRef, Component, DestroyRef, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import {
+  ApplicationRef,
+  Component,
+  DestroyRef,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
@@ -25,12 +33,28 @@ import { ProgressBarComponent } from './components/progress-bar/progress-bar';
     }
     <kj-search />
   `,
-  styles: [`
-    :host { display: block; height: 100dvh; overflow: hidden; }
-    .content-hidden { visibility: hidden; }
-    .app-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-    .app-shell > router-outlet { display: contents; }
-  `],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styles: [
+    `
+      :host {
+        display: block;
+        height: 100dvh;
+        overflow: hidden;
+      }
+      .content-hidden {
+        visibility: hidden;
+      }
+      .app-shell {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+      }
+      .app-shell > router-outlet {
+        display: contents;
+      }
+    `,
+  ],
 })
 export class App implements OnInit {
   protected readonly loading = inject(LoadingService);
@@ -50,7 +74,11 @@ export class App implements OnInit {
     // is done and there are no pending async tasks. Replaces the prior fixed
     // 1600ms timer that kept the splash up regardless of actual readiness.
     this.appRef.isStable
-      .pipe(filter(stable => stable), first(), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        filter((stable) => stable),
+        first(),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(() => this.loading.hide());
   }
 }

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjTimePickerComponent } from './time-picker';
@@ -6,6 +6,7 @@ import { KjTimePickerComponent } from './time-picker';
 @Component({
   standalone: true,
   imports: [KjTimePickerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-time-picker
       [(kjValue)]="value"
@@ -24,7 +25,9 @@ class HostComponent {
 }
 
 describe('KjTimePickerComponent', () => {
-  beforeEach(() => { TestBed.configureTestingModule({ imports: [HostComponent] }); });
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [HostComponent] });
+  });
 
   test('renders the wrapper with two segments by default', () => {
     const fixture = TestBed.createComponent(HostComponent);
@@ -39,7 +42,9 @@ describe('KjTimePickerComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
     const hours = fixture.nativeElement.querySelector('.kj-time-picker__hours') as HTMLInputElement;
-    const minutes = fixture.nativeElement.querySelector('.kj-time-picker__minutes') as HTMLInputElement;
+    const minutes = fixture.nativeElement.querySelector(
+      '.kj-time-picker__minutes',
+    ) as HTMLInputElement;
     expect(hours.getAttribute('aria-valuenow')).toBe('9');
     expect(minutes.getAttribute('aria-valuenow')).toBe('30');
   });
@@ -48,7 +53,9 @@ describe('KjTimePickerComponent', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.twelveHour = true;
     fixture.detectChanges();
-    const meridiem = fixture.nativeElement.querySelector('.kj-time-picker__meridiem') as HTMLButtonElement;
+    const meridiem = fixture.nativeElement.querySelector(
+      '.kj-time-picker__meridiem',
+    ) as HTMLButtonElement;
     expect(meridiem).not.toBeNull();
     expect(meridiem.getAttribute('aria-pressed')).toBe('false'); // 09:30 → AM
   });

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable } from './table';
@@ -7,11 +7,15 @@ import { KjTableCell } from './table-cell';
 import { KjTableKeyboardNav } from './table-keyboard';
 import { kjColumn } from './column-helpers';
 
-interface Row { a: string; b: string; }
+interface Row {
+  a: string;
+  b: string;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable, KjTableRow, KjTableCell, KjTableKeyboardNav],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table kjTableKeyboardNav [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
       <tbody>
@@ -28,9 +32,13 @@ interface Row { a: string; b: string; }
 })
 class Host {
   protected readonly cols = [
-    kjColumn<Row>({ accessorKey: 'a' }), kjColumn<Row>({ accessorKey: 'b' }),
+    kjColumn<Row>({ accessorKey: 'a' }),
+    kjColumn<Row>({ accessorKey: 'b' }),
   ];
-  protected readonly data = signal<Row[]>([{ a: '1', b: '2' }, { a: '3', b: '4' }]);
+  protected readonly data = signal<Row[]>([
+    { a: '1', b: '2' },
+    { a: '3', b: '4' },
+  ]);
 }
 
 describe('KjTableKeyboardNav', () => {

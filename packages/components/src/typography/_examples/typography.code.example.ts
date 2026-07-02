@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjCode } from '@kouji-ui/core';
 
 /**
@@ -13,11 +13,18 @@ import { KjCode } from '@kouji-ui/core';
   selector: 'kj-typography-code-example',
   standalone: true,
   imports: [KjCode],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <p>
-      Run <code kjCode>npm install &#64;kouji-ui/core</code> to install the
-      headless directives, then import the prose stylesheet from
+      Run <code kjCode>npm install &#64;kouji-ui/core</code> to install the headless directives,
+      then import the prose stylesheet from
       <code kjCode>&#64;kouji-ui/core/typography/prose.css</code>.
     </p>
   `,

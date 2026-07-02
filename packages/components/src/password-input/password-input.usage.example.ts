@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjPasswordInputComponent } from './password-input';
 
 /**
@@ -10,17 +10,28 @@ import { KjPasswordInputComponent } from './password-input';
   selector: 'kj-password-input-usage-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); max-width: 22rem; }
-    label { display: grid; gap: var(--kj-space-xs); font-size: 0.875rem; color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+        max-width: 22rem;
+      }
+      label {
+        display: grid;
+        gap: var(--kj-space-xs);
+        font-size: 0.875rem;
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>
       Current password
-      <kj-password-input
-        kjAutocomplete="current-password"
-        kjPlaceholder="Enter your password" />
+      <kj-password-input kjAutocomplete="current-password" kjPlaceholder="Enter your password" />
     </label>
 
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
@@ -30,7 +41,8 @@ import { KjPasswordInputComponent } from './password-input';
         kjAutocomplete="new-password"
         kjPlaceholder="Choose a strong one"
         [kjShowStrength]="true"
-        [kjShowCapsLockWarning]="true" />
+        [kjShowCapsLockWarning]="true"
+      />
     </label>
 
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->

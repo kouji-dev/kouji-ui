@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarComponent } from '../../avatar/avatar';
 import {
   KjChatAvatarComponent,
@@ -26,9 +26,14 @@ import {
     KjChatBubbleComponent,
     KjAvatarComponent,
   ],
-  styles: [`
-    :host { display: block; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-chat-log kjChatLogLabel="Grouped messages">
       <kj-chat kjSide="start" kjChatAuthor="alice">

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../button';
 
 /**
@@ -10,10 +10,22 @@ import { KjButtonComponent } from '../button';
   selector: 'kj-button-usage-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-sm); flex-wrap: wrap; align-items: center; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-sm);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-button kjVariant="default" (click)="onSave()">Save changes</kj-button>

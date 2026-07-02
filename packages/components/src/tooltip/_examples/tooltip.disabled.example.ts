@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjTooltipTrigger, KjTooltipContent } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,6 +7,7 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-tooltip-disabled-example',
   standalone: true,
   imports: [KjTooltipTrigger, KjTooltipContent, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjTooltipTrigger [kjDisabled]="true" #t="kjTooltipTrigger">No tooltip</kj-button>
     <kj-tooltip-content [kjFor]="t">Hidden</kj-tooltip-content>

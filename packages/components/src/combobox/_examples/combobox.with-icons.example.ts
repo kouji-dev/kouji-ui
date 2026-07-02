@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
 
 /**
@@ -9,23 +9,38 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
   selector: 'kj-combobox-with-icons-example',
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
-  styles: [`
-    :host { display: block; }
-    .flag {
-      display: inline-block;
-      width: 1.5rem;
-      text-align: center;
-      margin-right: var(--kj-space-sm);
-      font-size: 1rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .flag {
+        display: inline-block;
+        width: 1.5rem;
+        text-align: center;
+        margin-right: var(--kj-space-sm);
+        font-size: 1rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-combobox [(value)]="lang" placeholder="Pick a language…">
-      <kj-combobox-option [value]="'en'"><span class="flag" aria-hidden="true">🇬🇧</span>English</kj-combobox-option>
-      <kj-combobox-option [value]="'fr'"><span class="flag" aria-hidden="true">🇫🇷</span>French</kj-combobox-option>
-      <kj-combobox-option [value]="'de'"><span class="flag" aria-hidden="true">🇩🇪</span>German</kj-combobox-option>
-      <kj-combobox-option [value]="'es'"><span class="flag" aria-hidden="true">🇪🇸</span>Spanish</kj-combobox-option>
-      <kj-combobox-option [value]="'jp'"><span class="flag" aria-hidden="true">🇯🇵</span>Japanese</kj-combobox-option>
+      <kj-combobox-option [value]="'en'"
+        ><span class="flag" aria-hidden="true">🇬🇧</span>English</kj-combobox-option
+      >
+      <kj-combobox-option [value]="'fr'"
+        ><span class="flag" aria-hidden="true">🇫🇷</span>French</kj-combobox-option
+      >
+      <kj-combobox-option [value]="'de'"
+        ><span class="flag" aria-hidden="true">🇩🇪</span>German</kj-combobox-option
+      >
+      <kj-combobox-option [value]="'es'"
+        ><span class="flag" aria-hidden="true">🇪🇸</span>Spanish</kj-combobox-option
+      >
+      <kj-combobox-option [value]="'jp'"
+        ><span class="flag" aria-hidden="true">🇯🇵</span>Japanese</kj-combobox-option
+      >
     </kj-combobox>
   `,
 })

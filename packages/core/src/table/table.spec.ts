@@ -1,4 +1,4 @@
-﻿import { Component, signal } from '@angular/core';
+﻿import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ColumnDef } from '@tanstack/angular-table';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -9,32 +9,35 @@ import { kjColumn } from './column-helpers';
 
 expect.extend(toHaveNoViolations);
 
-interface User { name: string; age: number; }
+interface User {
+  name: string;
+  age: number;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable, KjTableHeader],
-  template: `
-    <table [kjTable]="columns" [kjTableData]="data" #tbl="kjTable">
-      <thead>
-        @for (hg of tbl.table().getHeaderGroups(); track hg.id) {
-          <tr>
-            @for (h of hg.headers; track h.id) {
-              <th kjTableHeader [kjHeader]="h" scope="col">{{ h.id }}</th>
-            }
-          </tr>
-        }
-      </thead>
-      <tbody>
-        @for (row of tbl.table().getRowModel().rows; track row.id) {
-          <tr>
-            @for (cell of row.getVisibleCells(); track cell.id) {
-              <td>{{ cell.getValue() }}</td>
-            }
-          </tr>
-        }
-      </tbody>
-    </table>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <table [kjTable]="columns" [kjTableData]="data" #tbl="kjTable">
+    <thead>
+      @for (hg of tbl.table().getHeaderGroups(); track hg.id) {
+        <tr>
+          @for (h of hg.headers; track h.id) {
+            <th kjTableHeader [kjHeader]="h" scope="col">{{ h.id }}</th>
+          }
+        </tr>
+      }
+    </thead>
+    <tbody>
+      @for (row of tbl.table().getRowModel().rows; track row.id) {
+        <tr>
+          @for (cell of row.getVisibleCells(); track cell.id) {
+            <td>{{ cell.getValue() }}</td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>`,
 })
 class TableTestComponent {
   columns: ColumnDef<User>[] = [
@@ -74,37 +77,34 @@ describe('KjTable', () => {
   it('sortable header has tabindex=0', async () => {
     const { container } = await render(TableTestComponent);
     const ths = container.querySelectorAll('th');
-    ths.forEach(th => expect(th).toHaveAttribute('tabindex', '0'));
+    ths.forEach((th) => expect(th).toHaveAttribute('tabindex', '0'));
   });
 
   it('sortable header has aria-sort="none" initially', async () => {
     const { container } = await render(TableTestComponent);
     const ths = container.querySelectorAll('th');
-    ths.forEach(th => expect(th).toHaveAttribute('aria-sort', 'none'));
+    ths.forEach((th) => expect(th).toHaveAttribute('aria-sort', 'none'));
   });
 
   it('non-sortable column header has no cursor:pointer', async () => {
     @Component({
       standalone: true,
       imports: [KjTable, KjTableHeader],
-      template: `
-        <table [kjTable]="columns" [kjTableData]="data" #tbl="kjTable">
-          <thead>
-            @for (hg of tbl.table().getHeaderGroups(); track hg.id) {
-              <tr>
-                @for (h of hg.headers; track h.id) {
-                  <th kjTableHeader [kjHeader]="h" scope="col">{{ h.id }}</th>
-                }
-              </tr>
-            }
-          </thead>
-          <tbody></tbody>
-        </table>`,
+      template: ` <table [kjTable]="columns" [kjTableData]="data" #tbl="kjTable">
+        <thead>
+          @for (hg of tbl.table().getHeaderGroups(); track hg.id) {
+            <tr>
+              @for (h of hg.headers; track h.id) {
+                <th kjTableHeader [kjHeader]="h" scope="col">{{ h.id }}</th>
+              }
+            </tr>
+          }
+        </thead>
+        <tbody></tbody>
+      </table>`,
     })
     class NoSortTableComponent {
-      columns: ColumnDef<User>[] = [
-        { accessorKey: 'name', header: 'Name', enableSorting: false },
-      ];
+      columns: ColumnDef<User>[] = [{ accessorKey: 'name', header: 'Name', enableSorting: false }];
       data: User[] = [{ name: 'Alice', age: 30 }];
     }
 
@@ -115,16 +115,23 @@ describe('KjTable', () => {
   });
 });
 
-interface Row { id: string; name: string; }
+interface Row {
+  id: string;
+  name: string;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<table [kjTable]="cols" [kjTableData]="data()" #t="kjTable"></table>`,
 })
 class Host {
   protected readonly cols = [kjColumn<Row>({ accessorKey: 'name', header: 'Name' })];
-  protected readonly data = signal<Row[]>([{ id: '1', name: 'alice' }, { id: '2', name: 'bob' }]);
+  protected readonly data = signal<Row[]>([
+    { id: '1', name: 'alice' },
+    { id: '2', name: 'bob' },
+  ]);
 }
 
 describe('KjTable (extended)', () => {

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { fireEvent } from '@testing-library/angular';
 import { afterEach, describe, expect, test } from 'vitest';
@@ -20,6 +20,7 @@ import { parseTimeString, toParts } from './time-picker.format';
     KjTimePickerSeconds,
     KjTimePickerMeridiem,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       kjTimePicker
@@ -35,7 +36,12 @@ import { parseTimeString, toParts } from './time-picker.format';
       @if (showSeconds()) {
         <input kjTimePickerSeconds data-testid="seconds" />
       }
-      <button type="button" kjTimePickerMeridiem data-testid="meridiem" aria-label="Toggle meridiem"></button>
+      <button
+        type="button"
+        kjTimePickerMeridiem
+        data-testid="meridiem"
+        aria-label="Toggle meridiem"
+      ></button>
     </div>
   `,
 })
@@ -48,7 +54,10 @@ class HostComponent {
   valueShape = signal<'date' | 'string'>('date');
 }
 
-function setup(): { fixture: ReturnType<typeof TestBed.createComponent<HostComponent>>; root: HTMLElement } {
+function setup(): {
+  fixture: ReturnType<typeof TestBed.createComponent<HostComponent>>;
+  root: HTMLElement;
+} {
   TestBed.configureTestingModule({ imports: [HostComponent] });
   const fixture = TestBed.createComponent(HostComponent);
   fixture.detectChanges();

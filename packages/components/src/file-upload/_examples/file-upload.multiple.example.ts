@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjFileUploadComponent } from '../file-upload';
 
 /**
@@ -10,12 +10,14 @@ import { KjFileUploadComponent } from '../file-upload';
   selector: 'kj-file-upload-multiple-example',
   standalone: true,
   imports: [KjFileUploadComponent],
-  styles: [`:host { display: block; }`],
-  template: `
-    <kj-file-upload
-      [kjMaxFiles]="5"
-      kjDropzoneHint="Up to 5 files"
-    />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-file-upload [kjMaxFiles]="5" kjDropzoneHint="Up to 5 files" /> `,
 })
 export class KjFileUploadMultipleExample {}

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
   KjCascadeOptionComponent,
@@ -13,7 +13,14 @@ import {
   selector: 'kj-cascade-select-disabled-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 20rem;">
       <div>

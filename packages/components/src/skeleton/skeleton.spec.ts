@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import type { KjSkeletonAnimation, KjSkeletonShape } from '@kouji-ui/core';
@@ -7,6 +7,7 @@ import { KjSkeletonComponent } from './skeleton';
 @Component({
   standalone: true,
   imports: [KjSkeletonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-skeleton
     [kjSkeletonShape]="shape"
     [kjSkeletonAnimation]="animation"

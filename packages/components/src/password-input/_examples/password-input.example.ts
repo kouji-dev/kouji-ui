@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjPasswordInputComponent } from '../password-input';
 
 /**
@@ -9,13 +9,16 @@ import { KjPasswordInputComponent } from '../password-input';
   selector: 'kj-password-input-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: block; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-password-input
-      kjAutocomplete="current-password"
-      kjPlaceholder="Enter your password" />
+    <kj-password-input kjAutocomplete="current-password" kjPlaceholder="Enter your password" />
   `,
 })
 export class KjPasswordInputExample {}

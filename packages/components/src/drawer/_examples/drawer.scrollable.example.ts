@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDrawer, KjDrawerService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,7 +7,11 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-drawer-scrollable-body',
   standalone: true,
   imports: [KjDrawer],
-  template: `<kj-drawer><h2>Long</h2><div style="overflow:auto; max-height:60vh"><p>Lorem ipsum…</p></div></kj-drawer>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-drawer
+    ><h2>Long</h2>
+    <div style="overflow:auto; max-height:60vh"><p>Lorem ipsum…</p></div></kj-drawer
+  >`,
 })
 class Body {}
 
@@ -15,9 +19,12 @@ class Body {}
   selector: 'kj-drawer-scrollable-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-button (click)="open()">Open</kj-button>`,
 })
 export class KjDrawerScrollableExample {
   private readonly drawer = inject(KjDrawerService);
-  open(): void { this.drawer.open(Body); }
+  open(): void {
+    this.drawer.open(Body);
+  }
 }

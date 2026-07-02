@@ -1,18 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from './tabs';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from './tabs';
 
 const imports = [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent];
 
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tabs [(value)]="active" [orientation]="orientation">
       <kj-tab-list>
@@ -20,9 +16,13 @@ const imports = [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanel
         <kj-tab value="api">API</kj-tab>
         <kj-tab value="examples">Examples</kj-tab>
       </kj-tab-list>
-      <kj-tab-panel value="overview"><span data-testid="panel-overview">Overview body</span></kj-tab-panel>
+      <kj-tab-panel value="overview"
+        ><span data-testid="panel-overview">Overview body</span></kj-tab-panel
+      >
       <kj-tab-panel value="api"><span data-testid="panel-api">API body</span></kj-tab-panel>
-      <kj-tab-panel value="examples"><span data-testid="panel-examples">Examples body</span></kj-tab-panel>
+      <kj-tab-panel value="examples"
+        ><span data-testid="panel-examples">Examples body</span></kj-tab-panel
+      >
     </kj-tabs>
   `,
 })
@@ -34,6 +34,7 @@ class HostComponent {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tabs>
       <kj-tab-list>

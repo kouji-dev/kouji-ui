@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -16,13 +16,18 @@ import { provideKjAlert } from './config';
 expect.extend(toHaveNoViolations);
 
 const ALERT_IMPORTS = [
-  KjAlert, KjAlertTitle, KjAlertDescription,
-  KjAlertIcon, KjAlertActions, KjAlertDismiss,
+  KjAlert,
+  KjAlertTitle,
+  KjAlertDescription,
+  KjAlertIcon,
+  KjAlertActions,
+  KjAlertDismiss,
 ];
 
 @Component({
   standalone: true,
   imports: [KjAlert, KjAlertTitle, KjAlertDismiss],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (visible()) {
       <div kjAlert (kjAlertDismissed)="onDismissed()">
@@ -35,15 +40,17 @@ const ALERT_IMPORTS = [
 class DismissHost {
   readonly visible = signal(true);
   fired = 0;
-  onDismissed(): void { this.fired++; this.visible.set(false); }
+  onDismissed(): void {
+    this.fired++;
+    this.visible.set(false);
+  }
 }
 
 describe('KjAlert', () => {
   it('renders with role="status" and aria-live="polite" by default', async () => {
-    const { container } = await render(
-      `<div kjAlert><h3 kjAlertTitle>Heads up</h3></div>`,
-      { imports: ALERT_IMPORTS },
-    );
+    const { container } = await render(`<div kjAlert><h3 kjAlertTitle>Heads up</h3></div>`, {
+      imports: ALERT_IMPORTS,
+    });
     const root = container.querySelector('[kjAlert]')!;
     expect(root.getAttribute('role')).toBe('status');
     expect(root.getAttribute('aria-live')).toBe('polite');
@@ -99,10 +106,9 @@ describe('KjAlert', () => {
   });
 
   it('wires aria-labelledby to the title id', async () => {
-    const { container } = await render(
-      `<div kjAlert><h3 kjAlertTitle>Title</h3></div>`,
-      { imports: ALERT_IMPORTS },
-    );
+    const { container } = await render(`<div kjAlert><h3 kjAlertTitle>Title</h3></div>`, {
+      imports: ALERT_IMPORTS,
+    });
     const root = container.querySelector('[kjAlert]')!;
     const title = container.querySelector('[kjAlertTitle]')!;
     expect(title.id).toMatch(/-title$/);
@@ -110,10 +116,9 @@ describe('KjAlert', () => {
   });
 
   it('wires aria-describedby to the description id', async () => {
-    const { container } = await render(
-      `<div kjAlert><p kjAlertDescription>Body</p></div>`,
-      { imports: ALERT_IMPORTS },
-    );
+    const { container } = await render(`<div kjAlert><p kjAlertDescription>Body</p></div>`, {
+      imports: ALERT_IMPORTS,
+    });
     const root = container.querySelector('[kjAlert]')!;
     const desc = container.querySelector('[kjAlertDescription]')!;
     expect(desc.id).toMatch(/-description$/);
@@ -167,10 +172,9 @@ describe('KjAlert', () => {
   });
 
   it('default variant is "info" from KJ_ALERT_DEFAULTS', async () => {
-    const { container } = await render(
-      `<div kjAlert><span kjAlertDescription>x</span></div>`,
-      { imports: ALERT_IMPORTS },
-    );
+    const { container } = await render(`<div kjAlert><span kjAlertDescription>x</span></div>`, {
+      imports: ALERT_IMPORTS,
+    });
     expect(container.querySelector('[kjAlert]')!.getAttribute('data-variant')).toBe('info');
   });
 
@@ -183,10 +187,9 @@ describe('KjAlert', () => {
         }),
       ],
     });
-    const { container } = await render(
-      `<div kjAlert><span kjAlertDescription>x</span></div>`,
-      { imports: ALERT_IMPORTS },
-    );
+    const { container } = await render(`<div kjAlert><span kjAlertDescription>x</span></div>`, {
+      imports: ALERT_IMPORTS,
+    });
     expect(container.querySelector('[kjAlert]')!.getAttribute('data-variant')).toBe('brand');
   });
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi, afterEach } from 'vitest';
@@ -7,6 +7,7 @@ import { KJ_VARIANT_PRESET, KjVariant } from './variant';
 @Component({
   standalone: true,
   imports: [KjVariant],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<button kjVariant [kjVariant]="value">x</button>`,
 })
 class HostComponent {
@@ -20,7 +21,10 @@ describe('KjVariant', () => {
     const { getByRole } = await render(`<button kjVariant [kjVariant]="'destructive'">x</button>`, {
       imports: [KjVariant],
       providers: [
-        { provide: KJ_VARIANT_PRESET, useValue: { values: ['default', 'destructive'], default: 'default' } },
+        {
+          provide: KJ_VARIANT_PRESET,
+          useValue: { values: ['default', 'destructive'], default: 'default' },
+        },
       ],
     });
     expect(getByRole('button')).toHaveAttribute('data-variant', 'destructive');

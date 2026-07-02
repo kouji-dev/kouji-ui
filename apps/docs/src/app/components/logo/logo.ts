@@ -1,9 +1,10 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'kj-logo',
   standalone: true,
   templateUrl: './logo.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './logo.css',
 })
 export class LogoComponent {

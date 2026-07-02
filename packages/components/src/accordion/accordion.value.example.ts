@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjAccordionComponent,
   KjAccordionItemComponent,
@@ -14,17 +14,33 @@ import {
   selector: 'kj-accordion-value-example',
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
-  styles: [`
-    :host { display: block; }
-    .controls { display: flex; gap: var(--kj-space-sm); margin-bottom: var(--kj-space-md); }
-    button { padding: 0.25rem 0.75rem; border: 1px solid var(--kj-border-default); border-radius: var(--kj-radius-field); cursor: pointer; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .controls {
+        display: flex;
+        gap: var(--kj-space-sm);
+        margin-bottom: var(--kj-space-md);
+      }
+      button {
+        padding: 0.25rem 0.75rem;
+        border: 1px solid var(--kj-border-default);
+        border-radius: var(--kj-radius-field);
+        cursor: pointer;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="controls">
       <button type="button" (click)="open.set('overview')">Open overview</button>
       <button type="button" (click)="open.set('billing')">Open billing</button>
       <button type="button" (click)="open.set('')">Close all</button>
-      <span style="margin-left:auto; font: 0.875rem var(--kj-font-mono);">value = "{{ open() }}"</span>
+      <span style="margin-left:auto; font: 0.875rem var(--kj-font-mono);"
+        >value = "{{ open() }}"</span
+      >
     </div>
     <kj-accordion [(value)]="open">
       <kj-accordion-item value="overview" label="Overview">

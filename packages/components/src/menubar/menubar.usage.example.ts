@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjMenubarComponent, KjMenubarItemComponent } from './menubar';
 
 /**
@@ -13,7 +13,14 @@ import { KjMenubarComponent, KjMenubarItemComponent } from './menubar';
   selector: 'kj-menubar-usage-example',
   standalone: true,
   imports: [KjMenubarComponent, KjMenubarItemComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-menubar kjAriaLabel="Application">
       <kj-menubar-item>File</kj-menubar-item>

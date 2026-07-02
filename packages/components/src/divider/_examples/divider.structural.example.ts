@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjDividerComponent } from '../divider';
 
 /**
@@ -13,11 +13,25 @@ import { KjDividerComponent } from '../divider';
   selector: 'kj-divider-structural-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    section { display: flex; flex-direction: column; gap: var(--kj-space-xs); }
-    ul { margin: 0; padding-inline-start: var(--kj-space-lg); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xs);
+      }
+      ul {
+        margin: 0;
+        padding-inline-start: var(--kj-space-lg);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <section>
       <p>Account preferences — tune how your profile is presented.</p>

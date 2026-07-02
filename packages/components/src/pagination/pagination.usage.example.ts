@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjPaginationDefaultComponent } from './pagination';
 
 /**
@@ -11,10 +11,23 @@ import { KjPaginationDefaultComponent } from './pagination';
   selector: 'kj-pagination-usage-example',
   standalone: true,
   imports: [KjPaginationDefaultComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); }
-    .label { font-size: 0.75rem; color: var(--kj-fg-default); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+      }
+      .label {
+        font-size: 0.75rem;
+        color: var(--kj-fg-default);
+        opacity: 0.7;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div>
       <span class="label">Compact (5 pages)</span>

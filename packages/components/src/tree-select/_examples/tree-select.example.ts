@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTreeSelectComponent } from '../tree-select';
 import type { KjTreeNode } from '@kouji-ui/core';
 
@@ -12,15 +12,22 @@ import type { KjTreeNode } from '@kouji-ui/core';
   standalone: true,
   imports: [KjTreeSelectComponent],
   styles: [
-    `:host { display: block; }`,
-    `p { margin-top: var(--kj-space-md); font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-default); }`,
+    `
+      :host {
+        display: block;
+      }
+    `,
+    `
+      p {
+        margin-top: var(--kj-space-md);
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-fg-default);
+      }
+    `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-tree-select
-      [kjNodes]="categories"
-      [(kjValue)]="selected"
-      placeholder="Select a topic"
-    />
+    <kj-tree-select [kjNodes]="categories" [(kjValue)]="selected" placeholder="Select a topic" />
     <p>Selected: {{ selected() ?? 'none' }}</p>
   `,
 })

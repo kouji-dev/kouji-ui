@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDialog, KjDialogService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,7 +7,11 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-dialog-confirmation-body',
   standalone: true,
   imports: [KjDialog],
-  template: `<kj-dialog [kjAlert]="true"><h2>Confirm</h2><p>Are you sure?</p></kj-dialog>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-dialog [kjAlert]="true"
+    ><h2>Confirm</h2>
+    <p>Are you sure?</p></kj-dialog
+  >`,
 })
 class ConfirmationBody {}
 
@@ -15,9 +19,12 @@ class ConfirmationBody {}
   selector: 'kj-dialog-confirmation-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-button (click)="open()">Confirm</kj-button>`,
 })
 export class KjDialogConfirmationExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(ConfirmationBody, { alert: true }); }
+  open(): void {
+    this.dialog.open(ConfirmationBody, { alert: true });
+  }
 }

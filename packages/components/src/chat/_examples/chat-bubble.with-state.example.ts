@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjChatBubbleComponent,
   KjChatComponent,
@@ -16,15 +16,15 @@ import {
 @Component({
   selector: 'kj-chat-bubble-with-state-example',
   standalone: true,
-  imports: [
-    KjChatLogComponent,
-    KjChatComponent,
-    KjChatBubbleComponent,
-    KjChatFooterComponent,
+  imports: [KjChatLogComponent, KjChatComponent, KjChatBubbleComponent, KjChatFooterComponent],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
   ],
-  styles: [`
-    :host { display: block; }
-  `],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-chat-log kjChatLogLabel="Read receipts">
       <kj-chat kjSide="end">

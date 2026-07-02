@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjBlockquote } from '@kouji-ui/core';
 
 /**
@@ -13,17 +13,21 @@ import { KjBlockquote } from '@kouji-ui/core';
   selector: 'kj-typography-blockquote-example',
   standalone: true,
   imports: [KjBlockquote],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <figure>
       <blockquote kjBlockquote>
-        Atlas turned our quarterly planning from a five-day rite of passage
-        into a single afternoon. The whole team finally agrees on what we are
-        — and are not — shipping next quarter.
+        Atlas turned our quarterly planning from a five-day rite of passage into a single afternoon.
+        The whole team finally agrees on what we are — and are not — shipping next quarter.
       </blockquote>
-      <figcaption>
-        — Priya Raman, Director of Engineering, Northwind
-      </figcaption>
+      <figcaption>— Priya Raman, Director of Engineering, Northwind</figcaption>
     </figure>
   `,
 })

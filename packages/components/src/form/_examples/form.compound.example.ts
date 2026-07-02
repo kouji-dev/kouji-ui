@@ -1,13 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjButtonComponent } from '../../button/button';
 import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
 import { KjInputComponent } from '../../input/input';
-import {
-  KjFormActionsComponent,
-  KjFormComponent,
-  KjFormSummaryComponent,
-} from '../form';
+import { KjFormActionsComponent, KjFormComponent, KjFormSummaryComponent } from '../form';
 
 /**
  * Compound form — multiple `FormGroup` sections (account + address) inside a
@@ -28,11 +24,26 @@ import {
     KjButtonComponent,
     ReactiveFormsModule,
   ],
-  styles: [`
-    :host { display: block; }
-    .group { display: flex; flex-direction: column; gap: 0.5rem; padding: var(--kj-space-md); border: 1px solid var(--kj-border-default); border-radius: 0.5rem; }
-    .group h3 { margin: 0; font-size: 0.875rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: var(--kj-space-md);
+        border: 1px solid var(--kj-border-default);
+        border-radius: 0.5rem;
+      }
+      .group h3 {
+        margin: 0;
+        font-size: 0.875rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <form kj-form [formGroup]="form" (kjSubmit)="lastValue.set($event)">
       <kj-form-summary />

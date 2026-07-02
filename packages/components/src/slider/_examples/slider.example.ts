@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjSliderComponent } from '../slider';
 
 /**
@@ -12,11 +12,23 @@ import { KjSliderComponent } from '../slider';
   selector: 'kj-slider-example',
   standalone: true,
   imports: [KjSliderComponent],
-  styles: [`
-    :host { display: block; }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); }
-    .value { font: 0.875rem var(--kj-font-mono, monospace); color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+      }
+      .value {
+        font: 0.875rem var(--kj-font-mono, monospace);
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-slider [(kjValue)]="volume" kjAriaLabel="Volume" />

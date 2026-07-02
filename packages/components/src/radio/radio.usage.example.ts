@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjRadioGroupComponent, KjRadioComponent } from './radio';
 
 /**
@@ -10,10 +10,23 @@ import { KjRadioGroupComponent, KjRadioComponent } from './radio';
   selector: 'kj-radio-usage-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-xl); }
-    .label { font-size: 0.75rem; color: var(--kj-fg-default); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xl);
+      }
+      .label {
+        font-size: 0.75rem;
+        color: var(--kj-fg-default);
+        opacity: 0.7;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div>
       <span class="label">Size (vertical)</span>

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjAlertComponent,
@@ -24,13 +24,17 @@ import {
     KjAlertDismissComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md); min-height: 10rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        min-height: 10rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (visible()) {
       <kj-alert kjVariant="success" (kjAlertDismissed)="visible.set(false)">

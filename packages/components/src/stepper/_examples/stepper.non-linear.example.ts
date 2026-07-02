@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjStepperComponent,
   KjStepComponent,
@@ -24,10 +24,19 @@ import {
     KjStepperNextComponent,
     KjStepperPreviousComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    .actions { display: flex; gap: var(--kj-space-sm); margin-top: var(--kj-space-lg); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .actions {
+        display: flex;
+        gap: var(--kj-space-sm);
+        margin-top: var(--kj-space-lg);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-stepper [(kjActiveStep)]="active">
       <kj-step>

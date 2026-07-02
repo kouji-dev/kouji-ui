@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjSelectComponent, KjOptionComponent } from './select';
 
 /**
@@ -10,10 +10,23 @@ import { KjSelectComponent, KjOptionComponent } from './select';
   selector: 'kj-select-usage-example',
   standalone: true,
   imports: [KjSelectComponent, KjOptionComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); max-width: 18rem; }
-    label { display: grid; gap: var(--kj-space-xs); font-size: 0.875rem; color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+        max-width: 18rem;
+      }
+      label {
+        display: grid;
+        gap: var(--kj-space-xs);
+        font-size: 0.875rem;
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
     <label>

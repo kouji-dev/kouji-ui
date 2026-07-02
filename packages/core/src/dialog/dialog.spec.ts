@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import { KjDialog as KjDialogService } from './dialog.service';
@@ -7,6 +7,7 @@ import { KjDialogRef } from './dialog.ref';
 @Component({
   selector: 'kj-simple-dlg',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<button (click)="ref.close('ok')">OK</button>`,
 })
 class SimpleDlg {

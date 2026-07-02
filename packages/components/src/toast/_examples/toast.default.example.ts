@@ -1,4 +1,4 @@
-import { Component, TemplateRef, inject, viewChild } from '@angular/core';
+import { Component, TemplateRef, inject, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { KjToastService } from '@kouji-ui/core';
 import type { KjToastTemplateContext } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
@@ -8,7 +8,15 @@ import { KjToastViewportComponent, KjToastComponent, KjToastCloseComponent } fro
   selector: 'kj-toast-default-example',
   standalone: true,
   imports: [KjButtonComponent, KjToastViewportComponent, KjToastComponent, KjToastCloseComponent],
-  styles: [`:host { display: block; min-height: 8rem; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 8rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button (click)="show()">Show toast</kj-button>
     <kj-toast-viewport />

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../button/button';
 import { KjOverlayBadgeComponent } from './overlay-badge';
 
@@ -11,9 +11,17 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
   selector: 'kj-overlay-badge-usage-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-xl); flex-wrap: wrap; align-items: center; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-xl);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-overlay-badge [kjValue]="4" kjVariant="destructive" kjDescription="4 unread">
       <kj-button kjVariant="secondary">Inbox</kj-button>
@@ -23,7 +31,12 @@ import { KjOverlayBadgeComponent } from './overlay-badge';
       <kj-button kjVariant="ghost">Profile</kj-button>
     </kj-overlay-badge>
 
-    <kj-overlay-badge [kjValue]="120" [kjMaxValue]="99" kjVariant="default" kjDescription="120 messages">
+    <kj-overlay-badge
+      [kjValue]="120"
+      [kjMaxValue]="99"
+      kjVariant="default"
+      kjDescription="120 messages"
+    >
       <kj-button kjVariant="outline">Messages</kj-button>
     </kj-overlay-badge>
   `,

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjPaginationComponent,
   KjPaginationItemComponent,
@@ -26,7 +26,14 @@ import {
     KjPaginationLastComponent,
     KjPaginationEllipsisComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-pagination [(kjPage)]="page" [kjTotalPages]="10" #p="kjPagination">
       <kj-pagination-first>«</kj-pagination-first>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjDropdownMenuTrigger, KjDropdownMenuContent, KjDropdownMenuItem } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,6 +7,7 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-dropdown-menu-sides-example',
   standalone: true,
   imports: [KjDropdownMenuTrigger, KjDropdownMenuContent, KjDropdownMenuItem, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjDropdownMenuTrigger #t="kjDropdownMenuTrigger">Open</kj-button>
     <kj-dropdown-menu-content [kjFor]="t" kjSide="right">

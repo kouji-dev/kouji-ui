@@ -1,6 +1,14 @@
 import {
-  Component, DestroyRef, ElementRef,
-  afterNextRender, effect, inject, input, signal, viewChild,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { KjSpinnerComponent } from '@kouji-ui/components';
 import { ThemeService } from '../../services/theme.service';
@@ -12,20 +20,21 @@ import { MonacoService } from '../../services/monaco.service';
   standalone: true,
   imports: [KjSpinnerComponent],
   templateUrl: './code-editor.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './code-editor.css',
 })
 export class CodeEditorComponent {
   readonly editorHost = viewChild.required<ElementRef<HTMLDivElement>>('editorHost');
 
-  code       = input<string>('');
-  lang       = input<'ts' | 'html' | 'css' | 'json' | 'md'>('ts');
-  readonly   = input<boolean>(true);
+  code = input<string>('');
+  lang = input<'ts' | 'html' | 'css' | 'json' | 'md'>('ts');
+  readonly = input<boolean>(true);
   showHeader = input<boolean>(true);
 
   private readonly themeService = inject(ThemeService);
-  private readonly clipboard    = inject(ClipboardService);
-  private readonly monacoSvc    = inject(MonacoService);
-  private readonly destroyRef   = inject(DestroyRef);
+  private readonly clipboard = inject(ClipboardService);
+  private readonly monacoSvc = inject(MonacoService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly copied = signal(false);
 
@@ -88,38 +97,38 @@ export class CodeEditorComponent {
     this.loading.set(true);
     this.monaco = await this.monacoSvc.getMonaco();
 
-    const isDark  = this.themeService.isDark();
-    const isMd    = this.lang() === 'md';
+    const isDark = this.themeService.isDark();
+    const isMd = this.lang() === 'md';
     const monacoLang = this.toMonacoLang(this.lang());
 
     this.editor = this.monaco.editor.create(host, {
-      value:    this.code(),
+      value: this.code(),
       language: monacoLang,
-      theme:    isDark ? 'vs-dark' : 'vs',
+      theme: isDark ? 'vs-dark' : 'vs',
       readOnly: this.readonly(),
 
       // Layout
-      minimap:            { enabled: false },
+      minimap: { enabled: false },
       scrollBeyondLastLine: false,
-      wordWrap:           isMd ? 'on' : 'off',
-      lineNumbers:        isMd ? 'off' : 'on',
+      wordWrap: isMd ? 'on' : 'off',
+      lineNumbers: isMd ? 'off' : 'on',
       lineDecorationsWidth: isMd ? 0 : 16,
-      glyphMargin:        false,
-      folding:            false,
+      glyphMargin: false,
+      folding: false,
       renderLineHighlight: 'none',
       overviewRulerBorder: false,
-      overviewRulerLanes:  0,
+      overviewRulerLanes: 0,
 
       // Typography
-      fontSize:    isMd ? 14 : 13,
-      fontFamily:  isMd ? "system-ui, -apple-system, sans-serif" : "'JetBrains Mono', monospace",
-      lineHeight:  isMd ? 24 : 20,
+      fontSize: isMd ? 14 : 13,
+      fontFamily: isMd ? 'system-ui, -apple-system, sans-serif' : "'JetBrains Mono', monospace",
+      lineHeight: isMd ? 24 : 20,
 
       // Scrollbar
       scrollbar: {
-        vertical:   'auto',
+        vertical: 'auto',
         horizontal: 'auto',
-        verticalScrollbarSize:   6,
+        verticalScrollbarSize: 6,
         horizontalScrollbarSize: 6,
       },
 
@@ -127,14 +136,14 @@ export class CodeEditorComponent {
       padding: { top: isMd ? 0 : 16, bottom: isMd ? 0 : 16 },
 
       // Remove decorations
-      contextmenu:          false,
-      links:                false,
+      contextmenu: false,
+      links: false,
       occurrencesHighlight: 'off',
-      selectionHighlight:   false,
-      stickyScroll:         { enabled: false },
-      cursorStyle:          'line',
-      cursorBlinking:       'blink',
-      automaticLayout:      true,
+      selectionHighlight: false,
+      stickyScroll: { enabled: false },
+      cursorStyle: 'line',
+      cursorBlinking: 'blink',
+      automaticLayout: true,
     });
 
     // Auto-size to content. md is uncapped; code mode caps at ~30 lines and scrolls past.
@@ -151,8 +160,8 @@ export class CodeEditorComponent {
   }
 
   private toMonacoLang(lang: string): string {
-    if (lang === 'ts')  return 'typescript';
-    if (lang === 'md')  return 'markdown';
+    if (lang === 'ts') return 'typescript';
+    if (lang === 'md') return 'markdown';
     return lang;
   }
 

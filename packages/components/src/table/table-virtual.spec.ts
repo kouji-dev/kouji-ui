@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { KjTableVirtual } from './table-virtual';
@@ -21,17 +21,22 @@ beforeAll(() => {
   // prototype getters.
   Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
     configurable: true,
-    get(): number { return 400; },
+    get(): number {
+      return 400;
+    },
   });
   Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
     configurable: true,
-    get(): number { return 200; },
+    get(): number {
+      return 200;
+    },
   });
 });
 
 @Component({
   standalone: true,
   imports: [KjTableVirtual],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       kjTableVirtual
@@ -51,7 +56,9 @@ class Host {
   protected readonly overscan = signal(5);
   readonly virt = viewChild.required(KjTableVirtual);
 
-  setCount(n: number): void { this.count.set(n); }
+  setCount(n: number): void {
+    this.count.set(n);
+  }
 }
 
 describe('KjTableVirtual', () => {

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KJ_BUTTON_GROUP } from '@kouji-ui/core';
@@ -8,6 +8,7 @@ import { KjButtonComponent } from '../button/button';
 @Component({
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button-group
       [kjOrientation]="orientation"

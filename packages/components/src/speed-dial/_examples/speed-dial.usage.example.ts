@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjSpeedDialActionComponent,
   KjSpeedDialActionsComponent,
@@ -20,10 +20,23 @@ import {
     KjSpeedDialActionsComponent,
     KjSpeedDialActionComponent,
   ],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-end; padding: var(--kj-space-2xl); min-height: 16rem; }
-    .count { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        align-items: flex-end;
+        padding: var(--kj-space-2xl);
+        min-height: 16rem;
+      }
+      .count {
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <p class="count">Actions invoked: {{ count() }}</p>
     <kj-speed-dial kjDirection="up" kjPosition="static">
@@ -31,7 +44,9 @@ import {
       <kj-speed-dial-actions>
         <kj-speed-dial-action kjAriaLabel="Edit" (click)="bump()">E</kj-speed-dial-action>
         <kj-speed-dial-action kjAriaLabel="Share" (click)="bump()">S</kj-speed-dial-action>
-        <kj-speed-dial-action kjAriaLabel="Delete" kjVariant="destructive" (click)="bump()">D</kj-speed-dial-action>
+        <kj-speed-dial-action kjAriaLabel="Delete" kjVariant="destructive" (click)="bump()"
+          >D</kj-speed-dial-action
+        >
       </kj-speed-dial-actions>
     </kj-speed-dial>
   `,

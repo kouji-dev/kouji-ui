@@ -1,12 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import {
-  KjCalendar,
-  KjCalendarDay,
-  KjCalendarGrid,
-  KjCalendarHeader,
-} from './index';
+import { KjCalendar, KjCalendarDay, KjCalendarGrid, KjCalendarHeader } from './index';
 import {
   addDays,
   buildMonthMatrix,
@@ -20,6 +15,7 @@ import {
 @Component({
   standalone: true,
   imports: [KjCalendar, KjCalendarHeader, KjCalendarGrid, KjCalendarDay],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       kjCalendar

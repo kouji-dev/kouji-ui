@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTimePickerComponent } from '../time-picker';
 
 /**
@@ -10,16 +10,20 @@ import { KjTimePickerComponent } from '../time-picker';
   selector: 'kj-time-picker-formatted-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`
-    :host { display: block; }
-    pre { margin-top: var(--kj-space-md); font: 0.875rem var(--kj-font-mono, ui-monospace); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      pre {
+        margin-top: var(--kj-space-md);
+        font: 0.875rem var(--kj-font-mono, ui-monospace);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-time-picker
-      [(kjValue)]="time"
-      kjValueShape="string"
-      kjAriaLabel="Reminder time"
-    />
+    <kj-time-picker [(kjValue)]="time" kjValueShape="string" kjAriaLabel="Reminder time" />
     <pre>Stored: {{ time() }}</pre>
   `,
 })

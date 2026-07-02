@@ -1,11 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjTagComponent } from '../tag';
 
 @Component({
   selector: 'kj-tag-variants-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tag kjVariant="default">Default</kj-tag>
     <kj-tag kjVariant="secondary">Secondary</kj-tag>

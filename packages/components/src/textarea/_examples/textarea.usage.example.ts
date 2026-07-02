@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KjTextareaComponent } from '../textarea';
 
@@ -11,16 +11,22 @@ import { KjTextareaComponent } from '../textarea';
   selector: 'kj-textarea-usage-example',
   standalone: true,
   imports: [KjTextareaComponent, FormsModule],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .hint { font: 0.75rem var(--kj-font-sans); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .hint {
+        font: 0.75rem var(--kj-font-sans);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-textarea
-      [kjRows]="4"
-      kjPlaceholder="Share a quick update…"
-      [(ngModel)]="bio"
-    ></kj-textarea>
+    <kj-textarea [kjRows]="4" kjPlaceholder="Share a quick update…" [(ngModel)]="bio"></kj-textarea>
 
     <kj-textarea
       [kjRows]="3"

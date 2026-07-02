@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjKbdComponent } from '../kbd';
 
 /**
@@ -10,9 +10,17 @@ import { KjKbdComponent } from '../kbd';
   selector: 'kj-kbd-sizes-example',
   standalone: true,
   imports: [KjKbdComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center; flex-wrap: wrap; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+        flex-wrap: wrap;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-kbd kjSize="xs">Esc</kj-kbd>
     <kj-kbd kjSize="sm">Esc</kj-kbd>

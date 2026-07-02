@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjKbdComponent } from './kbd';
@@ -17,6 +17,7 @@ async function flushAfterNextRender(): Promise<void> {
 @Component({
   standalone: true,
   imports: [KjKbdComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-kbd>K</kj-kbd>`,
 })
 class DefaultHost {}
@@ -24,6 +25,7 @@ class DefaultHost {}
 @Component({
   standalone: true,
   imports: [KjKbdComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-kbd [kjSize]="size">{{ label }}</kj-kbd>`,
 })
 class SizedHost {
@@ -34,6 +36,7 @@ class SizedHost {
 @Component({
   standalone: true,
   imports: [KjKbdComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-kbd [kjKbdAriaLabel]="ariaLabel">{{ label }}</kj-kbd>`,
 })
 class AriaLabelHost {

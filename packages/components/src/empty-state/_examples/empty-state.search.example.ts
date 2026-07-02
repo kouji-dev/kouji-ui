@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjEmptyStateComponent,
   KjEmptyStateIconComponent,
@@ -26,11 +26,24 @@ import { KjButtonComponent } from '../../button/button';
     KjEmptyStateActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    .search { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    input { padding: var(--kj-space-sm) var(--kj-space-md); border: 1px solid var(--kj-border-default); border-radius: var(--kj-radius-field, 0.5rem); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .search {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      input {
+        padding: var(--kj-space-sm) var(--kj-space-md);
+        border: 1px solid var(--kj-border-default);
+        border-radius: var(--kj-radius-field, 0.5rem);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="search">
       <input
@@ -41,13 +54,22 @@ import { KjButtonComponent } from '../../button/button';
       />
       <kj-empty-state kjLive="polite">
         <kj-empty-state-icon>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" />
           </svg>
         </kj-empty-state-icon>
         <kj-empty-state-title>No results match "{{ query() || 'octopus' }}"</kj-empty-state-title>
-        <kj-empty-state-description>Try adjusting your search or clearing filters.</kj-empty-state-description>
+        <kj-empty-state-description
+          >Try adjusting your search or clearing filters.</kj-empty-state-description
+        >
         <kj-empty-state-actions>
           <kj-button kjVariant="ghost" (click)="query.set('')">Clear search</kj-button>
         </kj-empty-state-actions>

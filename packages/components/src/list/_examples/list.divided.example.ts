@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjListComponent, KjListItemComponent } from '../list';
 
 /**
@@ -11,7 +11,14 @@ import { KjListComponent, KjListItemComponent } from '../list';
   selector: 'kj-list-divided-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-list ariaLabel="Recent files" [divided]="true">
       <kj-list-item>Q4 financial report.pdf</kj-list-item>

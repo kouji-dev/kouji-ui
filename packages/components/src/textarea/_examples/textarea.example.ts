@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjTextareaComponent } from '../textarea';
 
 /**
@@ -9,14 +9,14 @@ import { KjTextareaComponent } from '../textarea';
   selector: 'kj-textarea-example',
   standalone: true,
   imports: [KjTextareaComponent],
-  styles: [`
-    :host { display: block; }
-  `],
-  template: `
-    <kj-textarea
-      [kjRows]="4"
-      kjPlaceholder="Tell us about yourself…"
-    ></kj-textarea>
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-textarea [kjRows]="4" kjPlaceholder="Tell us about yourself…"></kj-textarea> `,
 })
 export class KjTextareaExample {}

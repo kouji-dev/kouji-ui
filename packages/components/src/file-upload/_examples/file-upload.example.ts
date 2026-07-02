@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjFileUploadComponent } from '../file-upload';
 
 /**
@@ -9,7 +9,14 @@ import { KjFileUploadComponent } from '../file-upload';
   selector: 'kj-file-upload-example',
   standalone: true,
   imports: [KjFileUploadComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-file-upload
       [kjMultiple]="false"

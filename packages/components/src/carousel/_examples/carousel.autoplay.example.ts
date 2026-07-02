@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCarouselComponent,
   KjCarouselViewportComponent,
@@ -30,18 +30,35 @@ import {
     KjCarouselAutoplayComponent,
     KjCarouselPauseComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    .slide { display: grid; place-items: center; min-height: 12rem; font-weight: 600; font-size: 1.125rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .slide {
+        display: grid;
+        place-items: center;
+        min-height: 12rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-carousel label="Latest news">
       <kj-carousel-autoplay [delay]="6000" />
       <kj-carousel-previous aria-label="Previous slide" />
       <kj-carousel-viewport>
-        <kj-carousel-slide value="release" label="0.1 release"><div class="slide">0.1 release</div></kj-carousel-slide>
-        <kj-carousel-slide value="roadmap" label="Roadmap update"><div class="slide">Roadmap update</div></kj-carousel-slide>
-        <kj-carousel-slide value="hiring"  label="We are hiring"><div class="slide">We are hiring</div></kj-carousel-slide>
+        <kj-carousel-slide value="release" label="0.1 release"
+          ><div class="slide">0.1 release</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="roadmap" label="Roadmap update"
+          ><div class="slide">Roadmap update</div></kj-carousel-slide
+        >
+        <kj-carousel-slide value="hiring" label="We are hiring"
+          ><div class="slide">We are hiring</div></kj-carousel-slide
+        >
       </kj-carousel-viewport>
       <kj-carousel-next aria-label="Next slide" />
       <kj-carousel-indicators />

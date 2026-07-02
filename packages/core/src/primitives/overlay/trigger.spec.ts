@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, it, expect } from 'vitest';
 import { KjOverlayTrigger } from './trigger';
@@ -16,6 +16,7 @@ import { viewportCentered } from './strategies/position/viewport-centered';
     KjOverlayController,
     { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onClick() },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class TrigHost {
@@ -35,11 +36,19 @@ class TrigHost {
   hostDirectives: [KjOverlayTrigger],
   providers: [
     KjOverlayController,
-    { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => ({
-      ariaHasPopup: 'menu' as const,
-      attach() {}, bindToggle() {}, onOpen() {}, onClose() {}, detach() {},
-    }) },
+    {
+      provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
+      useFactory: () => ({
+        ariaHasPopup: 'menu' as const,
+        attach() {},
+        bindToggle() {},
+        onOpen() {},
+        onClose() {},
+        detach() {},
+      }),
+    },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class TrigMenuHost {
@@ -61,6 +70,7 @@ class TrigMenuHost {
     KjOverlayController,
     { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onClick() },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class TrigCtrlHost {

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjDatePickerComponent } from '../date-picker';
 
 /**
@@ -12,15 +12,24 @@ import { KjDatePickerComponent } from '../date-picker';
   selector: 'kj-date-picker-example',
   standalone: true,
   imports: [KjDatePickerComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-bg-surface, #f3f3f3); min-height: 24rem; }
-    .selected { margin-top: var(--kj-space-md, 0.75rem); font-family: monospace; color: var(--kj-fg-default, #111); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        padding: var(--kj-space-2xl, 2rem);
+        background: var(--kj-bg-surface, #f3f3f3);
+        min-height: 24rem;
+      }
+      .selected {
+        margin-top: var(--kj-space-md, 0.75rem);
+        font-family: monospace;
+        color: var(--kj-fg-default, #111);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-date-picker
-      [(kjValue)]="when"
-      kjPlaceholder="Pick a date"
-    />
+    <kj-date-picker [(kjValue)]="when" kjPlaceholder="Pick a date" />
     <p class="selected">Selected: {{ when().toDateString() }}</p>
   `,
 })

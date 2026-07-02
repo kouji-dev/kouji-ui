@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -18,6 +18,7 @@ async function flushAfterNextRender(): Promise<void> {
 @Component({
   standalone: true,
   imports: [KjKbd],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kbd kjKbd [kjSize]="size">{{ label }}</kbd>`,
 })
 class HostComponent {
@@ -82,9 +83,7 @@ describe('KjKbd', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await render(`<kbd kjKbd>Enter</kbd>`, { imports: [KjKbd] });
       await flushAfterNextRender();
-      const matched = warn.mock.calls.some((c) =>
-        /applied to <\w+>/i.test(String(c[0])),
-      );
+      const matched = warn.mock.calls.some((c) => /applied to <\w+>/i.test(String(c[0])));
       expect(matched).toBe(false);
     });
 
@@ -105,9 +104,7 @@ describe('KjKbd', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await render(`<kbd kjKbd><button>?</button></kbd>`, { imports: [KjKbd] });
       await flushAfterNextRender();
-      const matched = warn.mock.calls.some((c) =>
-        /focusable descendant/i.test(String(c[0])),
-      );
+      const matched = warn.mock.calls.some((c) => /focusable descendant/i.test(String(c[0])));
       expect(matched).toBe(true);
     });
 
@@ -115,9 +112,7 @@ describe('KjKbd', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await render(`<kbd kjKbd>Enter</kbd>`, { imports: [KjKbd] });
       await flushAfterNextRender();
-      const matched = warn.mock.calls.some((c) =>
-        /focusable descendant/i.test(String(c[0])),
-      );
+      const matched = warn.mock.calls.some((c) => /focusable descendant/i.test(String(c[0])));
       expect(matched).toBe(false);
     });
 
@@ -125,9 +120,7 @@ describe('KjKbd', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await render(`<kbd kjKbd><span>Enter</span></kbd>`, { imports: [KjKbd] });
       await flushAfterNextRender();
-      const matched = warn.mock.calls.some((c) =>
-        /focusable descendant/i.test(String(c[0])),
-      );
+      const matched = warn.mock.calls.some((c) => /focusable descendant/i.test(String(c[0])));
       expect(matched).toBe(false);
     });
   });

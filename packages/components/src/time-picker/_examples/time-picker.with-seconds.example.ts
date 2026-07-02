@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTimePickerComponent } from '../time-picker';
 
 /**
@@ -9,14 +9,15 @@ import { KjTimePickerComponent } from '../time-picker';
   selector: 'kj-time-picker-with-seconds-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`:host { display: block; }`],
-  template: `
-    <kj-time-picker
-      [(kjValue)]="time"
-      kjShowSeconds
-      kjAriaLabel="Lap time"
-    />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-time-picker [(kjValue)]="time" kjShowSeconds kjAriaLabel="Lap time" /> `,
 })
 export class KjTimePickerWithSecondsExample {
   readonly time = signal<Date | string>(new Date(2024, 0, 1, 0, 1, 23));

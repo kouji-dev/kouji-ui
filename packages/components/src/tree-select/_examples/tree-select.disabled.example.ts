@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTreeSelectComponent } from '../tree-select';
 import type { KjTreeNode } from '@kouji-ui/core';
 
@@ -12,9 +12,25 @@ import type { KjTreeNode } from '@kouji-ui/core';
   standalone: true,
   imports: [KjTreeSelectComponent],
   styles: [
-    `:host { display: block; display: flex; flex-direction: column; gap: var(--kj-space-lg); }`,
-    `label { font: 0.75rem var(--kj-font-sans); color: var(--kj-fg-default); opacity: 0.7; margin-bottom: var(--kj-space-xs); display: block; }`,
+    `
+      :host {
+        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+      }
+    `,
+    `
+      label {
+        font: 0.75rem var(--kj-font-sans);
+        color: var(--kj-fg-default);
+        opacity: 0.7;
+        margin-bottom: var(--kj-space-xs);
+        display: block;
+      }
+    `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div>
       <label for="tree-select-disabled-all">Entirely disabled</label>

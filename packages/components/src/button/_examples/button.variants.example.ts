@@ -1,13 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../button';
 
 @Component({
   selector: 'kj-button-variants-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-sm); flex-wrap: wrap; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-sm);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjVariant="default">Default</kj-button>
     <kj-button kjVariant="destructive">Destructive</kj-button>

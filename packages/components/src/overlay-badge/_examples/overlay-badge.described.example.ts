@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import { KjOverlayBadgeComponent } from '../overlay-badge';
 
@@ -15,7 +15,14 @@ import { KjOverlayBadgeComponent } from '../overlay-badge';
   selector: 'kj-overlay-badge-described-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjButtonComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-overlay-badge
       [kjValue]="248"

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KjInputOtpComponent } from '../input-otp';
 
@@ -10,15 +10,25 @@ import { KjInputOtpComponent } from '../input-otp';
   selector: 'kj-input-otp-masked-example',
   standalone: true,
   imports: [KjInputOtpComponent, FormsModule],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--kj-space-lg); }
-    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
-    .hint { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kj-space-lg);
+      }
+      label {
+        font-size: var(--kj-text-sm);
+        color: var(--kj-fg-default);
+      }
+      .hint {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <label for="input-otp-masked">Enter your PIN</label>
     <kj-input-otp

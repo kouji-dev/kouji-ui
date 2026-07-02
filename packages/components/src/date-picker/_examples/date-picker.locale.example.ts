@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjDatePickerComponent } from '../date-picker';
 
 /**
@@ -10,10 +10,24 @@ import { KjDatePickerComponent } from '../date-picker';
   selector: 'kj-date-picker-locale-example',
   standalone: true,
   imports: [KjDatePickerComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-bg-surface, #f3f3f3); min-height: 24rem; }
-    .row { display: grid; grid-template-columns: 6rem 1fr; align-items: center; gap: var(--kj-space-md, 0.75rem); margin-bottom: var(--kj-space-md, 0.75rem); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        padding: var(--kj-space-2xl, 2rem);
+        background: var(--kj-bg-surface, #f3f3f3);
+        min-height: 24rem;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 6rem 1fr;
+        align-items: center;
+        gap: var(--kj-space-md, 0.75rem);
+        margin-bottom: var(--kj-space-md, 0.75rem);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <span>en-US</span>

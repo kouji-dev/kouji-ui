@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjInputComponent } from '../../input/input';
 import { KjInputGroupComponent, KjInputGroupAddonComponent } from '../input-group';
 
@@ -9,12 +9,16 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from '../input-grou
   selector: 'kj-input-group-variants-example',
   standalone: true,
   imports: [KjInputGroupComponent, KjInputGroupAddonComponent, KjInputComponent],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-input-group>
       <kj-input-group-addon [kjAriaHidden]="true">$</kj-input-group-addon>

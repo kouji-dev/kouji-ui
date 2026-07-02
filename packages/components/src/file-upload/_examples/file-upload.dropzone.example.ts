@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjFileUploadComponent } from '../file-upload';
 
 /**
@@ -10,10 +10,17 @@ import { KjFileUploadComponent } from '../file-upload';
   selector: 'kj-file-upload-dropzone-example',
   standalone: true,
   imports: [KjFileUploadComponent],
-  styles: [`
-    :host { display: block; }
-    .kj-file-upload__dropzone { min-height: 14rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .kj-file-upload__dropzone {
+        min-height: 14rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-file-upload
       kjAccept=".pdf,.txt,.md"

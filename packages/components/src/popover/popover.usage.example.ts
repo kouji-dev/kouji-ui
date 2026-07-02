@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverClose } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 
@@ -11,9 +11,16 @@ import { KjButtonComponent } from '../button/button';
   selector: 'kj-popover-usage-example',
   standalone: true,
   imports: [KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverClose, KjButtonComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); flex-wrap: wrap; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjPopoverTrigger #info="kjPopoverTrigger">Settings</kj-button>
     <kj-popover-content [kjFor]="info">
@@ -28,7 +35,9 @@ import { KjButtonComponent } from '../button/button';
       <p>Use ⌘K to open the command palette.</p>
     </kj-popover-content>
 
-    <kj-button kjPopoverTrigger #danger="kjPopoverTrigger" kjVariant="destructive">Delete</kj-button>
+    <kj-button kjPopoverTrigger #danger="kjPopoverTrigger" kjVariant="destructive"
+      >Delete</kj-button
+    >
     <kj-popover-content [kjFor]="danger" [kjTrap]="true">
       <h3 kjPopoverTitle>Delete this item?</h3>
       <p>This action cannot be undone.</p>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjSkeletonComponent } from '../skeleton';
 
 /**
@@ -11,9 +11,14 @@ import { KjSkeletonComponent } from '../skeleton';
   selector: 'kj-skeleton-example',
   standalone: true,
   imports: [KjSkeletonComponent],
-  styles: [`
-    :host { display: block; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-skeleton kjWidth="16rem" kjHeight="1.5rem" />`,
 })
 export class KjSkeletonExample {}

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAriaDescribedBy } from '@kouji-ui/core';
 import {
   KjFieldComponent,
@@ -25,7 +25,8 @@ import {
   styles: [
     `
       :host {
-        display: block; max-width: 400px;
+        display: block;
+        max-width: 400px;
       }
       input.kj-bare {
         flex: 1;
@@ -39,6 +40,7 @@ import {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-field #f="kjField">
       <kj-field-label>Amount</kj-field-label>

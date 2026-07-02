@@ -1,10 +1,13 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { fireEvent, render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable, kjColumn } from '@kouji-ui/core';
 import { KjTablePaginationComponent } from './table-pagination';
 
-interface Row { id: string; name: string; }
+interface Row {
+  id: string;
+  name: string;
+}
 
 function makeRows(n: number): Row[] {
   return Array.from({ length: n }, (_, i) => ({ id: String(i + 1), name: `Row ${i + 1}` }));
@@ -17,15 +20,13 @@ function makeRows(n: number): Row[] {
 @Component({
   standalone: true,
   imports: [KjTable, KjTablePaginationComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
       <tbody>
         <tr>
           <td>
-            <kj-table-pagination
-              [kjPageSizes]="pageSizes()"
-              [kjShowSummary]="showSummary()"
-            />
+            <kj-table-pagination [kjPageSizes]="pageSizes()" [kjShowSummary]="showSummary()" />
           </td>
         </tr>
       </tbody>
@@ -39,7 +40,9 @@ class Host {
   protected readonly showSummary = signal(true);
   readonly tableRef = viewChild.required(KjTable);
 
-  setShowSummary(v: boolean): void { this.showSummary.set(v); }
+  setShowSummary(v: boolean): void {
+    this.showSummary.set(v);
+  }
 }
 
 describe('KjTablePaginationComponent', () => {

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { fireEvent, render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 import { KjPagination } from './pagination';
@@ -25,6 +25,7 @@ const imports = [
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <nav kjPagination [(kjPage)]="page" [kjTotalPages]="totalPages()" #p="kjPagination">
       <button kjPaginationFirst>«</button>
@@ -50,6 +51,7 @@ class PaginationHost {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <nav kjPagination [(kjPage)]="page" [kjTotalPages]="totalPages()" #p="kjPagination">
       @for (token of p.pages(); track token) {
@@ -359,9 +361,7 @@ describe('KjPagination — directive integration', () => {
       // The directive uses queueMicrotask to clear-then-set; flush it.
       await Promise.resolve();
       await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
-      const region = container.querySelector(
-        '[data-kj-pagination-live]',
-      ) as HTMLElement;
+      const region = container.querySelector('[data-kj-pagination-live]') as HTMLElement;
       expect(region.textContent).toBe('Page 4 of 10');
     });
   });
@@ -386,4 +386,3 @@ describe('KjPagination — directive integration', () => {
     });
   });
 });
-

@@ -1,9 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
-import {
-  KjCommandPaletteComponent,
-  KjCommandItemComponent,
-} from '../command-palette';
+import { KjCommandPaletteComponent, KjCommandItemComponent } from '../command-palette';
 
 /**
  * Default modal command palette. Click the trigger button (or use the
@@ -14,7 +11,16 @@ import {
   selector: 'kj-command-palette-example',
   standalone: true,
   imports: [KjCommandPaletteComponent, KjCommandItemComponent, KjButtonComponent],
-  styles: [`:host { display: flex; justify-content: center; min-height: 16rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        justify-content: center;
+        min-height: 16rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">Open palette</kj-button>
 

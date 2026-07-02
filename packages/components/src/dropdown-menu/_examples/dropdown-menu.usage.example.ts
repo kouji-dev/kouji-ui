@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjDropdownMenuTrigger,
   KjDropdownMenuContent,
@@ -23,10 +23,20 @@ import { KjButtonComponent } from '../../button/button';
     KjDropdownMenuLabel,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); }
-    .status { font-size: 0.875rem; color: var(--kj-fg-muted); align-self: center; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+      }
+      .status {
+        font-size: 0.875rem;
+        color: var(--kj-fg-muted);
+        align-self: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjDropdownMenuTrigger #t="kjDropdownMenuTrigger">Account</kj-button>
     <kj-dropdown-menu-content [kjFor]="t">

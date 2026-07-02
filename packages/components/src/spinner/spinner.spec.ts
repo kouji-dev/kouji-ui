@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjSpinnerComponent } from './spinner';
@@ -17,6 +17,7 @@ async function flushAfterNextRender(): Promise<void> {
 @Component({
   standalone: true,
   imports: [KjSpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-spinner />`,
 })
 class DefaultHost {}
@@ -24,7 +25,13 @@ class DefaultHost {}
 @Component({
   standalone: true,
   imports: [KjSpinnerComponent],
-  template: `<kj-spinner [kjAnimation]="animation" [kjVariant]="variant" [kjSize]="size" [kjAriaLabel]="label" />`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-spinner
+    [kjAnimation]="animation"
+    [kjVariant]="variant"
+    [kjSize]="size"
+    [kjAriaLabel]="label"
+  />`,
 })
 class ConfigurableHost {
   animation: 'spin' | 'dots' | 'pulse' | 'bars' = 'spin';
@@ -36,6 +43,7 @@ class ConfigurableHost {
 @Component({
   standalone: true,
   imports: [KjSpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <span id="busy-lbl">Loading users</span>
     <kj-spinner aria-labelledby="busy-lbl" />
@@ -122,9 +130,7 @@ describe('KjSpinnerComponent', () => {
       await flushAfterNextRender();
       fixture.detectChanges();
 
-      const hidden = fixture.nativeElement.querySelector(
-        'kj-spinner span[kjVisuallyHidden]',
-      );
+      const hidden = fixture.nativeElement.querySelector('kj-spinner span[kjVisuallyHidden]');
       expect(hidden).toBeNull();
       const host = fixture.nativeElement.querySelector('kj-spinner') as HTMLElement;
       expect(host.getAttribute('aria-labelledby')).toBe('busy-lbl');

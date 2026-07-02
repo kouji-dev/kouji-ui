@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
@@ -7,6 +7,7 @@ import { KjLink } from './link';
 @Component({
   standalone: true,
   imports: [KjLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<a kjLink href="/x" [kjDisabled]="d" (click)="onClick()">x</a>`,
 })
 class DisabledClickHost {
@@ -20,6 +21,7 @@ class DisabledClickHost {
 @Component({
   standalone: true,
   imports: [KjLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<a kjLink href="/x" [kjDisabled]="d" (keydown)="onKeydown($event)">x</a>`,
 })
 class DisabledKeydownHost {
@@ -47,18 +49,16 @@ describe('KjLink', () => {
   });
 
   it('reflects kjVariant to data-variant', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/x" [kjVariant]="'destructive'">x</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/x" [kjVariant]="'destructive'">x</a>`, {
+      imports: [KjLink],
+    });
     expect(getByRole('link')).toHaveAttribute('data-variant', 'destructive');
   });
 
   it('reflects kjSize to data-size', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/x" [kjSize]="'sm'">x</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/x" [kjSize]="'sm'">x</a>`, {
+      imports: [KjLink],
+    });
     expect(getByRole('link')).toHaveAttribute('data-size', 'sm');
   });
 
@@ -68,18 +68,16 @@ describe('KjLink', () => {
   });
 
   it('reflects kjUnderline=always', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/x" [kjUnderline]="'always'">x</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/x" [kjUnderline]="'always'">x</a>`, {
+      imports: [KjLink],
+    });
     expect(getByRole('link')).toHaveAttribute('data-underline', 'always');
   });
 
   it('reflects kjUnderline=none', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/x" [kjUnderline]="'none'">x</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/x" [kjUnderline]="'none'">x</a>`, {
+      imports: [KjLink],
+    });
     expect(getByRole('link')).toHaveAttribute('data-underline', 'none');
   });
 
@@ -92,18 +90,16 @@ describe('KjLink', () => {
   });
 
   it('does not mark as external when no target="_blank" and kjExternal unset', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="https://example.com">Docs</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="https://example.com">Docs</a>`, {
+      imports: [KjLink],
+    });
     expect(getByRole('link')).not.toHaveAttribute('data-external');
   });
 
   it('explicit kjExternal=true overrides target detection', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/internal" [kjExternal]="true">Docs</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/internal" [kjExternal]="true">Docs</a>`, {
+      imports: [KjLink],
+    });
     expect(getByRole('link')).toHaveAttribute('data-external', 'true');
   });
 
@@ -140,10 +136,9 @@ describe('KjLink', () => {
   });
 
   it('does not add noopener/noreferrer when not external', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/internal" rel="nofollow">x</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/internal" rel="nofollow">x</a>`, {
+      imports: [KjLink],
+    });
     const rel = getByRole('link').getAttribute('rel') ?? '';
     expect(rel.split(/\s+/u)).not.toContain('noopener');
     expect(rel.split(/\s+/u)).toContain('nofollow');
@@ -179,10 +174,9 @@ describe('KjLink', () => {
   });
 
   it('disabled bundle: aria-disabled, data-disabled, tabindex=-1', async () => {
-    const { getByRole } = await render(
-      `<a kjLink href="/x" [kjDisabled]="true">x</a>`,
-      { imports: [KjLink] },
-    );
+    const { getByRole } = await render(`<a kjLink href="/x" [kjDisabled]="true">x</a>`, {
+      imports: [KjLink],
+    });
     const link = getByRole('link');
     expect(link).toHaveAttribute('aria-disabled', 'true');
     expect(link).toHaveAttribute('data-disabled', '');

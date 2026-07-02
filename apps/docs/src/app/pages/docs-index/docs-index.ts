@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DocsService, DocsTrack } from '../../services/docs.service';
 import { DocsTrackCardComponent } from '../../components/track-card/track-card';
 
@@ -14,6 +14,7 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
   standalone: true,
   imports: [DocsTrackCardComponent],
   templateUrl: './docs-index.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './docs-index.css',
 })
 export class DocsIndexComponent implements OnInit {

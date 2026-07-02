@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjAlertActionsComponent,
@@ -27,14 +27,17 @@ import {
     KjAlertDismissComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (visible()) {
-      <kj-alert
-        [kjAlertStatic]="true"
-        kjVariant="warning"
-        (kjAlertDismissed)="visible.set(false)"
-      >
+      <kj-alert [kjAlertStatic]="true" kjVariant="warning" (kjAlertDismissed)="visible.set(false)">
         <kj-alert-icon>!</kj-alert-icon>
         <kj-alert-title>Maintenance scheduled</kj-alert-title>
         <kj-alert-description>

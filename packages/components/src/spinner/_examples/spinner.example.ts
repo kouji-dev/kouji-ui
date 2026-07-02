@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjSpinnerComponent } from '../spinner';
 
 /**
@@ -11,7 +11,16 @@ import { KjSpinnerComponent } from '../spinner';
   selector: 'kj-spinner-example',
   standalone: true,
   imports: [KjSpinnerComponent],
-  styles: [`:host { display: flex; align-items: center; justify-content: center; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-spinner />`,
 })
 export class KjSpinnerExample {}

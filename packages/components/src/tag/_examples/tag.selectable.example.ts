@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTagComponent } from '../tag';
 
 /**
@@ -10,7 +10,16 @@ import { KjTagComponent } from '../tag';
   selector: 'kj-tag-selectable-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tag [kjTagSelectable]="true" [(kjTagSelected)]="design">Design</kj-tag>
     <kj-tag [kjTagSelectable]="true" [(kjTagSelected)]="engineering">Engineering</kj-tag>

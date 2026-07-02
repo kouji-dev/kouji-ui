@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
@@ -28,6 +28,7 @@ const imports = [
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-pagination [(kjPage)]="page" [kjTotalPages]="totalPages()" #p="kjPagination">
       <kj-pagination-first>«</kj-pagination-first>
@@ -53,9 +54,8 @@ class HostComponent {
 @Component({
   standalone: true,
   imports,
-  template: `
-    <kj-pagination-default [(kjPage)]="page" [kjTotalPages]="totalPages()" />
-  `,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-pagination-default [(kjPage)]="page" [kjTotalPages]="totalPages()" /> `,
 })
 class DefaultHost {
   readonly page = signal(1);
@@ -85,7 +85,9 @@ describe('KjPaginationComponent (wrapper)', () => {
       root.querySelector('button.kj-pagination-action--first[data-pagination-action="first"]'),
     ).not.toBeNull();
     expect(
-      root.querySelector('button.kj-pagination-action--previous[data-pagination-action="previous"]'),
+      root.querySelector(
+        'button.kj-pagination-action--previous[data-pagination-action="previous"]',
+      ),
     ).not.toBeNull();
     expect(
       root.querySelector('button.kj-pagination-action--next[data-pagination-action="next"]'),
@@ -127,9 +129,7 @@ describe('KjPaginationComponent (wrapper)', () => {
     expect(current!.textContent?.trim()).toBe('3');
 
     // Only one current button at a time.
-    const allCurrent = Array.from(items).filter(
-      (b) => b.getAttribute('aria-current') === 'page',
-    );
+    const allCurrent = Array.from(items).filter((b) => b.getAttribute('aria-current') === 'page');
     expect(allCurrent.length).toBe(1);
   });
 

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDrawer, KjDrawerRef, KjDrawerService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -10,6 +10,7 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-drawer-usage-body',
   standalone: true,
   imports: [KjDrawer, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-drawer>
       <h2 style="margin: 0 0 var(--kj-space-md)">Settings</h2>
@@ -29,7 +30,15 @@ class DrawerUsageBody {
   selector: 'kj-drawer-usage-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`:host { display: flex; gap: var(--kj-space-md); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button (click)="open('right')">Open right</kj-button>
     <kj-button kjVariant="outline" (click)="open('bottom')">Open bottom sheet</kj-button>

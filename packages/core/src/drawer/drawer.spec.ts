@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -10,6 +10,7 @@ import { KjDrawerRef } from './drawer.ref';
   selector: 'kj-simple-drawer',
   standalone: true,
   imports: [KjDrawer],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-drawer><button id="ok" (click)="ref.close('ok')">OK</button></kj-drawer>`,
 })
 class SimpleDrawer {
@@ -20,6 +21,7 @@ class SimpleDrawer {
   selector: 'kj-data-drawer',
   standalone: true,
   imports: [KjDrawer],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-drawer>{{ data }}</kj-drawer>`,
 })
 class DataDrawer {
@@ -109,7 +111,7 @@ describe('KjDrawer (body component)', () => {
   it('exposes the resolved side through `side`', () => {
     const svc = TestBed.inject(KjDrawerService);
     const ref = svc.open(SimpleDrawer, { side: 'top' });
-    expect((ref.instance as unknown as { ref: KjDrawerRef<unknown> })).toBeTruthy();
+    expect(ref.instance as unknown as { ref: KjDrawerRef<unknown> }).toBeTruthy();
     cleanupOverlays();
   });
 });

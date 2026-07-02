@@ -1,11 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjRadioGroupComponent, KjRadioComponent } from '../radio';
 
 @Component({
   selector: 'kj-radio-group-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-radio-group [(value)]="plan" ariaLabel="Plan">
       <kj-radio [value]="'free'">Free</kj-radio>
@@ -15,4 +22,6 @@ import { KjRadioGroupComponent, KjRadioComponent } from '../radio';
     </kj-radio-group>
   `,
 })
-export class KjRadioGroupExample { readonly plan = signal<'free'|'pro'|'team'|'enterprise'>('pro'); }
+export class KjRadioGroupExample {
+  readonly plan = signal<'free' | 'pro' | 'team' | 'enterprise'>('pro');
+}

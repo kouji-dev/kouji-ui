@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
@@ -22,12 +22,9 @@ import {
     KjStepperPreviousComponent,
     KjStepperResetComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-stepper
-      [(kjActiveStep)]="active"
-      [kjLinear]="linear"
-      [kjOrientation]="orientation"
-    >
+    <kj-stepper [(kjActiveStep)]="active" [kjLinear]="linear" [kjOrientation]="orientation">
       <kj-step [kjStepCompleted]="step0Completed">
         <kj-step-label>Account</kj-step-label>
         <kj-step-content>Account body</kj-step-content>

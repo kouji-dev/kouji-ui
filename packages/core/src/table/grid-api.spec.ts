@@ -1,24 +1,34 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable } from './table';
 import { kjColumn } from './column-helpers';
 
-interface User { id: string; name: string; age: number; }
+interface User {
+  id: string;
+  name: string;
+  age: number;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable],
-  template: `<table [kjTable]="cols" [kjTableData]="data()" [kjGetRowId]="getId" #t="kjTable"></table>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<table
+    [kjTable]="cols"
+    [kjTableData]="data()"
+    [kjGetRowId]="getId"
+    #t="kjTable"
+  ></table>`,
 })
 class Host {
   protected readonly cols = [
     kjColumn<User>({ accessorKey: 'name', header: 'Name' }),
-    kjColumn<User>({ accessorKey: 'age',  header: 'Age', filterFn: 'equals' }),
+    kjColumn<User>({ accessorKey: 'age', header: 'Age', filterFn: 'equals' }),
   ];
   protected readonly data = signal<User[]>([
     { id: '1', name: 'Alice', age: 30 },
-    { id: '2', name: 'Bob',   age: 25 },
+    { id: '2', name: 'Bob', age: 25 },
     { id: '3', name: 'Carol', age: 40 },
   ]);
   protected readonly getId = (row: User) => row.id;

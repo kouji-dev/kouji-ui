@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjInputComponent } from '../input';
 
 /**
@@ -9,14 +9,22 @@ import { KjInputComponent } from '../input';
   selector: 'kj-input-color-example',
   standalone: true,
   imports: [KjInputComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-md); align-items: center; }
-    code { font: var(--kj-text-sm)/1 var(--kj-font-mono); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      code {
+        font: var(--kj-text-sm)/1 var(--kj-font-mono);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-input
-      type="color"
-      (input)="hex.set($any($event.target).value)" />
+    <kj-input type="color" (input)="hex.set($any($event.target).value)" />
     <code>{{ hex() }}</code>
   `,
 })

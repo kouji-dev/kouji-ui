@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
   KjCascadeOptionComponent,
@@ -6,8 +6,14 @@ import {
 } from '../cascade-select';
 
 const LABELS: Record<string, string> = {
-  us: 'USA', gb: 'UK', ca: 'California', ny: 'New York',
-  sf: 'San Francisco', la: 'Los Angeles', nyc: 'New York City', lon: 'London',
+  us: 'USA',
+  gb: 'UK',
+  ca: 'California',
+  ny: 'New York',
+  sf: 'San Francisco',
+  la: 'Los Angeles',
+  nyc: 'New York City',
+  lon: 'London',
 };
 
 /**
@@ -18,7 +24,14 @@ const LABELS: Record<string, string> = {
   selector: 'kj-cascade-select-path-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--kj-fg-default);">
       Path: <span style="font-weight: 600;">{{ breadcrumb() }}</span>
@@ -63,7 +76,7 @@ export class KjCascadeSelectPathExample {
   readonly breadcrumb = () => {
     const p = this.path();
     if (!p.length) return '—';
-    return p.map(v => LABELS[v as string] ?? String(v)).join(' › ');
+    return p.map((v) => LABELS[v as string] ?? String(v)).join(' › ');
   };
 
   onPathChange(p: readonly unknown[]): void {

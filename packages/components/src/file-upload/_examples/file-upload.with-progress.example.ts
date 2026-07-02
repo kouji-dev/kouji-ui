@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { KjFileUploadComponent } from '../file-upload';
 
 /**
@@ -16,7 +16,14 @@ import { KjFileUploadComponent } from '../file-upload';
   selector: 'kj-file-upload-with-progress-example',
   standalone: true,
   imports: [KjFileUploadComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-file-upload
       #picker

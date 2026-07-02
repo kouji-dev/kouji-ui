@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjSpeedDialActionComponent,
   KjSpeedDialActionsComponent,
@@ -22,14 +22,18 @@ import {
     KjSpeedDialActionsComponent,
     KjSpeedDialActionComponent,
   ],
-  styles: [`
-    :host {
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-      padding: var(--kj-space-2xl); min-height: 18rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        padding: var(--kj-space-2xl);
+        min-height: 18rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-speed-dial kjDirection="up" kjPosition="static">
       <kj-speed-dial-trigger kjAriaLabel="Open quick actions">+</kj-speed-dial-trigger>

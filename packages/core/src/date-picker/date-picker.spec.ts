@@ -1,16 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import {
-  KjDatePicker,
-  KjDatePickerCalendar,
-  KjDatePickerTrigger,
-} from './index';
+import { KjDatePicker, KjDatePickerCalendar, KjDatePickerTrigger } from './index';
 import { isSameDay } from '../calendar/date-utils';
 
 @Component({
   standalone: true,
   imports: [KjDatePicker, KjDatePickerTrigger, KjDatePickerCalendar],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjDatePicker [(kjValue)]="value" [(kjOpen)]="open">
       <input kjDatePickerTrigger #t="kjDatePickerTrigger" />

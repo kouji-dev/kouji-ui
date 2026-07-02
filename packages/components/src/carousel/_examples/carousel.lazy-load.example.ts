@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCarouselComponent,
   KjCarouselViewportComponent,
@@ -25,10 +25,20 @@ import {
     KjCarouselNextComponent,
     KjCarouselIndicatorsComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    img { width: 100%; height: 16rem; object-fit: cover; border-radius: var(--kj-radius-box); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      img {
+        width: 100%;
+        height: 16rem;
+        object-fit: cover;
+        border-radius: var(--kj-radius-box);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-carousel label="Image gallery">
       <kj-carousel-previous aria-label="Previous slide" />
@@ -51,9 +61,25 @@ import {
 })
 export class KjCarouselLazyLoadExample {
   readonly items = [
-    { id: 'meadow',   src: 'https://placehold.co/800x400/png?text=Meadow',   alt: 'Mountain meadow at dusk' },
-    { id: 'lake',     src: 'https://placehold.co/800x400/png?text=Lake',     alt: 'Alpine lake under cloud' },
-    { id: 'glacier',  src: 'https://placehold.co/800x400/png?text=Glacier',  alt: 'Glacier ridge at dawn' },
-    { id: 'forest',   src: 'https://placehold.co/800x400/png?text=Forest',   alt: 'Pine forest in winter' },
+    {
+      id: 'meadow',
+      src: 'https://placehold.co/800x400/png?text=Meadow',
+      alt: 'Mountain meadow at dusk',
+    },
+    {
+      id: 'lake',
+      src: 'https://placehold.co/800x400/png?text=Lake',
+      alt: 'Alpine lake under cloud',
+    },
+    {
+      id: 'glacier',
+      src: 'https://placehold.co/800x400/png?text=Glacier',
+      alt: 'Glacier ridge at dawn',
+    },
+    {
+      id: 'forest',
+      src: 'https://placehold.co/800x400/png?text=Forest',
+      alt: 'Pine forest in winter',
+    },
   ];
 }

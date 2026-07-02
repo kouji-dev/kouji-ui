@@ -1,10 +1,5 @@
-import { Component } from '@angular/core';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from '../tabs';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from '../tabs';
 
 /**
  * Manual activation example — focus moves with arrow keys but Enter or Space
@@ -15,7 +10,14 @@ import {
   selector: 'kj-tabs-manual-activation-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tabs activationMode="manual">
       <kj-tab-list>

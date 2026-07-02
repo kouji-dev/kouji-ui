@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjCommandPaletteComponent,
@@ -21,16 +21,40 @@ import {
     KjCommandSeparatorComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; min-height: 16rem; }
-  kbd { border: 1px solid var(--kj-border-default); color: var(--kj-fg-muted); font-family: var(--kj-font-mono); font-size: 0.7rem; padding: 0.1rem 0.35rem; margin-inline-start: var(--kj-space-md); }
-  .activated { font-family: var(--kj-font-mono); font-size: 0.75rem; color: var(--kj-fg-muted); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+        align-items: flex-start;
+        min-height: 16rem;
+      }
+      kbd {
+        border: 1px solid var(--kj-border-default);
+        color: var(--kj-fg-muted);
+        font-family: var(--kj-font-mono);
+        font-size: 0.7rem;
+        padding: 0.1rem 0.35rem;
+        margin-inline-start: var(--kj-space-md);
+      }
+      .activated {
+        font-family: var(--kj-font-mono);
+        font-size: 0.75rem;
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjVariant="outline" (click)="open.set(true)">
       Search commands… <kbd>⌘K</kbd>
     </kj-button>
 
     @if (lastActivated()) {
-      <p class="activated">Activated: <strong>{{ lastActivated() }}</strong></p>
+      <p class="activated">
+        Activated: <strong>{{ lastActivated() }}</strong>
+      </p>
     }
 
     <kj-command-palette

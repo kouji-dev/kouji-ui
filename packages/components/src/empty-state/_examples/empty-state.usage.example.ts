@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjEmptyStateComponent,
   KjEmptyStateIconComponent,
@@ -23,14 +23,23 @@ import { KjButtonComponent } from '../../button/button';
     KjEmptyStateActionsComponent,
     KjButtonComponent,
   ],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-empty-state>
       <kj-empty-state-icon>📁</kj-empty-state-icon>
       <kj-empty-state-title>No projects yet</kj-empty-state-title>
-      <kj-empty-state-description>Create your first project to get started.</kj-empty-state-description>
+      <kj-empty-state-description
+        >Create your first project to get started.</kj-empty-state-description
+      >
       <kj-empty-state-actions>
         <kj-button kjVariant="default">Create project</kj-button>
       </kj-empty-state-actions>
@@ -39,7 +48,9 @@ import { KjButtonComponent } from '../../button/button';
     <kj-empty-state kjLive="polite">
       <kj-empty-state-icon>🔍</kj-empty-state-icon>
       <kj-empty-state-title>No results for "kouji"</kj-empty-state-title>
-      <kj-empty-state-description>Try a different query or clear the filters.</kj-empty-state-description>
+      <kj-empty-state-description
+        >Try a different query or clear the filters.</kj-empty-state-description
+      >
     </kj-empty-state>
 
     <kj-empty-state kjVariant="error" kjLive="assertive">

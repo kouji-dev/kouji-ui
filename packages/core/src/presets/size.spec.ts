@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi, afterEach } from 'vitest';
@@ -7,6 +7,7 @@ import { KJ_SIZE_PRESET, KjSize } from './size';
 @Component({
   standalone: true,
   imports: [KjSize],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<button kjSize [kjSize]="value">x</button>`,
 })
 class HostComponent {
@@ -19,9 +20,7 @@ describe('KjSize', () => {
   it('reflects kjSize input as data-size on the host', async () => {
     const { getByRole } = await render(`<button kjSize [kjSize]="'lg'">x</button>`, {
       imports: [KjSize],
-      providers: [
-        { provide: KJ_SIZE_PRESET, useValue: { values: ['md', 'lg'], default: 'md' } },
-      ],
+      providers: [{ provide: KJ_SIZE_PRESET, useValue: { values: ['md', 'lg'], default: 'md' } }],
     });
     expect(getByRole('button')).toHaveAttribute('data-size', 'lg');
   });

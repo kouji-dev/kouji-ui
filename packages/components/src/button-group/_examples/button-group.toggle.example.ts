@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonGroupComponent } from '../button-group';
 import { KjButtonComponent } from '../../button/button';
 
@@ -13,7 +13,14 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-button-group-toggle-example',
   standalone: true,
   imports: [KjButtonGroupComponent, KjButtonComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button-group kjAriaLabel="Text formatting">
       <kj-button kjVariant="outline" [(kjPressed)]="bold">Bold</kj-button>

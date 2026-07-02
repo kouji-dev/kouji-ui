@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -11,17 +11,21 @@ expect.extend(toHaveNoViolations);
 @Component({
   standalone: true,
   imports: [KjButton],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<button kjButton [kjDisabled]="d" (click)="onClick()">x</button>`,
 })
 class ClickHost {
   d = true;
   fired = 0;
-  onClick() { this.fired++; }
+  onClick() {
+    this.fired++;
+  }
 }
 
 @Component({
   standalone: true,
   imports: [KjButton],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<button kjButton [(kjPressed)]="pressed">x</button>`,
 })
 class ToggleHost {
@@ -75,10 +79,9 @@ describe('KjButton', () => {
   });
 
   it('sets data-full="true" when kjFullWidth is true', async () => {
-    const { getByRole } = await render(
-      `<button kjButton [kjFullWidth]="true">x</button>`,
-      { imports: [KjButton] },
-    );
+    const { getByRole } = await render(`<button kjButton [kjFullWidth]="true">x</button>`, {
+      imports: [KjButton],
+    });
     expect(getByRole('button')).toHaveAttribute('data-full', 'true');
   });
 

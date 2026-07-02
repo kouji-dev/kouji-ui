@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjPasswordInputComponent } from '../password-input';
 
 /**
@@ -9,17 +9,31 @@ import { KjPasswordInputComponent } from '../password-input';
   selector: 'kj-password-input-toggle-example',
   standalone: true,
   imports: [KjPasswordInputComponent],
-  styles: [`
-    :host { display: block; }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); max-width: 360px; }
-    .state { font-size: var(--kj-text-xs); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+        max-width: 360px;
+      }
+      .state {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-password-input
         kjAutocomplete="current-password"
         kjPlaceholder="Click the eye to reveal"
-        [(kjRevealed)]="revealed" />
+        [(kjRevealed)]="revealed"
+      />
       <span class="state">revealed: {{ revealed() }}</span>
     </div>
   `,

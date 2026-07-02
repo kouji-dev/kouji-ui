@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjDividerComponent } from '../divider';
 
 /**
@@ -10,7 +10,14 @@ import { KjDividerComponent } from '../divider';
   selector: 'kj-divider-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <p>Above the divider — the first paragraph of content.</p>
     <kj-divider />

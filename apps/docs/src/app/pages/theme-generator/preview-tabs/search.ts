@@ -46,6 +46,7 @@ const ALL_STATUS = ['Open', 'In review', 'Done', 'Archived'] as const;
   selector: 'kj-preview-search-filters-drawer',
   standalone: true,
   imports: [KjDrawer, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-drawer>
       <h3 style="margin: 0 0 var(--kj-space-md);">Filters</h3>
@@ -101,11 +102,12 @@ export class PreviewSearch {
   protected readonly page = signal(1);
   protected readonly people = PEOPLE;
   protected readonly results = computed(() => this.people);
-  protected readonly chips: readonly { label: string; variant: 'primary' | 'success' | 'info' }[] = [
-    { label: 'Engineering', variant: 'primary' },
-    { label: 'Open', variant: 'success' },
-    { label: 'This week', variant: 'info' },
-  ];
+  protected readonly chips: readonly { label: string; variant: 'primary' | 'success' | 'info' }[] =
+    [
+      { label: 'Engineering', variant: 'primary' },
+      { label: 'Open', variant: 'success' },
+      { label: 'This week', variant: 'info' },
+    ];
 
   protected readonly allTags = ALL_TAGS;
   protected readonly allStatus = ALL_STATUS;

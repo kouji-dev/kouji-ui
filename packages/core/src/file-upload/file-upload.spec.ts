@@ -1,4 +1,4 @@
-import { Component, ViewChild, signal } from '@angular/core';
+import { Component, ViewChild, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import {
@@ -27,13 +27,17 @@ function makeFile(name: string, size = 100, type = 'text/plain'): File {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <div kjFileUpload #u="kjFileUpload"
-         [kjAccept]="accept()"
-         [kjMultiple]="multiple()"
-         [kjMaxSize]="maxSize()"
-         [kjMaxFiles]="maxFiles()"
-         [kjDisabled]="disabled()">
+    <div
+      kjFileUpload
+      #u="kjFileUpload"
+      [kjAccept]="accept()"
+      [kjMultiple]="multiple()"
+      [kjMaxSize]="maxSize()"
+      [kjMaxFiles]="maxFiles()"
+      [kjDisabled]="disabled()"
+    >
       <button kjFileUploadTrigger>Choose</button>
       <div kjFileUploadDropzone>Drop files here</div>
       <ul kjFileUploadList>
@@ -99,11 +103,7 @@ describe('KjFileUpload', () => {
       const { container, fixture } = await render(Host);
       fixture.componentInstance.maxFiles.set(2);
       fixture.detectChanges();
-      fixture.componentInstance.upload.addFiles([
-        makeFile('a'),
-        makeFile('b'),
-        makeFile('c'),
-      ]);
+      fixture.componentInstance.upload.addFiles([makeFile('a'), makeFile('b'), makeFile('c')]);
       fixture.detectChanges();
       expect(container.querySelectorAll('[kjFileUploadItem]').length).toBe(2);
     });

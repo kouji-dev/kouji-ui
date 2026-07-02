@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
@@ -18,24 +18,23 @@ import { DocsTrackCardComponent } from '../../components/track-card/track-card';
   standalone: true,
   imports: [RouterLink, DocsTrackCardComponent],
   templateUrl: './track-index.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../docs-index/docs-index.css', './track-index.css'],
 })
 export class TrackIndexComponent implements OnInit {
   private readonly docs = inject(DocsService);
   private readonly route = inject(ActivatedRoute);
   protected readonly trackId = toSignal(
-    this.route.data.pipe(map(d => (d['trackId'] as string) ?? '')),
+    this.route.data.pipe(map((d) => (d['trackId'] as string) ?? '')),
     { initialValue: '' },
   );
 
   protected readonly track = computed<DocsTrack | null>(() => {
     const id = this.trackId();
-    return this.docs.getTracks().find(t => t.id === id) ?? null;
+    return this.docs.getTracks().find((t) => t.id === id) ?? null;
   });
 
-  protected readonly categories = computed<SidebarNode[]>(
-    () => this.track()?.tree ?? [],
-  );
+  protected readonly categories = computed<SidebarNode[]>(() => this.track()?.tree ?? []);
 
   ngOnInit(): void {
     this.docs.loadManifest().subscribe();

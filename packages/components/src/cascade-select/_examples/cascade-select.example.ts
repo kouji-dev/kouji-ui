@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
   KjCascadeOptionComponent,
@@ -16,7 +16,14 @@ import {
   selector: 'kj-cascade-select-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-cascade-select [(kjValue)]="selectedCity" placeholder="Select a city">
       <kj-cascade-option [kjValue]="'us'" kjLabel="USA">

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverClose } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,6 +7,7 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-popover-cancellable-example',
   standalone: true,
   imports: [KjPopoverTrigger, KjPopoverContent, KjPopoverTitle, KjPopoverClose, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjPopoverTrigger #t="kjPopoverTrigger">Edit profile</kj-button>
     <kj-popover-content [kjFor]="t">

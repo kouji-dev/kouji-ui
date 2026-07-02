@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
 
 /**
@@ -10,16 +10,26 @@ import { KjComboboxComponent, KjComboboxOptionComponent } from '../combobox';
   selector: 'kj-combobox-free-text-example',
   standalone: true,
   imports: [KjComboboxComponent, KjComboboxOptionComponent],
-  styles: [`
-    :host { display: block; }
-    .out { font: 0.875rem var(--kj-font-mono, monospace); margin-top: var(--kj-space-md); color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .out {
+        font: 0.875rem var(--kj-font-mono, monospace);
+        margin-top: var(--kj-space-md);
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-combobox
       [(value)]="tag"
       [freeText]="true"
       [autoActivateFirst]="false"
-      placeholder="Type a tag and press Enter…">
+      placeholder="Type a tag and press Enter…"
+    >
       <kj-combobox-option [value]="'design'">Design</kj-combobox-option>
       <kj-combobox-option [value]="'engineering'">Engineering</kj-combobox-option>
       <kj-combobox-option [value]="'research'">Research</kj-combobox-option>

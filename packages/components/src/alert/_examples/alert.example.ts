@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjAlertComponent,
   KjAlertDescriptionComponent,
@@ -19,7 +19,14 @@ import {
     KjAlertTitleComponent,
     KjAlertDescriptionComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-alert kjVariant="info">
       <kj-alert-icon>i</kj-alert-icon>

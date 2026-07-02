@@ -1,11 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjRadioGroupComponent, KjRadioComponent } from '../radio';
 
 @Component({
   selector: 'kj-radio-inline-example',
   standalone: true,
   imports: [KjRadioGroupComponent, KjRadioComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-radio-group [(value)]="vote" orientation="horizontal" ariaLabel="Vote">
       <kj-radio [value]="'yes'">Yes</kj-radio>
@@ -14,4 +21,6 @@ import { KjRadioGroupComponent, KjRadioComponent } from '../radio';
     </kj-radio-group>
   `,
 })
-export class KjRadioInlineExample { readonly vote = signal<'yes'|'no'|'abstain'>('yes'); }
+export class KjRadioInlineExample {
+  readonly vote = signal<'yes' | 'no' | 'abstain'>('yes');
+}

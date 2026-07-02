@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjLinkComponent } from './link';
@@ -6,6 +6,7 @@ import { KjLinkComponent } from './link';
 @Component({
   standalone: true,
   imports: [KjLinkComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-link
       [kjHref]="href"
@@ -16,7 +17,8 @@ import { KjLinkComponent } from './link';
       [kjUnderline]="underline"
       [kjExternal]="external"
       [kjDisabled]="disabled"
-    >{{ label }}</kj-link>
+      >{{ label }}</kj-link
+    >
   `,
 })
 class HostComponent {

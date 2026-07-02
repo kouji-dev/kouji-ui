@@ -1,11 +1,20 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjCheckboxComponent } from '../checkbox';
 
 @Component({
   selector: 'kj-checkbox-indeterminate-example',
   standalone: true,
   imports: [KjCheckboxComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-checkbox [(checked)]="value" [indeterminate]="true">Mixed selection</kj-checkbox>`,
 })
-export class KjCheckboxIndeterminateExample { readonly value = signal(false); }
+export class KjCheckboxIndeterminateExample {
+  readonly value = signal(false);
+}

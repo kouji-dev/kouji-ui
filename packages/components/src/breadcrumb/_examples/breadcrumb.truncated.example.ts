@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjBreadcrumbComponent,
   KjBreadcrumbListComponent,
@@ -24,8 +24,13 @@ import {
     KjBreadcrumbEllipsisComponent,
   ],
   styles: [
-    `:host { display: block; }`,
+    `
+      :host {
+        display: block;
+      }
+    `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-breadcrumb [kjMaxItems]="3">
       <kj-breadcrumb-list>

@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { PageTocDirective } from './page-toc.directive';
 
 @Component({
@@ -6,6 +6,7 @@ import { PageTocDirective } from './page-toc.directive';
   standalone: true,
   imports: [],
   templateUrl: './page-toc.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './page-toc.css',
 })
 export class PageTocComponent {

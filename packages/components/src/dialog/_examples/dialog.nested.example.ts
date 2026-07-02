@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjDialog,
   KjDialogService,
@@ -25,6 +25,7 @@ import { KjButtonComponent } from '../../button/button';
     KjTooltipTrigger,
     KjTooltipContent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-dialog>
       <h2>Outer dialog</h2>
@@ -48,13 +49,16 @@ import { KjButtonComponent } from '../../button/button';
 class OuterBody {
   protected readonly ref = inject(KjDialogRef);
   private readonly dialog = inject(KjDialogService);
-  protected openInner(): void { this.dialog.open(InnerBody); }
+  protected openInner(): void {
+    this.dialog.open(InnerBody);
+  }
 }
 
 @Component({
   selector: 'kj-dialog-nested-inner-body',
   standalone: true,
   imports: [KjDialog, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-dialog>
       <h2>Inner dialog</h2>
@@ -71,9 +75,12 @@ class InnerBody {
   selector: 'kj-dialog-nested-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-button (click)="open()">Open dialog</kj-button>`,
 })
 export class KjDialogNestedExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(OuterBody); }
+  open(): void {
+    this.dialog.open(OuterBody);
+  }
 }

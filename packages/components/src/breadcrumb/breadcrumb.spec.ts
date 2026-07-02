@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
@@ -24,6 +24,7 @@ const imports = [
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-breadcrumb [kjMaxItems]="maxItems()" [kjOverflow]="overflow()" [kjSeparator]="separator()">
       <kj-breadcrumb-list>
@@ -54,6 +55,7 @@ class HostComponent {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-breadcrumb>
       <kj-breadcrumb-list>
@@ -77,6 +79,7 @@ class ExplicitSeparatorHost {}
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-breadcrumb [kjMaxItems]="3">
       <kj-breadcrumb-list>

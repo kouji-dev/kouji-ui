@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjDividerComponent } from '../divider';
 
 /**
@@ -10,9 +10,16 @@ import { KjDividerComponent } from '../divider';
   selector: 'kj-divider-variants-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <p>Solid — the default rule style.</p>
     <kj-divider kjVariant="solid" />

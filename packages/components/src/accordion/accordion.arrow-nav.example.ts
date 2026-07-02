@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjAccordionComponent,
   KjAccordionItemComponent,
@@ -14,7 +14,14 @@ import {
   selector: 'kj-accordion-arrow-nav-example',
   standalone: true,
   imports: [KjAccordionComponent, KjAccordionItemComponent, KjAccordionContentComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-accordion arrowNavigation type="multiple">
       <kj-accordion-item value="filters" label="Filters">

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjDividerComponent } from '../divider';
 
 /**
@@ -9,10 +9,22 @@ import { KjDividerComponent } from '../divider';
   selector: 'kj-divider-usage-example',
   standalone: true,
   imports: [KjDividerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); }
-    .row { display: flex; align-items: center; gap: var(--kj-space-md); height: 2rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-lg);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: var(--kj-space-md);
+        height: 2rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <section>
       <p>First section content.</p>

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjNumberInputComponent } from '../number-input';
 
 /**
@@ -9,10 +9,15 @@ import { KjNumberInputComponent } from '../number-input';
   selector: 'kj-number-input-example',
   standalone: true,
   imports: [KjNumberInputComponent],
-  styles: [`:host { display: block; }`],
-  template: `
-    <kj-number-input [(kjValue)]="qty" kjAriaLabel="Quantity" />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-number-input [(kjValue)]="qty" kjAriaLabel="Quantity" /> `,
 })
 export class KjNumberInputExample {
   readonly qty = signal<number>(3);

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjProgressBarComponent } from '../progress-bar';
 
 /**
@@ -10,17 +10,21 @@ import { KjProgressBarComponent } from '../progress-bar';
   selector: 'kj-progress-bar-variants-example',
   standalone: true,
   imports: [KjProgressBarComponent],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--kj-space-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-progress-bar [kjValue]="50" kjVariant="primary" kjAriaLabel="Primary" />
     <kj-progress-bar [kjValue]="50" kjVariant="success" kjAriaLabel="Success" />
     <kj-progress-bar [kjValue]="50" kjVariant="warning" kjAriaLabel="Warning" />
-    <kj-progress-bar [kjValue]="50" kjVariant="error"   kjAriaLabel="Error" />
+    <kj-progress-bar [kjValue]="50" kjVariant="error" kjAriaLabel="Error" />
   `,
 })
 export class KjProgressBarVariantsExample {}

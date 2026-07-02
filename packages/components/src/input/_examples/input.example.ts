@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjInputComponent } from '../input';
 
 /**
@@ -9,7 +9,14 @@ import { KjInputComponent } from '../input';
   selector: 'kj-input-example',
   standalone: true,
   imports: [KjInputComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-input type="text" placeholder="Type something…"></kj-input>`,
 })
 export class KjInputExample {}

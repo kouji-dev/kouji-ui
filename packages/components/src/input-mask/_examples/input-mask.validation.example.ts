@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjInputMask } from '@kouji-ui/core';
 import {
@@ -26,27 +26,32 @@ import {
     KjFieldHelpComponent,
     KjFieldErrorComponent,
   ],
-  styles: [`
-    :host {
-      display: block; max-width: 400px;
-    }
-    input[kjInputMask] { color: var(--kj-fg-default);
-      border: 1px solid var(--kj-border-default);
-      border-radius: var(--kj-radius-field, 0.375rem);
-      padding: var(--kj-space-sm) var(--kj-space-md);
-      font: var(--kj-text-sm) / 1.4 var(--kj-font-sans);
-      font-variant-numeric: tabular-nums;
-      width: 100%;
-    }
-    input[kjInputMask]:focus-visible {
-      outline: 2px solid var(--kj-fg-primary);
-      outline-offset: 2px;
-      border-color: var(--kj-fg-primary);
-    }
-    input[kjInputMask][aria-invalid='true'] {
-      border-color: var(--kj-fg-danger, #ef4444);
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+        max-width: 400px;
+      }
+      input[kjInputMask] {
+        color: var(--kj-fg-default);
+        border: 1px solid var(--kj-border-default);
+        border-radius: var(--kj-radius-field, 0.375rem);
+        padding: var(--kj-space-sm) var(--kj-space-md);
+        font: var(--kj-text-sm) / 1.4 var(--kj-font-sans);
+        font-variant-numeric: tabular-nums;
+        width: 100%;
+      }
+      input[kjInputMask]:focus-visible {
+        outline: 2px solid var(--kj-fg-primary);
+        outline-offset: 2px;
+        border-color: var(--kj-fg-primary);
+      }
+      input[kjInputMask][aria-invalid='true'] {
+        border-color: var(--kj-fg-danger, #ef4444);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-field [kjInvalid]="phoneCtrl.invalid && phoneCtrl.touched">
       <kj-field-label>Phone number</kj-field-label>
@@ -61,9 +66,10 @@ import {
         <kj-field-error>Phone number is required.</kj-field-error>
       } @else if (phoneCtrl.touched && phoneCtrl.errors?.['mask']) {
         <kj-field-error>
-          Please enter all {{ $any(phoneCtrl.errors)['mask']?.required }} digits
-          ({{ $any(phoneCtrl.errors)['mask']?.filled }} of
-          {{ $any(phoneCtrl.errors)['mask']?.required }} filled).
+          Please enter all {{ $any(phoneCtrl.errors)['mask']?.required }} digits ({{
+            $any(phoneCtrl.errors)['mask']?.filled
+          }}
+          of {{ $any(phoneCtrl.errors)['mask']?.required }} filled).
         </kj-field-error>
       }
     </kj-field>

@@ -1,15 +1,15 @@
 import {
   Directive,
   ElementRef,
-  ModelSignal,
   Signal,
+  WritableSignal,
   afterNextRender,
   computed,
   effect,
   inject,
   input,
   isDevMode,
-  model,
+  linkedSignal,
   output,
   untracked,
 } from '@angular/core';
@@ -84,7 +84,9 @@ export class KjPagination implements KjPaginationContext {
    * `[(kjPage)]`. Out-of-range writes are clamped to `[1, kjTotalPages()]`
    * with a dev-mode console warning.
    */
-  readonly kjPage: ModelSignal<number> = model<number>(1);
+  // eslint-disable-next-line @angular-eslint/no-input-rename -- alias keeps the public `kjPage` name distinct from this internal linkedSignal-backed property
+  readonly kjPageInput = input<number>(1, { alias: 'kjPage' });
+  readonly kjPage: WritableSignal<number> = linkedSignal(this.kjPageInput);
 
   /** Total number of pages. May be `0` (empty dataset). */
   readonly kjTotalPages = input.required<number>();

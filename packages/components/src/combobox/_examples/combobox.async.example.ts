@@ -1,4 +1,4 @@
-import { Component, signal, effect } from '@angular/core';
+import { Component, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjComboboxComponent,
   KjComboboxOptionComponent,
@@ -33,14 +33,22 @@ const ALL_USERS = [
     KjComboboxLoadingComponent,
     KjComboboxEmptyComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-combobox
       [(value)]="user"
       [(query)]="query"
       [shouldFilter]="false"
       [loading]="loading()"
-      placeholder="Search users…">
+      placeholder="Search users…"
+    >
       @for (u of results(); track u.id) {
         <kj-combobox-option [value]="u.name">{{ u.name }}</kj-combobox-option>
       }
@@ -69,7 +77,7 @@ export class KjComboboxAsyncExample {
       this.loading.set(true);
       this.timer = setTimeout(() => {
         const needle = q.toLowerCase();
-        this.results.set(ALL_USERS.filter(u => u.name.toLowerCase().includes(needle)));
+        this.results.set(ALL_USERS.filter((u) => u.name.toLowerCase().includes(needle)));
         this.loading.set(false);
       }, 250);
     });

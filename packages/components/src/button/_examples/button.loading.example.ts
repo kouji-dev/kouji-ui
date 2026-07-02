@@ -1,11 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../button';
 
 @Component({
   selector: 'kj-button-loading-example',
   standalone: true,
   imports: [KjButtonComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button [kjLoading]="busy()" (click)="run()">
       {{ busy() ? 'Saving…' : 'Save' }}
@@ -18,7 +25,7 @@ export class KjButtonLoadingExample {
   async run() {
     if (this.busy()) return;
     this.busy.set(true);
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1500));
     this.busy.set(false);
   }
 }

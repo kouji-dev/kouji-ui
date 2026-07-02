@@ -1,10 +1,5 @@
-import { Component } from '@angular/core';
-import {
-  KjTabsComponent,
-  KjTabListComponent,
-  KjTabComponent,
-  KjTabPanelComponent,
-} from '../tabs';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent } from '../tabs';
 
 /**
  * Disabled-tab example — the middle tab announces `aria-disabled="true"` and
@@ -15,7 +10,14 @@ import {
   selector: 'kj-tabs-disabled-example',
   standalone: true,
   imports: [KjTabsComponent, KjTabListComponent, KjTabComponent, KjTabPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-tabs>
       <kj-tab-list>

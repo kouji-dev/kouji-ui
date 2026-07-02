@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjMuted } from '@kouji-ui/core';
 
 /**
@@ -12,12 +12,16 @@ import { KjMuted } from '@kouji-ui/core';
   selector: 'kj-typography-muted-example',
   standalone: true,
   imports: [KjMuted],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <p>
-      Last updated <span kjMuted>3 minutes ago</span> by
-      <span kjMuted>Jamie Cole</span>.
-    </p>
+    <p>Last updated <span kjMuted>3 minutes ago</span> by <span kjMuted>Jamie Cole</span>.</p>
   `,
 })
 export class KjTypographyMutedExample {}

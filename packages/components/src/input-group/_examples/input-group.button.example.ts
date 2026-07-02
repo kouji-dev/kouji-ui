@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KjInputComponent } from '../../input/input';
 import { KjButtonComponent } from '../../button/button';
@@ -17,7 +17,14 @@ import { KjInputGroupComponent, KjInputGroupAddonComponent } from '../input-grou
     FormsModule,
     KjButtonComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-input-group>
       <kj-input type="search" placeholder="Search…" [(ngModel)]="query" aria-label="Search" />

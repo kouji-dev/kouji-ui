@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ColumnDef } from '@tanstack/angular-table';
 import { describe, expect, test, beforeEach } from 'vitest';
@@ -30,6 +30,7 @@ const DATA: Row[] = [
 @Component({
   standalone: true,
   imports: [KjTable, KjTableToolbarComponent, KjBulkAction],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="columns" [kjTableData]="data" #tbl="kjTable">
       <thead></thead>
@@ -55,11 +56,18 @@ function getToolbarHost(rootEl: HTMLElement): HTMLElement {
 
 function getTableDir(fixture: { debugElement: { query: (cb: unknown) => unknown } }): KjTable<Row> {
   // Walk to the <table> element and pull the directive instance.
-  const tableEl = (fixture as unknown as { nativeElement: HTMLElement })
-    .nativeElement.querySelector('table');
+  const tableEl = (
+    fixture as unknown as { nativeElement: HTMLElement }
+  ).nativeElement.querySelector('table');
   if (!tableEl) throw new Error('table not found');
   // Use Angular's debugElement injector by searching for the table debug node.
-  const root = (fixture as unknown as { debugElement: { children: { nativeElement: HTMLElement; injector: { get: <T>(t: unknown) => T } }[] } }).debugElement;
+  const root = (
+    fixture as unknown as {
+      debugElement: {
+        children: { nativeElement: HTMLElement; injector: { get: <T>(t: unknown) => T } }[];
+      };
+    }
+  ).debugElement;
   const node = root.children.find((c) => c.nativeElement === tableEl);
   if (!node) throw new Error('table debug node not found');
   return node.injector.get<KjTable<Row>>(KjTable);
@@ -83,7 +91,7 @@ describe('KjTableToolbarComponent', () => {
     fixture.detectChanges();
     const dir = getTableDir(fixture);
     const input = fixture.nativeElement.querySelector(
-      'kj-table-toolbar input[type="search"]'
+      'kj-table-toolbar input[type="search"]',
     ) as HTMLInputElement;
     expect(input).toBeTruthy();
 
@@ -102,7 +110,7 @@ describe('KjTableToolbarComponent', () => {
     expect(dir.state.density()).toBe('standard');
 
     const buttons = Array.from(
-      fixture.nativeElement.querySelectorAll('.kj-table-toolbar__density button')
+      fixture.nativeElement.querySelectorAll('.kj-table-toolbar__density button'),
     ) as HTMLButtonElement[];
     // 3 segmented buttons: compact / standard / comfortable
     expect(buttons.length).toBe(3);
@@ -125,7 +133,7 @@ describe('KjTableToolbarComponent', () => {
     // <kj-checkbox> labels are projected through the template). We probe via
     // the projected label text on each checkbox.
     const labels = Array.from(
-      fixture.nativeElement.querySelectorAll('kj-table-toolbar kj-checkbox .kj-checkbox-label')
+      fixture.nativeElement.querySelectorAll('kj-table-toolbar kj-checkbox .kj-checkbox-label'),
     ) as HTMLElement[];
 
     const text = labels.map((el) => el.textContent?.trim()).filter(Boolean);
@@ -138,16 +146,14 @@ describe('KjTableToolbarComponent', () => {
     fixture.detectChanges();
 
     // No selection → bulk slot wrapper should NOT exist.
-    expect(
-      fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')
-    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')).toBeNull();
 
     const dir = getTableDir(fixture);
     dir.setState({ rowSelection: { '0': true } });
     fixture.detectChanges();
 
     const bulk = fixture.nativeElement.querySelector(
-      '.kj-table-toolbar__bulk'
+      '.kj-table-toolbar__bulk',
     ) as HTMLElement | null;
     expect(bulk).not.toBeNull();
     // Projected bulk button is rendered inside.
@@ -161,20 +167,14 @@ describe('KjTableToolbarComponent', () => {
 
     dir.setState({ rowSelection: { '0': true } });
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')
-    ).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')).not.toBeNull();
 
     dir.setState({ rowSelection: { '0': false } });
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')
-    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')).toBeNull();
 
     dir.setState({ rowSelection: {} });
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')
-    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('.kj-table-toolbar__bulk')).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCarouselComponent,
   KjCarouselViewportComponent,
@@ -21,10 +21,21 @@ import {
     KjCarouselPreviousComponent,
     KjCarouselNextComponent,
   ],
-  styles: [`
-    :host { display: block; }
-    .slide { display: grid; place-items: center; min-height: 12rem; font-weight: 600; font-size: 1.125rem; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .slide {
+        display: grid;
+        place-items: center;
+        min-height: 12rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-carousel label="Featured destinations">
       <kj-carousel-previous aria-label="Previous slide" />

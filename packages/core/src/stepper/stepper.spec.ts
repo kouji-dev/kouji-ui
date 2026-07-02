@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { fireEvent, render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import {
@@ -47,6 +47,7 @@ const baseTemplate = `
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: baseTemplate,
 })
 class BasicHostComponent {
@@ -213,7 +214,12 @@ describe('KjStepper', () => {
       imports,
       template: `
         <ol kjStepper>
-          <li kjStep [kjStepCompleted]="done()" [kjStepError]="failed()" [kjStepOptional]="optional()">
+          <li
+            kjStep
+            [kjStepCompleted]="done()"
+            [kjStepError]="failed()"
+            [kjStepOptional]="optional()"
+          >
             <button kjStepLabel>One</button>
           </li>
           <li kjStep>
@@ -283,12 +289,11 @@ describe('KjStepper', () => {
       @Component({
         standalone: true,
         imports,
-        template: `
-          <ol kjStepper [kjLoop]="loop">
-            <li kjStep><button kjStepLabel>A</button></li>
-            <li kjStep><button kjStepLabel>B</button></li>
-            <button kjStepperNext>Next</button>
-          </ol>`,
+        template: ` <ol kjStepper [kjLoop]="loop">
+          <li kjStep><button kjStepLabel>A</button></li>
+          <li kjStep><button kjStepLabel>B</button></li>
+          <button kjStepperNext>Next</button>
+        </ol>`,
       })
       class LoopHost {
         loop = false;
@@ -313,11 +318,10 @@ describe('KjStepper', () => {
       @Component({
         standalone: true,
         imports,
-        template: `
-          <ol kjStepper kjOrientation="vertical">
-            <li kjStep><button kjStepLabel>One</button></li>
-            <li kjStep><button kjStepLabel>Two</button></li>
-          </ol>`,
+        template: ` <ol kjStepper kjOrientation="vertical">
+          <li kjStep><button kjStepLabel>One</button></li>
+          <li kjStep><button kjStepLabel>Two</button></li>
+        </ol>`,
       })
       class VerticalHost {}
       const { container } = await render(VerticalHost);
@@ -340,11 +344,10 @@ describe('KjStepper', () => {
       @Component({
         standalone: true,
         imports,
-        template: `
-          <ol kjStepper kjOrientation="vertical">
-            <li kjStep><button kjStepLabel>One</button></li>
-            <li kjStep><button kjStepLabel>Two</button></li>
-          </ol>`,
+        template: ` <ol kjStepper kjOrientation="vertical">
+          <li kjStep><button kjStepLabel>One</button></li>
+          <li kjStep><button kjStepLabel>Two</button></li>
+        </ol>`,
       })
       class VerticalHost {}
       const { container } = await render(VerticalHost);
@@ -366,13 +369,12 @@ describe('KjStepper', () => {
       @Component({
         standalone: true,
         imports,
-        template: `
-          <ol kjStepper #s="kjStepper">
-            <li kjStep kjStepKey="account"><button kjStepLabel>Account</button></li>
-            <li kjStep kjStepKey="profile"><button kjStepLabel>Profile</button></li>
-            <li kjStep kjStepKey="confirm"><button kjStepLabel>Confirm</button></li>
-            <button (click)="s.goToKey('profile')" id="jump">Jump</button>
-          </ol>`,
+        template: ` <ol kjStepper #s="kjStepper">
+          <li kjStep kjStepKey="account"><button kjStepLabel>Account</button></li>
+          <li kjStep kjStepKey="profile"><button kjStepLabel>Profile</button></li>
+          <li kjStep kjStepKey="confirm"><button kjStepLabel>Confirm</button></li>
+          <button (click)="s.goToKey('profile')" id="jump">Jump</button>
+        </ol>`,
       })
       class KeyHost {}
       const { container } = await render(KeyHost);
@@ -385,12 +387,11 @@ describe('KjStepper', () => {
       @Component({
         standalone: true,
         imports,
-        template: `
-          <ol kjStepper #s="kjStepper">
-            <li kjStep kjStepKey="a"><button kjStepLabel>A</button></li>
-            <li kjStep kjStepKey="b"><button kjStepLabel>B</button></li>
-            <button (click)="s.goToKey('nope')" id="jump">Jump</button>
-          </ol>`,
+        template: ` <ol kjStepper #s="kjStepper">
+          <li kjStep kjStepKey="a"><button kjStepLabel>A</button></li>
+          <li kjStep kjStepKey="b"><button kjStepLabel>B</button></li>
+          <button (click)="s.goToKey('nope')" id="jump">Jump</button>
+        </ol>`,
       })
       class KeyHost {}
       const { container } = await render(KeyHost);

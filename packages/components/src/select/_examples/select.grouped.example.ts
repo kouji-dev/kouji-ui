@@ -1,14 +1,26 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjSelectComponent, KjOptionComponent } from '../select';
 
 @Component({
   selector: 'kj-select-grouped-example',
   standalone: true,
   imports: [KjSelectComponent, KjOptionComponent],
-  styles: [`
-    :host { display: block; }
-    .group-label { padding: 4px 12px; font-size: 0.75rem; color: var(--kj-fg-default); opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .group-label {
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        color: var(--kj-fg-default);
+        opacity: 0.6;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-select [(value)]="city" placeholder="Choose a city">
       <div class="group-label">Europe</div>
@@ -20,4 +32,6 @@ import { KjSelectComponent, KjOptionComponent } from '../select';
     </kj-select>
   `,
 })
-export class KjSelectGroupedExample { readonly city = signal<string | undefined>(undefined); }
+export class KjSelectGroupedExample {
+  readonly city = signal<string | undefined>(undefined);
+}

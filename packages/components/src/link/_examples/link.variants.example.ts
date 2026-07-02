@@ -1,13 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjLinkComponent } from '../link';
 
 @Component({
   selector: 'kj-link-variants-example',
   standalone: true,
   imports: [KjLinkComponent],
-  styles: [`
-    :host { display: flex; gap: var(--kj-space-lg); flex-wrap: wrap; }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-lg);
+        flex-wrap: wrap;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-link kjHref="/x" kjVariant="primary" kjUnderline="always">Primary</kj-link>
     <kj-link kjHref="/x" kjVariant="secondary" kjUnderline="always">Secondary</kj-link>

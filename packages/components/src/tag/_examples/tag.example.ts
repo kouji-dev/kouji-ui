@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjTagComponent } from '../tag';
 
 /**
@@ -9,7 +9,14 @@ import { KjTagComponent } from '../tag';
   selector: 'kj-tag-example',
   standalone: true,
   imports: [KjTagComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-tag>New</kj-tag>`,
 })
 export class KjTagExample {}

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
@@ -20,6 +20,7 @@ import {
     KjAlertActionsComponent,
     KjAlertDismissComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (visible()) {
       <kj-alert
@@ -47,7 +48,10 @@ class HostComponent {
   mode: 'assertive' | 'polite' | 'static' | 'off' | undefined = undefined;
   visible = signal(true);
   fired = 0;
-  onDismissed(): void { this.fired++; this.visible.set(false); }
+  onDismissed(): void {
+    this.fired++;
+    this.visible.set(false);
+  }
 }
 
 describe('KjAlertComponent', () => {

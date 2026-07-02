@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { KjTextareaComponent } from '../textarea';
 
@@ -11,9 +11,14 @@ import { KjTextareaComponent } from '../textarea';
   selector: 'kj-textarea-character-count-example',
   standalone: true,
   imports: [KjTextareaComponent, ReactiveFormsModule],
-  styles: [`
-    :host { display: block; }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-textarea
       [kjRows]="4"

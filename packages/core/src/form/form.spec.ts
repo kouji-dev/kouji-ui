@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { describe, expect, it } from 'vitest';
@@ -8,8 +8,14 @@ import { KjFormErrorSummary } from './form-error-summary';
 @Component({
   standalone: true,
   imports: [KjForm, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <form kjForm [formGroup]="group" (kjSubmit)="submitted.set($event)" (kjInvalidSubmit)="invalid.set($event)">
+    <form
+      kjForm
+      [formGroup]="group"
+      (kjSubmit)="submitted.set($event)"
+      (kjInvalidSubmit)="invalid.set($event)"
+    >
       <input id="email" formControlName="email" />
       <input id="password" formControlName="password" />
       <button type="submit">Sign in</button>
@@ -28,6 +34,7 @@ class ReactiveHost {
 @Component({
   standalone: true,
   imports: [KjForm, KjFormErrorSummary, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <form kjForm [formGroup]="group" (kjSubmit)="submitted.set($event)">
       <div kjFormErrorSummary #s="kjFormErrorSummary">
@@ -121,7 +128,10 @@ describe('KjForm', () => {
     })
     class Host {
       group = new FormGroup({ x: new FormControl('', [Validators.required]) });
-      handler = (): Promise<void> => { calls++; return Promise.resolve(); };
+      handler = (): Promise<void> => {
+        calls++;
+        return Promise.resolve();
+      };
     }
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();

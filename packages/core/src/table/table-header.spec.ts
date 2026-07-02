@@ -1,15 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable } from './table';
 import { KjTableHeader } from './table-header';
 import { kjColumn } from './column-helpers';
 
-interface Row { name: string; }
+interface Row {
+  name: string;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable, KjTableHeader],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
       <thead>

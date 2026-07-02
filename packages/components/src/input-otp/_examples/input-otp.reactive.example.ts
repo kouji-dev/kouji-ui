@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { KjInputOtpComponent } from '../input-otp';
 
@@ -10,20 +10,27 @@ import { KjInputOtpComponent } from '../input-otp';
   selector: 'kj-input-otp-reactive-example',
   standalone: true,
   imports: [KjInputOtpComponent, ReactiveFormsModule],
-  styles: [`
-    :host {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--kj-space-lg); }
-    label { font-size: var(--kj-text-sm); color: var(--kj-fg-default); }
-    .error {
-      font-size: var(--kj-text-xs);
-      color: var(--kj-fg-danger);
-      font-family: var(--kj-font-mono);
-      min-height: 1.25rem;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--kj-space-lg);
+      }
+      label {
+        font-size: var(--kj-text-sm);
+        color: var(--kj-fg-default);
+      }
+      .error {
+        font-size: var(--kj-text-xs);
+        color: var(--kj-fg-danger);
+        font-family: var(--kj-font-mono);
+        min-height: 1.25rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <label for="input-otp-reactive">Enter your 6-digit code</label>
     <kj-input-otp
@@ -35,8 +42,11 @@ import { KjInputOtpComponent } from '../input-otp';
     />
     @if (ctrl.invalid && ctrl.touched) {
       <span class="error" role="alert">
-        @if (ctrl.hasError('required')) { Code is required. }
-        @else if (ctrl.hasError('minlength')) { Please enter all 6 digits. }
+        @if (ctrl.hasError('required')) {
+          Code is required.
+        } @else if (ctrl.hasError('minlength')) {
+          Please enter all 6 digits.
+        }
       </span>
     } @else {
       <span class="error"></span>
@@ -44,8 +54,5 @@ import { KjInputOtpComponent } from '../input-otp';
   `,
 })
 export class KjInputOtpReactiveExample {
-  readonly ctrl = new FormControl('', [
-    Validators.required,
-    Validators.minLength(6),
-  ]);
+  readonly ctrl = new FormControl('', [Validators.required, Validators.minLength(6)]);
 }

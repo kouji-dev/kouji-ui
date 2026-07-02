@@ -1,14 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { KjTableComponent } from './table';
-import {
-  KJ_TABLE_STORAGE,
-  inMemoryAdapter,
-  kjColumn,
-  type KjStorageAdapter,
-} from '@kouji-ui/core';
+import { KJ_TABLE_STORAGE, inMemoryAdapter, kjColumn, type KjStorageAdapter } from '@kouji-ui/core';
 
 expect.extend(toHaveNoViolations);
 
@@ -22,19 +17,28 @@ beforeAll(() => {
   vi.stubGlobal('ResizeObserver', StubResizeObserver);
   Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
     configurable: true,
-    get(): number { return 400; },
+    get(): number {
+      return 400;
+    },
   });
   Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
     configurable: true,
-    get(): number { return 200; },
+    get(): number {
+      return 200;
+    },
   });
 });
 
-interface User { id: string; name: string; email: string; }
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 @Component({
   standalone: true,
   imports: [KjTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-table [kjData]="data()" [kjColumns]="cols" />`,
 })
 class Host {
@@ -69,10 +73,10 @@ describe('KjTableComponent', () => {
 @Component({
   standalone: true,
   imports: [KjTableComponent],
-  template: `
-    <kj-table [kjData]="data" [kjColumns]="cols">
-      <div kjEmpty>No data</div>
-    </kj-table>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-table [kjData]="data" [kjColumns]="cols">
+    <div kjEmpty>No data</div>
+  </kj-table>`,
 })
 class EmptyHost {
   protected readonly data: User[] = [];
@@ -90,6 +94,7 @@ describe('KjTableComponent — slots', () => {
 @Component({
   standalone: true,
   imports: [KjTableComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-table [kjData]="data" [kjColumns]="cols" [kjEnableFilters]="true" />`,
 })
 class FilterRowHost {
@@ -114,12 +119,8 @@ describe('KjTableComponent — filter row', () => {
 @Component({
   standalone: true,
   imports: [KjTableComponent],
-  template: `
-    <kj-table
-      [kjData]="data"
-      [kjColumns]="cols"
-      [kjGetRowId]="rowId"
-    />`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-table [kjData]="data" [kjColumns]="cols" [kjGetRowId]="rowId" />`,
 })
 class GetRowIdHost {
   protected readonly data: User[] = [
@@ -133,8 +134,7 @@ class GetRowIdHost {
 describe('KjTableComponent — kjGetRowId', () => {
   it('keys row selection by the user-supplied id', async () => {
     const { fixture } = await render(GetRowIdHost);
-    const dataTable = fixture.debugElement.children[0].componentInstance as
-      KjTableComponent<User>;
+    const dataTable = fixture.debugElement.children[0].componentInstance as KjTableComponent<User>;
     const tbl = dataTable.tableRef();
     tbl.setState({ rowSelection: { 'user-1': true } });
     fixture.detectChanges();
@@ -148,12 +148,8 @@ describe('KjTableComponent — kjGetRowId', () => {
 @Component({
   standalone: true,
   imports: [KjTableComponent],
-  template: `
-    <kj-table
-      [kjData]="data"
-      [kjColumns]="cols"
-      kjStorageKey="kj.test.dt"
-    />`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-table [kjData]="data" [kjColumns]="cols" kjStorageKey="kj.test.dt" />`,
 })
 class StorageHost {
   protected readonly data: User[] = [{ id: '1', name: 'A', email: 'a@x' }];
@@ -167,8 +163,7 @@ describe('KjTableComponent — kjStorageKey', () => {
     const { fixture } = await render(StorageHost, {
       providers: [{ provide: KJ_TABLE_STORAGE, useValue: adapter }],
     });
-    const dataTable = fixture.debugElement.children[0].componentInstance as
-      KjTableComponent<User>;
+    const dataTable = fixture.debugElement.children[0].componentInstance as KjTableComponent<User>;
     dataTable.tableRef().setState({ globalFilter: 'foo' });
     fixture.detectChanges();
     await fixture.whenStable();

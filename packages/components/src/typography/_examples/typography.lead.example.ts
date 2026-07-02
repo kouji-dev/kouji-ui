@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjLead } from '@kouji-ui/core';
 
 /**
@@ -12,17 +12,24 @@ import { KjLead } from '@kouji-ui/core';
   selector: 'kj-typography-lead-example',
   standalone: true,
   imports: [KjLead],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <article>
       <h1>Atlas — quarterly roadmap planning</h1>
       <p kjLead>
-        Atlas helps engineering teams plan quarterly roadmaps with shared
-        context, calibrated estimates, and a clean handoff to delivery.
+        Atlas helps engineering teams plan quarterly roadmaps with shared context, calibrated
+        estimates, and a clean handoff to delivery.
       </p>
       <p>
-        The lead paragraph anchors the section's tone; the body paragraphs
-        below carry the supporting detail at the regular reading size.
+        The lead paragraph anchors the section's tone; the body paragraphs below carry the
+        supporting detail at the regular reading size.
       </p>
     </article>
   `,

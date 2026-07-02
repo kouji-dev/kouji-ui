@@ -1,11 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarComponent } from '../avatar';
 
 @Component({
   selector: 'kj-avatar-shapes-example',
   standalone: true,
   imports: [KjAvatarComponent],
-  styles: [`:host { display: flex; gap: 0.75rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: 0.75rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-avatar shape="circle" content="C" />
     <kj-avatar shape="rounded" content="R" />

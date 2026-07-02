@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDrawer, KjDrawerService, KjDrawerRef } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 import { KjInputComponent } from '../../input/input';
@@ -7,13 +7,8 @@ import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
 @Component({
   selector: 'kj-drawer-form-body',
   standalone: true,
-  imports: [
-    KjDrawer,
-    KjButtonComponent,
-    KjInputComponent,
-    KjFieldComponent,
-    KjFieldLabelComponent,
-  ],
+  imports: [KjDrawer, KjButtonComponent, KjInputComponent, KjFieldComponent, KjFieldLabelComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-drawer>
       <h2 style="margin: 0 0 var(--kj-space-md);">Edit profile</h2>
@@ -25,7 +20,9 @@ import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
         <kj-field-label>Email</kj-field-label>
         <kj-input placeholder="jane@example.com" />
       </kj-field>
-      <div style="display: flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-lg);">
+      <div
+        style="display: flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-lg);"
+      >
         <kj-button kjVariant="ghost" (click)="ref.close()">Cancel</kj-button>
         <kj-button (click)="ref.close('saved')">Save</kj-button>
       </div>
@@ -40,9 +37,12 @@ class Body {
   selector: 'kj-drawer-with-form-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-button (click)="open()">Open form drawer</kj-button>`,
 })
 export class KjDrawerWithFormExample {
   private readonly drawer = inject(KjDrawerService);
-  open(): void { this.drawer.open(Body); }
+  open(): void {
+    this.drawer.open(Body);
+  }
 }

@@ -1,21 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { describe, expect, it, beforeEach } from 'vitest';
-import {
-  KjFormActionsComponent,
-  KjFormComponent,
-  KjFormSummaryComponent,
-} from './form';
+import { KjFormActionsComponent, KjFormComponent, KjFormSummaryComponent } from './form';
 
 @Component({
   standalone: true,
-  imports: [
-    KjFormComponent,
-    KjFormActionsComponent,
-    KjFormSummaryComponent,
-    ReactiveFormsModule,
-  ],
+  imports: [KjFormComponent, KjFormActionsComponent, KjFormSummaryComponent, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <form
       kj-form

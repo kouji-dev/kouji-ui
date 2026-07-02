@@ -1,11 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjBadgeComponent } from '../badge';
 
 @Component({
   selector: 'kj-badge-with-icon-example',
   standalone: true,
   imports: [KjBadgeComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-badge variant="destructive">
       <span aria-hidden="true">●</span>

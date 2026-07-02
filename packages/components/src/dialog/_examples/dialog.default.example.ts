@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDialog, KjDialogService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,7 +7,11 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-dialog-default-body',
   standalone: true,
   imports: [KjDialog],
-  template: `<kj-dialog><h2>Hello</h2><p>Dialog body</p></kj-dialog>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-dialog
+    ><h2>Hello</h2>
+    <p>Dialog body</p></kj-dialog
+  >`,
 })
 class DialogBody {}
 
@@ -15,9 +19,12 @@ class DialogBody {}
   selector: 'kj-dialog-default-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-button (click)="open()">Open dialog</kj-button>`,
 })
 export class KjDialogDefaultExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(DialogBody); }
+  open(): void {
+    this.dialog.open(DialogBody);
+  }
 }

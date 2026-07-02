@@ -1,15 +1,19 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable } from './table';
 import { KjTableRow } from './table-row';
 import { kjColumn } from './column-helpers';
 
-interface Row { id: string; name: string; }
+interface Row {
+  id: string;
+  name: string;
+}
 
 @Component({
   standalone: true,
   imports: [KjTable, KjTableRow],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
       <tbody>
@@ -22,7 +26,10 @@ interface Row { id: string; name: string; }
 })
 class Host {
   protected readonly cols = [kjColumn<Row>({ accessorKey: 'name', header: 'Name' })];
-  protected readonly data = signal<Row[]>([{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }]);
+  protected readonly data = signal<Row[]>([
+    { id: 'a', name: 'A' },
+    { id: 'b', name: 'B' },
+  ]);
 }
 
 describe('KjTableRow', () => {

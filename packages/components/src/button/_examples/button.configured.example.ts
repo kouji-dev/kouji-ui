@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KJ_BUTTON_DEFAULTS, provideKjButton } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button';
 
@@ -13,10 +13,27 @@ import { KjButtonComponent } from '../button';
     }),
   ],
   styles: [
-    `:host { display: block; display: flex; gap: var(--kj-space-md); }`,
-    `.kj-button[data-variant='brand']    { --kj-button-bg: var(--kj-bg-primary);   --kj-button-fg: var(--kj-fg-on-primary); }`,
-    `.kj-button[data-variant='warning']  { --kj-button-bg: var(--kj-bg-warning);   --kj-button-fg: var(--kj-fg-on-warning); }`,
+    `
+      :host {
+        display: block;
+        display: flex;
+        gap: var(--kj-space-md);
+      }
+    `,
+    `
+      .kj-button[data-variant='brand'] {
+        --kj-button-bg: var(--kj-bg-primary);
+        --kj-button-fg: var(--kj-fg-on-primary);
+      }
+    `,
+    `
+      .kj-button[data-variant='warning'] {
+        --kj-button-bg: var(--kj-bg-warning);
+        --kj-button-fg: var(--kj-fg-on-warning);
+      }
+    `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button>Default (now 'brand')</kj-button>
     <kj-button kjVariant="warning">Warning</kj-button>

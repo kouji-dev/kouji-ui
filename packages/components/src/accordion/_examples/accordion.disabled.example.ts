@@ -1,16 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
-  KjAccordionComponent, KjAccordionItemComponent,
-  KjAccordionTriggerComponent, KjAccordionContentComponent,
+  KjAccordionComponent,
+  KjAccordionItemComponent,
+  KjAccordionTriggerComponent,
+  KjAccordionContentComponent,
 } from '../accordion';
 
 @Component({
   selector: 'kj-accordion-disabled-example',
   standalone: true,
   imports: [
-    KjAccordionComponent, KjAccordionItemComponent, KjAccordionTriggerComponent, KjAccordionContentComponent,
+    KjAccordionComponent,
+    KjAccordionItemComponent,
+    KjAccordionTriggerComponent,
+    KjAccordionContentComponent,
   ],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-accordion>
       <kj-accordion-item value="a">

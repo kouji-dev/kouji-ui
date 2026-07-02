@@ -1,11 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjSelectComponent, KjOptionComponent } from '../select';
 
 @Component({
   selector: 'kj-select-default-example',
   standalone: true,
   imports: [KjSelectComponent, KjOptionComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-select [(value)]="fruit" placeholder="Choose a fruit">
       <kj-option [value]="'apple'">Apple</kj-option>
@@ -14,4 +21,6 @@ import { KjSelectComponent, KjOptionComponent } from '../select';
     </kj-select>
   `,
 })
-export class KjSelectDefaultExample { readonly fruit = signal<string | undefined>(undefined); }
+export class KjSelectDefaultExample {
+  readonly fruit = signal<string | undefined>(undefined);
+}

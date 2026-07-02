@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTimePickerComponent } from '../time-picker';
 
 /**
@@ -10,11 +10,25 @@ import { KjTimePickerComponent } from '../time-picker';
   selector: 'kj-time-picker-usage-example',
   standalone: true,
   imports: [KjTimePickerComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-    .row { display: flex; gap: var(--kj-space-md); align-items: center; }
-    .readout { font: 0.875rem var(--kj-font-sans); color: var(--kj-fg-muted); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+      .row {
+        display: flex;
+        gap: var(--kj-space-md);
+        align-items: center;
+      }
+      .readout {
+        font: 0.875rem var(--kj-font-sans);
+        color: var(--kj-fg-muted);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-time-picker [(kjValue)]="meeting" kjAriaLabel="Meeting time" />
@@ -22,20 +36,12 @@ import { KjTimePickerComponent } from '../time-picker';
     </div>
 
     <div class="row">
-      <kj-time-picker
-        [(kjValue)]="lunch"
-        [kj12Hour]="true"
-        kjAriaLabel="Lunch time"
-      />
+      <kj-time-picker [(kjValue)]="lunch" [kj12Hour]="true" kjAriaLabel="Lunch time" />
       <span class="readout">{{ lunch() }}</span>
     </div>
 
     <div class="row">
-      <kj-time-picker
-        [(kjValue)]="alarm"
-        kjValueShape="string"
-        kjAriaLabel="Alarm time"
-      />
+      <kj-time-picker [(kjValue)]="alarm" kjValueShape="string" kjAriaLabel="Alarm time" />
       <span class="readout">{{ alarm() }}</span>
     </div>
   `,

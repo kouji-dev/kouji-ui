@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { FormsModule } from '@angular/forms';
 import { KjInputOtp, KjInputOtpCell } from './input-otp';
@@ -9,6 +9,7 @@ import { KjInputOtp, KjInputOtpCell } from './input-otp';
   selector: 'kj-test-host',
   standalone: true,
   imports: [KjInputOtp, KjInputOtpCell, FormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       kjInputOtp
@@ -45,7 +46,6 @@ function getInputs(container: HTMLElement): HTMLInputElement[] {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('KjInputOtp + KjInputOtpCell', () => {
-
   describe('rendering', () => {
     it('renders 6 cells by default', async () => {
       const { container } = await setup();
@@ -80,13 +80,13 @@ describe('KjInputOtp + KjInputOtpCell', () => {
     it('sets maxlength="1" on each cell', async () => {
       const { container } = await setup();
       const inputs = getInputs(container);
-      inputs.forEach(input => expect(input.getAttribute('maxlength')).toBe('1'));
+      inputs.forEach((input) => expect(input.getAttribute('maxlength')).toBe('1'));
     });
 
     it('sets spellcheck="false" on each cell', async () => {
       const { container } = await setup();
       const inputs = getInputs(container);
-      inputs.forEach(input => expect(input.getAttribute('spellcheck')).toBe('false'));
+      inputs.forEach((input) => expect(input.getAttribute('spellcheck')).toBe('false'));
     });
   });
 
@@ -262,13 +262,13 @@ describe('KjInputOtp + KjInputOtpCell', () => {
       await fixture.whenStable();
 
       const inputs = getInputs(container);
-      inputs.forEach(input => expect(input.type).toBe('password'));
+      inputs.forEach((input) => expect(input.type).toBe('password'));
     });
 
     it('uses type="text" by default', async () => {
       const { container } = await setup();
       const inputs = getInputs(container);
-      inputs.forEach(input => expect(input.type).toBe('text'));
+      inputs.forEach((input) => expect(input.type).toBe('text'));
     });
   });
 

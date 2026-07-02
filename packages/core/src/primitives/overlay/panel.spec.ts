@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, it, expect } from 'vitest';
 import { KjOverlayPanel } from './panel';
@@ -19,11 +19,12 @@ import { programmatic } from './strategies/trigger-event/programmatic';
   hostDirectives: [KjOverlayPanel],
   providers: [
     KjOverlayController,
-    { provide: KJ_OVERLAY_MOUNT_STRATEGY,    useFactory: () => bodyPortal() },
+    { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => viewportCentered() },
     { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => programmatic() },
-    { provide: KJ_OVERLAY_PANEL_ROLE,        useValue: 'dialog' as const },
+    { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'dialog' as const },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class PanelHost {

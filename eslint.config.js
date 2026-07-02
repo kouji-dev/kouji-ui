@@ -63,6 +63,16 @@ module.exports = tseslint.config(
     },
   },
   {
+    // The Angular 22 migration set `ChangeDetectionStrategy.Eager` on spec test-host
+    // components, doc examples, and docs-app components to preserve their pre-migration
+    // (non-OnPush) behavior. None are shipped library primitives — converting them to
+    // OnPush is a separate, deliberate follow-up, not a side effect of a dependency bump.
+    files: ['**/*.spec.ts', '**/*.example.ts', 'apps/docs/**/*.ts'],
+    rules: {
+      '@angular-eslint/prefer-on-push-component-change-detection': 'off',
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [
       ...angular.configs.templateRecommended,

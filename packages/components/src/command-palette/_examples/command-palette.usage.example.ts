@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjCommandPaletteComponent,
@@ -19,17 +19,20 @@ import {
     KjCommandGroupComponent,
     KjButtonComponent,
   ],
-  styles: [`:host { display: flex; justify-content: center; min-height: 16rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        justify-content: center;
+        min-height: 16rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-button kjVariant="outline" (click)="open.set(true)">
-      Open palette (or press ⌘K)
-    </kj-button>
+    <kj-button kjVariant="outline" (click)="open.set(true)"> Open palette (or press ⌘K) </kj-button>
 
-    <kj-command-palette
-      [(kjOpen)]="open"
-      kjHotkey="mod+k"
-      kjPlaceholder="Type a command…"
-    >
+    <kj-command-palette [(kjOpen)]="open" kjHotkey="mod+k" kjPlaceholder="Type a command…">
       <kj-command-group kjLabel="Actions">
         <kj-command-item kjValue="new-file">New file</kj-command-item>
         <kj-command-item kjValue="save">Save</kj-command-item>

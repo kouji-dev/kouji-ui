@@ -3,7 +3,7 @@ import {
   booleanAttribute,
   computed,
   input,
-  model,
+  linkedSignal,
   output,
   signal,
 } from '@angular/core';
@@ -60,7 +60,9 @@ export class KjSpeedDial implements KjSpeedDialContext {
   readonly kjDirection = input<KjSpeedDialDirection>('up');
 
   /** Two-way bindable expanded state. */
-  readonly kjOpen = model<boolean>(false);
+  // eslint-disable-next-line @angular-eslint/no-input-rename -- alias keeps the public `kjOpen` name distinct from this internal linkedSignal-backed property
+  readonly kjOpenInput = input<boolean>(false, { alias: 'kjOpen' });
+  readonly kjOpen = linkedSignal(this.kjOpenInput);
 
   /** Disables opening; if open, closes. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
@@ -68,7 +70,7 @@ export class KjSpeedDial implements KjSpeedDialContext {
   /** Open on hover (desktop only — coarse pointers always click-to-open). */
   readonly kjOpenOnHover = input(false, { transform: booleanAttribute });
 
-  /** Convenience output paired with the `kjOpen` model. */
+  /** Convenience output paired with the `kjOpen` input, deduplicated against internal writes. */
   readonly kjOpenChange = output<boolean>();
 
   // ── KjSpeedDialContext fields ────────────────────────────────────────

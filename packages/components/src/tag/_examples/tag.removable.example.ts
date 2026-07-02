@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjTagComponent, KjTagRemoveComponent } from '../tag';
 
 /**
@@ -11,7 +11,16 @@ import { KjTagComponent, KjTagRemoveComponent } from '../tag';
   selector: 'kj-tag-removable-example',
   standalone: true,
   imports: [KjTagComponent, KjTagRemoveComponent],
-  styles: [`:host { display: flex; flex-wrap: wrap; gap: 0.5rem; }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @for (tag of tags(); track tag) {
       <kj-tag kjVariant="secondary" (kjTagRemoved)="remove(tag)">
@@ -25,6 +34,6 @@ export class KjTagRemovableExample {
   protected readonly tags = signal(['Acme Corp', 'Globex', 'Initech', 'Umbrella']);
 
   protected remove(tag: string): void {
-    this.tags.update(list => list.filter(t => t !== tag));
+    this.tags.update((list) => list.filter((t) => t !== tag));
   }
 }

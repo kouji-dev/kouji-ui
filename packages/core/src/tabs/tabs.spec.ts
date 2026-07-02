@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render, fireEvent, screen } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjTab, KjTabList, KjTabPanel, KjTabs } from './tabs';
@@ -10,6 +10,7 @@ const imports = [KjTabs, KjTabList, KjTab, KjTabPanel];
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjTabs [(kjValue)]="active">
       <div kjTabList aria-label="Demo tabs">
@@ -18,13 +19,19 @@ const imports = [KjTabs, KjTabList, KjTab, KjTabPanel];
         <button kjTab kjTabValue="usage">Usage</button>
       </div>
       <div kjTabPanel kjPanelValue="overview" #p1="kjTabPanel">
-        @if (p1.mounted()) { <span data-testid="overview-content">Overview body</span> }
+        @if (p1.mounted()) {
+          <span data-testid="overview-content">Overview body</span>
+        }
       </div>
       <div kjTabPanel kjPanelValue="billing" #p2="kjTabPanel">
-        @if (p2.mounted()) { <span data-testid="billing-content">Billing body</span> }
+        @if (p2.mounted()) {
+          <span data-testid="billing-content">Billing body</span>
+        }
       </div>
       <div kjTabPanel kjPanelValue="usage" #p3="kjTabPanel">
-        @if (p3.mounted()) { <span data-testid="usage-content">Usage body</span> }
+        @if (p3.mounted()) {
+          <span data-testid="usage-content">Usage body</span>
+        }
       </div>
     </div>
   `,
@@ -36,6 +43,7 @@ class HorizontalHost {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjTabs kjOrientation="vertical" [(kjValue)]="active">
       <div kjTabList>
@@ -56,6 +64,7 @@ class VerticalHost {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjTabs kjActivationMode="manual" [(kjValue)]="active">
       <div kjTabList>
@@ -74,6 +83,7 @@ class ManualHost {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjTabs [(kjValue)]="active">
       <div kjTabList>
@@ -94,6 +104,7 @@ class DisabledHost {
 @Component({
   standalone: true,
   imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div kjTabs>
       <div kjTabList>

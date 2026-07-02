@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarGroupComponent } from '../avatar-group';
 import { KjAvatarComponent } from '../avatar';
 
@@ -11,7 +11,14 @@ import { KjAvatarComponent } from '../avatar';
   selector: 'kj-avatar-group-example',
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-avatar-group kjAriaLabel="collaborators">
       <kj-avatar content="AL" alt="Ada Lovelace" />

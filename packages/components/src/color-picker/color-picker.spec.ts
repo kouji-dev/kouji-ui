@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { render, fireEvent } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -10,12 +10,9 @@ expect.extend(toHaveNoViolations);
 @Component({
   standalone: true,
   imports: [KjColorPickerComponent, FormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-color-picker
-      [(ngModel)]="hex"
-      [kjShowAlpha]="showAlpha()"
-      [kjPresets]="presets()"
-    />
+    <kj-color-picker [(ngModel)]="hex" [kjShowAlpha]="showAlpha()" [kjPresets]="presets()" />
   `,
 })
 class HostComponent {
@@ -68,9 +65,7 @@ describe('KjColorPickerComponent', () => {
 
   it('clicking a preset updates the bound value', async () => {
     const { container, fixture } = await render(HostComponent);
-    fixture.componentInstance.presets.set([
-      { value: '#00ff00', label: 'Green' },
-    ]);
+    fixture.componentInstance.presets.set([{ value: '#00ff00', label: 'Green' }]);
     fixture.detectChanges();
     fireEvent.click(container.querySelector('.kj-color-picker-trigger')!);
     fixture.detectChanges();

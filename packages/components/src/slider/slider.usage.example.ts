@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjSliderComponent } from './slider';
 
 /**
@@ -10,11 +10,25 @@ import { KjSliderComponent } from './slider';
   selector: 'kj-slider-usage-example',
   standalone: true,
   imports: [KjSliderComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-xl); }
-    .row { display: flex; flex-direction: column; gap: var(--kj-space-sm); }
-    .value { font: 0.875rem var(--kj-font-mono, monospace); color: var(--kj-fg-default); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-xl);
+      }
+      .row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-sm);
+      }
+      .value {
+        font: 0.875rem var(--kj-font-mono, monospace);
+        color: var(--kj-fg-default);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="row">
       <kj-slider [(kjValue)]="volume" kjAriaLabel="Volume" />
@@ -29,7 +43,8 @@ import { KjSliderComponent } from './slider';
         [kjStep]="5"
         [kjMinDistance]="20"
         kjStartAriaLabel="Lowest price"
-        kjEndAriaLabel="Highest price" />
+        kjEndAriaLabel="Highest price"
+      />
       <span class="value">\${{ price()[0] }} – \${{ price()[1] }}</span>
     </div>
 
@@ -40,7 +55,8 @@ import { KjSliderComponent } from './slider';
         [kjMax]="5"
         [kjStep]="1"
         [kjTicks]="'auto'"
-        kjAriaLabel="Rating" />
+        kjAriaLabel="Rating"
+      />
       <span class="value">Rating: {{ rating() }} / 5</span>
     </div>
   `,

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarComponent } from '../../avatar/avatar';
 import { KjOverlayBadgeComponent } from '../overlay-badge';
 
@@ -11,13 +11,17 @@ import { KjOverlayBadgeComponent } from '../overlay-badge';
   selector: 'kj-overlay-badge-on-avatar-example',
   standalone: true,
   imports: [KjOverlayBadgeComponent, KjAvatarComponent],
-  styles: [`:host { display: flex; gap: var(--kj-space-xl); }`],
+  styles: [
+    `
+      :host {
+        display: flex;
+        gap: var(--kj-space-xl);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-overlay-badge
-      [kjDot]="true"
-      kjPosition="bottom-end"
-      kjDescription="Online"
-    >
+    <kj-overlay-badge [kjDot]="true" kjPosition="bottom-end" kjDescription="Online">
       <kj-avatar content="AB" alt="Alex Brown" />
     </kj-overlay-badge>
 

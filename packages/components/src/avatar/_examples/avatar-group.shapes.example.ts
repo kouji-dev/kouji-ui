@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjAvatarGroupComponent } from '../avatar-group';
 import { KjAvatarComponent } from '../avatar';
 
@@ -12,9 +12,16 @@ import { KjAvatarComponent } from '../avatar';
   selector: 'kj-avatar-group-shapes-example',
   standalone: true,
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
-  styles: [`
-    :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
-  `],
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kj-space-md);
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-avatar-group kjShape="circle" kjAriaLabel="circle collaborators">
       <kj-avatar content="AL" alt="Ada Lovelace" />

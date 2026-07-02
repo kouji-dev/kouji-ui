@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjListComponent, KjListItemComponent } from '../list';
 
 /**
@@ -11,15 +11,20 @@ import { KjListComponent, KjListItemComponent } from '../list';
   selector: 'kj-list-interactive-example',
   standalone: true,
   imports: [KjListComponent, KjListItemComponent],
-  styles: [`
-    :host { display: block; }
-    .kj-list-interactive-status {
-      margin-top: var(--kj-space-md);
-      font: 0.875rem / 1.4 var(--kj-font-sans);
-      color: var(--kj-fg-default);
-      opacity: 0.75;
-    }
-  `],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+      .kj-list-interactive-status {
+        margin-top: var(--kj-space-md);
+        font: 0.875rem / 1.4 var(--kj-font-sans);
+        color: var(--kj-fg-default);
+        opacity: 0.75;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-list ariaLabel="Recent contacts" [divided]="true" [hoverable]="true">
       @for (contact of contacts; track contact) {
@@ -28,13 +33,16 @@ import { KjListComponent, KjListItemComponent } from '../list';
         </kj-list-item>
       }
     </kj-list>
-    <p class="kj-list-interactive-status">
-      Selected: {{ selected() ?? '(none)' }}
-    </p>
+    <p class="kj-list-interactive-status">Selected: {{ selected() ?? '(none)' }}</p>
   `,
 })
 export class KjListInteractiveExample {
-  protected readonly contacts = ['Ada Lovelace', 'Grace Hopper', 'Alan Turing', 'Katherine Johnson'];
+  protected readonly contacts = [
+    'Ada Lovelace',
+    'Grace Hopper',
+    'Alan Turing',
+    'Katherine Johnson',
+  ];
   protected readonly selected = signal<string | null>(null);
 
   protected select(name: string): void {

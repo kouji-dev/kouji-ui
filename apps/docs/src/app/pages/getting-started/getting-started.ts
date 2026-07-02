@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DocsCalloutComponent } from '../../components/callout/callout';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
@@ -8,8 +8,15 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
 @Component({
   selector: 'app-getting-started',
   standalone: true,
-  imports: [RouterLink, DocsCalloutComponent, CodeEditorComponent, PageTocDirective, PageTocComponent],
+  imports: [
+    RouterLink,
+    DocsCalloutComponent,
+    CodeEditorComponent,
+    PageTocDirective,
+    PageTocComponent,
+  ],
   templateUrl: './getting-started.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './getting-started.css',
 })
 export class GettingStartedComponent {

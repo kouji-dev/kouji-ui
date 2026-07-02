@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KjDialog, KjDialogService } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,7 +7,11 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-dialog-scrollable-body',
   standalone: true,
   imports: [KjDialog],
-  template: `<kj-dialog><h2>Long content</h2><div style="max-height:60vh; overflow:auto"><p>Lorem ipsum…</p></div></kj-dialog>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-dialog
+    ><h2>Long content</h2>
+    <div style="max-height:60vh; overflow:auto"><p>Lorem ipsum…</p></div></kj-dialog
+  >`,
 })
 class ScrollableBody {}
 
@@ -15,9 +19,12 @@ class ScrollableBody {}
   selector: 'kj-dialog-scrollable-example',
   standalone: true,
   imports: [KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-button (click)="open()">Open scrollable</kj-button>`,
 })
 export class KjDialogScrollableExample {
   private readonly dialog = inject(KjDialogService);
-  open(): void { this.dialog.open(ScrollableBody); }
+  open(): void {
+    this.dialog.open(ScrollableBody);
+  }
 }

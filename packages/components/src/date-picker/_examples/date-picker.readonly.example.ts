@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjDatePickerComponent } from '../date-picker';
 
 /**
@@ -14,12 +14,18 @@ import { KjDatePickerComponent } from '../date-picker';
   selector: 'kj-date-picker-readonly-example',
   standalone: true,
   imports: [KjDatePickerComponent],
-  styles: [`
-    :host { display: block; padding: var(--kj-space-2xl, 2rem); background: var(--kj-bg-surface, #f3f3f3); min-height: 12rem; }
-  `],
-  template: `
-    <kj-date-picker [(kjValue)]="when" [kjReadonly]="true" />
-  `,
+  styles: [
+    `
+      :host {
+        display: block;
+        padding: var(--kj-space-2xl, 2rem);
+        background: var(--kj-bg-surface, #f3f3f3);
+        min-height: 12rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: ` <kj-date-picker [(kjValue)]="when" [kjReadonly]="true" /> `,
 })
 export class KjDatePickerReadonlyExample {
   readonly when = signal<Date>(new Date());

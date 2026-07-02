@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjDatePickerComponent } from './date-picker';
@@ -6,6 +6,7 @@ import { KjDatePickerComponent } from './date-picker';
 @Component({
   standalone: true,
   imports: [KjDatePickerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-date-picker [(kjValue)]="value" [(kjOpen)]="open" />`,
 })
 class HostComponent {
@@ -36,7 +37,9 @@ describe('KjDatePickerComponent', () => {
   test('toggle click opens the panel', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const toggle = fixture.nativeElement.querySelector('button.kj-date-picker__toggle') as HTMLButtonElement;
+    const toggle = fixture.nativeElement.querySelector(
+      'button.kj-date-picker__toggle',
+    ) as HTMLButtonElement;
     toggle.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.open()).toBe(true);

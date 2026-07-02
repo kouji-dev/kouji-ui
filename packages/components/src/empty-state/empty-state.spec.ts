@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
@@ -21,12 +21,9 @@ import {
     KjEmptyStateDescriptionComponent,
     KjEmptyStateActionsComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-empty-state
-      [kjVariant]="variant"
-      [kjLive]="live"
-      [kjEmptyStateLabel]="label"
-    >
+    <kj-empty-state [kjVariant]="variant" [kjLive]="live" [kjEmptyStateLabel]="label">
       <kj-empty-state-icon>icon</kj-empty-state-icon>
       <kj-empty-state-title [kjLevel]="level">Heading</kj-empty-state-title>
       <kj-empty-state-description>Body text</kj-empty-state-description>
@@ -172,7 +169,9 @@ describe('KjEmptyStateComponent', () => {
     @Component({
       standalone: true,
       imports: [KjEmptyStateComponent, KjEmptyStateTitleComponent],
-      template: `<kj-empty-state kjSize="lg"><kj-empty-state-title>X</kj-empty-state-title></kj-empty-state>`,
+      template: `<kj-empty-state kjSize="lg"
+        ><kj-empty-state-title>X</kj-empty-state-title></kj-empty-state
+      >`,
     })
     class SizeHost {}
 

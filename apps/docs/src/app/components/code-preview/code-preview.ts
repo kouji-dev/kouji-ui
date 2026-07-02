@@ -1,4 +1,16 @@
-import { Component, Type, ViewContainerRef, computed, effect, inject, input, signal, viewChild, untracked } from '@angular/core';
+import {
+  Component,
+  Type,
+  ViewContainerRef,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild,
+  untracked,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CodeEditorComponent } from '../code-editor/code-editor';
 import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
@@ -16,6 +28,7 @@ export interface CodeExample {
   standalone: true,
   imports: [CodeEditorComponent],
   templateUrl: './code-preview.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './code-preview.css',
 })
 export class CodePreviewComponent {
@@ -43,7 +56,9 @@ export class CodePreviewComponent {
   protected readonly activeTheme = signal<PreviewTheme>('default');
   protected readonly previewThemes = PREVIEW_THEMES;
   protected readonly activeExampleIdx = signal(0);
-  protected readonly activeDocExample = computed(() => this.docExamples()[this.activeExampleIdx()] ?? null);
+  protected readonly activeDocExample = computed(
+    () => this.docExamples()[this.activeExampleIdx()] ?? null,
+  );
 
   /** Whether the code editor panel is visible. Hidden by default. */
   protected readonly showCode = signal(false);
@@ -86,9 +101,9 @@ export class CodePreviewComponent {
   protected readonly hasMultipleThemes = computed((): boolean => {
     const docEx = this.activeDocExample();
     if (docEx) {
-      return Object.keys(docEx.themedFiles).filter(k => k !== 'default').length > 0;
+      return Object.keys(docEx.themedFiles).filter((k) => k !== 'default').length > 0;
     }
-    return Object.keys(this.themedExamples()).filter(k => k !== 'default').length > 0;
+    return Object.keys(this.themedExamples()).filter((k) => k !== 'default').length > 0;
   });
 
   /**
@@ -104,7 +119,9 @@ export class CodePreviewComponent {
   protected readonly hasDemo = computed(() => !!this.demoComponent());
 
   /** Signal-based view query — resolves to the ViewContainerRef when #previewHost exists in the DOM. */
-  private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', { read: ViewContainerRef });
+  private readonly previewHost = viewChild<string, ViewContainerRef>('previewHost', {
+    read: ViewContainerRef,
+  });
 
   constructor() {
     // React to the active example's exportName: clear the current demo and
@@ -118,17 +135,20 @@ export class CodePreviewComponent {
         return;
       }
       untracked(() => this.resolvingDemo.set(true));
-      this.registrySvc.get(exportName).then((cmp) => {
-        // Bail if the active example changed while we awaited the chunk —
-        // a newer effect cycle will have written the latest demo.
-        const latest = this.activeFiles()[0]?.exportName;
-        if (latest !== exportName) return;
-        this.demoComponent.set(cmp);
-        this.resolvingDemo.set(false);
-      }).catch(() => {
-        this.demoComponent.set(null);
-        this.resolvingDemo.set(false);
-      });
+      this.registrySvc
+        .get(exportName)
+        .then((cmp) => {
+          // Bail if the active example changed while we awaited the chunk —
+          // a newer effect cycle will have written the latest demo.
+          const latest = this.activeFiles()[0]?.exportName;
+          if (latest !== exportName) return;
+          this.demoComponent.set(cmp);
+          this.resolvingDemo.set(false);
+        })
+        .catch(() => {
+          this.demoComponent.set(null);
+          this.resolvingDemo.set(false);
+        });
     });
 
     // Mount/unmount the resolved component into #previewHost.
@@ -185,8 +205,8 @@ bootstrapApplication(AppComponent).catch(console.error);`;
     }
 
     // Find the main component file
-    const mainFile = examples.find(e => e.filename === 'app.component.ts')?.filename
-      ?? examples[0]?.filename;
+    const mainFile =
+      examples.find((e) => e.filename === 'app.component.ts')?.filename ?? examples[0]?.filename;
 
     sdk.openProject(
       {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { KjTooltipTrigger, KjTooltipContent, KjTooltipArrow } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -7,6 +7,7 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-tooltip-rich-example',
   standalone: true,
   imports: [KjTooltipTrigger, KjTooltipContent, KjTooltipArrow, KjButtonComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-button kjTooltipTrigger #t="kjTooltipTrigger">Save</kj-button>
     <kj-tooltip-content [kjFor]="t">

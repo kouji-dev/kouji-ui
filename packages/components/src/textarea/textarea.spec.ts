@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { describe, expect, test, beforeEach } from 'vitest';
@@ -7,6 +7,7 @@ import { KjTextareaComponent } from './textarea';
 @Component({
   standalone: true,
   imports: [KjTextareaComponent, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-textarea
       [kjRows]="rows"

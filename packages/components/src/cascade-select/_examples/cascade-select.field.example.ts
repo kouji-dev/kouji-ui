@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
   KjCascadeOptionComponent,
@@ -14,13 +14,27 @@ import {
   selector: 'kj-cascade-select-field-example',
   standalone: true,
   imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
-  styles: [`:host { display: block; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div style="display: flex; flex-direction: column; gap: 0.25rem; max-width: 20rem;">
-      <label for="cascade-delivery-location" style="font-size: 0.875rem; font-weight: 500; color: var(--kj-fg-default);">
+      <label
+        for="cascade-delivery-location"
+        style="font-size: 0.875rem; font-weight: 500; color: var(--kj-fg-default);"
+      >
         Delivery location
       </label>
-      <kj-cascade-select id="cascade-delivery-location" [(kjValue)]="location" placeholder="Select a city">
+      <kj-cascade-select
+        id="cascade-delivery-location"
+        [(kjValue)]="location"
+        placeholder="Select a city"
+      >
         <kj-cascade-option [kjValue]="'us'" kjLabel="United States">
           <kj-cascade-sub-panel kjOwnerOptionId="field-us">
             <kj-cascade-option [kjValue]="'ca'" kjLabel="California">
