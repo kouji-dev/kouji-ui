@@ -1,5 +1,4 @@
 import express from 'express';
-import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../../../dist/docs/browser');
@@ -9,7 +8,6 @@ app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: 'index.html',
-    redirect: false,
   }),
 );
 
