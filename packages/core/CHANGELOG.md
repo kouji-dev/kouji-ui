@@ -1,5 +1,49 @@
 # @kouji-ui/core
 
+## 1.0.0
+
+### Major Changes
+
+- ec17a49: Upgrade to Angular 22. Peer dependency ranges for `@angular/core`, `@angular/common`, and `@angular/cdk` now require `^22.0.0` (was `^21.0.0`) — consumers must upgrade to Angular 22 to use this version.
+
+  Internal changes as part of the upgrade:
+  - `KjSpeedDial`, `KjPagination`, and `KjCombobox`'s two-way-bindable inputs (`kjOpen`, `kjPage`, `kjQuery`) now use `input()` + `linkedSignal()` instead of `model()`, to avoid colliding with their paired convenience outputs under Angular 22's stricter duplicate-output check. Public API is unchanged.
+  - `packages/core`'s build now passes `-c tsconfig.lib.prod.json` explicitly to `ng-packagr`, fixing a silent fallback to an internal `es2018` lib default that broke `Intl`/`Array.prototype.at` typings.
+
+  Known issue: a subset of overlay-based components (confirm-popup, drawer, popover, date-picker, and others using the shared overlay `attachComponent()` primitive) hit `NG0950` (required input not available) under Angular 22's stricter dynamic-component input timing. Tracked as follow-up work, not fixed in this release.
+
+### Minor Changes
+
+- 658554d: Add leading dot indicator to badge (superset, additive).
+  - core: `[kjBadge]` gains `kjBadgeDot` input reflecting a `data-dot` attribute; defaults off, existing consumers unaffected.
+  - components: `<kj-badge>` gains `dot` input rendering a `::before` indicator, themeable via `--kj-badge-dot-size` and `--kj-badge-dot-color` (defaults to `currentColor`).
+
+- be6386d: Data-table polish: server-mode pagination, virtualization fix, inline-edit overlay, xs pagination tier.
+  - `KjTable` (core): dedupe identity-only slice patches; expose
+    `setRowCount` / `manualPagination` so resource-backed tables report the
+    full remote total instead of just the visible page.
+  - `KjSelect` / `KjSelectTrigger` (core): trigger registers its element
+    with the parent at construction time. `KjSelect.focus()` delegates to
+    the registered trigger — no view-query timing dance for consumers.
+  - `KjTableComponent`: virtualization reads pre-pagination rows (10k rows
+    scroll correctly); inline editors mount as `position: absolute` overlays
+    with a hidden ghost preserving column width; column meta (`selectOptions`)
+    forwarded to dynamically-mounted editors via the cell-editor outlet.
+  - `KjTablePaginationComponent`: three-column footer (page size · summary ·
+    nav), `space-between` nav cluster, full `xs | sm | md | lg` size tier
+    forwarded to the boundary buttons.
+  - `KjPagination`: `xs` registered in `KJ_PAGINATION_DEFAULTS.sizes` + CSS.
+  - `KjSelectComponent` / `KjInputComponent` / `KjNumberInputComponent`:
+    public `focus()` methods, no DOM querying.
+  - Renamed `KjCellEditorOutlet` output `cancel` → `editCancel` to avoid
+    the DOM-event collision flagged by angular-eslint.
+  - `kjTableVirtual` directive selector + exportAs lowercased for the `kj`
+    prefix rule.
+
+### Patch Changes
+
+- d2150ee: fix(signals): widen `nonRecords` constructor type to accept native builtins (WeakSet/WeakMap/Promise/Error/RegExp/DataView/Function) — pure type-level change, no runtime behavior change.
+
 ## 0.0.6
 
 ### Patch Changes
