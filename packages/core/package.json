@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.",
   "license": "MIT",
   "repository": {
@@ -50,12 +50,13 @@
   "module": "../../dist/kj-core/fesm2022/kouji-ui-core.mjs",
   "typings": "../../dist/kj-core/types/kouji-ui-core.d.ts",
   "exports": {
-    "./package.json": {
-      "default": "./package.json"
+    "./icon/icon.css": {
+      "style": "./icon/icon.css",
+      "default": "./icon/icon.css"
     },
-    ".": {
-      "types": "../../dist/kj-core/types/kouji-ui-core.d.ts",
-      "default": "../../dist/kj-core/fesm2022/kouji-ui-core.mjs"
+    "./typography/prose.css": {
+      "style": "./typography/prose.css",
+      "default": "./typography/prose.css"
     }
   },
   "scripts": {

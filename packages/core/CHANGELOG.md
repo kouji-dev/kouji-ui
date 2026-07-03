@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.1.4
+
+### Patch Changes
+
+- Export the shipped CSS assets (`./icon/icon.css`, `./typography/prose.css`) from the package exports map so consumers can `@import` them.
+
 ## 0.1.3
 
 ### Patch Changes
