@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.1.5
+
+### Patch Changes
+
+- cc560fc: kj-input: widen `KjInputType` with native `date`, `time`, and `datetime-local` types.
+
 ## 0.1.4
 
 ### Patch Changes
