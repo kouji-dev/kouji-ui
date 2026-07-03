@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.4.1
+
+### Patch Changes
+
+- kj-select: the trigger caret is now a registry `chevron-down` icon (kjIcon) instead of a text glyph. Consumers using the icon set (e.g. `provideLucideIcons()`) get a crisp themable arrow.
+
 ## 0.4.0
 
 ### Minor Changes

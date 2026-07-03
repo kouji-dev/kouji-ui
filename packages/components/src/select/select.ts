@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ViewEncapsulation, contentChildren, forwardRef, input, inject, computed } from '@angular/core';
-import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/core';
+import { KjIconDirective, KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/core';
 
 /**
  * Select root. Two-way bind via `[(value)]`.
@@ -75,11 +75,11 @@ import { KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/
   hostDirectives: [
     { directive: KjSelect, inputs: ['kjSelectValue: value'], outputs: ['kjSelectValueChange: valueChange'] },
   ],
-  imports: [KjSelectTrigger, KjSelectContent],
+  imports: [KjIconDirective, KjSelectTrigger, KjSelectContent],
   template: `
     <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null" [kjMultiple]="multiple()">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
-      <span class="kj-select-trigger-caret" aria-hidden="true">▾</span>
+      <span kjIcon="chevron-down" class="kj-select-trigger-caret" aria-hidden="true"></span>
     </button>
     <kj-select-content [kjFor]="trig" class="kj-select-content">
       <ng-content />
