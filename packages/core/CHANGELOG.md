@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.1.2
+
+### Patch Changes
+
+- Publish the built ng-packagr output (`dist/kj-*`) instead of raw library source via `publishConfig.directory`. The 0.1.1 tarballs shipped `src/` with no entry points and are unusable; this republishes with proper `fesm2022` bundles, types, and exports.
+
 ## 0.1.1
 
 ### Major Changes

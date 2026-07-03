@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.",
   "license": "MIT",
   "repository": {
@@ -34,7 +34,8 @@
         "types": "./types/kouji-ui-core.d.ts",
         "default": "./fesm2022/kouji-ui-core.mjs"
       }
-    }
+    },
+    "directory": "../../dist/kj-core"
   },
   "peerDependencies": {
     "@angular/common": "^22.0.0",

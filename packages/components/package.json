@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/components",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Opinionated styled Angular components built on @kouji-ui/core directives. Themed at runtime via @kouji-ui/themes.",
   "license": "MIT",
   "repository": {
@@ -21,7 +21,8 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": false
+    "provenance": false,
+    "directory": "../../dist/kj-components"
   },
   "peerDependencies": {
     "@angular/common": "^22.0.0",
