@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.4.2
+
+### Patch Changes
+
+- kj-table: sticky header — `thead` cells pin to the top of the scrolling body so only rows scroll when the table has a constrained height.
+
 ## 0.4.1
 
 ### Patch Changes

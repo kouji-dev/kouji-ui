@@ -50,6 +50,21 @@
   min-width: 0;
 }
 
+/* Sticky header — the scroll container is `.kj-table-body`, which holds the
+   whole <table> including <thead>. Pin the header rows to the top of that
+   scrollport so only the rows scroll. Opaque background required (rows pass
+   underneath); z-index above pinned data cells (1) so corner cells layer
+   correctly, below the resize indicator (3). */
+.kj-table-body thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--kj-bg-surface);
+}
+.kj-table-body thead th[data-pin] {
+  z-index: 3;
+}
+
 .kj-table-body > table {
   /* Table never flex-grows; row heights stay content-driven (or row-height
      CSS var-driven if the consumer sets `--kj-table-row-height`). */
