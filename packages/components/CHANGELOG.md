@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.4.0
+
+### Minor Changes
+
+- kj-table: `kjPageSize` input (`number | 'all'`) — set `'all'` to render every row and scroll instead of paging. Without `<kj-table-pagination>` the default 25-row page silently truncated data.
+
 ## 0.3.0
 
 ### Minor Changes

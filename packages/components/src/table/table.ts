@@ -601,6 +601,14 @@ export class KjTableComponent<TData extends RowData = unknown> {
   readonly kjEnableRowPinning = input<boolean>(false);
   readonly kjEditOnDoubleClick = input<boolean>(true);
 
+  /**
+   * Rows per page. `'all'` disables paging so every row renders and the
+   * body scrolls (pair with a fixed-height host). `null` keeps the default
+   * page size (25) — project `<kj-table-pagination>` to expose the controls;
+   * without it the rows beyond the page are silently cut off.
+   */
+  readonly kjPageSize = input<number | 'all' | null>(null);
+
   // ── Row expansion template ─────────────────────────────────────────────
   /** Template for master-detail row expansion. Receives `$implicit = row`. */
   readonly kjRowExpansionTpl = contentChild<TemplateRef<unknown>>('kjRowExpansion');
@@ -739,6 +747,16 @@ export class KjTableComponent<TData extends RowData = unknown> {
   };
 
   constructor() {
+    // `kjPageSize` input → pagination state. `'all'` renders every row
+    // (scroll instead of paging).
+    effect(() => {
+      const size = this.kjPageSize();
+      if (size == null) return;
+      this.t.setState({
+        pagination: { pageIndex: 0, pageSize: size === 'all' ? Number.MAX_SAFE_INTEGER : size },
+      });
+    });
+
     // Wrapper's `kjDensity` input → hosted directive's density state. Both
     // the user's external binding AND the toolbar's density toggle write
     // into `KjTable.density` via `setState`, so a single source of truth
