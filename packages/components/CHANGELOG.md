@@ -1,6 +1,6 @@
 # @kouji-ui/components
 
-## 1.0.0
+## 0.0.7
 
 ### Major Changes
 
@@ -46,7 +46,7 @@
 - Updated dependencies [658554d]
 - Updated dependencies [be6386d]
 - Updated dependencies [d2150ee]
-  - @kouji-ui/core@1.0.0
+  - @kouji-ui/core@0.0.7
 
 ## 0.0.6
 
