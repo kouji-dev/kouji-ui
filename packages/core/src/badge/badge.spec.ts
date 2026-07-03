@@ -13,6 +13,14 @@ describe('KjBadge', () => {
     const { container } = await render(`<span kjBadge>Beta</span>`, { imports: [KjBadge] });
     expect(container.querySelector('span')).toHaveAttribute('data-variant', 'default');
   });
+  it('sets data-dot attribute when kjBadgeDot is true', async () => {
+    const { container } = await render(`<span kjBadge [kjBadgeDot]="true">Active</span>`, { imports: [KjBadge] });
+    expect(container.querySelector('span')).toHaveAttribute('data-dot', '');
+  });
+  it('omits data-dot attribute by default', async () => {
+    const { container } = await render(`<span kjBadge>Beta</span>`, { imports: [KjBadge] });
+    expect(container.querySelector('span')).not.toHaveAttribute('data-dot');
+  });
   it('passes axe audit', async () => {
     const { container } = await render(`<span kjBadge>Beta</span>`, { imports: [KjBadge] });
     expect(await axe(container)).toHaveNoViolations();

@@ -3,4 +3,5 @@
 export { KjBadgeDefaultExample } from './badge.default.example';
 export { KjBadgeSizesExample } from './badge.sizes.example';
 export { KjBadgeVariantsExample } from './badge.variants.example';
+export { KjBadgeWithDotExample } from './badge.with-dot.example';
 export { KjBadgeWithIconExample } from './badge.with-icon.example';

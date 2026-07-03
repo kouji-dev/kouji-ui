@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, booleanAttribute, input } from '@angular/core';
 import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
 
 /**
@@ -20,6 +20,10 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  * @doc-example With icon
  *   Project an icon before the label for status pills or sender chips.
  *   @doc-file badge.with-icon.example.ts
+ * @doc-example With dot
+ *   Set `dot` to render a leading status indicator; tint it via
+ *   `--kj-badge-dot-color` for state pills (active / pending / archived).
+ *   @doc-file badge.with-dot.example.ts
  *
  * @doc-aria
  *   role          — Decorative by default; promote to `status` for live counts and pair with `aria-live="polite"`
@@ -46,6 +50,8 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  *   --kj-badge-padding-x     — Horizontal padding. Sizes override.
  *   --kj-badge-padding-y     — Vertical padding. Sizes override.
  *   --kj-badge-font-size     — Font size. Sizes override.
+ *   --kj-badge-dot-size      — Diameter of the leading dot (when `dot` is set).
+ *   --kj-badge-dot-color     — Fill of the leading dot. Defaults to currentColor.
  *
  * @doc-category Library/Data display
  * @doc
@@ -62,6 +68,7 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
       kjBadge
       class="kj-badge"
       [kjBadgeVariant]="variant()"
+      [kjBadgeDot]="dot()"
       [attr.data-size]="size()"
     >
       <ng-content />
@@ -75,4 +82,5 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
 export class KjBadgeComponent {
   readonly variant = input<KjBadgeVariant>('default');
   readonly size = input<'xs' | 'sm' | 'md' | 'lg'>('md');
+  readonly dot = input(false, { transform: booleanAttribute });
 }
