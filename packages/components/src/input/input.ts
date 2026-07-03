@@ -107,6 +107,8 @@ export type KjInputSize = 'xs' | 'sm' | 'md' | 'lg';
       [type]="type()"
       [value]="value()"
       [placeholder]="placeholder()"
+      [attr.autocomplete]="autocomplete() || null"
+      [attr.inputmode]="inputmode() || null"
       [attr.data-variant]="variant()"
       [attr.data-size]="kjSize() === 'md' ? null : kjSize()"
       [kjInvalid]="invalid()"
@@ -129,6 +131,10 @@ export class KjInputComponent implements ControlValueAccessor {
   readonly placeholder = input<string>('');
   readonly invalid = input(false);
   readonly disabled = input(false);
+  /** Native `autocomplete` attribute passthrough. Empty string omits the attribute. */
+  readonly autocomplete = input<string>('');
+  /** Native `inputmode` attribute passthrough. Empty string omits the attribute. */
+  readonly inputmode = input<string>('');
 
   @ViewChild(KjInput, { static: true })
   protected innerInput?: KjInput;

@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.1.4
+
+### Patch Changes
+
+- kj-input: add native `autocomplete` and `inputmode` attribute passthroughs (omitted when empty).
+
 ## 0.1.3
 
 ### Patch Changes

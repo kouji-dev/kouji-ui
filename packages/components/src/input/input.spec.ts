@@ -13,6 +13,8 @@ import { KjInputComponent } from './input';
     [placeholder]="placeholder"
     [invalid]="invalid"
     [disabled]="disabled"
+    [autocomplete]="autocomplete"
+    [inputmode]="inputmode"
   />`,
 })
 class HostComponent {
@@ -21,6 +23,8 @@ class HostComponent {
   placeholder = '';
   invalid = false;
   disabled = false;
+  autocomplete = '';
+  inputmode = '';
 }
 
 describe('KjInputComponent', () => {
@@ -94,5 +98,23 @@ describe('KjInputComponent', () => {
     expect(
       fixture.nativeElement.querySelector('kj-input input').getAttribute('aria-disabled'),
     ).toBe('true');
+  });
+
+  test('omits autocomplete and inputmode when empty', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('kj-input input');
+    expect(input.getAttribute('autocomplete')).toBeNull();
+    expect(input.getAttribute('inputmode')).toBeNull();
+  });
+
+  test('forwards autocomplete and inputmode to the inner element', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.autocomplete = 'username';
+    fixture.componentInstance.inputmode = 'numeric';
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('kj-input input');
+    expect(input.getAttribute('autocomplete')).toBe('username');
+    expect(input.getAttribute('inputmode')).toBe('numeric');
   });
 });
