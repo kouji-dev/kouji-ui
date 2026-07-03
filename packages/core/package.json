@@ -23,7 +23,7 @@
   ],
   "publishConfig": {
     "access": "public",
-    "provenance": true,
+    "provenance": false,
     "module": "fesm2022/kouji-ui-core.mjs",
     "typings": "types/kouji-ui-core.d.ts",
     "exports": {
