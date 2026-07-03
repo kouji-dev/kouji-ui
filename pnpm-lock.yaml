@@ -197,7 +197,7 @@ importers:
         version: 6.5.0
       '@kouji-ui/components':
         specifier: workspace:*
-        version: link:../../packages/components
+        version: link:../../dist/kj-components
       '@kouji-ui/themes':
         specifier: workspace:*
         version: link:../../packages/themes
@@ -222,10 +222,11 @@ importers:
     devDependencies:
       '@kouji-ui/core':
         specifier: workspace:*
-        version: link:../core
+        version: link:../../dist/kj-core
       lucide-static:
         specifier: ^1.14.0
         version: 1.14.0
+    publishDirectory: ../../dist/kj-components
 
   packages/core:
     dependencies:
@@ -238,6 +239,7 @@ importers:
       '@angular/core':
         specifier: ^22.0.0
         version: 22.0.5(@angular/compiler@22.0.5)(rxjs@7.8.2)(zone.js@0.16.1)
+    publishDirectory: ../../dist/kj-core
 
   packages/themes: {}
 
