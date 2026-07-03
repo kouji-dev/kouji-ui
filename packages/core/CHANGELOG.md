@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.1.5
+
+### Patch Changes
+
+- Drop the legacy `publishConfig.exports`/`module`/`typings` overrides that clobbered the dist manifest's exports map on publish — the `./icon/icon.css` and `./typography/prose.css` asset exports now actually reach npm.
+
 ## 0.1.4
 
 ### Patch Changes
