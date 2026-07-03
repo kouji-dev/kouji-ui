@@ -1,6 +1,6 @@
 # @kouji-ui/core
 
-## 0.0.7
+## 0.1.1
 
 ### Major Changes
 
