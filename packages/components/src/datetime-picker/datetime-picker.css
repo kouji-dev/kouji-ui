@@ -17,7 +17,10 @@
   font: inherit;
   background: var(--kj-bg-field);
   color: var(--kj-fg-default);
-  min-width: 16ch;
+  /* Size to the content ("12/05/2026 14:30" ≈ 16ch) instead of the browser's
+     20-character default — the trigger shouldn't be wider than its text. */
+  width: 19ch;
+  min-width: 0;
 }
 .kj-datetime-picker[data-size="xs"] .kj-datetime-picker__input { --kj-datetime-picker-input-height: 1.75rem; font-size: 0.75rem;   padding-inline: var(--kj-space-sm); min-width: 0; }
 .kj-datetime-picker[data-size="sm"] .kj-datetime-picker__input { --kj-datetime-picker-input-height: 2rem;    font-size: 0.8125rem; }

@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.3.0
+
+### Minor Changes
+
+- kj-table: custom cell templates via `ng-template[kjCellTemplate]="columnId"` (context: row, value, cell) — badges, buttons, and arbitrary markup in plain data cells. kj-datetime-picker: the trigger input now sizes to its content (19ch) instead of the browser's 20-character default.
+
 ## 0.2.0
 
 ### Minor Changes

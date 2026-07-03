@@ -13,6 +13,7 @@ import {
   signal,
   untracked,
   contentChild,
+  contentChildren,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { ResourceRef } from '@angular/core';
@@ -31,6 +32,7 @@ import {
 } from '@kouji-ui/core';
 import type { Cell, Column, Header, Row, RowData } from '@tanstack/angular-table';
 import { KjTableVirtual } from './table-virtual';
+import { KjCellTemplateDirective } from './table-cell-template';
 import { KjCheckboxComponent } from '../checkbox/checkbox';
 import {
   KjBooleanEditor,
@@ -332,7 +334,11 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                           (editCancel)="onEditorCancel()"
                         ></span>
                       } @else {
-                        {{ c.getValue() }}
+                        @if (cellTpl(c); as tpl) {
+                          <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: r.original, row: r.original, value: c.getValue(), cell: c }" />
+                        } @else {
+                          {{ c.getValue() }}
+                        }
                       }
                     </td>
                   }
@@ -388,7 +394,11 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                             (editCancel)="onEditorCancel()"
                           ></span>
                         } @else {
-                          {{ c.getValue() }}
+                          @if (cellTpl(c); as tpl) {
+                            <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: r.original, row: r.original, value: c.getValue(), cell: c }" />
+                          } @else {
+                            {{ c.getValue() }}
+                          }
                         }
                       </td>
                     }
@@ -460,7 +470,11 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                         {{ c.renderValue() }}
                       } @else if (c.getIsPlaceholder?.()) {
                       } @else {
-                        {{ c.getValue() }}
+                        @if (cellTpl(c); as tpl) {
+                          <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: r.original, row: r.original, value: c.getValue(), cell: c }" />
+                        } @else {
+                          {{ c.getValue() }}
+                        }
                       }
                     </td>
                   }
@@ -497,7 +511,13 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                     </td>
                   }
                   @for (c of r.getVisibleCells(); track c.id) {
-                    <td kjTableCell [kjCell]="c" tabindex="-1">{{ c.getValue() }}</td>
+                    <td kjTableCell [kjCell]="c" tabindex="-1">
+                      @if (cellTpl(c); as tpl) {
+                        <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: r.original, row: r.original, value: c.getValue(), cell: c }" />
+                      } @else {
+                        {{ c.getValue() }}
+                      }
+                    </td>
                   }
                 </tr>
               }
@@ -584,6 +604,17 @@ export class KjTableComponent<TData extends RowData = unknown> {
   // ── Row expansion template ─────────────────────────────────────────────
   /** Template for master-detail row expansion. Receives `$implicit = row`. */
   readonly kjRowExpansionTpl = contentChild<TemplateRef<unknown>>('kjRowExpansion');
+
+  /** Custom cell templates declared as `ng-template[kjCellTemplate]` content. */
+  private readonly cellTemplates = contentChildren(KjCellTemplateDirective);
+
+  /** Resolve the registered template for a cell's column, if any. */
+  protected cellTpl(cell: Cell<TData, unknown>): TemplateRef<unknown> | null {
+    for (const t of this.cellTemplates()) {
+      if (t.kjCellTemplate() === cell.column.id) return t.template;
+    }
+    return null;
+  }
 
   // ── Outputs ─────────────────────────────────────────────────────────────
   readonly cellEdit = output<KjCellEditEvent<TData>>();
