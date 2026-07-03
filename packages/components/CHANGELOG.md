@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.4.3
+
+### Patch Changes
+
+- kj-table: the sticky header background is themable via `--kj-table-header-bg` (falls back to `--kj-bg-surface`).
+
 ## 0.4.2
 
 ### Patch Changes

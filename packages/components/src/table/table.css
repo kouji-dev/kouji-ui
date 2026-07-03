@@ -59,7 +59,8 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  background: var(--kj-bg-surface);
+  /* Themable header band — falls back to the table surface. */
+  background: var(--kj-table-header-bg, var(--kj-bg-surface));
 }
 .kj-table-body thead th[data-pin] {
   z-index: 3;
