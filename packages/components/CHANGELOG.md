@@ -1,5 +1,17 @@
 # @kouji-ui/components
 
+## 1.0.0
+
+### Minor Changes
+
+- kj-badge: `bg` / `fg` / `dotColor` inputs for data-driven colours — applied as inline custom properties on the badge span so they win over variant and theme rules.
+- New `kj-datetime-picker` — date-picker calendar popover plus a time field sharing one native `Date` value (panel stays open after a day pick; day merges preserve time-of-day). Core `kjDatePickerTrigger` gains an optional `kjDisplayFormat` input for custom trigger text.
+
+### Patch Changes
+
+- Updated dependencies
+  - @kouji-ui/core@0.2.0
+
 ## 0.1.5
 
 ### Patch Changes

@@ -1,0 +1,81 @@
+.kj-datetime-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kj-space-xs);
+  position: relative;
+}
+
+.kj-datetime-picker__input {
+  /* Explicit height contract (matches input.css / date-picker.css) so the
+     trigger lines up with sibling inputs in a form row. */
+  --kj-datetime-picker-input-height: 2.25rem;
+  appearance: none;
+  border: var(--kj-border) solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  padding: 0 var(--kj-space-md);
+  height: var(--kj-datetime-picker-input-height);
+  font: inherit;
+  background: var(--kj-bg-field);
+  color: var(--kj-fg-default);
+  min-width: 16ch;
+}
+.kj-datetime-picker[data-size="xs"] .kj-datetime-picker__input { --kj-datetime-picker-input-height: 1.75rem; font-size: 0.75rem;   padding-inline: var(--kj-space-sm); min-width: 0; }
+.kj-datetime-picker[data-size="sm"] .kj-datetime-picker__input { --kj-datetime-picker-input-height: 2rem;    font-size: 0.8125rem; }
+.kj-datetime-picker[data-size="lg"] .kj-datetime-picker__input { --kj-datetime-picker-input-height: 2.75rem; font-size: 1rem; }
+
+.kj-datetime-picker__input:focus {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 2px;
+  border-color: var(--kj-border-focus);
+}
+
+.kj-datetime-picker__input[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Panel chrome mirrors the date-picker panel. */
+.kj-datetime-picker__panel {
+  box-sizing: border-box;
+  z-index: 50;
+  display: inline-block;
+  background: var(--kj-bg-elevated);
+  color: var(--kj-fg-default);
+  border: var(--kj-border) solid var(--kj-border-default);
+  border-radius: var(--kj-radius-box);
+  box-shadow: var(--kj-shadow-md);
+  padding: var(--kj-space-sm);
+}
+.kj-datetime-picker__panel .kj-calendar {
+  padding: 0;
+}
+.kj-datetime-picker__panel[hidden] {
+  display: none;
+}
+
+/* Time row under the calendar. */
+.kj-datetime-picker__time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kj-space-sm);
+  margin-top: var(--kj-space-sm);
+  padding: var(--kj-space-sm) var(--kj-space-xs) 0;
+  border-top: var(--kj-border) solid var(--kj-border-muted);
+  font-size: 0.8125rem;
+  color: var(--kj-fg-muted);
+}
+.kj-datetime-picker__time-input {
+  appearance: none;
+  border: var(--kj-border) solid var(--kj-border-default);
+  border-radius: var(--kj-radius-field);
+  background: var(--kj-bg-field);
+  color: var(--kj-fg-default);
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 2px var(--kj-space-sm);
+}
+.kj-datetime-picker__time-input:focus {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: 1px;
+}

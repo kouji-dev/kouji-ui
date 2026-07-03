@@ -53,6 +53,10 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
  *   --kj-badge-dot-size      — Diameter of the leading dot (when `dot` is set).
  *   --kj-badge-dot-color     — Fill of the leading dot. Defaults to currentColor.
  *
+ * Custom colours: the `bg` / `fg` / `dotColor` inputs set these variables as
+ * inline styles on the badge span, so they win over any variant or theme rule.
+ * Use for data-driven colour maps (status pills, role badges).
+ *
  * @doc-category Library/Data display
  * @doc
  * @doc-name badge
@@ -70,6 +74,9 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
       [kjBadgeVariant]="variant()"
       [kjBadgeDot]="dot()"
       [attr.data-size]="size()"
+      [style.--kj-badge-bg]="bg() || null"
+      [style.--kj-badge-fg]="fg() || null"
+      [style.--kj-badge-dot-color]="dotColor() || null"
     >
       <ng-content />
     </span>
@@ -83,4 +90,10 @@ export class KjBadgeComponent {
   readonly variant = input<KjBadgeVariant>('default');
   readonly size = input<'xs' | 'sm' | 'md' | 'lg'>('md');
   readonly dot = input(false, { transform: booleanAttribute });
+  /** Custom background — any CSS color/var(). Wins over the variant (inline style). Empty = variant colours. */
+  readonly bg = input<string>('');
+  /** Custom foreground — any CSS color/var(). Wins over the variant (inline style). */
+  readonly fg = input<string>('');
+  /** Custom dot colour (with `dot`). Defaults to currentColor via the theme. */
+  readonly dotColor = input<string>('');
 }

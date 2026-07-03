@@ -1,4 +1,4 @@
-import { Directive, ElementRef, computed, effect, inject } from '@angular/core';
+import { Directive, ElementRef, computed, effect, inject, input } from '@angular/core';
 import { KjFormControl } from '../primitives/forms/form-control';
 import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import { formatDateShort, parseDate } from '../calendar/date-utils';
@@ -110,9 +110,19 @@ export class KjDatePickerTrigger {
   /** Cached typed text — avoids overwriting mid-edit. */
   private editing = false;
 
+  /**
+   * Optional custom display formatter, e.g. for datetime pickers that show
+   * the time next to the date. Free-text parsing (`commitTyped`) still uses
+   * the locale date parser — text that doesn't parse as a plain date is
+   * reverted to the formatted value on the next value change.
+   */
+  readonly kjDisplayFormat = input<((d: Date, locale: string) => string) | null>(null);
+
   readonly displayValue = computed(() => {
     const v = this.ctx.value();
-    return v ? formatDateShort(v, this.ctx.locale()) : '';
+    if (!v) return '';
+    const fmt = this.kjDisplayFormat();
+    return fmt ? fmt(v, this.ctx.locale()) : formatDateShort(v, this.ctx.locale());
   });
 
   constructor() {

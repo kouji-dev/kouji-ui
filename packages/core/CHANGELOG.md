@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.2.0
+
+### Minor Changes
+
+- New `kj-datetime-picker` — date-picker calendar popover plus a time field sharing one native `Date` value (panel stays open after a day pick; day merges preserve time-of-day). Core `kjDatePickerTrigger` gains an optional `kjDisplayFormat` input for custom trigger text.
+
 ## 0.1.5
 
 ### Patch Changes
