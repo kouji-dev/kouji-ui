@@ -1,5 +1,13 @@
 # @kouji-ui/core
 
+## 0.1.3
+
+### Patch Changes
+
+- Declare previously undeclared runtime dependencies so consumers can resolve the fesm bundles:
+  - core: `@tanstack/angular-table` (dependency), `@angular/forms` + `rxjs` (peers), `echarts` (optional peer — lazily imported by `kjChart` only).
+  - components: `@tanstack/virtual-core` (dependency), `@angular/forms` + `rxjs` (peers).
+
 ## 0.1.2
 
 ### Patch Changes

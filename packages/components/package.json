@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/components",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Opinionated styled Angular components built on @kouji-ui/core directives. Themed at runtime via @kouji-ui/themes.",
   "license": "MIT",
   "repository": {
@@ -29,7 +29,9 @@
     "@angular/core": "^22.0.0",
     "@angular/cdk": "^22.0.0",
     "@kouji-ui/core": "*",
-    "lucide-static": "^1.14.0"
+    "lucide-static": "^1.14.0",
+    "@angular/forms": "^22.0.0",
+    "rxjs": "^7.8.0"
   },
   "devDependencies": {
     "@kouji-ui/core": "workspace:*",
@@ -40,5 +42,8 @@
     "build": "ng build kj-components",
     "test": "vitest run",
     "lint": "ng lint kj-components"
+  },
+  "dependencies": {
+    "@tanstack/virtual-core": "^3.14.0"
   }
 }

@@ -3,5 +3,8 @@
   "dest": "../../dist/kj-components",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": [
+    "@tanstack/virtual-core"
+  ]
 }
