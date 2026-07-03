@@ -12,7 +12,8 @@ import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import { KjInput } from '@kouji-ui/core';
 
 export type KjInputType = 'text' | 'email' | 'password' | 'number'
-                        | 'search' | 'tel' | 'url' | 'color';
+                        | 'search' | 'tel' | 'url' | 'color'
+                        | 'date' | 'time' | 'datetime-local';
 
 /** Visual variants — `default` uses the field surface; `sunken` drops to
  *  body bg so the input pops against a card/surface parent. */
