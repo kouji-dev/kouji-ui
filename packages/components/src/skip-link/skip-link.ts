@@ -28,10 +28,10 @@ import { KjSkipLink } from '@kouji-ui/core';
  * <kj-skip-link kjTarget="page-body">Skip to article</kj-skip-link>
  * ```
  *
- * @doc-example Default
+ * @doc-example Basic
  *   The shell-level skip link. Tab into the demo frame to reveal it, then
  *   activate it to move focus to the demo's main region.
- *   @doc-file skip-link.example.ts
+ *   @doc-file skip-link.basic.example.ts
  *
  * @doc-keyboard
  *   Tab   — Reveals the link when it receives focus (it is the first focusable element)

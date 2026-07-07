@@ -28,9 +28,9 @@ import { KjLocale } from '@kouji-ui/core';
  * <kj-direction-toggle kjAriaLabel="Toggle Arabic layout">اتجاه</kj-direction-toggle>
  * ```
  *
- * @doc-example Default
+ * @doc-example Basic
  *   The toggle wired to `KjLocale` — click to flip `<html dir>` and mirror the page.
- *   @doc-file direction-toggle.example.ts
+ *   @doc-file direction-toggle.basic.example.ts
  *
  * @doc-keyboard
  *   Enter — Toggles the direction (native button activation)

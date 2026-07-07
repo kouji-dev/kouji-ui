@@ -231,6 +231,8 @@ export class KjCommandPaletteComponent {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+  /** Host command-palette state container — owns the `kjQuery` / `kjValue` models. */
+  private readonly palette = inject(KjCommandPalette);
 
   constructor() {
     afterNextRender(() => {
@@ -246,12 +248,22 @@ export class KjCommandPaletteComponent {
       this.destroyRef.onDestroy(() => document.removeEventListener('keydown', handler));
     });
 
-    // Focus the search input when the palette opens.
+    // Reset stale search state, then focus the input, every time the palette
+    // opens. The input's DOM value is not two-way bound to `kjQuery` (the core
+    // input writes one-way on `input` events), so a reopen would otherwise keep
+    // the previous query text and its filtered result set. Clearing the model
+    // AND the element value guarantees each open starts blank.
     effect(() => {
       if (!this.kjOpen()) return;
+      this.palette.kjQuery.set('');
+      this.palette.kjValue.set(null);
       if (!isPlatformBrowser(this.platformId)) return;
       queueMicrotask(() => {
-        document.querySelector<HTMLInputElement>('.kj-command-palette__dialog .kj-command-palette__input')?.focus();
+        const input = document.querySelector<HTMLInputElement>(
+          '.kj-command-palette__dialog .kj-command-palette__input',
+        );
+        if (input) input.value = '';
+        input?.focus();
       });
     });
   }

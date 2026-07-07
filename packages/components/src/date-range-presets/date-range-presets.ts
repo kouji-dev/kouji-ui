@@ -31,9 +31,9 @@ import {
  *   options; Enter / Space select (native button activation).
  * - the selected preset is conveyed by `aria-selected`, not color alone.
  *
- * @doc-example Default
+ * @doc-example Basic
  *   The ten built-in presets bound to a `signal<KjDateRange | null>`.
- *   @doc-file date-range-presets.example.ts
+ *   @doc-file date-range-presets.basic.example.ts
  * @doc-example Custom presets
  *   Spread `defaultDateRangePresets()` and append your own `getRange`.
  *   @doc-file date-range-presets.custom.example.ts

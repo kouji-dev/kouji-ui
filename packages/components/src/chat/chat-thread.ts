@@ -32,7 +32,7 @@ import { KjChatMessage } from './chat-message';
  *   A full send → simulated-stream → reply loop with slash commands, a Stop
  *   button, tool-call cards and citations. No backend — a fake token generator
  *   feeds the store on a timer.
- *   @doc-file ai-chat.example.ts
+ *   @doc-file ai-chat.streaming.example.ts
  *
  * @doc-keyboard
  *   Enter        — Send the message
