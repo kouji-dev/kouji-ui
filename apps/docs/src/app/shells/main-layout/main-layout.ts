@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { KjSkipLinkComponent } from '@kouji-ui/components';
 import { NavbarComponent } from '../../components/navbar/navbar';
 
 /**
@@ -14,9 +15,10 @@ import { NavbarComponent } from '../../components/navbar/navbar';
 @Component({
   selector: 'kj-main-layout',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent],
+  imports: [RouterOutlet, NavbarComponent, KjSkipLinkComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <kj-skip-link />
     <kj-navbar />
     <router-outlet />
   `,

@@ -36,17 +36,23 @@ the fragment `href` and the **focus move** on activation.
 - **Input:** `kjSkipLink: string` (alias of selector) — id of the target
   element. Default `'main-content'`.
 - **Host bindings:**
-  - `[attr.href]="'#' + kjSkipLink()"` — a real fragment link. Works without JS,
-    is correct in the SSR-prerendered HTML, and gives native anchor semantics
-    (role=link, Enter activates).
-  - `(click)="onActivate()"` — SSR-safe (only fires in the browser).
-- **Behaviour (`onActivate`):** look up the target by id via injected
-  `DOCUMENT`. If found and it has no `tabindex`, add `tabindex="-1"` (makes it
-  programmatically focusable while keeping it out of the tab order). Then call
-  `.focus()`. Native browsers do not reliably move keyboard focus on fragment
-  navigation; focusing explicitly makes it deterministic across browsers.
-  No `preventDefault` — the native hash update (scroll + bookmarkable URL) is
-  desirable and complements the focus move.
+  - `[attr.href]="'#' + kjSkipLink()"` — real anchor semantics (role=link, Enter
+    activates) and carries the target id in the SSR-prerendered HTML.
+  - `(click)="onActivate($event)"` — SSR-safe (only fires in the browser).
+- **Behaviour (`onActivate`):** `preventDefault()`, look up the target by id via
+  injected `DOCUMENT`. If found and it has no `tabindex`, add `tabindex="-1"`
+  (makes it programmatically focusable while keeping it out of the tab order),
+  then call `.focus()` (which also scrolls it into view).
+- **Why `preventDefault` is required (design finding).** The original plan kept
+  the native fragment navigation for a bookmarkable hash. Verified against the
+  built app, that is actively wrong: Angular SPAs ship `<base href="/">`, and a
+  fragment-only reference (`#main-content`) resolves against the **base URL**,
+  not the current document — so the native click navigates to `/#main-content`
+  (the **home** route), swapping the page out and dropping focus. Moving focus
+  programmatically and suppressing the default is both correct and immune to the
+  `<base>` gotcha, so the input default resolving (`'' → 'main-content'`) is done
+  in an input `transform` because a bare `<a kjSkipLink>` binds the attribute as
+  an empty string.
 
 ### `@kouji-ui/components` — `KjSkipLinkComponent` (styled wrapper)
 
