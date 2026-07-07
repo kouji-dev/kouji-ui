@@ -9,6 +9,9 @@ export * from './a11y/index';
 // -- Locale provider (formatting + direction) --
 export * from './locale/index';
 
+// -- Motion (reduced-motion service + named preset directive) --
+export * from './motion/index';
+
 // -- Internal presets (composed via hostDirectives; filtered from docs) --
 export * from './presets/index';
 

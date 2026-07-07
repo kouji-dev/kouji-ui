@@ -46,6 +46,10 @@
     "./typography/prose.css": {
       "style": "./typography/prose.css",
       "default": "./typography/prose.css"
+    },
+    "./motion/motion.css": {
+      "style": "./motion/motion.css",
+      "default": "./motion/motion.css"
     }
   },
   "scripts": {

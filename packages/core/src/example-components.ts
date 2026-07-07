@@ -15,6 +15,7 @@ import type { Type } from '@angular/core';
 export const EXAMPLE_LOADERS: Record<string, () => Promise<Record<string, Type<unknown>>>> = {
   'button': () => import('./button/_examples') as Promise<Record<string, Type<unknown>>>,
   'dialog': () => import('./dialog/_examples') as Promise<Record<string, Type<unknown>>>,
+  'motion': () => import('./motion/_examples') as Promise<Record<string, Type<unknown>>>,
   'popover': () => import('./popover/_examples') as Promise<Record<string, Type<unknown>>>,
   'toast': () => import('./toast/_examples') as Promise<Record<string, Type<unknown>>>,
   'tooltip': () => import('./tooltip/_examples') as Promise<Record<string, Type<unknown>>>,
@@ -29,6 +30,8 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   DialogConfirmExample: 'dialog',
   DialogFinanceExample: 'dialog',
   DialogRetroExample: 'dialog',
+  MotionExample: 'motion',
+  MotionReducedExample: 'motion',
   PopoverBasicExample: 'popover',
   PopoverFinanceExample: 'popover',
   PopoverRetroExample: 'popover',
