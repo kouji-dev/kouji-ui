@@ -1,7 +1,6 @@
 import {
   Directive,
   ElementRef,
-  LOCALE_ID,
   booleanAttribute,
   computed,
   effect,
@@ -12,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
+import { KjLocale } from '../locale/index';
 import { KJ_NUMBER_INPUT, KjNumberInputContext } from './number-input.context';
 import { KjNumberInputGroup } from './number-input-group';
 import {
@@ -95,7 +95,8 @@ export class KjNumberInput implements KjNumberInputContext {
   /** @internal */
   readonly formCtrl = inject(KjFormControl);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
-  private readonly localeId = inject(LOCALE_ID);
+  /** Locale provider — the fallback source of truth for locale + currency. */
+  private readonly locale = inject(KjLocale);
   private readonly group = inject(KjNumberInputGroup, { optional: true, skipSelf: true });
 
   /** Two-way bindable numeric model. `null` for empty. */
@@ -137,10 +138,13 @@ export class KjNumberInput implements KjNumberInputContext {
   /** Drives `Intl.NumberFormat` style. Ignored when `kjUseNativeNumber=true`. */
   readonly kjFormat = input<'decimal' | 'currency' | 'percent' | 'unit'>('decimal');
 
-  /** BCP-47 tag. Falls back to the injected `LOCALE_ID`. */
+  /** BCP-47 tag. Falls back to the `KjLocale` provider (`provideKjLocale`). */
   readonly kjLocale = input<string | undefined>(undefined);
 
-  /** ISO 4217 code (e.g. `'USD'`). Required when `kjFormat="currency"`. */
+  /**
+   * ISO 4217 code (e.g. `'USD'`). Required when `kjFormat="currency"` unless a
+   * default currency is supplied via `provideKjLocale`.
+   */
   readonly kjCurrency = input<string | undefined>(undefined);
 
   /** Currency display mode. */
@@ -212,9 +216,9 @@ export class KjNumberInput implements KjNumberInputContext {
 
   /** Formatter options derived from the public inputs. */
   private readonly formatOptions = computed<KjNumberFormatOptions>(() => ({
-    locale: this.kjLocale() ?? this.localeId,
+    locale: this.kjLocale() ?? this.locale.locale(),
     format: this.kjFormat(),
-    currency: this.kjCurrency(),
+    currency: this.kjCurrency() ?? this.locale.currency(),
     currencyDisplay: this.kjCurrencyDisplay(),
     unit: this.kjUnit(),
     unitDisplay: this.kjUnitDisplay(),
@@ -274,7 +278,7 @@ export class KjNumberInput implements KjNumberInputContext {
       } else if (editing) {
         // Percent: the user thinks of `50` even though we store `0.5`.
         const display = this.kjFormat() === 'percent' ? value * 100 : value;
-        next = formatForEdit(display, this.kjLocale() ?? this.localeId);
+        next = formatForEdit(display, this.kjLocale() ?? this.locale.locale());
       } else {
         next = formatNumber(value, this.formatOptions());
       }
@@ -437,7 +441,7 @@ export class KjNumberInput implements KjNumberInputContext {
       return;
     }
     el.value = this.editing()
-      ? formatForEdit(this.kjFormat() === 'percent' ? value * 100 : value, this.kjLocale() ?? this.localeId)
+      ? formatForEdit(this.kjFormat() === 'percent' ? value * 100 : value, this.kjLocale() ?? this.locale.locale())
       : formatNumber(value, this.formatOptions());
   }
 

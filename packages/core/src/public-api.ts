@@ -6,6 +6,9 @@ export * from './primitives/index';
 // -- Accessibility utilities --
 export * from './a11y/index';
 
+// -- Locale provider (formatting + direction) --
+export * from './locale/index';
+
 // -- Internal presets (composed via hostDirectives; filtered from docs) --
 export * from './presets/index';
 
