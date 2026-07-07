@@ -19,6 +19,7 @@ export * from './confirm-popup/index';
 export * from './date-picker/index';
 export * from './datetime-picker/index';
 export * from './dialog/index';
+export * from './direction-toggle/index';
 export * from './drawer/index';
 export * from './dropdown-menu/index';
 export * from './empty-state/index';

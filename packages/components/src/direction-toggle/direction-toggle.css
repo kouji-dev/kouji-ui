@@ -1,0 +1,55 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-direction-toggle — accessible LTR/RTL toggle button.
+   Tokens default to shared-layer values from @kouji-ui/themes so
+   the control blends with the active theme; consumers can override
+   any --kj-direction-toggle-* knob.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-direction-toggle {
+    --kj-direction-toggle-bg:           var(--kj-bg-subtle, transparent);
+    --kj-direction-toggle-fg:           var(--kj-fg, currentColor);
+    --kj-direction-toggle-border-color: var(--kj-border-color, currentColor);
+    --kj-direction-toggle-radius:       var(--kj-radius-field, 0.5rem);
+    --kj-direction-toggle-padding-x:    var(--kj-space-md, 0.75rem);
+    --kj-direction-toggle-padding-y:    var(--kj-space-sm, 0.5rem);
+
+    /* WCAG 2.5.5 — reserve a 44×44 hit area regardless of label size. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--kj-space-xs, 0.25rem);
+    min-width: 44px;
+    min-height: 44px;
+    padding-block: var(--kj-direction-toggle-padding-y);
+    padding-inline: var(--kj-direction-toggle-padding-x);
+
+    background: var(--kj-direction-toggle-bg);
+    color: var(--kj-direction-toggle-fg);
+    border: var(--kj-border, 1px) solid var(--kj-direction-toggle-border-color);
+    border-radius: var(--kj-direction-toggle-radius);
+    font: inherit;
+    font-size: var(--kj-text-sm, 0.875rem);
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .kj-direction-toggle:hover {
+    background: var(--kj-bg-subtle-hover, var(--kj-direction-toggle-bg));
+  }
+
+  /* Focus ring only for keyboard users. */
+  .kj-direction-toggle:focus-visible {
+    outline: var(--kj-focus-ring-width, 2px) solid
+      var(--kj-focus-ring-color, currentColor);
+    outline-offset: 2px;
+  }
+
+  /* Pressed = RTL active. */
+  .kj-direction-toggle[aria-pressed='true'] {
+    background: var(--kj-bg-primary, var(--kj-direction-toggle-bg));
+    color: var(--kj-fg-on-primary, var(--kj-direction-toggle-fg));
+    border-color: var(--kj-bg-primary, var(--kj-direction-toggle-border-color));
+  }
+}

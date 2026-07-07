@@ -151,7 +151,7 @@
   min-height: 2.75rem;
   padding: 0.625rem var(--kj-space-lg, 1.25rem);
   border: none;
-  border-left: 2px solid transparent;
+  border-inline-start: 2px solid transparent;
   background: transparent;
   font-family: var(--kj-font-mono);
   font-size: 0.875rem;
@@ -164,7 +164,7 @@
 .kj-command-item:hover,
 .kj-command-item[data-active] {
   background: var(--kj-bg-surface);
-  border-left-color: var(--kj-bg-primary);
+  border-inline-start-color: var(--kj-bg-primary);
 }
 
 .kj-command-item[aria-disabled="true"] {

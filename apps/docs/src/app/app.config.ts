@@ -12,6 +12,7 @@ import {
 } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideLucideIcons } from '@kouji-ui/components';
+import { provideKjLocale, provideKjDocumentDirection } from '@kouji-ui/core';
 import { routes } from './app.routes';
 import { DocsManifestProvider } from './services/docs-manifest.provider';
 import { BrowserDocsManifestProvider } from './services/docs-manifest.browser';
@@ -26,6 +27,11 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay(), withNoIncrementalHydration()),
     provideHttpClient(withFetch()),
     provideLucideIcons(),
+    // Locale + RTL wiring: KjLocale is the direction source of truth;
+    // provideKjDocumentDirection reflects it onto <html dir> so the visible
+    // KjDirectionToggle flips the whole page (SSR-safe).
+    provideKjLocale(),
+    provideKjDocumentDirection(),
     { provide: DocsManifestProvider, useClass: BrowserDocsManifestProvider },
     { provide: RoadmapDataProvider, useClass: BrowserRoadmapDataProvider },
     // Eagerly construct RoadmapService on every page. During prerender this
