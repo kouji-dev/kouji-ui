@@ -35,14 +35,32 @@ This is **not** the v0.2 roadmap's full adapter system (`KjChartHost` + first-pa
 | `kjChartLoading` | `boolean` | `false` | Toggles ECharts `showLoading`/`hideLoading` |
 | `kjChartPalette` | `string[] \| undefined` | `undefined` | Explicit color array; falls back to kj-token palette |
 | `kjChartAnimate` | `boolean` | `true` | Forced to `false` when `prefers-reduced-motion: reduce` matches |
+| `kjChartOn` | `readonly string[]` | `[]` | ECharts event names to forward through `(kjChartEvent)`; re-bound reactively on change |
 
 **Outputs**
 
 | Name | Payload |
 | --- | --- |
-| `kjChartReady` | the ECharts instance (typed `EChartsType`) |
-| `kjChartClick` | ECharts click event (`ECElementEvent`) |
-| `kjChartLegendSelect` | legend `selectchanged` event |
+| `kjChartReady` | the ECharts instance (typed `EChartsType`) — emitted **after the first `setOption`** (ready-with-data) |
+| `kjChartEvent` | `{ type: string; params: unknown }` for every event named in `kjChartOn` |
+| `kjChartClick` | ECharts click event (`ECElementEvent`) — convenience |
+| `kjChartLegendSelect` | legend `selectchanged` event — convenience |
+
+### Pluggable / lazy ECharts engine
+
+`KjChart` resolves its ECharts implementation from DI:
+
+- `provideECharts(loader: KjEChartsLoader)` (env providers) + the `KJ_ECHARTS` `InjectionToken` (kouji `provide*` idiom, cf. `provideIcons`/`provideMonaco`).
+- `KjEChartsLoader = () => KjEChartsCore | Promise<KjEChartsCore>` — returns the consumer's tree-shaken `echarts/core` namespace (after `.use([LineChart, GridComponent, CanvasRenderer, …])`), sync or async.
+- **Resolution:** if a loader is provided, the directive `await`s it; **else** it falls back to the current full `await import('echarts')` — zero-config convenience preserved. Resolution stays inside `afterNextRender` (SSR-safe). The resolved impl is used for `init` + all `setOption`s.
+- **Why:** the full `echarts` module is ~1 MB and is the heavy path in the bundle-budget work. Opting into a minimal build trims it to only the registered charts/components/renderer.
+- `KjEChartsCore.init` is typed to return `unknown` (narrowed to `EChartsType` internally) because `echarts` and `echarts/core` ship private-field-incompatible instance declarations; `unknown` is the only structural type both satisfy.
+
+### General event API
+
+- `[kjChartOn]="['click','datazoom',…]"` + `(kjChartEvent)="…$event…"` emitting `{ type, params }`.
+- On init the directive binds `chart.on(name, e => kjChartEvent.emit({ type: name, params: e }))` for each name (imperative first bind), and a reactive `effect` re-applies the binding set (idempotent unbind-then-rebind via `chart.off`/`chart.on`) whenever `kjChartOn` changes. All forwarders are removed when the chart is disposed on destroy.
+- `kjChartReady` still exposes the raw instance for full manual `.on(...)` wiring; `kjChartClick`/`kjChartLegendSelect` remain as convenience outputs.
 
 **Host bindings**
 
@@ -112,6 +130,7 @@ Shared `fixtures.ts` exports demo datasets (revenue series, multi-series users d
 | `chart.events.example.ts` | `ChartEventsExample` | `(kjChartClick)` + `(kjChartLegendSelect)`; prints last interaction below the chart |
 | `chart.loading.example.ts` | `ChartLoadingExample` | Button toggles `[kjChartLoading]` |
 | `chart.fallback.example.ts` | `ChartFallbackExample` | Bar + `*kjChartTableFallback` slot rendering equivalent data as SR-only `<table>` |
+| `chart.pluggable.example.ts` | `ChartPluggableExample` | Component-scoped `KJ_ECHARTS` loader building a minimal `echarts/core` (`LineChart` + grid/tooltip/data-zoom + canvas), plus `[kjChartOn]="['click','datazoom']"` → `(kjChartEvent)` printing the last event |
 
 All examples use the directive on a `<div>` with explicit `style="height: 300px"` (sparkline uses 60px).
 
@@ -170,6 +189,8 @@ New cases:
 ## Files touched
 
 **New:**
+- `packages/core/src/chart/echarts.ts` — `provideECharts`, `KJ_ECHARTS`, `KjEChartsCore`, `KjEChartsLoader`
+- `packages/core/src/chart/_examples/chart.pluggable.example.ts` — `ChartPluggableExample`
 - `packages/core/src/chart/chart-tokens.ts`
 - `packages/core/src/chart/chart-tokens.spec.ts`
 - `packages/core/src/chart/chart-table-fallback.ts`

@@ -12,6 +12,7 @@ function makeChartDouble(overrides: Record<string, unknown> = {}) {
     setOption: vi.fn(),
     resize: vi.fn(),
     on: vi.fn(),
+    off: vi.fn(),
     dispose: vi.fn(),
     showLoading: vi.fn(),
     hideLoading: vi.fn(),
@@ -216,6 +217,71 @@ describe('KjChart', () => {
     legendHandler?.({ name: 'Series A' });
     expect(legend).toHaveBeenCalledWith({ name: 'Series A' });
     vi.doUnmock('echarts');
+  });
+
+  it('emits kjChartReady after the first setOption (ready-with-data)', async () => {
+    const order: string[] = [];
+    const instance = makeChartDouble({ setOption: vi.fn(() => order.push('setOption')) });
+    vi.doMock('echarts', () => ({ init: () => instance }));
+
+    const ready = vi.fn(() => order.push('ready'));
+    const { KjChart: Fresh } = await import('./chart');
+    await render(
+      `<div kjChart [kjChartOption]="{}" kjChartLabel="x" (kjChartReady)="r($event)"></div>`,
+      { imports: [Fresh], componentProperties: { r: ready } },
+    );
+    await flush();
+    expect(order.indexOf('setOption')).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf('ready')).toBeGreaterThan(order.indexOf('setOption'));
+    vi.doUnmock('echarts');
+  });
+
+  it('forwards kjChartOn events via (kjChartEvent) and rebinds when kjChartOn changes', async () => {
+    const handlers: Record<string, (e: unknown) => void> = {};
+    const offSpy = vi.fn();
+    vi.doMock('echarts', () => ({
+      init: () => makeChartDouble({
+        on: (evt: string, cb: (e: unknown) => void) => { handlers[evt] = cb; },
+        off: offSpy,
+      }),
+    }));
+
+    const onEvent = vi.fn();
+    const { KjChart: Fresh } = await import('./chart');
+    const { rerender } = await render(
+      `<div kjChart [kjChartOption]="{}" kjChartLabel="x" [kjChartOn]="names" (kjChartEvent)="onEvent($event)"></div>`,
+      { imports: [Fresh], componentProperties: { names: ['datazoom'], onEvent } },
+    );
+    await flush();
+
+    handlers['datazoom']?.({ start: 10 });
+    expect(onEvent).toHaveBeenCalledWith({ type: 'datazoom', params: { start: 10 } });
+
+    // Changing the list unbinds the old handler and binds the new one.
+    await rerender({ componentProperties: { names: ['brush'], onEvent } });
+    await flush();
+    expect(offSpy).toHaveBeenCalledWith('datazoom', expect.any(Function));
+
+    handlers['brush']?.({ areas: [] });
+    expect(onEvent).toHaveBeenCalledWith({ type: 'brush', params: { areas: [] } });
+    vi.doUnmock('echarts');
+  });
+
+  it('uses the provideECharts loader instead of the full import when provided', async () => {
+    const initSpy = vi.fn(() => makeChartDouble());
+    const loader = vi.fn(() => ({ init: initSpy }));
+
+    // Intentionally do NOT mock 'echarts': with a loader present the fallback
+    // import must never run.
+    const { KjChart: Fresh } = await import('./chart');
+    const { provideECharts } = await import('./echarts');
+    await render(
+      `<div kjChart [kjChartOption]="{}" kjChartLabel="x"></div>`,
+      { imports: [Fresh], providers: [provideECharts(loader as never)] },
+    );
+    await flush();
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(initSpy).toHaveBeenCalledTimes(1);
   });
 
   it('wires aria-describedby to a visually-hidden description div when kjChartDescription is set', async () => {

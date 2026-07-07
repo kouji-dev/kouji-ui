@@ -6,3 +6,4 @@ export { ChartSparklineExample } from './chart.sparkline.example';
 export { ChartEventsExample } from './chart.events.example';
 export { ChartLoadingExample } from './chart.loading.example';
 export { ChartFallbackExample } from './chart.fallback.example';
+export { ChartPluggableExample } from './chart.pluggable.example';

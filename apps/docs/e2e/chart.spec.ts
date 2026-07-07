@@ -24,4 +24,36 @@ test.describe('chart docs page', () => {
     await expect(fallbackTable).toBeVisible({ timeout: 20000 });
     expect(await fallbackTable.evaluate((el) => el.closest('[role="img"]') === null)).toBe(true);
   });
+
+  test('pluggable example: minimal echarts/core build renders + kjChartOn/kjChartEvent forwards', async ({ page }) => {
+    await page.goto('/docs/headless/chart');
+    await page.getByRole('tab', { name: /examples/i }).click();
+
+    // The pluggable example provides a tree-shaken echarts/core build via the
+    // KJ_ECHARTS token. If that minimal engine boots, its chart paints a canvas.
+    const host = page.locator('[role="img"][aria-label*="minimal ECharts build"]');
+    await expect(host).toBeVisible({ timeout: 20000 });
+    await expect(host.locator('canvas').first()).toBeVisible({ timeout: 20000 });
+
+    // The example listens on ['click','mouseover'] via (kjChartEvent) and prints
+    // the last event. The chart is a bar chart, so moving over / clicking a
+    // column reliably fires ECharts 'mouseover'/'click' — proving the general
+    // event API forwards a named event through (kjChartEvent).
+    const lastEvent = page.locator('kj-chart-pluggable-example p');
+    await expect(lastEvent).toHaveText(/Last event: —/, { timeout: 20000 });
+
+    const canvas = host.locator('canvas').first();
+    await canvas.scrollIntoViewIfNeeded();
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('pluggable example canvas has no box');
+    // Sweep the pointer across bar columns (short bars leave gaps at any single
+    // fixed x). Landing on any bar makes ECharts fire 'mouseover', which is
+    // forwarded through (kjChartEvent) and printed. Positions are element-
+    // relative so the pointer lands on the canvas regardless of page scroll.
+    for (let fx = 0.15; fx <= 0.9; fx += 0.05) {
+      await canvas.hover({ position: { x: box.width * fx, y: box.height * 0.7 } });
+      if (!/—/.test((await lastEvent.textContent()) ?? '')) break;
+    }
+    await expect(lastEvent).toHaveText(/Last event: mouseover event/, { timeout: 20000 });
+  });
 });

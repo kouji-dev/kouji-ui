@@ -16,8 +16,17 @@ import {
 import type { EChartsOption, EChartsType, ECElementEvent } from 'echarts';
 import { resolveChartPalette } from './chart-tokens';
 import { KjChartTableFallback } from './chart-table-fallback';
+import { KJ_ECHARTS, type KjEChartsCore } from './echarts';
 
 let nextDescId = 0;
+
+/** Payload emitted by `(kjChartEvent)` — the forwarded ECharts event name and its raw params. */
+export interface KjChartEvent {
+  /** The ECharts event name (as listed in `kjChartOn`), e.g. `'click'`, `'datazoom'`. */
+  readonly type: string;
+  /** The raw event object ECharts passes to the handler. Shape depends on `type`. */
+  readonly params: unknown;
+}
 
 /**
  * Wraps Apache ECharts. Initializes after first render, updates reactively
@@ -49,6 +58,8 @@ let nextDescId = 0;
  *   @doc-file chart.loading.example.ts
  * @doc-example Table fallback
  *   @doc-file chart.fallback.example.ts
+ * @doc-example Pluggable engine + general events
+ *   @doc-file chart.pluggable.example.ts
  */
 @Directive({
   selector: '[kjChart]',
@@ -64,6 +75,8 @@ export class KjChart {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly vcr = inject(ViewContainerRef);
+  /** Optional consumer-supplied ECharts loader (via `provideECharts`); null → full-import fallback. */
+  private readonly echartsLoader = inject(KJ_ECHARTS, { optional: true });
 
   /** ECharts option object defining the chart. */
   kjChartOption = input.required<EChartsOption>();
@@ -77,12 +90,24 @@ export class KjChart {
   kjChartPalette = input<string[] | undefined>(undefined);
   /** Honored unless prefers-reduced-motion: reduce is set. */
   kjChartAnimate = input<boolean>(true);
+  /**
+   * ECharts event names to forward through `(kjChartEvent)`. Bound via
+   * `chart.on(name, …)` and re-bound reactively when this list changes.
+   * e.g. `['click', 'datazoom', 'legendselectchanged']`.
+   */
+  kjChartOn = input<readonly string[]>([]);
 
-  /** Emits the ECharts instance once initialized. */
+  /** Emits the ECharts instance after its first `setOption` (ready with data). Re-emits on re-init. */
   kjChartReady = output<EChartsType>();
-  /** Emits ECharts 'click' events. */
+  /**
+   * Emits `{ type, params }` for every ECharts event named in `kjChartOn`.
+   * Use this for arbitrary events; `kjChartReady` still exposes the raw
+   * instance for full manual `.on(...)` wiring.
+   */
+  kjChartEvent = output<KjChartEvent>();
+  /** Emits ECharts 'click' events. Convenience — also available via `kjChartOn`. */
   kjChartClick = output<ECElementEvent>();
-  /** Emits ECharts 'legendselectchanged' events. */
+  /** Emits ECharts 'legendselectchanged' events. Convenience — also available via `kjChartOn`. */
   kjChartLegendSelect = output<unknown>();
 
   /** Unique id for the description div; used by host's aria-describedby binding. */
@@ -94,14 +119,21 @@ export class KjChart {
   /** Projected `*kjChartTableFallback`, if any. Rendered as an SR table sibling. */
   protected readonly _fallback = contentChild(KjChartTableFallback);
 
-  private chart: EChartsType | null = null;
+  /** The live ECharts instance. A signal so event-binding + loading effects react to init/dispose. */
+  private readonly chart = signal<EChartsType | null>(null);
   private readonly prefersReducedMotion = signal(false);
+  /** Currently-bound `kjChartOn` forwarders, tracked so they can be unbound on re-bind/destroy. */
+  private forwarded: { name: string; handler: (params: unknown) => void }[] = [];
 
   constructor() {
     afterNextRender(async () => {
       try {
-        const echarts = await import('echarts');
-        this.chart = echarts.init(this.el.nativeElement);
+        // Resolve ECharts from DI: a consumer-provided (tree-shaken) build via
+        // provideECharts, else fall back to a dynamic import of the full module.
+        const echarts: KjEChartsCore = this.echartsLoader
+          ? await this.echartsLoader()
+          : await import('echarts');
+        const chart = echarts.init(this.el.nativeElement) as EChartsType;
 
         // prefers-reduced-motion — subscribe and re-apply on change. Guarded:
         // matchMedia is absent in some non-browser/test environments.
@@ -113,17 +145,27 @@ export class KjChart {
           this.prefersReducedMotion.set(mql.matches);
           const onMqlChange = () => {
             this.prefersReducedMotion.set(mql.matches);
-            this.chart?.setOption(this.resolveOption());
+            chart.setOption(this.resolveOption());
           };
           mql.addEventListener('change', onMqlChange);
           this.destroyRef.onDestroy(() => mql.removeEventListener('change', onMqlChange));
         }
 
-        this.chart.setOption(this.resolveOption());
-        this.kjChartReady.emit(this.chart);
+        // First setOption populates the chart, THEN we publish it — so both the
+        // signal-driven effects (events, loading) and kjChartReady observers get
+        // an instance that is already showing data.
+        chart.setOption(this.resolveOption());
+        this.chart.set(chart);
+        this.kjChartReady.emit(chart);
 
-        this.chart.on('click', (e: ECElementEvent) => this.kjChartClick.emit(e));
-        this.chart.on('legendselectchanged', (e: unknown) => this.kjChartLegendSelect.emit(e));
+        // Convenience events — always emitted regardless of kjChartOn.
+        chart.on('click', (e: ECElementEvent) => this.kjChartClick.emit(e));
+        chart.on('legendselectchanged', (e: unknown) => this.kjChartLegendSelect.emit(e));
+
+        // Initial general-event binding (the reactive effect below re-binds on
+        // any later kjChartOn change; this guarantees the first bind even before
+        // the next change-detection pass).
+        this.bindForwardedEvents(chart, this.kjChartOn());
 
         // ResizeObserver — coalesce via rAF so a burst of entries collapses to one resize.
         // Guarded: ResizeObserver is absent in some non-browser environments.
@@ -133,7 +175,7 @@ export class KjChart {
             if (pendingRaf) return;
             pendingRaf = requestAnimationFrame(() => {
               pendingRaf = 0;
-              this.chart?.resize();
+              chart.resize();
             });
           });
           ro.observe(this.el.nativeElement);
@@ -143,9 +185,10 @@ export class KjChart {
           });
         }
 
-        // Theme changes on <html> re-resolve the kj palette and re-apply the option.
+        // Theme changes on <html> re-resolve the kj palette and re-apply the
+        // option. This never disposes the instance, so kjChartReady fires once.
         if (typeof MutationObserver !== 'undefined') {
-          const themeMo = new MutationObserver(() => this.chart?.setOption(this.resolveOption()));
+          const themeMo = new MutationObserver(() => chart.setOption(this.resolveOption()));
           themeMo.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ['class', 'data-theme'],
@@ -153,24 +196,35 @@ export class KjChart {
           this.destroyRef.onDestroy(() => themeMo.disconnect());
         }
 
-        this.destroyRef.onDestroy(() => this.chart?.dispose());
+        this.destroyRef.onDestroy(() => {
+          chart.dispose();
+          this.chart.set(null);
+        });
       } catch {
         // ECharts cannot initialize in non-browser environments (jsdom, SSR)
       }
     });
 
     afterEveryRender(() => {
-      if (this.chart) {
-        this.chart.setOption(this.resolveOption());
-      }
+      this.chart()?.setOption(this.resolveOption());
+    });
+
+    // General event API — re-forward kjChartOn through (kjChartEvent) whenever
+    // the list changes (the initial bind happens imperatively at init).
+    // bindForwardedEvents is idempotent, so a redundant first run is harmless.
+    effect(() => {
+      const names = this.kjChartOn();
+      const chart = this.chart();
+      if (chart) this.bindForwardedEvents(chart, names);
     });
 
     // Loading overlay driven reactively by [kjChartLoading].
     effect(() => {
       const loading = this.kjChartLoading();
-      if (!this.chart) return;
-      if (loading) this.chart.showLoading();
-      else this.chart.hideLoading();
+      const chart = this.chart();
+      if (!chart) return;
+      if (loading) chart.showLoading();
+      else chart.hideLoading();
     });
 
     // Visually-hidden description element, referenced by the host's aria-describedby.
@@ -213,6 +267,20 @@ export class KjChart {
     });
   }
 
+  /**
+   * (Re)binds the `kjChartOn` event forwarders: unbinds the previous set, then
+   * binds `chart.on(name, …)` for each name, emitting `(kjChartEvent)`.
+   * Idempotent — safe to call from both init and the reactive effect.
+   */
+  private bindForwardedEvents(chart: EChartsType, names: readonly string[]): void {
+    for (const { name, handler } of this.forwarded) chart.off(name, handler);
+    this.forwarded = names.map((name) => {
+      const handler = (params: unknown) => this.kjChartEvent.emit({ type: name, params });
+      chart.on(name, handler);
+      return { name, handler };
+    });
+  }
+
   /** Merges reactive concerns (palette, reduced-motion) into the user option. */
   private resolveOption(): EChartsOption {
     const base = this.kjChartOption();
@@ -231,16 +299,16 @@ export class KjChart {
 
   /** Imperative resize — wraps chart.resize(). */
   resize(): void {
-    this.chart?.resize();
+    this.chart()?.resize();
   }
 
   /** Imperative dispatch — passes through to ECharts. */
   dispatchAction(payload: Parameters<EChartsType['dispatchAction']>[0]): void {
-    this.chart?.dispatchAction(payload);
+    this.chart()?.dispatchAction(payload);
   }
 
   /** Reads current option — passes through to ECharts. */
   getOption(): EChartsOption | undefined {
-    return this.chart?.getOption() as EChartsOption | undefined;
+    return this.chart()?.getOption() as EChartsOption | undefined;
   }
 }

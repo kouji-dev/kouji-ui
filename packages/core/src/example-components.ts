@@ -34,6 +34,7 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   ChartExample: 'chart',
   ChartFallbackExample: 'chart',
   ChartLoadingExample: 'chart',
+  ChartPluggableExample: 'chart',
   ChartSparklineExample: 'chart',
   DialogBasicExample: 'dialog',
   DialogConfirmExample: 'dialog',
