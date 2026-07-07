@@ -14,6 +14,7 @@ import type { Type } from '@angular/core';
 
 export const EXAMPLE_LOADERS: Record<string, () => Promise<Record<string, Type<unknown>>>> = {
   'button': () => import('./button/_examples') as Promise<Record<string, Type<unknown>>>,
+  'chart': () => import('./chart/_examples') as Promise<Record<string, Type<unknown>>>,
   'dialog': () => import('./dialog/_examples') as Promise<Record<string, Type<unknown>>>,
   'motion': () => import('./motion/_examples') as Promise<Record<string, Type<unknown>>>,
   'popover': () => import('./popover/_examples') as Promise<Record<string, Type<unknown>>>,
@@ -26,6 +27,14 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   ButtonFinanceExample: 'button',
   ButtonRetroExample: 'button',
   ButtonSizesExample: 'button',
+  ChartAreaExample: 'chart',
+  ChartBarExample: 'chart',
+  ChartDonutExample: 'chart',
+  ChartEventsExample: 'chart',
+  ChartExample: 'chart',
+  ChartFallbackExample: 'chart',
+  ChartLoadingExample: 'chart',
+  ChartSparklineExample: 'chart',
   DialogBasicExample: 'dialog',
   DialogConfirmExample: 'dialog',
   DialogFinanceExample: 'dialog',

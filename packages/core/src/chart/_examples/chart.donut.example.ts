@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjChart } from '../chart';
 import { REGION_REVENUE } from './fixtures';
+import type { EChartsOption } from 'echarts';
 
 @Component({
-  selector: 'chart-donut-example',
+  selector: 'kj-chart-donut-example',
   standalone: true,
   imports: [KjChart],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,7 +13,7 @@ import { REGION_REVENUE } from './fixtures';
   `,
 })
 export class ChartDonutExample {
-  readonly opt = signal({
+  readonly opt = signal<EChartsOption>({
     tooltip: { trigger: 'item' },
     legend: { orient: 'vertical', left: 'left' },
     series: [{

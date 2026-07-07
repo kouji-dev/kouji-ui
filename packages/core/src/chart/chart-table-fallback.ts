@@ -1,11 +1,14 @@
-import { Directive, OnInit, TemplateRef, ViewContainerRef, inject } from '@angular/core';
+import { Directive, TemplateRef, inject } from '@angular/core';
 
 /**
  * Projects a screen-reader-only table fallback for a `KjChart`. When present
- * inside a `[kjChart]` host, the chart's canvas wrapper becomes `aria-hidden`
- * and the table is rendered alongside it (visually-hidden via the host's
- * sr-only styling) so assistive technology reads structured data instead of
- * the canvas.
+ * inside a `[kjChart]` host, the host directive renders the template as a table
+ * *sibling* of the chart element — outside the `role="img"` subtree — so
+ * assistive technology reads structured data instead of the canvas.
+ *
+ * This directive only exposes its `TemplateRef`; `KjChart` performs the
+ * rendering (see its `_fallback` content query). Rendering it standalone,
+ * without a `[kjChart]` host, produces no output.
  *
  * @example
  * ```html
@@ -20,11 +23,6 @@ import { Directive, OnInit, TemplateRef, ViewContainerRef, inject } from '@angul
   selector: '[kjChartTableFallback]',
   standalone: true,
 })
-export class KjChartTableFallback implements OnInit {
+export class KjChartTableFallback {
   readonly tpl = inject(TemplateRef<unknown>);
-  private readonly vcr = inject(ViewContainerRef);
-
-  ngOnInit(): void {
-    this.vcr.createEmbeddedView(this.tpl);
-  }
 }

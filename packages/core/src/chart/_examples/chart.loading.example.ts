@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjChart } from '../chart';
 import { DAYS, REVENUE } from './fixtures';
+import type { EChartsOption } from 'echarts';
 
 @Component({
-  selector: 'chart-loading-example',
+  selector: 'kj-chart-loading-example',
   standalone: true,
   imports: [KjChart],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,7 +18,7 @@ import { DAYS, REVENUE } from './fixtures';
 })
 export class ChartLoadingExample {
   readonly loading = signal(false);
-  readonly opt = signal({
+  readonly opt = signal<EChartsOption>({
     xAxis: { type: 'category', data: DAYS },
     yAxis: { type: 'value' },
     series: [{ type: 'line', data: REVENUE, smooth: true }],

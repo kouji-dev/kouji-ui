@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjChart } from '../chart';
 import { DAYS, USERS } from './fixtures';
+import type { EChartsOption } from 'echarts';
 
 @Component({
-  selector: 'chart-bar-example',
+  selector: 'kj-chart-bar-example',
   standalone: true,
   imports: [KjChart],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,7 +13,7 @@ import { DAYS, USERS } from './fixtures';
   `,
 })
 export class ChartBarExample {
-  readonly opt = signal({
+  readonly opt = signal<EChartsOption>({
     xAxis: { type: 'category', data: DAYS },
     yAxis: { type: 'value' },
     legend: { data: ['Desktop', 'Mobile'] },

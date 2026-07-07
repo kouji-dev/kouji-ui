@@ -2,9 +2,10 @@ import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjChart } from '../chart';
 import { KjChartTableFallback } from '../chart-table-fallback';
 import { DAYS, USERS } from './fixtures';
+import type { EChartsOption } from 'echarts';
 
 @Component({
-  selector: 'chart-fallback-example',
+  selector: 'kj-chart-fallback-example',
   standalone: true,
   imports: [KjChart, KjChartTableFallback],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,7 +32,7 @@ export class ChartFallbackExample {
   readonly days = DAYS;
   readonly desktop = USERS.desktop;
   readonly mobile = USERS.mobile;
-  readonly opt = signal({
+  readonly opt = signal<EChartsOption>({
     xAxis: { type: 'category', data: DAYS },
     yAxis: { type: 'value' },
     legend: { data: ['Desktop', 'Mobile'] },

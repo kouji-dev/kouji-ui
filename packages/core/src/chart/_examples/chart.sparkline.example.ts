@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjChart } from '../chart';
 import { REVENUE } from './fixtures';
+import type { EChartsOption } from 'echarts';
 
 @Component({
-  selector: 'chart-sparkline-example',
+  selector: 'kj-chart-sparkline-example',
   standalone: true,
   imports: [KjChart],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,7 +13,7 @@ import { REVENUE } from './fixtures';
   `,
 })
 export class ChartSparklineExample {
-  readonly opt = signal({
+  readonly opt = signal<EChartsOption>({
     grid: { left: 0, right: 0, top: 4, bottom: 4 },
     xAxis: { type: 'category', show: false, data: REVENUE.map((_, i) => i) },
     yAxis: { type: 'value', show: false },

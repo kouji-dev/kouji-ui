@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjChart } from '../chart';
 import { DAYS, REVENUE } from './fixtures';
-import type { ECElementEvent } from 'echarts';
+import type { ECElementEvent, EChartsOption } from 'echarts';
 
 @Component({
-  selector: 'chart-events-example',
+  selector: 'kj-chart-events-example',
   standalone: true,
   imports: [KjChart],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +19,7 @@ import type { ECElementEvent } from 'echarts';
   `,
 })
 export class ChartEventsExample {
-  readonly opt = signal({
+  readonly opt = signal<EChartsOption>({
     xAxis: { type: 'category', data: DAYS },
     yAxis: { type: 'value' },
     legend: { data: ['Revenue'] },

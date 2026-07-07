@@ -1,23 +1,32 @@
 import { render } from '@testing-library/angular';
 import { describe, it, expect } from 'vitest';
+import { KjChart } from './chart';
 import { KjChartTableFallback } from './chart-table-fallback';
 
 describe('KjChartTableFallback', () => {
-  it('renders its template content', async () => {
+  it('projects its template as a table when hosted by [kjChart]', async () => {
     const { container } = await render(
-      `<ng-container *kjChartTableFallback>
-         <table data-testid="fb"><tbody><tr><td>x</td></tr></tbody></table>
-       </ng-container>`,
-      { imports: [KjChartTableFallback] }
+      `<div kjChart [kjChartOption]="{}" kjChartLabel="Sales">
+         <ng-container *kjChartTableFallback>
+           <table data-testid="fb"><tbody><tr><td>x</td></tr></tbody></table>
+         </ng-container>
+       </div>`,
+      { imports: [KjChart, KjChartTableFallback] },
     );
     expect(container.querySelector('[data-testid="fb"]')).toBeInTheDocument();
   });
 
-  it('exposes its TemplateRef via static query on the host', async () => {
+  it('renders the table outside the role="img" host so AT can read it', async () => {
     const { container } = await render(
-      `<div><ng-container *kjChartTableFallback>X</ng-container></div>`,
-      { imports: [KjChartTableFallback] }
+      `<div kjChart [kjChartOption]="{}" kjChartLabel="Sales">
+         <ng-container *kjChartTableFallback>
+           <table data-testid="fb"><tbody><tr><td>x</td></tr></tbody></table>
+         </ng-container>
+       </div>`,
+      { imports: [KjChart, KjChartTableFallback] },
     );
-    expect(container.textContent).toContain('X');
+    const tbl = container.querySelector('[data-testid="fb"]');
+    expect(tbl).not.toBeNull();
+    expect(tbl!.closest('[role="img"]')).toBeNull();
   });
 });
