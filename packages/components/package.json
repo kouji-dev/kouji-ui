@@ -31,7 +31,16 @@
     "@kouji-ui/core": "*",
     "lucide-static": "^1.14.0",
     "@angular/forms": "^22.0.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "lexical": "^0.38.0",
+    "@lexical/rich-text": "^0.38.0",
+    "@lexical/list": "^0.38.0",
+    "@lexical/link": "^0.38.0",
+    "@lexical/history": "^0.38.0",
+    "@lexical/markdown": "^0.38.0",
+    "@lexical/code": "^0.38.0",
+    "@lexical/html": "^0.38.0",
+    "@lexical/selection": "^0.38.0"
   },
   "devDependencies": {
     "@kouji-ui/core": "workspace:*",
@@ -45,5 +54,34 @@
   },
   "dependencies": {
     "@tanstack/virtual-core": "^3.14.0"
+  },
+  "peerDependenciesMeta": {
+    "lexical": {
+      "optional": true
+    },
+    "@lexical/rich-text": {
+      "optional": true
+    },
+    "@lexical/list": {
+      "optional": true
+    },
+    "@lexical/link": {
+      "optional": true
+    },
+    "@lexical/history": {
+      "optional": true
+    },
+    "@lexical/markdown": {
+      "optional": true
+    },
+    "@lexical/code": {
+      "optional": true
+    },
+    "@lexical/html": {
+      "optional": true
+    },
+    "@lexical/selection": {
+      "optional": true
+    }
   }
 }

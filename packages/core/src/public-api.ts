@@ -78,6 +78,9 @@ export * from './date-range-presets/index';
 // -- Charts --
 export * from './chart/index';
 
+// -- Rich text editor --
+export * from './rich-text/index';
+
 // -- Layout components --
 export * from './divider/index';
 export * from './skeleton/index';
