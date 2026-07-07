@@ -1,0 +1,119 @@
+:host {
+  display: block;
+  border: 1px solid var(--kj-border-default);
+  border-radius: var(--kj-radius-md, 0);
+  overflow: hidden;
+  background: var(--kj-bg-surface);
+}
+
+.kj-editor-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 12rem;
+}
+
+/* ── Toolbar ── */
+.kj-editor-toolbar,
+.kj-editor-status {
+  display: flex;
+  align-items: center;
+  gap: var(--kj-space-sm);
+  padding: var(--kj-space-sm) var(--kj-space-lg);
+  background: var(--kj-bg-body);
+  flex-shrink: 0;
+}
+.kj-editor-toolbar {
+  border-bottom: 1px solid var(--kj-border-default);
+}
+.kj-editor-status {
+  border-top: 1px solid var(--kj-border-default);
+}
+
+.kj-editor-spacer {
+  flex: 1;
+}
+
+.kj-editor-lang {
+  font-family: var(--kj-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kj-fg-primary);
+  background: color-mix(in oklab, var(--kj-bg-primary) 8%, transparent);
+  padding: 0.15rem var(--kj-space-sm);
+  border: 1px solid color-mix(in oklab, var(--kj-bg-primary) 22%, transparent);
+}
+
+.kj-editor-copy {
+  background: none;
+  border: none;
+  color: var(--kj-fg-muted);
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  /* 44x44 touch target (WCAG 2.5.5) via padding on a compact control. */
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 var(--kj-space-sm);
+  transition: color 0.15s;
+}
+.kj-editor-copy:hover {
+  color: var(--kj-fg-default);
+}
+.kj-editor-copy:focus-visible {
+  outline: 2px solid var(--kj-border-focus, var(--kj-bg-primary));
+  outline-offset: 2px;
+}
+
+/* ── Status bar ── */
+.kj-editor-pos {
+  font-family: var(--kj-font-mono);
+  font-size: 0.7rem;
+  color: var(--kj-fg-muted);
+}
+.kj-editor-hint {
+  font-size: 0.7rem;
+  color: var(--kj-fg-muted);
+}
+
+/* ── Monaco host ── */
+.kj-editor-body {
+  position: relative;
+  flex: 1;
+  min-height: 8rem;
+}
+.kj-editor-host {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.kj-editor-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--kj-bg-surface);
+  z-index: 1;
+}
+
+/* ── Pierce Monaco's uncontrolled DOM to match kj tokens ──
+   Monaco renders elements we don't own; the defined kj-editor theme handles
+   most chrome, this backstops backgrounds/scrollbar for the container. */
+.kj-editor-host ::ng-deep .monaco-editor,
+.kj-editor-host ::ng-deep .monaco-editor-background,
+.kj-editor-host ::ng-deep .monaco-editor .margin {
+  background-color: var(--kj-bg-surface) !important;
+}
+.kj-editor-host ::ng-deep .monaco-editor .scrollbar .slider {
+  background: var(--kj-bg-field, var(--kj-bg-elevated)) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kj-editor-copy {
+    transition: none;
+  }
+}

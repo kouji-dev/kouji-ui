@@ -41,7 +41,9 @@
     "@lexical/markdown": "^0.38.0",
     "@lexical/code": "^0.38.0",
     "@lexical/html": "^0.38.0",
-    "@lexical/selection": "^0.38.0"
+    "@lexical/selection": "^0.38.0",
+    "monaco-editor": "^0.55.0",
+    "@monaco-editor/loader": "^1.7.0"
   },
   "sideEffects": false,
   "type": "module",
@@ -95,6 +97,12 @@
       "optional": true
     },
     "@lexical/selection": {
+      "optional": true
+    },
+    "monaco-editor": {
+      "optional": true
+    },
+    "@monaco-editor/loader": {
       "optional": true
     }
   },

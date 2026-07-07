@@ -329,6 +329,9 @@ importers:
       '@lexical/selection':
         specifier: ^0.38.0
         version: 0.38.2
+      '@monaco-editor/loader':
+        specifier: ^1.7.0
+        version: 1.7.0
       '@tanstack/angular-table':
         specifier: ^8.21.4
         version: 8.21.4(@angular/core@22.0.5(@angular/compiler@22.0.5)(rxjs@7.8.2)(zone.js@0.16.1))
@@ -338,6 +341,9 @@ importers:
       lexical:
         specifier: ^0.38.0
         version: 0.38.2
+      monaco-editor:
+        specifier: ^0.55.0
+        version: 0.55.1
       rxjs:
         specifier: ^7.8.0
         version: 7.8.2

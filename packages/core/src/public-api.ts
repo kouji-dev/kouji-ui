@@ -81,6 +81,9 @@ export * from './chart/index';
 // -- Rich text editor --
 export * from './rich-text/index';
 
+// -- Editor --
+export * from './editor/index';
+
 // -- Layout components --
 export * from './divider/index';
 export * from './skeleton/index';

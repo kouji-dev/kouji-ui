@@ -1,0 +1,50 @@
+<div class="kj-editor-wrap">
+  @if (kjShowToolbar()) {
+    <div class="kj-editor-toolbar">
+      <span class="kj-editor-lang">{{ kjLanguage() }}</span>
+      <span class="kj-editor-spacer"></span>
+      <button
+        type="button"
+        class="kj-editor-copy"
+        (click)="copy()"
+        [attr.aria-label]="copied() ? 'Copied' : 'Copy code'"
+      >
+        {{ copied() ? 'Copied' : 'Copy' }}
+      </button>
+    </div>
+  }
+
+  <div class="kj-editor-body">
+    <div
+      #editorHost
+      class="kj-editor-host"
+      kjEditor
+      [(kjValue)]="kjValue"
+      [kjLanguage]="kjLanguage()"
+      [kjReadonly]="kjReadonly()"
+      [kjMinimap]="kjMinimap()"
+      [kjLineNumbers]="kjLineNumbers()"
+      [kjWordWrap]="kjWordWrap()"
+      [kjFontSize]="kjFontSize()"
+      [kjAriaLabel]="kjAriaLabel()"
+      [kjTabFocusMode]="kjTabFocusMode()"
+      [kjTheme]="themeId()"
+      [kjOptions]="kjOptions()"
+      (kjReady)="onReady($event)"
+    ></div>
+
+    @if (loading()) {
+      <div class="kj-editor-loading" role="status" aria-live="polite">
+        <kj-spinner kjAriaLabel="Loading editor" />
+      </div>
+    }
+  </div>
+
+  @if (kjShowStatusBar()) {
+    <div class="kj-editor-status">
+      <span class="kj-editor-pos">Ln {{ line() }}, Col {{ column() }}</span>
+      <span class="kj-editor-spacer"></span>
+      <span class="kj-editor-hint">{{ escapeHint() }}</span>
+    </div>
+  }
+</div>
