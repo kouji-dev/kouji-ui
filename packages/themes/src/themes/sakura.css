@@ -81,5 +81,12 @@
     /* Lift the cherry magenta to a deeper rose so the hover reads
        against the warm body. */
     --kj-button-bg-hover: #a01548;
+    /* ── chart palette ── */
+    --kj-chart-1: var(--kj-bg-primary);
+    --kj-chart-2: var(--kj-bg-accent);
+    --kj-chart-3: var(--kj-bg-success);
+    --kj-chart-4: var(--kj-bg-warning);
+    --kj-chart-5: var(--kj-bg-info, var(--kj-bg-accent-subtle));
+    --kj-chart-6: var(--kj-bg-danger);
   }
 }

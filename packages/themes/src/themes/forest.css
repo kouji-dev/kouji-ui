@@ -83,5 +83,12 @@
     /* Mustard gold brightens on hover (8% black-mix would push it duller
        on a dark theme — we want it more luminous against the moss bg). */
     --kj-button-bg-hover: #e8b22a;
+    /* ── chart palette ── */
+    --kj-chart-1: var(--kj-bg-primary);
+    --kj-chart-2: var(--kj-bg-accent);
+    --kj-chart-3: var(--kj-bg-success);
+    --kj-chart-4: var(--kj-bg-warning);
+    --kj-chart-5: var(--kj-bg-info, var(--kj-bg-accent-subtle));
+    --kj-chart-6: var(--kj-bg-danger);
   }
 }

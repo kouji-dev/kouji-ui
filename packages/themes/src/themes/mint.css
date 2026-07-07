@@ -95,5 +95,12 @@
     /* Deepen the spearmint on hover (~10% darker) so the interaction
        reads on the bright body. */
     --kj-button-bg-hover: #035a42;
+    /* ── chart palette ── */
+    --kj-chart-1: var(--kj-bg-primary);
+    --kj-chart-2: var(--kj-bg-accent);
+    --kj-chart-3: var(--kj-bg-success);
+    --kj-chart-4: var(--kj-bg-warning);
+    --kj-chart-5: var(--kj-bg-info, var(--kj-bg-accent-subtle));
+    --kj-chart-6: var(--kj-bg-danger);
   }
 }

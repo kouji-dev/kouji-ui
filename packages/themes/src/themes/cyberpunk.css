@@ -78,5 +78,12 @@
     --kj-shadow-md:     4px 4px 0 #0a0a0a;
     --kj-shadow-lg:     8px 8px 0 #0a0a0a;
     --kj-shadow-focus:  0 0 0 3px #ff007f;
+    /* ── chart palette ── */
+    --kj-chart-1: var(--kj-bg-primary);
+    --kj-chart-2: var(--kj-bg-accent);
+    --kj-chart-3: var(--kj-bg-success);
+    --kj-chart-4: var(--kj-bg-warning);
+    --kj-chart-5: var(--kj-bg-info, var(--kj-bg-accent-subtle));
+    --kj-chart-6: var(--kj-bg-danger);
   }
 }
