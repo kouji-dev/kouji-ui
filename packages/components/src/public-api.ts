@@ -44,6 +44,7 @@ export * from './progress-bar/index';
 export * from './radio/index';
 export * from './select/index';
 export * from './skeleton/index';
+export * from './skip-link/index';
 export * from './slider/index';
 export * from './speed-dial/index';
 export * from './spinner/index';

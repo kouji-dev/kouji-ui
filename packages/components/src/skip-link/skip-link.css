@@ -1,0 +1,58 @@
+/* ─────────────────────────────────────────────────────────────
+   .kj-skip-link — WCAG 2.4.1 "skip to content" link.
+   Visually hidden (parked above the viewport, NOT display:none so
+   it stays in the tab order) until focused, then slides on-screen
+   with a solid high-contrast surface. Component tokens default to
+   shared-layer values from @kouji-ui/themes.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-skip-link {
+    /* component knobs — themes / users can override any of these */
+    --kj-skip-link-bg:     var(--kj-bg-primary);
+    --kj-skip-link-fg:     var(--kj-fg-on-primary);
+    --kj-skip-link-radius: var(--kj-radius-field, 0.25rem);
+    --kj-skip-link-shadow: var(--kj-shadow-lg);
+    --kj-skip-link-offset: var(--kj-space-sm, 0.5rem);
+    --kj-skip-link-z:      1000;
+
+    position: fixed;
+    /* Parked just above the viewport — off-screen but focusable. */
+    top: 0;
+    left: var(--kj-skip-link-offset);
+    z-index: var(--kj-skip-link-z);
+    transform: translateY(-150%);
+    transition: transform var(--kj-transition, 150ms ease);
+
+    display: inline-block;
+    padding: 0.625rem 1rem;
+    min-height: 44px; /* WCAG 2.5.5 comfortable target once revealed */
+    box-sizing: border-box;
+
+    background: var(--kj-skip-link-bg);
+    color: var(--kj-skip-link-fg);
+    border-radius: var(--kj-skip-link-radius);
+    box-shadow: var(--kj-skip-link-shadow);
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* Revealed on focus (:focus covers browsers/AT that don't match
+     :focus-visible for programmatic focus, e.g. skip-to-here). */
+  .kj-skip-link:focus,
+  .kj-skip-link:focus-visible {
+    transform: translateY(var(--kj-skip-link-offset));
+    outline: 3px solid var(--kj-fg-primary);
+    outline-offset: 2px;
+  }
+
+  /* Honour reduced-motion: reveal instantly rather than sliding. */
+  @media (prefers-reduced-motion: reduce) {
+    .kj-skip-link {
+      transition: none;
+    }
+  }
+}

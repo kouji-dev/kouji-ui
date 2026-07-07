@@ -76,6 +76,7 @@ export * from './skeleton/index';
 
 // -- Navigation --
 export * from './link/index';
+export * from './skip-link/index';
 export * from './breadcrumb/index';
 export * from './menubar/index';
 export * from './pagination/index';
