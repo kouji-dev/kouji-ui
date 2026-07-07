@@ -6,6 +6,7 @@ import { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
 import { KjToastPositionX, KjToastPositionY } from './toast.types';
+import { KjTranslateService } from '../i18n/index';
 
 export type { KjToastVariant, KjToastContext, KjToastOptions } from './toast.service';
 export type { KjToastPositionX, KjToastPositionY } from './toast.types';
@@ -420,9 +421,14 @@ export class KjToastViewport {
  * for new code — this directive is for cases where the dismiss target id is
  * known outside the template context.
  *
+ * Carries a **localized default `aria-label`** (from the `'toast.close'`
+ * translation key), so an icon-only close button is named for assistive tech in
+ * the active locale with no extra markup. Override per-instance with
+ * `[kjToastCloseLabel]`.
+ *
  * @example
  * ```html
- * <button [kjToastClose]="toast.id" aria-label="Dismiss">×</button>
+ * <button [kjToastClose]="toast.id">×</button>
  * ```
  * @doc-category Core/Overlay
  */
@@ -432,12 +438,22 @@ export class KjToastViewport {
   host: {
     'class': 'kj-toast-close',
     '(click)': 'dismiss()',
+    '[attr.aria-label]': 'closeLabel()',
   },
 })
 export class KjToastClose {
   private readonly svc = inject(KjToastService);
+  private readonly i18n = inject(KjTranslateService);
   /** The id of the toast to dismiss on click. */
   kjToastClose = input.required<string>();
+
+  /** Overrides the localized default `aria-label`. */
+  readonly kjToastCloseLabel = input<string>();
+
+  /** Resolved `aria-label`: explicit override, else the localized default. */
+  protected readonly closeLabel = computed(
+    () => this.kjToastCloseLabel() ?? this.i18n.translate('toast.close'),
+  );
 
   dismiss(): void {
     this.svc.dismiss(this.kjToastClose());

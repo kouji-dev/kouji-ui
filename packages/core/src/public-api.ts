@@ -12,6 +12,9 @@ export * from './locale/index';
 // -- Motion (reduced-motion service + named preset directive) --
 export * from './motion/index';
 
+// -- i18n (typed translation strings) --
+export * from './i18n/index';
+
 // -- Internal presets (composed via hostDirectives; filtered from docs) --
 export * from './presets/index';
 
