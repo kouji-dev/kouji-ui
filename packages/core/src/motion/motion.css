@@ -1,0 +1,90 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/core — motion preset library
+   Named, composable entrance/exit animations applied via the
+   `kjMotion` directive (or a bare `.kj-motion[data-kj-motion]`
+   element). Reduced-motion aware: every preset collapses to a
+   ~1ms opacity fade with no transform under
+   `prefers-reduced-motion: reduce` (WCAG 2.1 AAA 2.3.3).
+
+   Timing/easing/distance are read from `--kj-motion-*` custom
+   properties (themeable via @kouji-ui/themes) with inline
+   fallbacks so this file also works standalone.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-motion {
+    --_kj-motion-duration: var(--kj-motion-duration-md, 250ms);
+    --_kj-motion-ease: var(--kj-motion-ease, cubic-bezier(0.16, 1, 0.3, 1));
+    --_kj-motion-ease-in: var(--kj-motion-ease-in, cubic-bezier(0.7, 0, 0.84, 0));
+    --_kj-motion-ease-spring: var(--kj-motion-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+    --_kj-motion-distance: var(--kj-motion-distance, 0.5rem);
+
+    animation-duration: var(--_kj-motion-duration);
+    animation-timing-function: var(--_kj-motion-ease);
+    animation-fill-mode: both;
+  }
+
+  /* Exit keyframes ease "in" (accelerate away). */
+  .kj-motion[data-kj-motion-state="exit"] {
+    animation-timing-function: var(--_kj-motion-ease-in);
+  }
+
+  /* ── fade ─────────────────────────────────────────────── */
+  .kj-motion[data-kj-motion="fade"][data-kj-motion-state="enter"] { animation-name: kj-fade-in; }
+  .kj-motion[data-kj-motion="fade"][data-kj-motion-state="exit"]  { animation-name: kj-fade-out; }
+
+  /* ── slide-up / down / left / right (transform only) ──── */
+  .kj-motion[data-kj-motion="slide-up"][data-kj-motion-state="enter"]    { animation-name: kj-slide-up-in; }
+  .kj-motion[data-kj-motion="slide-up"][data-kj-motion-state="exit"]     { animation-name: kj-slide-up-out; }
+  .kj-motion[data-kj-motion="slide-down"][data-kj-motion-state="enter"]  { animation-name: kj-slide-down-in; }
+  .kj-motion[data-kj-motion="slide-down"][data-kj-motion-state="exit"]   { animation-name: kj-slide-down-out; }
+  .kj-motion[data-kj-motion="slide-left"][data-kj-motion-state="enter"]  { animation-name: kj-slide-left-in; }
+  .kj-motion[data-kj-motion="slide-left"][data-kj-motion-state="exit"]   { animation-name: kj-slide-left-out; }
+  .kj-motion[data-kj-motion="slide-right"][data-kj-motion-state="enter"] { animation-name: kj-slide-right-in; }
+  .kj-motion[data-kj-motion="slide-right"][data-kj-motion-state="exit"]  { animation-name: kj-slide-right-out; }
+
+  /* ── scale ────────────────────────────────────────────── */
+  .kj-motion[data-kj-motion="scale"][data-kj-motion-state="enter"] { animation-name: kj-scale-in; }
+  .kj-motion[data-kj-motion="scale"][data-kj-motion-state="exit"]  { animation-name: kj-scale-out; }
+
+  /* ── slide-up-fade (composed: transform + opacity) ────── */
+  .kj-motion[data-kj-motion="slide-up-fade"][data-kj-motion-state="enter"] { animation-name: kj-slide-up-fade-in; }
+  .kj-motion[data-kj-motion="slide-up-fade"][data-kj-motion-state="exit"]  { animation-name: kj-slide-up-fade-out; }
+
+  /* ── scale-spring (springy easing) ────────────────────── */
+  .kj-motion[data-kj-motion="scale-spring"] { animation-timing-function: var(--_kj-motion-ease-spring); }
+  .kj-motion[data-kj-motion="scale-spring"][data-kj-motion-state="enter"] { animation-name: kj-scale-in; }
+  .kj-motion[data-kj-motion="scale-spring"][data-kj-motion-state="exit"]  { animation-name: kj-scale-out; }
+
+  /* ── keyframes ────────────────────────────────────────── */
+  @keyframes kj-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes kj-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+  @keyframes kj-slide-up-in     { from { transform: translateY(var(--_kj-motion-distance)); } to { transform: translateY(0); } }
+  @keyframes kj-slide-up-out    { from { transform: translateY(0); } to { transform: translateY(calc(-1 * var(--_kj-motion-distance))); } }
+  @keyframes kj-slide-down-in   { from { transform: translateY(calc(-1 * var(--_kj-motion-distance))); } to { transform: translateY(0); } }
+  @keyframes kj-slide-down-out  { from { transform: translateY(0); } to { transform: translateY(var(--_kj-motion-distance)); } }
+  @keyframes kj-slide-left-in   { from { transform: translateX(var(--_kj-motion-distance)); } to { transform: translateX(0); } }
+  @keyframes kj-slide-left-out  { from { transform: translateX(0); } to { transform: translateX(calc(-1 * var(--_kj-motion-distance))); } }
+  @keyframes kj-slide-right-in  { from { transform: translateX(calc(-1 * var(--_kj-motion-distance))); } to { transform: translateX(0); } }
+  @keyframes kj-slide-right-out { from { transform: translateX(0); } to { transform: translateX(var(--_kj-motion-distance)); } }
+
+  @keyframes kj-scale-in  { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes kj-scale-out { from { transform: scale(1); opacity: 1; } to { transform: scale(0.92); opacity: 0; } }
+
+  @keyframes kj-slide-up-fade-in  { from { transform: translateY(var(--_kj-motion-distance)); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes kj-slide-up-fade-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(calc(-1 * var(--_kj-motion-distance))); opacity: 0; } }
+
+  /* ── reduced motion: strip movement, keep appearance ──────
+     Every preset collapses to a near-instant opacity fade. The 1ms
+     duration keeps `animationend` firing so state machines that await
+     it don't hang. WCAG 2.1 AAA 2.3.3 (Animation from Interactions). */
+  @media (prefers-reduced-motion: reduce) {
+    .kj-motion {
+      animation-duration: 1ms !important;
+      animation-timing-function: linear !important;
+    }
+    .kj-motion[data-kj-motion-state="enter"] { animation-name: kj-fade-in !important; }
+    .kj-motion[data-kj-motion-state="exit"]  { animation-name: kj-fade-out !important; }
+  }
+}
