@@ -1,12 +1,16 @@
 /**
  * Browser-only orchestration layer around Lexical.
  *
- * This module is loaded exclusively via a dynamic `import()` from
- * {@link KjRichTextEditor} inside `afterNextRender`, so its eager Lexical
- * imports never execute during SSR. It owns editor creation, plugin
- * registration, reactive state derivation, and all editor commands.
+ * Loaded exclusively via a dynamic `import()` from {@link KjRichTextEditor}
+ * inside `afterNextRender`, so its eager imports never execute during SSR. It
+ * statically imports only the **base** editing packages (core `lexical`,
+ * `@lexical/rich-text` for `registerRichText`, `@lexical/selection`,
+ * `@lexical/html`). Everything else (lists, code, history, markdown, links) is
+ * loaded lazily and per-feature via each feature's `load()`.
+ *
+ * State is derived package-agnostically (by `node.getType()` + duck-typed
+ * methods) so the engine never imports a feature's package to read state.
  */
-import * as lexical from 'lexical';
 import {
   createEditor,
   $getRoot,
@@ -19,7 +23,10 @@ import {
   REDO_COMMAND,
   CAN_UNDO_COMMAND,
   CAN_REDO_COMMAND,
+  KEY_DOWN_COMMAND,
   COMMAND_PRIORITY_LOW,
+  COMMAND_PRIORITY_HIGH,
+  type ElementNode,
   type Klass,
   type LexicalEditor,
   type LexicalNode,
@@ -27,69 +34,12 @@ import {
   type SerializedEditorState,
   type EditorThemeClasses,
 } from 'lexical';
-import {
-  registerRichText,
-  HeadingNode,
-  QuoteNode,
-  $createHeadingNode,
-  $createQuoteNode,
-  $isHeadingNode,
-  $isQuoteNode,
-  type HeadingTagType,
-} from '@lexical/rich-text';
-import {
-  ListNode,
-  ListItemNode,
-  INSERT_ORDERED_LIST_COMMAND,
-  INSERT_UNORDERED_LIST_COMMAND,
-  REMOVE_LIST_COMMAND,
-  registerList,
-  $isListNode,
-} from '@lexical/list';
-import { LinkNode, $toggleLink, $isLinkNode } from '@lexical/link';
-import { CodeNode, CodeHighlightNode, $createCodeNode, $isCodeNode } from '@lexical/code';
-import { registerHistory, createEmptyHistoryState } from '@lexical/history';
-import { registerMarkdownShortcuts, TRANSFORMERS } from '@lexical/markdown';
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import { registerRichText } from '@lexical/rich-text';
 import { $setBlocksType } from '@lexical/selection';
-import { KjImageNode, $createKjImageNode } from './image-node';
-import type { KjRichTextExtension, KjRichTextContext } from './rich-text-plugin';
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import type { KjRichTextContext, KjRichTextFeature, KjRteShortcut } from './feature';
 import type { KjDecoratorMountAdapter, KjMountedComponent } from './rich-text.context';
-import type {
-  KjBlockType,
-  KjImageInsert,
-  KjRichTextState,
-  KjTextFormat,
-} from './rich-text-editor.types';
-
-/**
- * Built-in extensions. The core editor features are themselves extensions —
- * each contributes its nodes (collected before `createEditor`) and/or behaviour
- * (registered after). Consumer extensions are appended after these.
- */
-const BUILTIN_EXTENSIONS: readonly KjRichTextExtension[] = [
-  {
-    name: 'rich-text',
-    nodes: () => [HeadingNode, QuoteNode],
-    setup: ({ editor }) => registerRichText(editor),
-  },
-  {
-    name: 'list',
-    nodes: () => [ListNode, ListItemNode],
-    setup: ({ editor }) => registerList(editor),
-  },
-  { name: 'link', nodes: () => [LinkNode] },
-  { name: 'code', nodes: () => [CodeNode, CodeHighlightNode] },
-  { name: 'image', nodes: () => [KjImageNode] },
-  {
-    name: 'history',
-    setup: ({ editor }) => registerHistory(editor, createEmptyHistoryState(), 300),
-  },
-  {
-    name: 'markdown-shortcuts',
-    setup: ({ editor }) => registerMarkdownShortcuts(editor, TRANSFORMERS),
-  },
-];
+import type { KjBlockType, KjRichTextState, KjTextFormat } from './rich-text-editor.types';
 
 /** CSS classes applied to editor nodes; styled by the components layer. */
 const THEME: EditorThemeClasses = {
@@ -120,12 +70,18 @@ const INLINE_FORMATS: readonly KjTextFormat[] = [
 export interface RichTextEngineConfig {
   /** Initial content as an HTML string. */
   initialHtml?: string;
-  /** Consumer extensions, appended after the built-in set. */
-  extensions?: readonly KjRichTextExtension[];
+  /** Active features (built-in editing lives in features too). */
+  features?: readonly KjRichTextFeature[];
   /** Lexical namespace (diagnostics only). */
   namespace?: string;
   /** Adapter used to mount Angular components for decorator nodes. */
   mount?: KjDecoratorMountAdapter;
+  /** Called when a feature requests an overlay. */
+  onOverlayOpen?(id: string, data: unknown): void;
+  /** Called when a feature closes the overlay. */
+  onOverlayClose?(): void;
+  /** Called to announce a message to assistive technology. */
+  onAnnounce?(message: string): void;
 }
 
 /** Callbacks the engine invokes to push state/value changes to the directive. */
@@ -135,28 +91,36 @@ export interface RichTextEngineCallbacks {
 }
 
 /**
- * Create and mount a Lexical editor on `root` and return an engine handle
- * exposing commands and lifecycle.
- *
- * Nodes are collected from every extension (built-in + consumer) **before**
- * `createEditor`, so extensions can contribute their own node types — the core
- * limitation this framework removes.
+ * Create and mount a Lexical editor on `root`, loading each feature's packages,
+ * collecting their nodes **before** `createEditor`, then registering behaviour.
+ * Async because feature package loading is awaited.
  */
-export function createRichTextEngine(
+export async function createRichTextEngine(
   root: HTMLElement,
   config: RichTextEngineConfig,
   callbacks: RichTextEngineCallbacks,
-): RichTextEngine {
-  const extensions = [...BUILTIN_EXTENSIONS, ...(config.extensions ?? [])];
+): Promise<RichTextEngine> {
+  const features = config.features ?? [];
 
-  // Collect nodes from all extensions (lazy factories resolved with the
-  // now-imported Lexical namespace) before creating the editor.
+  // Per-feature lazy package loading. Disabling a feature ⇒ its package never
+  // loads. Loaded in parallel; a failure is isolated to its feature.
+  await Promise.all(
+    features.map(async (feature) => {
+      try {
+        await feature.load?.();
+      } catch (error) {
+        console.error(`[KjRichTextEditor] feature "${feature.name}" load() failed`, error);
+      }
+    }),
+  );
+
+  // Collect nodes from all features (now that their packages are loaded).
   const nodeSet = new Set<Klass<LexicalNode>>();
-  for (const extension of extensions) {
+  for (const feature of features) {
     try {
-      for (const node of extension.nodes?.(lexical) ?? []) nodeSet.add(node);
+      for (const node of feature.nodes?.() ?? []) nodeSet.add(node);
     } catch (error) {
-      console.error(`[KjRichTextEditor] extension "${extension.name}" nodes() failed`, error);
+      console.error(`[KjRichTextEditor] feature "${feature.name}" nodes() failed`, error);
     }
   }
 
@@ -165,15 +129,12 @@ export function createRichTextEngine(
     editable: true,
     theme: THEME,
     nodes: [...nodeSet],
-    onError: (error: Error) => {
-      // Surface engine errors without breaking the host application.
-      console.error('[KjRichTextEditor]', error);
-    },
+    onError: (error: Error) => console.error('[KjRichTextEditor]', error),
   });
 
   editor.setRootElement(root);
-  const engine = new RichTextEngine(editor, callbacks, config.mount);
-  engine.init(extensions, config);
+  const engine = new RichTextEngine(editor, callbacks, config);
+  engine.init(features);
   return engine;
 }
 
@@ -185,40 +146,64 @@ export class RichTextEngine {
   private destroyed = false;
   private readonly decoratorRegistry = new Map<string, unknown>();
   private readonly mounted = new Map<NodeKey, KjMountedComponent>();
+  /** Shared, live context handed to features. */
+  readonly context: KjRichTextContext;
 
   constructor(
     readonly editor: LexicalEditor,
     private readonly callbacks: RichTextEngineCallbacks,
-    private readonly mountAdapter?: KjDecoratorMountAdapter,
-  ) {}
-
-  /** @internal Register extension behaviour, listeners, decorators, and seed content. */
-  init(extensions: readonly KjRichTextExtension[], config: RichTextEngineConfig): void {
-    // Shared context passed to every extension's setup.
-    const context: KjRichTextContext = {
-      editor: this.editor,
+    private readonly config: RichTextEngineConfig,
+  ) {
+    const context: Omit<KjRichTextContext, 'state'> = {
+      editor,
+      update: (fn: () => void) => this.update(fn),
+      read: (fn) => editor.getEditorState().read(fn),
+      toggleInlineFormat: (format) => this.toggleFormat(format),
+      setBlock: (create) => this.setBlock(create),
+      setParagraph: () => this.setBlock(() => $createParagraphNode()),
+      insertNodes: (create) => this.update(() => $insertNodes(create())),
+      dispatch: (command, payload) => {
+        editor.dispatchCommand(command, payload);
+        this.flush();
+      },
       registerCommand: (command, listener, priority) =>
-        this.editor.registerCommand(command, listener, priority),
-      registerNodeTransform: (klass, listener) =>
-        this.editor.registerNodeTransform(klass, listener),
+        editor.registerCommand(command, listener, priority),
+      registerNodeTransform: (klass, listener) => editor.registerNodeTransform(klass, listener),
+      registerShortcut: (shortcut, run) => this.registerShortcut(shortcut, run),
+      undo: () => this.undo(),
+      redo: () => this.redo(),
+      focus: () => this.focus(),
+      openOverlay: (id, data) => this.config.onOverlayOpen?.(id, data),
+      closeOverlay: () => this.config.onOverlayClose?.(),
+      announce: (message) => this.config.onAnnounce?.(message),
     };
+    // `state` is a live getter (reflects the current selection each read).
+    Object.defineProperty(context, 'state', {
+      get: () => this.readState(),
+      enumerable: true,
+    });
+    this.context = context as KjRichTextContext;
+  }
 
-    // Run each extension's setup (nodes were already collected pre-createEditor).
-    for (const extension of extensions) {
-      // Collect this extension's decorator component registrations.
-      for (const registration of extension.decorators ?? []) {
-        this.decoratorRegistry.set(registration.nodeType, registration.component);
-      }
+  /** @internal Register base editing, feature behaviour, listeners, decorators, seed content. */
+  init(features: readonly KjRichTextFeature[]): void {
+    // Base: rich-text editing (selection, formatting commands, paste, Enter).
+    this.teardowns.push(registerRichText(this.editor));
+
+    for (const feature of features) {
       try {
-        const teardown = extension.setup?.(context);
+        const teardown = feature.setup?.(this.context);
         if (teardown) this.teardowns.push(teardown);
       } catch (error) {
-        console.error(`[KjRichTextEditor] extension "${extension.name}" setup failed`, error);
+        console.error(`[KjRichTextEditor] feature "${feature.name}" setup failed`, error);
+      }
+      // Decorator components declared via createKjDecoratorNode-based features.
+      for (const registration of feature.decorators ?? []) {
+        this.decoratorRegistry.set(registration.nodeType, registration.component);
       }
     }
 
-    // Decorator bridge: mount Angular components for decorator nodes.
-    if (this.mountAdapter && this.decoratorRegistry.size > 0) {
+    if (this.config.mount && this.decoratorRegistry.size > 0) {
       this.teardowns.push(
         this.editor.registerDecoratorListener((decorators: Record<NodeKey, unknown>) =>
           this.reconcileDecorators(decorators),
@@ -226,7 +211,6 @@ export class RichTextEngine {
       );
     }
 
-    // Undo/redo availability.
     this.teardowns.push(
       this.editor.registerCommand(
         CAN_UNDO_COMMAND,
@@ -250,7 +234,6 @@ export class RichTextEngine {
       ),
     );
 
-    // Value + state on every document/selection change.
     this.teardowns.push(
       this.editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
@@ -262,50 +245,18 @@ export class RichTextEngine {
       }),
     );
 
-    if (config.initialHtml) {
-      this.setHtml(config.initialHtml);
+    if (this.config.initialHtml) {
+      this.setHtml(this.config.initialHtml);
     } else {
       this.emitState();
     }
   }
 
-  // -- reactive state ------------------------------------------------------
+  // -- reactive state (package-agnostic) -----------------------------------
 
   private emitState(): void {
     if (this.destroyed) return;
     this.callbacks.onState(this.readState());
-  }
-
-  /**
-   * Mount/unmount Angular components for decorator nodes as they appear and
-   * disappear. `decorators` maps each decorator node key to the value returned
-   * by its `decorate()` — here, the node instance itself.
-   */
-  private reconcileDecorators(decorators: Record<NodeKey, unknown>): void {
-    if (!this.mountAdapter) return;
-    const liveKeys = new Set<NodeKey>(Object.keys(decorators) as NodeKey[]);
-
-    // Dispose components whose nodes were removed.
-    for (const [key, mounted] of this.mounted) {
-      if (!liveKeys.has(key)) {
-        mounted.destroy();
-        this.mounted.delete(key);
-      }
-    }
-
-    // Mount components for newly added decorator nodes.
-    for (const key of liveKeys) {
-      if (this.mounted.has(key)) continue;
-      const node = decorators[key] as { getType?: () => string } | undefined;
-      const type = node?.getType?.();
-      const component = type ? this.decoratorRegistry.get(type) : undefined;
-      if (!component) continue;
-      const host = this.editor.getElementByKey(key);
-      if (!host) continue;
-      const mounted = this.mountAdapter.mount(component, node);
-      host.appendChild(mounted.element);
-      this.mounted.set(key, mounted);
-    }
   }
 
   private readState(): KjRichTextState {
@@ -328,115 +279,89 @@ export class RichTextEngine {
       const anchorNode = selection.anchor.getNode();
       const element =
         anchorNode.getKey() === 'root' ? anchorNode : anchorNode.getTopLevelElementOrThrow();
+      blockType = elementBlockType(element);
 
-      if ($isHeadingNode(element)) {
-        const tag = element.getTag();
-        blockType = tag === 'h1' || tag === 'h2' || tag === 'h3' ? tag : 'paragraph';
-      } else if ($isQuoteNode(element)) {
-        blockType = 'quote';
-      } else if ($isCodeNode(element)) {
-        blockType = 'code';
-      } else if ($isListNode(element)) {
-        blockType = element.getListType() === 'number' ? 'number' : 'bullet';
-      } else {
-        blockType = 'paragraph';
-      }
-
-      isLink = selection
-        .getNodes()
-        .some((node) => $isLinkNode(node) || $isLinkNode(node.getParent()));
+      // Duck-typed link detection (no @lexical/link import).
+      isLink = selection.getNodes().some((node) => isLinkNode(node) || isLinkNode(node.getParent()));
     });
 
     return { activeFormats, blockType, canUndo: this.canUndo, canRedo: this.canRedo, isLink, empty };
   }
 
-  // -- commands ------------------------------------------------------------
+  private reconcileDecorators(decorators: Record<NodeKey, unknown>): void {
+    if (!this.config.mount) return;
+    const liveKeys = new Set<NodeKey>(Object.keys(decorators) as NodeKey[]);
+    for (const [key, mounted] of this.mounted) {
+      if (!liveKeys.has(key)) {
+        mounted.destroy();
+        this.mounted.delete(key);
+      }
+    }
+    for (const key of liveKeys) {
+      if (this.mounted.has(key)) continue;
+      const node = decorators[key] as { getType?: () => string } | undefined;
+      const type = node?.getType?.();
+      const component = type ? this.decoratorRegistry.get(type) : undefined;
+      if (!component) continue;
+      const hostEl = this.editor.getElementByKey(key);
+      if (!hostEl) continue;
+      const mounted = this.config.mount.mount(component, node);
+      hostEl.appendChild(mounted.element);
+      this.mounted.set(key, mounted);
+    }
+  }
 
-  /**
-   * Force any pending (batched) Lexical updates to commit synchronously so
-   * that subsequent reads and derived state observe the change immediately.
-   */
+  // -- command mechanics ---------------------------------------------------
+
   private flush(): void {
     this.editor.update(() => {}, { discrete: true });
   }
 
-  toggleFormat(format: KjTextFormat): void {
+  private update(fn: () => void): void {
+    if (this.destroyed) return;
+    this.editor.update(fn, { discrete: true });
+  }
+
+  private toggleFormat(format: KjTextFormat): void {
     if (this.destroyed) return;
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
     this.flush();
   }
 
-  setBlock(block: Exclude<KjBlockType, 'bullet' | 'number'>): void {
-    if (this.destroyed) return;
-    this.editor.update(
-      () => {
-        const selection = $getSelection();
-        if (!$isRangeSelection(selection)) return;
-        switch (block) {
-          case 'paragraph':
-            $setBlocksType(selection, () => $createParagraphNode());
-            break;
-          case 'quote':
-            $setBlocksType(selection, () => $createQuoteNode());
-            break;
-          case 'code':
-            $setBlocksType(selection, () => $createCodeNode());
-            break;
-          default:
-            $setBlocksType(selection, () => $createHeadingNode(block as HeadingTagType));
-        }
-      },
-      { discrete: true },
-    );
-  }
-
-  toggleList(type: 'bullet' | 'number'): void {
-    if (this.destroyed) return;
-    const current = this.readState().blockType;
-    if (current === type) {
-      this.editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
-    } else {
-      this.editor.dispatchCommand(
-        type === 'number' ? INSERT_ORDERED_LIST_COMMAND : INSERT_UNORDERED_LIST_COMMAND,
-        undefined,
-      );
-    }
-    this.flush();
-  }
-
-  toggleLink(url: string | null): void {
-    if (this.destroyed) return;
-    this.editor.update(
-      () => {
-        $toggleLink(url && url.trim() ? url.trim() : null);
-      },
-      { discrete: true },
-    );
-  }
-
-  getSelectedLinkUrl(): string | null {
-    let url: string | null = null;
-    this.editor.getEditorState().read(() => {
+  private setBlock(create: () => LexicalNode): void {
+    this.update(() => {
       const selection = $getSelection();
-      if (!$isRangeSelection(selection)) return;
-      for (const node of selection.getNodes()) {
-        const link = $isLinkNode(node) ? node : $isLinkNode(node.getParent()) ? node.getParent() : null;
-        if (link && $isLinkNode(link)) {
-          url = link.getURL();
-          break;
-        }
+      if ($isRangeSelection(selection)) {
+        // Block factories always return ElementNodes; the public ctx type is the
+        // broader LexicalNode for ergonomics.
+        $setBlocksType(selection, create as () => ElementNode);
       }
     });
-    return url;
   }
 
-  insertImage(image: KjImageInsert): void {
-    if (this.destroyed || !image.src) return;
-    this.editor.update(
-      () => {
-        $insertNodes([$createKjImageNode(image)]);
+  private registerShortcut(shortcut: KjRteShortcut, run: () => void): () => void {
+    const parts = shortcut.toLowerCase().split('+');
+    const key = parts[parts.length - 1];
+    const needMod = parts.includes('mod');
+    const needShift = parts.includes('shift');
+    const needAlt = parts.includes('alt');
+    return this.editor.registerCommand(
+      KEY_DOWN_COMMAND,
+      (event: KeyboardEvent) => {
+        const mod = event.ctrlKey || event.metaKey;
+        if (
+          event.key.toLowerCase() === key &&
+          needMod === mod &&
+          needShift === event.shiftKey &&
+          needAlt === event.altKey
+        ) {
+          event.preventDefault();
+          run();
+          return true;
+        }
+        return false;
       },
-      { discrete: true },
+      COMMAND_PRIORITY_HIGH,
     );
   }
 
@@ -459,14 +384,11 @@ export class RichTextEngine {
 
   clear(): void {
     if (this.destroyed) return;
-    this.editor.update(
-      () => {
-        const root = $getRoot();
-        root.clear();
-        root.append($createParagraphNode());
-      },
-      { discrete: true },
-    );
+    this.update(() => {
+      const root = $getRoot();
+      root.clear();
+      root.append($createParagraphNode());
+    });
   }
 
   setEditable(editable: boolean): void {
@@ -486,24 +408,21 @@ export class RichTextEngine {
 
   setHtml(html: string): void {
     if (this.destroyed) return;
-    this.editor.update(
-      () => {
-        const root = $getRoot();
-        root.clear();
-        if (!html) {
-          root.append($createParagraphNode());
-          return;
-        }
-        const dom = new DOMParser().parseFromString(html, 'text/html');
-        const nodes = $generateNodesFromDOM(this.editor, dom);
-        root.select();
-        $insertNodes(nodes);
-        if (root.getChildrenSize() === 0) {
-          root.append($createParagraphNode());
-        }
-      },
-      { discrete: true },
-    );
+    this.update(() => {
+      const root = $getRoot();
+      root.clear();
+      if (!html) {
+        root.append($createParagraphNode());
+        return;
+      }
+      // $generateNodesFromDOM only produces nodes for registered (active) types,
+      // so deserialization automatically respects the active feature/node set.
+      const dom = new DOMParser().parseFromString(html, 'text/html');
+      const nodes = $generateNodesFromDOM(this.editor, dom);
+      root.select();
+      $insertNodes(nodes);
+      if (root.getChildrenSize() === 0) root.append($createParagraphNode());
+    });
   }
 
   getJson(): SerializedEditorState {
@@ -519,7 +438,6 @@ export class RichTextEngine {
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
-    // Dispose any mounted decorator components first.
     for (const mounted of this.mounted.values()) {
       try {
         mounted.destroy();
@@ -538,4 +456,32 @@ export class RichTextEngine {
     this.teardowns = [];
     this.editor.setRootElement(null);
   }
+}
+
+/** Map a top-level element node to a {@link KjBlockType} via its type string. */
+function elementBlockType(element: LexicalNode): KjBlockType {
+  const el = element as unknown as {
+    getType(): string;
+    getTag?(): string;
+    getListType?(): string;
+  };
+  switch (el.getType()) {
+    case 'heading': {
+      const tag = el.getTag?.();
+      return tag === 'h1' || tag === 'h2' || tag === 'h3' ? tag : 'paragraph';
+    }
+    case 'quote':
+      return 'quote';
+    case 'code':
+      return 'code';
+    case 'list':
+      return el.getListType?.() === 'number' ? 'number' : 'bullet';
+    default:
+      return 'paragraph';
+  }
+}
+
+/** Duck-typed link-node check (avoids importing `@lexical/link`). */
+function isLinkNode(node: LexicalNode | null | undefined): boolean {
+  return !!node && (node as unknown as { getType(): string }).getType() === 'link';
 }

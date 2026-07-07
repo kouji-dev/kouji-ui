@@ -16,13 +16,14 @@ composes it with a toolbar and design tokens. **No `@angular/cdk`** (strict repo
 
 | File | Responsibility |
 |---|---|
-| `rich-text-editor.ts` | `KjRichTextEditor` directive (`[kjRichTextEditor]`). Owns the Lexical editor instance, SSR-safe lazy init, reactive state signals, format/block/list/link/history/image commands, value in/out, `ControlValueAccessor`. Provides `KJ_RICH_TEXT`; collects extensions; hosts the Angular decorator mount adapter. |
-| `rich-text.context.ts` | `KJ_RICH_TEXT` context token (signal-context pattern), `KJ_RICH_TEXT_EXTENSIONS` multi-token + `provideKjRichText(...)`, `KJ_RICH_TEXT_NODE` + `injectRichTextNode()`, and the `KjDecoratorMountAdapter` contract. |
-| `rich-text-extension.ts` | `KjRichTextExtensionDirective` (`[kjRichTextExtension]`) — child directive that self-registers an extension with the nearest editor (like `Option`↔`Select`). |
-| `rich-text-plugin.ts` | `KjRichTextExtension` contract (`nodes` lazy factory + `decorators` + `setup`), `KjRichTextContext`, `KjDecoratorRegistration`. `KjRichTextPlugin` kept as a deprecated alias. |
-| `decorator-node.ts` | `createKjDecoratorNode(lexical, config)` — builds a `DecoratorNode` subclass rendered by an Angular component via the bridge. Returns `{ Node, $create, $is }`. No eager Lexical import (receives the namespace). |
-| `engine.ts` | Browser-only orchestrator (lazy). Collects nodes from all extensions **before** `createEditor`, runs setups after, and runs the decorator bridge. Built-in features are themselves extensions. |
-| `image-node.ts` | Self-rendering `KjImageNode` (extends `DecoratorNode`, renders its own `<figure><img>` in `createDOM` — jsdom/SSR safe). Contributed by the built-in `image` extension. |
+| `feature.ts` | The `KjRichTextFeature` contract (`load`/`nodes`/`setup`/`toolbar`/`overlay`/`decorators`), the `KjRichTextContext` (package-agnostic helpers), `KjRteToolbarItem`, `KjRteOverlay`, `KjDecoratorRegistration`. |
+| `rich-text-editor.ts` | `KjRichTextEditor` directive (`[kjRichTextEditor]`). SSR-safe lazy init; merges features (DI + `kjFeatures` + child directives); exposes `state`, `toolbarItems`/`toolbarGroups`, `activeOverlay`, `runItem`; value in/out + `ControlValueAccessor`. Provides `KJ_RICH_TEXT`; hosts the decorator mount adapter. |
+| `rich-text.context.ts` | `KJ_RICH_TEXT` context token, `KJ_RICH_TEXT_FEATURES` multi-token + `provideKjRichText(...)`, `KJ_RICH_TEXT_NODE`/`injectRichTextNode()`, `KJ_RTE_OVERLAY_DATA`/`injectRteOverlayData()`, `KjDecoratorMountAdapter`. |
+| `rich-text-extension.ts` | `KjRichTextExtensionDirective` (`[kjRichTextFeature]`, `[kjRichTextExtension]`) — child directive that self-registers a feature (like `Option`↔`Select`). |
+| `rich-text-plugin.ts` | Deprecated aliases: `KjRichTextExtension`/`KjRichTextPlugin` → `KjRichTextFeature`. |
+| `decorator-node.ts` | `createKjDecoratorNode(lexical, config)` — Angular-rendered decorator node. Returns `{ Node, $create, $is }`. No eager Lexical import. |
+| `image-node.ts` | `createKjImageNode(lexical)` — self-rendering image node (own `<figure><img>` + HTML round-trip). No eager Lexical import; used by the `image` feature. |
+| `engine.ts` | Browser-only orchestrator (lazy). Awaits each feature's `load()`, collects nodes **before** `createEditor`, runs setups, package-agnostic state, decorator bridge. Base editing only is statically imported. |
 | `rich-text-editor.types.ts` | Public types: `KjBlockType`, `KjTextFormat`, `KjRichTextState`, `KjRichTextValue`, `KjImageInsert`. |
 | `index.ts` / `public-api` | Barrel + exports (framework surface is Lexical-free at runtime). |
 
@@ -30,81 +31,84 @@ composes it with a toolbar and design tokens. **No `@angular/cdk`** (strict repo
 inside `afterNextRender`. Only `import type` at module top-level (erased at build → no SSR
 `require`). All commands guard on the engine being non-null; before init they are no-ops.
 
-## Extension framework
+## Feature framework (client-driven)
 
-The core is a **registration framework** so nodes/behaviours can be added from outside the
-engine, in kouji's directive idiom. Built-in features (rich-text, list, link, code, image,
-history, markdown) are themselves extensions.
+The editor is composed from **features** — self-contained vertical slices that each own their
+**package loading**, **nodes**, **behaviour/activation**, and **UI** (toolbar + overlay). The
+client picks features; only chosen features load packages and contribute UI. Built-in editing
+(rich-text base) is the engine floor; everything else is a feature.
 
-**Extension contract** (`KjRichTextExtension`):
-- `nodes?(lexical)` — **lazy** node-class factory, resolved at engine init *after* the dynamic
-  Lexical import, so node classes stay out of the base bundle and SSR-safe. Nodes from **all**
-  extensions are collected **before** `createEditor` (fixing the old flaw where `setup` ran too
-  late to add nodes).
-- `decorators?` — `{ nodeType, component }[]` mapping decorator-node types to Angular components.
-- `setup?(ctx)` — runtime behaviour; `ctx` exposes `editor` + `registerCommand` /
-  `registerNodeTransform` passthroughs; returns an optional teardown.
+**Feature contract** (`KjRichTextFeature`):
+- `load?()` — **lazily imports the feature's own `@lexical/*` package(s)** (`link()` imports
+  `@lexical/link`, `bulletList()` imports `@lexical/list`, …). Each `load` is a per-feature
+  dynamic `import()`, so disabling a feature means its package is never downloaded. Awaited in
+  parallel at engine init.
+- `nodes?()` — node classes (resolved after `load`), collected from **all** features **before**
+  `createEditor`.
+- `setup?(ctx)` — register commands / transforms / keybindings; returns a teardown.
+- `toolbar?: KjRteToolbarItem[]` — declarative contributions `{ id, group, order, icon, label,
+  ariaKeyshortcuts?, kind: 'button'|'toggle', isActive?(state), isDisabled?(state), run(ctx) }`.
+- `overlay?: KjRteOverlay[]` — `{ id, label, component }`; opened via `ctx.openOverlay(id, data)`.
+- `decorators?` — `{ nodeType, component }` for Angular-rendered decorator nodes.
 
-**Node factory** — `createKjDecoratorNode(lexical, { type, component, inline?, ariaLabel? })`
-returns `{ Node, $create, $is }`: a `DecoratorNode` subclass storing JSON `data`, whose
-instances render `component` (which reads its node via `injectRichTextNode()`).
+**Context** (`ctx`, package-agnostic helpers): `editor`, live `state`, `update`/`read`,
+`toggleInlineFormat`, `setBlock(create)`/`setParagraph`, `insertNodes`, `dispatch`,
+`registerCommand`/`registerNodeTransform`/`registerShortcut`, `undo`/`redo`/`focus`,
+`openOverlay`/`closeOverlay`, `announce`. Inline formats (bold/italic) load **no** package.
 
-**Decorator bridge (no CDK)** — the engine registers a Lexical `decoratorListener`; for each
-decorator node it mounts the registered Angular component into the node's DOM using a
-`KjDecoratorMountAdapter` supplied by the directive (`createComponent` + `ApplicationRef` +
-an element injector providing `KJ_RICH_TEXT_NODE`), disposing on node removal / editor destroy.
+**Package-agnostic engine.** The engine statically imports only the base (`lexical`,
+`@lexical/rich-text` for `registerRichText`, `@lexical/selection`, `@lexical/html`). State
+(`blockType`, `isLink`) is derived by `node.getType()` + duck-typing — the engine never imports
+a feature's package. HTML (de)serialization uses `$generateNodesFromDOM`, which only emits nodes
+for **registered (active)** types, so it automatically respects the active node set.
 
-**Registration surfaces** (both kouji-idiomatic):
-- Child directive `[kjRichTextExtension]="ext | ext[]"` — injects `KJ_RICH_TEXT`, registers on
-  `ngOnInit` (before init).
-- `provideKjRichText(...exts)` — multi-provider (`KJ_RICH_TEXT_EXTENSIONS`) for app/route/component
-  scope, like `provideIcons`.
-- Per-instance input `kjExtensions` (`kjPlugins` kept as a deprecated alias).
+**Client composition:**
+- `provideKjRichText(bold(), italic(), link(), …)` — multi-provider (`KJ_RICH_TEXT_FEATURES`).
+- `[kjFeatures]` input (per-instance) / `[kjRichTextFeature]` child directive.
+- `defaultFeatures()` — the full bundle, so zero-config still gives the complete editor.
+
+**Node factories** (SSR-safe — receive the `lexical` namespace, no eager import):
+`createKjDecoratorNode(lexical, cfg) → { Node, $create, $is }` (Angular-rendered node) and
+`createKjImageNode(lexical) → { Node, $create, $is }` (self-rendering image). The decorator
+bridge mounts Angular components via a `KjDecoratorMountAdapter` (`createComponent` +
+`ApplicationRef` + an element injector providing `KJ_RICH_TEXT_NODE`), disposing on removal.
 
 ```ts
-// Define + register a custom node in ~10 lines, from outside the engine:
+// A custom feature: its own node + toolbar button, from outside the engine.
 const badge = createKjDecoratorNode(lexical, { type: 'badge', component: BadgeChip, inline: true });
-export const badgeExtension: KjRichTextExtension = {
+export const badgeFeature: KjRichTextFeature = {
   name: 'badge',
   nodes: () => [badge.Node],
   decorators: [{ nodeType: 'badge', component: BadgeChip }],
+  toolbar: [{ id: 'badge', group: 'insert', order: 20, icon: 'sparkles', label: 'Insert badge',
+    kind: 'button', run: (ctx) => ctx.insertNodes(() => [badge.$create({ label: 'New' })]) }],
 };
-// <div kjRichTextEditor [kjRichTextExtension]="badgeExtension"></div>
-// editor.update(() => $insertNodes([badge.$create({ label: 'New' })]));
+// <kj-rich-text-editor [kjFeatures]="[...defaultFeatures(), badgeFeature]" />
 ```
 
-**Reactive state** (signals, updated from a Lexical `registerUpdateListener` +
-`SELECTION_CHANGE`/`CAN_UNDO`/`CAN_REDO` command listeners):
-- `activeFormats: Signal<Set<KjTextFormat>>` — bold/italic/underline/strikethrough/code
-- `blockType: Signal<KjBlockType>` — paragraph/h1/h2/h3/quote/code/bullet/number
-- `canUndo`, `canRedo`, `isLink`, `empty`, `focused` — booleans
-- convenience computeds: `isBold`, `isItalic`, … for template ergonomics
-
-**Commands** (public methods; no-op until initialized):
-`toggleFormat(f)`, `setBlock(b)`, `toggleList('bullet'|'number')`, `toggleLink(url|null)`,
-`getSelectedLinkUrl()`, `insertImage({src,alt})`, `undo()`, `redo()`, `focus()`, `clear()`,
-`getHtml()`, `setHtml()`, `getJson()`, `setJson()`.
-
-**Value I/O + forms.** `kjValue` input (HTML string) / `valueChange`, `htmlChange`,
-`jsonChange`, `textChange` outputs. Implements `ControlValueAccessor` (HTML string is the
-model) so it drops into template & reactive forms.
-
-**Keyboard shortcuts** wired inside the editor: Ctrl/Cmd+B/I/U (bold/italic/underline),
-Ctrl/Cmd+K (link), plus Lexical's built-in undo/redo (Ctrl/Cmd+Z / Shift+Z) and
-markdown shortcuts (`# `, `- `, `1. `, `> `, ``` ``` ```, `**`, `*`, `` ` ``).
+**Value I/O + forms.** `kjValue` input (HTML) + `valueChange`/`textChange`/`jsonChange` outputs;
+`ControlValueAccessor` (HTML string model). **Reactive state**: `state` signal +
+`isBold`/`blockType`/`canUndo`/… computeds. **Keyboard**: features register their own shortcuts
+(Ctrl/Cmd+B/I/U, Ctrl/Cmd+K), plus Lexical undo/redo + markdown shortcuts.
 
 ### Components — `@kouji-ui/components/src/rich-text/`
 
 | File | Responsibility |
 |---|---|
-| `rich-text-editor.ts` | `KjRichTextEditorComponent` (`kj-rich-text-editor`). Renders a labelled `role="toolbar"` (roving tabindex) of formatting controls + a `contenteditable` host carrying the core directive, plus inline (non-CDK) link and image entry forms shown in normal flow when their toolbar control is toggled. Forwards value I/O + `kjLabel`/`kjPlaceholder`. Composes core. |
-| `rich-text-editor.css` | Themed styles via CSS custom properties (`--kj-rte-*`), light/dark (via shared tokens), reduced-motion, focus rings, AAA touch targets, content typography (headings/lists/quote/code/link/image). |
-| `index.ts` | Barrel. |
+| `rich-text-editor.ts` | `KjRichTextEditorComponent` (`kj-rich-text-editor`). Renders a **dynamic** `role="toolbar"` from `ed.toolbarGroups()` (roving tabindex, `aria-pressed` on toggles) — no hardcoded buttons. Feature overlays render via `NgComponentOutlet` in a `role="dialog"` popover. `kjFeatures` defaults to `defaultFeatures()`. |
+| `features/*.ts` | The feature factories: `bold`/`italic`/`underline`/`strike`/`inlineCode`, `heading`, `bulletList`/`orderedList`, `quote`, `codeBlock`, `link`, `image`, `markdownShortcuts`, `history`, + `defaultFeatures()`. Each `load()`s its own package. |
+| `overlays/*.ts` | `LinkEditor`, `ImageEditor` overlay components (contributed by the link/image features). |
+| `rich-text-editor.css` | Themed styles via `--kj-rte-*`, reduced-motion, focus rings, AAA touch targets, overlay + content typography. |
 
 Toolbar buttons use `kjRovingTabindexItem` (single tab stop, arrow-key nav — WCAG toolbar
-pattern). `aria-pressed` reflects `activeFormats`. A `kjLiveRegion` announces format/block
-changes ("Bold on", "Heading 1"). Icons via `kjIcon` (lucide), decorative buttons carry
-`aria-label`. Touch targets ≥ 44px.
+pattern). `aria-pressed` reflects toggle state; `aria-keyshortcuts` advertises shortcuts. A
+`kjLiveRegion` announces format/block changes + feature announcements. Touch targets ≥ 44px.
+
+> **Overlay note (honest):** feature overlays render in a scoped, accessible `role="dialog"`
+> popover managed by the RTE component (no CDK, Esc/outside dismissable, focus-managed) rather
+> than the shared `KjOverlayService` — the repo's connected-overlay path is directive-based and
+> doesn't fit dynamic per-feature components cleanly. The `overlay` contribution API is engine-
+> agnostic and ready to route to `KjOverlayService` in a follow-up.
 
 ## Scope shipped
 

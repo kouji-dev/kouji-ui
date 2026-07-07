@@ -1,197 +1,195 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { describe, expect, test, beforeEach, afterEach, vi } from 'vitest';
 import * as lexical from 'lexical';
-import { $getRoot, $isTextNode, $insertNodes } from 'lexical';
+import { $getRoot, $isTextNode } from 'lexical';
+import * as richText from '@lexical/rich-text';
 import { createRichTextEngine, type RichTextEngine } from './engine';
+import { createKjDecoratorNode } from './decorator-node';
+import type { KjRichTextFeature } from './feature';
 import type { KjRichTextState } from './rich-text-editor.types';
 import { KjRichTextEditor } from './rich-text-editor';
 import { KjRichTextExtensionDirective } from './rich-text-extension';
-import { createKjDecoratorNode } from './decorator-node';
-import type { KjRichTextExtension } from './rich-text-plugin';
 import {
   KJ_RICH_TEXT,
   provideKjRichText,
-  KJ_RICH_TEXT_EXTENSIONS,
+  KJ_RICH_TEXT_FEATURES,
   type KjDecoratorMountAdapter,
   type KjRichTextHost,
 } from './rich-text.context';
 
-/** A trivial standalone component used as a decorator-node target in tests. */
 @Component({ selector: 'kj-test-chip', standalone: true, template: `chip` })
 class TestChip {}
 
-/** Insert a node produced by `$create` after selecting the end of the document. */
-function insertNode(engine: RichTextEngine, create: () => lexical.LexicalNode): void {
-  engine.editor.update(
-    () => {
-      $getRoot().selectEnd();
-      $insertNodes([create()]);
-    },
-    { discrete: true },
-  );
-}
-
-/** Fully select the text of the first text node so formatting commands apply. */
+/** Fully select the first text node so formatting commands apply. */
 function selectAllText(engine: RichTextEngine): void {
   engine.editor.update(
     () => {
       const node = $getRoot().getFirstDescendant();
-      if ($isTextNode(node)) {
-        node.select(0, node.getTextContentSize());
-      }
+      if ($isTextNode(node)) node.select(0, node.getTextContentSize());
     },
     { discrete: true },
   );
 }
 
-describe('RichTextEngine (commands + state)', () => {
+/** A heading feature built from statically-imported @lexical/rich-text (test only). */
+function headingFeature(loadSpy?: () => void): KjRichTextFeature {
+  return {
+    name: 'heading',
+    load: loadSpy
+      ? async () => {
+          loadSpy();
+        }
+      : undefined,
+    nodes: () => [richText.HeadingNode],
+    toolbar: [
+      {
+        id: 'h1',
+        group: 'block',
+        order: 0,
+        icon: 'heading-1',
+        label: 'Heading 1',
+        kind: 'toggle',
+        isActive: (s) => s.blockType === 'h1',
+        run: (ctx) => ctx.setBlock(() => richText.$createHeadingNode('h1')),
+      },
+    ],
+  };
+}
+
+describe('RichTextEngine (feature-composed)', () => {
   let host: HTMLDivElement;
   let engine: RichTextEngine;
   let lastState: KjRichTextState | undefined;
-  let lastText = '';
 
-  function mount(initialHtml?: string): void {
-    engine = createRichTextEngine(
-      host,
-      { initialHtml },
-      {
-        onState: (s) => (lastState = s),
-        onValue: (v) => {
-          lastText = v.text;
-        },
-      },
-    );
+  async function mount(config: Parameters<typeof createRichTextEngine>[1] = {}): Promise<void> {
+    engine = await createRichTextEngine(host, config, {
+      onState: (s) => (lastState = s),
+      onValue: () => {},
+    });
   }
 
   beforeEach(() => {
     host = document.createElement('div');
     document.body.appendChild(host);
   });
-
   afterEach(() => {
     engine?.destroy();
     host.remove();
     lastState = undefined;
-    lastText = '';
   });
 
-  test('parses initial HTML into html + text', () => {
-    mount('<p>Hello world</p>');
-    expect(engine.getHtml()).toContain('Hello world');
-    expect(lastText).toContain('Hello world');
-  });
-
-  test('empty state reflects no content', () => {
-    mount();
-    expect(lastState?.empty).toBe(true);
-    expect(lastState?.blockType).toBe('paragraph');
-    expect(lastState?.canUndo).toBe(false);
-  });
-
-  test('setHtml replaces content and reports it', () => {
-    mount('<p>one</p>');
-    engine.setHtml('<p>two</p>');
-    expect(engine.getHtml()).toContain('two');
-    expect(engine.getHtml()).not.toContain('one');
-    expect(lastState?.empty).toBe(false);
-  });
-
-  test('clear() empties the document', () => {
-    mount('<p>content</p>');
-    engine.clear();
-    expect(engine.editor.getEditorState().read(() => $getRoot().getTextContent())).toBe('');
-    expect(lastState?.empty).toBe(true);
-  });
-
-  test('toggleFormat bold marks the selection bold', () => {
-    mount('<p>bold me</p>');
+  test('base editing works with zero features (bold via context)', async () => {
+    await mount({ initialHtml: '<p>bold me</p>' });
     selectAllText(engine);
-    engine.toggleFormat('bold');
+    engine.context.toggleInlineFormat('bold');
     expect(lastState?.activeFormats.has('bold')).toBe(true);
     expect(engine.getHtml()).toMatch(/<(b|strong)/);
   });
 
-  test('setBlock h1 converts the paragraph to a heading', () => {
-    mount('<p>title</p>');
+  test('feature load() is awaited and its nodes collected before createEditor', async () => {
+    const loadSpy = vi.fn();
+    await mount({ initialHtml: '<p>title</p>', features: [headingFeature(loadSpy)] });
+    expect(loadSpy).toHaveBeenCalledTimes(1);
     selectAllText(engine);
-    engine.setBlock('h1');
+    // Inserting a heading only works if HeadingNode was registered.
+    engine.context.setBlock(() => richText.$createHeadingNode('h1'));
     expect(engine.getHtml()).toContain('<h1');
     expect(lastState?.blockType).toBe('h1');
   });
 
-  test('setBlock quote and code produce the right blocks', () => {
-    mount('<p>q</p>');
+  test('block type is derived package-agnostically', async () => {
+    await mount({ initialHtml: '<p>x</p>', features: [headingFeature()] });
     selectAllText(engine);
-    engine.setBlock('quote');
-    expect(engine.getHtml()).toContain('<blockquote');
-    expect(lastState?.blockType).toBe('quote');
-
+    engine.context.setBlock(() => richText.$createHeadingNode('h1'));
+    expect(lastState?.blockType).toBe('h1');
     selectAllText(engine);
-    engine.setBlock('code');
-    expect(lastState?.blockType).toBe('code');
-  });
-
-  test('toggleList bullet then off', () => {
-    mount('<p>item</p>');
-    selectAllText(engine);
-    engine.toggleList('bullet');
-    expect(engine.getHtml()).toContain('<ul');
-    expect(lastState?.blockType).toBe('bullet');
-
-    selectAllText(engine);
-    engine.toggleList('bullet');
+    engine.context.setParagraph();
     expect(lastState?.blockType).toBe('paragraph');
   });
 
-  test('toggleLink wraps and unwraps the selection', () => {
-    mount('<p>link me</p>');
-    selectAllText(engine);
-    engine.toggleLink('https://example.com');
-    expect(engine.getHtml()).toContain('href="https://example.com"');
-    expect(engine.getSelectedLinkUrl()).toBe('https://example.com');
-
-    selectAllText(engine);
-    engine.toggleLink(null);
-    expect(engine.getHtml()).not.toContain('href=');
-  });
-
-  test('insertImage inserts an accessible image node', () => {
-    mount('<p>x</p>');
-    selectAllText(engine);
-    engine.insertImage({ src: 'https://example.com/a.png', alt: 'An A' });
-    const html = engine.getHtml();
-    expect(html).toContain('<img');
-    expect(html).toContain('alt="An A"');
-  });
-
-  test('undo restores the previous content', () => {
-    mount('<p>start</p>');
-    selectAllText(engine);
-    engine.setBlock('h1');
-    expect(engine.getHtml()).toContain('<h1');
-    engine.undo();
-    expect(engine.getHtml()).not.toContain('<h1');
-  });
-
-  test('JSON round-trips through get/setJson', () => {
-    mount('<p>json content</p>');
-    const json = engine.getJson();
-    engine.clear();
-    expect(engine.getHtml()).not.toContain('json content');
-    engine.setJson(json);
-    expect(engine.getHtml()).toContain('json content');
-  });
-
-  test('commands are inert after destroy', () => {
-    mount('<p>done</p>');
+  test('feature setup teardown runs on destroy', async () => {
+    const teardown = vi.fn();
+    const feature: KjRichTextFeature = { name: 'x', setup: () => teardown };
+    await mount({ features: [feature] });
+    expect(teardown).not.toHaveBeenCalled();
     engine.destroy();
-    // Should not throw.
-    engine.toggleFormat('bold');
-    engine.setBlock('h1');
-    engine.undo();
+    expect(teardown).toHaveBeenCalledTimes(1);
+  });
+
+  test('a feature can open an overlay through the context', async () => {
+    const onOverlayOpen = vi.fn();
+    const feature: KjRichTextFeature = {
+      name: 'ov',
+      toolbar: [
+        {
+          id: 'ov',
+          group: 'insert',
+          order: 0,
+          icon: 'link',
+          label: 'Open',
+          kind: 'button',
+          run: (ctx) => ctx.openOverlay('ov', { hello: 1 }),
+        },
+      ],
+    };
+    await mount({ features: [feature], onOverlayOpen });
+    feature.toolbar![0].run(engine.context);
+    expect(onOverlayOpen).toHaveBeenCalledWith('ov', { hello: 1 });
+  });
+
+  test('mounts and disposes an Angular component for a decorator node', async () => {
+    const badge = createKjDecoratorNode(lexical, {
+      type: 'test-decorator',
+      component: TestChip,
+      inline: true,
+    });
+    const mount = vi.fn();
+    const destroy = vi.fn();
+    const adapter: KjDecoratorMountAdapter = {
+      mount: (component, node) => {
+        mount(component, node);
+        return { element: document.createElement('span'), destroy };
+      },
+    };
+    engine = await createRichTextEngine(
+      host,
+      {
+        initialHtml: '<p>x</p>',
+        features: [
+          {
+            name: 'badge',
+            nodes: () => [badge.Node],
+            decorators: [{ nodeType: 'test-decorator', component: TestChip }],
+          },
+        ],
+        mount: adapter,
+      },
+      { onState: () => {}, onValue: () => {} },
+    );
+    engine.editor.update(
+      () => {
+        $getRoot().selectEnd();
+        lexical.$insertNodes([badge.$create({ label: 'y' })]);
+      },
+      { discrete: true },
+    );
+    expect(mount).toHaveBeenCalledTimes(1);
+    expect(mount.mock.calls[0][0]).toBe(TestChip);
+    engine.destroy();
+    expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
+  test('HTML round-trips and clear empties the document', async () => {
+    await mount({ initialHtml: '<p>hello world</p>' });
+    expect(engine.getHtml()).toContain('hello world');
+    engine.clear();
+    expect(engine.editor.getEditorState().read(() => $getRoot().getTextContent())).toBe('');
   });
 });
+
+// -- directive -----------------------------------------------------------
 
 @Component({
   standalone: true,
@@ -202,10 +200,8 @@ class HostComponent {
   readonly readonly = signal(false);
 }
 
-describe('KjRichTextEditor directive (a11y host)', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [HostComponent] });
-  });
+describe('KjRichTextEditor directive', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [HostComponent] }));
 
   test('exposes textbox role and aria-multiline', () => {
     const fixture = TestBed.createComponent(HostComponent);
@@ -225,113 +221,41 @@ describe('KjRichTextEditor directive (a11y host)', () => {
   });
 });
 
-describe('extension framework', () => {
-  let host: HTMLDivElement;
-  let engine: RichTextEngine;
+@Component({
+  standalone: true,
+  imports: [KjRichTextEditor],
+  providers: [provideKjRichText(headingFeature())],
+  template: `<div kjRichTextEditor></div>`,
+})
+class ToolbarHost {}
 
-  beforeEach(() => {
-    host = document.createElement('div');
-    document.body.appendChild(host);
-  });
-  afterEach(() => {
-    engine?.destroy();
-    host.remove();
-  });
-
-  test('collects extension-contributed nodes before createEditor', () => {
-    const badge = createKjDecoratorNode(lexical, {
-      type: 'test-badge',
-      component: TestChip,
-      inline: true,
-    });
-    engine = createRichTextEngine(
-      host,
-      { initialHtml: '<p>hi</p>', extensions: [{ name: 'badge', nodes: () => [badge.Node] }] },
-      { onState() {}, onValue() {} },
-    );
-    // Inserting a node of a type only known to the extension proves it was
-    // collected into createEditor (otherwise Lexical throws "not registered").
-    insertNode(engine, () => badge.$create({ label: 'x' }));
-
-    const types: string[] = [];
-    engine.editor.getEditorState().read(() => {
-      const walk = (node: lexical.LexicalNode): void => {
-        types.push(node.getType());
-        const el = node as unknown as { getChildren?: () => lexical.LexicalNode[] };
-        el.getChildren?.().forEach(walk);
-      };
-      walk($getRoot());
-    });
-    expect(types).toContain('test-badge');
+describe('feature composition → toolbar contract', () => {
+  test('aggregates + groups provided features into sorted toolbar items', () => {
+    TestBed.configureTestingModule({ imports: [ToolbarHost] });
+    const fixture = TestBed.createComponent(ToolbarHost);
+    fixture.detectChanges();
+    const ed = fixture.debugElement
+      .query(By.directive(KjRichTextEditor))
+      .injector.get(KjRichTextEditor);
+    expect(ed.toolbarItems().map((i) => i.id)).toContain('h1');
+    expect(ed.toolbarGroups().some((g) => g.group === 'block')).toBe(true);
   });
 
-  test('runs extension setup and calls its teardown on destroy', () => {
-    const teardown = vi.fn();
-    const setup = vi.fn(() => teardown);
-    engine = createRichTextEngine(
-      host,
-      { extensions: [{ name: 'x', setup }] },
-      { onState() {}, onValue() {} },
-    );
-    expect(setup).toHaveBeenCalledTimes(1);
-    expect(teardown).not.toHaveBeenCalled();
-    engine.destroy();
-    expect(teardown).toHaveBeenCalledTimes(1);
-  });
-
-  test('mounts an Angular component for a decorator node and disposes it', () => {
-    const badge = createKjDecoratorNode(lexical, {
-      type: 'test-decorator',
-      component: TestChip,
-      inline: true,
-    });
-    const mount = vi.fn();
-    const destroy = vi.fn();
-    const adapter: KjDecoratorMountAdapter = {
-      mount: (component, node) => {
-        mount(component, node);
-        return { element: document.createElement('span'), destroy };
-      },
-    };
-    engine = createRichTextEngine(
-      host,
-      {
-        initialHtml: '<p>x</p>',
-        extensions: [
-          {
-            name: 'badge',
-            nodes: () => [badge.Node],
-            decorators: [{ nodeType: 'test-decorator', component: TestChip }],
-          },
-        ],
-        mount: adapter,
-      },
-      { onState() {}, onValue() {} },
-    );
-    insertNode(engine, () => badge.$create({ label: 'y' }));
-    expect(mount).toHaveBeenCalledTimes(1);
-    expect(mount.mock.calls[0][0]).toBe(TestChip);
-    engine.destroy();
-    expect(destroy).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('provideKjRichText + KjRichTextExtensionDirective', () => {
-  test('provideKjRichText returns multi providers for the extensions token', () => {
-    const ext: KjRichTextExtension = { name: 'a' };
-    const providers = provideKjRichText(ext) as Array<{
+  test('provideKjRichText returns multi providers for the features token', () => {
+    const feature: KjRichTextFeature = { name: 'a' };
+    const providers = provideKjRichText(feature) as Array<{
       provide: unknown;
       multi: boolean;
       useValue: unknown;
     }>;
     expect(providers).toHaveLength(1);
-    expect(providers[0].provide).toBe(KJ_RICH_TEXT_EXTENSIONS);
+    expect(providers[0].provide).toBe(KJ_RICH_TEXT_FEATURES);
     expect(providers[0].multi).toBe(true);
-    expect(providers[0].useValue).toBe(ext);
+    expect(providers[0].useValue).toBe(feature);
   });
 
-  test('the extension directive registers with the host context on init', () => {
-    const registered: KjRichTextExtension[] = [];
+  test('the feature directive registers with the host on init', () => {
+    const registered: KjRichTextFeature[] = [];
     const fakeHost: KjRichTextHost = {
       editor: signal(null),
       state: signal({
@@ -342,17 +266,18 @@ describe('provideKjRichText + KjRichTextExtensionDirective', () => {
         isLink: false,
         empty: true,
       }),
-      registerExtension: (e) => registered.push(e),
+      toolbarItems: signal([]),
+      registerFeature: (f) => registered.push(f),
     };
 
     @Component({
       standalone: true,
       imports: [KjRichTextExtensionDirective],
       providers: [{ provide: KJ_RICH_TEXT, useValue: fakeHost }],
-      template: `<div [kjRichTextExtension]="ext"></div>`,
+      template: `<div [kjRichTextFeature]="feature"></div>`,
     })
     class ExtHost {
-      ext: KjRichTextExtension = { name: 'z' };
+      feature: KjRichTextFeature = { name: 'z' };
     }
 
     TestBed.configureTestingModule({ imports: [ExtHost] });

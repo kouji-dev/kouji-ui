@@ -2,6 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjRichTextEditorComponent } from './rich-text-editor';
+import { bold, italic, link } from './features/index';
 
 @Component({
   standalone: true,
@@ -88,5 +89,31 @@ describe('KjRichTextEditorComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.kj-rte__toolbar')).toBeNull();
     expect(fixture.nativeElement.querySelector('.kj-rte__content')).not.toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [KjRichTextEditorComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-rich-text-editor [kjFeatures]="features" />`,
+})
+class MinimalHost {
+  features = [bold(), italic(), link()];
+}
+
+describe('KjRichTextEditorComponent — dynamic toolbar', () => {
+  test('renders only the enabled features (subset shrinks the toolbar)', () => {
+    TestBed.configureTestingModule({ imports: [MinimalHost] });
+    const fixture = TestBed.createComponent(MinimalHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('button[aria-label="Bold"]')).not.toBeNull();
+    expect(root.querySelector('button[aria-label="Italic"]')).not.toBeNull();
+    expect(root.querySelector('button[aria-label="Link"]')).not.toBeNull();
+    // Disabled features contribute no toolbar buttons.
+    expect(root.querySelector('button[aria-label="Undo"]')).toBeNull();
+    expect(root.querySelector('button[aria-label="Bullet list"]')).toBeNull();
+    expect(root.querySelector('button[aria-label="Heading 1"]')).toBeNull();
   });
 });

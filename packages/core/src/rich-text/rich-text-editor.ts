@@ -21,20 +21,15 @@ import { isPlatformBrowser } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import type { LexicalEditor, SerializedEditorState } from 'lexical';
 import type { RichTextEngine } from './engine';
-import type { KjRichTextExtension } from './rich-text-plugin';
+import type { KjRichTextFeature, KjRteOverlay, KjRteToolbarItem } from './feature';
 import {
   KJ_RICH_TEXT,
-  KJ_RICH_TEXT_EXTENSIONS,
+  KJ_RICH_TEXT_FEATURES,
   KJ_RICH_TEXT_NODE,
   type KjDecoratorMountAdapter,
   type KjRichTextHost,
 } from './rich-text.context';
-import type {
-  KjBlockType,
-  KjImageInsert,
-  KjRichTextState,
-  KjTextFormat,
-} from './rich-text-editor.types';
+import type { KjBlockType, KjRichTextState, KjTextFormat } from './rich-text-editor.types';
 
 const EMPTY_STATE: KjRichTextState = {
   activeFormats: new Set<KjTextFormat>(),
@@ -45,28 +40,40 @@ const EMPTY_STATE: KjRichTextState = {
   empty: true,
 };
 
+/** Stable ordering for toolbar groups; unknown groups sort last, alphabetically. */
+const GROUP_ORDER = ['format', 'block', 'list', 'insert', 'history'];
+
+/** A resolved open overlay: its descriptor plus the data the feature passed. */
+export interface KjActiveOverlay {
+  readonly overlay: KjRteOverlay;
+  readonly data: unknown;
+}
+
+/** A contiguous run of toolbar items sharing a group, for rendering. */
+export interface KjRteToolbarGroup {
+  readonly group: string;
+  readonly items: readonly KjRteToolbarItem[];
+}
+
 /**
- * Headless rich-text editor wrapping [Lexical](https://lexical.dev).
+ * Headless, client-driven rich-text editor wrapping [Lexical](https://lexical.dev).
  *
  * Apply to a block element to turn it into an editable, accessible surface
- * (`role="textbox"`, `aria-multiline`). The Lexical engine is loaded lazily via
- * dynamic `import()` inside `afterNextRender`, so this directive is SSR-safe and
- * adds nothing to the initial bundle until it renders in the browser.
+ * (`role="textbox"`, `aria-multiline`). The editor is composed from **features**
+ * (see {@link KjRichTextFeature}) supplied via {@link provideKjRichText}, the
+ * `kjFeatures` input, or `[kjRichTextExtension]` child directives. Each feature
+ * lazily loads its own `@lexical/*` package(s) in the browser, so disabling a
+ * feature keeps its code out of the bundle. SSR-safe: the engine loads via
+ * dynamic `import()` inside `afterNextRender`.
  *
- * Exposes reactive state signals (`isBold`, `blockType`, `canUndo`, …) and
- * imperative commands (`toggleFormat`, `setBlock`, `toggleLink`, …) for a
- * toolbar to bind to, and implements {@link ControlValueAccessor} (HTML string
- * model) for use with Angular forms.
+ * Exposes the aggregated {@link toolbarItems}, reactive `state`, and imperative
+ * helpers (`runItem`, `undo`, …) for a dynamic toolbar to bind to, and
+ * implements {@link ControlValueAccessor} (HTML string model) for Angular forms.
  *
- * @example
- * ```html
- * <div kjRichTextEditor #ed="kjRichTextEditor" [(ngModel)]="html"></div>
- * <button (click)="ed.toggleFormat('bold')" [attr.aria-pressed]="ed.isBold()">B</button>
- * ```
  * @doc-category Core/Forms
  * @doc
  * @doc-name rich-text-editor
- * @doc-description Headless Lexical-powered rich-text editor directive with reactive state and form control support.
+ * @doc-description Headless, feature-composed Lexical rich-text editor directive with a dynamic toolbar contract and form support.
  * @doc-is-main
  */
 @Directive({
@@ -93,20 +100,19 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly envInjector = inject(EnvironmentInjector);
   private readonly appRef = inject(ApplicationRef);
-  /** App-/scope-wide extensions contributed via {@link provideKjRichText}. */
-  private readonly providedExtensions = inject(KJ_RICH_TEXT_EXTENSIONS, { optional: true }) ?? [];
-  /** Extensions registered by child directives via {@link registerExtension}. */
-  private readonly childExtensions: KjRichTextExtension[] = [];
+  /** App-/scope-wide features contributed via {@link provideKjRichText}. */
+  private readonly providedFeatures = inject(KJ_RICH_TEXT_FEATURES, { optional: true }) ?? [];
+  /** Features registered by child directives via {@link registerFeature}. */
+  private readonly childFeatures = signal<readonly KjRichTextFeature[]>([]);
 
   /** Initial content as an HTML string. Ongoing edits are reported via outputs / forms. */
   readonly kjValue = input<string>('');
-  /** Additional extensions appended to the built-in set (history, lists, markdown, …). */
-  readonly kjExtensions = input<readonly KjRichTextExtension[]>([]);
-  /**
-   * @deprecated Renamed to {@link kjExtensions}. Still honored (merged) for
-   * backwards compatibility.
-   */
-  readonly kjPlugins = input<readonly KjRichTextExtension[]>([]);
+  /** Per-instance features, merged with provided + child-registered features. */
+  readonly kjFeatures = input<readonly KjRichTextFeature[]>([]);
+  /** @deprecated Renamed to {@link kjFeatures}. Still honored (merged). */
+  readonly kjExtensions = input<readonly KjRichTextFeature[]>([]);
+  /** @deprecated Renamed to {@link kjFeatures}. Still honored (merged). */
+  readonly kjPlugins = input<readonly KjRichTextFeature[]>([]);
   /** Makes the editor non-editable while still selectable. */
   readonly kjReadonly = input<boolean>(false);
   /** Native spellcheck toggle. */
@@ -120,6 +126,8 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   readonly textChange = output<string>();
   /** Emits the Lexical `SerializedEditorState` whenever the document changes. */
   readonly jsonChange = output<SerializedEditorState>();
+  /** Emits messages a feature asked to announce to assistive technology. */
+  readonly announce = output<string>();
 
   private readonly editorSig = signal<LexicalEditor | null>(null);
   /** The live Lexical editor instance, or `null` before initialization. */
@@ -137,6 +145,50 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   readonly canRedo = computed(() => this.state().canRedo);
   readonly isLink = computed(() => this.state().isLink);
   readonly empty = computed(() => this.state().empty);
+
+  /** All active features (provided + inputs + child-registered). */
+  private readonly features = computed<readonly KjRichTextFeature[]>(() => [
+    ...this.providedFeatures,
+    ...this.kjFeatures(),
+    ...this.kjExtensions(),
+    ...this.kjPlugins(),
+    ...this.childFeatures(),
+  ]);
+
+  /** Toolbar items contributed by active features, sorted by group then order. */
+  readonly toolbarItems = computed<readonly KjRteToolbarItem[]>(() =>
+    this.features()
+      .flatMap((feature) => feature.toolbar ?? [])
+      .slice()
+      .sort((a, b) => {
+        const ga = GROUP_ORDER.indexOf(a.group);
+        const gb = GROUP_ORDER.indexOf(b.group);
+        const oa = ga === -1 ? GROUP_ORDER.length : ga;
+        const ob = gb === -1 ? GROUP_ORDER.length : gb;
+        if (oa !== ob) return oa - ob;
+        if (a.group !== b.group) return a.group.localeCompare(b.group);
+        return a.order - b.order;
+      }),
+  );
+
+  /** Toolbar items grouped into contiguous runs (for rendering separators). */
+  readonly toolbarGroups = computed<readonly KjRteToolbarGroup[]>(() => {
+    const groups: { group: string; items: KjRteToolbarItem[] }[] = [];
+    for (const item of this.toolbarItems()) {
+      const last = groups[groups.length - 1];
+      if (!last || last.group !== item.group) groups.push({ group: item.group, items: [item] });
+      else last.items.push(item);
+    }
+    return groups;
+  });
+
+  /** Overlay descriptors contributed by active features. */
+  private readonly overlays = computed<readonly KjRteOverlay[]>(() =>
+    this.features().flatMap((feature) => feature.overlay ?? []),
+  );
+
+  /** The overlay currently open (opened by a feature), or `null`. */
+  readonly activeOverlay = signal<KjActiveOverlay | null>(null);
 
   /** @internal CVA disabled flag. */
   readonly disabledState = signal(false);
@@ -158,7 +210,6 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
       this.engine = null;
     });
 
-    // React to readonly / disabled input changes after the engine exists.
     effect(() => {
       const editable = !this.kjReadonly() && !this.disabledState();
       this.engine?.setEditable(editable);
@@ -169,20 +220,17 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
       const { createRichTextEngine } = await import('./engine');
       if (this.destroyed) return;
       const initial = this.pendingValue ?? this.kjValue();
-      const extensions: KjRichTextExtension[] = [
-        ...this.providedExtensions,
-        ...this.kjExtensions(),
-        ...this.kjPlugins(),
-        ...this.childExtensions,
-      ];
       this.applyingExternal = true;
-      const engine = createRichTextEngine(
+      const engine = await createRichTextEngine(
         this.el.nativeElement,
         {
           initialHtml: initial,
-          extensions,
+          features: this.features(),
           namespace: this.kjNamespace(),
           mount: this.createMountAdapter(),
+          onOverlayOpen: (id, data) => this.openOverlayById(id, data),
+          onOverlayClose: () => this.activeOverlay.set(null),
+          onAnnounce: (message) => this.announce.emit(message),
         },
         {
           onState: (s) => this.state.set(s),
@@ -190,6 +238,10 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
         },
       );
       this.applyingExternal = false;
+      if (this.destroyed) {
+        engine.destroy();
+        return;
+      }
       this.engine = engine;
       this.editorSig.set(engine.editor);
       this.pendingValue = null;
@@ -207,71 +259,44 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
     this.jsonChange.emit(json);
   }
 
-  /**
-   * Register an extension with this editor. Contributed nodes only take effect if
-   * registered before initialization (during a child directive's `ngOnInit`, or
-   * via {@link provideKjRichText}). `setup`-only extensions can be added anytime
-   * a new editor initializes.
-   */
-  registerExtension(extension: KjRichTextExtension): void {
-    this.childExtensions.push(extension);
+  private openOverlayById(id: string, data: unknown): void {
+    const overlay = this.overlays().find((o) => o.id === id);
+    if (overlay) this.activeOverlay.set({ overlay, data });
   }
 
-  /** Build the Angular mount adapter the engine uses for decorator-node components. */
-  private createMountAdapter(): KjDecoratorMountAdapter {
-    return {
-      mount: (component, node) => {
-        const elementInjector = Injector.create({
-          parent: this.envInjector,
-          providers: [{ provide: KJ_RICH_TEXT_NODE, useValue: node }],
-        });
-        const ref = createComponent(component as Type<unknown>, {
-          environmentInjector: this.envInjector,
-          elementInjector,
-        });
-        this.appRef.attachView(ref.hostView);
-        return {
-          element: ref.location.nativeElement as HTMLElement,
-          destroy: () => {
-            this.appRef.detachView(ref.hostView);
-            ref.destroy();
-          },
-        };
-      },
-    };
+  // -- feature registration + toolbar API ----------------------------------
+
+  /** {@inheritDoc KjRichTextHost.registerFeature} */
+  registerFeature(feature: KjRichTextFeature): void {
+    this.childFeatures.update((list) => [...list, feature]);
   }
 
-  // -- commands (no-ops until initialized) ---------------------------------
-
-  /** Toggle an inline text format on the selection. */
-  toggleFormat(format: KjTextFormat): void {
-    this.engine?.toggleFormat(format);
+  /** @deprecated Renamed to {@link registerFeature}. */
+  registerExtension(feature: KjRichTextFeature): void {
+    this.registerFeature(feature);
   }
 
-  /** Convert the selected block(s) to a paragraph, heading, quote, or code block. */
-  setBlock(block: Exclude<KjBlockType, 'bullet' | 'number'>): void {
-    this.engine?.setBlock(block);
+  /** Run a toolbar item's action against the live editor (no-op until ready). */
+  runItem(item: KjRteToolbarItem): void {
+    if (this.engine) item.run(this.engine.context);
   }
 
-  /** Toggle a bullet or numbered list on the selection. */
-  toggleList(type: 'bullet' | 'number'): void {
-    this.engine?.toggleList(type);
+  /** Whether a toggle toolbar item is currently active. */
+  itemActive(item: KjRteToolbarItem): boolean {
+    return item.kind === 'toggle' && !!item.isActive?.(this.state());
   }
 
-  /** Wrap the selection in a link (or remove it when `url` is `null`/empty). */
-  toggleLink(url: string | null): void {
-    this.engine?.toggleLink(url);
+  /** Whether a toolbar item is currently disabled. */
+  itemDisabled(item: KjRteToolbarItem): boolean {
+    return !!item.isDisabled?.(this.state());
   }
 
-  /** Return the URL of the link at the selection, if any. */
-  getSelectedLinkUrl(): string | null {
-    return this.engine?.getSelectedLinkUrl() ?? null;
+  /** Close any open feature overlay. */
+  closeOverlay(): void {
+    this.activeOverlay.set(null);
   }
 
-  /** Insert a block image at the selection. */
-  insertImage(image: KjImageInsert): void {
-    this.engine?.insertImage(image);
-  }
+  // -- imperative editor helpers -------------------------------------------
 
   /** Undo the last edit. */
   undo(): void {
@@ -314,6 +339,30 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
     this.applyingExternal = true;
     this.engine.setJson(json);
     this.applyingExternal = false;
+  }
+
+  /** Build the Angular mount adapter the engine uses for decorator-node components. */
+  private createMountAdapter(): KjDecoratorMountAdapter {
+    return {
+      mount: (component, node) => {
+        const elementInjector = Injector.create({
+          parent: this.envInjector,
+          providers: [{ provide: KJ_RICH_TEXT_NODE, useValue: node }],
+        });
+        const ref = createComponent(component as Type<unknown>, {
+          environmentInjector: this.envInjector,
+          elementInjector,
+        });
+        this.appRef.attachView(ref.hostView);
+        return {
+          element: ref.location.nativeElement as HTMLElement,
+          destroy: () => {
+            this.appRef.detachView(ref.hostView);
+            ref.destroy();
+          },
+        };
+      },
+    };
   }
 
   // -- ControlValueAccessor ------------------------------------------------

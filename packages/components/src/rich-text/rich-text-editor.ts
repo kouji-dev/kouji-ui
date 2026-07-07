@@ -1,11 +1,13 @@
+import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
+  EnvironmentInjector,
+  Injector,
   ViewEncapsulation,
+  inject,
   input,
   output,
-  signal,
   viewChild,
 } from '@angular/core';
 import {
@@ -14,45 +16,50 @@ import {
   KjRichTextEditor,
   KjRovingTabindex,
   KjRovingTabindexItemDirective,
-  type KjBlockType,
-  type KjTextFormat,
+  KJ_RTE_OVERLAY_DATA,
+  type KjActiveOverlay,
+  type KjRichTextFeature,
+  type KjRteToolbarItem,
 } from '@kouji-ui/core';
+import { defaultFeatures } from './features/default-features';
 
 let kjRteUid = 0;
 
 /**
  * Styled, accessible rich-text editor composing the headless
- * {@link KjRichTextEditor} core directive with a `role="toolbar"` of formatting
- * controls (roving tabindex, `aria-pressed` state) and screen-reader
- * announcements on every command.
+ * {@link KjRichTextEditor} core directive with a **dynamic** `role="toolbar"`
+ * that renders whatever the active features contribute (sorted by group then
+ * order) — no hardcoded buttons. Feature overlays (link/image editors) render in
+ * an accessible `role="dialog"` popover.
  *
- * Supports bold/italic/underline/strikethrough/inline-code, headings, quotes,
- * ordered & unordered lists, links, code blocks, images, undo/redo, and
- * markdown shortcuts. Content flows in/out via `kjValue` + `valueChange`, and
- * the underlying directive is a form-control (usable with `ngModel`).
+ * Zero-config gives the full editor via {@link defaultFeatures}; pass a subset to
+ * `kjFeatures` (or `provideKjRichText(...)`) to load only the packages you need.
  *
  * @example
  * ```html
  * <kj-rich-text-editor kjLabel="Message" [(kjValue)]="html" />
+ * <kj-rich-text-editor [kjFeatures]="[bold(), italic(), link()]" />
  * ```
  * @doc-category Library/Forms
  * @doc
  * @doc-name rich-text-editor
  * @doc-is-main
- * @doc-description Accessible rich-text editor wrapping Lexical with a formatting toolbar.
+ * @doc-description Accessible, feature-composed rich-text editor wrapping Lexical with a dynamic toolbar.
  * @doc-example Default
- *   A full editor with the formatting toolbar and a placeholder.
+ *   The full editor: the toolbar renders every default feature's contribution.
  *   @doc-file rich-text-editor.example.ts
+ * @doc-example Minimal (subset of features)
+ *   Only bold, italic and link — the toolbar and loaded packages shrink to match.
+ *   @doc-file rich-text-editor.minimal.example.ts
+ * @doc-example Custom feature
+ *   A feature contributing its own toolbar button + node in a few lines.
+ *   @doc-file rich-text-editor.custom-node.example.ts
  * @doc-example Readonly
  *   Renders existing content without editing affordances.
  *   @doc-file rich-text-editor.readonly.example.ts
- * @doc-example Custom node (extension framework)
- *   Define an Angular-rendered decorator node outside the engine and register it
- *   with the `[kjRichTextExtension]` directive.
- *   @doc-file rich-text-editor.custom-node.example.ts
  * @doc-aria role="textbox" — the editable surface, with aria-multiline="true".
  * @doc-aria role="toolbar" — the formatting controls, arrow-key navigable.
- * @doc-a11y Toolbar buttons expose aria-pressed; changes are announced via an aria-live region.
+ * @doc-a11y Toggle items expose aria-pressed; feature actions announce via an aria-live region.
  * @doc-css-var --kj-rte-bg — Editor background.
  * @doc-css-var --kj-rte-border-color — Border colour.
  * @doc-css-var --kj-rte-radius — Corner radius.
@@ -68,6 +75,7 @@ let kjRteUid = 0;
     KjRovingTabindexItemDirective,
     KjLiveRegion,
     KjIconDirective,
+    NgComponentOutlet,
   ],
   host: { class: 'kj-rte' },
   template: `
@@ -80,280 +88,38 @@ let kjRteUid = 0;
         kjRovingTabindex
         kjRovingOrientation="horizontal"
       >
-        <div class="kj-rte__group" role="group" aria-label="Text formatting">
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Bold"
-            title="Bold (Ctrl+B)"
-            [class.kj-rte__btn--active]="ed.isBold()"
-            [attr.aria-pressed]="ed.isBold()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onFormat(ed, 'bold', 'Bold')"
-          >
-            <i kjIcon="bold" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Italic"
-            title="Italic (Ctrl+I)"
-            [class.kj-rte__btn--active]="ed.isItalic()"
-            [attr.aria-pressed]="ed.isItalic()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onFormat(ed, 'italic', 'Italic')"
-          >
-            <i kjIcon="italic" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Underline"
-            title="Underline (Ctrl+U)"
-            [class.kj-rte__btn--active]="ed.isUnderline()"
-            [attr.aria-pressed]="ed.isUnderline()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onFormat(ed, 'underline', 'Underline')"
-          >
-            <i kjIcon="underline" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Strikethrough"
-            title="Strikethrough"
-            [class.kj-rte__btn--active]="ed.isStrikethrough()"
-            [attr.aria-pressed]="ed.isStrikethrough()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onFormat(ed, 'strikethrough', 'Strikethrough')"
-          >
-            <i kjIcon="strikethrough" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Inline code"
-            title="Inline code"
-            [class.kj-rte__btn--active]="ed.isCode()"
-            [attr.aria-pressed]="ed.isCode()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onFormat(ed, 'code', 'Inline code')"
-          >
-            <i kjIcon="code" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        <span class="kj-rte__sep" role="separator" aria-orientation="vertical"></span>
-
-        <div class="kj-rte__group" role="group" aria-label="Headings">
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Heading 1"
-            title="Heading 1"
-            [class.kj-rte__btn--active]="ed.blockType() === 'h1'"
-            [attr.aria-pressed]="ed.blockType() === 'h1'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onBlock(ed, 'h1', 'Heading 1')"
-          >
-            <i kjIcon="heading-1" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Heading 2"
-            title="Heading 2"
-            [class.kj-rte__btn--active]="ed.blockType() === 'h2'"
-            [attr.aria-pressed]="ed.blockType() === 'h2'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onBlock(ed, 'h2', 'Heading 2')"
-          >
-            <i kjIcon="heading-2" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Heading 3"
-            title="Heading 3"
-            [class.kj-rte__btn--active]="ed.blockType() === 'h3'"
-            [attr.aria-pressed]="ed.blockType() === 'h3'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onBlock(ed, 'h3', 'Heading 3')"
-          >
-            <i kjIcon="heading-3" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        <span class="kj-rte__sep" role="separator" aria-orientation="vertical"></span>
-
-        <div class="kj-rte__group" role="group" aria-label="Blocks">
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Bullet list"
-            title="Bullet list"
-            [class.kj-rte__btn--active]="ed.blockType() === 'bullet'"
-            [attr.aria-pressed]="ed.blockType() === 'bullet'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onList(ed, 'bullet', 'Bullet list')"
-          >
-            <i kjIcon="list" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Numbered list"
-            title="Numbered list"
-            [class.kj-rte__btn--active]="ed.blockType() === 'number'"
-            [attr.aria-pressed]="ed.blockType() === 'number'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onList(ed, 'number', 'Numbered list')"
-          >
-            <i kjIcon="list-ordered" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Quote"
-            title="Quote"
-            [class.kj-rte__btn--active]="ed.blockType() === 'quote'"
-            [attr.aria-pressed]="ed.blockType() === 'quote'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onBlock(ed, 'quote', 'Quote')"
-          >
-            <i kjIcon="quote" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Code block"
-            title="Code block"
-            [class.kj-rte__btn--active]="ed.blockType() === 'code'"
-            [attr.aria-pressed]="ed.blockType() === 'code'"
-            (mousedown)="$event.preventDefault()"
-            (click)="onBlock(ed, 'code', 'Code block')"
-          >
-            <i kjIcon="square-code" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        <span class="kj-rte__sep" role="separator" aria-orientation="vertical"></span>
-
-        <div class="kj-rte__group" role="group" aria-label="Insert">
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Link"
-            title="Link (Ctrl+K)"
-            [class.kj-rte__btn--active]="ed.isLink()"
-            [attr.aria-pressed]="ed.isLink()"
-            [attr.aria-expanded]="linkOpen()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onLink(ed)"
-          >
-            <i kjIcon="link" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Image"
-            title="Insert image"
-            [attr.aria-expanded]="imageOpen()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onImage()"
-          >
-            <i kjIcon="image" aria-hidden="true"></i>
-          </button>
-        </div>
-
-        <span class="kj-rte__sep" role="separator" aria-orientation="vertical"></span>
-
-        <div class="kj-rte__group" role="group" aria-label="History">
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Undo"
-            title="Undo (Ctrl+Z)"
-            [disabled]="!ed.canUndo()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onUndo(ed)"
-          >
-            <i kjIcon="undo" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="kj-rte__btn"
-            kjRovingTabindexItem
-            aria-label="Redo"
-            title="Redo (Ctrl+Shift+Z)"
-            [disabled]="!ed.canRedo()"
-            (mousedown)="$event.preventDefault()"
-            (click)="onRedo(ed)"
-          >
-            <i kjIcon="redo" aria-hidden="true"></i>
-          </button>
-        </div>
+        @for (grp of ed.toolbarGroups(); track grp.group; let firstGroup = $first) {
+          @if (!firstGroup) {
+            <span class="kj-rte__sep" role="separator" aria-orientation="vertical"></span>
+          }
+          <div class="kj-rte__group" role="group" [attr.aria-label]="grp.group">
+            @for (item of grp.items; track item.id) {
+              <button
+                type="button"
+                class="kj-rte__btn"
+                kjRovingTabindexItem
+                [attr.aria-label]="item.label"
+                [title]="item.label"
+                [attr.aria-keyshortcuts]="item.ariaKeyshortcuts || null"
+                [class.kj-rte__btn--active]="ed.itemActive(item)"
+                [attr.aria-pressed]="item.kind === 'toggle' ? ed.itemActive(item) : null"
+                [disabled]="ed.itemDisabled(item)"
+                (mousedown)="$event.preventDefault()"
+                (click)="onRun(ed, item)"
+              >
+                <i [kjIcon]="item.icon" aria-hidden="true"></i>
+              </button>
+            }
+          </div>
+        }
       </div>
 
-      @if (linkOpen()) {
-        <form class="kj-rte__inline" (submit)="applyLink(ed, $event)">
-          <label class="kj-rte__inline-label" [attr.for]="contentId + '-link'">URL</label>
-          <input
-            #linkInput
-            class="kj-rte__inline-input"
-            type="url"
-            [id]="contentId + '-link'"
-            [value]="linkUrl()"
-            placeholder="https://example.com"
-            (input)="linkUrl.set($any($event.target).value)"
-            (keydown.escape)="closeLink(ed)"
+      @if (ed.activeOverlay(); as ov) {
+        <div class="kj-rte__overlay" role="dialog" [attr.aria-label]="ov.overlay.label">
+          <ng-container
+            *ngComponentOutlet="ov.overlay.component; injector: overlayInjector(ov)"
           />
-          <button type="submit" class="kj-rte__inline-btn">Apply</button>
-          <button type="button" class="kj-rte__inline-btn" (click)="removeLink(ed)">Remove</button>
-          <button type="button" class="kj-rte__inline-btn" (click)="closeLink(ed)">Cancel</button>
-        </form>
-      }
-
-      @if (imageOpen()) {
-        <form class="kj-rte__inline" (submit)="applyImage(ed, $event)">
-          <label class="kj-rte__inline-label" [attr.for]="contentId + '-img'">Image URL</label>
-          <input
-            #imageInput
-            class="kj-rte__inline-input"
-            type="url"
-            [id]="contentId + '-img'"
-            [value]="imageSrc()"
-            placeholder="https://example.com/photo.jpg"
-            (input)="imageSrc.set($any($event.target).value)"
-            (keydown.escape)="closeImage(ed)"
-          />
-          <input
-            class="kj-rte__inline-input"
-            type="text"
-            [value]="imageAlt()"
-            placeholder="Alt text"
-            aria-label="Image alternative text"
-            (input)="imageAlt.set($any($event.target).value)"
-            (keydown.escape)="closeImage(ed)"
-          />
-          <button type="submit" class="kj-rte__inline-btn">Insert</button>
-          <button type="button" class="kj-rte__inline-btn" (click)="closeImage(ed)">Cancel</button>
-        </form>
+        </div>
       }
     }
 
@@ -362,6 +128,7 @@ let kjRteUid = 0;
       [id]="contentId"
       class="kj-rte__content"
       kjRichTextEditor
+      [kjFeatures]="kjFeatures()"
       [kjValue]="kjValue()"
       [kjReadonly]="kjReadonly()"
       [attr.aria-label]="kjLabelledBy() ? null : kjLabel()"
@@ -370,6 +137,7 @@ let kjRteUid = 0;
       (valueChange)="valueChange.emit($event)"
       (textChange)="textChange.emit($event)"
       (jsonChange)="jsonChange.emit($event)"
+      (announce)="announce($event)"
     ></div>
 
     <div class="kj-rte__sr" kjLiveRegion aria-live="polite"></div>
@@ -382,6 +150,10 @@ let kjRteUid = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjRichTextEditorComponent {
+  private readonly env = inject(EnvironmentInjector);
+
+  /** Active features. Defaults to the full {@link defaultFeatures} bundle. */
+  readonly kjFeatures = input<readonly KjRichTextFeature[]>(defaultFeatures());
   /** Initial HTML content. */
   readonly kjValue = input<string>('');
   /** Accessible label for the editable region (ignored when `kjLabelledBy` is set). */
@@ -408,107 +180,32 @@ export class KjRichTextEditorComponent {
   protected readonly contentId = `kj-rte-${kjRteUid++}`;
 
   private readonly live = viewChild(KjLiveRegion);
-  private readonly linkInput = viewChild<ElementRef<HTMLInputElement>>('linkInput');
-  private readonly imageInput = viewChild<ElementRef<HTMLInputElement>>('imageInput');
+  private readonly overlayInjectors = new WeakMap<object, Injector>();
 
-  protected readonly linkOpen = signal(false);
-  protected readonly linkUrl = signal('');
-  protected readonly imageOpen = signal(false);
-  protected readonly imageSrc = signal('');
-  protected readonly imageAlt = signal('');
+  /** Run a toolbar item and announce toggle state changes to AT. */
+  protected onRun(ed: KjRichTextEditor, item: KjRteToolbarItem): void {
+    ed.runItem(item);
+    if (item.kind === 'toggle') {
+      this.announce(`${item.label} ${ed.itemActive(item) ? 'on' : 'off'}`);
+    }
+  }
 
-  private announce(message: string): void {
+  /** Announce a message via the live region (also handles feature announcements). */
+  protected announce(message: string): void {
     this.live()?.announce(message);
   }
 
-  protected onFormat(ed: KjRichTextEditor, format: KjTextFormat, label: string): void {
-    ed.toggleFormat(format);
-    this.announce(`${label} ${ed.state().activeFormats.has(format) ? 'on' : 'off'}`);
-    ed.focus();
-  }
-
-  protected onBlock(
-    ed: KjRichTextEditor,
-    block: Exclude<KjBlockType, 'bullet' | 'number'>,
-    label: string,
-  ): void {
-    if (ed.blockType() === block) {
-      ed.setBlock('paragraph');
-      this.announce('Paragraph');
-    } else {
-      ed.setBlock(block);
-      this.announce(label);
+  /** Injector that exposes the overlay's data via KJ_RTE_OVERLAY_DATA. */
+  protected overlayInjector(active: KjActiveOverlay): Injector {
+    const key = (active.data ?? active) as object;
+    let injector = this.overlayInjectors.get(key);
+    if (!injector) {
+      injector = Injector.create({
+        parent: this.env,
+        providers: [{ provide: KJ_RTE_OVERLAY_DATA, useValue: active.data }],
+      });
+      this.overlayInjectors.set(key, injector);
     }
-    ed.focus();
-  }
-
-  protected onList(ed: KjRichTextEditor, type: 'bullet' | 'number', label: string): void {
-    ed.toggleList(type);
-    this.announce(ed.blockType() === type ? label : 'List removed');
-    ed.focus();
-  }
-
-  protected onUndo(ed: KjRichTextEditor): void {
-    ed.undo();
-    this.announce('Undo');
-    ed.focus();
-  }
-
-  protected onRedo(ed: KjRichTextEditor): void {
-    ed.redo();
-    this.announce('Redo');
-    ed.focus();
-  }
-
-  protected onLink(ed: KjRichTextEditor): void {
-    this.closeImage(ed);
-    this.linkUrl.set(ed.getSelectedLinkUrl() ?? '');
-    this.linkOpen.set(true);
-    queueMicrotask(() => this.linkInput()?.nativeElement.focus());
-  }
-
-  protected applyLink(ed: KjRichTextEditor, event: Event): void {
-    event.preventDefault();
-    const url = this.linkUrl().trim();
-    ed.toggleLink(url || null);
-    this.announce(url ? 'Link added' : 'Link removed');
-    this.linkOpen.set(false);
-    ed.focus();
-  }
-
-  protected removeLink(ed: KjRichTextEditor): void {
-    ed.toggleLink(null);
-    this.announce('Link removed');
-    this.linkOpen.set(false);
-    ed.focus();
-  }
-
-  protected closeLink(ed: KjRichTextEditor): void {
-    this.linkOpen.set(false);
-    ed.focus();
-  }
-
-  protected onImage(): void {
-    this.linkOpen.set(false);
-    this.imageSrc.set('');
-    this.imageAlt.set('');
-    this.imageOpen.set(true);
-    queueMicrotask(() => this.imageInput()?.nativeElement.focus());
-  }
-
-  protected applyImage(ed: KjRichTextEditor, event: Event): void {
-    event.preventDefault();
-    const src = this.imageSrc().trim();
-    if (src) {
-      ed.insertImage({ src, alt: this.imageAlt().trim() });
-      this.announce('Image inserted');
-    }
-    this.imageOpen.set(false);
-    ed.focus();
-  }
-
-  protected closeImage(ed: KjRichTextEditor): void {
-    this.imageOpen.set(false);
-    ed.focus();
+    return injector;
   }
 }

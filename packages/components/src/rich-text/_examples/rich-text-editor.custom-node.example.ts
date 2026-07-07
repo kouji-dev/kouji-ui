@@ -1,19 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import * as lexical from 'lexical';
-import { $getRoot, $insertNodes } from 'lexical';
-import {
-  KjRichTextEditor,
-  KjRichTextExtensionDirective,
-  createKjDecoratorNode,
-  injectRichTextNode,
-  type KjRichTextExtension,
-} from '@kouji-ui/core';
+import { createKjDecoratorNode, injectRichTextNode, type KjRichTextFeature } from '@kouji-ui/core';
+import { KjRichTextEditorComponent } from '../rich-text-editor';
+import { defaultFeatures } from '../features/default-features';
 
-/**
- * The Angular component rendered for each badge node. It reads its node's data
- * via {@link injectRichTextNode}. Kept non-interactive (not a keyboard trap); its
- * visible text is its accessible name.
- */
+/** Angular component rendered for each badge node; reads its data via injection. */
 @Component({
   selector: 'kj-badge-chip',
   standalone: true,
@@ -30,7 +21,6 @@ import {
         color: var(--kj-fg-on-primary, #fff);
         font-size: 0.8em;
         font-weight: 600;
-        line-height: 1.4;
       }
     `,
   ],
@@ -41,8 +31,7 @@ export class BadgeChip {
     injectRichTextNode<{ getData(): { label?: string } }>().getData().label ?? 'Badge';
 }
 
-// ─── Define + register a custom decorator node from OUTSIDE the engine ───
-// Everything below is all a consumer writes to add a first-class node type.
+// ─── A custom feature: its own node + toolbar button, in ~15 lines ───
 const badge = createKjDecoratorNode<{ label: string }>(lexical, {
   type: 'kj-badge',
   component: BadgeChip,
@@ -50,74 +39,40 @@ const badge = createKjDecoratorNode<{ label: string }>(lexical, {
   ariaLabel: 'Badge',
 });
 
-/** The extension: contributes the node class + its Angular decorator component. */
-export const badgeExtension: KjRichTextExtension = {
+export const badgeFeature: KjRichTextFeature = {
   name: 'badge',
   nodes: () => [badge.Node],
   decorators: [{ nodeType: 'kj-badge', component: BadgeChip }],
+  toolbar: [
+    {
+      id: 'badge',
+      group: 'insert',
+      order: 20,
+      icon: 'sparkles',
+      label: 'Insert badge',
+      kind: 'button',
+      run: (ctx) => {
+        ctx.insertNodes(() => [badge.$create({ label: 'New' })]);
+        ctx.focus();
+        ctx.announce('Badge inserted');
+      },
+    },
+  ],
 };
 
 /**
- * Demonstrates the rich-text extension framework: a custom Angular-rendered
- * decorator node registered via the `[kjRichTextExtension]` directive and
- * inserted with the node factory returned by `createKjDecoratorNode`.
+ * Demonstrates the feature framework: a custom Angular-rendered node with its
+ * own toolbar button, composed alongside the default features — the toolbar
+ * picks up the new button automatically.
  */
 @Component({
   selector: 'kj-rich-text-editor-custom-node-example',
   standalone: true,
-  imports: [KjRichTextEditor, KjRichTextExtensionDirective],
-  template: `
-    <div class="kj-rte-demo">
-      <button type="button" class="kj-rte-demo__btn" (click)="insertBadge(ed)">Insert badge</button>
-      <div
-        #ed="kjRichTextEditor"
-        kjRichTextEditor
-        class="kj-rte-demo__surface"
-        aria-label="Notes with custom badges"
-        [kjRichTextExtension]="badgeExtension"
-        [kjValue]="initial"
-      ></div>
-    </div>
-  `,
-  styles: [
-    `
-      .kj-rte-demo {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .kj-rte-demo__btn {
-        align-self: flex-start;
-        min-height: 2.25rem;
-        padding: 0 0.75rem;
-        border: 1px solid var(--kj-border-default, #d4d4d8);
-        border-radius: var(--kj-radius-field, 0.375rem);
-        background: var(--kj-bg-field, #fff);
-        color: var(--kj-fg-default, #18181b);
-        cursor: pointer;
-      }
-      .kj-rte-demo__surface {
-        min-height: 8rem;
-        padding: 0.75rem;
-        border: 1px solid var(--kj-border-default, #d4d4d8);
-        border-radius: var(--kj-radius-field, 0.375rem);
-        outline: none;
-      }
-    `,
-  ],
+  imports: [KjRichTextEditorComponent],
+  template: `<kj-rich-text-editor kjLabel="Notes" [kjFeatures]="features" [kjValue]="initial" />`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjRichTextEditorCustomNodeExample {
-  protected readonly initial =
-    '<p>Custom nodes are defined outside the engine. Click “Insert badge”.</p>';
-  protected readonly badgeExtension = badgeExtension;
-
-  protected insertBadge(ed: KjRichTextEditor): void {
-    const editor = ed.editor();
-    editor?.focus();
-    editor?.update(() => {
-      $getRoot().selectEnd();
-      $insertNodes([badge.$create({ label: 'New' })]);
-    });
-  }
+  protected readonly initial = '<p>The “Insert badge” button comes from a custom feature.</p>';
+  protected readonly features: KjRichTextFeature[] = [...defaultFeatures(), badgeFeature];
 }

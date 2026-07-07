@@ -50,17 +50,43 @@ test.describe('rich-text-editor', () => {
     await expect(italic).toHaveAttribute('aria-pressed', 'true');
   });
 
-  // Exercises the extension framework: a custom Angular-rendered decorator node
-  // registered from outside the engine via [kjRichTextExtension].
-  test('inserts a custom badge decorator node via the extension framework', async ({ page }) => {
+  test('a minimal feature subset renders only its toolbar controls', async ({ page }) => {
+    const example = page.locator('kj-rich-text-editor-minimal-example');
+    await expect(example).toBeVisible();
+    // Enabled features render.
+    await expect(example.locator('button[aria-label="Bold"]')).toBeVisible();
+    await expect(example.locator('button[aria-label="Italic"]')).toBeVisible();
+    await expect(example.locator('button[aria-label="Link"]')).toBeVisible();
+    // Disabled features contribute nothing to the toolbar.
+    await expect(example.locator('button[aria-label="Undo"]')).toHaveCount(0);
+    await expect(example.locator('button[aria-label="Heading 1"]')).toHaveCount(0);
+    await expect(example.locator('button[aria-label="Bullet list"]')).toHaveCount(0);
+  });
+
+  // Exercises the feature framework: a custom feature contributing its own
+  // toolbar button + Angular-rendered decorator node.
+  test('a custom feature inserts a badge decorator node from its toolbar button', async ({
+    page,
+  }) => {
     const example = page.locator('kj-rich-text-editor-custom-node-example');
     await expect(example).toBeVisible();
 
-    const insert = example.getByRole('button', { name: 'Insert badge' });
-    await insert.click();
+    await example.getByRole('button', { name: 'Insert badge' }).click();
 
     // The badge chip component mounts inside the editable surface.
     await expect(example.locator('kj-badge-chip')).toHaveCount(1);
     await expect(example.locator('.kj-badge-chip')).toHaveText('New');
+  });
+
+  test('opens the link overlay dialog from the toolbar', async ({ page }) => {
+    const editor = page.locator('kj-rich-text-editor').first();
+    const textbox = editor.locator('[role="textbox"]');
+    await textbox.click();
+    await page.keyboard.press('ControlOrMeta+A');
+    await editor.locator('button[aria-label="Link"]').click();
+
+    const dialog = editor.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute('aria-label', /link/i);
   });
 });

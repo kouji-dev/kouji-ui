@@ -1,6 +1,6 @@
 import { InjectionToken, type Provider, type Signal, inject } from '@angular/core';
 import type { LexicalEditor } from 'lexical';
-import type { KjRichTextExtension } from './rich-text-plugin';
+import type { KjRichTextFeature, KjRteToolbarItem } from './feature';
 import type { KjRichTextState } from './rich-text-editor.types';
 
 /**
@@ -8,49 +8,56 @@ import type { KjRichTextState } from './rich-text-editor.types';
  *
  * Follows the repo's signal-context pattern (root provides a token pointing to
  * itself; descendants inject it) so that child directives and toolbars can read
- * editor state and contribute extensions without a hard reference to the class.
+ * editor state / toolbar contributions and register features without a hard
+ * reference to the class.
  */
 export interface KjRichTextHost {
   /** The live Lexical editor instance, or `null` before initialization. */
   readonly editor: Signal<LexicalEditor | null>;
   /** Current formatting state derived from the selection. */
   readonly state: Signal<KjRichTextState>;
+  /** Toolbar items contributed by the active features, sorted by group then order. */
+  readonly toolbarItems: Signal<readonly KjRteToolbarItem[]>;
   /**
-   * Register an extension with this editor. Must be called before the editor
-   * initializes (i.e. during construction / `ngOnInit` of a child directive, or
-   * via {@link provideKjRichText}) for node-contributing extensions to take effect.
+   * Register a feature with this editor. Must be called before the editor
+   * initializes (during a child directive's `ngOnInit`, or via
+   * {@link provideKjRichText}) for node-contributing features to take effect.
    */
-  registerExtension(extension: KjRichTextExtension): void;
+  registerFeature(feature: KjRichTextFeature): void;
 }
 
 /**
  * Context token for the rich-text editor. A {@link KjRichTextEditor} provides it
- * pointing to itself; descendants (toolbars, extension directives) inject it.
+ * pointing to itself; descendants (toolbars, feature directives) inject it.
  */
 export const KJ_RICH_TEXT = new InjectionToken<KjRichTextHost>('KJ_RICH_TEXT');
 
 /**
- * Multi-provider token for app- or scope-wide rich-text extensions. Contribute
- * to it with {@link provideKjRichText}; every {@link KjRichTextEditor} in that
- * injector scope registers them automatically.
+ * Multi-provider token for app- or scope-wide rich-text features. Contribute to
+ * it with {@link provideKjRichText}; every {@link KjRichTextEditor} in that
+ * injector scope activates them.
  */
-export const KJ_RICH_TEXT_EXTENSIONS = new InjectionToken<KjRichTextExtension[]>(
-  'KJ_RICH_TEXT_EXTENSIONS',
+export const KJ_RICH_TEXT_FEATURES = new InjectionToken<KjRichTextFeature[]>(
+  'KJ_RICH_TEXT_FEATURES',
 );
 
+/** @deprecated Renamed to {@link KJ_RICH_TEXT_FEATURES}. Same token instance. */
+export const KJ_RICH_TEXT_EXTENSIONS = KJ_RICH_TEXT_FEATURES;
+
 /**
- * Register one or more rich-text extensions for every editor in this injector
- * scope (app config, a route, or a component's `providers`).
+ * Register one or more rich-text features for every editor in this injector
+ * scope (app config, a route, or a component's `providers`). Only the chosen
+ * features load their packages and contribute toolbar/overlay UI.
  *
  * @example
  * ```ts
- * providers: [provideKjRichText(mentionExtension, badgeExtension)]
+ * providers: [provideKjRichText(bold(), italic(), link())]
  * ```
  */
-export function provideKjRichText(...extensions: KjRichTextExtension[]): Provider[] {
-  return extensions.map((extension) => ({
-    provide: KJ_RICH_TEXT_EXTENSIONS,
-    useValue: extension,
+export function provideKjRichText(...features: KjRichTextFeature[]): Provider[] {
+  return features.map((feature) => ({
+    provide: KJ_RICH_TEXT_FEATURES,
+    useValue: feature,
     multi: true,
   }));
 }
@@ -65,6 +72,14 @@ export const KJ_RICH_TEXT_NODE = new InjectionToken<unknown>('KJ_RICH_TEXT_NODE'
 /** Inject the Lexical node instance a decorator-node component is rendering. */
 export function injectRichTextNode<T = unknown>(): T {
   return inject(KJ_RICH_TEXT_NODE) as T;
+}
+
+/** Injection token holding the data a feature passed to `context.openOverlay(id, data)`. */
+export const KJ_RTE_OVERLAY_DATA = new InjectionToken<unknown>('KJ_RTE_OVERLAY_DATA');
+
+/** Inject the data supplied to the currently rendered rich-text overlay component. */
+export function injectRteOverlayData<T = unknown>(): T {
+  return inject(KJ_RTE_OVERLAY_DATA) as T;
 }
 
 /** A component mounted by the decorator bridge, with a handle to tear it down. */
