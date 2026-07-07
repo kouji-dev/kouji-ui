@@ -13,11 +13,11 @@
 
     <h3>Styled</h3>
     <p>Drop-in ready. Behaviour, styled wrappers, and the 13 themes. Pick a theme with <code>[data-theme="kouji"]</code> on <code>&lt;html&gt;</code> and ship.</p>
-    <kj-code-editor [showHeader]="false" [code]="installFull" lang="ts" />
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="installFull" kjLanguage="bash" kjAriaLabel="Install (styled)" />
 
     <h3>Headless</h3>
     <p>Just the behaviour layer. Directives expose ARIA semantics and <code>data-*</code> hooks; you bring the CSS (Tailwind, design tokens, plain stylesheets — anything).</p>
-    <kj-code-editor [showHeader]="false" [code]="installHeadless" lang="ts" />
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="installHeadless" kjLanguage="bash" kjAriaLabel="Install (headless)" />
 
     <kj-docs-callout variant="info">
       <span class="callout-icon">◈</span>
@@ -29,21 +29,21 @@
   <section id="quick-start" class="section">
     <h2 id="quick-start">Quick start</h2>
     <p>Import directive directly — no NgModules needed.</p>
-    <kj-code-editor [showHeader]="false" [code]="quickStartTs" lang="ts" />
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="quickStartTs" kjLanguage="ts" kjAriaLabel="Quick start example" />
   </section>
 
   <!-- Headless usage -->
   <section id="headless" class="section">
     <h2 id="headless">Headless usage</h2>
     <p>The core package ships zero CSS. Directives add ARIA attributes and <code>data-*</code> attributes you can target in your stylesheets:</p>
-    <kj-code-editor [showHeader]="false" [code]="headlessStyles" lang="css" />
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="headlessStyles" kjLanguage="css" kjAriaLabel="Headless styles example" />
   </section>
 
   <!-- Angular forms -->
   <section id="forms" class="section">
     <h2 id="forms">Angular forms</h2>
     <p>Form controls compose <code>KjFormControl</code> via <code>hostDirectives</code>, so they work with reactive forms out of the box:</p>
-    <kj-code-editor [showHeader]="false" [code]="formsTs" lang="ts" />
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="formsTs" kjLanguage="ts" kjAriaLabel="Forms example" />
   </section>
 
   <!-- Accessibility -->
@@ -51,7 +51,7 @@
     <h2 id="accessibility">Accessibility</h2>
     <p>Every component targets <strong>WCAG 2.1 AAA</strong>. Keyboard interactions, ARIA patterns, and focus management are baked into the headless primitives.</p>
     <p>Use the a11y utilities to enhance your own components:</p>
-    <kj-code-editor [showHeader]="false" [code]="a11yImports" lang="ts" />
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="a11yImports" kjLanguage="ts" kjAriaLabel="Accessibility imports example" />
     <kj-docs-callout variant="success">
       <span class="callout-icon">♿</span>
       <p>All overlay components (Dialog, Menu, Select) compose <code>KjFocusTrap</code>, <code>KjRovingTabindex</code>, and <code>KjLiveRegion</code> from <code>&#64;kouji-ui/core</code> for full keyboard + screen-reader support — verified against NVDA, JAWS, and VoiceOver.</p>

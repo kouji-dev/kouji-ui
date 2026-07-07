@@ -24,3 +24,42 @@ export type KjEditorLineNumbers = 'on' | 'off' | 'relative';
 
 /** Soft-wrap mode. */
 export type KjEditorWordWrap = 'on' | 'off';
+
+/**
+ * A code language for the editor. The listed ids get editor autocomplete, but
+ * any Monaco language id (or a short alias like `ts` / `md` / `yml`, normalised
+ * for you) is accepted — hence the open `(string & {})`. This is a kj-level
+ * abstraction: callers never import a Monaco type to set a language.
+ */
+export type KjEditorLanguage =
+  | 'plaintext'
+  | 'typescript'
+  | 'javascript'
+  | 'json'
+  | 'html'
+  | 'css'
+  | 'scss'
+  | 'less'
+  | 'markdown'
+  | 'yaml'
+  | 'xml'
+  | 'python'
+  | 'java'
+  | 'go'
+  | 'rust'
+  | 'sql'
+  | 'shell'
+  | 'c'
+  | 'cpp'
+  | 'csharp'
+  | 'php'
+  | 'ruby'
+  | (string & {});
+
+/**
+ * Lazily loads one language's Monaco contribution (grammar + config). The
+ * returned promise resolves once the language is registered. Typically an
+ * `import(...)` of a `monaco-editor/esm/vs/basic-languages/<lang>/<lang>.contribution`
+ * module, which self-registers into Monaco as a side effect.
+ */
+export type KjMonacoLanguageLoader = () => Promise<unknown>;

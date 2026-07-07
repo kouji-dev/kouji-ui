@@ -13,6 +13,27 @@
   min-height: 12rem;
 }
 
+/* ── Auto-height mode: grow to fit content instead of filling the container. ──
+   The directive sets the host's inline height from Monaco's content height; the
+   body must stop being a flex-fill / absolute-positioned region so that height
+   applies. */
+:host([data-auto-height]) {
+  height: auto;
+}
+:host([data-auto-height]) .kj-editor-wrap {
+  height: auto;
+  min-height: 0;
+}
+:host([data-auto-height]) .kj-editor-body {
+  position: static;
+  flex: none;
+  min-height: 3rem;
+}
+:host([data-auto-height]) .kj-editor-host {
+  position: relative;
+  inset: auto;
+}
+
 /* ── Toolbar ── */
 .kj-editor-toolbar,
 .kj-editor-status {

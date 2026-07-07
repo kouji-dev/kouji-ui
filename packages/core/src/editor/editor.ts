@@ -11,8 +11,10 @@ import {
   signal,
 } from '@angular/core';
 import { KjEditorLoader } from './editor.loader';
+import { normalizeLanguage } from './editor.languages';
 import type {
   KjEditorInstance,
+  KjEditorLanguage,
   KjEditorLineNumbers,
   KjEditorOptions,
   KjEditorWordWrap,
@@ -54,8 +56,8 @@ export class KjEditor {
 
   /** Two-way editor text. */
   readonly kjValue = model<string>('');
-  /** Monaco language id (`typescript`, `html`, `css`, `json`, `markdown`, …). */
-  readonly kjLanguage = input<string>('plaintext');
+  /** Code language — friendly name or Monaco id; short aliases (`ts`, `md`) normalised. */
+  readonly kjLanguage = input<KjEditorLanguage>('plaintext');
   /** Read-only mode. */
   readonly kjReadonly = input<boolean>(false);
   /** Show the minimap. */
@@ -66,6 +68,10 @@ export class KjEditor {
   readonly kjWordWrap = input<KjEditorWordWrap>('off');
   /** Font size in px. */
   readonly kjFontSize = input<number>(13);
+  /** Grow the host to fit content instead of filling its container. */
+  readonly kjAutoHeight = input<boolean>(false);
+  /** Cap for `kjAutoHeight` in px (content scrolls past it). Uncapped when unset. */
+  readonly kjMaxHeight = input<number | undefined>(undefined);
   /** Explicit Monaco theme id; overrides the wrapper's auto light/dark. */
   readonly kjTheme = input<string | undefined>(undefined);
   /** Accessible name — set as Monaco `ariaLabel` and the host `aria-label`. */
@@ -87,6 +93,8 @@ export class KjEditor {
   private applyingExternal = false;
   /** Our tracked copy of Monaco's tabFocusMode (no public getter exists). */
   private tabFocusOn = false;
+  /** Recompute-height callback, wired once auto-height is set up. */
+  private autoHeightUpdate: (() => void) | null = null;
   private readonly reducedMotion = signal(false);
 
   constructor() {
@@ -112,21 +120,32 @@ export class KjEditor {
       }
     });
 
-    // Language switch.
+    // Language switch — lazy-load the language contribution first, then apply.
     effect(() => {
-      const lang = this.kjLanguage();
-      if (this.editor && this.monaco) {
-        const model = this.editor.getModel();
-        if (model && model.getLanguageId() !== lang) {
+      const lang = normalizeLanguage(this.kjLanguage());
+      const editor = this.editor;
+      const monaco = this.monaco;
+      if (!editor || !monaco) return;
+      const model = editor.getModel();
+      if (!model || model.getLanguageId() === lang) return;
+      void this.loader.ensureLanguage(lang).then(() => {
+        if (this.editor === editor && this.monaco) {
           this.monaco.editor.setModelLanguage(model, lang);
         }
-      }
+      });
     });
 
     // Live option updates (readonly / minimap / line-numbers / wrap / font / motion / overrides).
     effect(() => {
       const opts = this.resolveOptions();
       if (this.editor) this.editor.updateOptions(opts);
+    });
+
+    // Keep the auto-height fit in sync when the cap or toggle changes.
+    effect(() => {
+      this.kjAutoHeight();
+      this.kjMaxHeight();
+      this.autoHeightUpdate?.();
     });
 
     // Tab-focus mode (keyboard-trap escape) — keep Monaco in sync with the input.
@@ -165,9 +184,13 @@ export class KjEditor {
     }
     if (!this.monaco) return;
 
+    const language = normalizeLanguage(this.kjLanguage());
+    await this.loader.ensureLanguage(language);
+    if (!this.monaco) return;
+
     this.editor = this.monaco.editor.create(host, {
       value: this.kjValue(),
-      language: this.kjLanguage(),
+      language,
       ...this.resolveOptions(),
     });
 
@@ -179,8 +202,28 @@ export class KjEditor {
       this.applyingExternal = false;
     });
 
+    if (this.kjAutoHeight()) this.setupAutoHeight(instance, host);
     this.syncTabFocus(this.kjTabFocusMode());
     this.kjReady.emit(instance);
+  }
+
+  /**
+   * Size the host to the editor's content height (capped by `kjMaxHeight`),
+   * updating whenever the content grows/shrinks. Mirrors the docs code-viewer
+   * behaviour so a snippet fits its lines instead of needing a fixed height.
+   */
+  private setupAutoHeight(editor: KjEditorInstance, host: HTMLElement): void {
+    const update = () => {
+      if (!this.kjAutoHeight()) return;
+      const cap = this.kjMaxHeight() ?? Number.POSITIVE_INFINITY;
+      const height = Math.min(cap, editor.getContentHeight());
+      host.style.height = `${height}px`;
+      editor.layout({ width: host.clientWidth, height });
+    };
+    this.autoHeightUpdate = update;
+    const sub = editor.onDidContentSizeChange(update);
+    this.destroyRef.onDestroy(() => sub.dispose());
+    update();
   }
 
   private resolveOptions(): KjEditorOptions {

@@ -148,5 +148,75 @@ packages/components/src/editor/
   _examples/…            # docs examples + barrel
   index.ts
 ```
-</content>
-</invoke>
+
+---
+
+## Update — docs migration, API polish, lazy language loading
+
+### Docs migrated onto the library (prior art retired)
+
+The docs app now renders **every** code viewer with the library `<kj-editor>`; the
+docs-internal editor is deleted:
+
+- **Deleted**: `apps/docs/src/app/services/monaco.service.ts`,
+  `apps/docs/src/app/components/code-editor/{code-editor.ts,.html,.css}`.
+- **Repointed** to `KjEditorComponent` (`@kouji-ui/components`):
+  `components/code-preview` (3 code-panel usages), `pages/component-doc`
+  (usage walkthrough + `.usage-editor kj-editor` CSS), `pages/getting-started`
+  (6 install/quick-start snippets).
+
+This dogfooding drove the API additions below (a fixed-height editor didn't fit
+read-only snippet viewers that must size to content).
+
+### Final public API
+
+**Core directive `[kjEditor]` / component `<kj-editor>`** inputs:
+`kjValue` (two-way), `kjLanguage` (`KjEditorLanguage` — friendly names + open
+string, short aliases like `ts`/`md`/`sh` normalised), `kjReadonly`,
+`kjMinimap`, `kjLineNumbers`, `kjWordWrap`, `kjFontSize`, **`kjAutoHeight`**
+(grow to fit content), **`kjMaxHeight`** (cap for auto-height), `kjTheme`,
+`kjAriaLabel`, `kjTabFocusMode`, `kjOptions` (documented advanced escape hatch —
+the only place a Monaco type surfaces). Output `kjReady` (advanced imperative
+access). Component adds `kjShowToolbar` / `kjShowStatusBar`.
+
+`KjEditorLanguage` is the kj-level language abstraction so callers never import a
+Monaco type just to pick a language.
+
+**Providers**: `provideMonaco({ loader?, vsPath? })` (configurable source, CDN
+default) and **`provideMonacoLanguages({ id: () => import(...) })`** (below).
+
+### Lazy language-module loading
+
+Languages are heavy, so loading is first-class and on-demand:
+
+- `provideMonacoLanguages(loaders)` registers per-language lazy loaders keyed by
+  (normalised) id, `multi` so several calls compose.
+- `KjEditorLoader.ensureLanguage(id)` runs the matching loader **once** (memoised)
+  and is awaited by the editor **before** create and before any language switch —
+  so a language's grammar downloads only when an editor first uses it.
+- With the default CDN Monaco every language is already bundled, so registering
+  loaders is optional (a missing id falls back to the built-in language). The
+  mechanism pays off for the lean/self-hosted `provideMonaco({ loader })` path,
+  where you register only:
+  ```ts
+  provideMonacoLanguages({
+    python: () => import('monaco-editor/esm/vs/basic-languages/python/python.contribution'),
+  })
+  ```
+
+### E2E outcome (updated)
+
+Run against the static prerendered prod build (`playwright.prod.config.ts` +
+`apps/docs/e2e/static-server.mjs`): **3 passing**, now including **live** Monaco
+assertions — `getting-started` mounts **6** live `.monaco-editor` instances via
+the library `<kj-editor>`, and the button doc's usage walkthrough mounts a live
+editor. The editor component's own auto-generated example-preview page (demos
+created via `ViewContainerRef.createComponent`) does not re-hydrate its live
+previews in this headless sandbox; that page falls back to a served-markup
+assertion. All migrated static usages hydrate and render Monaco correctly.
+
+### Accessible name on read-only editors
+
+Read-only Monaco renders no editable `.inputarea`; the accessible name from
+`kjAriaLabel` lands on the `[kjEditor]` host (`aria-label`). Editable editors
+also expose it on Monaco's `.inputarea`. Tab-trap escape (`Ctrl+M`) unchanged.

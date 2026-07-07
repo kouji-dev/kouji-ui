@@ -15,6 +15,7 @@ import {
   KjEditor,
   KjEditorLoader,
   type KjEditorInstance,
+  type KjEditorLanguage,
   type KjEditorLineNumbers,
   type KjEditorOptions,
   type KjEditorWordWrap,
@@ -72,6 +73,9 @@ import { KjSpinnerComponent } from '../spinner/spinner';
   templateUrl: './editor.html',
   styleUrl: './editor.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[attr.data-auto-height]': "kjAutoHeight() ? '' : null",
+  },
 })
 export class KjEditorComponent {
   private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -82,8 +86,8 @@ export class KjEditorComponent {
 
   /** Two-way editor text. */
   readonly kjValue = model<string>('');
-  /** Monaco language id. */
-  readonly kjLanguage = input<string>('plaintext');
+  /** Code language — friendly name or Monaco id; short aliases (`ts`, `md`) normalised. */
+  readonly kjLanguage = input<KjEditorLanguage>('plaintext');
   /** Read-only mode. */
   readonly kjReadonly = input<boolean>(false);
   /** Show the minimap. */
@@ -94,6 +98,10 @@ export class KjEditorComponent {
   readonly kjWordWrap = input<KjEditorWordWrap>('off');
   /** Font size in px. */
   readonly kjFontSize = input<number>(13);
+  /** Grow to fit content instead of filling the container (great for code snippets). */
+  readonly kjAutoHeight = input<boolean>(false);
+  /** Cap for `kjAutoHeight` in px (content scrolls past it). Uncapped when unset. */
+  readonly kjMaxHeight = input<number | undefined>(undefined);
   /** Accessible name for the editor. */
   readonly kjAriaLabel = input<string>('Code editor');
   /** Start with Tab moving focus out instead of indenting. */

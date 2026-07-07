@@ -110,7 +110,18 @@ describe('KjEditor', () => {
   it('switches the model language reactively', async () => {
     const { fake, view } = await setup();
     view.fixture.componentInstance.lang.set('css');
-    await waitFor(() => expect(fake.setModelLanguage).toHaveBeenCalledWith(expect.anything(), 'css'));
+    await waitFor(() =>
+      expect(fake.setModelLanguage).toHaveBeenCalledWith(expect.anything(), 'css'),
+    );
+  });
+
+  it('normalises short language aliases (ts → typescript)', async () => {
+    const { fake, view } = await setup();
+    view.fixture.componentInstance.lang.set('ts');
+    // 'ts' normalises to 'typescript'; since the model already reports
+    // 'typescript' no redundant switch fires — assert no wrong-id call.
+    await waitFor(() => expect(fake.model.getLanguageId).toHaveBeenCalled());
+    expect(fake.setModelLanguage).not.toHaveBeenCalledWith(expect.anything(), 'ts');
   });
 
   it('applies option changes via updateOptions', async () => {

@@ -11,7 +11,7 @@ import {
   untracked,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { CodeEditorComponent } from '../code-editor/code-editor';
+import { KjEditorComponent } from '@kouji-ui/components';
 import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
 import { DocExample } from '../../services/docs.service';
@@ -26,7 +26,7 @@ export interface CodeExample {
 @Component({
   selector: 'kj-code-preview',
   standalone: true,
-  imports: [CodeEditorComponent],
+  imports: [KjEditorComponent],
   templateUrl: './code-preview.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './code-preview.css',

@@ -1,7 +1,4 @@
-import {
-  type EnvironmentProviders,
-  makeEnvironmentProviders,
-} from '@angular/core';
+import { type EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { KJ_MONACO_CONFIG, type KjMonacoConfig } from './editor.tokens';
 
 /**

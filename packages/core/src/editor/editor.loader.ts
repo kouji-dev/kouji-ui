@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { KJ_MONACO_CONFIG } from './editor.tokens';
-import type { KjMonaco } from './editor.types';
+import { KJ_MONACO_LANGUAGE_LOADERS, normalizeLanguage } from './editor.languages';
+import type { KjMonaco, KjMonacoLanguageLoader } from './editor.types';
 
 /**
  * Resolves the Monaco namespace **once** and memoises the promise, so every
@@ -23,7 +24,9 @@ import type { KjMonaco } from './editor.types';
 @Injectable({ providedIn: 'root' })
 export class KjEditorLoader {
   private readonly config = inject(KJ_MONACO_CONFIG);
+  private readonly languageLoaders = inject(KJ_MONACO_LANGUAGE_LOADERS);
   private promise: Promise<KjMonaco> | null = null;
+  private readonly loadedLanguages = new Map<string, Promise<void>>();
 
   /** Resolve Monaco (cached after the first call). */
   load(): Promise<KjMonaco> {
@@ -31,6 +34,26 @@ export class KjEditorLoader {
       this.promise = this.config.loader ? this.config.loader() : this.loadFromCdn();
     }
     return this.promise;
+  }
+
+  /**
+   * Ensure a language's contribution is loaded before it's used. Runs the loader
+   * registered via {@link provideMonacoLanguages} for this id (once, memoised).
+   * No-ops when no loader is registered — the default CDN Monaco already ships
+   * every language, so this only does work for lean/self-hosted setups.
+   */
+  ensureLanguage(language: string): Promise<void> {
+    const id = normalizeLanguage(language);
+    const existing = this.loadedLanguages.get(id);
+    if (existing) return existing;
+
+    let loader: KjMonacoLanguageLoader | undefined;
+    for (const map of this.languageLoaders) {
+      if (map[id]) loader = map[id];
+    }
+    const done = loader ? loader().then(() => undefined) : Promise.resolve();
+    this.loadedLanguages.set(id, done);
+    return done;
   }
 
   private async loadFromCdn(): Promise<KjMonaco> {
