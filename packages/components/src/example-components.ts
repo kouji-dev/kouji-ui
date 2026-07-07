@@ -137,6 +137,7 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   KjCascadeSelectDataDrivenExample: 'cascade-select',
   KjRichTextEditorExample: 'rich-text',
   KjRichTextEditorReadonlyExample: 'rich-text',
+  KjRichTextEditorCustomNodeExample: 'rich-text',
   KjCascadeSelectDisabledExample: 'cascade-select',
   KjCascadeSelectExample: 'cascade-select',
   KjCascadeSelectFieldExample: 'cascade-select',

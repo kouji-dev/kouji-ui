@@ -9,7 +9,13 @@ Add `KjRichTextEditor` — a rich-text editor wrapping [Lexical](https://lexical
   Lexical engine (loaded lazily via dynamic `import()` for SSR safety, no CDK). Exposes
   reactive state signals (`isBold`, `blockType`, `canUndo`, …), imperative commands
   (`toggleFormat`, `setBlock`, `toggleList`, `toggleLink`, `insertImage`, `undo`/`redo`),
-  a `KjRichTextPlugin` registration system, and `ControlValueAccessor` form support.
+  and `ControlValueAccessor` form support.
+- **Extension framework** (`@kouji-ui/core`): register nodes/behaviours from outside the
+  engine. `KJ_RICH_TEXT` context token, `provideKjRichText(...)` + a `[kjRichTextExtension]`
+  directive, the `KjRichTextExtension` contract (lazy `nodes` factory collected before
+  `createEditor`, `decorators`, `setup`), a `createKjDecoratorNode()` node factory, and a
+  CDK-free Angular decorator-node bridge (`injectRichTextNode`). Built-in features are
+  themselves extensions. `KjRichTextPlugin` remains as a deprecated alias.
 - **Components** (`@kouji-ui/components`): a styled `<kj-rich-text-editor>` with an
   accessible `role="toolbar"` (roving tabindex, `aria-pressed`) for bold/italic/underline/
   strikethrough/inline-code, headings, lists, quote, code block, links, images, and

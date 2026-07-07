@@ -1,10 +1,15 @@
 import {
+  ApplicationRef,
   Directive,
   DestroyRef,
   ElementRef,
+  EnvironmentInjector,
+  Injector,
   PLATFORM_ID,
+  type Type,
   afterNextRender,
   computed,
+  createComponent,
   effect,
   forwardRef,
   inject,
@@ -16,7 +21,14 @@ import { isPlatformBrowser } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import type { LexicalEditor, SerializedEditorState } from 'lexical';
 import type { RichTextEngine } from './engine';
-import type { KjRichTextPlugin } from './rich-text-plugin';
+import type { KjRichTextExtension } from './rich-text-plugin';
+import {
+  KJ_RICH_TEXT,
+  KJ_RICH_TEXT_EXTENSIONS,
+  KJ_RICH_TEXT_NODE,
+  type KjDecoratorMountAdapter,
+  type KjRichTextHost,
+} from './rich-text.context';
 import type {
   KjBlockType,
   KjImageInsert,
@@ -72,17 +84,29 @@ const EMPTY_STATE: KjRichTextState = {
   },
   providers: [
     { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => KjRichTextEditor), multi: true },
+    { provide: KJ_RICH_TEXT, useExisting: forwardRef(() => KjRichTextEditor) },
   ],
 })
-export class KjRichTextEditor implements ControlValueAccessor {
+export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly envInjector = inject(EnvironmentInjector);
+  private readonly appRef = inject(ApplicationRef);
+  /** App-/scope-wide extensions contributed via {@link provideKjRichText}. */
+  private readonly providedExtensions = inject(KJ_RICH_TEXT_EXTENSIONS, { optional: true }) ?? [];
+  /** Extensions registered by child directives via {@link registerExtension}. */
+  private readonly childExtensions: KjRichTextExtension[] = [];
 
   /** Initial content as an HTML string. Ongoing edits are reported via outputs / forms. */
   readonly kjValue = input<string>('');
-  /** Additional plugins appended to the built-in set (history, lists, markdown). */
-  readonly kjPlugins = input<readonly KjRichTextPlugin[]>([]);
+  /** Additional extensions appended to the built-in set (history, lists, markdown, …). */
+  readonly kjExtensions = input<readonly KjRichTextExtension[]>([]);
+  /**
+   * @deprecated Renamed to {@link kjExtensions}. Still honored (merged) for
+   * backwards compatibility.
+   */
+  readonly kjPlugins = input<readonly KjRichTextExtension[]>([]);
   /** Makes the editor non-editable while still selectable. */
   readonly kjReadonly = input<boolean>(false);
   /** Native spellcheck toggle. */
@@ -145,13 +169,20 @@ export class KjRichTextEditor implements ControlValueAccessor {
       const { createRichTextEngine } = await import('./engine');
       if (this.destroyed) return;
       const initial = this.pendingValue ?? this.kjValue();
+      const extensions: KjRichTextExtension[] = [
+        ...this.providedExtensions,
+        ...this.kjExtensions(),
+        ...this.kjPlugins(),
+        ...this.childExtensions,
+      ];
       this.applyingExternal = true;
       const engine = createRichTextEngine(
         this.el.nativeElement,
         {
           initialHtml: initial,
-          plugins: this.kjPlugins(),
+          extensions,
           namespace: this.kjNamespace(),
+          mount: this.createMountAdapter(),
         },
         {
           onState: (s) => this.state.set(s),
@@ -174,6 +205,40 @@ export class KjRichTextEditor implements ControlValueAccessor {
     this.valueChange.emit(html);
     this.textChange.emit(text);
     this.jsonChange.emit(json);
+  }
+
+  /**
+   * Register an extension with this editor. Contributed nodes only take effect if
+   * registered before initialization (during a child directive's `ngOnInit`, or
+   * via {@link provideKjRichText}). `setup`-only extensions can be added anytime
+   * a new editor initializes.
+   */
+  registerExtension(extension: KjRichTextExtension): void {
+    this.childExtensions.push(extension);
+  }
+
+  /** Build the Angular mount adapter the engine uses for decorator-node components. */
+  private createMountAdapter(): KjDecoratorMountAdapter {
+    return {
+      mount: (component, node) => {
+        const elementInjector = Injector.create({
+          parent: this.envInjector,
+          providers: [{ provide: KJ_RICH_TEXT_NODE, useValue: node }],
+        });
+        const ref = createComponent(component as Type<unknown>, {
+          environmentInjector: this.envInjector,
+          elementInjector,
+        });
+        this.appRef.attachView(ref.hostView);
+        return {
+          element: ref.location.nativeElement as HTMLElement,
+          destroy: () => {
+            this.appRef.detachView(ref.hostView);
+            ref.destroy();
+          },
+        };
+      },
+    };
   }
 
   // -- commands (no-ops until initialized) ---------------------------------

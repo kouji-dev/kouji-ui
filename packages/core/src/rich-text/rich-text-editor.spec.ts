@@ -1,10 +1,36 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, test, beforeEach, afterEach } from 'vitest';
-import { $getRoot, $isTextNode } from 'lexical';
+import { describe, expect, test, beforeEach, afterEach, vi } from 'vitest';
+import * as lexical from 'lexical';
+import { $getRoot, $isTextNode, $insertNodes } from 'lexical';
 import { createRichTextEngine, type RichTextEngine } from './engine';
 import type { KjRichTextState } from './rich-text-editor.types';
 import { KjRichTextEditor } from './rich-text-editor';
+import { KjRichTextExtensionDirective } from './rich-text-extension';
+import { createKjDecoratorNode } from './decorator-node';
+import type { KjRichTextExtension } from './rich-text-plugin';
+import {
+  KJ_RICH_TEXT,
+  provideKjRichText,
+  KJ_RICH_TEXT_EXTENSIONS,
+  type KjDecoratorMountAdapter,
+  type KjRichTextHost,
+} from './rich-text.context';
+
+/** A trivial standalone component used as a decorator-node target in tests. */
+@Component({ selector: 'kj-test-chip', standalone: true, template: `chip` })
+class TestChip {}
+
+/** Insert a node produced by `$create` after selecting the end of the document. */
+function insertNode(engine: RichTextEngine, create: () => lexical.LexicalNode): void {
+  engine.editor.update(
+    () => {
+      $getRoot().selectEnd();
+      $insertNodes([create()]);
+    },
+    { discrete: true },
+  );
+}
 
 /** Fully select the text of the first text node so formatting commands apply. */
 function selectAllText(engine: RichTextEngine): void {
@@ -196,5 +222,143 @@ describe('KjRichTextEditor directive (a11y host)', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement.querySelector('[kjRichTextEditor]')!;
     expect(el.getAttribute('aria-readonly')).toBe('true');
+  });
+});
+
+describe('extension framework', () => {
+  let host: HTMLDivElement;
+  let engine: RichTextEngine;
+
+  beforeEach(() => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+  });
+  afterEach(() => {
+    engine?.destroy();
+    host.remove();
+  });
+
+  test('collects extension-contributed nodes before createEditor', () => {
+    const badge = createKjDecoratorNode(lexical, {
+      type: 'test-badge',
+      component: TestChip,
+      inline: true,
+    });
+    engine = createRichTextEngine(
+      host,
+      { initialHtml: '<p>hi</p>', extensions: [{ name: 'badge', nodes: () => [badge.Node] }] },
+      { onState() {}, onValue() {} },
+    );
+    // Inserting a node of a type only known to the extension proves it was
+    // collected into createEditor (otherwise Lexical throws "not registered").
+    insertNode(engine, () => badge.$create({ label: 'x' }));
+
+    const types: string[] = [];
+    engine.editor.getEditorState().read(() => {
+      const walk = (node: lexical.LexicalNode): void => {
+        types.push(node.getType());
+        const el = node as unknown as { getChildren?: () => lexical.LexicalNode[] };
+        el.getChildren?.().forEach(walk);
+      };
+      walk($getRoot());
+    });
+    expect(types).toContain('test-badge');
+  });
+
+  test('runs extension setup and calls its teardown on destroy', () => {
+    const teardown = vi.fn();
+    const setup = vi.fn(() => teardown);
+    engine = createRichTextEngine(
+      host,
+      { extensions: [{ name: 'x', setup }] },
+      { onState() {}, onValue() {} },
+    );
+    expect(setup).toHaveBeenCalledTimes(1);
+    expect(teardown).not.toHaveBeenCalled();
+    engine.destroy();
+    expect(teardown).toHaveBeenCalledTimes(1);
+  });
+
+  test('mounts an Angular component for a decorator node and disposes it', () => {
+    const badge = createKjDecoratorNode(lexical, {
+      type: 'test-decorator',
+      component: TestChip,
+      inline: true,
+    });
+    const mount = vi.fn();
+    const destroy = vi.fn();
+    const adapter: KjDecoratorMountAdapter = {
+      mount: (component, node) => {
+        mount(component, node);
+        return { element: document.createElement('span'), destroy };
+      },
+    };
+    engine = createRichTextEngine(
+      host,
+      {
+        initialHtml: '<p>x</p>',
+        extensions: [
+          {
+            name: 'badge',
+            nodes: () => [badge.Node],
+            decorators: [{ nodeType: 'test-decorator', component: TestChip }],
+          },
+        ],
+        mount: adapter,
+      },
+      { onState() {}, onValue() {} },
+    );
+    insertNode(engine, () => badge.$create({ label: 'y' }));
+    expect(mount).toHaveBeenCalledTimes(1);
+    expect(mount.mock.calls[0][0]).toBe(TestChip);
+    engine.destroy();
+    expect(destroy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('provideKjRichText + KjRichTextExtensionDirective', () => {
+  test('provideKjRichText returns multi providers for the extensions token', () => {
+    const ext: KjRichTextExtension = { name: 'a' };
+    const providers = provideKjRichText(ext) as Array<{
+      provide: unknown;
+      multi: boolean;
+      useValue: unknown;
+    }>;
+    expect(providers).toHaveLength(1);
+    expect(providers[0].provide).toBe(KJ_RICH_TEXT_EXTENSIONS);
+    expect(providers[0].multi).toBe(true);
+    expect(providers[0].useValue).toBe(ext);
+  });
+
+  test('the extension directive registers with the host context on init', () => {
+    const registered: KjRichTextExtension[] = [];
+    const fakeHost: KjRichTextHost = {
+      editor: signal(null),
+      state: signal({
+        activeFormats: new Set(),
+        blockType: 'paragraph',
+        canUndo: false,
+        canRedo: false,
+        isLink: false,
+        empty: true,
+      }),
+      registerExtension: (e) => registered.push(e),
+    };
+
+    @Component({
+      standalone: true,
+      imports: [KjRichTextExtensionDirective],
+      providers: [{ provide: KJ_RICH_TEXT, useValue: fakeHost }],
+      template: `<div [kjRichTextExtension]="ext"></div>`,
+    })
+    class ExtHost {
+      ext: KjRichTextExtension = { name: 'z' };
+    }
+
+    TestBed.configureTestingModule({ imports: [ExtHost] });
+    const fixture = TestBed.createComponent(ExtHost);
+    fixture.detectChanges();
+    expect(registered).toHaveLength(1);
+    expect(registered[0].name).toBe('z');
   });
 });

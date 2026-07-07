@@ -1,40 +1,92 @@
-import type { LexicalEditor } from 'lexical';
+import type { Type } from '@angular/core';
+import type {
+  CommandListenerPriority,
+  Klass,
+  LexicalCommand,
+  LexicalEditor,
+  LexicalNode,
+} from 'lexical';
 
 /**
- * Context handed to a {@link KjRichTextPlugin} when it is registered.
- * Provides the live Lexical editor instance so the plugin can register
- * commands, listeners, nodes, or transforms.
+ * Context handed to a {@link KjRichTextExtension} `setup` when it is registered.
+ * Wraps the live editor with convenience passthroughs so extensions rarely need
+ * to import Lexical command/transform plumbing directly.
  */
 export interface KjRichTextContext {
   /** The initialized Lexical editor instance. */
   readonly editor: LexicalEditor;
+  /**
+   * Register a command listener. Returns a teardown that unregisters it.
+   * (Passthrough to `editor.registerCommand`.)
+   */
+  registerCommand<P>(
+    command: LexicalCommand<P>,
+    listener: (payload: P, editor: LexicalEditor) => boolean,
+    priority: CommandListenerPriority,
+  ): () => void;
+  /**
+   * Register a node transform. Returns a teardown that unregisters it.
+   * (Passthrough to `editor.registerNodeTransform`.)
+   */
+  registerNodeTransform<T extends LexicalNode>(
+    klass: Klass<T>,
+    listener: (node: T) => void,
+  ): () => void;
+}
+
+/**
+ * Maps a Lexical decorator-node type to the Angular component that renders it.
+ * The engine's decorator bridge mounts the component into each node's DOM.
+ */
+export interface KjDecoratorRegistration {
+  /** The Lexical node `getType()` value this renders. */
+  readonly nodeType: string;
+  /** The standalone Angular component to mount for each node instance. */
+  readonly component: Type<unknown>;
 }
 
 /**
  * A composable unit of editor behaviour registered with {@link KjRichTextEditor}.
  *
- * Built-in behaviours (history, lists, markdown shortcuts) are plugins, and
- * consumers can supply their own via the `kjPlugins` input to extend the editor
- * (e.g. mentions, custom nodes) without forking the core.
+ * An extension can contribute **nodes**, **decorator components**, and/or runtime
+ * **behaviour** — the three things needed to add a first-class feature (mentions,
+ * embeds, custom marks) from outside the engine:
  *
- * `setup` runs once, browser-side, after the editor is created; it returns a
- * teardown callback invoked when the editor is destroyed.
+ * - `nodes` is a **lazy factory** resolved during the engine's browser-side init
+ *   (after Lexical is dynamically imported), keeping node classes out of the base
+ *   bundle and SSR-safe. It receives the imported `lexical` namespace.
+ * - `decorators` registers Angular components for the node types it renders.
+ * - `setup` runs once after the editor is created and returns a teardown.
  *
  * @example
  * ```ts
- * const hashtagPlugin: KjRichTextPlugin = {
- *   name: 'hashtag',
- *   setup: ({ editor }) => registerHashtag(editor),
+ * const badge = createKjDecoratorNode(lexical, { type: 'badge', component: BadgeChip, inline: true });
+ * export const badgeExtension: KjRichTextExtension = {
+ *   name: 'badge',
+ *   nodes: () => [badge.Node],
+ *   decorators: [{ nodeType: 'badge', component: BadgeChip }],
  * };
  * ```
  */
-export interface KjRichTextPlugin {
-  /** Unique, human-readable plugin name (used for diagnostics). */
+export interface KjRichTextExtension {
+  /** Unique, human-readable extension name (used for diagnostics). */
   readonly name: string;
   /**
-   * Register the plugin against the editor.
-   * @param context - The editor context.
-   * @returns A teardown callback that unregisters the plugin.
+   * Lazy node factory. Receives the imported `lexical` namespace and returns the
+   * node classes this extension contributes. Collected **before** editor creation.
    */
-  setup(context: KjRichTextContext): () => void;
+  nodes?(lexical: typeof import('lexical')): ReadonlyArray<Klass<LexicalNode>>;
+  /** Angular components to render for this extension's decorator node types. */
+  decorators?: readonly KjDecoratorRegistration[];
+  /**
+   * Register runtime behaviour (commands, listeners, transforms) against the
+   * editor. Runs once after creation; returns an optional teardown callback.
+   */
+  setup?(context: KjRichTextContext): (() => void) | void;
 }
+
+/**
+ * @deprecated Renamed to {@link KjRichTextExtension}. Kept as an alias for
+ * backwards compatibility; will be removed in a future major.
+ */
+export type KjRichTextPlugin = KjRichTextExtension;

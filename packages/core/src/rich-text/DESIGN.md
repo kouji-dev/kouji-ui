@@ -16,23 +16,62 @@ composes it with a toolbar and design tokens. **No `@angular/cdk`** (strict repo
 
 | File | Responsibility |
 |---|---|
-| `rich-text-editor.ts` | `KjRichTextEditor` directive (`[kjRichTextEditor]`). Owns the Lexical editor instance, SSR-safe lazy init, reactive state signals, format/block/list/link/history/image commands, value in/out, `ControlValueAccessor`. |
-| `rich-text-plugin.ts` | `KjRichTextPlugin` interface + `KjRichTextContext` — the plugin registration system. Built-ins register through it; consumers can add their own. |
-| `plugins.ts` | Built-in plugin factories: history, list, link, markdown-shortcuts, code, image. Each returns a `KjRichTextPlugin`. |
-| `image-node.ts` | Self-rendering `ImageNode` (extends `DecoratorNode`, renders its own `<figure><img>` in `createDOM` — no framework decorator infra, jsdom/SSR safe). |
-| `rich-text-editor.types.ts` | Public types: `KjBlockType`, `KjTextFormat`, `KjEditorValue`, `KjEditorState`. |
-| `index.ts` / `public-api` | Barrel + exports. |
+| `rich-text-editor.ts` | `KjRichTextEditor` directive (`[kjRichTextEditor]`). Owns the Lexical editor instance, SSR-safe lazy init, reactive state signals, format/block/list/link/history/image commands, value in/out, `ControlValueAccessor`. Provides `KJ_RICH_TEXT`; collects extensions; hosts the Angular decorator mount adapter. |
+| `rich-text.context.ts` | `KJ_RICH_TEXT` context token (signal-context pattern), `KJ_RICH_TEXT_EXTENSIONS` multi-token + `provideKjRichText(...)`, `KJ_RICH_TEXT_NODE` + `injectRichTextNode()`, and the `KjDecoratorMountAdapter` contract. |
+| `rich-text-extension.ts` | `KjRichTextExtensionDirective` (`[kjRichTextExtension]`) — child directive that self-registers an extension with the nearest editor (like `Option`↔`Select`). |
+| `rich-text-plugin.ts` | `KjRichTextExtension` contract (`nodes` lazy factory + `decorators` + `setup`), `KjRichTextContext`, `KjDecoratorRegistration`. `KjRichTextPlugin` kept as a deprecated alias. |
+| `decorator-node.ts` | `createKjDecoratorNode(lexical, config)` — builds a `DecoratorNode` subclass rendered by an Angular component via the bridge. Returns `{ Node, $create, $is }`. No eager Lexical import (receives the namespace). |
+| `engine.ts` | Browser-only orchestrator (lazy). Collects nodes from all extensions **before** `createEditor`, runs setups after, and runs the decorator bridge. Built-in features are themselves extensions. |
+| `image-node.ts` | Self-rendering `KjImageNode` (extends `DecoratorNode`, renders its own `<figure><img>` in `createDOM` — jsdom/SSR safe). Contributed by the built-in `image` extension. |
+| `rich-text-editor.types.ts` | Public types: `KjBlockType`, `KjTextFormat`, `KjRichTextState`, `KjRichTextValue`, `KjImageInsert`. |
+| `index.ts` / `public-api` | Barrel + exports (framework surface is Lexical-free at runtime). |
 
 **SSR-safety** (mirrors `chart.ts`): all Lexical runtime symbols are loaded via `await import()`
 inside `afterNextRender`. Only `import type` at module top-level (erased at build → no SSR
-`require`). All commands guard on `this.#editor()` being non-null; before init they are no-ops.
+`require`). All commands guard on the engine being non-null; before init they are no-ops.
 
-**Plugin system.** After the editor is created (browser only), each registered
-`KjRichTextPlugin.setup(ctx)` runs, receiving `{ editor, lexical, modules, announce }` where
-`modules` holds the already-imported `@lexical/*` namespaces. `setup` returns a teardown fn.
-Built-in set: `historyPlugin`, `listPlugin`, `linkPlugin`, `markdownShortcutsPlugin`,
-`codePlugin`, `imagePlugin`, plus core rich-text (`registerRichText`). Consumers pass extra
-plugins via the `kjPlugins` input.
+## Extension framework
+
+The core is a **registration framework** so nodes/behaviours can be added from outside the
+engine, in kouji's directive idiom. Built-in features (rich-text, list, link, code, image,
+history, markdown) are themselves extensions.
+
+**Extension contract** (`KjRichTextExtension`):
+- `nodes?(lexical)` — **lazy** node-class factory, resolved at engine init *after* the dynamic
+  Lexical import, so node classes stay out of the base bundle and SSR-safe. Nodes from **all**
+  extensions are collected **before** `createEditor` (fixing the old flaw where `setup` ran too
+  late to add nodes).
+- `decorators?` — `{ nodeType, component }[]` mapping decorator-node types to Angular components.
+- `setup?(ctx)` — runtime behaviour; `ctx` exposes `editor` + `registerCommand` /
+  `registerNodeTransform` passthroughs; returns an optional teardown.
+
+**Node factory** — `createKjDecoratorNode(lexical, { type, component, inline?, ariaLabel? })`
+returns `{ Node, $create, $is }`: a `DecoratorNode` subclass storing JSON `data`, whose
+instances render `component` (which reads its node via `injectRichTextNode()`).
+
+**Decorator bridge (no CDK)** — the engine registers a Lexical `decoratorListener`; for each
+decorator node it mounts the registered Angular component into the node's DOM using a
+`KjDecoratorMountAdapter` supplied by the directive (`createComponent` + `ApplicationRef` +
+an element injector providing `KJ_RICH_TEXT_NODE`), disposing on node removal / editor destroy.
+
+**Registration surfaces** (both kouji-idiomatic):
+- Child directive `[kjRichTextExtension]="ext | ext[]"` — injects `KJ_RICH_TEXT`, registers on
+  `ngOnInit` (before init).
+- `provideKjRichText(...exts)` — multi-provider (`KJ_RICH_TEXT_EXTENSIONS`) for app/route/component
+  scope, like `provideIcons`.
+- Per-instance input `kjExtensions` (`kjPlugins` kept as a deprecated alias).
+
+```ts
+// Define + register a custom node in ~10 lines, from outside the engine:
+const badge = createKjDecoratorNode(lexical, { type: 'badge', component: BadgeChip, inline: true });
+export const badgeExtension: KjRichTextExtension = {
+  name: 'badge',
+  nodes: () => [badge.Node],
+  decorators: [{ nodeType: 'badge', component: BadgeChip }],
+};
+// <div kjRichTextEditor [kjRichTextExtension]="badgeExtension"></div>
+// editor.update(() => $insertNodes([badge.$create({ label: 'New' })]));
+```
 
 **Reactive state** (signals, updated from a Lexical `registerUpdateListener` +
 `SELECTION_CHANGE`/`CAN_UNDO`/`CAN_REDO` command listeners):
@@ -73,14 +112,18 @@ bold, italic, underline, strikethrough, inline code; headings h1–h3; paragraph
 ordered + unordered lists; links (inline editor, Ctrl+K); undo/redo history; code blocks;
 markdown shortcuts; image insertion (by URL/alt, self-rendering node).
 
+## Delivered via the framework
+
+- **Angular-rendered decorator nodes** — the decorator bridge mounts Angular components into
+  Lexical decorator nodes (no CDK). Proven by the shipped **badge chip** custom-node example
+  (`rich-text-editor.custom-node.example.ts`).
+
 ## Deferred (honest)
 
 - **Mentions / @-typeahead** — requires a positioned popup menu; doing it without CDK means
   wiring kouji's overlay primitives into a Lexical typeahead. Significant standalone scope;
-  deferred to a follow-up. The `KjRichTextPlugin` system is the extension point for it.
-- **Angular-rendered decorator nodes** (rich interactive embeds) — the reference mounts Angular
-  components into decorator nodes via a `DecoratorsPlugin`. Images here use a self-rendering DOM
-  node instead (simpler, SSR/jsdom-safe). Full framework decorator mounting deferred.
+  deferred to a follow-up. It is now straightforward to build **on top of** the extension
+  framework (a `nodes` + `decorators` + `setup` extension registering the typeahead command).
 
 ## Accessibility (target WCAG 2.1 AAA)
 

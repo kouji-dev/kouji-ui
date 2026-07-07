@@ -6,6 +6,7 @@
  * imports never execute during SSR. It owns editor creation, plugin
  * registration, reactive state derivation, and all editor commands.
  */
+import * as lexical from 'lexical';
 import {
   createEditor,
   $getRoot,
@@ -19,7 +20,10 @@ import {
   CAN_UNDO_COMMAND,
   CAN_REDO_COMMAND,
   COMMAND_PRIORITY_LOW,
+  type Klass,
   type LexicalEditor,
+  type LexicalNode,
+  type NodeKey,
   type SerializedEditorState,
   type EditorThemeClasses,
 } from 'lexical';
@@ -39,21 +43,53 @@ import {
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
   REMOVE_LIST_COMMAND,
+  registerList,
   $isListNode,
 } from '@lexical/list';
 import { LinkNode, $toggleLink, $isLinkNode } from '@lexical/link';
 import { CodeNode, CodeHighlightNode, $createCodeNode, $isCodeNode } from '@lexical/code';
+import { registerHistory, createEmptyHistoryState } from '@lexical/history';
+import { registerMarkdownShortcuts, TRANSFORMERS } from '@lexical/markdown';
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { $setBlocksType } from '@lexical/selection';
 import { KjImageNode, $createKjImageNode } from './image-node';
-import { defaultPlugins } from './plugins';
-import type { KjRichTextPlugin } from './rich-text-plugin';
+import type { KjRichTextExtension, KjRichTextContext } from './rich-text-plugin';
+import type { KjDecoratorMountAdapter, KjMountedComponent } from './rich-text.context';
 import type {
   KjBlockType,
   KjImageInsert,
   KjRichTextState,
   KjTextFormat,
 } from './rich-text-editor.types';
+
+/**
+ * Built-in extensions. The core editor features are themselves extensions —
+ * each contributes its nodes (collected before `createEditor`) and/or behaviour
+ * (registered after). Consumer extensions are appended after these.
+ */
+const BUILTIN_EXTENSIONS: readonly KjRichTextExtension[] = [
+  {
+    name: 'rich-text',
+    nodes: () => [HeadingNode, QuoteNode],
+    setup: ({ editor }) => registerRichText(editor),
+  },
+  {
+    name: 'list',
+    nodes: () => [ListNode, ListItemNode],
+    setup: ({ editor }) => registerList(editor),
+  },
+  { name: 'link', nodes: () => [LinkNode] },
+  { name: 'code', nodes: () => [CodeNode, CodeHighlightNode] },
+  { name: 'image', nodes: () => [KjImageNode] },
+  {
+    name: 'history',
+    setup: ({ editor }) => registerHistory(editor, createEmptyHistoryState(), 300),
+  },
+  {
+    name: 'markdown-shortcuts',
+    setup: ({ editor }) => registerMarkdownShortcuts(editor, TRANSFORMERS),
+  },
+];
 
 /** CSS classes applied to editor nodes; styled by the components layer. */
 const THEME: EditorThemeClasses = {
@@ -84,10 +120,12 @@ const INLINE_FORMATS: readonly KjTextFormat[] = [
 export interface RichTextEngineConfig {
   /** Initial content as an HTML string. */
   initialHtml?: string;
-  /** Extra consumer plugins, appended after the built-in default set. */
-  plugins?: readonly KjRichTextPlugin[];
+  /** Consumer extensions, appended after the built-in set. */
+  extensions?: readonly KjRichTextExtension[];
   /** Lexical namespace (diagnostics only). */
   namespace?: string;
+  /** Adapter used to mount Angular components for decorator nodes. */
+  mount?: KjDecoratorMountAdapter;
 }
 
 /** Callbacks the engine invokes to push state/value changes to the directive. */
@@ -99,26 +137,34 @@ export interface RichTextEngineCallbacks {
 /**
  * Create and mount a Lexical editor on `root` and return an engine handle
  * exposing commands and lifecycle.
+ *
+ * Nodes are collected from every extension (built-in + consumer) **before**
+ * `createEditor`, so extensions can contribute their own node types — the core
+ * limitation this framework removes.
  */
 export function createRichTextEngine(
   root: HTMLElement,
   config: RichTextEngineConfig,
   callbacks: RichTextEngineCallbacks,
 ): RichTextEngine {
+  const extensions = [...BUILTIN_EXTENSIONS, ...(config.extensions ?? [])];
+
+  // Collect nodes from all extensions (lazy factories resolved with the
+  // now-imported Lexical namespace) before creating the editor.
+  const nodeSet = new Set<Klass<LexicalNode>>();
+  for (const extension of extensions) {
+    try {
+      for (const node of extension.nodes?.(lexical) ?? []) nodeSet.add(node);
+    } catch (error) {
+      console.error(`[KjRichTextEditor] extension "${extension.name}" nodes() failed`, error);
+    }
+  }
+
   const editor = createEditor({
     namespace: config.namespace ?? 'kj-rich-text',
     editable: true,
     theme: THEME,
-    nodes: [
-      HeadingNode,
-      QuoteNode,
-      ListNode,
-      ListItemNode,
-      LinkNode,
-      CodeNode,
-      CodeHighlightNode,
-      KjImageNode,
-    ],
+    nodes: [...nodeSet],
     onError: (error: Error) => {
       // Surface engine errors without breaking the host application.
       console.error('[KjRichTextEditor]', error);
@@ -126,8 +172,8 @@ export function createRichTextEngine(
   });
 
   editor.setRootElement(root);
-  const engine = new RichTextEngine(editor, callbacks);
-  engine.init(config);
+  const engine = new RichTextEngine(editor, callbacks, config.mount);
+  engine.init(extensions, config);
   return engine;
 }
 
@@ -137,25 +183,47 @@ export class RichTextEngine {
   private canUndo = false;
   private canRedo = false;
   private destroyed = false;
+  private readonly decoratorRegistry = new Map<string, unknown>();
+  private readonly mounted = new Map<NodeKey, KjMountedComponent>();
 
   constructor(
     readonly editor: LexicalEditor,
     private readonly callbacks: RichTextEngineCallbacks,
+    private readonly mountAdapter?: KjDecoratorMountAdapter,
   ) {}
 
-  /** @internal Register core behaviour, plugins, listeners, and seed content. */
-  init(config: RichTextEngineConfig): void {
-    // Core rich-text behaviour (selection, formatting commands, paste).
-    this.teardowns.push(registerRichText(this.editor));
+  /** @internal Register extension behaviour, listeners, decorators, and seed content. */
+  init(extensions: readonly KjRichTextExtension[], config: RichTextEngineConfig): void {
+    // Shared context passed to every extension's setup.
+    const context: KjRichTextContext = {
+      editor: this.editor,
+      registerCommand: (command, listener, priority) =>
+        this.editor.registerCommand(command, listener, priority),
+      registerNodeTransform: (klass, listener) =>
+        this.editor.registerNodeTransform(klass, listener),
+    };
 
-    // Built-in + consumer plugins.
-    const plugins = [...defaultPlugins(), ...(config.plugins ?? [])];
-    for (const plugin of plugins) {
-      try {
-        this.teardowns.push(plugin.setup({ editor: this.editor }));
-      } catch (error) {
-        console.error(`[KjRichTextEditor] plugin "${plugin.name}" failed to register`, error);
+    // Run each extension's setup (nodes were already collected pre-createEditor).
+    for (const extension of extensions) {
+      // Collect this extension's decorator component registrations.
+      for (const registration of extension.decorators ?? []) {
+        this.decoratorRegistry.set(registration.nodeType, registration.component);
       }
+      try {
+        const teardown = extension.setup?.(context);
+        if (teardown) this.teardowns.push(teardown);
+      } catch (error) {
+        console.error(`[KjRichTextEditor] extension "${extension.name}" setup failed`, error);
+      }
+    }
+
+    // Decorator bridge: mount Angular components for decorator nodes.
+    if (this.mountAdapter && this.decoratorRegistry.size > 0) {
+      this.teardowns.push(
+        this.editor.registerDecoratorListener((decorators: Record<NodeKey, unknown>) =>
+          this.reconcileDecorators(decorators),
+        ),
+      );
     }
 
     // Undo/redo availability.
@@ -206,6 +274,38 @@ export class RichTextEngine {
   private emitState(): void {
     if (this.destroyed) return;
     this.callbacks.onState(this.readState());
+  }
+
+  /**
+   * Mount/unmount Angular components for decorator nodes as they appear and
+   * disappear. `decorators` maps each decorator node key to the value returned
+   * by its `decorate()` — here, the node instance itself.
+   */
+  private reconcileDecorators(decorators: Record<NodeKey, unknown>): void {
+    if (!this.mountAdapter) return;
+    const liveKeys = new Set<NodeKey>(Object.keys(decorators) as NodeKey[]);
+
+    // Dispose components whose nodes were removed.
+    for (const [key, mounted] of this.mounted) {
+      if (!liveKeys.has(key)) {
+        mounted.destroy();
+        this.mounted.delete(key);
+      }
+    }
+
+    // Mount components for newly added decorator nodes.
+    for (const key of liveKeys) {
+      if (this.mounted.has(key)) continue;
+      const node = decorators[key] as { getType?: () => string } | undefined;
+      const type = node?.getType?.();
+      const component = type ? this.decoratorRegistry.get(type) : undefined;
+      if (!component) continue;
+      const host = this.editor.getElementByKey(key);
+      if (!host) continue;
+      const mounted = this.mountAdapter.mount(component, node);
+      host.appendChild(mounted.element);
+      this.mounted.set(key, mounted);
+    }
   }
 
   private readState(): KjRichTextState {
@@ -419,6 +519,15 @@ export class RichTextEngine {
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
+    // Dispose any mounted decorator components first.
+    for (const mounted of this.mounted.values()) {
+      try {
+        mounted.destroy();
+      } catch {
+        // ignore
+      }
+    }
+    this.mounted.clear();
     for (const teardown of this.teardowns.reverse()) {
       try {
         teardown();

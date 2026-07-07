@@ -46,6 +46,10 @@ let kjRteUid = 0;
  * @doc-example Readonly
  *   Renders existing content without editing affordances.
  *   @doc-file rich-text-editor.readonly.example.ts
+ * @doc-example Custom node (extension framework)
+ *   Define an Angular-rendered decorator node outside the engine and register it
+ *   with the `[kjRichTextExtension]` directive.
+ *   @doc-file rich-text-editor.custom-node.example.ts
  * @doc-aria role="textbox" — the editable surface, with aria-multiline="true".
  * @doc-aria role="toolbar" — the formatting controls, arrow-key navigable.
  * @doc-a11y Toolbar buttons expose aria-pressed; changes are announced via an aria-live region.

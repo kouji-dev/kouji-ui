@@ -49,4 +49,18 @@ test.describe('rich-text-editor', () => {
     const italic = editor.locator('button[aria-label="Italic"]');
     await expect(italic).toHaveAttribute('aria-pressed', 'true');
   });
+
+  // Exercises the extension framework: a custom Angular-rendered decorator node
+  // registered from outside the engine via [kjRichTextExtension].
+  test('inserts a custom badge decorator node via the extension framework', async ({ page }) => {
+    const example = page.locator('kj-rich-text-editor-custom-node-example');
+    await expect(example).toBeVisible();
+
+    const insert = example.getByRole('button', { name: 'Insert badge' });
+    await insert.click();
+
+    // The badge chip component mounts inside the editable surface.
+    await expect(example.locator('kj-badge-chip')).toHaveCount(1);
+    await expect(example.locator('.kj-badge-chip')).toHaveText('New');
+  });
 });
