@@ -72,3 +72,21 @@ test('roadmap link in navbar navigates and marks active', async ({ page }) => {
   await expect(page).toHaveURL(/\/roadmap$/);
   await expect(page.getByRole('link', { name: /^roadmap$/i }).first()).toHaveClass(/active/);
 });
+
+/**
+ * Regression: on a static host (Vercel) there is no `/api/roadmap` server
+ * fallback, so the board must get its data from data seeded on every page —
+ * not only when `/roadmap` is loaded directly. Reaching `/roadmap` via
+ * client-side navigation (the normal path: click the navbar link) must still
+ * fill the columns with cards.
+ */
+test('roadmap board fills after client-side navigation from home', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: /^roadmap$/i }).first().click();
+  await expect(page).toHaveURL(/\/roadmap$/);
+  await expect(page.getByRole('heading', { name: 'roadmap.' })).toBeVisible();
+  // Cards come from roadmap data; an empty board renders zero cards and only
+  // "nothing here right now" placeholders.
+  await expect(page.locator('kj-roadmap-card').first()).toBeVisible();
+  expect(await page.locator('kj-roadmap-card').count()).toBeGreaterThan(0);
+});
