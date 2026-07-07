@@ -19,3 +19,27 @@ export {
   provideKjChatBubble,
   type KjChatBubbleConfig,
 } from './config';
+
+// AI / LLM streaming layer (additive — coexists with the chat-bubble kit above).
+export {
+  KjChatStore,
+  nextChatMessageId,
+  type KjChatMessageData,
+  type KjChatMessageRole,
+  type KjChatStatus,
+  type KjChatCitation,
+  type KjChatToolCall,
+  type KjChatToolStatus,
+} from './chat-stream';
+export {
+  KjChatAnnouncer,
+  coalesceAnnouncement,
+  type KjCoalesceOptions,
+  type KjCoalesceResult,
+} from './chat-announcer';
+export {
+  parseSlash,
+  matchSlashCommands,
+  type KjSlashCommand,
+  type KjSlashParse,
+} from './chat-slash';
