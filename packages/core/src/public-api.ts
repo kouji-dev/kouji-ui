@@ -73,6 +73,7 @@ export * from './time-picker/index';
 export * from './color-picker/index';
 export * from './calendar/index';
 export * from './date-picker/index';
+export * from './date-range-presets/index';
 
 // -- Charts --
 export * from './chart/index';

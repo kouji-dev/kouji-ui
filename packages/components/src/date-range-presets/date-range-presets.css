@@ -1,0 +1,49 @@
+.kj-date-range-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: var(--kj-date-range-presets-min-width, 12rem);
+  padding: var(--kj-space-xs, 0.25rem);
+  background: var(--kj-bg-elevated, transparent);
+  border: var(--kj-border) solid var(--kj-border-subtle, transparent);
+  border-radius: var(--kj-radius-field, 0.375rem);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: var(--kj-fg-default);
+}
+
+.kj-date-range-presets__option {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  /* WCAG 2.5.5 — 44px target height. */
+  min-height: 44px;
+  padding: 0 var(--kj-space-md, 0.75rem);
+  background: transparent;
+  border: var(--kj-border) solid transparent;
+  border-radius: var(--kj-radius-field, 0.375rem);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.kj-date-range-presets__option:hover:not([disabled]) {
+  background: var(--kj-bg-field);
+}
+
+.kj-date-range-presets__option:focus-visible {
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: -2px;
+}
+
+.kj-date-range-presets__option[data-selected] {
+  background: var(--kj-bg-primary);
+  color: var(--kj-fg-on-primary);
+  font-weight: 600;
+}
+
+.kj-date-range-presets__option[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
