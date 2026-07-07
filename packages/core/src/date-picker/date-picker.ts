@@ -1,6 +1,5 @@
 import {
   Directive,
-  LOCALE_ID,
   booleanAttribute,
   computed,
   inject,
@@ -8,6 +7,7 @@ import {
   model,
 } from '@angular/core';
 import { KjDisabled } from '../primitives/interaction/disabled';
+import { KjLocale } from '../locale/index';
 import { startOfDay } from '../calendar/date-utils';
 import { KJ_DATE_PICKER, type KjDatePickerContext } from './date-picker.context';
 
@@ -55,7 +55,7 @@ function nextPanelId(): string {
 })
 export class KjDatePicker implements KjDatePickerContext {
   private readonly disabledHost = inject(KjDisabled);
-  private readonly defaultLocale = inject(LOCALE_ID);
+  private readonly localeProvider = inject(KjLocale);
 
   /** Current selected value. Two-way bindable — `[(kjValue)]`. */
   readonly kjValue = model<Date | null>(null);
@@ -69,7 +69,7 @@ export class KjDatePicker implements KjDatePickerContext {
   /** Per-date predicate. */
   readonly kjDisabledDates = input<((d: Date) => boolean) | null>(null);
 
-  /** BCP-47 locale tag. Defaults to Angular's `LOCALE_ID`. */
+  /** BCP-47 locale tag. Falls back to the `KjLocale` provider (`provideKjLocale`). */
   readonly kjLocale = input<string>('');
 
   /** First day of the week override (0=Sun … 6=Sat). */
@@ -98,7 +98,7 @@ export class KjDatePicker implements KjDatePickerContext {
   readonly minDate = computed(() => this.kjMin());
   readonly maxDate = computed(() => this.kjMax());
   readonly disabledDates = computed(() => this.kjDisabledDates());
-  readonly locale = computed(() => this.kjLocale() || this.defaultLocale);
+  readonly locale = computed(() => this.kjLocale() || this.localeProvider.locale());
   readonly disabled = this.disabledHost.disabled;
   readonly readonly = computed(() => this.kjReadonly());
 
