@@ -2,6 +2,7 @@
 export const KJ_COMPONENTS_VERSION = '0.0.1';
 
 export * from './accordion/index';
+export * from './action-sheet/index';
 export * from './alert/index';
 export * from './avatar/index';
 export * from './badge/index';
@@ -44,6 +45,7 @@ export * from './popover/index';
 export * from './progress-bar/index';
 export * from './radio/index';
 export * from './select/index';
+export * from './sheet/index';
 export * from './skeleton/index';
 export * from './skip-link/index';
 export * from './slider/index';

@@ -14,6 +14,7 @@ import type { Type } from '@angular/core';
 
 export const EXAMPLE_LOADERS: Record<string, () => Promise<Record<string, Type<unknown>>>> = {
   'accordion': () => import('./accordion/_examples') as Promise<Record<string, Type<unknown>>>,
+  'action-sheet': () => import('./action-sheet/_examples') as Promise<Record<string, Type<unknown>>>,
   'alert': () => import('./alert/_examples') as Promise<Record<string, Type<unknown>>>,
   'avatar': () => import('./avatar/_examples') as Promise<Record<string, Type<unknown>>>,
   'badge': () => import('./badge/_examples') as Promise<Record<string, Type<unknown>>>,
@@ -57,6 +58,7 @@ export const EXAMPLE_LOADERS: Record<string, () => Promise<Record<string, Type<u
   'progress-bar': () => import('./progress-bar/_examples') as Promise<Record<string, Type<unknown>>>,
   'radio': () => import('./radio/_examples') as Promise<Record<string, Type<unknown>>>,
   'select': () => import('./select/_examples') as Promise<Record<string, Type<unknown>>>,
+  'sheet': () => import('./sheet/_examples') as Promise<Record<string, Type<unknown>>>,
   'skeleton': () => import('./skeleton/_examples') as Promise<Record<string, Type<unknown>>>,
   'skip-link': () => import('./skip-link/_examples') as Promise<Record<string, Type<unknown>>>,
   'slider': () => import('./slider/_examples') as Promise<Record<string, Type<unknown>>>,
@@ -77,6 +79,8 @@ export const EXAMPLE_LOADERS: Record<string, () => Promise<Record<string, Type<u
 
 export const EXAMPLE_OWNER: Record<string, string> = {
   KjAccordionDefaultExample: 'accordion',
+  KjActionSheetExample: 'action-sheet',
+  KjActionSheetIconsExample: 'action-sheet',
   KjAccordionDisabledExample: 'accordion',
   KjAccordionMultipleExample: 'accordion',
   KjAccordionRichContentExample: 'accordion',
@@ -294,6 +298,9 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   KjSelectDisabledExample: 'select',
   KjSelectGroupedExample: 'select',
   KjSelectPlaceholderExample: 'select',
+  KjSheetExample: 'sheet',
+  KjSheetDetentsExample: 'sheet',
+  KjSheetScrollableExample: 'sheet',
   KjSkeletonAnimationsExample: 'skeleton',
   KjSkeletonCardExample: 'skeleton',
   KjSkeletonExample: 'skeleton',
