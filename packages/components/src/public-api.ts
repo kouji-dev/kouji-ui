@@ -45,6 +45,7 @@ export * from './password-input/index';
 export * from './popover/index';
 export * from './progress-bar/index';
 export * from './radio/index';
+export * from './rich-text/index';
 export * from './select/index';
 export * from './sheet/index';
 export * from './skeleton/index';
