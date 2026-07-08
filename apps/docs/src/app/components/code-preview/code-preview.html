@@ -85,7 +85,7 @@
         </div>
       </div>
       @if (activeExample(); as ex) {
-        <kj-code-editor [code]="ex.content" [lang]="ex.lang" [showHeader]="false" />
+        <kj-editor [kjValue]="ex.content" [kjLanguage]="ex.lang" [kjReadonly]="true" [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjAutoHeight]="true" [kjMaxHeight]="620" kjAriaLabel="Code example" />
       }
     } @else {
       <div class="no-code-for-theme">
@@ -120,7 +120,7 @@
       </div>
     </div>
     @if (activeExample(); as ex) {
-      <kj-code-editor [code]="ex.content" [lang]="ex.lang" [showHeader]="false" />
+      <kj-editor [kjValue]="ex.content" [kjLanguage]="ex.lang" [kjReadonly]="true" [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjAutoHeight]="true" [kjMaxHeight]="620" kjAriaLabel="Code example" />
     }
   }
 

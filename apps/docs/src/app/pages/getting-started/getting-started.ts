@@ -1,7 +1,7 @@
 ﻿import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DocsCalloutComponent } from '../../components/callout/callout';
-import { CodeEditorComponent } from '../../components/code-editor/code-editor';
+import { KjEditorComponent } from '@kouji-ui/components';
 import { PageTocDirective } from '../../components/page-toc/page-toc.directive';
 import { PageTocComponent } from '../../components/page-toc/page-toc';
 
@@ -11,7 +11,7 @@ import { PageTocComponent } from '../../components/page-toc/page-toc';
   imports: [
     RouterLink,
     DocsCalloutComponent,
-    CodeEditorComponent,
+    KjEditorComponent,
     PageTocDirective,
     PageTocComponent,
   ],

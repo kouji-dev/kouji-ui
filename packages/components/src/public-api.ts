@@ -24,6 +24,7 @@ export * from './dialog/index';
 export * from './direction-toggle/index';
 export * from './drawer/index';
 export * from './dropdown-menu/index';
+export * from './editor/index';
 export * from './empty-state/index';
 export * from './field/index';
 export * from './file-upload/index';

@@ -497,7 +497,7 @@
   background: var(--kj-bg-body);
 }
 
-.usage-editor kj-code-editor { display: block; }
+.usage-editor kj-editor { display: block; }
 
 /* ── Empty / fallback states ────────────────────────────────── */
 .empty-state {

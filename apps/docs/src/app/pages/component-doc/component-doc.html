@@ -103,7 +103,7 @@
                      auto-derived import line above. -->
                 @if (usageSource(); as src) {
                   <div class="usage-editor">
-                    <kj-code-editor [code]="src" lang="ts" [readonly]="true" [showHeader]="false" />
+                    <kj-editor [kjValue]="src" kjLanguage="ts" [kjReadonly]="true" [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjAutoHeight]="true" [kjMaxHeight]="620" kjAriaLabel="Usage example" />
                   </div>
                 }
               </section>

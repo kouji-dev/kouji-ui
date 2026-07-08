@@ -19,7 +19,7 @@ import { DocsService } from '../../services/docs.service';
 import type { DocItem, DocPage } from '../../services/docs.service';
 import type { CalloutKind, PageExample } from '../../../lib/docs-extractor.types';
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
-import { CodeEditorComponent } from '../../components/code-editor/code-editor';
+import { KjEditorComponent } from '@kouji-ui/components';
 import { PlaygroundComponent } from './playground';
 import { PLAYGROUND_FILES } from './playground-files';
 
@@ -37,7 +37,7 @@ const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'err
   imports: [
     RouterLink,
     CodePreviewComponent,
-    CodeEditorComponent,
+    KjEditorComponent,
     PlaygroundComponent,
     KjTabsComponent,
     KjTabListComponent,
