@@ -41,18 +41,47 @@
 
   .kj-rte__toolbar {
     display: flex;
-    flex-wrap: wrap;
+    /* Single horizontal row that scrolls on overflow rather than wrapping into
+       a tall, chunked block in narrow containers. All buttons stay keyboard-
+       reachable (roving tabindex) and scroll into view on focus. */
+    flex-wrap: nowrap;
     align-items: center;
     gap: var(--kj-space-xs, 0.25rem);
     padding: var(--kj-space-sm);
     background: var(--kj-rte-toolbar-bg);
     border-bottom: var(--kj-border) solid var(--kj-rte-border-color);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--kj-rte-border-color) transparent;
+  }
+
+  /* Subtle, unobtrusive scrollbar for the overflowing toolbar (WebKit). */
+  .kj-rte__toolbar::-webkit-scrollbar {
+    height: 0.5rem;
+  }
+
+  .kj-rte__toolbar::-webkit-scrollbar-thumb {
+    background: var(--kj-rte-border-color);
+    border-radius: 0.25rem;
+  }
+
+  .kj-rte__toolbar::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .kj-rte__group {
     display: flex;
     align-items: center;
     gap: var(--kj-space-xs, 0.25rem);
+  }
+
+  /* Keep buttons, groups and separators at their natural size so the row
+     scrolls instead of squashing them when space is tight. */
+  .kj-rte__group,
+  .kj-rte__sep,
+  .kj-rte__btn {
+    flex: 0 0 auto;
   }
 
   .kj-rte__sep {

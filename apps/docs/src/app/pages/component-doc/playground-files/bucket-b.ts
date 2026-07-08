@@ -14,16 +14,14 @@ import { PLAYGROUND as FieldPlayground } from '@kouji-ui/components/field/field.
 
 /**
  * Bucket B migrations. Keys are `DocItem.symbol` matching the directive /
- * component the docs page is built around. Note that `command-palette`'s
- * `@doc-is-main` lives on `KjCommandPaletteFooter` (the marker directive),
- * so the registry key tracks that symbol, not `KjCommandPaletteComponent`.
+ * component the docs page is built around.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const BUCKET_B_FILES: Record<string, PlaygroundFile> = {
   KjCheckboxComponent: CheckboxPlayground,
   KjColorPickerComponent: ColorPickerPlayground,
   KjComboboxComponent: ComboboxPlayground,
-  KjCommandPaletteFooter: CommandPalettePlayground,
+  KjCommandPaletteComponent: CommandPalettePlayground,
   KjConfirmPopupComponent: ConfirmPopupPlayground,
   KjDatePickerComponent: DatePickerPlayground,
   KjDialogComponent: DialogPlayground,
