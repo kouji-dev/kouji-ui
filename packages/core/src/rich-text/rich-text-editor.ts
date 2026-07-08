@@ -83,6 +83,10 @@ export interface KjRteToolbarGroup {
   host: {
     role: 'textbox',
     'aria-multiline': 'true',
+    // Lexical listens on this element but does NOT set `contenteditable` itself —
+    // the host must. Without this the editor attaches but the surface can't be
+    // clicked into or typed in. Readonly/disabled → non-editable (still selectable).
+    '[attr.contenteditable]': 'kjReadonly() || disabledState() ? "false" : "true"',
     '[attr.spellcheck]': 'kjSpellcheck()',
     '[attr.aria-readonly]': 'kjReadonly() ? "true" : null',
     '[attr.aria-disabled]': 'disabledState() ? "true" : null',
