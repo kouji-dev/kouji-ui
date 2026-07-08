@@ -1,5 +1,7 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjEditorComponent } from '../editor';
+import { KjButtonComponent } from '../../button/button';
+import { KjButtonGroupComponent } from '../../button-group/button-group';
 
 const SNIPPETS: Record<string, string> = {
   typescript: `export const greet = (name: string) => \`Hello, \${name}!\`;`,
@@ -10,30 +12,20 @@ const SNIPPETS: Record<string, string> = {
 
 /**
  * Switching `kjLanguage` re-tokenises the buffer — pick a language to see the
- * syntax highlighting update live.
+ * syntax highlighting update live. The picker is a `kj-button-group` of
+ * `kj-button`s; the active language is the filled (`default`) button.
  */
 @Component({
   selector: 'kj-editor-languages-example',
   standalone: true,
-  imports: [KjEditorComponent],
+  imports: [KjEditorComponent, KjButtonComponent, KjButtonGroupComponent],
   styles: [
     `
       :host {
         display: block;
       }
       .langs {
-        display: flex;
-        gap: var(--kj-space-sm);
         margin-bottom: var(--kj-space-md);
-        flex-wrap: wrap;
-      }
-      button {
-        min-height: 44px;
-        padding: 0 var(--kj-space-md);
-        cursor: pointer;
-      }
-      button[aria-pressed='true'] {
-        font-weight: 600;
       }
       .host {
         height: 260px;
@@ -42,11 +34,17 @@ const SNIPPETS: Record<string, string> = {
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <div class="langs" role="group" aria-label="Language">
+    <kj-button-group class="langs" kjAriaLabel="Language">
       @for (l of languages; track l) {
-        <button type="button" [attr.aria-pressed]="lang() === l" (click)="pick(l)">{{ l }}</button>
+        <kj-button
+          kjSize="sm"
+          [kjVariant]="lang() === l ? 'default' : 'outline'"
+          [attr.aria-pressed]="lang() === l"
+          (click)="pick(l)"
+          >{{ l }}</kj-button
+        >
       }
-    </div>
+    </kj-button-group>
     <div class="host">
       <kj-editor [kjValue]="code()" [kjLanguage]="lang()" kjAriaLabel="Code sample" />
     </div>
