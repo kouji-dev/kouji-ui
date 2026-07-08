@@ -87,7 +87,11 @@ export class ComponentDocComponent {
               ? ('core' as const)
               : undefined;
         const name = segs[1]?.path ?? '';
-        return this.docs.loadManifest().pipe(map(() => this.docs.getPage(name, trackId)));
+        // Fall back across tracks so a wrong-track URL (e.g. /docs/components/chart
+        // for the headless-only chart) still resolves instead of 404ing.
+        return this.docs.loadManifest().pipe(
+          map(() => this.docs.getPage(name, trackId) ?? this.docs.getPage(name)),
+        );
       }),
     ),
   );
@@ -192,8 +196,17 @@ export class ComponentDocComponent {
     return CALLOUT_VARIANT[kind] ?? 'info';
   }
 
-  /** Build the route segment for related cards (`/docs/<track>/<slug>`). */
-  protected relatedHref(slug: string, pkg: DocPage['pkg']): string {
+  /**
+   * Build the route segment for related cards (`/docs/<track>/<slug>`).
+   *
+   * Resolves the related item's *actual* track rather than assuming the current
+   * page's: prefer the current pkg when the slug exists there, else fall back to
+   * wherever it is documented. Without this, a component page relating to the
+   * headless-only `chart` linked to `/docs/components/chart` → "Page not found".
+   */
+  protected relatedHref(slug: string, currentPkg: DocPage['pkg']): string {
+    const page = this.docs.getPage(slug, currentPkg) ?? this.docs.getPage(slug);
+    const pkg = page?.pkg ?? currentPkg;
     const track = pkg === 'core' ? 'headless' : 'components';
     return `/docs/${track}/${slug}`;
   }

@@ -22,6 +22,9 @@ function minimalFeatures(): KjRichTextFeature[] {
   selector: 'kj-rich-text-editor-playground',
   standalone: true,
   imports: [KjRichTextEditorComponent],
+  // Fill the playground stage and never exceed it. `min-width: 0` lets the
+  // editor shrink to the stage width (toolbar scrolls) instead of overflowing.
+  styles: [':host { display: block; width: 100%; min-width: 0; }'],
   template: `
     <kj-rich-text-editor
       kjLabel="Message"

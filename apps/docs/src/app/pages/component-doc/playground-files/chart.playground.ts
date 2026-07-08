@@ -37,6 +37,9 @@ function optionFor(t: 'line' | 'bar' | 'area'): EChartsOption {
   selector: 'kj-chart-playground',
   standalone: true,
   imports: [KjChart],
+  // Give the demo host a definite width so the chart (which fills 100%) renders
+  // at the stage width instead of collapsing when the stage lets it shrink.
+  styles: [':host { display: block; width: 100%; min-width: 0; }'],
   template: `
     <div
       kjChart
