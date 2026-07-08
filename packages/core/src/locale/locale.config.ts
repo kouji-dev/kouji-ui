@@ -58,6 +58,10 @@ export const KJ_LOCALE_CONFIG = new InjectionToken<KjLocaleConfig>(
  * });
  * ```
  * @doc
+ *  @doc-example Basic
+ *    Switch the active locale and watch every `Intl`-backed formatter (number,
+ *    currency, date) and the resolved direction update reactively.
+ *    @doc-file locale.basic.example.ts
  * @doc-name locale
  * @doc-order 1
  */
