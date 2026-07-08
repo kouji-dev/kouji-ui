@@ -48,6 +48,20 @@
   --kj-button-shadow-active: 0 0 0 1.5px #2a2a2a;
 }
 
+/* Keep the mounted demo within the stage. Without `min-width: 0` a flex item's
+   automatic minimum size is its content width, so an intrinsically wide demo
+   (rich-text editor, data table, chart) would push past the stage and overlap
+   the controls panel. This only lets wide demos shrink to fit — small demos
+   keep their natural centered size.
+
+   `::ng-deep` is required: the demo component is mounted dynamically via
+   `ViewContainerRef`, so its host element never receives this component's
+   emulated-encapsulation attribute and a plain scoped selector wouldn't match. */
+:host ::ng-deep .playground-stage > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* No backdrop — the docs playground stage stays clean so component fills
    read solid. The brutalist dot/grid pattern stays scoped to the landing
    hero where it's a deliberate brand element. */

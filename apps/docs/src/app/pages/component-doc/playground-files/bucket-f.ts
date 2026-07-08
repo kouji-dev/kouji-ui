@@ -10,6 +10,7 @@ import { PLAYGROUND as SheetPlayground } from '@kouji-ui/components/sheet/sheet.
 import { PLAYGROUND as SkipLinkPlayground } from '@kouji-ui/components/skip-link/skip-link.playground';
 import { PLAYGROUND as AiChatPlayground } from '@kouji-ui/components/chat/ai-chat.playground';
 import { PLAYGROUND as RichTextEditorPlayground } from '@kouji-ui/components/rich-text/rich-text-editor.playground';
+import { PLAYGROUND as ChartPlayground } from './chart.playground';
 
 /**
  * Bucket F. Playgrounds added in the docs-completeness pass so every component
@@ -28,4 +29,5 @@ export const BUCKET_F_FILES: Record<string, PlaygroundFile> = {
   KjSkipLinkComponent: SkipLinkPlayground,
   KjChatThread: AiChatPlayground,
   KjRichTextEditorComponent: RichTextEditorPlayground,
+  KjChart: ChartPlayground,
 };
