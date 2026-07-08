@@ -4,6 +4,7 @@ import { BUCKET_B_FILES } from './bucket-b';
 import { BUCKET_C_FILES } from './bucket-c';
 import { BUCKET_D_FILES } from './bucket-d';
 import { BUCKET_E_FILES } from './bucket-e';
+import { BUCKET_F_FILES } from './bucket-f';
 
 /**
  * Aggregated playground registry. Keys are `DocItem.symbol`. Components
@@ -18,4 +19,5 @@ export const PLAYGROUND_FILES: Record<string, PlaygroundFile> = {
   ...BUCKET_C_FILES,
   ...BUCKET_D_FILES,
   ...BUCKET_E_FILES,
+  ...BUCKET_F_FILES,
 };

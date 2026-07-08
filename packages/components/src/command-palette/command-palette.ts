@@ -41,7 +41,6 @@ import {
  * @doc
  * @doc-name command-palette
  * @doc-description Themed Cmd-K modal command palette with fuzzy filtering, grouped results, and keyboard navigation.
- * @doc-is-main
  */
 @Directive({
   selector: '[kjCommandPaletteFooter]',
@@ -134,6 +133,7 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
  * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
+ * @doc-is-main
  */
 @Component({
   selector: 'kj-command-palette',
