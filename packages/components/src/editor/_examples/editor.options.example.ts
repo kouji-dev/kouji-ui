@@ -1,15 +1,17 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { KjEditorComponent } from '../editor';
+import { KjToggleComponent } from '../../toggle/toggle';
+import { KjSliderComponent } from '../../slider/slider';
 import type { KjEditorWordWrap } from '@kouji-ui/core';
 
 /**
- * Live options — toggle readonly, minimap, word wrap, line numbers and font
- * size and watch the editor reconfigure without a reload.
+ * Live options — toggle readonly, minimap, word wrap and font size (via
+ * `kj-toggle` / `kj-slider`) and watch the editor reconfigure without a reload.
  */
 @Component({
   selector: 'kj-editor-options-example',
   standalone: true,
-  imports: [KjEditorComponent],
+  imports: [KjEditorComponent, KjToggleComponent, KjSliderComponent],
   styles: [
     `
       :host {
@@ -18,15 +20,17 @@ import type { KjEditorWordWrap } from '@kouji-ui/core';
       .controls {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--kj-space-md);
+        gap: var(--kj-space-lg);
         margin-bottom: var(--kj-space-md);
         align-items: center;
       }
-      label {
+      .opt {
         display: inline-flex;
         align-items: center;
-        gap: var(--kj-space-xs);
-        min-height: 44px;
+        gap: var(--kj-space-sm);
+      }
+      .opt--slider {
+        min-width: 13rem;
       }
       .host {
         height: 280px;
@@ -36,41 +40,27 @@ import type { KjEditorWordWrap } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="controls">
-      <label
-        ><input
-          type="checkbox"
-          [checked]="readonly()"
-          (change)="readonly.set($any($event.target).checked)"
-        />
-        Readonly</label
-      >
-      <label
-        ><input
-          type="checkbox"
-          [checked]="minimap()"
-          (change)="minimap.set($any($event.target).checked)"
-        />
-        Minimap</label
-      >
-      <label
-        ><input
-          type="checkbox"
-          [checked]="wrap() === 'on'"
-          (change)="wrap.set($any($event.target).checked ? 'on' : 'off')"
-        />
-        Word wrap</label
-      >
-      <label
-        >Font
-        <input
-          type="range"
-          min="11"
-          max="20"
-          [value]="fontSize()"
-          (input)="fontSize.set(+$any($event.target).value)"
-        />
-        {{ fontSize() }}px
-      </label>
+      <span class="opt">
+        <kj-toggle [(pressed)]="readonly" ariaLabel="Readonly"></kj-toggle>
+        <span>Readonly</span>
+      </span>
+      <span class="opt">
+        <kj-toggle [(pressed)]="minimap" ariaLabel="Minimap"></kj-toggle>
+        <span>Minimap</span>
+      </span>
+      <span class="opt">
+        <kj-toggle
+          [pressed]="wrap() === 'on'"
+          (pressedChange)="wrap.set($event ? 'on' : 'off')"
+          ariaLabel="Word wrap"
+        ></kj-toggle>
+        <span>Word wrap</span>
+      </span>
+      <span class="opt opt--slider">
+        <span>Font</span>
+        <kj-slider [(kjValue)]="fontSize" [kjMin]="11" [kjMax]="20" kjAriaLabel="Font size" />
+        <span>{{ fontSize() }}px</span>
+      </span>
     </div>
     <div class="host">
       <kj-editor
