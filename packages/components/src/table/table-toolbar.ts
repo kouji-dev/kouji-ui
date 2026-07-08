@@ -61,10 +61,8 @@ export class KjBulkAction {}
  * The toolbar must sit inside a `<kj-table>` (or any element hosting
  * the `KJ_TABLE` token) so it can resolve the table instance via DI.
  *
- * @doc-category Components/Data
- * @doc
- * @doc-name table-toolbar
- * @doc-description Toolbar chrome above the data table — quick filter, density, column visibility, export, and bulk-action slot.
+ * Documented as part of the data table on the `table` page — not a standalone
+ * docs entry.
  */
 @Component({
   selector: 'kj-table-toolbar',

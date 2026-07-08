@@ -197,10 +197,8 @@ export class KjTableSidePanelContent {
  * </kj-table>
  * ```
  *
- * @doc-category Components/Data
- * @doc
- * @doc-name table-side-panel
- * @doc-description Service-launched drawer listing every column with visibility, pin, and group controls.
+ * Documented as part of the data table on the `table` page — not a standalone
+ * docs entry.
  */
 @Component({
   selector: 'kj-table-side-panel',

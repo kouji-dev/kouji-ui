@@ -51,10 +51,8 @@ import {
  * </div>
  * ```
  *
- * @doc-category Components/Data
- * @doc
- * @doc-name table-virtual
- * @doc-description Row virtualization adapter on @tanstack/virtual-core. Exposes virtualRows / paddingTop / paddingBottom / totalSize signals for the styled data table.
+ * Documented as part of the data table on the `table` page — not a standalone
+ * docs entry.
  */
 @Directive({
   selector: '[kjTableVirtual]',

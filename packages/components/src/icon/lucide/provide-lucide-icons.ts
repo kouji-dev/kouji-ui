@@ -69,7 +69,7 @@ function buildLucideRegistry(): Record<string, string> {
  * ```
  *
  * @doc-example Gallery
- *   @doc-file ../icon.gallery.example.ts
+ *   @doc-file ../_examples/icon.gallery.example.ts
  *
  * @doc-css-var
  *   --kj-icon       — Resolved icon value (url("...") or "glyph"). Set by the directive — read by the rendered .kj-icon.
