@@ -42,7 +42,7 @@ function optionFor(t: 'line' | 'bar' | 'area'): EChartsOption {
       kjChart
       [kjChartOption]="option()"
       kjChartLabel="Weekly active users"
-      style="height: 280px; width: 100%;"
+      style="height: 280px; width: 32rem; max-width: 100%;"
     ></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

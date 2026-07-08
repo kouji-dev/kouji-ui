@@ -48,15 +48,14 @@
   --kj-button-shadow-active: 0 0 0 1.5px #2a2a2a;
 }
 
-/* Keep the mounted demo within the stage. Without `min-width: 0` a flex item's
-   automatic minimum size is its content width, so an intrinsically wide demo
-   (rich-text editor, data table, chart) would push past the stage and overlap
-   the controls panel. This only lets wide demos shrink to fit — small demos
-   keep their natural centered size.
-
-   `::ng-deep` is required: the demo component is mounted dynamically via
-   `ViewContainerRef`, so its host element never receives this component's
-   emulated-encapsulation attribute and a plain scoped selector wouldn't match. */
+/* Let a demo shrink to the stage width instead of pushing past it. Without
+   `min-width: 0` a flex item's automatic minimum is its content width, so an
+   intrinsically wide demo (e.g. the rich-text editor) would overflow and
+   overlap the controls panel; `max-width: 100%` caps it. Small demos keep their
+   natural centered size. `::ng-deep` is required because demos are mounted
+   dynamically via `ViewContainerRef` and don't carry this component's
+   encapsulation attribute. Demos that need a definite width (a chart) set their
+   own dimensions in their template, exactly like a real consumer. */
 :host ::ng-deep .playground-stage > * {
   min-width: 0;
   max-width: 100%;
