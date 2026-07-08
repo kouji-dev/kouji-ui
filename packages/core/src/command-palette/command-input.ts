@@ -4,6 +4,7 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
+  effect,
   inject,
 } from '@angular/core';
 import { KjListNavigator } from '../primitives/list';
@@ -46,6 +47,19 @@ export class KjCommandInput implements OnInit, OnDestroy {
   protected readonly palette = inject(KjCommandPalette);
   private readonly nav = inject(KjListNavigator);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
+
+  constructor() {
+    // Reflect the query signal back onto the DOM input. The `(input)` binding
+    // is one-way (DOM → signal), so an external reset of `kjQuery` (e.g. the
+    // wrapper clearing it when the palette closes) would otherwise leave the
+    // previous text visible on reopen. During typing the values already match,
+    // so this is a no-op and never disturbs the caret position.
+    effect(() => {
+      const q = this.palette.query();
+      const el = this.el.nativeElement;
+      if (el.value !== q) el.value = q;
+    });
+  }
 
   ngOnInit(): void {
     this.palette._setNavigator(this.nav);

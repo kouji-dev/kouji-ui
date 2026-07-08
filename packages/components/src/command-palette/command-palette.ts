@@ -37,6 +37,7 @@ import {
  *   --kj-command-item-align     — Cross-axis alignment of row contents. Defaults to `center`.
  *   --kj-command-item-gap       — Gap between icon and label inside a row. Defaults to --kj-space-md.
  *
+ * @doc-category Library/Actions
  * @doc
  * @doc-name command-palette
  * @doc-description Themed Cmd-K modal command palette with fuzzy filtering, grouped results, and keyboard navigation.
@@ -231,8 +232,24 @@ export class KjCommandPaletteComponent {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+  /** The composed headless palette (host directive) — owns query + active state. */
+  private readonly palette = inject(KjCommandPalette);
 
   constructor() {
+    // Reset the search query + active item when the palette closes, so the
+    // next open starts fresh instead of restoring the previous search. Paired
+    // with KjCommandInput reflecting the query signal back to the DOM input,
+    // this also clears the visible text.
+    let wasOpen = false;
+    effect(() => {
+      const open = this.kjOpen();
+      if (wasOpen && !open) {
+        this.palette.kjQuery.set('');
+        this.palette.kjValue.set(null);
+      }
+      wasOpen = open;
+    });
+
     afterNextRender(() => {
       if (!isPlatformBrowser(this.platformId)) return;
       const handler = (e: KeyboardEvent) => {

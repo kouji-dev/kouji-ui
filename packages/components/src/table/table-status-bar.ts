@@ -16,10 +16,8 @@ import { KJ_TABLE, KjTable } from '@kouji-ui/core';
  * </table>
  * ```
  *
- * @doc-category Components/Data
- * @doc
- * @doc-name table-status-bar
- * @doc-description Counts strip showing row count, selected count, and filtered indicator.
+ * Documented as part of the data table on the `table` page — not a standalone
+ * docs entry.
  */
 @Component({
   selector: 'kj-table-status-bar',

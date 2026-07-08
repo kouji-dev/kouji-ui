@@ -40,10 +40,8 @@ import { KjSelectComponent, KjOptionComponent } from '../select';
  * </kj-table>
  * ```
  *
- * @doc-category Components/Data
- * @doc
- * @doc-name table-pagination
- * @doc-description Page-size selector, First/Prev/Next/Last nav, and "Showing N–M of total" summary bound to the parent table.
+ * Documented as part of the data table on the `table` page — not a standalone
+ * docs entry.
  */
 @Component({
   selector: 'kj-table-pagination',

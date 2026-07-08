@@ -21,6 +21,7 @@ import type { CalloutKind, PageExample } from '../../../lib/docs-extractor.types
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 import { CodeEditorComponent } from '../../components/code-editor/code-editor';
 import { PlaygroundComponent } from './playground';
+import { PLAYGROUND_FILES } from './playground-files';
 
 /** Maps Callout.kind to a kj-alert variant. */
 const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'error'> = {
@@ -126,18 +127,38 @@ export class ComponentDocComponent {
   });
 
   /**
-   * Flat list of non-playground, non-usage examples rendered on the Examples
-   * tab. Variants / sizes / states / recipes all live in a single grid — no
-   * per-bucket sub-sections, matching design-revamp/docs.jsx `ExamplesTab`.
-   * The usage example is hidden from the recipes grid (it owns the Overview
-   * code editor instead).
+   * Whether this page has an interactive Playground (a co-located
+   * `<comp>.playground.ts` registered in `PLAYGROUND_FILES`). When true, the
+   * page's canonical/"Default" example is represented by that interactive
+   * stage, so it is hidden from the recipes grid to avoid duplication.
+   */
+  protected readonly hasInteractivePlayground = computed<boolean>(() => {
+    const symbol = this.main()?.symbol;
+    return !!(symbol && PLAYGROUND_FILES[symbol]);
+  });
+
+  /**
+   * Flat list of non-usage examples rendered on the Examples tab. Variants /
+   * sizes / states / recipes all live in a single grid — no per-bucket
+   * sub-sections, matching design-revamp/docs.jsx `ExamplesTab`. The usage
+   * example is hidden from the recipes grid (it owns the Overview code editor
+   * instead).
+   *
+   * Playground-bucket examples (the canonical "Default") are normally hidden
+   * here because they render in the interactive Playground. But pages without
+   * an interactive playground file have no other place to show that example —
+   * so we surface it here instead of silently dropping the component's primary
+   * demo (e.g. service-launched overlays like action-sheet, or datetime-picker).
    */
   protected readonly recipeExamples = computed<PageExample[]>(() => {
     const p = this.page();
     const usageSlug = p ? `${p.name}.usage` : '';
-    return this.pageExamples().filter(
-      (e) => e.example.bucket !== 'playground' && e.example.slug !== usageSlug,
-    );
+    const hidePlayground = this.hasInteractivePlayground();
+    return this.pageExamples().filter((e) => {
+      if (e.example.slug === usageSlug) return false;
+      if (e.example.bucket === 'playground') return !hidePlayground;
+      return true;
+    });
   });
 
   /** Auto-derived import snippet — uses `importOverride` when set. */
