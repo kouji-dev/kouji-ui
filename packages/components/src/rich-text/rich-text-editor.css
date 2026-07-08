@@ -23,6 +23,14 @@
 
     display: flex;
     flex-direction: column;
+    /* Fluid: fill the container and never exceed it. `min-width: 0` lets the
+       editor shrink below its content's intrinsic width inside flex/grid
+       parents (the docs playground stage, app layouts) so the toolbar scrolls
+       instead of the whole editor overflowing its container. */
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     background: var(--kj-rte-bg);
     color: var(--kj-rte-fg);
     border: var(--kj-border) solid var(--kj-rte-border-color);
@@ -199,10 +207,12 @@
 
   .kj-rte__content {
     flex: 1 1 auto;
+    min-width: 0;
     min-height: var(--kj-rte-min-height);
     padding: var(--kj-rte-pad);
     outline: none;
     overflow-y: auto;
+    overflow-wrap: anywhere;
     line-height: 1.6;
     color: var(--kj-rte-fg);
   }
