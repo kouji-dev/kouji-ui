@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { KjChatStore, type KjSlashCommand } from '@kouji-ui/core';
 import { KjChatThread } from '../chat-thread';
 import { KjPromptInput } from '../prompt-input';
@@ -15,7 +15,7 @@ import { KjPromptInput } from '../prompt-input';
   standalone: true,
   imports: [KjChatThread, KjPromptInput],
   providers: [KjChatStore],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       :host {
@@ -50,6 +50,11 @@ export class AiChatExample {
   ];
 
   private timer: ReturnType<typeof setInterval> | null = null;
+
+  constructor() {
+    // Stop the simulated stream if the demo is torn down mid-reply.
+    inject(DestroyRef).onDestroy(() => this.clearTimer());
+  }
 
   onSend(text: string): void {
     this.store.sendUser(text);

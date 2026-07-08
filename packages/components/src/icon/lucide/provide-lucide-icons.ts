@@ -27,11 +27,20 @@ function encodeSvgDataUrl(svg: string): string {
   return `url("data:image/svg+xml;utf8,${encoded}")`;
 }
 
-/** Convert PascalCase ("AArrowDown") → kebab-case ("a-arrow-down"). */
+/**
+ * Convert PascalCase ("AArrowDown") → kebab-case ("a-arrow-down").
+ *
+ * Lucide separates a trailing number from its word with a hyphen and keeps the
+ * digits grouped ("Heading1" → "heading-1", "Clock10" → "clock-10"), so a
+ * letter→digit boundary also gets a hyphen. Without this, digit-bearing icons
+ * (headings, clock-1…12, columns-2, …) resolve to a key that never matches the
+ * requested name and render blank.
+ */
 function pascalToKebab(name: string): string {
   return name
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+    .replace(/([a-zA-Z])([0-9])/g, '$1-$2')
     .toLowerCase();
 }
 
