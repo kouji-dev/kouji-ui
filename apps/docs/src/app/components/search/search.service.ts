@@ -4,6 +4,8 @@ import { DocsService } from '../../services/docs.service';
 
 export interface SearchResult {
   slug: string;
+  /** Source package — decides the docs track (`core` → headless, `components`). */
+  pkg: 'core' | 'components';
   componentName: string;
   categoryPath: string[];
   matchLabel: string;
@@ -50,7 +52,7 @@ export class SearchService {
       // Page title match
       if (compName.includes(term)) {
         found.push({
-          slug, componentName: page.title, categoryPath: catPath,
+          slug, pkg: page.pkg, componentName: page.title, categoryPath: catPath,
           matchLabel: page.title, matchType: 'component',
           score: compName.startsWith(term) ? 100 : 80,
         });
@@ -64,7 +66,7 @@ export class SearchService {
         // Directive class name
         if (item.symbol.toLowerCase().includes(term)) {
           found.push({
-            slug, componentName: page.title, categoryPath: catPath,
+            slug, pkg: page.pkg, componentName: page.title, categoryPath: catPath,
             matchLabel: item.symbol, matchType: 'directive',
             score: item.symbol.toLowerCase().startsWith(term) ? 70 : 60,
           });
@@ -73,7 +75,7 @@ export class SearchService {
         // Selector match
         if (dir.selector.toLowerCase().includes(term)) {
           found.push({
-            slug, componentName: page.title, categoryPath: catPath,
+            slug, pkg: page.pkg, componentName: page.title, categoryPath: catPath,
             matchLabel: dir.selector, matchType: 'selector',
             score: 65,
           });
@@ -83,7 +85,7 @@ export class SearchService {
         for (const input of dir.inputs) {
           if (input.name.toLowerCase().includes(term)) {
             found.push({
-              slug, componentName: page.title, categoryPath: catPath,
+              slug, pkg: page.pkg, componentName: page.title, categoryPath: catPath,
               matchLabel: `${dir.selector} → ${input.name}`, matchType: 'input',
               score: 50,
             });
@@ -108,7 +110,8 @@ export class SearchService {
   }
 
   navigate(result: SearchResult): void {
-    this.router.navigate(['/docs/components', result.slug]);
+    const track = result.pkg === 'core' ? 'headless' : 'components';
+    this.router.navigate(['/docs', track, result.slug]);
     this.close();
   }
 
