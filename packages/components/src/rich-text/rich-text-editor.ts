@@ -45,16 +45,16 @@ let kjRteUid = 0;
  * @doc-name rich-text-editor
  * @doc-is-main
  * @doc-description Accessible, feature-composed rich-text editor wrapping Lexical with a dynamic toolbar.
- * @doc-example Default
+ * @doc-example Default [full]
  *   The full editor: the toolbar renders every default feature's contribution.
  *   @doc-file rich-text-editor.example.ts
- * @doc-example Minimal (subset of features)
+ * @doc-example Minimal (subset of features) [full]
  *   Only bold, italic and link — the toolbar and loaded packages shrink to match.
  *   @doc-file rich-text-editor.minimal.example.ts
- * @doc-example Custom feature
+ * @doc-example Custom feature [full]
  *   A feature contributing its own toolbar button + node in a few lines.
  *   @doc-file rich-text-editor.custom-node.example.ts
- * @doc-example Readonly
+ * @doc-example Readonly [full]
  *   Renders existing content without editing affordances.
  *   @doc-file rich-text-editor.readonly.example.ts
  * @doc-aria role="textbox" — the editable surface, with aria-multiline="true".

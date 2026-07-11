@@ -78,10 +78,34 @@
     user-select: none;
   }
 
-  /* ── Per-crumb link (inherits KjLink styling via .kj-link) ──── */
+  /* ── Per-crumb link ─────────────────────────────────────────────
+     Owns its resting colour. The anchor carries `.kj-link`, but the
+     KjLink *component* (which ships link.css) may not be on the page,
+     so those rules aren't guaranteed to load — without an explicit
+     colour the anchor falls back to the UA default blue in every theme.
+     Retargeting the Link tokens keeps styling consistent when link.css
+     *is* present. */
   .kj-breadcrumb-link {
+    --kj-link-fg: var(--kj-color-breadcrumb-muted);
+    --kj-link-hover-fg: var(--kj-color-breadcrumb-current);
+    color: var(--kj-link-fg);
     text-decoration: none;
     padding-block: 0.5rem; /* hit-area extension for WCAG 2.5.5 */
+    transition: color var(--kj-transition, 0.15s ease);
+  }
+
+  .kj-breadcrumb-link:hover {
+    color: var(--kj-link-hover-fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Self-contained focus ring — link.css may not be loaded (see above),
+     so don't depend on `.kj-link:focus-visible` for WCAG 2.4.7. */
+  .kj-breadcrumb-link:focus-visible {
+    outline: 2px solid var(--kj-fg-primary);
+    outline-offset: 2px;
+    border-radius: var(--kj-radius-field, 0.25rem);
   }
 
   /* ── Current cell ───────────────────────────────────────────── */
