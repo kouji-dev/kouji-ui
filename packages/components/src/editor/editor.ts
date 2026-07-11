@@ -43,16 +43,16 @@ import { KjSpinnerComponent } from '../spinner/spinner';
  * @doc-name editor
  * @doc-is-main
  * @doc-description Themed Monaco code editor — syntax highlighting, two-way value, kj-theme sync, and AAA keyboard access.
- * @doc-example Default
+ * @doc-example Default [full]
  *   A TypeScript editor with the toolbar and status bar, two-way bound to a signal.
  *   @doc-file editor.example.ts
- * @doc-example Languages
+ * @doc-example Languages [full]
  *   Switch the `kjLanguage` to re-tokenise the same buffer across TS / HTML / CSS / JSON.
  *   @doc-file editor.languages.example.ts
- * @doc-example Read-only
+ * @doc-example Read-only [full]
  *   A read-only viewer with the minimap enabled and line numbers on.
  *   @doc-file editor.readonly.example.ts
- * @doc-example Options
+ * @doc-example Options [full]
  *   Toggle readonly, minimap, word wrap, line numbers and font size live.
  *   @doc-file editor.options.example.ts
  *

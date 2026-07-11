@@ -85,10 +85,15 @@ export function getJsDocBlock(node: ts.Node, sourceFile: ts.SourceFile): string 
   return trivia.substring(jsStart, jsEnd + 2);
 }
 
-/** Extracts the first exported class name from a TypeScript file's source text. */
+/**
+ * Extracts the example component's exported class name from a TypeScript file's
+ * source text. Files may export helper classes before the example component
+ * (e.g. a custom decorator-node), so a class named `*Example` wins over source
+ * order; otherwise the first exported class is used.
+ */
 export function extractExportName(content: string): string | undefined {
-  const match = content.match(/export\s+(?:default\s+)?class\s+(\w+)/);
-  return match?.[1];
+  const names = [...content.matchAll(/export\s+(?:default\s+)?class\s+(\w+)/g)].map(m => m[1]);
+  return names.find(n => n.endsWith('Example')) ?? names[0];
 }
 
 /**

@@ -12,6 +12,7 @@ export * from './button-group/index';
 export * from './calendar/index';
 export * from './card/index';
 export * from './carousel/index';
+export * from './chart/index';
 export * from './chat/index';
 export * from './checkbox/index';
 export * from './color-picker/index';
