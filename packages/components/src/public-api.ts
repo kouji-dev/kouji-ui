@@ -68,3 +68,62 @@ export * from './cascade-select/index';
 export * from './command-palette/index';
 export * from './tree-select/index';
 export * from './typography/index';
+
+// Core directives/types surfaced through the components barrel so that public
+// API referencing them (member types, host directives, input/output types)
+// resolves for consumers importing from '@kouji-ui/components'. Without this,
+// AOT template type-checking fails with NG3004 (as it did for KjOverlayPanel).
+export {
+  KjCarousel,
+  KjCarouselSlide,
+  KjCascadeSelectOption,
+  KjChatAnnouncer,
+  KjChatStore,
+  KjColorPicker,
+  KjCombobox,
+  KjDatePicker,
+  KjFileUpload,
+  KjInput,
+  KjLiveRegion,
+  KjRichTextEditor,
+  KjTabPanel,
+  KjTable,
+  KjTreeSelect,
+} from '@kouji-ui/core';
+export type {
+  KjActiveOverlay,
+  KjAlertMode,
+  KjAvatarShape,
+  KjBadgeVariant,
+  KjButtonGroupOrientation,
+  KjChatMessageData,
+  KjDateRange,
+  KjDateRangePreset,
+  KjDividerAlign,
+  KjDividerOrientation,
+  KjEditorInstance,
+  KjEditorLanguage,
+  KjEditorLineNumbers,
+  KjEditorWordWrap,
+  KjFileRejection,
+  KjHourCycle,
+  KjListAs,
+  KjListOrientation,
+  KjNumberFilterType,
+  KjPasswordAutocomplete,
+  KjPasswordScore,
+  KjResourceResult,
+  KjRichTextFeature,
+  KjRteToolbarItem,
+  KjSkeletonAnimation,
+  KjSkeletonShape,
+  KjSlashCommand,
+  KjSpinnerAnimation,
+  KjStorageAdapter,
+  KjTableState,
+  KjTextareaAutoresize,
+  KjTextareaResize,
+  KjToastVariant,
+  KjTreeNode,
+  KjUploadableFile,
+} from '@kouji-ui/core';
