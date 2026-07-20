@@ -13,7 +13,11 @@ export {
   KjPopoverArrow,
   KjPopoverClose,
   KjPopoverTitle,
+  // The overlay controller exposed by `KjPopoverTrigger.controller` — re-exported so
+  // consumers can call `trigger.controller.close()` in AOT-checked templates.
+  KjOverlayPanel,
 } from '@kouji-ui/core';
+export type { KjOverlayTriggerLike } from '@kouji-ui/core';
 
 /**
  * Click-triggered popover. Compose `[kjPopoverTrigger]` + `<kj-popover-content [kjFor]="t">`
