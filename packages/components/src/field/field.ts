@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  booleanAttribute,
+  input,
 } from '@angular/core';
 import {
   KjField,
@@ -168,6 +170,15 @@ export class KjFieldHelpComponent {}
 
 /**
  * Styled wrapper around `KjFieldError`.
+ *
+ * With `kjReserve`, the error line keeps its box while the field is valid
+ * (invisible, one text line tall) so errors appearing / disappearing never
+ * shift the form layout.
+ *
+ * @example
+ * ```html
+ * <kj-field-error kjReserve>Please enter a valid email.</kj-field-error>
+ * ```
  * @doc-category Library/Data input
  * @doc
  * @doc-name field
@@ -176,7 +187,7 @@ export class KjFieldHelpComponent {}
   selector: 'kj-field-error',
   standalone: true,
   imports: [KjFieldError],
-  template: `<span kjFieldError class="kj-field-error"><ng-content /></span>`,
+  template: `<span kjFieldError [kjFieldErrorReserve]="kjReserve()" class="kj-field-error"><ng-content /></span>`,
   styleUrl: './field.css',
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -184,7 +195,10 @@ export class KjFieldHelpComponent {}
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjFieldErrorComponent {}
+export class KjFieldErrorComponent {
+  /** Keep the error line's box while valid, so showing it never moves the layout. */
+  readonly kjReserve = input(false, { transform: booleanAttribute });
+}
 
 /**
  * Styled wrapper around `KjFieldGroup`. Lays out an input with optional
