@@ -1,5 +1,186 @@
 # @kouji-ui/components
 
+## 0.5.0
+
+### Minor Changes
+
+- 509c90c: Add `<kj-chart>` — an accessible Apache ECharts wrapper (new component).
+  - SSR-safe lazy init in the browser only, reactive `option`, auto-resize via `ResizeObserver`, and clean dispose on destroy.
+  - Accessibility: ECharts paints an opaque `<canvas>`, so the host now carries `role="img"` and a required-in-practice `ariaLabel` for the accessible name. An optional `caption` renders a visually-hidden summary wired to the host via `aria-describedby`. The host takes no tab stop, so keyboard users are never trapped.
+  - Ships playground, usage example, and bar + donut examples.
+
+- 509c90c: feat(chat): provider-agnostic AI/LLM chat UI kit
+
+  Adds an AI streaming layer that coexists with the existing chat-bubble kit
+  (additive — no breaking changes).
+
+  **Core (`@kouji-ui/core`)**
+  - `KjChatStore` — headless, provider-agnostic streaming state: `messages`
+    signal, `status` (`idle`/`streaming`/`error`), and the token-append API
+    (`sendUser`, `beginAssistant`, `pushChunk`, `endAssistant`, `fail`, `stop`)
+    plus tool-call + citation tracking. No LLM SDK, no backend.
+  - `KjChatAnnouncer` / `coalesceAnnouncement` — coalesces streamed tokens into
+    whole-sentence **polite live-region** announcements (never char-by-char).
+  - `parseSlash` / `matchSlashCommands` — slash-command model reusing the
+    command-palette filter engine.
+  - Types: `KjChatMessageData`, `KjChatMessageRole`, `KjChatStatus`,
+    `KjChatToolCall`, `KjChatCitation`, `KjSlashCommand`.
+
+  **Components (`@kouji-ui/components`)**
+  - `KjChatThread` — AI thread surface; reuses `KjChatLog` (`role="log"`) and
+    drives a dedicated coalesced polite live region for streaming.
+  - `KjChatMessage` — renders user/assistant/system/tool turns with safe markdown,
+    code blocks (copy button), tool-call cards, citations, and a reduced-motion
+    typing indicator.
+  - `KjPromptInput` — auto-grow textarea with Enter-send / Esc-stop / Shift+Enter
+    newline, a slash-command listbox, and an attachment slot.
+  - `renderMarkdown` — minimal, XSS-safe markdown renderer.
+
+  WCAG 2.1 AAA: coalesced announcements, keyboard send/stop, message roles
+  conveyed to AT, reduced-motion, ≥44px targets.
+
+- 509c90c: feat(date-picker): date range presets
+
+  Add a keyboard-accessible **date range presets** primitive — a `role="listbox"`
+  of named quick-selects ("Today", "Last 7 days", "This month", "This quarter",
+  "Year to date", …) that resolve to an inclusive `{ start, end }` range.
+  - **core** — headless `KjDateRangePresets` (listbox coordinator, roving
+    tabindex, two-way `kjValue`) + `KjDateRangePresetOption`, plus
+    `defaultDateRangePresets(weekStartsOn?)`, `resolveDateRangePreset()`, and the
+    `KjDateRange` / `KjDateRangePreset` types. Custom presets fully supported.
+  - **components** — themed `<kj-date-range-presets>` (`KjDateRangePresetsComponent`).
+
+  Designed to slot beside a future range calendar, but usable standalone against
+  any `signal<KjDateRange | null>`. WCAG 2.1 AAA: single tab stop, Arrow/Home/End
+  navigation, `aria-selected` on the chosen preset, 44px targets.
+
+- 509c90c: feat: mobile-first interaction patterns — bottom sheet + action sheet
+
+  Adds two mobile-first overlay patterns composed on the existing overlay
+  primitive stack (no new overlay engine):
+  - **Bottom sheet** (`KjSheetService` / `KjSheet` / `KjSheetRef` in core, styled
+    `kj-sheet` in components): a bottom-anchored modal surface with a grab handle,
+    drag-to-dismiss, `detent` initial-height option, focus trap, scroll lock, and
+    reduced-motion-aware transitions.
+  - **Action sheet** (`KjActionSheetService` / `KjActionSheetRef` in components):
+    a data-driven, iOS-style `role="menu"` list of actions presented in a bottom
+    sheet, with default / destructive action roles, resolving the selected value.
+
+  Swipe-to-reveal list rows and a generalized gesture-overlay abstraction are
+  intentionally deferred to a follow-up (see the design spec).
+
+- 509c90c: feat(editor): KjEditor — Monaco-wrapped code editor.
+
+  Core adds the headless `KjEditor` directive (`[kjEditor]`) plus `KjEditorLoader`
+  and `provideMonaco()`: two-way `kjValue`, `kjLanguage` (kj-level `KjEditorLanguage`
+  type with short-alias normalisation), options (readonly, minimap, line numbers,
+  word wrap, font size), `kjAutoHeight` / `kjMaxHeight` (grow to fit content),
+  reduced-motion, SSR-safe lazy load, and a configurable Monaco source (defaults to
+  the `@monaco-editor/loader` CDN so Monaco never bloats the base bundle; point at a
+  self-hosted/bundled Monaco via `provideMonaco({ vsPath })` or `provideMonaco({ loader })`).
+  `monaco-editor` and `@monaco-editor/loader` are optional peer dependencies.
+
+  Lazy language loading: `provideMonacoLanguages({ id: () => import(...) })` registers
+  per-language loaders that `KjEditorLoader.ensureLanguage` runs on demand (once) so
+  heavy language grammars download only when an editor first uses them.
+
+  Components adds the styled `<kj-editor>` (`KjEditorComponent`): a kj-token-synced
+  Monaco theme that re-applies on theme switch, an optional toolbar and status bar,
+  a loading region, and AAA keyboard access (accessible name via `kjAriaLabel`,
+  `accessibilitySupport: 'auto'`, and the documented `Ctrl+M` tab-trap escape).
+
+- 509c90c: Add `KjRichTextEditor` — a **client-driven, feature-composed** rich-text editor wrapping
+  [Lexical](https://lexical.dev).
+  - **Core** (`@kouji-ui/core`): a headless `[kjRichTextEditor]` directive that owns the
+    Lexical engine (loaded lazily via dynamic `import()` for SSR safety, no CDK), plus the
+    **feature framework**. A `KjRichTextFeature` is a self-contained vertical slice that owns
+    its package loading (`load()`), `nodes`, activation (`setup`), and UI (`toolbar`, `overlay`):
+    - **Per-feature lazy package loading** — each feature dynamically imports only its own
+      `@lexical/*` package(s), so disabling a feature keeps its code out of the bundle.
+    - Nodes are collected from all features **before** `createEditor`; state + HTML
+      (de)serialization are package-agnostic (respect only the active node set).
+    - Declarative `toolbar` + `overlay` contributions; a `KjRichTextContext` of package-agnostic
+      command helpers; `createKjDecoratorNode()`/`createKjImageNode()` node factories; a CDK-free
+      Angular decorator-node bridge (`injectRichTextNode`).
+    - Composition via `provideKjRichText(...)`, `[kjFeatures]`, or `[kjRichTextFeature]`.
+      `KjRichTextExtension`/`KjRichTextPlugin` remain as deprecated aliases of `KjRichTextFeature`.
+  - **Components** (`@kouji-ui/components`): a styled `<kj-rich-text-editor>` whose accessible
+    `role="toolbar"` (roving tabindex, `aria-pressed`, `aria-keyshortcuts`) renders **dynamically**
+    from the active features' contributions — no hardcoded buttons. Ships the feature factories
+    (`bold()`, `italic()`, `heading()`, `bulletList()`, `link()`, `image()`, `codeBlock()`,
+    `markdownShortcuts()`, `history()`, …) and a `defaultFeatures()` bundle for zero-config, plus
+    link/image overlay editors and live-region announcements.
+
+  Lexical is declared as an optional peer dependency (mirroring the ECharts/chart setup).
+
+- 509c90c: Add RTL support — `<html dir>` wiring, a visible direction toggle, and
+  logical-property mirroring.
+
+  `provideKjDocumentDirection()` (core) reflects `KjLocale.direction` onto the
+  document's `<html dir>` attribute and keeps it in sync with runtime
+  `setDirection(...)` changes. It is SSR-safe (no DOM access on the server) and
+  the single writer of `<html dir>`, while `KjDirectionality` stays the reader
+  that feeds `KjLocale`'s `'auto'` derivation.
+
+  `KjDirectionToggle` (components) is a keyboard-native `<button>` that flips the
+  shared `KjLocale` between `ltr` and `rtl`. `aria-pressed` reflects the RTL
+  state, it carries an accessible name, and reserves a 44×44 hit area. Paired with
+  `provideKjDocumentDirection()`, one click mirrors the whole page.
+
+  Converted the remaining logical-intent physical CSS in the focused set to
+  logical properties so layout mirrors under RTL: the toast close button
+  (`margin-inline-start`) and the command-palette active-item indicator
+  (`border-inline-start`). Breadcrumb, pagination, dropdown-menu, and the overlay
+  family already used logical properties and are verified to mirror. DOM order is
+  unchanged, so reading and tab order stay correct in both directions
+  (WCAG 1.3.2).
+
+  Deferred to the v0.2 RTL roadmap item: the full physical→logical sweep across
+  all components (sliders, calendars, stepper, tabs, table, …) and directional
+  key-handling for range/date components.
+
+- 509c90c: feat(skip-link): add `KjSkipLink` — a "skip to main content" bypass link (WCAG 2.4.1)
+  - `@kouji-ui/core`: headless `KjSkipLink` directive (`a[kjSkipLink]`). Reflects a
+    fragment `href`, and on activation moves keyboard focus to the target landmark
+    (adding `tabindex="-1"` when needed). Suppresses the anchor's native
+    navigation, which under `<base href="/">` would resolve `#main-content`
+    against the base URL and leave the page.
+  - `@kouji-ui/components`: themed `KjSkipLinkComponent` (`kj-skip-link`) —
+    visually hidden until focused, then revealed on-screen with a high-contrast
+    (`--kj-bg-primary` / `--kj-fg-on-primary`) surface. Themable via
+    `--kj-skip-link-*` tokens; honours `prefers-reduced-motion`.
+
+### Patch Changes
+
+- 509c90c: fix(overlay): register `sheet` and `action-sheet` in the overlay CSS aggregator; fix(command-palette): reset the search query when the palette closes
+  - **overlay**: service-launched bottom sheets and action sheets (`KjSheetService` / `KjActionSheetService`) rendered **unstyled** because their skins (`sheet.css`, `action-sheet.css`) were never `@import`ed into the global `overlay/overlay.css` aggregator — only attached to the docs-only shell wrapper components, which a real consumer never instantiates. They now load with the rest of the overlay family (dialog, drawer, toast, …).
+  - **command-palette**: reopening the palette after a search showed the previous query. `KjCommandInput` now reflects the `kjQuery` signal back onto the DOM input (the `(input)` binding was one-way), and `KjCommandPaletteComponent` clears the query + active item when it closes — so each open starts fresh.
+  - **icon**: digit-bearing Lucide icons (`heading-1`, `heading-2`, `heading-3`, `clock-10`, `columns-2`, …) rendered blank — `pascalToKebab` never inserted a hyphen before digits, so the requested kebab name never matched the registry key. Fixed the converter; these icons now resolve everywhere (including the rich-text-editor toolbar).
+
+- 7e554b6: Surface the `@kouji-ui/core` directives and types referenced by the components' public API through the `@kouji-ui/components` entry point, and pin the `@kouji-ui/core` peer dependency to `>=0.3.0`.
+
+  Consumers importing a component from `@kouji-ui/components` whose public API references a core symbol (e.g. `KjOverlayPanel`, `KjInput`, `KjTable`, `KjBadgeVariant`, `KjTabPanel`) previously failed clean AOT template type-checking with `NG3004: Unable to import symbol …` (dev HMR skips the check, so it only surfaced on `ng build`). All such core symbols are now re-exported.
+
+  The core peer was `*`, which let an incompatible older `@kouji-ui/core` be installed next to newer `@kouji-ui/components` (causing `No matching export in @kouji-ui/core` at runtime). It is now pinned to `>=0.3.0`.
+
+- 509c90c: Fix broken Vercel docs deploy after the `KjRichTextEditor` merge (#24).
+
+  The nine `@lexical/*` (and `lexical`) **optional peer dependencies** added to
+  `@kouji-ui/components` were never recorded in `pnpm-lock.yaml`, so Vercel's
+  `pnpm install --frozen-lockfile` aborted before the build could run — taking the
+  whole docs site (not just the rich-text editor page) offline. Regenerated the
+  lockfile so the frozen install resolves and the static prerender completes,
+  restoring the RTE documentation route.
+
+- 509c90c: fix(rich-text-editor): make the editor fluid so it never overflows its container
+
+  `.kj-rte` had no width constraint, so inside a flex/grid parent (the docs
+  playground stage, or a narrow app layout) it sized to its content and spilled
+  out sideways. Added `width: 100%; max-width: 100%; min-width: 0; box-sizing:
+border-box`, plus `min-width: 0` + `overflow-wrap: anywhere` on the editable
+  surface — the editor now fills and respects its container, and the toolbar
+  scrolls within it instead of the whole editor overflowing.
+
 ## 0.4.4
 
 ### Patch Changes
