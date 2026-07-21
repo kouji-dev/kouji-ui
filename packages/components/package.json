@@ -28,7 +28,7 @@
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/cdk": "^22.0.0",
-    "@kouji-ui/core": "*",
+    "@kouji-ui/core": ">=0.3.0",
     "lucide-static": "^1.14.0",
     "@angular/forms": "^22.0.0",
     "rxjs": "^7.8.0",
