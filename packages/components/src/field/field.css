@@ -64,6 +64,16 @@
     font: var(--kj-field-error-font-size) / 1.4 var(--kj-font-sans);
   }
 
+  /* Reserved error slot — keeps one text line of height while valid so the
+     error appearing/disappearing never shifts the surrounding layout. */
+  .kj-field-error[data-reserve] {
+    display: block;
+    min-height: calc(var(--kj-field-error-font-size) * 1.4);
+  }
+  .kj-field-error[data-hidden] {
+    visibility: hidden;
+  }
+
   /* Compound input layout */
   .kj-field-group {
     --kj-field-group-bg:           var(--kj-bg-field);

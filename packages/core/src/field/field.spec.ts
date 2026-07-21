@@ -104,6 +104,34 @@ describe('KjField', () => {
     expect(error.hasAttribute('hidden')).toBe(false);
   });
 
+  test('reserved error keeps its box: data-hidden toggles instead of hidden', () => {
+    @Component({
+      standalone: true,
+      imports: [KjField, KjFieldError],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `
+        <div kjField [kjInvalid]="invalid()">
+          <span kjFieldError kjFieldErrorReserve>Enter a valid email.</span>
+        </div>
+      `,
+    })
+    class ReserveHost {
+      invalid = signal(false);
+    }
+    const fixture = TestBed.createComponent(ReserveHost);
+    fixture.detectChanges();
+    const error = fixture.nativeElement.querySelector('[kjFieldError]') as HTMLElement;
+    // Valid: never display:none-hidden — the box is kept, marked data-hidden.
+    expect(error.hasAttribute('hidden')).toBe(false);
+    expect(error.hasAttribute('data-hidden')).toBe(true);
+    expect(error.hasAttribute('data-reserve')).toBe(true);
+    fixture.componentInstance.invalid.set(true);
+    fixture.detectChanges();
+    expect(error.hasAttribute('hidden')).toBe(false);
+    expect(error.hasAttribute('data-hidden')).toBe(false);
+    expect(error.hasAttribute('data-reserve')).toBe(true);
+  });
+
   test('help element hides when invalid (error takes precedence)', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
