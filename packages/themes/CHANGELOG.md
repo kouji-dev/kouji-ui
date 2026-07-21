@@ -1,5 +1,26 @@
 # @kouji-ui/themes
 
+## 0.1.0
+
+### Minor Changes
+
+- 509c90c: feat(chart): KjChart — ResizeObserver, prefers-reduced-motion, theme palette via `--kj-chart-1..6` (alias to intent tokens in all 13 themes), `kjChartDescription` + `aria-describedby`, `*kjChartTableFallback` for screen-reader tables, event outputs (`kjChartClick`, `kjChartLegendSelect`, `kjChartReady`), `[kjChartLoading]`, `exportAs="kjChart"` with `resize/dispatchAction/getOption`. 8 examples wired through the example registry; auto-discovered docs page at `/docs/chart`.
+- 509c90c: feat(core): motion preset library + shared reduced-motion service.
+  - `KjReducedMotion` (`providedIn: 'root'`) exposes an SSR-safe
+    `prefersReducedMotion` signal derived from `matchMedia`, updating live when
+    the OS setting flips.
+  - Named, composable CSS motion presets shipped as `@kouji-ui/core/motion/motion.css`
+    (`fade`, `slide-up/down/left/right`, `scale`, `slide-up-fade`, `scale-spring`)
+    with matching entrance/exit keyframes, keyed off `--kj-motion-*` custom props.
+  - `KjMotion` directive (`[kjMotion]`) applies a named preset + enter/exit state
+    to any element and surfaces the `reduced()` signal.
+  - Every preset collapses to a ~1ms opacity fade with no transform under
+    `prefers-reduced-motion: reduce` (WCAG 2.1 AAA 2.3.3).
+
+  themes: adds `--kj-motion-duration-*`, `--kj-motion-ease*`, and
+  `--kj-motion-distance` tokens (plus base duration/easing primitives) so presets
+  are retunable per theme.
+
 ## 0.0.6
 
 ### Patch Changes
