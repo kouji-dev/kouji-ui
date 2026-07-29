@@ -384,6 +384,31 @@
   color: var(--kj-fg-muted);
 }
 
+/* ── Empty / error pane sizing ──────────────────────────────────
+   These panes are siblings *after* `.kj-table-body`, so with the
+   body's default `flex: 1 1 auto` a height-constrained table gave
+   the whole leftover column to the (row-less) body and left the
+   message stranded at the very bottom, reading as a footer rather
+   than a state.
+
+   When either state is active the body yields: it shrinks to its
+   content (the sticky header stays visible, keeping column context)
+   and the pane takes the residual space, so its existing
+   `align-items/justify-content: center` finally has a box to center
+   inside. Unconstrained tables are unaffected — there is no residual
+   space to hand over, and the pane keeps its natural padded height.
+
+   Loading is excluded: it is already an `inset: 0` overlay. */
+:host([data-empty]) .kj-table-body,
+:host([data-error]) .kj-table-body {
+  flex: 0 1 auto;
+}
+.kj-table-empty,
+.kj-table-error {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 /* ── Loading state ──────────────────────────────────────────────
    Two modes:
    - Initial load (`data-has-rows="false"`): full-pane overlay with
