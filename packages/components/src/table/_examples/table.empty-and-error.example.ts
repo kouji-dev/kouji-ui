@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { kjColumn, kjTableResource, type KjColumnDef, type KjTableState } from '@kouji-ui/core';
 import { KjTableComponent } from '../table';
+import { KjTableEmptyTemplate, KjTableErrorTemplate } from '../table-state-templates';
 import { KjButtonComponent } from '../../button/button';
 
 interface User {
@@ -25,27 +26,38 @@ const INITIAL_STATE: KjTableState = {
 };
 
 /**
- * Empty and error states — two tables side by side.
+ * Empty and error states — two tables side by side, both height-constrained so
+ * the state pane centers in the space left below the header.
  *
- * Left: empty data with a custom `kjEmpty` slot that prompts the user to add
+ * Left: empty data with a custom `kjEmptyTemplate` that prompts the user to add
  *   a row.
  * Right: a resource-backed table whose loader rejects, surfacing a custom
- *   `kjError` slot with a retry button.
+ *   `kjErrorTemplate` with a retry button.
+ *
+ * Both use `<ng-template>` slots, so the markup is instantiated only while that
+ * state is on screen. The older `[kjEmpty]` / `[kjError]` attribute slots remain
+ * supported for static markup.
  */
 @Component({
   selector: 'kj-table-empty-and-error-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KjTableComponent, KjButtonComponent],
+  imports: [
+    KjTableComponent,
+    KjButtonComponent,
+    KjTableEmptyTemplate,
+    KjTableErrorTemplate,
+  ],
   styles: [`
     :host { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
     @media (min-width: 60rem) { :host { grid-template-columns: 1fr 1fr; } }
+    /* Constrained height — shows the pane centering in the residual space. */
+    kj-table { height: 16rem; }
     .kj-empty, .kj-error {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.5rem;
-      padding: 1rem;
       text-align: center;
     }
     .kj-empty p, .kj-error p { margin: 0; }
@@ -54,12 +66,14 @@ const INITIAL_STATE: KjTableState = {
     <section>
       <h3>Empty</h3>
       <kj-table [kjData]="emptyRows" [kjColumns]="cols">
-        <div kjEmpty class="kj-empty">
-          <p>No users found.</p>
-          <kj-button kjVariant="default" kjSize="sm" (click)="addUser()">
-            Add user
-          </kj-button>
-        </div>
+        <ng-template kjEmptyTemplate>
+          <div class="kj-empty">
+            <p>No users found.</p>
+            <kj-button kjVariant="default" kjSize="sm" (click)="addUser()">
+              Add user
+            </kj-button>
+          </div>
+        </ng-template>
       </kj-table>
       @if (added()) {
         <p aria-live="polite">Pretend we just opened an "add user" dialog.</p>
@@ -69,12 +83,14 @@ const INITIAL_STATE: KjTableState = {
     <section>
       <h3>Error</h3>
       <kj-table [kjColumns]="cols" [kjResource]="failingResource">
-        <div kjError class="kj-error" role="alert">
-          <p>Failed to load.</p>
-          <kj-button kjVariant="outline" kjSize="sm" (click)="retry()">
-            Try again
-          </kj-button>
-        </div>
+        <ng-template kjErrorTemplate>
+          <div class="kj-error">
+            <p>Failed to load.</p>
+            <kj-button kjVariant="outline" kjSize="sm" (click)="retry()">
+              Try again
+            </kj-button>
+          </div>
+        </ng-template>
       </kj-table>
       @if (retried()) {
         <p aria-live="polite">Retry clicked — wired in real apps via reload().</p>

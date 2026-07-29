@@ -10,3 +10,4 @@ export * from './table-filters';
 export * from './table-cell-editor-outlet';
 export * from './table-filter-outlet';
 export * from './table-cell-template';
+export * from './table-state-templates';

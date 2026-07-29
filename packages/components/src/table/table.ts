@@ -33,6 +33,11 @@ import {
 import type { Cell, Column, Header, Row, RowData } from '@tanstack/angular-table';
 import { KjTableVirtual } from './table-virtual';
 import { KjCellTemplateDirective } from './table-cell-template';
+import {
+  KjTableEmptyTemplate,
+  KjTableErrorTemplate,
+  KjTableLoadingTemplate,
+} from './table-state-templates';
 import { KjCheckboxComponent } from '../checkbox/checkbox';
 import {
   KjBooleanEditor,
@@ -165,7 +170,10 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
  *   the toolbar's export menu.
  *   @doc-file table.export.example.ts
  * @doc-example Empty and error [full]
- *   Project `[kjEmpty]` / `[kjError]` slots to override the defaults.
+ *   Override the defaults with `<ng-template kjEmptyTemplate>` /
+ *   `kjErrorTemplate` / `kjLoadingTemplate` (lazy — instantiated only while
+ *   that state is active). The older `[kjEmpty]` / `[kjError]` / `[kjLoading]`
+ *   projection slots still work and act as the fallback.
  *   @doc-file table.empty-and-error.example.ts
  * @doc-example Keyboard [full]
  *   Arrow / Home / End / Ctrl+Home/End / PageUp/Down / F2 / Enter / Esc /
@@ -215,6 +223,10 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
     '[attr.data-variant]': 'kjVariant()',
     '[attr.data-loading]': 'isLoading() ? "" : null',
     '[attr.data-error]': 'hasError() ? "" : null',
+    // Drives the "state pane owns the leftover height" layout in table.css —
+    // without it the body keeps `flex: 1` and shoves the empty pane to the
+    // bottom of a height-constrained table instead of centering it.
+    '[attr.data-empty]': 'showEmpty() ? "" : null',
   },
   template: `
     <div class="kj-table-wrapper">
@@ -530,12 +542,20 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
 
       @if (showEmpty()) {
         <div class="kj-table-empty" role="status">
-          <ng-content select="[kjEmpty]" />
+          @if (emptyTpl(); as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" />
+          } @else {
+            <ng-content select="[kjEmpty]" />
+          }
         </div>
       }
       @if (hasError()) {
         <div class="kj-table-error" role="alert">
-          <ng-content select="[kjError]" />
+          @if (errorTpl(); as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" />
+          } @else {
+            <ng-content select="[kjError]" />
+          }
         </div>
       }
       @if (isLoading()) {
@@ -543,9 +563,13 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
              aria-live="polite"
              aria-busy="true"
              [attr.data-has-rows]="effectiveData().length > 0 ? '' : null">
-          <ng-content select="[kjLoading]">
-            <span class="kj-table-loading-fallback">Loading…</span>
-          </ng-content>
+          @if (loadingTpl(); as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" />
+          } @else {
+            <ng-content select="[kjLoading]">
+              <span class="kj-table-loading-fallback">Loading…</span>
+            </ng-content>
+          }
         </div>
       }
 
@@ -615,6 +639,27 @@ export class KjTableComponent<TData extends RowData = unknown> {
 
   /** Custom cell templates declared as `ng-template[kjCellTemplate]` content. */
   private readonly cellTemplates = contentChildren(KjCellTemplateDirective);
+
+  // ── State templates ─────────────────────────────────────────────────────
+  // Declared as `ng-template[kj{Empty,Loading,Error}Template]` content. When
+  // present they win over the `[kjEmpty]` / `[kjLoading]` / `[kjError]`
+  // projection slots, which stay supported for simple static markup.
+  private readonly emptyTemplate = contentChild(KjTableEmptyTemplate);
+  private readonly loadingTemplate = contentChild(KjTableLoadingTemplate);
+  private readonly errorTemplate = contentChild(KjTableErrorTemplate);
+
+  /** Empty-state template, or `null` to fall back to the `[kjEmpty]` slot. */
+  protected readonly emptyTpl = computed<TemplateRef<unknown> | null>(
+    () => this.emptyTemplate()?.template ?? null,
+  );
+  /** Loading template, or `null` to fall back to the `[kjLoading]` slot. */
+  protected readonly loadingTpl = computed<TemplateRef<unknown> | null>(
+    () => this.loadingTemplate()?.template ?? null,
+  );
+  /** Error template, or `null` to fall back to the `[kjError]` slot. */
+  protected readonly errorTpl = computed<TemplateRef<unknown> | null>(
+    () => this.errorTemplate()?.template ?? null,
+  );
 
   /** Resolve the registered template for a cell's column, if any. */
   protected cellTpl(cell: Cell<TData, unknown>): TemplateRef<unknown> | null {
