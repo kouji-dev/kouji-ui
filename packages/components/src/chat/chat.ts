@@ -243,6 +243,33 @@ export class KjChatBubbleComponent {
 }
 
 /**
+ * Multi-part turn body. Occupies the row's `bubble` area and stacks whatever
+ * is projected into it — several `<kj-chat-bubble>`s, and any consumer content
+ * that belongs to the same turn (alert cards, action rows, attachments).
+ *
+ * Without this, a turn made of several parts has to become several `<kj-chat>`
+ * rows, which repeats the avatar and breaks the turn into unrelated-looking
+ * articles; stacking bubbles inside one row is not an option either, because
+ * every `.kj-chat-bubble` claims `grid-area: bubble` and they would overlap in
+ * the same cell. `kj-chat-message` solves the same problem for the AI kit, but
+ * it is data-driven — this is the content-projection equivalent.
+ *
+ * Bubble tails, variants and sizes keep working inside: they are driven by
+ * descendant selectors from the row, which this element does not interrupt.
+ * @doc
+ * @doc-name chat
+ */
+@Component({
+  selector: 'kj-chat-content',
+  standalone: true,
+  template: `<ng-content />`,
+  encapsulation: ViewEncapsulation.None,
+  host: { class: 'kj-chat-content' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjChatContentComponent {}
+
+/**
  * Read-state footer. Composes `KjChatFooter` so the directive mints an id,
  * registers it with the parent row for `aria-describedby`, reflects
  * `kjState` to `data-state`, and injects an `aria-label` so the glyph is

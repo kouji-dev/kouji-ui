@@ -64,6 +64,29 @@
     text-align: start;
   }
 
+  /* Pin the body to its own side of the row.
+     The bubble is a grid item in a `1fr` column, so it stretches — until
+     `max-width` caps it, at which point a stretched item settles at the START
+     of its column. On an `end` row that unpinned the bubble from the right
+     edge the moment a message grew past the cap, so long messages drifted
+     inward while short ones stayed flush. Alignment must be explicit. */
+  .kj-chat[data-side='start'] .kj-chat-bubble,
+  .kj-chat[data-side='start'] .kj-chat-header,
+  .kj-chat[data-side='start'] .kj-chat-footer { justify-self: start; }
+
+  .kj-chat[data-side='end'] .kj-chat-bubble,
+  .kj-chat[data-side='end'] .kj-chat-header,
+  .kj-chat[data-side='end'] .kj-chat-footer { justify-self: end; }
+
+  /* Same cascade-driven flip as the row itself. */
+  [dir='rtl'] .kj-chat[data-side='start'] .kj-chat-bubble,
+  [dir='rtl'] .kj-chat[data-side='start'] .kj-chat-header,
+  [dir='rtl'] .kj-chat[data-side='start'] .kj-chat-footer { justify-self: end; }
+
+  [dir='rtl'] .kj-chat[data-side='end'] .kj-chat-bubble,
+  [dir='rtl'] .kj-chat[data-side='end'] .kj-chat-header,
+  [dir='rtl'] .kj-chat[data-side='end'] .kj-chat-footer { justify-self: start; }
+
   /* Grouping suppresses avatar / header visibility but preserves layout
      so the gap stays tight and consistent. */
   .kj-chat[data-grouped] .kj-chat-avatar { visibility: hidden; }
@@ -98,6 +121,24 @@
     font-variant-numeric: tabular-nums;
     opacity: 0.85;
   }
+
+  /* ── Multi-part turn body ────────────────────────────────── */
+  .kj-chat-content {
+    grid-area: bubble;
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-chat-col-gap);
+    /* A flex column defaults to stretch; without this a long child forces the
+       whole stack wider than the row instead of wrapping inside it. */
+    min-width: 0;
+  }
+
+  /* Parts align to the row's own side, so a short bubble under a long card
+     hugs the same edge as the rest of the turn. */
+  .kj-chat[data-side='start'] .kj-chat-content { align-items: start; }
+  .kj-chat[data-side='end'] .kj-chat-content { align-items: end; }
+  [dir='rtl'] .kj-chat[data-side='start'] .kj-chat-content { align-items: end; }
+  [dir='rtl'] .kj-chat[data-side='end'] .kj-chat-content { align-items: start; }
 
   /* ── Bubble body ─────────────────────────────────────────── */
   .kj-chat-bubble {

@@ -5,6 +5,7 @@ import {
   KjChatAvatarComponent,
   KjChatBubbleComponent,
   KjChatComponent,
+  KjChatContentComponent,
   KjChatFooterComponent,
   KjChatHeaderComponent,
   KjChatLogComponent,
@@ -16,6 +17,7 @@ const imports = [
   KjChatAvatarComponent,
   KjChatHeaderComponent,
   KjChatBubbleComponent,
+  KjChatContentComponent,
   KjChatFooterComponent,
 ];
 
@@ -339,5 +341,63 @@ describe('KjChatHeaderComponent', () => {
     const h2 = (headers[1] as HTMLElement).id;
     expect(h1).not.toEqual(h2);
     expect(h1).toMatch(/^kj-chat-header-/);
+  });
+});
+
+describe('KjChatContentComponent', () => {
+  it('stacks several bubbles and arbitrary content in ONE row, under one avatar', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: `
+        <kj-chat-log>
+          <kj-chat kjSide="start">
+            <kj-chat-avatar>T</kj-chat-avatar>
+            <kj-chat-content>
+              <kj-chat-bubble>hello</kj-chat-bubble>
+              <kj-chat-bubble kjVariant="accent">a question?</kj-chat-bubble>
+              <div data-testid="card">consumer card</div>
+            </kj-chat-content>
+          </kj-chat>
+        </kj-chat-log>
+      `,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    await flush();
+
+    // The point of the component: a multi-part turn stays ONE article with a
+    // single avatar, instead of one row (and one avatar) per part.
+    expect(container.querySelectorAll('.kj-chat').length).toBe(1);
+    expect(container.querySelectorAll('.kj-chat-avatar').length).toBe(1);
+
+    const content = container.querySelector('.kj-chat-content');
+    expect(content).not.toBeNull();
+    expect(content!.querySelectorAll('.kj-chat-bubble').length).toBe(2);
+    // Consumer content is projected untouched, alongside the bubbles.
+    expect(content!.querySelector('[data-testid="card"]')?.textContent).toBe('consumer card');
+  });
+
+  it('keeps bubble variants working inside the stack (descendant selectors)', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: `
+        <kj-chat kjSide="end">
+          <kj-chat-content>
+            <kj-chat-bubble kjVariant="primary">mine</kj-chat-bubble>
+          </kj-chat-content>
+        </kj-chat>
+      `,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    await flush();
+
+    const bubble = container.querySelector('.kj-chat-bubble');
+    expect(bubble?.getAttribute('data-variant')).toBe('primary');
+    expect(container.querySelector('.kj-chat')?.getAttribute('data-side')).toBe('end');
   });
 });

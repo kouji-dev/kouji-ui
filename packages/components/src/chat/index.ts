@@ -2,6 +2,7 @@ export {
   KjChatAvatarComponent,
   KjChatBubbleComponent,
   KjChatComponent,
+  KjChatContentComponent,
   KjChatFooterComponent,
   KjChatHeaderComponent,
   KjChatLogComponent,
