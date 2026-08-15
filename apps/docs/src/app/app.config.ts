@@ -4,7 +4,7 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, TitleStrategy } from '@angular/router';
 import {
   provideClientHydration,
   withEventReplay,
@@ -19,6 +19,7 @@ import { BrowserDocsManifestProvider } from './services/docs-manifest.browser';
 import { RoadmapDataProvider } from './services/roadmap-data.provider';
 import { BrowserRoadmapDataProvider } from './services/roadmap-data.browser';
 import { RoadmapService } from './services/roadmap.service';
+import { AnalyticsService, AnalyticsTitleStrategy } from './services/analytics.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -41,6 +42,13 @@ export const appConfig: ApplicationConfig = {
     // without this the board is empty unless `/roadmap` is loaded directly.
     provideAppInitializer(() => {
       inject(RoadmapService);
+    }),
+    // GA4: page_view per navigation with the title already applied (the
+    // strategy runs after the router sets it), plus delegated outbound-click
+    // tracking. Both are browser-only no-ops during SSR/prerender.
+    { provide: TitleStrategy, useClass: AnalyticsTitleStrategy },
+    provideAppInitializer(() => {
+      inject(AnalyticsService).initOutboundClicks();
     }),
   ],
 };

@@ -96,12 +96,18 @@ export class ThemeToolbar {
   }
 
   async copyCss(): Promise<void> {
-    const ok = await this.clipboard.copy(this.exportedCss());
+    const ok = await this.clipboard.copy(this.exportedCss(), {
+      event: 'copy_theme_css',
+      params: { theme_name: this.draft().name || 'custom' },
+    });
     this.flash(ok ? 'CSS copied to clipboard' : 'Copy failed');
   }
 
   async copyLink(): Promise<void> {
-    const ok = await this.clipboard.copy(this.url.copyShareLink());
+    const ok = await this.clipboard.copy(this.url.copyShareLink(), {
+      event: 'share',
+      params: { method: 'link', content_type: 'theme' },
+    });
     this.flash(ok ? 'Link copied' : 'Copy failed');
   }
 

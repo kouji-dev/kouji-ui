@@ -143,7 +143,10 @@ export class PlaygroundComponent {
 
   /** Copy the generated snippet to the clipboard. */
   protected async copy(): Promise<void> {
-    const ok = await this.clipboard.copy(this.snippet());
+    const ok = await this.clipboard.copy(this.snippet(), {
+      event: 'copy_code',
+      params: { doc_slug: this.symbol(), file_name: 'playground' },
+    });
     if (!ok) return;
     this.copied.set(true);
     setTimeout(() => this.copied.set(false), 1600);

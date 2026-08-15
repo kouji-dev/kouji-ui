@@ -12,7 +12,8 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-7T7JWWFDVR');
+      // page_view is sent per navigation by AnalyticsTitleStrategy (SPA routing)
+      gtag('config', 'G-7T7JWWFDVR', { send_page_view: false });
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

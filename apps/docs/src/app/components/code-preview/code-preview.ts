@@ -12,6 +12,8 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { KjEditorComponent } from '@kouji-ui/components';
+import { AnalyticsService } from '../../services/analytics.service';
+import { ClipboardService } from '../../services/clipboard.service';
 import { ExampleRegistryService } from '../../services/example-registry.service';
 import { PreviewTheme, PREVIEW_THEMES } from '../../services/preview-theme';
 import { DocExample } from '../../services/docs.service';
@@ -52,6 +54,8 @@ export class CodePreviewComponent {
   previewOnly = input<boolean>(false);
 
   private readonly registrySvc = inject(ExampleRegistryService);
+  private readonly clipboard = inject(ClipboardService);
+  private readonly analytics = inject(AnalyticsService);
 
   protected readonly activeTheme = signal<PreviewTheme>('default');
   protected readonly previewThemes = PREVIEW_THEMES;
@@ -168,18 +172,20 @@ export class CodePreviewComponent {
   protected async copyActive(): Promise<void> {
     const ex = this.activeExample();
     if (!ex) return;
-    try {
-      await navigator.clipboard.writeText(ex.content);
+    const ok = await this.clipboard.copy(ex.content, {
+      event: 'copy_code',
+      params: { doc_slug: this.componentName(), file_name: ex.filename },
+    });
+    if (ok) {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 2000);
-    } catch {
-      // clipboard not available
     }
   }
 
   protected async openInStackBlitz(): Promise<void> {
     const examples = this.activeFiles();
     if (!examples.length) return;
+    this.analytics.track('open_stackblitz', { doc_slug: this.componentName() });
 
     const { default: sdk } = await import('@stackblitz/sdk');
 

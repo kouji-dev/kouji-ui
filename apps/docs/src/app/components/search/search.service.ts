@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { AnalyticsService } from '../../services/analytics.service';
 import { DocsService } from '../../services/docs.service';
 
 export interface SearchResult {
@@ -17,6 +18,7 @@ export interface SearchResult {
 export class SearchService {
   private readonly docs = inject(DocsService);
   private readonly router = inject(Router);
+  private readonly analytics = inject(AnalyticsService);
 
   readonly isOpen = signal(false);
   readonly query = signal('');
@@ -37,6 +39,7 @@ export class SearchService {
   search(q: string): void {
     this.query.set(q);
     this.activeIndex.set(0);
+    this.analytics.trackSearch(q);
 
     if (!q.trim()) { this.results.set([]); return; }
 
@@ -111,6 +114,7 @@ export class SearchService {
 
   navigate(result: SearchResult): void {
     const track = result.pkg === 'core' ? 'headless' : 'components';
+    this.analytics.track('select_content', { content_type: 'component_doc', item_id: result.slug });
     this.router.navigate(['/docs', track, result.slug]);
     this.close();
   }

@@ -1,13 +1,31 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { AnalyticsService } from './analytics.service';
 
-/** Shared clipboard utility for copying code snippets in the docs. */
+/** Optional GA4 event fired when a copy succeeds. */
+export interface CopyTrack {
+  event: string;
+  params?: Record<string, unknown>;
+}
+
+/**
+ * Shared clipboard utility for copying code snippets in the docs.
+ * Single choke point for all copy analytics: pass `track` and the event is
+ * reported only when the copy actually succeeded.
+ */
 @Injectable({ providedIn: 'root' })
 export class ClipboardService {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly analytics = inject(AnalyticsService);
 
   /** Copies text to the clipboard. Returns true on success. */
-  async copy(text: string): Promise<boolean> {
+  async copy(text: string, track?: CopyTrack): Promise<boolean> {
+    const ok = await this.write(text);
+    if (ok && track) this.analytics.track(track.event, track.params);
+    return ok;
+  }
+
+  private async write(text: string): Promise<boolean> {
     if (!isPlatformBrowser(this.platformId)) return false;
 
     if (navigator?.clipboard) {
