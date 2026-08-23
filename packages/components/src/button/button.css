@@ -8,22 +8,18 @@
 
 @layer kj.component {
   .kj-button {
-    /* component knobs — themes/users can override any of these */
-    --kj-button-bg:               var(--kj-bg-primary);
-    --kj-button-fg:               var(--kj-fg-on-primary);
-    --kj-button-border-color:     transparent;
-    --kj-button-border-style:     solid;
-    --kj-button-border-width:     var(--kj-border);
-    --kj-button-radius:           var(--kj-radius-field);
-    --kj-button-padding-x:        var(--kj-space-md);
-    --kj-button-padding-y:        var(--kj-space-sm);
-    --kj-button-font:             var(--kj-font-sans);
-    --kj-button-font-size:        var(--kj-text-sm);
-    --kj-button-justify:          center;
-    --kj-button-gap:              var(--kj-space-sm);
-    --kj-button-min-width:        auto;
-    --kj-button-height:           auto;
-    --kj-button-translate-active: none;
+    /* Component knobs are NOT declared here.
+       A custom property declared on an element always beats an inherited one,
+       so declaring the knobs on .kj-button made them unreachable from an
+       ancestor — including the <kj-button> host, which is display:contents and
+       is the only thing a consumer can put an inline style on. The knobs were
+       documented as "themes/users can override any of these" but in practice
+       could only be overridden by a rule targeting .kj-button itself.
+       Each knob is now read as var(name, <default>) at its use site, exactly
+       like --kj-button-shadow already was, so an ancestor value reaches the
+       component and the default still applies when nobody sets one.
+       Variant and size rules still DECLARE knobs on the element on purpose:
+       that is the component's own logic and must win. */
     /* --kj-button-shadow / --kj-button-shadow-hover / --kj-button-shadow-active
        are intentionally NOT declared here. Declaring them with element-level
        specificity would win over the theme's `[data-theme="X"]` ancestor
@@ -34,29 +30,26 @@
        component AND the fallback (`none`) applies when no theme sets one. */
     /* Typographic tone — themes override these for brand voice (e.g.
        bauhaus bumps weight to 900; cyberpunk tightens tracking). */
-    --kj-button-font-weight:      600;
-    --kj-button-letter-spacing:  -0.01em;
     /* Hover lift — pulls from the shared per-theme --kj-hover-translate
        (bauhaus = -4px; everyone else = -2px). */
-    --kj-button-hover-translate:  var(--kj-hover-translate, -2px);
 
     /* the only place raw var(--kj-button-*) is read */
     display: inline-flex;
     align-items: center;
-    justify-content: var(--kj-button-justify);
-    gap: var(--kj-button-gap);
-    min-width: var(--kj-button-min-width);
+    justify-content: var(--kj-button-justify, center);
+    gap: var(--kj-button-gap, var(--kj-space-sm));
+    min-width: var(--kj-button-min-width, auto);
     /* Explicit per-size height + align-self prevents flex parents
        (align-items: stretch) from over-growing the button vertically. */
-    height: var(--kj-button-height);
+    height: var(--kj-button-height, auto);
     align-self: center;
-    background: var(--kj-button-bg);
-    color: var(--kj-button-fg);
-    border: var(--kj-button-border-width) var(--kj-button-border-style) var(--kj-button-border-color);
-    border-radius: var(--kj-button-radius);
-    padding: var(--kj-button-padding-y) var(--kj-button-padding-x);
-    font: var(--kj-button-font-weight) var(--kj-button-font-size) / 1.2 var(--kj-button-font);
-    letter-spacing: var(--kj-button-letter-spacing);
+    background: var(--kj-button-bg, var(--kj-bg-primary));
+    color: var(--kj-button-fg, var(--kj-fg-on-primary));
+    border: var(--kj-button-border-width, var(--kj-border)) var(--kj-button-border-style, solid) var(--kj-button-border-color, transparent);
+    border-radius: var(--kj-button-radius, var(--kj-radius-field));
+    padding: var(--kj-button-padding-y, var(--kj-space-sm)) var(--kj-button-padding-x, var(--kj-space-md));
+    font: var(--kj-button-font-weight, 600) var(--kj-button-font-size, var(--kj-text-sm)) / 1.2 var(--kj-button-font, var(--kj-font-sans));
+    letter-spacing: var(--kj-button-letter-spacing, -0.01em);
     /* Button shadow is opt-in PER PAGE CONTEXT (e.g. landing hero, docs
        playground stage) AND restricted to the `default` (primary) variant
        — never global. Pages set `--kj-button-shadow` at their scope; the
@@ -187,7 +180,7 @@
     --kj-button-bg: var(--kj-button-bg-hover, color-mix(in oklch, var(--kj-bg-primary), black 8%));
     /* Hover lift — themed via --kj-hover-translate. Bauhaus = -4px,
        everyone else = -2px (default in :root). */
-    transform: translateY(var(--kj-button-hover-translate));
+    transform: translateY(var(--kj-button-hover-translate, var(--kj-hover-translate, -2px)));
   }
   /* fg-hover only applies to the default variant; ghost/outline/link own
      their hover fg already, and destructive keeps its on-danger fg. */
@@ -208,7 +201,7 @@
     box-shadow: var(--kj-button-shadow-active, var(--kj-button-shadow, none));
   }
   .kj-button:active {
-    transform: var(--kj-button-translate-active);
+    transform: var(--kj-button-translate-active, none);
   }
   .kj-button:focus-visible {
     outline: 2px solid var(--kj-border-focus);
@@ -250,7 +243,7 @@
   /* ── Spinner element (placeholder until KjSpinner ships) ─────────────
      The wrapper hides <ng-content> while loading and renders only this
      spinner, so it should sit centred in the button (the host already
-     applies `justify-content: var(--kj-button-justify)` = center). No
+     applies `justify-content: var(--kj-button-justify, center)` = center). No
      trailing margin — there's nothing after it to push away. */
   .kj-button__spinner {
     display: inline-block;
