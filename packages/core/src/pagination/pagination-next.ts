@@ -6,7 +6,7 @@ import {
   inject,
 } from '@angular/core';
 import { KjFocusRing } from '../primitives';
-import { KjVariant, KjSize } from '../presets';
+import { KJ_SIZE_FALLBACK, KJ_VARIANT_FALLBACK, KjVariant, KjSize } from '../presets';
 import { KJ_PAGINATION } from './pagination.context';
 import { KJ_PAGINATION_CONFIG } from './config';
 
@@ -33,6 +33,13 @@ import { KJ_PAGINATION_CONFIG } from './config';
     { directive: KjVariant, inputs: ['kjVariant'] },
     { directive: KjSize, inputs: ['kjSize'] },
     KjFocusRing,
+  ],
+  providers: [
+    // Bridge the pagination root's cascaded variant/size into the preset
+    // fallback chain: explicit input > root cascade > provideKjPagination
+    // default. See KJ_VARIANT_FALLBACK / KJ_SIZE_FALLBACK.
+    { provide: KJ_VARIANT_FALLBACK, useFactory: () => inject(KJ_PAGINATION).variant },
+    { provide: KJ_SIZE_FALLBACK, useFactory: () => inject(KJ_PAGINATION).size },
   ],
   host: {
     '[attr.aria-label]': 'config.nextLabel',

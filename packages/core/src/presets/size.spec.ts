@@ -2,7 +2,8 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { KJ_SIZE_PRESET, KjSize } from './size';
+import { signal } from '@angular/core';
+import { KJ_SIZE_FALLBACK, KJ_SIZE_PRESET, KjSize } from './size';
 
 @Component({
   standalone: true,
@@ -40,6 +41,31 @@ describe('KjSize', () => {
     fixture.detectChanges();
     const btn = fixture.nativeElement.querySelector('button');
     expect(btn.getAttribute('data-size')).toBe('md');
+  });
+
+  it('consults KJ_SIZE_FALLBACK before the preset default when input unset', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: KJ_SIZE_PRESET, useValue: { values: ['sm', 'lg'], default: 'sm' } },
+        { provide: KJ_SIZE_FALLBACK, useValue: signal('lg') },
+      ],
+    });
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button').getAttribute('data-size')).toBe('lg');
+  });
+
+  it('explicit input wins over KJ_SIZE_FALLBACK', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: KJ_SIZE_PRESET, useValue: { values: ['sm', 'md', 'lg'], default: 'sm' } },
+        { provide: KJ_SIZE_FALLBACK, useValue: signal('lg') },
+      ],
+    });
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.value = 'md';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button').getAttribute('data-size')).toBe('md');
   });
 
   it('warns once in dev mode for an unknown value', async () => {

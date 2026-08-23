@@ -133,15 +133,17 @@ export class KjProgressBarComponent {
 
   /**
    * Variant — one of the configured presets (`primary` | `success` |
-   * `warning` | `error` by default). @default 'primary'
+   * `warning` | `error` by default). Unset falls back to the
+   * `provideKjProgressBar(…)` default. @default 'primary'
    */
-  readonly kjVariant = input<string>('primary');
+  readonly kjVariant = input<string | undefined>(undefined);
 
   /**
    * Size — one of the configured presets (`xs` | `sm` | `md` | `lg` by
-   * default). Drives the bar height. @default 'md'
+   * default). Drives the bar height. Unset falls back to the configured
+   * default. @default 'md'
    */
-  readonly kjSize = input<string>('md');
+  readonly kjSize = input<string | undefined>(undefined);
 
   /**
    * Accessible label for the bar. At least one of `kjAriaLabel` or

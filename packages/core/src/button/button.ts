@@ -1,6 +1,13 @@
 import { Directive, ElementRef, ModelSignal, afterNextRender, computed, inject, input, model } from '@angular/core';
 import { KjFocusRing } from '../primitives';
-import { KjVariant, KjSize, bindPresets } from '../presets';
+import {
+  KJ_SIZE_FALLBACK,
+  KJ_VARIANT_FALLBACK,
+  KjVariant,
+  KjSize,
+  bindPresets,
+} from '../presets';
+import { KJ_BUTTON_GROUP } from '../button-group/button-group.context';
 import { KJ_BUTTON_CONFIG } from './config';
 
 /**
@@ -72,7 +79,29 @@ import { KJ_BUTTON_CONFIG } from './config';
     { directive: KjSize,    inputs: ['kjSize'] },
     KjFocusRing,
   ],
-  providers: [...bindPresets(KJ_BUTTON_CONFIG)],
+  providers: [
+    ...bindPresets(KJ_BUTTON_CONFIG),
+    // Bridge the enclosing button group's cascaded variant/size (if any) into
+    // the preset fallback chain, so a child that does not set its own
+    // variant/size inherits the group's. Resolution order (in KjVariant /
+    // KjSize): explicit input > group context > provideKjButton default >
+    // library default. `skipSelf` keeps a button that is itself a group host
+    // from reading its own context.
+    {
+      provide: KJ_VARIANT_FALLBACK,
+      useFactory: () => {
+        const group = inject(KJ_BUTTON_GROUP, { optional: true, skipSelf: true });
+        return group ? group.variant : null;
+      },
+    },
+    {
+      provide: KJ_SIZE_FALLBACK,
+      useFactory: () => {
+        const group = inject(KJ_BUTTON_GROUP, { optional: true, skipSelf: true });
+        return group ? group.size : null;
+      },
+    },
+  ],
   host: {
     '[attr.aria-disabled]': 'effectiveDisabled() ? "true" : null',
     '[attr.data-disabled]': 'effectiveDisabled() ? "" : null',
@@ -83,6 +112,14 @@ import { KJ_BUTTON_CONFIG } from './config';
 })
 export class KjButton {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /**
+   * Enclosing button group context, when the button sits inside a
+   * `[kjButtonGroup]`. Its `disabled` flag is OR-ed into
+   * {@link effectiveDisabled} (per the `KJ_BUTTON_GROUP` contract); its
+   * variant/size cascade through the preset fallback providers above.
+   */
+  private readonly group = inject(KJ_BUTTON_GROUP, { optional: true, skipSelf: true });
 
   /** Disables the button. Reflects `aria-disabled` and `data-disabled`. */
   readonly kjDisabled = input(false);
@@ -110,7 +147,9 @@ export class KjButton {
    */
   readonly kjPressed: ModelSignal<boolean | undefined> = model<boolean | undefined>(undefined);
 
-  protected readonly effectiveDisabled = computed(() => this.kjDisabled() || this.kjLoading());
+  protected readonly effectiveDisabled = computed(
+    () => this.kjDisabled() || this.kjLoading() || !!this.group?.disabled(),
+  );
 
   protected readonly pressedAttr = computed(() => {
     const p = this.kjPressed();

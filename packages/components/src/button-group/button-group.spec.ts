@@ -83,6 +83,58 @@ describe('KjButtonGroupComponent', () => {
     expect(host.querySelectorAll('button.kj-button').length).toBe(3);
   });
 
+  test('group variant/size cascade onto <kj-button> children', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.variant = 'outline';
+    fixture.componentInstance.size = 'lg';
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('button.kj-button');
+    expect(buttons.length).toBe(3);
+    for (const btn of buttons) {
+      expect(btn.getAttribute('data-variant')).toBe('outline');
+      expect(btn.getAttribute('data-size')).toBe('lg');
+    }
+  });
+
+  test('a child with explicit variant/size wins over the group cascade', () => {
+    @Component({
+      standalone: true,
+      imports: [KjButtonGroupComponent, KjButtonComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `
+        <kj-button-group kjVariant="outline" kjSize="lg">
+          <kj-button>Inherits</kj-button>
+          <kj-button kjVariant="destructive" kjSize="sm">Overrides</kj-button>
+        </kj-button-group>
+      `,
+    })
+    class MixedHost {}
+
+    const fixture = TestBed.createComponent(MixedHost);
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('button.kj-button');
+    expect(buttons[0].getAttribute('data-variant')).toBe('outline');
+    expect(buttons[0].getAttribute('data-size')).toBe('lg');
+    expect(buttons[1].getAttribute('data-variant')).toBe('destructive');
+    expect(buttons[1].getAttribute('data-size')).toBe('sm');
+  });
+
+  test('without group variant/size, children use the library defaults', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button');
+    expect(btn.getAttribute('data-variant')).toBe('default');
+    expect(btn.getAttribute('data-size')).toBe('md');
+  });
+
+  test('group kjDisabled disables <kj-button> children', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.disabled = true;
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button');
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+  });
+
   test('exposes KJ_BUTTON_GROUP context with forwarded variant/size', () => {
     let captured: ReturnType<typeof inject<typeof KJ_BUTTON_GROUP>> | undefined;
 

@@ -7,7 +7,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/core';
+import { KjSpinner, type KjSpinnerAnimation, KjVariant, KjSize, KjVisuallyHidden } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjSpinner` directive.
@@ -100,14 +100,15 @@ import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/
   standalone: true,
   imports: [KjVisuallyHidden],
   hostDirectives: [
-    {
-      directive: KjSpinner,
-      // KjSpinner's own surface — kjVariant + kjSize live on its nested
-      // KjVariant / KjSize and are not surfaced through this outer
-      // composition; they are re-exposed as wrapper inputs below and wired
-      // straight to the host's data-variant / data-size attributes.
-      inputs: ['kjAnimation', 'kjAriaLabel'],
-    },
+    { directive: KjSpinner, inputs: ['kjAnimation', 'kjAriaLabel'] },
+    // Host-directive input forwarding is not transitive: KjSpinner composes
+    // KjVariant / KjSize itself, but the wrapper must compose them directly
+    // to expose kjVariant / kjSize as its own inputs. Angular applies each
+    // directive once per host, so these bind the same preset instances that
+    // KjSpinner already composes — unset falls back to the
+    // `provideKjSpinner(…)` default.
+    { directive: KjVariant, inputs: ['kjVariant'] },
+    { directive: KjSize, inputs: ['kjSize'] },
   ],
   template: `
     <span class="kj-spinner__glyph" aria-hidden="true"></span>
@@ -117,27 +118,27 @@ import { KjSpinner, type KjSpinnerAnimation, KjVisuallyHidden } from '@kouji-ui/
   `,
   styleUrl: './spinner.css',
   encapsulation: ViewEncapsulation.None,
-  host: {
-    'class': 'kj-spinner',
-    '[attr.data-variant]': 'kjVariant()',
-    '[attr.data-size]': 'kjSize()',
-  },
+  host: { class: 'kj-spinner' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSpinnerComponent {
+  // Inputs are forwarded via `hostDirectives.inputs` above. Re-declared here
+  // for the docs extractor only — the forwarded copies are authoritative.
   /**
-   * Color preset reflected to `data-variant` on the host. Defaults to
-   * `'neutral'`, which resolves to `currentColor` in shipped themes — so a
-   * spinner inside a coloured surface inherits its parent's text colour.
+   * Color preset reflected to `data-variant` on the host. Unset falls back
+   * to the `provideKjSpinner(…)` default (`'neutral'`, which resolves to
+   * `currentColor` in shipped themes — so a spinner inside a coloured
+   * surface inherits its parent's text colour).
    */
-  readonly kjVariant = input<string>('neutral');
+  readonly kjVariant = input<string | undefined>(undefined);
 
   /**
-   * Size preset reflected to `data-size` on the host. Defaults to `'md'`.
-   * Sizes ship as `xs | sm | md | lg`; an `xl` is intentionally absent — a
-   * spinner that big almost always wants a determinate Progress Bar instead.
+   * Size preset reflected to `data-size` on the host. Unset falls back to
+   * the configured default (`'md'`). Sizes ship as `xs | sm | md | lg`; an
+   * `xl` is intentionally absent — a spinner that big almost always wants a
+   * determinate Progress Bar instead.
    */
-  readonly kjSize = input<string>('md');
+  readonly kjSize = input<string | undefined>(undefined);
 
   /**
    * Animation shape preset forwarded to `KjSpinner.kjAnimation` via the

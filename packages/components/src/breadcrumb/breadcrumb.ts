@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   ViewEncapsulation,
   booleanAttribute,
+  inject,
   input,
 } from '@angular/core';
 import {
+  KJ_BREADCRUMB_CONFIG,
   KjBreadcrumb,
   KjBreadcrumbList,
   KjBreadcrumbItem,
@@ -13,6 +15,7 @@ import {
   KjBreadcrumbSeparator,
   KjBreadcrumbEllipsis,
   KjLink,
+  KjSize,
 } from '@kouji-ui/core';
 
 /**
@@ -98,6 +101,11 @@ import {
       directive: KjBreadcrumb,
       inputs: ['kjAriaLabel', 'kjSeparator', 'kjMaxItems', 'kjOverflow'],
     },
+    // Host-directive input forwarding is not transitive: KjBreadcrumb composes
+    // KjSize itself, but the wrapper must compose it directly to expose kjSize
+    // as its own input (same instance — Angular applies a directive once per
+    // host). Unset falls back to the `provideKjBreadcrumb(…)` default.
+    { directive: KjSize, inputs: ['kjSize'] },
   ],
   template: `<ng-content />`,
   styleUrl: './breadcrumb.css',
@@ -105,13 +113,15 @@ import {
   host: {
     'class': 'kj-breadcrumb',
     'role': 'navigation',
-    '[attr.data-size]': 'kjSize()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjBreadcrumbComponent {
+  // Forwarded via `hostDirectives.inputs` above; re-declared for the docs
+  // extractor only. Unset falls back to the `provideKjBreadcrumb(…)` default
+  // (`'md'`).
   /** Size preset cascaded onto descendants. Default `'md'`. */
-  readonly kjSize = input<string>('md');
+  readonly kjSize = input<string | undefined>(undefined);
 }
 
 /**
@@ -198,14 +208,16 @@ export class KjBreadcrumbLinkComponent {
   /** Bound to `[attr.aria-label]` on the inner `<a>`. */
   readonly kjAriaLabel = input<string | undefined>(undefined);
 
-  /** KjLink variant. Defaults to `'muted'` (the breadcrumb default). */
-  readonly kjVariant = input<string>('muted');
+  private readonly config = inject(KJ_BREADCRUMB_CONFIG);
 
-  /** KjLink size. Defaults to `'sm'` (the breadcrumb default). */
-  readonly kjSize = input<string>('sm');
+  /** KjLink variant. Defaults to `provideKjBreadcrumb(…)`'s `linkVariant` (`'muted'`). */
+  readonly kjVariant = input<string>(this.config.defaults.linkVariant);
 
-  /** Underline mode. Defaults to `'hover'`. */
-  readonly kjUnderline = input<'always' | 'hover' | 'none'>('hover');
+  /** KjLink size. Defaults to `provideKjBreadcrumb(…)`'s `linkSize` (`'sm'`). */
+  readonly kjSize = input<string>(this.config.defaults.linkSize);
+
+  /** Underline mode. Defaults to `provideKjBreadcrumb(…)`'s `linkUnderline` (`'hover'`). */
+  readonly kjUnderline = input<'always' | 'hover' | 'none'>(this.config.defaults.linkUnderline);
 
   /** External-link tri-state. Forwarded to `KjLink`. */
   readonly kjExternal = input(false);

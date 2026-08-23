@@ -116,11 +116,11 @@ export class KjLinkComponent {
   /** Bound to `[attr.aria-label]` on the inner `<a>`. When set, suppresses the AT suffix injection. */
   readonly kjAriaLabel = input<string | undefined>(undefined);
 
-  /** Forwarded to the directive's `KjVariant` host directive. */
-  readonly kjVariant = input<string>('primary');
+  /** Forwarded to the directive's `KjVariant` host directive. Unset falls back to the `provideKjLink(…)` default (`'primary'`). */
+  readonly kjVariant = input<string | undefined>(undefined);
 
-  /** Forwarded to the directive's `KjSize` host directive. */
-  readonly kjSize = input<string>('inherit');
+  /** Forwarded to the directive's `KjSize` host directive. Unset falls back to the configured default (`'inherit'`). */
+  readonly kjSize = input<string | undefined>(undefined);
 
   /** Forwarded to the directive's underline-mode reflection. */
   readonly kjUnderline = input<'always' | 'hover' | 'none'>('hover');

@@ -1,6 +1,7 @@
 import {
   Directive,
   ElementRef,
+  InputSignalWithTransform,
   Signal,
   WritableSignal,
   afterNextRender,
@@ -109,10 +110,19 @@ export class KjPagination implements KjPaginationContext {
    * their own. Forwarded to each child's `KjVariant` host directive via
    * the `KJ_PAGINATION` context.
    */
-  readonly kjVariant = input<string>(this.config.defaults.variant);
+  // Undefined-tolerant: wrapper components bind `undefined` when the
+  // consumer did not set a value, which must fall back to the configured
+  // default rather than clearing the cascade.
+  readonly kjVariant: InputSignalWithTransform<string, string | undefined> = input(
+    this.config.defaults.variant,
+    { transform: (v?: string) => v || this.config.defaults.variant },
+  );
 
   /** Cascaded size for child items / boundary controls. */
-  readonly kjSize = input<string>(this.config.defaults.size);
+  readonly kjSize: InputSignalWithTransform<string, string | undefined> = input(
+    this.config.defaults.size,
+    { transform: (v?: string) => v || this.config.defaults.size },
+  );
 
   /**
    * Page-change output. Mirrors `kjPage` writes; emitted whenever the

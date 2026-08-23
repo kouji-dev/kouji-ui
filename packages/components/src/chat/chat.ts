@@ -234,10 +234,10 @@ export class KjChatHeaderComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjChatBubbleComponent {
-  /** Visual register. Validated against `KJ_CHAT_BUBBLE_CONFIG`. */
-  readonly kjVariant = input<KjChatBubbleVariant>('default');
-  /** Density preset. Drives padding + font-size on the bubble. */
-  readonly kjSize = input<KjChatBubbleSize>('md');
+  /** Visual register. Validated against `KJ_CHAT_BUBBLE_CONFIG`. Unset falls back to the `provideKjChatBubble(…)` default (`'default'`). */
+  readonly kjVariant = input<KjChatBubbleVariant | undefined>(undefined);
+  /** Density preset. Drives padding + font-size on the bubble. Unset falls back to the configured default (`'md'`). */
+  readonly kjSize = input<KjChatBubbleSize | undefined>(undefined);
   /** Suppresses the tail unconditionally. Auto-suppression on grouped rows is independent. */
   readonly kjChatBubbleNoTail = input(false);
 }
