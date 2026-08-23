@@ -32,7 +32,8 @@
   "exports": {
     ".": "./src/index.css",
     "./base.css": "./src/base.css",
-    "./themes/dark.css": "./src/themes/dark.css"
+    "./density.css": "./src/density.css",
+    "./themes/*.css": "./src/themes/*.css"
   },
   "scripts": {
     "build": "echo 'no build for css-only package'",

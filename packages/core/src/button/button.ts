@@ -36,7 +36,7 @@ import { KJ_BUTTON_CONFIG } from './config';
  *   data-full      — set to "true" when [kjFullWidth] is true
  *
  * @doc-touch
- *   Meets WCAG 2.5.5 (44×44 CSS px) at `size="lg"` (2.75rem) and `size="icon"` (enforced via min-width/min-height). Sizes `sm` (32px) and `md` (36px) sit below the 44px floor and rely on the inline-text-link exception — use them for buttons embedded in a sentence or dense form rows only.
+ *   Meets WCAG 2.5.5 (44×44 CSS px) at `size="lg"` (2.75rem) and `size="icon"` (enforced via min-width/min-height). Sizes `xs` (28px), `sm` (32px) and `md` (36px) sit below the 44px floor and rely on the inline-text-link exception — use them for buttons embedded in a sentence or dense form rows only. `xs` is intended for dense application chrome (IDE toolbars, table row actions) where a 44px control would break the layout; do not use it on touch-primary surfaces.
  *
  * @doc-a11y
  *   Kouji uses ARIA-disabled rather than the native `disabled` attribute so the

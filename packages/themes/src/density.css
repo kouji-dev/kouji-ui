@@ -1,0 +1,135 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/themes — density layer
+   App-wide density. Before this, density existed only on the table
+   (--kj-table-row-height); everything else was fixed.
+
+   Mechanism: two inherited scalars, not per-component selectors.
+   Components use ViewEncapsulation.None, so a [data-density] selector
+   WOULD reach them — but it would need one block per component per level,
+   and the ratio would live in dozens of places. Two inherited numbers put
+   the ratio in one place and, because custom properties inherit, a dense
+   region nests correctly inside a comfortable app with no extra rules.
+
+   Every derived value is round()ed to a whole pixel. Fractional heights
+   blur hairlines and desync rows from any JS/SVG surface that mirrors them.
+
+   Layer note: these rules join the EXISTING kj.base layer. Do not add a
+   kj.density sublayer — that would mean editing the @layer statement in
+   base.css, which desyncs consumers who re-declare the layer order.
+   Sitting in kj.base keeps themes (kj.shared) and consumer CSS above it.
+   ──────────────────────────────────────────────────────────── */
+
+/* Registered so JS can read a resolved px value. An UNregistered custom
+   property has no computed value: getComputedStyle() returns the raw token
+   stream ("round(calc(...))"), and parseFloat gives NaN.
+
+   Only the scalars and the JS-read ladders are registered. The existing
+   --kj-space-* / --kj-text-* deliberately are NOT: registration makes
+   invalid-at-computed-value-time *apply*, which would silently discard a
+   legitimate consumer override and is a breaking change. */
+@property --kj-density    { syntax: "<number>"; inherits: true; initial-value: 1; }
+@property --kj-type-scale { syntax: "<number>"; inherits: true; initial-value: 1; }
+
+@property --kj-ctl-h-xs { syntax: "<length>"; inherits: true; initial-value: 28px; }
+@property --kj-ctl-h-sm { syntax: "<length>"; inherits: true; initial-value: 32px; }
+@property --kj-ctl-h-md { syntax: "<length>"; inherits: true; initial-value: 36px; }
+@property --kj-ctl-h-lg { syntax: "<length>"; inherits: true; initial-value: 44px; }
+@property --kj-ctl-h-xl { syntax: "<length>"; inherits: true; initial-value: 52px; }
+@property --kj-row-h    { syntax: "<length>"; inherits: true; initial-value: 36px; }
+
+@layer kj.base {
+  :root {
+    --kj-density: 1;
+    --kj-type-scale: 1;
+
+    /* ── numeric spacing ladder ──
+       The t-shirt names below re-point at these. Values are kept in rem so
+       spacing still tracks the root font size, exactly as before. At
+       density 1 every t-shirt token resolves to its previous value to the
+       byte — this is a re-pointing, not a re-scaling. */
+    --kj-space-1:  round(calc(0.125rem  * var(--kj-density)), 1px); /*  2px */
+    --kj-space-2:  round(calc(0.25rem   * var(--kj-density)), 1px); /*  4px */
+    --kj-space-3:  round(calc(0.375rem  * var(--kj-density)), 1px); /*  6px */
+    --kj-space-4:  round(calc(0.5rem    * var(--kj-density)), 1px); /*  8px */
+    --kj-space-5:  round(calc(0.625rem  * var(--kj-density)), 1px); /* 10px */
+    --kj-space-6:  round(calc(0.75rem   * var(--kj-density)), 1px); /* 12px */
+    --kj-space-7:  round(calc(1rem      * var(--kj-density)), 1px); /* 16px */
+    --kj-space-8:  round(calc(1.25rem   * var(--kj-density)), 1px); /* 20px */
+    --kj-space-9:  round(calc(1.5rem    * var(--kj-density)), 1px); /* 24px */
+    --kj-space-10: round(calc(1.75rem   * var(--kj-density)), 1px); /* 28px */
+    --kj-space-11: round(calc(2rem      * var(--kj-density)), 1px); /* 32px */
+
+    /* t-shirt names stay the documented API; numeric is the dense-UI
+       escape hatch. These land on the same values they always had. */
+    --kj-space-xs:  var(--kj-space-2);   /*  4px */
+    --kj-space-sm:  var(--kj-space-4);   /*  8px */
+    --kj-space-md:  var(--kj-space-6);   /* 12px */
+    --kj-space-lg:  var(--kj-space-7);   /* 16px */
+    --kj-space-xl:  var(--kj-space-9);   /* 24px */
+    --kj-space-2xl: var(--kj-space-11);  /* 32px */
+    --kj-space-3xl: round(calc(3rem * var(--kj-density)), 1px);  /*  48px */
+    --kj-space-4xl: round(calc(4rem * var(--kj-density)), 1px);  /*  64px */
+    --kj-space-5xl: round(calc(6rem * var(--kj-density)), 1px);  /*  96px */
+    --kj-space-6xl: round(calc(8rem * var(--kj-density)), 1px);  /* 128px */
+
+    /* ── type ──
+       xs..2xl keep their existing values at scale 1. 3xs/2xs and 3xl/4xl/
+       display are ADDITIVE: dense UIs need badge- and meta-sized steps that
+       a 6-step scale cannot express, and new names mean no reflow for
+       existing consumers. Type is snapped to a half pixel, not a whole one —
+       fonts render fine on halves and it keeps the ramp from collapsing. */
+    --kj-text-3xs:     round(calc(0.625rem  * var(--kj-type-scale)), 0.5px); /* 10px */
+    --kj-text-2xs:     round(calc(0.6875rem * var(--kj-type-scale)), 0.5px); /* 11px */
+    --kj-text-xs:      round(calc(0.75rem   * var(--kj-type-scale)), 0.5px); /* 12px */
+    --kj-text-sm:      round(calc(0.875rem  * var(--kj-type-scale)), 0.5px); /* 14px */
+    --kj-text-base:    round(calc(1rem      * var(--kj-type-scale)), 0.5px); /* 16px */
+    --kj-text-lg:      round(calc(1.125rem  * var(--kj-type-scale)), 0.5px); /* 18px */
+    --kj-text-xl:      round(calc(1.25rem   * var(--kj-type-scale)), 0.5px); /* 20px */
+    --kj-text-2xl:     round(calc(1.5rem    * var(--kj-type-scale)), 0.5px); /* 24px */
+    --kj-text-3xl:     round(calc(2rem      * var(--kj-type-scale)), 0.5px); /* 32px */
+    --kj-text-4xl:     round(calc(2.5rem    * var(--kj-type-scale)), 0.5px); /* 40px */
+    --kj-text-display: round(calc(3rem      * var(--kj-type-scale)), 0.5px); /* 48px */
+
+    /* Code surfaces (Monaco, terminals) take metrics as JS numbers — they
+       cannot inherit font-size — so they read these two directly. */
+    --kj-text-code:    round(calc(0.8125rem * var(--kj-type-scale)), 0.5px); /* 13px */
+    --kj-leading-code: round(calc(1.125rem  * var(--kj-type-scale)), 1px);   /* 18px */
+
+    /* ── control heights ──
+       sm/md/lg stay each component's semantic API; this shared ladder is
+       what those variants resolve to, so density scales every variant
+       uniformly instead of each component hardcoding a rem value. Values
+       match the current button heights exactly at density 1. */
+    --kj-ctl-h-xs: round(calc(1.75rem * var(--kj-density)), 1px); /* 28px */
+    --kj-ctl-h-sm: round(calc(2rem    * var(--kj-density)), 1px); /* 32px */
+    --kj-ctl-h-md: round(calc(2.25rem * var(--kj-density)), 1px); /* 36px */
+    --kj-ctl-h-lg: round(calc(2.75rem * var(--kj-density)), 1px); /* 44px */
+    --kj-ctl-h-xl: round(calc(3.25rem * var(--kj-density)), 1px); /* 52px */
+
+    /* Row height for list/table/tree surfaces. */
+    --kj-row-h: var(--kj-ctl-h-md);
+  }
+
+  /* ── presets ──
+     Ratios validated in a dense IDE: type breathes more gently than boxes,
+     because an 0.85 squeeze that flatters padding is punishing on 12px text.
+
+     "standard" is declared as an explicit no-op so KjTableDensity's existing
+     three values all remain valid — renaming or dropping one would be an API
+     break. "comfy" is accepted as an alias; "comfortable" stays canonical. */
+  [data-density="compact"] {
+    --kj-density: 0.85;
+    --kj-type-scale: 0.875;
+  }
+
+  [data-density="standard"] {
+    --kj-density: 1;
+    --kj-type-scale: 1;
+  }
+
+  [data-density="comfortable"],
+  [data-density="comfy"] {
+    --kj-density: 1.18;
+    --kj-type-scale: 1.125;
+  }
+}

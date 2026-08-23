@@ -21,7 +21,7 @@
        Don't set `align-self` — in column-flex parents (form-field stacks),
        `center` horizontally shifts the host; explicit height alone is what
        prevents row-flex parents from stretching the input vertically. */
-    --kj-input-height:           2.25rem;
+    --kj-input-height:           var(--kj-ctl-h-md);
 
     display: inline-flex;
     width: 100%;
@@ -35,9 +35,9 @@
     transition: var(--kj-transition);
   }
   /* Per-size heights mirror the button scale. */
-  .kj-input[data-size="xs"] { --kj-input-height: 1.75rem; --kj-input-font-size: 0.75rem;   --kj-input-padding-x: var(--kj-space-sm); --kj-input-padding-y: 0; }
-  .kj-input[data-size="sm"] { --kj-input-height: 2rem;    --kj-input-font-size: 0.8125rem; }
-  .kj-input[data-size="lg"] { --kj-input-height: 2.75rem; --kj-input-font-size: 1rem; }
+  .kj-input[data-size="xs"] { --kj-input-height: var(--kj-ctl-h-xs); --kj-input-font-size: 0.75rem;   --kj-input-padding-x: var(--kj-space-sm); --kj-input-padding-y: 0; }
+  .kj-input[data-size="sm"] { --kj-input-height: var(--kj-ctl-h-sm);    --kj-input-font-size: 0.8125rem; }
+  .kj-input[data-size="lg"] { --kj-input-height: var(--kj-ctl-h-lg); --kj-input-font-size: 1rem; }
 
   /* Variant: sunken — inputs sit on `--kj-bg-body` so they read distinctly
      against a card / surface parent. Used on the landing showcase where

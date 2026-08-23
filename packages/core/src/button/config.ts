@@ -12,7 +12,7 @@ export interface KjButtonConfig {
  */
 export const KJ_BUTTON_DEFAULTS: KjButtonConfig = {
   variants: ['default', 'destructive', 'outline', 'ghost', 'link'],
-  sizes: ['sm', 'md', 'lg', 'xl', 'icon'],
+  sizes: ['xs', 'sm', 'md', 'lg', 'xl', 'icon'],
   defaults: { variant: 'default', size: 'md' },
 };
 

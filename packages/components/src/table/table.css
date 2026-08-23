@@ -20,7 +20,7 @@
   /* Default row height — predictable + virtualization-friendly. Density
      variants below override; consumers can also write the var directly
      (`<kj-table style="--kj-table-row-height: 2.75rem">…</kj-table>`). */
-  --kj-table-row-height: 2.25rem;
+  --kj-table-row-height: var(--kj-row-h);
 }
 :host([data-density="compact"])     { --kj-table-row-height: 1.75rem; }
 :host([data-density="comfortable"]) { --kj-table-row-height: 2.75rem; }

@@ -131,32 +131,38 @@
   /* sizes — heights are explicit so flex parents can't stretch the button.
      padding-y is kept for the `height: auto` (token-overridden) case and
      for visual rhythm with content larger than the height. */
+  .kj-button[data-size="xs"] {
+    --kj-button-padding-x: var(--kj-space-sm);
+    --kj-button-padding-y: 0;
+    --kj-button-font-size: 0.75rem;
+    --kj-button-height:    var(--kj-ctl-h-xs);   /*  28px */
+  }
   .kj-button[data-size="sm"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: 0.25rem;
     --kj-button-font-size: 0.8125rem;
-    --kj-button-height:    2rem;       /*  32px */
+    --kj-button-height:    var(--kj-ctl-h-sm);   /*  32px */
   }
   .kj-button[data-size="md"] {
-    --kj-button-height:    2.25rem;    /*  36px */
+    --kj-button-height:    var(--kj-ctl-h-md);   /*  36px */
   }
   .kj-button[data-size="lg"] {
     --kj-button-padding-x: var(--kj-space-lg);
     --kj-button-padding-y: 0.625rem;
     --kj-button-font-size: 1rem;
-    --kj-button-height:    2.75rem;    /*  44px (AAA touch target) */
+    --kj-button-height:    var(--kj-ctl-h-lg);   /*  44px (AAA touch target) */
   }
   .kj-button[data-size="xl"] {
     --kj-button-padding-x: var(--kj-space-2xl);
     --kj-button-padding-y: 0.875rem;
     --kj-button-font-size: 1.0625rem;
     --kj-button-gap:       var(--kj-space-md);
-    --kj-button-height:    3.25rem;    /*  52px */
+    --kj-button-height:    var(--kj-ctl-h-xl);   /*  52px */
   }
   .kj-button[data-size="icon"] {
     --kj-button-padding-x: var(--kj-space-sm);
     --kj-button-padding-y: var(--kj-space-sm);
-    --kj-button-height:    2.25rem;
+    --kj-button-height:    var(--kj-ctl-h-md);
     aspect-ratio: 1;
   }
 

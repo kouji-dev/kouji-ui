@@ -1,4 +1,5 @@
 @import './base.css';
+@import './density.css';
 @import './themes/dark.css';
 @import './themes/light.css';
 @import './themes/kouji.css';
@@ -12,3 +13,5 @@
 @import './themes/forest.css';
 @import './themes/nord.css';
 @import './themes/terminal.css';
+@import './themes/orrery.css';
+@import './themes/orrery-light.css';
