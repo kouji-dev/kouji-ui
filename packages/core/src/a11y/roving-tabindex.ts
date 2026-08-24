@@ -1,8 +1,9 @@
 import {
+  DestroyRef,
   Directive,
   ElementRef,
   InjectionToken,
-  contentChildren,
+  computed,
   effect,
   forwardRef,
   inject,
@@ -39,6 +40,18 @@ export class KjRovingTabindexItemDirective {
   readonly el = inject(ElementRef<HTMLElement>);
   /** @internal */
   readonly active = signal(false);
+
+  constructor() {
+    // Registration is by DI, NOT by a content query on the container: a styled
+    // wrapper (`<kj-tab>`) renders its item inside its OWN view, and a content
+    // query cannot cross that boundary. Querying left every item at
+    // tabindex="-1" whenever the wrappers were used — i.e. in every app — so
+    // the tab strip could not be reached by keyboard at all.
+    const parent = inject(KJ_ROVING_TABINDEX, { optional: true });
+    if (!parent) return;
+    parent.register(this);
+    inject(DestroyRef).onDestroy(() => parent.unregister(this));
+  }
 }
 
 /**
@@ -67,10 +80,28 @@ export class KjRovingTabindexItemDirective {
 })
 export class KjRovingTabindex {
   private readonly host = inject(ElementRef<HTMLElement>);
-  private readonly items = contentChildren(KjRovingTabindexItemDirective, {
-    descendants: true,
-  });
+  private readonly registered = signal<readonly KjRovingTabindexItemDirective[]>([]);
+  /** Items in DOM order — registration order follows creation, which a
+   *  re-order (`@for` with a changing track) does not preserve. */
+  private readonly items = computed(() =>
+    [...this.registered()].sort((a, b) =>
+      a.el.nativeElement.compareDocumentPosition(b.el.nativeElement) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+        ? -1
+        : 1,
+    ),
+  );
   private readonly activeIndex = signal(0);
+
+  /** @internal */
+  register(item: KjRovingTabindexItemDirective): void {
+    this.registered.update((all) => [...all, item]);
+  }
+
+  /** @internal */
+  unregister(item: KjRovingTabindexItemDirective): void {
+    this.registered.update((all) => all.filter((i) => i !== item));
+  }
 
   /**
    * Restricts arrow-key navigation to a single axis.
