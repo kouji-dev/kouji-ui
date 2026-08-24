@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm build:docs",
+  "buildCommand": "NODE_OPTIONS=--max-old-space-size=8192 NG_BUILD_MAX_WORKERS=2 pnpm build:docs",
   "outputDirectory": "dist/docs/browser",
   "cleanUrls": true,
   "trailingSlash": false,
