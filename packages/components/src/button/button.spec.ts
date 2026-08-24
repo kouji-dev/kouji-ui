@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
+import { provideKjButton } from '@kouji-ui/core';
 import { KjButtonComponent } from './button';
 
 @Component({
@@ -18,8 +19,8 @@ import { KjButtonComponent } from './button';
   >`,
 })
 class HostComponent {
-  variant: string = 'default';
-  size: string = 'md';
+  variant: string | undefined = undefined;
+  size: string | undefined = undefined;
   disabled = false;
   loading = false;
   pressed: boolean | undefined = undefined;
@@ -54,6 +55,59 @@ describe('KjButtonComponent', () => {
     expect(fixture.nativeElement.querySelector('button.kj-button').getAttribute('data-size')).toBe(
       'sm',
     );
+  });
+
+  test('unset variant/size resolve to the library defaults on the inner button', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button');
+    expect(btn.getAttribute('data-variant')).toBe('default');
+    expect(btn.getAttribute('data-size')).toBe('md');
+  });
+
+  test('provideKjButton defaults are respected when variant/size are unset', () => {
+    @Component({
+      standalone: true,
+      imports: [KjButtonComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      providers: [
+        provideKjButton({
+          variants: ['default', 'brand'],
+          sizes: ['md', 'xl'],
+          defaults: { variant: 'brand', size: 'xl' },
+        }),
+      ],
+      template: `<kj-button>Configured</kj-button>`,
+    })
+    class ConfiguredHost {}
+
+    const fixture = TestBed.createComponent(ConfiguredHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button');
+    expect(btn.getAttribute('data-variant')).toBe('brand');
+    expect(btn.getAttribute('data-size')).toBe('xl');
+  });
+
+  test('explicit variant/size win over provideKjButton defaults', () => {
+    @Component({
+      standalone: true,
+      imports: [KjButtonComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      providers: [
+        provideKjButton({
+          variants: ['default', 'brand', 'destructive'],
+          defaults: { variant: 'brand', size: 'lg' },
+        }),
+      ],
+      template: `<kj-button kjVariant="destructive" kjSize="sm">Explicit</kj-button>`,
+    })
+    class ExplicitHost {}
+
+    const fixture = TestBed.createComponent(ExplicitHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button');
+    expect(btn.getAttribute('data-variant')).toBe('destructive');
+    expect(btn.getAttribute('data-size')).toBe('sm');
   });
 
   test('forwards disabled (aria-disabled attr on inner button)', () => {

@@ -137,8 +137,15 @@ import { KjButton } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjButtonComponent {
-  readonly kjVariant = input('default');
-  readonly kjSize = input('md');
+  /**
+   * Visual variant. Left unset, the inner `[kjButton]` resolves it:
+   * enclosing button-group cascade, else the `provideKjButton(…)` default,
+   * else `'default'`. Binding a hardcoded default here would clobber that
+   * chain — keep it `undefined` when the consumer didn't choose one.
+   */
+  readonly kjVariant = input<string | undefined>(undefined);
+  /** Size preset. Resolution mirrors {@link kjVariant} (default `'md'`). */
+  readonly kjSize = input<string | undefined>(undefined);
   readonly kjDisabled = input(false);
   readonly kjLoading = input(false);
   readonly kjFullWidth = input(false);

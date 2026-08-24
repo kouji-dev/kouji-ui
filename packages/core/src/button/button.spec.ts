@@ -4,6 +4,7 @@ import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 import { KjButton } from './button';
+import { KjButtonGroup } from '../button-group/button-group';
 import { provideKjButton } from './config';
 
 expect.extend(toHaveNoViolations);
@@ -154,6 +155,58 @@ describe('KjButton', () => {
     });
     const { getByRole } = await render(`<button kjButton>x</button>`, { imports: [KjButton] });
     expect(getByRole('button')).toHaveAttribute('data-variant', 'brand');
+  });
+
+  it('inherits variant and size from an enclosing kjButtonGroup', async () => {
+    const { getByRole } = await render(
+      `<div kjButtonGroup [kjVariant]="'outline'" [kjSize]="'lg'">
+         <button kjButton>x</button>
+       </div>`,
+      { imports: [KjButton, KjButtonGroup] },
+    );
+    const btn = getByRole('button');
+    expect(btn).toHaveAttribute('data-variant', 'outline');
+    expect(btn).toHaveAttribute('data-size', 'lg');
+  });
+
+  it('explicit variant/size on a child wins over the group cascade', async () => {
+    const { getByRole } = await render(
+      `<div kjButtonGroup [kjVariant]="'outline'" [kjSize]="'lg'">
+         <button kjButton [kjVariant]="'destructive'" [kjSize]="'sm'">x</button>
+       </div>`,
+      { imports: [KjButton, KjButtonGroup] },
+    );
+    const btn = getByRole('button');
+    expect(btn).toHaveAttribute('data-variant', 'destructive');
+    expect(btn).toHaveAttribute('data-size', 'sm');
+  });
+
+  it('group without variant/size leaves children on the configured default', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideKjButton({
+          variants: ['default', 'brand'],
+          defaults: { variant: 'brand', size: 'md' },
+        }),
+      ],
+    });
+    const { getByRole } = await render(
+      `<div kjButtonGroup><button kjButton>x</button></div>`,
+      { imports: [KjButton, KjButtonGroup] },
+    );
+    expect(getByRole('button')).toHaveAttribute('data-variant', 'brand');
+  });
+
+  it('group kjDisabled is OR-ed into child disabled state', async () => {
+    const { getByRole } = await render(
+      `<div kjButtonGroup [kjDisabled]="true">
+         <button kjButton>x</button>
+       </div>`,
+      { imports: [KjButton, KjButtonGroup] },
+    );
+    const btn = getByRole('button');
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAttribute('data-disabled');
   });
 
   it('passes axe audit', async () => {

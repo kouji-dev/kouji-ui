@@ -230,11 +230,11 @@ export class KjTextareaComponent implements ControlValueAccessor {
   /** Disables the textarea. Reflects `aria-disabled` and native `disabled`. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
-  /** Theme variant. Configurable via `provideKjTextarea(...)`. */
-  readonly kjVariant = input('outlined');
+  /** Theme variant. Unset falls back to the `provideKjTextarea(...)` default (`'outlined'`). */
+  readonly kjVariant = input<string | undefined>(undefined);
 
-  /** Theme size. Configurable via `provideKjTextarea(...)`. */
-  readonly kjSize = input('md');
+  /** Theme size. Unset falls back to the `provideKjTextarea(...)` default (`'md'`). */
+  readonly kjSize = input<string | undefined>(undefined);
 
   /** @internal stable id for the counter / aria-describedby wiring. */
   protected readonly counterId = `kj-textarea-counter-${++nextId}`;

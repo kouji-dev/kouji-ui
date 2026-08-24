@@ -423,8 +423,10 @@ export class KjPaginationDefaultComponent {
   readonly kjTotalPages = input.required<number>();
   readonly kjSiblingCount = input<number>(1);
   readonly kjBoundaryCount = input<number>(1);
-  readonly kjVariant = input<string>('default');
-  readonly kjSize = input<string>('md');
+  /** Cascaded onto items/boundaries. Unset falls back to the `provideKjPagination(…)` default (`'default'`). */
+  readonly kjVariant = input<string | undefined>(undefined);
+  /** Cascaded onto items/boundaries. Unset falls back to the configured default (`'md'`). */
+  readonly kjSize = input<string | undefined>(undefined);
   /** Render the First / Last boundary buttons. Default `true`. */
   readonly kjShowFirstLast = input<boolean>(true);
   /** Render the trailing "Page N of M" info span. Default `false`. */

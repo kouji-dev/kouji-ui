@@ -1,69 +1,149 @@
 @layer kj.component {
-  .kj-tabs { display: block; }
-  .kj-tabs[data-orientation="vertical"] { display: grid; grid-template-columns: auto 1fr; gap: var(--kj-space-lg); }
+  /* Two tab shapes, because that is what real products use:
+     - `default` — an UNDERLINE strip. The tabs sit flat on the surface and the
+       active one is marked by a short bar on the strip's edge. This is the
+       panel/section tab: it divides a surface that is already there.
+     - `pills` — a recessed TRAY holding chips. The active tab lifts to the
+       body colour with a hairline ring. This is the view-mode switch: a
+       control that floats on top of a surface.
+     Everything either shape needs is a knob, so a consumer re-themes them
+     without redeclaring the recipe. */
+  .kj-tabs {
+    display: block;
+
+    /* shared */
+    --kj-tab-fg: var(--kj-fg-muted);
+    --kj-tab-fg-active: var(--kj-fg-default);
+    --kj-tab-font-size: 0.875rem;
+    --kj-tab-font-weight: 400;
+    --kj-tab-padding-x: var(--kj-space-md);
+    --kj-tab-padding-y: var(--kj-space-sm);
+    --kj-tab-gap: 0;
+
+    /* default (underline) */
+    --kj-tab-indicator-color: var(--kj-bg-primary);
+    --kj-tab-indicator-size: 2px;
+    /* how far the bar is held back from each edge of the tab. 0 makes it span
+       the full tab, which is the classic material underline. */
+    --kj-tab-indicator-inset: 0px;
+    --kj-tab-list-border-color: var(--kj-border-default);
+    --kj-tab-list-gap: var(--kj-space-lg);
+
+    /* pills (tray) */
+    --kj-tab-tray-bg: var(--kj-bg-surface);
+    --kj-tab-tray-border-color: var(--kj-border-default);
+    --kj-tab-tray-radius: var(--kj-radius-field);
+    --kj-tab-tray-padding: 3px;
+    --kj-tab-tray-gap: 2px;
+    --kj-tab-chip-radius: calc(var(--kj-radius-field) - 2px);
+    --kj-tab-chip-bg-active: var(--kj-bg-body);
+    --kj-tab-chip-ring-active: var(--kj-border-default);
+  }
+  .kj-tabs[data-orientation="vertical"] {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--kj-space-lg);
+  }
 
   .kj-tab-list {
     display: flex;
-    border-bottom: 1px solid var(--kj-border-default);
-    margin-bottom: var(--kj-space-lg);
+    gap: var(--kj-tab-gap);
+    border-bottom: 1px solid var(--kj-tab-list-border-color);
+    margin-bottom: var(--kj-tab-list-gap);
   }
-  .kj-tabs[data-orientation="vertical"] .kj-tab-list { flex-direction: column; border-bottom: 0; border-right: 1px solid var(--kj-border-default); margin: 0; }
+  .kj-tabs[data-orientation="vertical"] .kj-tab-list {
+    flex-direction: column;
+    border-bottom: 0;
+    border-right: 1px solid var(--kj-tab-list-border-color);
+    margin: 0;
+  }
 
   .kj-tab {
+    position: relative;
     background: none;
     border: 0;
-    border-bottom: 2px solid transparent;
-    color: var(--kj-fg-default);
-    opacity: 0.6;
-    padding: var(--kj-space-sm) var(--kj-space-md);
-    font: 0.875rem var(--kj-font-sans);
+    color: var(--kj-tab-fg);
+    padding: var(--kj-tab-padding-y) var(--kj-tab-padding-x);
+    font: var(--kj-tab-font-weight) var(--kj-tab-font-size) / 1.2 var(--kj-font-sans);
     cursor: pointer;
-    margin-bottom: -1px;
-    transition: var(--kj-transition);
+    transition: color var(--kj-transition), background-color var(--kj-transition),
+      box-shadow var(--kj-transition);
   }
-  .kj-tab[aria-selected="true"] { opacity: 1; border-bottom-color: var(--kj-bg-primary); }
-  .kj-tab:hover { opacity: 1; }
-  .kj-tab:focus-visible { outline: 2px solid var(--kj-bg-primary); outline-offset: 2px; }
-  .kj-tab:disabled, .kj-tab[aria-disabled="true"] { opacity: 0.3; cursor: not-allowed; }
+  /* The active mark is a pseudo-element, not a border: a border cannot be
+     inset from the tab's edges, and the old `opacity: .6` for the rest state
+     dimmed the tab's ICON and any badge along with the label. */
+  .kj-tab::after {
+    content: "";
+    position: absolute;
+    left: var(--kj-tab-indicator-inset);
+    right: var(--kj-tab-indicator-inset);
+    bottom: 0;
+    height: var(--kj-tab-indicator-size);
+    background: var(--kj-tab-indicator-color);
+    opacity: 0;
+    transition: opacity var(--kj-transition);
+  }
+  .kj-tab[aria-selected="true"] {
+    color: var(--kj-tab-fg-active);
+  }
+  .kj-tab[aria-selected="true"]::after {
+    opacity: 1;
+  }
+  .kj-tab:hover {
+    color: var(--kj-tab-fg-active);
+  }
+  .kj-tab:focus-visible {
+    outline: 2px solid var(--kj-border-focus, var(--kj-bg-primary));
+    outline-offset: -2px;
+  }
+  .kj-tab:disabled,
+  .kj-tab[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 
-  /* Pills variant — a small "tray" container with each active tab popping
-     to the page-body color and an inset 1px ring. Matches the design's
-     showcase view-mode toggle. */
+  /* ---- pills: a tray of chips ---- */
   .kj-tabs[data-variant="pills"] {
-    /* The host becomes the tray itself when only a tab-list is rendered
-       (e.g. used purely as a view-mode toggle). */
+    /* the host IS the tray when only a tab-list is rendered (a view-mode
+       toggle with no panels) */
     display: inline-block;
   }
   .kj-tabs[data-variant="pills"] .kj-tab-list {
     display: inline-flex;
-    gap: 4px;
-    padding: 4px;
-    background-color: var(--kj-bg-surface);
-    border: 1px solid var(--kj-border-default);
-    border-radius: var(--kj-radius-field);
+    gap: var(--kj-tab-tray-gap);
+    padding: var(--kj-tab-tray-padding);
+    background-color: var(--kj-tab-tray-bg);
+    border: 1px solid var(--kj-tab-tray-border-color);
+    border-radius: var(--kj-tab-tray-radius);
     width: fit-content;
     margin-bottom: 0;
   }
   .kj-tabs[data-variant="pills"] .kj-tab {
-    border-bottom: 0;
-    border-radius: calc(var(--kj-radius-field) - 2px);
+    border-radius: var(--kj-tab-chip-radius);
     margin: 0;
-    padding: var(--kj-space-xs, 0.375rem) var(--kj-space-md);
-    color: var(--kj-fg-muted);
-    opacity: 1;
-    transition: background-color var(--kj-transition),
-                color var(--kj-transition),
-                box-shadow var(--kj-transition);
   }
-  .kj-tabs[data-variant="pills"] .kj-tab:hover { color: var(--kj-fg-default); }
+  /* no underline in a tray — the chip itself carries the state */
+  .kj-tabs[data-variant="pills"] .kj-tab::after {
+    content: none;
+  }
   .kj-tabs[data-variant="pills"] .kj-tab[aria-selected="true"] {
-    background-color: var(--kj-bg-body);
-    color: var(--kj-fg-default);
-    box-shadow: inset 0 0 0 1px var(--kj-border-default);
+    background-color: var(--kj-tab-chip-bg-active);
+    color: var(--kj-tab-fg-active);
+    box-shadow: inset 0 0 0 1px var(--kj-tab-chip-ring-active);
   }
 
-  .kj-tabs[data-orientation="vertical"] .kj-tab { border-bottom: 0; border-right: 2px solid transparent; margin: 0 -1px 0 0; text-align: left; }
-  .kj-tabs[data-orientation="vertical"] .kj-tab[aria-selected="true"] { border-right-color: var(--kj-bg-primary); }
+  /* ---- vertical: the bar moves to the inline edge ---- */
+  .kj-tabs[data-orientation="vertical"] .kj-tab {
+    text-align: left;
+  }
+  .kj-tabs[data-orientation="vertical"] .kj-tab::after {
+    left: auto;
+    right: 0;
+    top: var(--kj-tab-indicator-inset);
+    bottom: var(--kj-tab-indicator-inset);
+    width: var(--kj-tab-indicator-size);
+    height: auto;
+  }
 
   .kj-tab-panel {
     /* Default `display: block` — without it the host renders as inline
@@ -76,5 +156,7 @@
     font: 0.875rem var(--kj-font-sans);
     line-height: 1.5;
   }
-  .kj-tab-panel[hidden] { display: none; }
+  .kj-tab-panel[hidden] {
+    display: none;
+  }
 }

@@ -2,7 +2,8 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { KJ_VARIANT_PRESET, KjVariant } from './variant';
+import { signal } from '@angular/core';
+import { KJ_VARIANT_FALLBACK, KJ_VARIANT_PRESET, KjVariant } from './variant';
 
 @Component({
   standalone: true,
@@ -45,6 +46,43 @@ describe('KjVariant', () => {
     fixture.detectChanges();
     const btn = fixture.nativeElement.querySelector('button');
     expect(btn.getAttribute('data-variant')).toBe('default');
+  });
+
+  it('consults KJ_VARIANT_FALLBACK before the preset default when input unset', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: KJ_VARIANT_PRESET, useValue: { values: ['a', 'b'], default: 'a' } },
+        { provide: KJ_VARIANT_FALLBACK, useValue: signal('b') },
+      ],
+    });
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button').getAttribute('data-variant')).toBe('b');
+  });
+
+  it('explicit input wins over KJ_VARIANT_FALLBACK', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: KJ_VARIANT_PRESET, useValue: { values: ['a', 'b', 'c'], default: 'a' } },
+        { provide: KJ_VARIANT_FALLBACK, useValue: signal('b') },
+      ],
+    });
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.value = 'c';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button').getAttribute('data-variant')).toBe('c');
+  });
+
+  it('falls through an undefined fallback to the preset default', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: KJ_VARIANT_PRESET, useValue: { values: ['a', 'b'], default: 'a' } },
+        { provide: KJ_VARIANT_FALLBACK, useValue: signal(undefined) },
+      ],
+    });
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('button').getAttribute('data-variant')).toBe('a');
   });
 
   it('warns once in dev mode for an unknown value', async () => {
