@@ -1,5 +1,26 @@
 # @kouji-ui/components
 
+## 0.7.0
+
+### Minor Changes
+
+- 51aacaf: Add `provideKjTabs()` so tab variants are extensible, like Button's.
+
+  `<kj-tabs>` had `variant` as a hardcoded `'default' | 'pills'` input, so an app could neither add a shape nor change the default. It now resolves through the same preset chain as Button — explicit input > `provideKjTabs(…)` default > library default — via the composed `KjVariant` directive, and unknown names warn in dev.
+
+  ```ts
+  provideKjTabs({ variants: [...KJ_TABS_DEFAULTS.variants, 'document'] });
+  ```
+
+  A registered variant needs only a CSS rule on `.kj-tabs[data-variant="document"]`; every part of both shipped shapes is already a `--kj-tab-*` knob.
+
+### Patch Changes
+
+- 51aacaf: Retune the two tab shapes and make them themeable.
+  - `default` is the underline strip and `pills` is the recessed chip tray — the two shapes products actually use. Both are now driven by `--kj-tab-*` knobs (ink, indicator colour/size/inset, tray ground/ring, padding, font) instead of hardcoded values, so a consumer re-themes a strip without redeclaring the recipe.
+  - The active mark moved from `border-bottom` to a pseudo-element, so it can be inset from the tab's edges (`--kj-tab-indicator-inset`); a border cannot.
+  - The rest state is an ink token instead of `opacity: .6`, which was also dimming each tab's icon and badge.
+
 ## 0.6.4
 
 ### Patch Changes
