@@ -137,6 +137,39 @@ describe('KjListNavigator', () => {
     expect((items[0] as { activated: number }).activated).toBe(1);
   });
 
+  it('Space in a text input types a character instead of activating', async () => {
+    // A combobox highlights a row for every query, so activating on Space made
+    // multi-word queries impossible — the space ran the highlighted item.
+    const items = [fakeItem('1', 'A')];
+    const { container, fixture } = await setup(items);
+    const host = container.querySelector('[kjListNavigator]') as HTMLElement;
+    press(host, fixture, 'ArrowDown');
+
+    const input = document.createElement('input');
+    host.appendChild(input);
+    const e = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    input.dispatchEvent(e);
+    fixture.detectChanges();
+
+    expect((items[0] as { activated: number }).activated).toBe(0);
+    expect(e.defaultPrevented).toBe(false);
+  });
+
+  it('Space still activates from a non-text control (a checkbox row)', async () => {
+    const items = [fakeItem('1', 'A')];
+    const { container, fixture } = await setup(items);
+    const host = container.querySelector('[kjListNavigator]') as HTMLElement;
+    press(host, fixture, 'ArrowDown');
+
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    host.appendChild(box);
+    box.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+
+    expect((items[0] as { activated: number }).activated).toBe(1);
+  });
+
   it('PageDown moves by kjPageSize (default 10)', async () => {
     const items = Array.from({ length: 15 }, (_, i) => fakeItem(String(i + 1), 'Item ' + (i + 1)));
     const { container, fixture } = await setup(items);
