@@ -1,5 +1,31 @@
 # @kouji-ui/components
 
+## 0.7.0
+
+### Minor Changes
+
+- 4b00429: Add `provideKjTabs()` so tab variants are extensible, like Button's.
+
+  `<kj-tabs>` had `variant` as a hardcoded `'default' | 'pills'` input, so an app could neither add a shape nor change the default. It now resolves through the same preset chain as Button — explicit input > `provideKjTabs(…)` default > library default — via the composed `KjVariant` directive, and unknown names warn in dev.
+
+  ```ts
+  provideKjTabs({ variants: [...KJ_TABS_DEFAULTS.variants, 'document'] });
+  ```
+
+  A registered variant needs only a CSS rule on `.kj-tabs[data-variant="document"]`; every part of both shipped shapes is already a `--kj-tab-*` knob.
+
+### Patch Changes
+
+- 76794cf: Respect `provideKjButton` defaults and button-group cascade everywhere.
+  - `KjVariant`/`KjSize` gain an optional fallback context (`KJ_VARIANT_FALLBACK`/`KJ_SIZE_FALLBACK`): explicit input > enclosing group cascade > `provideKj*` default > library default.
+  - Element wrappers (`kj-button`, `kj-badge`, breadcrumb, chat, link, pagination, progress-bar, spinner, textarea) no longer hardcode `variant`/`size` defaults that clobbered the provider config — a bare `<kj-button>` now honors `provideKjButton({ defaults })`.
+  - `kj-button-group` cascades its `kjVariant`/`kjSize`/`kjDisabled` to child buttons (both `<button kjButton>` and `<kj-button>` forms).
+
+- 4b00429: Retune the two tab shapes and make them themeable.
+  - `default` is the underline strip and `pills` is the recessed chip tray — the two shapes products actually use. Both are now driven by `--kj-tab-*` knobs (ink, indicator colour/size/inset, tray ground/ring, padding, font) instead of hardcoded values, so a consumer re-themes a strip without redeclaring the recipe.
+  - The active mark moved from `border-bottom` to a pseudo-element, so it can be inset from the tab's edges (`--kj-tab-indicator-inset`); a border cannot.
+  - The rest state is an ink token instead of `opacity: .6`, which was also dimming each tab's icon and badge.
+
 ## 0.6.3
 
 ### Patch Changes

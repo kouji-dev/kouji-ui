@@ -1,5 +1,26 @@
 # @kouji-ui/core
 
+## 0.6.0
+
+### Minor Changes
+
+- 4b00429: Add `provideKjTabs()` so tab variants are extensible, like Button's.
+
+  `<kj-tabs>` had `variant` as a hardcoded `'default' | 'pills'` input, so an app could neither add a shape nor change the default. It now resolves through the same preset chain as Button — explicit input > `provideKjTabs(…)` default > library default — via the composed `KjVariant` directive, and unknown names warn in dev.
+
+  ```ts
+  provideKjTabs({ variants: [...KJ_TABS_DEFAULTS.variants, 'document'] });
+  ```
+
+  A registered variant needs only a CSS rule on `.kj-tabs[data-variant="document"]`; every part of both shipped shapes is already a `--kj-tab-*` knob.
+
+### Patch Changes
+
+- 76794cf: Respect `provideKjButton` defaults and button-group cascade everywhere.
+  - `KjVariant`/`KjSize` gain an optional fallback context (`KJ_VARIANT_FALLBACK`/`KJ_SIZE_FALLBACK`): explicit input > enclosing group cascade > `provideKj*` default > library default.
+  - Element wrappers (`kj-button`, `kj-badge`, breadcrumb, chat, link, pagination, progress-bar, spinner, textarea) no longer hardcode `variant`/`size` defaults that clobbered the provider config — a bare `<kj-button>` now honors `provideKjButton({ defaults })`.
+  - `kj-button-group` cascades its `kjVariant`/`kjSize`/`kjDisabled` to child buttons (both `<button kjButton>` and `<kj-button>` forms).
+
 ## 0.5.1
 
 ### Patch Changes
