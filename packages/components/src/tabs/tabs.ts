@@ -5,7 +5,15 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
+import {
+  KjTabs,
+  KjTabList,
+  KjTab,
+  KjTabPanel,
+  KjVariant,
+  KJ_TABS_CONFIG,
+  bindPresets,
+} from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjTabs` directive — root of the tabs
@@ -103,19 +111,31 @@ import { KjTabs, KjTabList, KjTab, KjTabPanel } from '@kouji-ui/core';
       ],
       outputs: ['kjValueChange: valueChange'],
     },
+    // `variant` resolves through the preset chain (explicit input >
+    // provideKjTabs default > library default) and reflects data-variant —
+    // the same contract Button uses. Declaring it as a plain input here would
+    // hardcode the default and clobber provideKjTabs(…).
+    { directive: KjVariant, inputs: ['kjVariant: variant'] },
   ],
+  providers: [...bindPresets(KJ_TABS_CONFIG)],
   template: `<ng-content />`,
   styleUrl: './tabs.css',
   encapsulation: ViewEncapsulation.None,
-  host: {
-    class: 'kj-tabs',
-    '[attr.data-variant]': 'variant()',
-  },
+  host: { class: 'kj-tabs' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTabsComponent {
-  /** Visual chrome for the tab strip. Reflected as `data-variant` on the host. */
-  readonly variant = input<'default' | 'pills'>('default');
+  /**
+   * Visual chrome for the tab strip, reflected as `data-variant` on the host.
+   * Ships `'default'` (underline strip) and `'pills'` (recessed chip tray);
+   * register more with `provideKjTabs({ variants: [...] })` and key a CSS rule
+   * on `.kj-tabs[data-variant="…"]`.
+   *
+   * Declared here for the docs extractor only — the value is owned by the
+   * composed `KjVariant` preset directive (see `hostDirectives`), which is
+   * what actually resolves and reflects it.
+   */
+  readonly variant = input<string | undefined>(undefined);
 }
 
 /**
