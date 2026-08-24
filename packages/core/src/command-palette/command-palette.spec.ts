@@ -142,6 +142,40 @@ describe('KjCommandPalette — moveActive', () => {
     expect(getAllByRole('option')[1]).toHaveAttribute('data-active');
   });
 
+  it('re-seeds the active item when the visible set drops it (consumer-filtered)', async () => {
+    // Regression: with [kjShouldFilter]="false" the consumer re-renders the
+    // list AFTER the query effect ran, so the palette highlighted an item that
+    // is already gone — the stale value was non-null, the repair effect skipped
+    // it, no row was active, and Enter did nothing.
+    @Component({
+      standalone: true,
+      imports,
+      template: `
+        <div kjCommandPalette [kjShouldFilter]="false">
+          <input kjCommandInput type="search" placeholder="Search…" />
+          <div kjCommandList>
+            @for (id of ids(); track id) {
+              <button type="button" kjCommandItem [kjValue]="id">{{ id }}</button>
+            }
+          </div>
+        </div>
+      `,
+    })
+    class ConsumerFilteredHost {
+      readonly ids = signal(['a', 'b']);
+    }
+    const { getAllByRole, fixture } = await render(ConsumerFilteredHost);
+    expect(getAllByRole('option')[0]).toHaveAttribute('data-active');
+
+    // the active item ('a') is no longer rendered
+    fixture.componentInstance.ids.set(['c']);
+    fixture.detectChanges();
+
+    const options = getAllByRole('option');
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveAttribute('data-active');
+  });
+
   it('End key jumps to last item', async () => {
     const { getByRole, getAllByRole } = await render(basicTemplate, { imports });
     const input = getByRole('combobox');

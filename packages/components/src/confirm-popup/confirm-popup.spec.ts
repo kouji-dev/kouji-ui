@@ -61,6 +61,60 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
     vi.useRealTimers();
   });
 
+  test('the action slot resolves the popup: (kjConfirmed) fires and the panel closes', () => {
+    // Regression: the trigger sits on a CHILD of <kj-confirm-popup> (every
+    // documented example does this), so the root could not see the overlay
+    // controller in its own injector — close() bailed out, the popup stayed
+    // open and (kjConfirmed) never fired.
+    @Component({
+      standalone: true,
+      imports: [
+        KjConfirmPopupComponent,
+        KjConfirmPopupTriggerComponent,
+        KjConfirmPopupContentComponent,
+        KjConfirmPopupMessageComponent,
+        KjConfirmPopupActionComponent,
+        KjConfirmPopupCancelComponent,
+        KjConfirmPopupActionsComponent,
+      ],
+      template: `
+        <kj-confirm-popup
+          [kjDestructive]="true"
+          (kjConfirmed)="confirmed.set(true)"
+          (kjResult)="result.set($event)"
+        >
+          <kj-confirm-popup-trigger #trig="kjConfirmPopupTrigger">
+            <button>Delete</button>
+          </kj-confirm-popup-trigger>
+          <kj-confirm-popup-content [kjFor]="trig">
+            <kj-confirm-popup-message>Sure?</kj-confirm-popup-message>
+            <kj-confirm-popup-actions>
+              <kj-confirm-popup-cancel><button>Cancel</button></kj-confirm-popup-cancel>
+              <kj-confirm-popup-action><button>OK</button></kj-confirm-popup-action>
+            </kj-confirm-popup-actions>
+          </kj-confirm-popup-content>
+        </kj-confirm-popup>
+      `,
+    })
+    class Host {
+      readonly confirmed = signal(false);
+      readonly result = signal<boolean | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('button')!.click();
+    settle(fixture);
+    expect(findPanel()).not.toBeNull();
+
+    findPanel()!.querySelector<HTMLElement>('[data-kj-confirm-popup-action] button')!.click();
+    settle(fixture);
+
+    expect(fixture.componentInstance.confirmed()).toBe(true);
+    expect(fixture.componentInstance.result()).toBe(true);
+    expect(findPanel()).toBeNull();
+  });
+
   test('renders projected trigger content with display: contents on host', () => {
     @Component({
       standalone: true,

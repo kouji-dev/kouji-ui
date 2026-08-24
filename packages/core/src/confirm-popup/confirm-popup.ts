@@ -1,10 +1,12 @@
 import {
   Directive,
   booleanAttribute,
+  computed,
   effect,
   inject,
   input,
   output,
+  signal,
 } from '@angular/core';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import {
@@ -39,8 +41,25 @@ import {
   ],
 })
 export class KjConfirmPopup implements KjConfirmPopupContext {
-  /** The overlay controller provided by the trigger directive on the same element. */
-  private readonly controller = inject(KjOverlayController, { optional: true });
+  /** The overlay controller, when the trigger sits on this very element. */
+  private readonly selfController = inject(KjOverlayController, { optional: true });
+
+  /**
+   * The controller of a nested `[kjConfirmPopupTrigger]`. The documented
+   * composition puts the trigger on a CHILD of `[kjConfirmPopup]` (see every
+   * example), so the controller is NOT in this element's injector — without
+   * this registration `close()` bailed out and `(kjConfirmed)` never fired.
+   */
+  private readonly registered = signal<KjOverlayController | null>(null);
+
+  /** @internal — called by a nested `[kjConfirmPopupTrigger]`. */
+  _registerController(c: KjOverlayController): void {
+    this.registered.set(c);
+  }
+
+  private controllerOf(): KjOverlayController | null {
+    return this.selfController ?? this.registered();
+  }
 
   /** When `true`, the confirm action renders with destructive intent. */
   readonly kjDestructive = input<boolean, unknown>(false, {
@@ -62,10 +81,7 @@ export class KjConfirmPopup implements KjConfirmPopupContext {
   // ── KjConfirmPopupContext ──────────────────────────────────────────
 
   /** Open state forwarded from the underlying controller. */
-  readonly open = (() => {
-    const ctrl = this.controller;
-    return ctrl ? ctrl.isOpen : (() => false) as never;
-  })();
+  readonly open = computed(() => this.controllerOf()?.isOpen() ?? false);
 
   /** Whether the confirm action should render destructively. */
   readonly destructive = this.kjDestructive;
@@ -82,7 +98,7 @@ export class KjConfirmPopup implements KjConfirmPopupContext {
   constructor() {
     // Bridge the controller's open signal into the resolution contract.
     effect(() => {
-      const isOpen = this.controller?.isOpen() ?? false;
+      const isOpen = this.controllerOf()?.isOpen() ?? false;
       if (isOpen && !this.wasOpen) {
         this.resolved = false;
       }
@@ -99,11 +115,12 @@ export class KjConfirmPopup implements KjConfirmPopupContext {
    * Close the popup with the given result. `true` confirms, `false` cancels.
    */
   close(result: boolean): void {
-    if (!this.controller || !this.controller.isOpen()) return;
+    const controller = this.controllerOf();
+    if (!controller || !controller.isOpen()) return;
     this.resolved = true;
     if (result) this.kjConfirmed.emit();
     else this.kjCancelled.emit();
     this.kjResult.emit(result);
-    this.controller.close('programmatic');
+    controller.close('programmatic');
   }
 }

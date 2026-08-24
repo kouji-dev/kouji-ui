@@ -1,4 +1,5 @@
 import { InjectionToken, type Signal } from '@angular/core';
+import type { KjOverlayController } from '../primitives/overlay/controller';
 
 /**
  * Where initial focus lands when the confirm popup opens.
@@ -27,6 +28,13 @@ export interface KjConfirmPopupContext {
 
   /** Resolve the confirmation: `true` confirms, `false` cancels. */
   close(result: boolean): void;
+
+  /**
+   * @internal Register the overlay controller owned by a nested
+   * `[kjConfirmPopupTrigger]`. Optional so third-party context
+   * implementations stay source-compatible.
+   */
+  _registerController?(controller: KjOverlayController): void;
 }
 
 /** Injection token for the confirm popup context. */
