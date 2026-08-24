@@ -1,5 +1,35 @@
 # @kouji-ui/core
 
+## 0.6.2
+
+### Patch Changes
+
+- e52fa52: fix(command-palette): re-seed the active item when the visible set changes
+
+  With `[kjShouldFilter]="false"` the consumer re-renders the item list in
+  response to the query, which happens AFTER the query effect ran — so the
+  palette highlighted an item that was already gone, and the "pick first if
+  nothing is highlighted" effect skipped the repair because the stale value was
+  not `null`. No row was active and Enter did nothing. Typing slowly hid it;
+  typing fast or pasting a query reproduced it every time.
+
+  The palette now re-seeds whenever the active value is no longer among the
+  visible items.
+
+- e52fa52: fix(confirm-popup): resolve confirm/cancel when the trigger is a child
+
+  `[kjConfirmPopup]` read the overlay controller from its OWN element injector,
+  but every documented composition puts `[kjConfirmPopupTrigger]` on a child
+  (`<kj-confirm-popup><kj-confirm-popup-trigger>…`). The controller was therefore
+  never found: `close()` bailed out early, so clicking the action or cancel slot
+  did nothing, `(kjConfirmed)` / `(kjCancelled)` / `(kjResult)` never emitted, the
+  panel stayed open, and — because `ctx.open()` was permanently `false` — the
+  panel kept `role="dialog"` instead of being promoted to `alertdialog` with its
+  `aria-describedby` wiring and default focus.
+
+  The trigger now hands its controller to the enclosing confirm-popup context, so
+  the documented markup resolves as written.
+
 ## 0.6.1
 
 ### Patch Changes
