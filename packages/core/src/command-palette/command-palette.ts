@@ -146,12 +146,19 @@ export class KjCommandPalette implements KjListNavigatorConfig {
       });
     });
 
-    // When items register asynchronously (same query), pick first if nothing highlighted.
+    // Re-seed when the visible set changes under the active item: items may
+    // register asynchronously (nothing highlighted yet), and with
+    // `[kjShouldFilter]="false"` the consumer re-renders the list AFTER the
+    // query effect above ran — so that effect highlighted an item that is
+    // already gone. Without the `some()` check the palette kept a stale value,
+    // no row was active, and Enter did nothing (reproducible by typing fast
+    // or pasting a query).
     effect(() => {
       const visible = this.visibleItems();
       const active = this.kjValue();
       const autoFirst = this.kjAutoActivateFirst();
-      if (!autoFirst || visible.length === 0 || active !== null) return;
+      if (!autoFirst || visible.length === 0) return;
+      if (active !== null && visible.some(i => i.value() === active)) return;
       untracked(() => {
         const nav = this._nav();
         this.kjValue.set(visible[0].value());
