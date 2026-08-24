@@ -218,10 +218,21 @@ export class KjListNavigator {
         this.moveBy(-this.kjPageSize());
         return;
       case 'Enter':
-      case ' ':
         // Only preventDefault when we actually activate. Lets consumers
-        // (e.g. combobox free-text Enter) fall through when nothing is
-        // active, and lets Space type a literal space in a combobox input.
+        // (e.g. combobox free-text Enter) fall through when nothing is active.
+        if (this.activeItem()) {
+          e.preventDefault();
+          this.activateCurrent();
+        }
+        return;
+      case ' ':
+        // Space activates a LIST — but in a text field it is a character the
+        // user is typing, and the field owns it. A command palette highlights
+        // a row for every query, so treating Space as activation there made
+        // multi-word queries impossible: the space ran the highlighted command
+        // instead of reaching the input. Enter remains the activation key from
+        // a text field.
+        if (isTextEntry(e.target)) return;
         if (this.activeItem()) {
           e.preventDefault();
           this.activateCurrent();
@@ -235,4 +246,28 @@ export class KjListNavigator {
       }
     }
   }
+}
+
+/** Types of `<input>` that hold text the user types (Space is a character). */
+const NON_TEXT_INPUT_TYPES = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+]);
+
+/** Whether a key event landed in a field where Space types a character. */
+function isTextEntry(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el || typeof el.tagName !== 'string') return false;
+  if (el.isContentEditable) return true;
+  if (el.tagName === 'TEXTAREA') return true;
+  if (el.tagName !== 'INPUT') return false;
+  const type = (el as HTMLInputElement).type?.toLowerCase() ?? 'text';
+  return !NON_TEXT_INPUT_TYPES.has(type);
 }
