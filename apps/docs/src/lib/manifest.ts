@@ -8,6 +8,7 @@
  * In dev the file watcher invalidates the cache when any source file
  * in packages/core/src changes; the next request re-extracts.
  */
+import { isDevMode } from '@angular/core';
 import { watch, existsSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { extractDocsManifest } from './docs-extractor';
@@ -45,6 +46,15 @@ export function invalidateManifest(): void {
 function startWatcher(): void {
   if (_watcherStarted) return;
   _watcherStarted = true;
+
+  // Dev only. A prerender build runs this module inside every worker thread of
+  // the render pool, and a recursive fs.watch there is pure cost: it pins an
+  // open handle per worker for a process that renders one batch and exits, and
+  // on a CI container it multiplies the inotify watch count by the worker
+  // count. `ngDevMode` is stripped from an optimized build, so this is false
+  // exactly when the app was built for production — which is when prerendering
+  // happens — and true under `ng serve`, where the watcher earns its keep.
+  if (!isDevMode()) return;
 
   const root = findWorkspaceRoot(process.cwd());
   const paths = [
