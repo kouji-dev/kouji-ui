@@ -2,6 +2,8 @@
 // One barrel per component folder — used by the docs app as a lazy chunk.
 export { KjTagExample } from './tag.example';
 export { KjTagListExample } from './tag.list.example';
+export { KjTagOverflowExample } from './tag.overflow.example';
+export { KjTagOverflowTemplateExample } from './tag.overflow-template.example';
 export { KjTagRemovableExample } from './tag.removable.example';
 export { KjTagSelectableExample } from './tag.selectable.example';
 export { KjTagSizesExample } from './tag.sizes.example';

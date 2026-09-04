@@ -1,0 +1,43 @@
+/* ─────────────────────────────────────────────────────────────
+   kj-overflow-panel — the "+N" chip's panel (tag list / avatar group).
+   The panel itself is a kj-popover-content; only the default label
+   list and the trigger chips' shared reset live here.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.component {
+  .kj-overflow-panel {
+    --kj-popover-padding-x: var(--kj-space-sm);
+    --kj-popover-padding-y: var(--kj-space-sm);
+    min-width: 10rem;
+  }
+
+  .kj-overflow-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kj-space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kj-overflow-item {
+    padding: var(--kj-space-xs) var(--kj-space-sm);
+    font-size: var(--kj-text-sm);
+    line-height: 1.4;
+    color: var(--kj-fg-default);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* The "+N" chip is a native <button> so it is focusable and reachable on
+     touch; strip the UA chrome, the group's own chip styles paint it. */
+  .kj-overflow-trigger {
+    appearance: none;
+    font: inherit;
+    cursor: pointer;
+  }
+  .kj-overflow-trigger:focus-visible {
+    outline: 2px solid var(--kj-bg-primary);
+    outline-offset: 2px;
+  }
+}

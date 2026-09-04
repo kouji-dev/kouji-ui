@@ -56,4 +56,56 @@ describe('KjPopover', () => {
     expect(btn.getAttribute('aria-haspopup')).toBe('dialog');
     expect(panel.getAttribute('role')).toBe('dialog');
   });
+
+  it('kjTrigger="hover" opens on pointerenter and on focus, not on a bare click while open', async () => {
+    @Component({
+      selector: 'kj-pop-host',
+      standalone: true,
+      imports: [KjPopoverTrigger, KjPopoverContent],
+      template: `
+        <button
+          kjPopoverTrigger
+          kjTrigger="hover"
+          [kjOpenDelay]="0"
+          [kjCloseDelay]="0"
+          #t="kjPopoverTrigger"
+        >
+          Open
+        </button>
+        <kj-popover-content [kjFor]="t">Hi</kj-popover-content>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    const btn = container.querySelector('button')!;
+    btn.dispatchEvent(new Event('pointerenter'));
+    await new Promise((r) => setTimeout(r, 10));
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    // An open-only click keeps it open (touch fallback never toggles closed).
+    btn.click();
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('kjTrigger="click" (default) toggles on click', async () => {
+    @Component({
+      selector: 'kj-pop-host',
+      standalone: true,
+      imports: [KjPopoverTrigger, KjPopoverContent],
+      template: `
+        <button kjPopoverTrigger #t="kjPopoverTrigger">Open</button>
+        <kj-popover-content [kjFor]="t">Hi</kj-popover-content>
+      `,
+    })
+    class Host {}
+    const { container, fixture } = await render(Host);
+    const btn = container.querySelector('button')!;
+    btn.click();
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    btn.click();
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+  });
 });

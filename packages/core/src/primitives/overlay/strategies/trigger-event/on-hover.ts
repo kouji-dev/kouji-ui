@@ -13,6 +13,13 @@ const read = <T>(v: Reactive<T> | undefined, fallback: T): T => {
 export interface KjOnHoverOpts {
   openDelay?: Reactive<number>;
   closeDelay?: Reactive<number>;
+  /**
+   * Keep the panel open while the pointer rests on it. Required for panels
+   * that hold controls (a hover popover with actions): the pointer travels
+   * from the trigger to the panel, which would otherwise schedule a close.
+   * Tooltips leave this off — their content is never interactive.
+   */
+  interactive?: Reactive<boolean>;
 }
 
 export type KjOnHoverStrategy = KjTriggerEventStrategy & {
@@ -44,10 +51,46 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
   let opts: Partial<KjOnHoverOpts> = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;
   let toggle: (() => void) | null = null;
-  let openTimer = 0, closeTimer = 0;
+  let openTimer = 0,
+    closeTimer = 0;
   let onEnter: ((e: Event) => void) | null = null;
   let onLeave: ((e: Event) => void) | null = null;
   let listenTarget: HTMLElement | null = null;
+  let panelTarget: HTMLElement | null = null;
+
+  const cancelClose = () => {
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      closeTimer = 0;
+    }
+  };
+  const scheduleClose = () => {
+    if (openTimer) {
+      clearTimeout(openTimer);
+      openTimer = 0;
+    }
+    if (!ctx?.isOpen()) return;
+    cancelClose();
+    closeTimer = setTimeout(
+      () => {
+        toggle?.();
+        closeTimer = 0;
+      },
+      read(opts.closeDelay, 0),
+    ) as unknown as number;
+  };
+
+  // The panel is bound to the controller after the trigger attaches (a
+  // `[kjFor]` panel registers itself later), so its listeners are wired
+  // lazily — on the first hover intent, once the panel element exists.
+  const wirePanel = () => {
+    if (panelTarget || !read(opts.interactive, false)) return;
+    const panel = ctx?.panelEl();
+    if (!panel) return;
+    panelTarget = panel;
+    panel.addEventListener('pointerenter', cancelClose);
+    panel.addEventListener('pointerleave', scheduleClose);
+  };
 
   const wire = () => {
     if (!ctx?.platform.isBrowser) return;
@@ -55,14 +98,20 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
     if (!trigger || onEnter) return;
     listenTarget = effectiveHoverTarget(trigger);
     onEnter = () => {
-      if (closeTimer) { clearTimeout(closeTimer); closeTimer = 0; }
+      cancelClose();
+      wirePanel();
       if (ctx?.isOpen()) return;
-      openTimer = setTimeout(() => { toggle?.(); openTimer = 0; }, read(opts.openDelay, 0)) as unknown as number;
+      openTimer = setTimeout(
+        () => {
+          toggle?.();
+          openTimer = 0;
+        },
+        read(opts.openDelay, 0),
+      ) as unknown as number;
     };
     onLeave = () => {
-      if (openTimer) { clearTimeout(openTimer); openTimer = 0; }
-      if (!ctx?.isOpen()) return;
-      closeTimer = setTimeout(() => { toggle?.(); closeTimer = 0; }, read(opts.closeDelay, 0)) as unknown as number;
+      wirePanel();
+      scheduleClose();
     };
     listenTarget.addEventListener('pointerenter', onEnter);
     listenTarget.addEventListener('pointerleave', onLeave);
@@ -70,17 +119,34 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
 
   return {
     ariaHasPopup: null,
-    attach(c) { ctx = c; wire(); },
-    bindToggle(t) { toggle = t; wire(); },
-    onOpen() {}, onClose() {},
+    attach(c) {
+      ctx = c;
+      wire();
+    },
+    bindToggle(t) {
+      toggle = t;
+      wire();
+    },
+    onOpen() {},
+    onClose() {},
     detach() {
       if (listenTarget && onEnter) listenTarget.removeEventListener('pointerenter', onEnter);
       if (listenTarget && onLeave) listenTarget.removeEventListener('pointerleave', onLeave);
+      if (panelTarget) {
+        panelTarget.removeEventListener('pointerenter', cancelClose);
+        panelTarget.removeEventListener('pointerleave', scheduleClose);
+      }
       if (openTimer) clearTimeout(openTimer);
       if (closeTimer) clearTimeout(closeTimer);
-      onEnter = onLeave = null; listenTarget = null; openTimer = closeTimer = 0;
-      toggle = null; ctx = null;
+      onEnter = onLeave = null;
+      listenTarget = null;
+      panelTarget = null;
+      openTimer = closeTimer = 0;
+      toggle = null;
+      ctx = null;
     },
-    configure(newOpts) { opts = { ...opts, ...newOpts }; },
+    configure(newOpts) {
+      opts = { ...opts, ...newOpts };
+    },
   };
 }

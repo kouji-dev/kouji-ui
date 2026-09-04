@@ -2,8 +2,22 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  computed,
+  contentChild,
+  inject,
+  input,
+  viewChild,
 } from '@angular/core';
-import { KjIconDirective, KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
+import {
+  KjIconDirective,
+  KjOverflowContent,
+  KjPopoverTrigger,
+  KjTag,
+  KjTagList,
+  KjTagRemove,
+  KjTranslateService,
+} from '@kouji-ui/core';
+import { KjOverflowPanelComponent } from '../overflow/overflow-panel';
 
 /**
  * Styled wrapper around the headless `KjTag` directive. Renders the visual
@@ -52,6 +66,14 @@ import { KjIconDirective, KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
  * @doc-example Tag list
  *   Wrap chips in `<kj-tag-list>` for single-tab-stop + arrow-key navigation.
  *   @doc-file tag.list.example.ts
+ * @doc-example Overflow
+ *   `[kjMax]` on the list collapses the extra chips into a "+N" chip whose hover
+ *   panel lists them.
+ *   @doc-file tag.overflow.example.ts
+ * @doc-example Overflow template
+ *   `<ng-template kjOverflowContent>` renders the collapsed chips your way — here
+ *   as rows with a remove action.
+ *   @doc-file tag.overflow-template.example.ts
  *
  * @doc-keyboard
  *   Enter|Space — Activates a selectable tag; flips `aria-pressed`
@@ -105,12 +127,7 @@ import { KjIconDirective, KjTag, KjTagList, KjTagRemove } from '@kouji-ui/core';
   hostDirectives: [
     {
       directive: KjTag,
-      inputs: [
-        'kjTagSelectable',
-        'kjTagSelected',
-        'kjTagLabel',
-        'kjTagDisabled',
-      ],
+      inputs: ['kjTagSelectable', 'kjTagSelected', 'kjTagLabel', 'kjTagDisabled'],
       outputs: ['kjTagSelectedChange', 'kjTagRemoved'],
     },
   ],
@@ -156,9 +173,19 @@ export class KjTagRemoveComponent {}
 
 /**
  * Optional chip-group container. Provides the listbox / grid / group ARIA
- * wiring + roving tabindex via the headless `KjTagList` directive. Standalone
- * tags work without it; wrap chips in `<kj-tag-list>` whenever the group
- * needs a single tab stop and arrow-key navigation.
+ * wiring + roving tabindex via the headless `KjTagList` directive, and — with
+ * `[kjMax]` — collapses the chips past the cap into a "+N" chip. Hovering,
+ * focusing or tapping that chip opens a panel listing the collapsed chips;
+ * project an `<ng-template kjOverflowContent>` to render the panel yourself
+ * (the context carries the collapsed range, so you slice your own data and
+ * add actions such as remove).
+ *
+ * Standalone tags work without it; wrap chips in `<kj-tag-list>` whenever the
+ * group needs a single tab stop and arrow-key navigation.
+ *
+ * The "+N" chip is a button rendered inside the container: keep the container
+ * on its default `group` role when using `kjMax` (a `listbox` / `grid` only
+ * admits option / row children).
  * @doc
  * @doc-name tag
  */
@@ -173,14 +200,71 @@ export class KjTagRemoveComponent {}
         'kjTagListOrientation',
         'kjTagListMultiple',
         'kjTagListDisabled',
+        'kjMax',
       ],
     },
   ],
-  template: `<ng-content />`,
+  imports: [KjPopoverTrigger, KjOverflowPanelComponent],
+  template: `
+    <ng-content />
+    @if (overflowCount() > 0) {
+      <button
+        type="button"
+        class="kj-tag kj-overflow-trigger kj-tag-list-overflow"
+        [attr.data-variant]="kjOverflowVariant()"
+        kjPopoverTrigger
+        kjTrigger="hover"
+        #trg="kjPopoverTrigger"
+        [attr.aria-label]="overflowAriaLabel()"
+        (keydown.arrowdown)="focusPanel($event)"
+        (keydown.enter)="focusPanel($event)"
+      >
+        {{ overflowLabel() }}
+      </button>
+      <kj-overflow-panel
+        [kjFor]="trg"
+        [kjCount]="overflowCount()"
+        [kjStart]="list.visibleCount()"
+        [kjEnd]="list.total()"
+        [kjLabels]="list.hiddenLabels()"
+        [kjTemplate]="overflowTemplate()"
+      />
+    }
+  `,
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-tag-list',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjTagListComponent {}
+export class KjTagListComponent {
+  protected readonly list = inject(KjTagList, { self: true });
+  private readonly i18n = inject(KjTranslateService);
+
+  /** Text of the "+N" chip. Defaults to the `overflow.more` translation (`+{count}`). */
+  readonly kjOverflowLabel = input<((count: number) => string) | undefined>(undefined);
+  /** Accessible name of the chip button. Defaults to the `overflow.show` translation (`Show {count} more`). */
+  readonly kjOverflowAriaLabel = input<((count: number) => string) | undefined>(undefined);
+  /** Variant of the "+N" chip. Default `secondary`. */
+  readonly kjOverflowVariant = input('secondary');
+
+  protected readonly overflowTemplate = contentChild(KjOverflowContent);
+  private readonly panel = viewChild(KjOverflowPanelComponent);
+
+  protected readonly overflowCount = this.list.overflowCount;
+
+  protected readonly overflowLabel = computed(() => {
+    const n = this.overflowCount();
+    return this.kjOverflowLabel()?.(n) ?? this.i18n.translate('overflow.more', { count: n });
+  });
+
+  protected readonly overflowAriaLabel = computed(() => {
+    const n = this.overflowCount();
+    return this.kjOverflowAriaLabel()?.(n) ?? this.i18n.translate('overflow.show', { count: n });
+  });
+
+  protected focusPanel(event: Event): void {
+    event.preventDefault();
+    this.panel()?.focusFirst();
+  }
+}

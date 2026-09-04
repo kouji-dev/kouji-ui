@@ -27,6 +27,14 @@ export interface KjTagListContext {
   readonly disabled: Signal<boolean>;
   /** Whether the listbox container allows multi-selection. */
   readonly multiple: Signal<boolean>;
+  /** Projected chip count. */
+  readonly total: Signal<number>;
+  /** Chips rendered visibly under `kjMax` (all of them when uncapped). */
+  readonly visibleCount: Signal<number>;
+  /** Chips collapsed by `kjMax`; `0` when nothing overflows. */
+  readonly overflowCount: Signal<number>;
+  /** Labels of the collapsed chips, in order. */
+  readonly hiddenLabels: Signal<readonly string[]>;
 }
 
 /** Injection token providing the parent `KjTag` to projected children. */

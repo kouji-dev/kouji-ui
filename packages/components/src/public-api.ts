@@ -45,6 +45,7 @@ export * from './overlay-badge/index';
 export * from './pagination/index';
 export * from './password-input/index';
 export * from './popover/index';
+export * from './overflow/index';
 export * from './progress-bar/index';
 export * from './radio/index';
 export * from './rich-text/index';
