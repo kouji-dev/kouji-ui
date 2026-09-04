@@ -44,6 +44,7 @@ export * from './carousel/index';
 export * from './chat/index';
 export * from './typography/index';
 export * from './tag/index';
+export * from './overflow/index';
 
 // -- Overlay components --
 export * from './dialog/index';

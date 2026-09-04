@@ -22,12 +22,11 @@ describe('KjAvatarGroupComponent', () => {
     @Component({
       standalone: true,
       imports,
-      template: `
-        <kj-avatar-group>
-          <kj-avatar content="A" />
-          <kj-avatar content="B" />
-          <kj-avatar content="C" />
-        </kj-avatar-group>`,
+      template: ` <kj-avatar-group>
+        <kj-avatar content="A" />
+        <kj-avatar content="B" />
+        <kj-avatar content="C" />
+      </kj-avatar-group>`,
     })
     class Host {}
 
@@ -49,14 +48,13 @@ describe('KjAvatarGroupComponent', () => {
     @Component({
       standalone: true,
       imports,
-      template: `
-        <kj-avatar-group [kjMax]="2">
-          <kj-avatar content="A" />
-          <kj-avatar content="B" />
-          <kj-avatar content="C" />
-          <kj-avatar content="D" />
-          <kj-avatar content="E" />
-        </kj-avatar-group>`,
+      template: ` <kj-avatar-group [kjMax]="2">
+        <kj-avatar content="A" />
+        <kj-avatar content="B" />
+        <kj-avatar content="C" />
+        <kj-avatar content="D" />
+        <kj-avatar content="E" />
+      </kj-avatar-group>`,
     })
     class Host {}
 
@@ -73,12 +71,11 @@ describe('KjAvatarGroupComponent', () => {
     @Component({
       standalone: true,
       imports,
-      template: `
-        <kj-avatar-group [kjMax]="1">
-          <kj-avatar content="A" />
-          <kj-avatar content="B" />
-          <kj-avatar content="C" />
-        </kj-avatar-group>`,
+      template: ` <kj-avatar-group [kjMax]="1">
+        <kj-avatar content="A" />
+        <kj-avatar content="B" />
+        <kj-avatar content="C" />
+      </kj-avatar-group>`,
     })
     class Host {}
 
@@ -94,12 +91,11 @@ describe('KjAvatarGroupComponent', () => {
     @Component({
       standalone: true,
       imports,
-      template: `
-        <kj-avatar-group [kjMax]="3" kjAriaLabel="collaborators" [kjTotal]="42">
-          <kj-avatar content="A" />
-          <kj-avatar content="B" />
-          <kj-avatar content="C" />
-        </kj-avatar-group>`,
+      template: ` <kj-avatar-group [kjMax]="3" kjAriaLabel="collaborators" [kjTotal]="42">
+        <kj-avatar content="A" />
+        <kj-avatar content="B" />
+        <kj-avatar content="C" />
+      </kj-avatar-group>`,
     })
     class Host {}
 
@@ -134,5 +130,30 @@ describe('KjAvatarGroupComponent', () => {
     expect(container.querySelector('.kj-avatar-group-overflow')).toBeNull();
     // Empty group omits aria-label entirely (count-aware label suppressed at total === 0).
     expect(groupEl.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('the overflow chip is a named button whose panel lists the hidden avatars by alt', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: ` <kj-avatar-group [kjMax]="1" kjAriaLabel="collaborators">
+        <kj-avatar content="A" alt="Ada" />
+        <kj-avatar content="B" alt="Bob" />
+        <kj-avatar content="C" alt="Cyd" />
+      </kj-avatar-group>`,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    await flush();
+
+    const btn = container.querySelector('.kj-avatar-group-overflow-trigger') as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(btn.getAttribute('aria-label')).toBe('Show 2 more');
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    const items = Array.from(document.querySelectorAll('.kj-overflow-panel .kj-overflow-item')).map(
+      (i) => i.textContent?.trim(),
+    );
+    expect(items).toEqual(['Bob', 'Cyd']);
   });
 });

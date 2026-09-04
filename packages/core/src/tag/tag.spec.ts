@@ -19,10 +19,9 @@ describe('KjTag', () => {
   });
 
   it('selectable mode sets role="button", tabindex="0", and aria-pressed', async () => {
-    const { container } = await render(
-      `<span kjTag [kjTagSelectable]="true">Filter</span>`,
-      { imports },
-    );
+    const { container } = await render(`<span kjTag [kjTagSelectable]="true">Filter</span>`, {
+      imports,
+    });
     const host = container.querySelector('span')!;
     expect(host).toHaveAttribute('role', 'button');
     expect(host).toHaveAttribute('tabindex', '0');
@@ -70,18 +69,12 @@ describe('KjTag', () => {
   });
 
   it('forwards kjVariant to KjVariant via host directive composition', async () => {
-    const { container } = await render(
-      `<span kjTag [kjVariant]="'success'">x</span>`,
-      { imports },
-    );
+    const { container } = await render(`<span kjTag [kjVariant]="'success'">x</span>`, { imports });
     expect(container.querySelector('span')).toHaveAttribute('data-variant', 'success');
   });
 
   it('forwards kjSize to KjSize via host directive composition', async () => {
-    const { container } = await render(
-      `<span kjTag [kjSize]="'xs'">x</span>`,
-      { imports },
-    );
+    const { container } = await render(`<span kjTag [kjSize]="'xs'">x</span>`, { imports });
     expect(container.querySelector('span')).toHaveAttribute('data-size', 'xs');
   });
 
@@ -101,7 +94,9 @@ describe('KjTag', () => {
     @Component({
       standalone: true,
       imports,
-      template: `<span kjTag [kjTagSelectable]="true" [kjTagDisabled]="true" [(kjTagSelected)]="on">x</span>`,
+      template: `<span kjTag [kjTagSelectable]="true" [kjTagDisabled]="true" [(kjTagSelected)]="on"
+        >x</span
+      >`,
     })
     class Host {
       readonly on = signal(false);
@@ -146,7 +141,9 @@ describe('KjTagRemove', () => {
     @Component({
       standalone: true,
       imports,
-      template: `<span kjTag (kjTagRemoved)="hits.set(hits() + 1)">Acme<button kjTagRemove>×</button></span>`,
+      template: `<span kjTag (kjTagRemoved)="hits.set(hits() + 1)"
+        >Acme<button kjTagRemove>×</button></span
+      >`,
     })
     class Host {
       readonly hits = signal(0);
@@ -163,7 +160,9 @@ describe('KjTagRemove', () => {
     @Component({
       standalone: true,
       imports,
-      template: `<span kjTag [kjTagDisabled]="true" (kjTagRemoved)="hits.set(hits() + 1)">x<button kjTagRemove>×</button></span>`,
+      template: `<span kjTag [kjTagDisabled]="true" (kjTagRemoved)="hits.set(hits() + 1)"
+        >x<button kjTagRemove>×</button></span
+      >`,
     })
     class Host {
       readonly hits = signal(0);
@@ -236,5 +235,51 @@ describe('KjTagList', () => {
     );
     const chip = container.querySelector('[kjTag]')!;
     expect(chip).toHaveAttribute('aria-disabled', 'true');
+  });
+});
+
+describe('KjTagList kjMax', () => {
+  const flush = async () => {
+    await new Promise<void>((r) => setTimeout(r, 0));
+    await Promise.resolve();
+  };
+
+  it('hides the chips past kjMax and exposes the counts + hidden labels', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: ` <div kjTagList [kjMax]="2">
+        <span kjTag>One</span>
+        <span kjTag>Two</span>
+        <span kjTag>Three</span>
+        <span kjTag>Four</span>
+      </div>`,
+    })
+    class Host {}
+
+    const { container, fixture } = await render(Host);
+    await flush();
+    fixture.detectChanges();
+    const chips = Array.from(container.querySelectorAll('span'));
+    expect(chips.map((c) => c.hasAttribute('hidden'))).toEqual([false, false, true, true]);
+    expect(chips[3]!.getAttribute('data-overflow')).toBe('true');
+
+    const list = fixture.debugElement.query((d) => d.name === 'div').injector.get(KjTagList);
+    expect(list.total()).toBe(4);
+    expect(list.visibleCount()).toBe(2);
+    expect(list.overflowCount()).toBe(2);
+    expect(list.hiddenLabels()).toEqual(['Three', 'Four']);
+  });
+
+  it('kjMax=0 (default) shows every chip and overflows nothing', async () => {
+    const { container, fixture } = await render(
+      `<div kjTagList><span kjTag>One</span><span kjTag>Two</span></div>`,
+      { imports },
+    );
+    await flush();
+    expect(container.querySelectorAll('span[hidden]')).toHaveLength(0);
+    const list = fixture.debugElement.query((d) => d.name === 'div').injector.get(KjTagList);
+    expect(list.overflowCount()).toBe(0);
+    expect(list.visibleCount()).toBe(2);
   });
 });

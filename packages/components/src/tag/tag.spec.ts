@@ -2,6 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjTagComponent, KjTagListComponent, KjTagRemoveComponent } from './tag';
+import { KjOverflowContent } from '@kouji-ui/core';
 
 @Component({
   standalone: true,
@@ -149,5 +150,85 @@ describe('KjTagListComponent', () => {
     const chips = fixture.nativeElement.querySelectorAll('kj-tag');
     expect(chips[0].getAttribute('aria-disabled')).toBe('true');
     expect(chips[1].getAttribute('aria-disabled')).toBe('true');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [KjTagComponent, KjTagListComponent, KjOverflowContent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <kj-tag-list [kjMax]="max" aria-label="People">
+      @for (p of people; track p) {
+        <kj-tag>{{ p }}</kj-tag>
+      }
+      @if (custom) {
+        <ng-template kjOverflowContent let-count let-start="start" let-labels="labels">
+          <p class="custom">{{ count }} more from {{ start }}: {{ labels.join(', ') }}</p>
+        </ng-template>
+      }
+    </kj-tag-list>
+  `,
+})
+class OverflowHost {
+  max = 2;
+  custom = false;
+  people = ['Ada', 'Grace', 'Alan', 'Katherine'];
+}
+
+describe('KjTagListComponent overflow', () => {
+  const flush = async () => {
+    await new Promise<void>((r) => setTimeout(r, 0));
+    await Promise.resolve();
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [OverflowHost] });
+  });
+
+  test('collapses the chips past kjMax into a named "+N" button', async () => {
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+    const hidden = fixture.nativeElement.querySelectorAll('kj-tag[hidden]');
+    expect(hidden).toHaveLength(2);
+    const chip = fixture.nativeElement.querySelector('.kj-tag-list-overflow') as HTMLButtonElement;
+    expect(chip).not.toBeNull();
+    expect(chip.textContent?.trim()).toBe('+2');
+    expect(chip.getAttribute('aria-label')).toBe('Show 2 more');
+    expect(chip.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  test('renders no chip when nothing overflows', async () => {
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.componentInstance.max = 0;
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.kj-tag-list-overflow')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('kj-tag[hidden]')).toHaveLength(0);
+  });
+
+  test('the panel lists the hidden labels by default', async () => {
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+    const items = Array.from(document.querySelectorAll('.kj-overflow-panel .kj-overflow-item')).map(
+      (i) => i.textContent?.trim(),
+    );
+    expect(items).toEqual(['Alan', 'Katherine']);
+  });
+
+  test('a projected kjOverflowContent template replaces the default list and gets the collapsed range', async () => {
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.componentInstance.custom = true;
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+    expect(document.querySelector('.kj-overflow-panel .kj-overflow-item')).toBeNull();
+    const custom = document.querySelector('.kj-overflow-panel .custom');
+    expect(custom?.textContent?.trim()).toBe('2 more from 2: Alan, Katherine');
   });
 });

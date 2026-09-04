@@ -14,6 +14,10 @@ export const FR_CATALOG: Partial<KjTranslationCatalog> = {
   'toast.close': 'Fermer la notification',
   'dialog.close': 'Fermer la boîte de dialogue',
 
+  // -- Collapsed groups --
+  'overflow.more': '+{count}',
+  'overflow.show': 'Afficher {count} de plus',
+
   // -- Pagination --
   'pagination.nav': 'Pagination',
   'pagination.previous': 'Page précédente',

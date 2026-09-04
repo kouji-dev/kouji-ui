@@ -13,6 +13,10 @@ export const EN_CATALOG = {
   'toast.close': 'Close notification',
   'dialog.close': 'Close dialog',
 
+  // -- Collapsed groups (tag list / avatar group "+N" chip) --
+  'overflow.more': '+{count}',
+  'overflow.show': 'Show {count} more',
+
   // -- Pagination --
   'pagination.nav': 'Pagination',
   'pagination.previous': 'Previous page',
