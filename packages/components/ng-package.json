@@ -5,6 +5,7 @@
     "entryFile": "src/public-api.ts"
   },
   "allowedNonPeerDependencies": [
-    "@tanstack/virtual-core"
+    "@tanstack/virtual-core",
+    "marked"
   ]
 }

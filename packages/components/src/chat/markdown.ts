@@ -1,7 +1,13 @@
+import { marked, type Token, type TokensList } from 'marked';
+
 /**
- * A parsed markdown block. Prose blocks carry a **pre-sanitised** HTML string
- * (escaped first, then a whitelist of inline tags applied); code blocks are
- * kept structural so the view can render a `<pre><code>` with a copy button.
+ * A parsed markdown block. Prose blocks carry an HTML string; code blocks stay
+ * structural so the view can render a `<pre><code>` with a copy button.
+ *
+ * Raw HTML in the source is escaped, never emitted (see the renderer override
+ * below), so the prose HTML only ever contains tags this module produced. The
+ * view sanitises it again anyway — a model's output is not a trust boundary
+ * worth betting one layer on.
  */
 export type KjMdBlock =
   | { readonly kind: 'prose'; readonly html: string }
@@ -17,76 +23,77 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
-/** Only allow safe URL schemes for links. */
-function safeUrl(url: string): string | null {
-  const trimmed = url.trim();
-  if (/^(https?:\/\/|\/|#|mailto:)/i.test(trimmed)) return trimmed;
-  return null;
-}
-
-/** Apply link / bold / italic to a non-code segment. */
-function formatSegment(seg: string): string {
-  let s = seg.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text: string, url: string) => {
-    const href = safeUrl(url);
-    if (!href) return text;
-    return `<a class="kj-md-link" href="${escapeHtml(href)}" rel="noopener noreferrer" target="_blank">${text}</a>`;
-  });
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
-  return s;
-}
-
 /**
- * Render inline markdown on an **already HTML-escaped** string. Splits on
- * backtick code spans first so their contents are never re-formatted, then
- * applies link / bold / italic to the remaining prose segments.
- */
-function renderInline(escaped: string): string {
-  return escaped
-    .split(/(`[^`]+`)/g)
-    .map((seg) => {
-      if (seg.length >= 2 && seg.startsWith('`') && seg.endsWith('`')) {
-        return `<code class="kj-md-code">${seg.slice(1, -1)}</code>`;
-      }
-      return formatSegment(seg);
-    })
-    .join('');
-}
-
-/** Render a prose block (paragraphs + single-newline `<br>`) to safe HTML. */
-function renderProse(block: string): string {
-  const paragraphs = block
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-  return paragraphs
-    .map((p) => {
-      const lines = p.split('\n').map((line) => renderInline(escapeHtml(line)));
-      return `<p>${lines.join('<br>')}</p>`;
-    })
-    .join('');
-}
-
-/**
- * Parse a lightweight markdown subset into blocks: fenced code blocks
- * (```lang) become structural `code` blocks; everything else becomes `prose`
- * blocks with sanitised inline HTML.
+ * GFM, with `breaks` on: a chat turn treats a single newline as a line break,
+ * which is what people type. `pedantic` off so the parser stays forgiving of
+ * the half-formed markdown a model emits mid-stream.
  *
- * Deliberately minimal (no tables / nested lists) and **self-contained** — the
- * repo ships no markdown engine on `main`. Swap in a full parser later without
- * touching the view.
+ * `marked` dropped its sanitizer in v5 and passes source HTML through
+ * verbatim, so both HTML token kinds are overridden to escape instead. A chat
+ * turn is model or user output: it may *describe* markup, never inject it.
+ */
+marked.use({
+  gfm: true,
+  breaks: true,
+  pedantic: false,
+  renderer: {
+    html(token) {
+      return escapeHtml(typeof token === 'string' ? token : token.raw);
+    },
+  },
+  tokenizer: {},
+});
+
+marked.use({
+  renderer: {
+    // Inline HTML (`<img …>` mid-sentence) travels a different path than a
+    // block-level HTML token, and needs the same treatment.
+    text(token) {
+      const anyToken = token as { tokens?: unknown[]; text?: string; raw?: string };
+      if (Array.isArray(anyToken.tokens) && anyToken.tokens.length > 0) {
+        return this.parser.parseInline(anyToken.tokens as never);
+      }
+      return escapeHtml(String(anyToken.text ?? anyToken.raw ?? ''));
+    },
+  },
+});
+
+/**
+ * Parse markdown into blocks: fenced code becomes a structural `code` block,
+ * everything else is rendered to HTML as a `prose` block.
+ *
+ * Code is split out at the TOKEN level rather than by regex so an indented
+ * block, a `~~~` fence, or a fence inside a list is still recognised — and so
+ * a stray fence in a partial stream cannot swallow the rest of the message.
  */
 export function renderMarkdown(src: string): KjMdBlock[] {
+  const tokens = marked.lexer(src);
   const blocks: KjMdBlock[] = [];
-  const fence = /```([\w-]*)\n?([\s\S]*?)```/g;
-  let last = 0;
-  for (let m = fence.exec(src); m; m = fence.exec(src)) {
-    const before = src.slice(last, m.index);
-    if (before.trim()) blocks.push({ kind: 'prose', html: renderProse(before) });
-    blocks.push({ kind: 'code', lang: m[1] || '', code: m[2].replace(/\n$/, '') });
-    last = fence.lastIndex;
+  let prose: Token[] = [];
+
+  const flushProse = () => {
+    if (prose.length === 0) return;
+    // `marked.parser` reads `links` off the token list for reference-style
+    // links; a plain slice would drop them and render `[a][b]` verbatim.
+    const list = prose as TokensList;
+    list.links = tokens.links;
+    blocks.push({ kind: 'prose', html: marked.parser(list) });
+    prose = [];
+  };
+
+  for (const token of tokens) {
+    if (token.type === 'code') {
+      flushProse();
+      blocks.push({
+        kind: 'code',
+        lang: typeof token.lang === 'string' ? token.lang.split(/\s+/)[0] : '',
+        code: String(token.text ?? ''),
+      });
+      continue;
+    }
+    prose.push(token);
   }
-  const rest = src.slice(last);
-  if (rest.trim()) blocks.push({ kind: 'prose', html: renderProse(rest) });
+  flushProse();
+
   return blocks;
 }

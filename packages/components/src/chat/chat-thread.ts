@@ -11,7 +11,16 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { KjChatAnnouncer, KjChatLog, type KjChatStore } from '@kouji-ui/core';
+import { NgComponentOutlet } from '@angular/common';
+import {
+  KJ_CHAT_CONFIG,
+  KjChatAnnouncer,
+  KjChatLog,
+  type KjChatItemInput,
+  type KjChatMessageData,
+  type KjChatRenderer,
+  type KjChatStore,
+} from '@kouji-ui/core';
 import { KjChatMessage } from './chat-message';
 
 /**
@@ -28,6 +37,10 @@ import { KjChatMessage } from './chat-message';
  * Provider-agnostic: pair with `KjPromptInput` and drive `KjChatStore` from any
  * model / stream — the kit ships **no** LLM SDK or backend.
  *
+ * @doc-example Custom thread items
+ *   `provideKjChat` maps an item `type` to a component, so a thread can render
+ *   turns the kit knows nothing about. Ordinary messages are untouched.
+ *   @doc-file ai-chat.custom-items.example.ts
  * @doc-example Streaming (simulated)
  *   A full send → simulated-stream → reply loop with slash commands, a Stop
  *   button, tool-call cards and citations. No backend — a fake token generator
@@ -63,12 +76,18 @@ import { KjChatMessage } from './chat-message';
 @Component({
   selector: 'kj-chat-thread',
   standalone: true,
-  imports: [KjChatLog, KjChatMessage],
+  imports: [KjChatLog, KjChatMessage, NgComponentOutlet],
   providers: [KjChatAnnouncer],
   template: `
     <div #log kjChatLog kjChatLogLive="off" class="kj-chat-thread" [kjChatLogLabel]="kjLabel()">
       @for (m of store().messages(); track m.id) {
-        <kj-chat-message [message]="m" />
+        @if (rendererFor(m); as renderer) {
+          <ng-container
+            *ngComponentOutlet="renderer; inputs: { item: itemFor(m), message: m }"
+          ></ng-container>
+        } @else {
+          <kj-chat-message [message]="m" />
+        }
       }
     </div>
 
@@ -90,6 +109,32 @@ export class KjChatThread {
 
   /** @internal — the coalescing announcer for the polite live region. */
   readonly announcer = inject(KjChatAnnouncer);
+
+  private readonly config = inject(KJ_CHAT_CONFIG);
+
+  /**
+   * The registered component for a message's `type`, or `null` to let the
+   * built-in renderer draw it. A message with no `type` never consults the
+   * registry — that is the overwhelmingly common case and must stay free.
+   *
+   * An unknown `type` falls back to the configured `fallback`, and failing
+   * that to the built-in renderer: a transcript that silently drops a turn is
+   * worse than one that renders it plainly.
+   */
+  protected rendererFor(message: KjChatMessageData): KjChatRenderer | null {
+    if (!message.type) return null;
+    return this.config.renderers[message.type] ?? this.config.fallback ?? null;
+  }
+
+  /** The neutral shape handed to a registered renderer's `item` input. */
+  protected itemFor(message: KjChatMessageData): KjChatItemInput {
+    return {
+      id: message.id,
+      type: message.type,
+      role: message.role,
+      data: message.data ?? message.content,
+    };
+  }
 
   private readonly injector = inject(Injector);
   private readonly logEl = viewChild.required<ElementRef<HTMLElement>>('log');

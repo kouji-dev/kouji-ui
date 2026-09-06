@@ -32,6 +32,13 @@ export {
   type KjChatToolStatus,
 } from './chat-stream';
 export {
+  KJ_CHAT_CONFIG,
+  provideKjChat,
+  type KjChatConfig,
+  type KjChatItemInput,
+  type KjChatRenderer,
+} from './chat-registry';
+export {
   KjChatAnnouncer,
   coalesceAnnouncement,
   type KjCoalesceOptions,

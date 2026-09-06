@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  SecurityContext,
   ViewEncapsulation,
   computed,
   inject,
@@ -156,8 +157,15 @@ export class KjChatMessage {
   private readonly _copied = signal<number | null>(null);
   readonly copiedIndex = this._copied.asReadonly();
 
+  /**
+   * Sanitise rather than bypass. `renderMarkdown` already escapes raw HTML at
+   * the parse layer, but a chat body is model or user output — the one place
+   * in a UI kit where trusting a single layer is a bad bet. `sanitize` strips
+   * anything the parser somehow let through instead of waving it past
+   * Angular's checks.
+   */
   safe(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html);
+    return this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
   }
 
   async copy(code: string, index: number): Promise<void> {

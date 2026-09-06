@@ -1,9 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
-import { KjChatStore } from '@kouji-ui/core';
+import { KjChatStore, provideKjChat, type KjChatItemInput } from '@kouji-ui/core';
 import { KjChatThread } from './chat-thread';
 import { KjPromptInput } from './prompt-input';
 import { renderMarkdown } from './markdown';
@@ -34,6 +34,79 @@ class Host {
   ];
 }
 
+@Component({
+  standalone: true,
+  template: `<p data-testid="chart">chart: {{ item().data }}</p>`,
+})
+class ChartRenderer {
+  readonly item = input.required<KjChatItemInput<string>>();
+}
+
+@Component({
+  standalone: true,
+  template: `<p data-testid="fallback">unknown: {{ item().type }}</p>`,
+})
+class FallbackRenderer {
+  readonly item = input.required<KjChatItemInput>();
+}
+
+@Component({
+  standalone: true,
+  imports: [KjChatThread],
+  providers: [KjChatStore],
+  template: `<kj-chat-thread [store]="store" kjLabel="Registry conversation" />`,
+})
+class RegistryHost {
+  readonly store = inject(KjChatStore);
+}
+
+describe('chat item registry', () => {
+  it('draws a registered type with its component', async () => {
+    const { fixture } = await render(RegistryHost, {
+      providers: [provideKjChat({ renderers: { chart: ChartRenderer } })],
+    });
+    fixture.componentInstance.store.addItem({ type: 'chart', data: 'revenue', content: 'A chart' });
+    fixture.detectChanges();
+
+    expect(screen.getByTestId('chart')).toHaveTextContent('chart: revenue');
+  });
+
+  it('leaves ordinary messages to the built-in renderer', async () => {
+    const { fixture } = await render(RegistryHost, {
+      providers: [provideKjChat({ renderers: { chart: ChartRenderer } })],
+    });
+    fixture.componentInstance.store.sendUser('just text');
+    fixture.detectChanges();
+
+    expect(screen.queryByTestId('chart')).toBeNull();
+    expect(screen.getByText('just text')).toBeTruthy();
+  });
+
+  it('sends an unregistered type to the fallback', async () => {
+    const { fixture } = await render(RegistryHost, {
+      providers: [
+        provideKjChat({ renderers: { chart: ChartRenderer }, fallback: FallbackRenderer }),
+      ],
+    });
+    fixture.componentInstance.store.addItem({ type: 'diff', content: 'a diff' });
+    fixture.detectChanges();
+
+    expect(screen.getByTestId('fallback')).toHaveTextContent('unknown: diff');
+  });
+
+  it('renders an unknown type plainly when no fallback is registered', async () => {
+    // A transcript that silently drops a turn is worse than one that renders
+    // it as text.
+    const { fixture } = await render(RegistryHost, {
+      providers: [provideKjChat({ renderers: {} })],
+    });
+    fixture.componentInstance.store.addItem({ type: 'diff', content: 'a diff' });
+    fixture.detectChanges();
+
+    expect(screen.getByText('a diff')).toBeTruthy();
+  });
+});
+
 describe('renderMarkdown', () => {
   it('splits fenced code blocks from prose', () => {
     const blocks = renderMarkdown('Hi there.\n\n```ts\nconst x = 1;\n```\nDone.');
@@ -41,6 +114,42 @@ describe('renderMarkdown', () => {
     const code = blocks[1];
     expect(code.kind === 'code' && code.lang).toBe('ts');
     expect(code.kind === 'code' && code.code).toBe('const x = 1;');
+  });
+
+  it('renders the block markdown a model actually emits', () => {
+    // The hand-rolled parser this replaced handled only bold/italic/code spans
+    // and links, so lists, headings and tables reached the bubble as literal
+    // asterisks, hashes and pipes.
+    const [block] = renderMarkdown('## Primes\n\n- two\n- three\n\n1. first\n2. second');
+    expect(block.kind).toBe('prose');
+    const html = block.kind === 'prose' ? block.html : '';
+    expect(html).toContain('<h2');
+    expect(html).toContain('<ul>');
+    expect(html).toContain('<li>two</li>');
+    expect(html).toContain('<ol>');
+  });
+
+  it('renders GFM tables and strikethrough', () => {
+    const [block] = renderMarkdown('| a | b |\n| - | - |\n| 1 | 2 |\n\n~~gone~~');
+    const html = block.kind === 'prose' ? block.html : '';
+    expect(html).toContain('<table>');
+    expect(html).toContain('<td>1</td>');
+    expect(html).toContain('<del>gone</del>');
+  });
+
+  it('keeps inline emphasis and code spans working', () => {
+    const [block] = renderMarkdown('Three primes are **2, 3, and 5** via `nextPrime()`.');
+    const html = block.kind === 'prose' ? block.html : '';
+    expect(html).toContain('<strong>2, 3, and 5</strong>');
+    expect(html).toContain('<code>nextPrime()</code>');
+    expect(html).not.toContain('**');
+  });
+
+  it('escapes inline HTML without dropping the surrounding sentence', () => {
+    const [block] = renderMarkdown('Use <img src=x onerror=alert(1)> carefully.');
+    const html = block.kind === 'prose' ? block.html : '';
+    expect(html).not.toContain('<img');
+    expect(html).toContain('carefully.');
   });
 
   it('escapes HTML in prose (no XSS)', () => {

@@ -47,6 +47,15 @@ export interface KjChatMessageData {
   readonly id: string;
   /** Conversation role. */
   readonly role: KjChatMessageRole;
+  /**
+   * Which registered renderer draws this message. Absent — the usual case —
+   * means the built-in message renderer. Set it to a key registered through
+   * `provideKjChat` to draw a turn the kit knows nothing about (a chart, a
+   * form, a diff), with `data` carrying whatever that renderer needs.
+   */
+  readonly type?: string;
+  /** Arbitrary payload for a custom `type`. Opaque to the kit. */
+  readonly data?: unknown;
   /** Message text (may be partial while streaming). */
   readonly content: string;
   /** True while this (assistant) message is being streamed in. */
@@ -115,6 +124,33 @@ export class KjChatStore {
   sendUser(content: string): string {
     const id = nextChatMessageId();
     this.append({ id, role: 'user', content, createdAt: Date.now() });
+    return id;
+  }
+
+  /**
+   * Append an item drawn by a registered renderer rather than the built-in
+   * message body — a chart, a diff, a form. `type` must match a key passed to
+   * `provideKjChat`; `data` is handed to that component untouched.
+   *
+   * `content` is the item's plain-text equivalent. It is what the live region
+   * announces and what a fallback renderer shows, so give it something a
+   * screen-reader user can act on rather than leaving it empty.
+   */
+  addItem(options: {
+    type: string;
+    data?: unknown;
+    role?: KjChatMessageRole;
+    content?: string;
+  }): string {
+    const id = nextChatMessageId();
+    this.append({
+      id,
+      role: options.role ?? 'assistant',
+      type: options.type,
+      data: options.data,
+      content: options.content ?? '',
+      createdAt: Date.now(),
+    });
     return id;
   }
 
