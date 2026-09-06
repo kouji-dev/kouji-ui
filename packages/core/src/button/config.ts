@@ -11,7 +11,7 @@ export interface KjButtonConfig {
  * them when extending: `[...KJ_BUTTON_DEFAULTS.variants, 'brand']`.
  */
 export const KJ_BUTTON_DEFAULTS: KjButtonConfig = {
-  variants: ['default', 'destructive', 'outline', 'ghost', 'link'],
+  variants: ['default', 'destructive', 'outline', 'ghost', 'link', 'segmented'],
   sizes: ['xs', 'sm', 'md', 'lg', 'xl', 'icon'],
   defaults: { variant: 'default', size: 'md' },
 };
