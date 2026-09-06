@@ -2,6 +2,7 @@
 // One barrel per component folder — used by the docs app as a lazy chunk.
 export { KjButtonGroupExample } from './button-group.example';
 export { KjButtonGroupIconOnlyExample } from './button-group.icon-only.example';
+export { KjButtonGroupSegmentedExample } from './button-group.segmented.example';
 export { KjButtonGroupToggleExample } from './button-group.toggle.example';
 export { KjButtonGroupVariantsExample } from './button-group.variants.example';
 export { KjButtonGroupVerticalExample } from './button-group.vertical.example';

@@ -48,6 +48,9 @@ import {
     // dedicated toolbar/radiogroup variants.
     '[attr.data-orientation]': 'kjOrientation()',
     '[attr.data-disabled]': 'kjDisabled() ? "" : null',
+    // Styling hook for group-level looks that the children alone cannot
+    // draw — a segmented control's shared shell and dividers, for one.
+    '[attr.data-variant]': 'kjVariant() ?? null',
   },
 })
 export class KjButtonGroup implements KjButtonGroupContext {

@@ -70,6 +70,40 @@
     z-index: 1;
   }
 
+  /* ── Segmented: one shared shell, hairline dividers ────────────────
+     With `kjVariant="segmented"` the group — not each button — owns the
+     border and the rounded outer corners, and adjacent segments are parted
+     by a single hairline. The children go borderless (see button.css), so
+     the negative-margin overlap used by the default look is dropped here.
+
+     Typography and the on-state fill come from the `--kj-segmented-*`
+     hooks, set on this host by the consumer. */
+  .kj-button-group[data-variant='segmented'] {
+    border: var(--kj-border) solid var(--kj-segmented-border, var(--kj-border-default));
+    border-radius: var(--kj-radius-field);
+    overflow: hidden;
+  }
+
+  .kj-button-group[data-variant='segmented'] > kj-button > .kj-button {
+    margin-left: 0;
+    margin-top: 0;
+    border-radius: 0;
+  }
+
+  .kj-button-group[data-variant='segmented']:not([data-orientation='vertical'])
+    > kj-button
+    + kj-button
+    > .kj-button {
+    border-left: var(--kj-border) solid var(--kj-segmented-border, var(--kj-border-default));
+  }
+
+  .kj-button-group[data-variant='segmented'][data-orientation='vertical']
+    > kj-button
+    + kj-button
+    > .kj-button {
+    border-top: var(--kj-border) solid var(--kj-segmented-border, var(--kj-border-default));
+  }
+
   /* Group-level disabled: visually muted when the directive flags it. The
      individual <kj-button>s still render their own aria-disabled when their
      own kjDisabled is true; consumers wiring the group context as a fallback

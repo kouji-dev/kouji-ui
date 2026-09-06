@@ -50,6 +50,7 @@
     padding: var(--kj-button-padding-y, var(--kj-space-sm)) var(--kj-button-padding-x, var(--kj-space-md));
     font: var(--kj-button-font-weight, 600) var(--kj-button-font-size, var(--kj-text-sm)) / 1.2 var(--kj-button-font, var(--kj-font-sans));
     letter-spacing: var(--kj-button-letter-spacing, -0.01em);
+    text-transform: var(--kj-button-text-transform, none);
     /* Button shadow is opt-in PER PAGE CONTEXT (e.g. landing hero, docs
        playground stage) AND restricted to the `default` (primary) variant
        — never global. Pages set `--kj-button-shadow` at their scope; the
@@ -100,6 +101,38 @@
   }
   .kj-button[data-variant="outline"]:hover {
     --kj-button-bg: var(--kj-bg-surface);
+  }
+
+  /* Segmented — a member of a segmented control. Idle segments are quiet and
+     borderless: the GROUP draws one shared shell and the dividers (see
+     button-group.css), so per-button borders would double up. Only the
+     pressed segment is filled, so "which one is on" reads from fill and not
+     from colour alone.
+
+     The on-state pulls through `--kj-segmented-bg-on` / `-fg-on` rather than
+     naming the surface directly: variant rules declare knobs on the element
+     and would otherwise beat a consumer's ancestor value, which is the one
+     thing this variant needs to stay themable. */
+  .kj-button[data-variant="segmented"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-fg-muted, var(--kj-fg-default));
+    --kj-button-border-color: transparent;
+    --kj-button-border-width: 0;
+    --kj-button-radius: 0;
+    --kj-button-hover-translate: none;
+  }
+  .kj-button[data-variant="segmented"]:hover {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-fg-default);
+  }
+  .kj-button[data-variant="segmented"][aria-pressed="true"] {
+    --kj-button-bg: var(--kj-segmented-bg-on, var(--kj-bg-surface));
+    --kj-button-fg: var(--kj-segmented-fg-on, var(--kj-fg-default));
+    cursor: default;
+  }
+  .kj-button[data-variant="segmented"][aria-pressed="true"]:hover {
+    --kj-button-bg: var(--kj-segmented-bg-on, var(--kj-bg-surface));
+    --kj-button-fg: var(--kj-segmented-fg-on, var(--kj-fg-default));
   }
 
   .kj-button[data-variant="link"] {

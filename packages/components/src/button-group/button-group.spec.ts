@@ -168,4 +168,21 @@ describe('KjButtonGroupComponent', () => {
     expect(captured!.variant()).toBe('ghost');
     expect(captured!.size()).toBe('lg');
   });
+
+  test('leaves data-variant off the host until a variant is asked for', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('kj-button-group');
+    // The default look needs no group-level hook.
+    expect(host.getAttribute('data-variant')).toBeNull();
+  });
+
+  test('mirrors kjVariant to data-variant so the group can draw a shared shell', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.variant = 'segmented';
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement.querySelector('kj-button-group');
+    expect(host.getAttribute('data-variant')).toBe('segmented');
+  });
 });

@@ -39,6 +39,10 @@ import { KjButtonGroup, KjButtonGroupOrientation } from '@kouji-ui/core';
  * @doc-example Variants
  *   Set `kjVariant` on the group to cascade onto every child button.
  *   @doc-file button-group.variants.example.ts
+ * @doc-example Segmented
+ *   `kjVariant="segmented"` moves the border onto the group and fills only
+ *   the pressed child — a mode switcher rather than a toolbar.
+ *   @doc-file button-group.segmented.example.ts
  * @doc-example Toggle
  *   Pair with `[kjPressed]` on each child to build a segmented control.
  *   @doc-file button-group.toggle.example.ts
@@ -70,7 +74,17 @@ import { KjButtonGroup, KjButtonGroupOrientation } from '@kouji-ui/core';
  * @doc-related button,toggle,tabs
  *
  * @doc-css-var
- *   --kj-button-group-gap  — Gap between adjacent buttons. Defaults to 0 (segmented look); raise for a spaced cluster.
+ *   --kj-button-group-gap        — Gap between adjacent buttons. Defaults to 0 (segmented look); raise for a spaced cluster.
+ *   --kj-segmented-border  — Shell and divider colour, `kjVariant="segmented"` only. Defaults to `--kj-border-default`.
+ *   --kj-segmented-bg-on   — Fill behind the pressed segment. Defaults to `--kj-bg-surface`.
+ *   --kj-segmented-fg-on   — Ink on the pressed segment. Defaults to `--kj-fg-default`.
+ *
+ *   Typography needs no dedicated hook: set the ordinary `--kj-button-font`,
+ *   `--kj-button-font-size`, `--kj-button-letter-spacing` and
+ *   `--kj-button-text-transform` on this host and they reach each child,
+ *   since every knob is read as `var(name, default)`. The on-state colours
+ *   are the exception — variant rules declare those knobs on the element,
+ *   so they get their own `--kj-segmented-*` indirection.
  *
  * @doc-category Library/Actions
  * @doc
@@ -106,7 +120,9 @@ export class KjButtonGroupComponent {
 
   /**
    * Default variant forwarded to children via `KJ_BUTTON_GROUP`. Children
-   * that set their own `kjVariant` override this fallback.
+   * that set their own `kjVariant` override this fallback. Also mirrored to
+   * `data-variant` on the host, which is how `segmented` draws its shared
+   * shell and dividers.
    */
   readonly kjVariant = input<string | undefined>(undefined);
 
