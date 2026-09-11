@@ -1,6 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { ApplicationRef, Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { KjPopoverContent } from '../popover/popover-content';
+import { KjDialog as KjDialogService } from '../dialog/dialog.service';
+import { KjDialogRef } from '../dialog/dialog.ref';
 
 import { KjConfirmPopup } from './confirm-popup';
 import { KjConfirmPopupTrigger } from './confirm-popup-trigger';
@@ -9,8 +13,9 @@ import { KjConfirmPopupMessage } from './confirm-popup-message';
 import { KjConfirmPopupAction } from './confirm-popup-action';
 import { KjConfirmPopupCancel } from './confirm-popup-cancel';
 
+/** Every mounted overlay: each wrapper under the singleton `.kj-overlay-container`. */
 function findOverlays(): HTMLElement[] {
-  return Array.from(document.querySelectorAll<HTMLElement>('[data-kj-overlay]'));
+  return Array.from(document.querySelectorAll<HTMLElement>('.kj-overlay-container > *'));
 }
 
 function findPanel(): HTMLElement | null {
@@ -61,17 +66,17 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
         <div kjConfirmPopup>
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Are you sure?</p>
             <button kjConfirmPopupCancel>Cancel</button>
             <button kjConfirmPopupAction>OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -95,17 +100,17 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
         <div kjConfirmPopup>
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Confirm action</p>
             <button kjConfirmPopupCancel>Cancel</button>
             <button kjConfirmPopupAction>OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -126,7 +131,7 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
@@ -134,12 +139,12 @@ describe('KjConfirmPopup', () => {
              (kjConfirmed)="confirmed.set(true)"
              (kjCancelled)="cancelled.set(true)"
              (kjResult)="result.set($event)">
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Sure?</p>
             <button kjConfirmPopupCancel>Cancel</button>
             <button kjConfirmPopupAction>OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -168,7 +173,7 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
@@ -176,12 +181,12 @@ describe('KjConfirmPopup', () => {
              (kjConfirmed)="confirmed.set(true)"
              (kjCancelled)="cancelled.set(true)"
              (kjResult)="result.set($event)">
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Sure?</p>
             <button kjConfirmPopupCancel>Cancel</button>
             <button kjConfirmPopupAction>OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -210,17 +215,17 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
         <div kjConfirmPopup (kjResult)="result.set($event)">
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Sure?</p>
             <button kjConfirmPopupCancel>Cancel</button>
             <button kjConfirmPopupAction>OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -245,17 +250,17 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
         <div kjConfirmPopup [kjDestructive]="true">
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Sure?</p>
             <button kjConfirmPopupCancel>Cancel</button>
             <button kjConfirmPopupAction>OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -275,17 +280,17 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
         <div kjConfirmPopup>
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Sure?</p>
             <button kjConfirmPopupCancel data-test="cancel">Cancel</button>
             <button kjConfirmPopupAction data-test="action">OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -307,17 +312,17 @@ describe('KjConfirmPopup', () => {
     @Component({
       standalone: true,
       imports: [
-        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent,
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
         KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
       ],
       template: `
         <div kjConfirmPopup [kjDefaultFocus]="'confirm'">
-          <button kjConfirmPopupTrigger>Delete</button>
-          <ng-template kjConfirmPopupContent>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
             <p kjConfirmPopupMessage>Sure?</p>
             <button kjConfirmPopupCancel data-test="cancel">Cancel</button>
             <button kjConfirmPopupAction data-test="action">OK</button>
-          </ng-template>
+          </kj-popover-content>
         </div>
       `,
     })
@@ -333,5 +338,98 @@ describe('KjConfirmPopup', () => {
     expect(focused).not.toBeNull();
     expect(focused!.getAttribute('data-test')).toBe('action');
     fixture.nativeElement.remove();
+  });
+});
+
+describe('KjConfirmPopup nested inside a dialog', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame', 'queueMicrotask', 'Date'],
+    });
+  });
+
+  afterEach(() => {
+    cleanupOverlays();
+    document.documentElement.style.overflow = '';
+    vi.useRealTimers();
+  });
+
+  /** Tick every attached view (the dialog lives outside any fixture) and let the overlay transitions settle. */
+  function settleApp(appRef: ApplicationRef): void {
+    appRef.tick();
+    let remaining = 32;
+    while (remaining > 0) {
+      vi.advanceTimersByTime(1);
+      appRef.tick();
+      remaining -= 1;
+    }
+    appRef.tick();
+  }
+
+  @Component({
+    standalone: true,
+    imports: [
+      KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
+      KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
+    ],
+    template: `
+      <div kjConfirmPopup (kjConfirmed)="confirmed.set(true)" (kjCancelled)="cancelled.set(true)">
+        <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger" data-test="trigger">Uninstall</button>
+        <kj-popover-content [kjFor]="t" kjConfirmPopupContent data-test="popup">
+          <p kjConfirmPopupMessage>Remove this extension?</p>
+          <button kjConfirmPopupCancel data-test="keep">Keep</button>
+          <button kjConfirmPopupAction data-test="uninstall">Uninstall</button>
+        </kj-popover-content>
+      </div>
+    `,
+  })
+  class DialogBody {
+    readonly ref = inject<KjDialogRef<DialogBody>>(KjDialogRef);
+    readonly confirmed = signal(false);
+    readonly cancelled = signal(false);
+  }
+
+  function openDialogWithPopup() {
+    const appRef = TestBed.inject(ApplicationRef);
+    const ref = TestBed.inject(KjDialogService).open(DialogBody);
+    settleApp(appRef);
+    expect(ref.isOpen()).toBe(true);
+
+    const trigger = document.querySelector<HTMLElement>('.kj-overlay-container [data-test="trigger"]')!;
+    trigger.click();
+    settleApp(appRef);
+    const popup = document.querySelector<HTMLElement>('kj-popover-content[data-test="popup"]')!;
+    expect(popup.getAttribute('data-state')).toBe('open');
+    expect(popup.getAttribute('role')).toBe('alertdialog');
+    return { appRef, ref, popup };
+  }
+
+  it('the action button closes the POPUP, not the enclosing dialog', () => {
+    // Regression: the root resolved its "self" controller without `self: true`,
+    // so inside a service-launched dialog it walked up to the DIALOG's
+    // controller — Uninstall closed the whole dialog and left the popup open.
+    const { appRef, ref, popup } = openDialogWithPopup();
+
+    popup.querySelector<HTMLElement>('[data-test="uninstall"]')!.click();
+    settleApp(appRef);
+
+    expect(ref.instance.confirmed()).toBe(true);
+    expect(popup.getAttribute('data-state')).toBe('closed');
+    expect(ref.isOpen()).toBe(true);
+    ref.close();
+  });
+
+  it('the cancel button closes the POPUP, not the enclosing dialog', () => {
+    const { appRef, ref, popup } = openDialogWithPopup();
+
+    popup.querySelector<HTMLElement>('[data-test="keep"]')!.click();
+    settleApp(appRef);
+
+    expect(ref.instance.cancelled()).toBe(true);
+    expect(popup.getAttribute('data-state')).toBe('closed');
+    expect(ref.isOpen()).toBe(true);
+    ref.close();
   });
 });

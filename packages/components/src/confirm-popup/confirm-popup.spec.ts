@@ -12,8 +12,9 @@ import {
   KjConfirmPopupTriggerComponent,
 } from './confirm-popup';
 
+/** Every mounted overlay: each wrapper under the singleton `.kj-overlay-container`. */
 function findOverlays(): HTMLElement[] {
-  return Array.from(document.querySelectorAll<HTMLElement>('[data-kj-overlay]'));
+  return Array.from(document.querySelectorAll<HTMLElement>('.kj-overlay-container > *'));
 }
 
 function findPanel(): HTMLElement | null {
@@ -129,10 +130,10 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
       ],
       template: `
         <kj-confirm-popup>
-          <kj-confirm-popup-trigger>
+          <kj-confirm-popup-trigger #trig="kjConfirmPopupTrigger">
             <button>Delete</button>
           </kj-confirm-popup-trigger>
-          <kj-confirm-popup-content>
+          <kj-confirm-popup-content [kjFor]="trig">
             <p kjConfirmPopupMessage>Sure?</p>
             <kj-confirm-popup-actions>
               <kj-confirm-popup-cancel><button>Cancel</button></kj-confirm-popup-cancel>
@@ -163,10 +164,10 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
       ],
       template: `
         <kj-confirm-popup>
-          <kj-confirm-popup-trigger>
+          <kj-confirm-popup-trigger #trig="kjConfirmPopupTrigger">
             <button>Delete</button>
           </kj-confirm-popup-trigger>
-          <kj-confirm-popup-content>
+          <kj-confirm-popup-content [kjFor]="trig">
             <p kjConfirmPopupMessage>Sure?</p>
           </kj-confirm-popup-content>
         </kj-confirm-popup>
@@ -180,7 +181,7 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
     const triggerHost = fixture.nativeElement.querySelector('kj-confirm-popup-trigger')!;
     expect(triggerHost.getAttribute('aria-haspopup')).toBe('dialog');
     expect(triggerHost.getAttribute('aria-expanded')).toBe('false');
-    expect(triggerHost.getAttribute('aria-controls')).toMatch(/^kj-popover-\d+$/);
+    expect(triggerHost.getAttribute('aria-controls')).toMatch(/^kj-panel-\d+$/);
   });
 
   test('opening the popup mounts a panel with role="alertdialog"', () => {
@@ -196,10 +197,10 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
       ],
       template: `
         <kj-confirm-popup>
-          <kj-confirm-popup-trigger>
+          <kj-confirm-popup-trigger #trig="kjConfirmPopupTrigger">
             <button>Delete</button>
           </kj-confirm-popup-trigger>
-          <kj-confirm-popup-content>
+          <kj-confirm-popup-content [kjFor]="trig">
             <p kjConfirmPopupMessage>Sure?</p>
             <kj-confirm-popup-cancel><button>Cancel</button></kj-confirm-popup-cancel>
             <kj-confirm-popup-action><button>OK</button></kj-confirm-popup-action>
@@ -233,10 +234,10 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
       ],
       template: `
         <kj-confirm-popup (kjResult)="result.set($event)">
-          <kj-confirm-popup-trigger>
+          <kj-confirm-popup-trigger #trig="kjConfirmPopupTrigger">
             <button>Delete</button>
           </kj-confirm-popup-trigger>
-          <kj-confirm-popup-content>
+          <kj-confirm-popup-content [kjFor]="trig">
             <p kjConfirmPopupMessage>Sure?</p>
             <kj-confirm-popup-cancel><button>Cancel</button></kj-confirm-popup-cancel>
             <kj-confirm-popup-action><button>OK</button></kj-confirm-popup-action>
