@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.8.2
+
+### Patch Changes
+
+- 415123a: confirm popup: resolve its own overlay panel so a popup inside a dialog no longer closes the dialog
+
 ## 0.8.1
 
 ### Patch Changes

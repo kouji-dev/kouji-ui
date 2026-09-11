@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.9.1
+
+### Patch Changes
+
+- 415123a: confirm popup: resolve its own overlay panel so a popup inside a dialog no longer closes the dialog
+
 ## 0.9.0
 
 ### Minor Changes
