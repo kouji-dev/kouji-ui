@@ -51,7 +51,13 @@ export class KjConfirmPopupContent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ctx = inject<KjConfirmPopupContext>(KJ_CONFIRM_POPUP);
-  private readonly _panel = inject(KjOverlayPanel, { optional: true });
+  /**
+   * The panel this directive is layered on (`<kj-popover-content>` composes
+   * `KjOverlayPanel` as a host directive, so it lives on this very element).
+   * `self: true` keeps the lookup from walking up to an enclosing overlay —
+   * e.g. a `<kj-dialog>` — whose panel would be promoted / focused instead.
+   */
+  private readonly _panel = inject(KjOverlayPanel, { self: true, optional: true });
   private get controller(): KjOverlayController | null {
     return this._panel?.controller ?? null;
   }

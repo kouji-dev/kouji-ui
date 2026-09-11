@@ -41,8 +41,14 @@ import {
   ],
 })
 export class KjConfirmPopup implements KjConfirmPopupContext {
-  /** The overlay controller, when the trigger sits on this very element. */
-  private readonly selfController = inject(KjOverlayController, { optional: true });
+  /**
+   * The overlay controller, when the trigger sits on this very element.
+   * `self: true` is load-bearing: without it the lookup walks up the injector
+   * tree and, inside a service-launched dialog, resolves the DIALOG's
+   * controller — so confirm / cancel closed the enclosing dialog instead of
+   * the popup.
+   */
+  private readonly selfController = inject(KjOverlayController, { self: true, optional: true });
 
   /**
    * The controller of a nested `[kjConfirmPopupTrigger]`. The documented
