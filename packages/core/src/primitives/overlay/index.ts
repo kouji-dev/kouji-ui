@@ -2,7 +2,7 @@ export * from './types';
 export * from './tokens';
 export * from './context';
 export { KjId } from './id';
-export { KjOverlayStack } from './stack';
+export { KjOverlayStack, KJ_OVERLAY_Z_BASE, KJ_OVERLAY_Z_BASE_DEFAULT, KJ_OVERLAY_Z_VAR, applyOverlayZIndex, clearOverlayZIndex } from './stack';
 export type { KjOverlayRegistration, KjOverlayStackHandle } from './stack';
 export type { KjLivePoliteness as KjOverlayLivePoliteness } from './strategies/live-announcer/_announce';
 
@@ -15,4 +15,5 @@ export { KjOverlayTrigger } from './trigger';
 export { KjOverlayPanel } from './panel';
 export type { KjOverlayTriggerLike } from './panel';
 export { KjBackdrop } from './backdrop';
+export { getOverlayContainer, createOverlayWrapper } from './container';
 export * from './strategies/index';

@@ -19,7 +19,7 @@
     font: 0.875rem / 1.5 var(--kj-font-sans);
     box-shadow: var(--kj-confirm-popup-shadow);
     pointer-events: auto;
-    z-index: 1000;
+    z-index: var(--kj-overlay-z, 1000);
     word-wrap: break-word;
   }
 

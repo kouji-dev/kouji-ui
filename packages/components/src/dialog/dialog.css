@@ -6,7 +6,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: var(--kj-overlay-z, 1000);
   }
   .kj-dialog {
     display: flex;

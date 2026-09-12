@@ -1,7 +1,9 @@
+import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { KjOverlayController } from './controller';
 import type { KjOverlayStrategies } from './controller';
+import { KjOverlayStack } from './stack';
 
 function makeStub() {
   const calls: string[] = [];
@@ -83,4 +85,47 @@ describe('KjOverlayController', () => {
     expect(detaches[0]).toBe('trigger:detach');
     expect(detaches[detaches.length - 1]).toBe('mount:detach');
   });
+
+  it('open() stamps the stack level on the panel and its wrapper; a nested controller lands one above; close clears', async () => {
+    const stack = TestBed.inject(KjOverlayStack);
+    const raf = () => new Promise(r => requestAnimationFrame(() => r(undefined)));
+    const mk = () => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'kj-overlay-wrapper';
+      const panel = document.createElement('div');
+      wrapper.appendChild(panel);
+      document.body.appendChild(wrapper);
+      return { wrapper, panel };
+    };
+    const outer = mk();
+    const base = stack.nextZIndex;
+    ctrl.bindPanel(outer.panel);
+    ctrl.attachStrategies(makeStub().strategies);
+    ctrl.open();
+    expect(outer.panel.style.getPropertyValue('--kj-overlay-z')).toBe(String(base));
+    expect(outer.wrapper.style.zIndex).toBe(String(base));
+
+    const inner = mk();
+    const nested = Injector.create({ providers: [KjOverlayController], parent: TestBed.inject(Injector) })
+      .get(KjOverlayController);
+    nested.bindPanel(inner.panel);
+    nested.attachStrategies(makeStub().strategies);
+    nested.open();
+    expect(Number(inner.wrapper.style.zIndex)).toBe(base + 1);
+    expect(Number(inner.panel.style.getPropertyValue('--kj-overlay-z')))
+      .toBeGreaterThan(Number(outer.panel.style.getPropertyValue('--kj-overlay-z')));
+
+    nested.close();
+    await raf(); await raf();
+    expect(inner.panel.style.getPropertyValue('--kj-overlay-z')).toBe('');
+    expect(inner.wrapper.style.zIndex).toBe('');
+    // The outer keeps its level; the next overlay reopens one above it.
+    expect(outer.wrapper.style.zIndex).toBe(String(base));
+    expect(stack.nextZIndex).toBe(base + 1);
+
+    ctrl.close();
+    await raf(); await raf();
+    expect(outer.wrapper.style.zIndex).toBe('');
+    outer.wrapper.remove(); inner.wrapper.remove();
+  }, 5000);
 });

@@ -18,10 +18,15 @@
   .kj-overlay-container {
     position: fixed;
     inset: 0;
-    z-index: var(--kj-overlay-z-index, 1000);
+    z-index: var(--kj-overlay-z-index, var(--kj-overlay-z-base, 1000));
     pointer-events: none;
   }
 
+  /* One wrapper per open overlay. `KjOverlayStack` writes an inline
+     `z-index` + `--kj-overlay-z` here on open (base 1000, +1 per nested
+     level) so each wrapper is its own stacking context and a nested
+     overlay always paints above its opener. Panel stylesheets read
+     `z-index: var(--kj-overlay-z, <their default>)`. */
   .kj-overlay-wrapper {
     position: absolute;
     inset: 0;

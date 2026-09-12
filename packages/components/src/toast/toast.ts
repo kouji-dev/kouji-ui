@@ -61,7 +61,7 @@ import type { KjToastVariant } from '@kouji-ui/core';
  * @doc-related dialog,alert,spinner
  *
  * @doc-css-var
- *   --kj-toast-z-index  — Stack level for the viewport. Default 1000; raise above app overlays.
+ *   --kj-toast-z-index  — Stack level for the viewport. Default 2000 — above the overlay stack (dialogs, palettes, popovers start at 1000), so toasts always show on top.
  *   --kj-toast-gap      — Vertical gap between stacked toasts in both collapsed and expanded states.
  *
  * @doc-category Library/Overlay

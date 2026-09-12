@@ -7,7 +7,7 @@ import type {
   KjTriggerEventStrategy, KjStrategy,
 } from './tokens';
 import type { KjOverlayState, KjCloseReason } from './types';
-import { KjOverlayStack, type KjOverlayStackHandle } from './stack';
+import { KjOverlayStack, applyOverlayZIndex, clearOverlayZIndex, type KjOverlayStackHandle } from './stack';
 import { KjId } from './id';
 
 export interface KjOverlayStrategies {
@@ -121,6 +121,9 @@ export class KjOverlayController {
     s.scrollLock?.onOpen?.();
     this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
     if (this._panel()) this.stack.markContentEl(this.id, this._panel());
+    // Stacking: the panel (and its wrapper, when portalled) take the level
+    // the stack just assigned — one above every overlay open right now.
+    applyOverlayZIndex(this._panel(), this.stackHandle.zIndex);
     this.runTransition('open', () => {
       this._state.set('open');
       s.focusTrap?.focusFirst();
@@ -132,6 +135,7 @@ export class KjOverlayController {
     const s = this.strategies;
     this.runTransition('close', () => {
       s.focusTrap?.restoreFocus();
+      clearOverlayZIndex(this._panel());
       this.stackHandle?.unregister();
       this.stackHandle = null;
       s.scrollLock?.onClose?.();

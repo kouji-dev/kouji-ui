@@ -11,7 +11,11 @@ export interface KjToastStrategy {
   maxVisible: number;
   /** Pixel gap between stacked toasts — exposed as `--kj-toast-gap`. */
   gap: number;
-  /** Base `z-index` for stacked toasts — exposed as `--kj-toast-z-index`. */
+  /**
+   * Base `z-index` for stacked toasts — exposed as `--kj-toast-z-index`.
+   * Defaults to `2000`: above the overlay stack (`1000` + one per nested
+   * level), so a toast is never hidden behind a dialog or a palette.
+   */
   baseZIndex: number;
   /** Horizontal anchor. */
   positionX: KjToastPositionX;
@@ -39,7 +43,7 @@ export interface KjToastStrategy {
 export const KJ_TOAST_SONNER_STRATEGY: KjToastStrategy = Object.freeze({
   maxVisible: 3,
   gap: 14,
-  baseZIndex: 100,
+  baseZIndex: 2000,
   positionX: 'end',
   positionY: 'bottom',
   duration: 4000,
@@ -54,7 +58,7 @@ export const KJ_TOAST_SONNER_STRATEGY: KjToastStrategy = Object.freeze({
 export const KJ_TOAST_LIST_STRATEGY: KjToastStrategy = Object.freeze({
   maxVisible: Number.POSITIVE_INFINITY,
   gap: 8,
-  baseZIndex: 100,
+  baseZIndex: 2000,
   positionX: 'end',
   positionY: 'bottom',
   duration: 5000,

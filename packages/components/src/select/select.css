@@ -60,7 +60,7 @@
     padding: 4px;
     max-height: 16rem;
     overflow: auto;
-    z-index: 100;
+    z-index: var(--kj-overlay-z, 100);
   }
   .kj-select-content[hidden] { display: none; }
 

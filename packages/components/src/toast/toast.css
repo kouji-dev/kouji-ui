@@ -5,7 +5,7 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    z-index: var(--kj-toast-z-index, 1000);
+    z-index: var(--kj-toast-z-index, 2000);
     /* Default position: bottom-right (mirrors KJ_TOAST_SONNER_STRATEGY) */
     bottom: 1rem;
     right: 1rem;
