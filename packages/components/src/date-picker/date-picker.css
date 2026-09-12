@@ -39,7 +39,7 @@
    reads as a flat grid inside the panel. */
 .kj-date-picker__panel {
   box-sizing: border-box;
-  z-index: 50;
+  z-index: var(--kj-overlay-z, 50);
   display: inline-block;
   background: var(--kj-bg-elevated);
   color: var(--kj-fg-default);

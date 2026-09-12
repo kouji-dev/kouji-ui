@@ -4,10 +4,12 @@ import {
   Component,
   DestroyRef,
   Directive,
+  ElementRef,
   TemplateRef,
   ViewEncapsulation,
   PLATFORM_ID,
   afterNextRender,
+  afterRenderEffect,
   booleanAttribute,
   computed,
   contentChild,
@@ -15,6 +17,7 @@ import {
   inject,
   input,
   model,
+  viewChild,
 } from '@angular/core';
 import {
   KjCommandPalette,
@@ -23,8 +26,14 @@ import {
   KjCommandGroup,
   KjCommandSeparator,
   KjCommandEmpty,
+  KjId,
   KjListItem,
+  KjOverlayStack,
+  applyOverlayZIndex,
+  clearOverlayZIndex,
+  createOverlayWrapper,
   injectListItem,
+  type KjOverlayStackHandle,
 } from '@kouji-ui/core';
 
 /**
@@ -145,14 +154,15 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
     outputs: ['kjValueChange', 'kjQueryChange', 'kjActivate'],
   }],
   template: `
-    <div class="kj-command-palette__shell" [class.is-open]="kjOpen()">
+    <div #shell class="kj-command-palette__shell" [class.is-open]="kjOpen()">
       <div class="kj-command-palette__backdrop" (click)="close()" aria-hidden="true"></div>
       <div
+        #dialog
         class="kj-command-palette__dialog"
         role="dialog"
         aria-modal="true"
         [attr.aria-label]="kjAriaLabel()"
-        (keydown.escape)="close()"
+        (keydown.escape)="onEscape()"
       >
         <div class="kj-command-palette__input-wrapper">
           <svg class="kj-command-palette__search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -230,12 +240,31 @@ export class KjCommandPaletteComponent {
   protected readonly itemTpl = contentChild(KjCommandPaletteItemTemplate);
   protected readonly customFooter = contentChild(KjCommandPaletteFooter);
 
+  private readonly shell = viewChild<ElementRef<HTMLElement>>('shell');
+  private readonly dialog = viewChild<ElementRef<HTMLElement>>('dialog');
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
   /** The composed headless palette (host directive) — owns query + active state. */
   private readonly palette = inject(KjCommandPalette);
+  private readonly stack = inject(KjOverlayStack);
+  private readonly stackId = inject(KjId).mint('command-palette');
+  private stackHandle: KjOverlayStackHandle | null = null;
+  private wrapper: HTMLElement | null = null;
 
   constructor() {
+    // Stacking: while open, the shell (backdrop + dialog) lives in its own
+    // wrapper inside the shared `.kj-overlay-container`, registered on
+    // `KjOverlayStack` like every other overlay. That gives it a level above
+    // whatever was open when it opened, and — more importantly — lets a
+    // select, popover or dialog opened from inside the palette get the next
+    // level up instead of landing behind the palette's fixed `z-index`.
+    afterRenderEffect(() => {
+      if (this.kjOpen()) this.portalIn();
+      else this.portalOut();
+    });
+    this.destroyRef.onDestroy(() => this.portalOut());
+
     // Reset the search query + active item when the palette closes, so the
     // next open starts fresh instead of restoring the previous search. Paired
     // with KjCommandInput reflecting the query signal back to the DOM input,
@@ -276,6 +305,52 @@ export class KjCommandPaletteComponent {
   /** Programmatically close the palette. */
   close(): void {
     this.kjOpen.set(false);
+  }
+
+  /**
+   * Escape from inside the dialog. Only closes when the palette is the
+   * topmost overlay — an Escape meant for a select or popover opened from
+   * inside the palette is routed to that overlay by `KjOverlayStack`, and
+   * must not also dismiss the palette underneath it.
+   */
+  protected onEscape(): void {
+    if (this.stackHandle && !this.stackHandle.isTopmost()) return;
+    this.close();
+  }
+
+  private portalIn(): void {
+    if (this.stackHandle) return;
+    const shell = this.shell()?.nativeElement;
+    const wrapper = createOverlayWrapper();
+    if (!shell || !wrapper) return;
+    // Keep the trigger's theme scope — the container hangs off <body>.
+    const theme = this.host.nativeElement.closest('[data-theme]')?.getAttribute('data-theme');
+    if (theme) wrapper.setAttribute('data-theme', theme);
+    wrapper.appendChild(shell);
+    this.wrapper = wrapper;
+    // Escape and outside-click stay with the palette's own handlers (the
+    // input clears the query on a first Escape; the backdrop closes on
+    // click) — the stack is used for ordering and z-index only.
+    this.stackHandle = this.stack.register(this.stackId, {
+      onClose: () => this.close(),
+      closeOnEsc: false,
+      closeOnOutside: false,
+    });
+    this.stack.markContentEl(this.stackId, this.dialog()?.nativeElement ?? shell);
+    applyOverlayZIndex(shell, this.stackHandle.zIndex);
+  }
+
+  private portalOut(): void {
+    if (!this.stackHandle) return;
+    const shell = this.shell()?.nativeElement;
+    if (shell) {
+      clearOverlayZIndex(shell);
+      this.host.nativeElement.appendChild(shell);
+    }
+    this.wrapper?.remove();
+    this.wrapper = null;
+    this.stackHandle.unregister();
+    this.stackHandle = null;
   }
 
   /** Programmatically open the palette. */

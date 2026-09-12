@@ -10,6 +10,11 @@
  * directly — a single positioned root owns z-stacking, pointer-events
  * isolation, and cleanup ordering across the whole overlay system.
  *
+ * Stacking inside the root is owned by `KjOverlayStack`: each wrapper gets
+ * an inline `z-index` (base `1000`, one higher per nested level) when its
+ * overlay opens, so a later overlay always paints above the ones already
+ * open. The root itself sits at `--kj-overlay-z-base` (default `1000`).
+ *
  * @doc-category Core/Overlay
  * @doc
  * @doc-name overlay-container

@@ -23,7 +23,7 @@
     border-top-left-radius: var(--kj-sheet-radius);
     border-top-right-radius: var(--kj-sheet-radius);
     overflow: hidden;
-    z-index: 1000;
+    z-index: var(--kj-overlay-z, 1000);
     /* Live drag follows the pointer; released via --kj-sheet-drag-offset. */
     transform: translate3d(0, var(--kj-sheet-drag-offset, 0), 0);
     /* Respect the iOS home-indicator / gesture inset. */

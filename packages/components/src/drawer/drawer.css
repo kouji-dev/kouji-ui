@@ -13,7 +13,7 @@
     color: var(--kj-drawer-fg);
     box-shadow: var(--kj-drawer-shadow);
     overflow: hidden;
-    z-index: 1000;
+    z-index: var(--kj-overlay-z, 1000);
     box-sizing: border-box;
     padding: var(--kj-space-lg);
   }
@@ -53,7 +53,7 @@
     position: fixed;
     inset: 0;
     background: rgb(0 0 0 / 0.5);
-    z-index: 999;
+    z-index: calc(var(--kj-overlay-z, 1000) - 1);
     pointer-events: auto;
   }
   [data-kj-drawer-container]:has(.kj-drawer[role="region"])::before {
