@@ -210,6 +210,11 @@ export class KjOverlayStack {
     const top = this.topmost();
     if (!top || !top.opts.closeOnOutside) return;
     const target = e.target as Node | null;
+    // A node that is no longer in the document is not "outside" — it is
+    // gone. `contains()` reports false for it just like it would for a
+    // genuine outside click, which would dismiss the overlay on a gesture
+    // that started inside it and whose target was re-rendered away.
+    if (target && !target.isConnected) return;
     if (top.contentEl && target && top.contentEl.contains(target)) return;
     top.opts.onClose();
   }

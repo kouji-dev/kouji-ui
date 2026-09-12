@@ -64,6 +64,15 @@ export class KjOverlayController {
    */
   strategies: KjOverlayStrategies | null = null;
   private stackHandle: KjOverlayStackHandle | null = null;
+  private readonly _stackHandle = signal<KjOverlayStackHandle | null>(null);
+
+  /**
+   * Whether this overlay is the top of `KjOverlayStack` — nothing is open
+   * above it. Read by dismiss paths (backdrop click, Escape) so a gesture
+   * aimed at a nested overlay never falls through to its opener. `true`
+   * when the overlay is not registered at all (nothing to be under).
+   */
+  readonly isTopmost = computed(() => this._stackHandle()?.isTopmost() ?? true);
   private transitionDeadline = 0;
   private rafId = 0;
   private transitionListener: ((e: Event) => void) | null = null;
@@ -120,6 +129,7 @@ export class KjOverlayController {
     s.backdrop?.onOpen?.();
     s.scrollLock?.onOpen?.();
     this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
+    this._stackHandle.set(this.stackHandle);
     if (this._panel()) this.stack.markContentEl(this.id, this._panel());
     // Stacking: the panel (and its wrapper, when portalled) take the level
     // the stack just assigned — one above every overlay open right now.
@@ -138,6 +148,7 @@ export class KjOverlayController {
       clearOverlayZIndex(this._panel());
       this.stackHandle?.unregister();
       this.stackHandle = null;
+      this._stackHandle.set(null);
       s.scrollLock?.onClose?.();
       s.backdrop?.onClose?.();
       // Hide the panel synchronously before strategy cleanup so the brief
