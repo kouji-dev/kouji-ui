@@ -19,6 +19,11 @@
       "input": "src/motion",
       "glob": "motion.css",
       "output": "motion"
+    },
+    {
+      "input": "src/primitives/overlay",
+      "glob": "overlay.css",
+      "output": "overlay"
     }
   ],
   "allowedNonPeerDependencies": [

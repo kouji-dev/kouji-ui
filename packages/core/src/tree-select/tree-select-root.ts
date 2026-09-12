@@ -17,6 +17,7 @@ import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
+  ownListItems,
   KjSelectionModel,
   type KjCompareFn,
   type KjListNavigatorConfig,
@@ -131,7 +132,8 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
    * until node-level wiring lands (Task 3 of the migration plan); kept
    * here now so the config contract is satisfied today.
    */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  readonly items = ownListItems(this, this.allItems);
 
   /**
    * Single canonical value signal. Shared with the legacy `kjValue`

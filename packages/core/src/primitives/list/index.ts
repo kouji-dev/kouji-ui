@@ -6,3 +6,4 @@ export { KjFilterableList } from './filterable-list';
 export { KjTypeAhead } from './type-ahead';
 export { KjListGroup, KjListGroupLabel, KjListSeparator } from './group';
 export { injectListItem, injectSelectionModel, injectFilterableList } from './inject-helpers';
+export { ownListItems } from './scope';

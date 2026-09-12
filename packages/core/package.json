@@ -50,6 +50,10 @@
   "module": "../../dist/kj-core/fesm2022/kouji-ui-core.mjs",
   "typings": "../../dist/kj-core/types/kouji-ui-core.d.ts",
   "exports": {
+    "./overlay/overlay.css": {
+      "style": "./overlay/overlay.css",
+      "default": "./overlay/overlay.css"
+    },
     "./icon/icon.css": {
       "style": "./icon/icon.css",
       "default": "./icon/icon.css"

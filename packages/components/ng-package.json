@@ -7,5 +7,12 @@
   "allowedNonPeerDependencies": [
     "@tanstack/virtual-core",
     "marked"
+  ],
+  "assets": [
+    {
+      "input": "src",
+      "glob": "**/*.css",
+      "output": "src"
+    }
   ]
 }

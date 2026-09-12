@@ -1,27 +1,38 @@
 /* ─────────────────────────────────────────────────────────────
-   @kouji-ui/components — overlay-family aggregator
+   @kouji-ui/components — overlay-family surface stylesheet
    --------------------------------------------------------------
-   Single global stylesheet entry for every overlay-based piece in
-   the kit. Re-exports:
+   Register this file once in your build, next to the themes and
+   the core overlay primitive:
 
-   - The core overlay primitive's container/wrapper/backdrop CSS
-     (`@kouji-ui/core/src/primitives/overlay/overlay.css`).
-   - Every themed overlay-family component stylesheet
-     (popover, tooltip, dropdown-menu, dialog, drawer, toast,
-     confirm-popup, sheet, action-sheet).
+     "styles": [
+       "node_modules/@kouji-ui/themes/src/index.css",
+       "node_modules/@kouji-ui/core/overlay/overlay.css",
+       "node_modules/@kouji-ui/components/src/overlay/overlay.css"
+     ]
 
-   Each themed file is also imported by its wrapper component's
-   `styleUrl`, so the wrapper-component path keeps working. This
-   aggregator exists so the directive-level API (e.g.
-   `<kj-dropdown-menu-content>` straight from `@kouji-ui/core`)
-   is styled without forcing consumers to instantiate the wrapper
-   component.
+   WHY IT MUST BE REGISTERED. Every overlay panel in the kit is
+   rendered by a HEADLESS directive from `@kouji-ui/core` —
+   `<kj-popover-content>`, `<kj-dropdown-menu-content>`,
+   `<kj-tooltip-content>`, `<kj-dialog-content>`. Directives carry
+   no styles, and Angular injects a component's `styleUrl` only
+   when that component is INSTANTIATED. So a panel composed the
+   documented way (trigger directive + content directive, with no
+   `<kj-popover>`-style wrapper anywhere on the page) used to
+   paint with no background, no border and no shadow: the surface
+   CSS lived solely inside a wrapper component nobody rendered.
+   This stylesheet is that surface CSS, decoupled from the
+   wrappers — the wrapper components still `styleUrl` the same
+   files, so registering it is idempotent.
 
-   Register this file once in your build configuration (e.g. via
-   `angular.json` `styles`) alongside `@kouji-ui/themes`.
+   Kept in the SOURCE layout on purpose: `ng-packagr` copies every
+   stylesheet under `src` into the published package unchanged, so
+   these relative imports resolve identically from
+   `node_modules/@kouji-ui/components/src/overlay/overlay.css`.
+   The core primitive is NOT imported from here — CSS cannot reach
+   across packages by relative path once installed; register
+   `@kouji-ui/core/overlay/overlay.css` for the container /
+   wrapper / backdrop chrome.
    ──────────────────────────────────────────────────────────── */
-
-@import "../../../core/src/primitives/overlay/overlay.css";
 
 @import "../popover/popover.css";
 @import "../tooltip/tooltip.css";

@@ -23,6 +23,14 @@
       <span class="callout-icon">◈</span>
       <p><strong>Angular 21+ only.</strong> Standalone components, signals throughout, zero peer dependencies.</p>
     </kj-docs-callout>
+
+    <h3 id="global-stylesheets">Global stylesheets</h3>
+    <p>Register these once in <code>angular.json</code>. The two <code>overlay.css</code> entries are what paint every floating panel — popover, tooltip, dropdown menu, dialog, drawer, toast, confirm popup, sheet.</p>
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="globalStyles" kjLanguage="json" kjAriaLabel="Global stylesheets" />
+    <kj-docs-callout variant="warning">
+      <span class="callout-icon">◈</span>
+      <p><strong>Overlay panels need these.</strong> Every panel is rendered by a headless directive (<code>&lt;kj-popover-content&gt;</code>, <code>&lt;kj-dropdown-menu-content&gt;</code>, …), and directives carry no styles. Skip the overlay stylesheets and a panel composed straight from the directives comes up with no background, no border and no shadow — even though the markup is correct. Wrapper components such as <code>&lt;kj-popover&gt;</code> inline the same CSS, so a page that happens to render one looks fine while the rest do not.</p>
+    </kj-docs-callout>
   </section>
 
   <!-- Quick start -->

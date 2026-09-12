@@ -16,6 +16,7 @@ import {
   KJ_LIST_NAVIGATOR_CONFIG,
   KjFilterableList,
   KjListItem,
+  ownListItems,
   KjListNavigator,
   KjTypeAhead,
   type KjFilterFn,
@@ -87,8 +88,20 @@ export class KjCommandPalette implements KjListNavigatorConfig {
 
   /** Stable listbox id for `aria-controls` wiring. */
   readonly listId = nextCommandListId();
-  /** All `KjListItem`s under this palette. Source of truth for nav + filter. */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  /**
+   * Raw content query. `descendants: true` reaches straight through a
+   * list composite nested inside this palette, so it is never read
+   * directly — `items` narrows it to this container's own scope.
+   */
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  /**
+   * All `KjListItem`s under this palette. Source of truth for nav + filter.
+   *
+   * Items owned by a list composite nested inside this one (a select
+   * inside a palette, a menu inside a select) answer to that composite,
+   * not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems);
 
   private readonly filterSvc = inject(KjFilterableList);
 
