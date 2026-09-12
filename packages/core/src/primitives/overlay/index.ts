@@ -15,5 +15,6 @@ export { KjOverlayTrigger } from './trigger';
 export { KjOverlayPanel } from './panel';
 export type { KjOverlayTriggerLike } from './panel';
 export { KjBackdrop } from './backdrop';
+export { KjDismissPress } from './dismiss-press';
 export { getOverlayContainer, createOverlayWrapper } from './container';
 export * from './strategies/index';

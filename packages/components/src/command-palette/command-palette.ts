@@ -28,6 +28,7 @@ import {
   KjCommandEmpty,
   KjId,
   KjListItem,
+  KjDismissPress,
   KjOverlayStack,
   applyOverlayZIndex,
   clearOverlayZIndex,
@@ -155,7 +156,13 @@ export class KjCommandPaletteItemTemplate<T = unknown> {
   }],
   template: `
     <div #shell class="kj-command-palette__shell" [class.is-open]="kjOpen()">
-      <div class="kj-command-palette__backdrop" (click)="close()" aria-hidden="true"></div>
+      <div
+        class="kj-command-palette__backdrop"
+        (pointerdown)="onBackdropPress()"
+        (mousedown)="onBackdropPress()"
+        (click)="onBackdropClick($event)"
+        aria-hidden="true"
+      ></div>
       <div
         #dialog
         class="kj-command-palette__dialog"
@@ -302,8 +309,43 @@ export class KjCommandPaletteComponent {
     });
   }
 
+  /**
+   * Dismiss-by-scrim is a press the backdrop owns from the start. The
+   * backdrop spans the viewport underneath every overlay opened from
+   * inside the palette, so the browser hands it clicks it never saw the
+   * start of: commit a NEW value in a nested `<kj-select>` and its option
+   * list re-renders, the clicked option leaves the document before the
+   * pointer is released, and the engine retargets the `click` to what is
+   * under the pointer by then — this scrim. Committing the SAME value
+   * re-renders nothing, so the option stays put and the palette survived,
+   * which is what made the bug look value-dependent.
+   *
+   * Arming on `pointerdown` — dispatched at the true origin, before any
+   * re-render can move it — is what separates the two.
+   */
+  private readonly backdropPress = new KjDismissPress();
+
+  /** @internal — template listener; the press began on the scrim. */
+  protected onBackdropPress(): void {
+    // While a select / popover / dialog opened from inside the palette is
+    // still up, that overlay owns the gesture — `KjOverlayStack` routes
+    // the same pointerdown to it. Same posture as `onEscape`, and it has
+    // to be judged HERE: by the time the click arrives the nested overlay
+    // has closed and unregistered, which would make the palette look
+    // topmost and dismiss it on the press that dismissed the select.
+    if (this.stackHandle && !this.stackHandle.isTopmost()) return;
+    this.backdropPress.arm();
+  }
+
+  /** @internal — template listener. */
+  protected onBackdropClick(event: MouseEvent): void {
+    if (!this.backdropPress.owns(event)) return;
+    this.close();
+  }
+
   /** Programmatically close the palette. */
   close(): void {
+    this.backdropPress.reset();
     this.kjOpen.set(false);
   }
 
