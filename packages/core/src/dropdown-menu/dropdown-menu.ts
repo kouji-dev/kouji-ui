@@ -8,6 +8,7 @@ import {
 import {
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
+  ownListItems,
   type KjCompareFn,
   type KjListNavigatorConfig,
 } from '../primitives/list';
@@ -40,8 +41,20 @@ import {
   ],
 })
 export class KjDropdownMenu implements KjListNavigatorConfig {
-  /** All `KjListItem`s under this root. Source of truth for nav + type-ahead. */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  /**
+   * Raw content query. `descendants: true` reaches straight through a
+   * list composite nested inside this menu root, so it is never read
+   * directly — `items` narrows it to this container's own scope.
+   */
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  /**
+   * All `KjListItem`s under this root. Source of truth for nav + type-ahead.
+   *
+   * Items owned by a list composite nested inside this one (a select
+   * inside a palette, a menu inside a select) answer to that composite,
+   * not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems);
 
   /** Menu items are actions — no selection model. Kept as `Object.is`. */
   readonly compareBy = signal<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);

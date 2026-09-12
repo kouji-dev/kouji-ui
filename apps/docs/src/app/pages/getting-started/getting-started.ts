@@ -23,6 +23,14 @@ export class GettingStartedComponent {
   readonly installFull = `pnpm add @kouji-ui/core @kouji-ui/components @kouji-ui/themes`;
   readonly installHeadless = `pnpm add @kouji-ui/core`;
 
+  readonly globalStyles = `// angular.json -> projects.<app>.architect.build.options
+"styles": [
+  "node_modules/@kouji-ui/themes/src/index.css",
+  "node_modules/@kouji-ui/core/overlay/overlay.css",
+  "node_modules/@kouji-ui/components/src/overlay/overlay.css",
+  "src/styles.css"
+]`;
+
   readonly quickStartTs = `import { Component } from '@angular/core';
 import { KjButton } from '@kouji-ui/core';
 

@@ -16,6 +16,7 @@ import { KjOverlayController } from '../primitives/overlay/controller';
 import {
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
+  ownListItems,
   KjSelectionModel,
   KjTypeAhead,
   type KjCompareFn,
@@ -89,8 +90,20 @@ export class KjSelect implements KjListNavigatorConfig {
     this._triggerEl()?.nativeElement.focus();
   }
 
-  /** All `KjListItem`s under this select — source for navigator + type-ahead. */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  /**
+   * Raw content query. `descendants: true` reaches straight through a
+   * list composite nested inside this select, so it is never read
+   * directly — `items` narrows it to this container's own scope.
+   */
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  /**
+   * All `KjListItem`s under this select — source for navigator + type-ahead.
+   *
+   * Items owned by a list composite nested inside this one (a select
+   * inside a palette, a menu inside a select) answer to that composite,
+   * not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems);
 
   /** Implements `KjListNavigatorConfig.mode`. */
   readonly mode: Signal<KjListSelectionMode> = computed(() =>

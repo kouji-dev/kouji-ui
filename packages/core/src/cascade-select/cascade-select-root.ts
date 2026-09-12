@@ -16,6 +16,7 @@ import { KJ_SELECT } from '../select/select-root';
 import {
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
+  ownListItems,
   KjSelectionModel,
   type KjCompareFn,
   type KjListNavigatorConfig,
@@ -104,8 +105,20 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
   readonly kjLevelChange = output<{ levelIndex: number }>();
 
   // ── KjListNavigatorConfig implementation ──────────────────────────
-  /** All `KjListItem`s under this cascade — source for the navigators. */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  /**
+   * Raw content query. `descendants: true` reaches straight through a
+   * list composite nested inside this cascade, so it is never read
+   * directly — `items` narrows it to this container's own scope.
+   */
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  /**
+   * All `KjListItem`s under this cascade — source for the navigators.
+   *
+   * Items owned by a list composite nested inside this one (a select
+   * inside a palette, a menu inside a select) answer to that composite,
+   * not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems);
 
   /**
    * Every projected `KjCascadeSelectOption`. Used by {@link findOption}

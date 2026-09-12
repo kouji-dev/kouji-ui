@@ -33,6 +33,7 @@ import {
   KJ_LIST_FOCUS_MODE,
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
+  ownListItems,
   KjListNavigator,
   KjTypeAhead,
   type KjCompareFn,
@@ -158,8 +159,20 @@ export class KjDropdownMenuContent implements KjDropdownMenuContext, KjListNavig
   readonly kjMount = input<'portal' | 'point' | 'inline'>('portal');
 
   // ── KjListNavigatorConfig ────────────────────────────────────────────
-  /** All `KjListItem`s projected into the menu panel. */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  /**
+   * Raw content query. `descendants: true` reaches straight through a
+   * list composite nested inside this menu panel, so it is never read
+   * directly — `items` narrows it to this container's own scope.
+   */
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  /**
+   * All `KjListItem`s projected into the menu panel.
+   *
+   * Items owned by a list composite nested inside this one (a select
+   * inside a palette, a menu inside a select) answer to that composite,
+   * not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems);
   /** Menu items are actions — no selection model. Kept as `Object.is`. */
   readonly compareBy = signal<KjCompareFn<unknown>>(Object.is as KjCompareFn<unknown>);
   /**

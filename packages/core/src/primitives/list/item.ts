@@ -154,7 +154,23 @@ export class KjListItem<T = unknown> implements AfterContentInit {
   readonly setSize  = signal<number | null>(null);
 
   private readonly selection = inject(KjSelectionModel, { optional: true }) as KjSelectionModel<T> | null;
-  private readonly cfg       = inject(KJ_LIST_NAVIGATOR_CONFIG, { optional: true });
+  /**
+   * The list container this item belongs to — the nearest
+   * `KJ_LIST_NAVIGATOR_CONFIG` on the element-injector path, i.e. the
+   * innermost list-style composite that encloses this item. `null` when
+   * the item is rendered outside any container.
+   *
+   * This is what makes a nested composite (a select inside a command
+   * palette, a menu inside a select, a combobox inside a dialog) keep
+   * its items to itself: the item answers to exactly one container, and
+   * every container filters its own `contentChildren(KjListItem)` query
+   * down to the items that name it here (see {@link ownListItems}).
+   * Without that filter a `descendants: true` query reaches straight
+   * through a nested composite and steals its rows — the outer list then
+   * navigates, filters, numbers (`aria-posinset`) and activates options
+   * that are not its own.
+   */
+  readonly container = inject(KJ_LIST_NAVIGATOR_CONFIG, { optional: true });
 
   /**
    * `aria-selected` driven by the injected selection model. `null` when
@@ -216,7 +232,7 @@ export class KjListItem<T = unknown> implements AfterContentInit {
     if (this.selection && v !== undefined) {
       ({ closeRequested } = this.selection.toggle(v));
     }
-    this.cfg?.afterSelect?.(v, closeRequested);
+    this.container?.afterSelect?.(v, closeRequested);
     this.activate.emit(v);
   }
 }

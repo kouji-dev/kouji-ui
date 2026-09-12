@@ -21,6 +21,7 @@ import {
   KJ_LIST_NAVIGATOR_CONFIG,
   KjFilterableList,
   KjListItem,
+  ownListItems,
   KjListNavigator,
   KjSelectionModel,
   type KjFilterFn,
@@ -131,8 +132,20 @@ export class KjCombobox implements KjListNavigatorConfig {
   /** Stable listbox id for `aria-controls` wiring. */
   readonly listboxId = nextId();
 
-  /** All `KjListItem`s under this combobox — source for nav + filter. */
-  readonly items = contentChildren(KjListItem, { descendants: true });
+  /**
+   * Raw content query. `descendants: true` reaches straight through a
+   * list composite nested inside this combobox, so it is never read
+   * directly — `items` narrows it to this container's own scope.
+   */
+  private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  /**
+   * All `KjListItem`s under this combobox — source for nav + filter.
+   *
+   * Items owned by a list composite nested inside this one (a select
+   * inside a palette, a menu inside a select) answer to that composite,
+   * not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems);
 
   /** Filter-aware visible items, exposed for KjListNavigatorConfig. */
   readonly visibleItems = computed(
