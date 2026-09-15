@@ -1,386 +1,500 @@
 # Styles & Theming Review
 
-> **Adversarially verified 2026-09-15.** Findings below marked *(severity corrected during verification)* were re-checked against the source; corrections are inline. Refuted findings are preserved in **Refuted during verification** at the end of the findings list, not deleted.
-
-Aspect: **02-styles-theming** · Scope: `packages/themes/src/**`, `packages/core/src/**/*.css`,
-`packages/components/src/**/*.css` + inline component styles, `apps/docs/src/styles.css`,
-`angular.json` style wiring. Read-only static analysis (no builds, no suites).
-Contrast ratios below were computed from the theme sources with a WCAG 2.x relative-luminance
-implementation (oklch → sRGB → luminance); the script lives only in the session scratchpad.
-
----
-
 ## Verdict
 
-The token *architecture* is genuinely good — a three-tier `--kj-base-*` → semantic → `--kj-<component>-*`
-ladder, a real `@layer kj.reset, kj.base, kj.shared, kj.component` statement, a postcss-driven
-contract test that every theme must satisfy, a density system built on two inherited `@property`
-scalars with `round()` snapping, and `@scope` used correctly in `kouji.css` to stop a theme override
-at a nested `[data-theme]` boundary. `button.css` in particular is one of the most carefully reasoned
-component stylesheets in the repo. But the discipline is not enforced anywhere it matters. Ten
-component stylesheets ship **outside** the layer system and therefore outrank every layered rule
-including theme overrides; four undeclared layers (`kj.prose`, `kj.tone`, `kj.truncate`, `kj.tokens`)
-are appended *after* `kj.component` and win by accident of import order; a whole second, undefined
-token vocabulary (`--kj-radius-sm/md/lg`, `--kj-font-size-*`, `--kj-line-height-*`, `--kj-bg-subtle`,
-`--kj-danger`, `--kj-focus-ring-*`, `--kj-space-2xs`) is consumed by prose, sheet, action-sheet,
-file-upload, editor, time-picker and calendar and silently falls through to hard-coded literals, so
-those surfaces are simply not themed. On the shipping side the published `@kouji-ui/components`
-tarball contains **no CSS at all** (no `assets` in `ng-package.json`, no CSS `exports` in
-`package.json`) and the overlay primitive stylesheet is only reachable via a relative cross-package
-`@import "../../../core/src/..."` that cannot resolve for any consumer. On the a11y side,
-`--kj-border-default` — the border of every text input and unchecked checkbox — fails WCAG 1.4.11's
-3:1 in **all 15 themes** (1.12:1 in `kouji`, 1.14:1 in `orrery-light`), and every ratio comment in
-`orrery-light.css` was measured against white instead of that theme's own `#dedede` body. No theme
-declares `color-scheme`, so native controls, scrollbars and autofill stay light in the six dark
-themes. Density scales button and input only: 2 of 69 component stylesheets read the `--kj-ctl-h-*`
-ladder and 36 of them hard-code 99 literal `font-size` values that `--kj-type-scale` cannot touch.
+The token architecture is real and better than most: three genuine tiers (`--kj-base-*` primitives → semantic `--kj-bg/fg/border/shadow-*` → per-component `--kj-<component>-*` knobs), a machine-enforced per-theme contract (`themes.spec.ts` checks 47 required tokens; all 15 themes in fact declare an identical 61-token superset), an explicit `@layer` order, and `density.css` / `overlay-styles.spec.ts` are unusually well-reasoned pieces of CSS engineering. What lets it down is the gap between what the comments claim and what the cascade actually does. Four independent places reference tokens that exist nowhere (`--kj-primary`, `--kj-focus-ring-color`, `--kj-space-2xs`, `--kj-font-size-*`), and in two of them the `var()` chain bottoms out with no literal fallback, so the whole declaration goes invalid-at-computed-value-time and silently disappears — including two focus rings. No theme declares `color-scheme`, so all the dark themes render light native widgets and scrollbars. Contrast is good in 13 of 15 themes, but `orrery-light` ships six intent colours between 3.79:1 and 3.85:1 against its own body (its in-file comments quote ratios that match no background declared in the file — they are stale, not white-referenced) and `retro`'s focus ring is 2.27:1 on its body and 2.01:1 on its surface. Ten globally-injected stylesheets sit outside `@layer` entirely, and `base.css`'s layer statement — which `density.spec.ts` pins as the contract consumers re-declare — omits three layers that `prose.css` actually uses. None of this makes the library unusable; all of it is a consumer-visible defect. **Grade: B-**
 
-**Grade: C**
-
-*Post-verification: F-1 critical → high, F-2 high → medium, F-3 high → low, F-4 high → medium, F-5 high → medium. No critical findings remain in this dimension. Corrections are inline in each finding.*
-
----
+> **Verification pass applied.** F-1 was upheld at high with two secondary claims corrected; F-2 and F-3 were corrected high → medium. Each correction is folded into the finding under "Verification corrections", with withdrawn claims named explicitly. Nothing was refuted outright in this dimension.
 
 ## What works
 
-- **Layer statement + reset strategy is correct.** `packages/themes/src/base.css:7` declares the full
-  order once, and `packages/themes/src/base.css:21-25` puts theme-scoped resets in the *lowest* layer so
-  a nested `[data-theme]` starts clean. `apps/docs/src/styles.css:17-27` correctly re-opens `kj.reset`
-  for the universal `* { margin: 0 }` so the app reset cannot wipe component padding. That is the
-  right instinct, well documented.
-- **Density mechanism is the right design.** Two inherited scalars instead of per-component selectors
-  (`packages/themes/src/density.css:6-11`), `@property` registration only for the values JS must read
-  back (`density.css:30-38`), and the deliberate *non*-registration of `--kj-space-*`/`--kj-text-*` to
-  avoid turning a consumer override into a silently-discarded invalid value (`density.css:26-29`).
-  `density.spec.ts:55-64` locks that in.
-- **`@scope` for nested themes.** `packages/themes/src/themes/kouji.css:127` —
-  `@scope ([data-theme="kouji"]) to ([data-theme]:not([data-theme="kouji"]))` — is exactly the right
-  primitive for micro-frontend / preview-stage subtree theming, and the comment explains why.
-- **Component-knob discipline in `button.css`.** `packages/components/src/button/button.css:10-34`
-  explains, correctly, why knobs must be read as `var(name, default)` at the use site rather than
-  declared on `.kj-button` (an element-level custom property beats an inherited one). That is a
-  non-obvious CSS fact and the code acts on it.
-- **A machine-checked theme contract.** `packages/themes/src/themes.spec.ts:10-45` enumerates 40+
-  required shared tokens and asserts every discovered theme defines them; all 15 themes pass, and all
-  15 also define the full `--kj-chart-1..6` palette.
-- **Chart palette + `--kj-motion-*` primitives** are consistently defined base → semantic → consumer,
-  with `packages/core/src/chart/chart-tokens.ts:19` reading `--kj-chart-N` with per-slot fallback.
-
----
+- **Token contract is enforced, not aspirational.** `packages/themes/src/themes.spec.ts:10-45` lists 47 required shared tokens and asserts each theme declares every one. A mechanical diff of all 15 theme files confirms a *common* set of 61 tokens — no theme is missing anything another theme has except deliberate optional overrides (`--kj-font-display`, `--kj-button-bg-hover`, `--kj-hover-translate`, `--kj-display-italic`, `--kj-radius-box-lg`, `--kj-font-sans/mono`), each of which has a `:root` default in `base.css:103-164`. This audit found **zero** genuinely-missing per-theme tokens.
+- **Three-tier layering is respected in themes.** `base.css:31-94` holds only raw primitives; `base.css:4` states "Components MUST NOT read base tokens directly" and component CSS broadly honours it.
+- **Nested-theme handling is thought through.** `base.css:9-26` resets `--kj-button-shadow*` on every `[data-theme]` so a nested theme doesn't inherit brutalist chrome; `kouji.css:127` uses `@scope ([data-theme="kouji"]) to ([data-theme]:not([data-theme="kouji"]))` so a preview swatch of another theme escapes kouji's button override; `packages/core/src/primitives/overlay/strategies/mount/body-portal.ts:57-61` copies the nearest ancestor `data-theme` onto the portalled wrapper so overlays keep their subtree's theme. Two themes genuinely can coexist on one page.
+- **`density.css` is correct where it applies.** The `@property` rationale (`density.css:22-31`) — register the scalars so JS can read a resolved px value, but *not* `--kj-space-*` / `--kj-text-*` because registration makes invalid-at-computed-value-time *apply* and would silently eat a consumer override — is right, and `density.spec.ts:55-64` pins it.
+- **`overlay-styles.spec.ts` is a real regression test,** not a smoke test: it flattens the `@import` graph, asserts a rule both matches and fills the panel through the live cascade, asserts every overlay-family sheet is in the aggregator, and asserts the `ng-package.json` asset glob that makes the relative imports survive publication (`overlay-styles.spec.ts:96-196`).
+- **`motion.css` is exemplary** — fully `@layer kj.component`, entirely `.kj-`prefixed, tokenised with inline fallbacks, and reduced-motion-aware (`motion.css:82-89`).
+- **Colour-pair contrast is strong in 13/15 themes.** Every `fg-on-<intent>` / `bg-<intent>` pair passes AA in 14 of 15 themes; `terminal`, `cyberpunk` and `bauhaus` clear AAA on almost every pair.
 
 ## Findings
 
-### F-1 Overlay primitive CSS and the documented overlay aggregator ship in no tarball — service-launched overlays lose their backdrop; sheets lose their skin
+### F-1 Two focus rings resolve to nothing — `outline` goes invalid-at-computed-value-time
 
-**Severity:** high *(corrected during verification: was critical)* · **Confidence:** high
-**Files:** `packages/components/ng-package.json`, `packages/components/package.json`,
-`packages/components/src/overlay/overlay.css:20-24`, `packages/core/ng-package.json`,
-`packages/core/package.json`, `packages/core/src/primitives/overlay/overlay.css:35-41`, `angular.json:105`
+Severity: **high** *(upheld during verification; two secondary claims corrected)* · Confidence: **high** · Effort: **S**
 
-Two stylesheets are unreachable from an installed package.
-
-`packages/components/ng-package.json` has no `assets` block:
-
-```json
-{
-  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/kj-components",
-  "lib": { "entryFile": "src/public-api.ts" },
-  "allowedNonPeerDependencies": ["@tanstack/virtual-core", "marked"]
-}
-```
-
-so the aggregator `packages/components/src/overlay/overlay.css` — whose own header (lines 20-22) instructs consumers to "Register this file once in your build configuration" — is never emitted to `dist/kj-components`, and `packages/components/package.json` declares no CSS `exports` entry. `packages/core/ng-package.json` copies only `typography/prose.css`, `icon/icon.css` and `motion/motion.css`, matching the three entries in `packages/core/package.json`'s `exports`, so `packages/core/src/primitives/overlay/overlay.css` and the `packages/core/src/styles.css` aggregate ship nowhere either. The aggregator's cross-package `@import "../../../core/src/primitives/overlay/overlay.css"` (`overlay.css:24`) is a relative path out of the package and would break even if the file *were* copied. Nothing fails in-repo because `angular.json:105` registers the source paths directly.
-
-**Verification corrections — scope it correctly. Two of the original claims are refuted.**
-
-- **REFUTED: "no component CSS from `@kouji-ui/components` is installable at all."** Every themed overlay stylesheet is attached via `styleUrl` on its wrapper component (`dialog.ts:77`, `tooltip.ts:97`, `popover.ts:93`, `dropdown-menu.ts:123`, `drawer.ts:80`, `toast.ts:73/103`, `confirm-popup.ts` ×7, `sheet.ts:81`, `action-sheet.ts:128`), all with `ViewEncapsulation.None`. ng-packagr inlines `styleUrl` content into the FESM bundle, so a consumer importing `<kj-dialog>` gets `dialog.css` injected at runtime with **no build config at all**.
-- **REFUTED: "every dialog, drawer, popover, tooltip and toast would render unpositioned with no backdrop."** False on all five. `dialog.css:2-10` carries `position:fixed; inset:0` **plus its own scrim** and `z-index:1000`; `drawer.css:9,16,50-58` carries `position:fixed`, `z-index:1000` and a `[data-kj-drawer-container]::before` scrim; `toast.css:4-21` carries `position:fixed` + `z-index`. Popover/tooltip/dropdown panels are positioned by JavaScript, not CSS (`strategies/position/anchored-to.ts:98`, `corner.ts:13`) — `popover.css:16` even documents it. A missing `.kj-overlay-container` rule leaves a `position:static`, zero-height `<div>` at the end of `<body>`, which cannot mis-position or clip `position:fixed` descendants.
-
-**What is actually broken (the real, narrower defect):**
-
-1. **Backdrops on every service-launched overlay.** `.kj-backdrop, .kj-overlay-backdrop { position:absolute; inset:0; background: var(--kj-backdrop-bg, rgb(0 0 0/.5)); pointer-events:auto }` exists in exactly one file repo-wide (`core/src/primitives/overlay/overlay.css:35-41`) and ships nowhere. `solidBackdrop()` / `blurredBackdrop()` mount `<kj-backdrop class="kj-backdrop">` (`backdrop.ts:12,26`) for `KjDialogService` (`dialog.service.ts:30`), `KjDrawerService` (`drawer.service.ts:63`), `KjSheetService` (`sheet.service.ts:78`) and the command palette (`command-palette-dialog.ts:56`). Unstyled it is an inline custom element with a zero box: **no dim, and `closeOnClick: true` has no hit area to click.** (`<kj-dialog>`/`<kj-drawer>` used as components are unaffected — they carry their own scrims.)
-2. **Service-launched sheets and action sheets render unstyled.** `packages/components/CHANGELOG.md:405` states the sheet/action-sheet wrapper components are "docs-only shell wrapper components, which a real consumer never instantiates" — so for `KjSheetService` / `KjActionSheetService` the unshipped aggregator is the **only** CSS route, meaning that changelog entry's claimed fix does not reach any consumer.
-3. **Lost isolation and tokens:** `.kj-overlay-container` / `.kj-overlay-wrapper` `pointer-events` isolation (clickable app content behind a non-modal overlay) and the `--kj-overlay-z-index` override, plus a documented public CSS entry point that exists in neither tarball.
-
-**Fix:** add `assets` entries for `src/primitives/overlay/overlay.css` (core) and `src/overlay/overlay.css` (components); export them as `"./primitives/overlay/overlay.css"` and `"./overlay/overlay.css"`; replace the cross-package relative `@import` (`overlay.css:24`) with the package specifier. Add a packaging smoke test asserting the built `dist/kj-core` and `dist/kj-components` contain the expected `.css` files — `angular.json` registering source paths is what hides this whole class of bug.
-**Effort:** M
-
----
-
-### F-2 Ten globally-injected component style sources skip `@layer kj.component`, breaking the documented override contract
-
-**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
-**Files:** `packages/components/src/calendar/calendar.css`,
-`packages/components/src/command-palette/command-palette.css`,
-`packages/components/src/date-picker/date-picker.css`,
-`packages/components/src/date-range-presets/date-range-presets.css`,
-`packages/components/src/datetime-picker/datetime-picker.css`,
-`packages/components/src/input-mask/input-mask.css`,
-`packages/components/src/table/table-filters/filters.css`, `packages/core/src/icon/icon.css:13`,
-`packages/components/src/table/table-pagination.ts:63`, `packages/components/src/table/table-toolbar.ts:154`
-
-Most component stylesheets open with `@layer kj.component { … }`. Ten globally-injected sources do not — eight CSS files plus two inline `styles: []` blocks, all on `ViewEncapsulation.None` components and therefore part of the document cascade:
+Files: `packages/components/src/sheet/sheet.css:71-75`, `packages/components/src/action-sheet/action-sheet.css:45-49`, `packages/components/src/overlay/overlay.css:44-45`
 
 ```css
-/* packages/core/src/icon/icon.css:13 */
-.kj-icon {
-  display: inline-block;
-```
-
-`grep -c '@layer'` returns 0 for all ten. The canonical layer order is declared once at `packages/themes/src/base.css:7` (`@layer kj.reset, kj.base, kj.shared, kj.component;`) and nothing in the build wraps component CSS, so unlayered declarations sit **above every named layer** — including the `@layer kj.component { @scope (…) { … } }` theme-override hatch at `packages/themes/src/themes/kouji.css:125-134`. No lint rule or spec enforces the convention.
-
-**Verification corrections — scope and headline evidence were both wrong.**
-
-- **REFUTED: the `!important` cluster is not a layer symptom.** The 11 `!important` declarations at `packages/components/src/table/table.css:182-206` exist for the reason the file's own comment (lines 177-181) gives: they override the editor/input components' **inline** `style="display: contents"` host bindings (`input.ts:122`, `select.ts:165`, `number-input.ts:157`). Inline style-attribute declarations outrank every author stylesheet declaration regardless of cascade layer; `@layer` orders author-origin stylesheets only. Wrapping `table.css` in `@layer kj.component` would remove exactly zero of those `!important`s. Citing them as "the symptom" is a cascade error.
-- **REMOVED from scope: `table.css`, `editor.css`, `table-status-bar.ts`.** All three are deliberately view-encapsulated — `table.ts:580` and `table-status-bar.ts:54` set `ViewEncapsulation.Emulated` explicitly, `editor.ts` defaults to it. They are `:host`-scoped, `[_ngcontent-*]`-private styles that opted out of the global-cascade contract on purpose; `docs/superpowers/specs/2026-05-05-components-package-expansion-design.md:79` ties the two together ("`ViewEncapsulation.None` — so `[data-theme="X"] .kj-<comp>` overrides work and the `@layer kj.component` cascade applies"). Adding a layer there is not the fix. This also explains why the original finding's two counts disagreed ("63 of 73", then "10 of 69").
-- **OVERSTATED: no shipped theme is actually blocked today.** Grepping all of `packages/themes/src/`, no theme file targets `.kj-table`, `.kj-calendar`, `.kj-icon`, `.kj-editor`, `.kj-date-picker`, `.kj-datetime-picker`, `.kj-input-mask`, `.kj-command-palette`, `.kj-date-range-presets` or `.kj-text-filter` with any rule. The only hits are token declarations on the theme root (`--kj-icon-size-*` at `base.css:179-183`, `--kj-table-row-height` at `density.css:4`), and `icon.css` declares no `--kj-icon-size-*` at all (it hardcodes `width: 1em; height: 1em`). The `kouji.css` `@scope` hatch only ever targets `.kj-button`, which *is* layered.
-
-**Why it matters:** the breakage is **latent, for a downstream consumer overriding structural CSS**, not live in this repo. It is a consistency gap in the public override contract that a consumer discovers only after their override silently does nothing.
-
-**Fix:** wrap the eight sheets and two inline blocks in `@layer kj.component { … }`. Add the guard the original finding missed: there is no lint rule or spec asserting that every `ViewEncapsulation.None` component's stylesheet opens with `@layer kj.component`. Adding that check is what prevents the next drift.
-**Effort:** S
-
----
-
-### F-3 `kj.prose` / `kj.tone` / `kj.truncate` are not named in the canonical `@layer` statement, so their position depends on stylesheet registration order
-
-**Severity:** low *(corrected during verification: was high)* · **Confidence:** high
-**Files:** `packages/core/src/typography/prose.css:31`, `:257`, `:291`, `packages/themes/src/base.css:7`
-
-`packages/core/src/typography/prose.css` opens `kj.prose` (`:31`), `kj.tone` (`:257`) and `kj.truncate` (`:291`); `packages/themes/src/base.css:7` declares only `@layer kj.reset, kj.base, kj.shared, kj.component;`. An undeclared layer is appended at first encounter.
-
-**Verification corrections — the mechanical fact holds but nearly every consequence was wrong.**
-
-- **The harm is inverted.** `kj.tone` styles `[data-tone]` and `kj.truncate` styles `[data-truncate]` — opt-in attributes written by the consumer via `kjMuted` / `kjTruncate` — which **must** sort above `kj.component` to work at all. With the shipped registration order (`angular.json:103-104` loads `themes/index.css` before `core/styles.css`) the three land above `kj.component`, which is the **correct and intended** order. `docs/component-analyses/data-display/typography.md:153` documents shipping `kj-prose` as a deliberate separate CSS layer.
-- **REFUTED: "beats every component rule inside a prose container."** Prose targets only bare element selectors under `.kj-prose`; class-based component CSS (`.kj-button`, `.kj-card`) is never matched. The only real overlap in-repo is `.kj-prose a { text-decoration: underline }` defeating `.kj-link[data-underline="none"]`, which contradicts the doc note at `packages/core/src/link/link.ts:55` and is worth a separate one-line note. `.kj-prose` is used in exactly two non-example places (`typography.playground.ts`, `apps/docs/src/app/pages/roadmap/roadmap.html:2`).
-- **REFUTED: the `docs-themes.css` evidence, twice.** `packages/core/src/styles/docs-themes.css` is never loaded as a stylesheet — `angular.json:103-106` registers only `themes/index.css`, `core/styles.css`, `components/overlay/overlay.css` and `apps/docs/src/styles.css`, and no `index.html` links it; `apps/docs/src/lib/examples.ts:39,130` merely reads it from disk to render a code tab. And even if it were loaded, `@layer kj.tokens, kj.theme;` names a set **disjoint** from `base.css`'s, and CSS layer statements are additive and merge deterministically — a conflict requires contradictory ordering of *shared* names, which does not exist here.
-- **Out of scope of the change under review.** `git diff main...HEAD` is empty; `prose.css` last changed in `3279ee23` (2026-05-15, 174 commits back), `docs-themes.css` in `cb592bdd`, `base.css` in `63cda2ed`.
-
-**What survives:** a robustness nit. Because the names are undeclared, a consumer who registers `@kouji-ui/core/styles.css` **before** `@kouji-ui/themes/index.css` gets `kj.prose`/`kj.tone`/`kj.truncate` *first* and silently loses `kjTruncate` clamping and `kjMuted` colour against component rules.
-
-**Fix:** extend `base.css:7` to `@layer kj.reset, kj.base, kj.shared, kj.component, kj.prose, kj.tone, kj.truncate;`. Assert the statement's exact text in `themes.spec.ts` the way `density.spec.ts:37` already does.
-**Effort:** S
-
----
-
-### F-4 `--kj-border-default` fails WCAG 1.4.11 (3:1) in 13 of 15 themes — it is the sole boundary of every idle input and unchecked checkbox
-
-**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
-**Files:** 13 of 15 in `packages/themes/src/themes/`, `packages/components/src/input/input.css:11`,
-`packages/components/src/checkbox/checkbox.css:24`
-
-```css
-/* packages/components/src/input/input.css:11 */
-    --kj-input-border-color:     var(--kj-border-default);
-/* packages/components/src/checkbox/checkbox.css:24 */
-    --kj-checkbox-border:      var(--kj-border-default);
-```
-
-Computed `--kj-border-default` vs `--kj-bg-body` (3:1 required for UI-component boundaries) — independently reproduced during verification to two decimals:
-
-| theme | ratio | theme | ratio |
-|---|---|---|---|
-| kouji | **1.12** | retro | **1.33** |
-| orrery-light | **1.14** | nord | **1.45** |
-| light | **1.25** | dune | **1.46** |
-| corporate | **1.26** | dark | **1.53** |
-| sakura | **1.26** | terminal | **1.54** |
-| mint | **1.29** | orrery | **1.56** |
-| | | forest | **1.63** |
-
-Every mitigation that would have refuted this is absent, and verification **strengthened** the finding on two points:
-
-- **`--kj-border-strong` is not a usable fallback** — it also misses 3:1 in 12 of 15 (corporate 1.83, kouji 1.36, orrery-light 1.44, light 1.74, retro 1.92, sakura 2.03, mint 2.12, dune 2.43, terminal 2.45, forest 2.68, nord 1.69, orrery 1.94); only dark (4.41), bauhaus and cyberpunk clear it.
-- **No fill cue rescues identification** — `--kj-bg-field` vs `--kj-bg-body` is only 1.06–1.45 in every theme, and the unchecked `.kj-checkbox-box` is `bg-body` + a 1px `border-default`, so on a body-background page the border is genuinely its only identifying mark. There is no `forced-colors` or `prefers-contrast` CSS anywhere in `packages/`, and `input.css`/`checkbox.css` have no hover border upgrade.
-
-**Verification corrections.**
-
-- **REFUTED: "all 15 themes."** The original finding's own 13-theme evidence list contradicted its headline. **bauhaus** (`#1a1a1a` on `#f5efe1`) = **15.18:1** and **cyberpunk** (`#0a0a0a` on `#ffee00`) = **16.48:1** both pass comfortably and must not be counted.
-- **REFUTED: the `--kj-fg-disabled` bullet is not a violation at all.** WCAG 1.4.3 and 1.4.11 both exempt inactive user-interface components, and the repo documents the intent at `orrery.css:61` and `orrery-light.css:60` ("3.0:1 — non-text / disabled only").
-- **Split out — the finding bundled four distinct success criteria under one id.** Move these to separate, lower-severity findings: retro `--kj-fg-on-danger` `#ede5d0` on `--kj-bg-danger` `#c4625d` = **3.18** (1.4.3); forest `--kj-fg-danger` **4.33** on `bg-body` / **3.99** on `danger-subtle`; sakura `--kj-fg-success` **4.03** on `success-subtle`; retro `--kj-border-focus` **2.27** on `bg-body` — and note this last one affects `checkbox.css:63` **only**, since `input.css:52` focuses with `outline: 2px solid var(--kj-bg-primary)`, not `--kj-border-focus`.
-- **Not a regression from the change under review** — `HEAD` and `main` are the same SHA, `git diff main...HEAD` is empty, and the theme/input/checkbox files were last touched in already-merged commits (`01f65ef1`, `b1729083`, `be6386db`).
-- **Reconciliation sentence corrected:** `reports/a11y/*/*.json` holds 13 `scrollable-region-focusable` entries all at `"impact": "serious"`, so "0 serious" is wrong. The underlying point stands — axe-core does not evaluate 1.4.11 component boundaries, and the scan covered six docs routes, none rendering a bare checkbox or an idle input on `bg-body`.
-
-**Fix:** darken/lighten `--kj-border-default` per theme until ≥ 3:1 against both `bg-body` and `bg-field` (or introduce `--kj-border-interactive` for control boundaries and keep `--kj-border-default` decorative). Then make it machine-enforced: `apps/docs/src/app/lib/theme/theme-a11y-report.ts` already models 1.4.11 (`EdgeRequirement 'non-text'`, `requiredMin 3`) but its `NON_TEXT_PAIRS` covers only `bg-elevated × bg-body/bg-surface` — add `border-default × bg-body` and `border-default × bg-field` there, plus a contrast assertion in `packages/themes/src/themes.spec.ts`, which today checks token presence only.
-**Effort:** M
-
----
-
-### F-5 `orrery-light` is the only light theme whose `fg-subtle` and all six class-C intent tokens fall below AA on its own `#dedede` body
-
-**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
-**Files:** `packages/themes/src/themes/orrery-light.css:30`, `:56-60`, `:73`, `apps/docs/src/app/services/theme.service.ts:7-16`
-
-```css
-/* packages/themes/src/themes/orrery-light.css:30 */
-    --kj-bg-body:      #dedede;
-…
-/* :56-60 */
-    --kj-fg-subtle:   #6e6e6e;  /*  4.6:1 */
-    --kj-fg-disabled: #8c8c8c;  /*  3.0:1 — non-text / disabled only */
-/* :73 */
-    --kj-fg-primary: #8d4dcc;  /* 4.6:1 */
-```
-
-Against the theme's own body:
-
-| token | commented | vs `--kj-bg-body` `#dedede` |
-|---|---|---|
-| `--kj-fg-default` `#3b3b3b` | 10.0:1 | 8.33 (passes) |
-| `--kj-fg-muted` `#515151` | 7.1:1 | 5.90 (passes) |
-| `--kj-fg-subtle` `#6e6e6e` | 4.6:1 | **3.79 FAIL** |
-| `--kj-fg-disabled` `#8c8c8c` | 3.0:1 | 2.50 (non-text, fine) |
-| `--kj-fg-primary` / `--kj-fg-accent` `#8d4dcc` | 4.6:1 | **3.84 FAIL** |
-| `--kj-fg-info` `#1c6dc8` | — | **3.83 FAIL** |
-| `--kj-fg-success` `#1e7d3e` | — | **3.85 FAIL** |
-| `--kj-fg-warning` `#996100` | — | **3.84 FAIL** |
-| `--kj-fg-danger` `#bf4240` | — | **3.84 FAIL** |
-
-Every `*-subtle` surface is a `color-mix(… 12%, #dedede)` (`:43-54`), so intent-on-subtle is marginally worse still.
-
-**Verification corrections — the headline diagnosis was factually wrong.**
-
-- **REFUTED: "measured against white."** Recomputing every annotated ratio against six candidate grounds, the comments (10.0 / 7.1 / 4.6 / 3.0 / 4.6) match a **~`#f3f3f3`** ground almost exactly (10.10 / 7.15 / 4.60 / 3.03 / 4.65) — **not** white (11.20 / 7.94 / 5.10 / 3.36 / 5.16) and not `--kj-bg-elevated` `#f7f7f7` (10.46 / 7.41 / 4.76 / 3.14 / 4.82). The original finding's own evidence disproved its title: it reported `fg-subtle` at 5.10 vs white while the comment says 4.6, and never reconciled the gap. Most likely an earlier, lighter `--kj-bg-body` was later darkened to `#dedede` at `:30` without re-deriving the foregrounds. **The prescribed fix ("recompute every annotation against the theme's own surface") is therefore the wrong fix — the foregrounds need darkening, not the comments.**
-- **REMOVED from scope: the `:38-41` block.** "clearing 4.6:1" there is a correct statement about white ink on the intent **fills** (`--kj-fg-on-*` are all `#ffffff`; actual 5.16–7.59) and is rightly measured against white.
-- **Not systemic — this theme is the outlier.** Every other light theme clears AA on its own `bg-body` for the same six tokens: light 5.41–17.40, retro 4.69–6.63, corporate 7.00–14.48, sakura 4.69–7.49, mint 5.40–7.86, bauhaus 5.74–7.03, dune 5.11–10.55. Only orrery-light fails all six, at 3.79–3.85.
-- **Containment (and the reason severity drops):** the shortfalls are near-misses (3.79–3.85 vs 4.5, all clearing AA-large 3:1); the same tokens pass on `bg-surface` `#e8e8e8` (4.16–4.22) and `bg-elevated` `#f7f7f7` (4.76–4.83), where much intent text actually renders; and `orrery` / `orrery-light` are genuinely absent from `AVAILABLE_THEMES` and `THEME_SCHEME` (`theme.service.ts:7-16` lists 13 while `packages/themes/src/index.css` imports 15), so the theme is reachable by no picker in the repo and has never been scanned into `reports/a11y/`. That limits exposure today — and also means nothing will catch a regression.
-- **Pre-existing, not diff-new:** `HEAD == main`, the theme landed in `01f65ef1`.
-
-**No guard exists:** `packages/themes/src/themes.spec.ts` is a presence-only postcss token contract with no ratio assertions, and `contrast-score.service.ts` / `theme-a11y-report.ts` score *draft* themes in the generator UI, not shipped theme CSS.
-
-**Fix:** darken `orrery-light`'s `fg-subtle` and the six class-C intents (or lighten `bg-body`) until ≥ 4.5:1 on the theme's own body, matching peer themes; then update the comments to match. Add `orrery` / `orrery-light` to `AVAILABLE_THEMES` and `THEME_SCHEME` so the a11y scan covers them. Extend `packages/themes/src/themes.spec.ts` with a per-theme WCAG check of class-A and class-C foregrounds against that theme's own `--kj-bg-body`, which would have caught this.
-**Effort:** M
-
----
-
-### F-6 A second, entirely undefined token vocabulary — seven component families are effectively un-themed
-
-**Severity:** high · **Confidence:** high
-**Files:** `packages/core/src/typography/prose.css:18-28,35,37,163,172,243,270`,
-`packages/components/src/action-sheet/action-sheet.css:19,32,33,42,47,57,60,77`,
-`packages/components/src/sheet/sheet.css:72,74`,
-`packages/components/src/file-upload/file-upload.css:11,113,188`,
-`packages/components/src/editor/editor.css:4`,
-`packages/components/src/time-picker/time-picker.css:71`,
-`packages/components/src/date-range-presets/date-range-presets.css:8`,
-`packages/components/src/direction-toggle/direction-toggle.css:10,12,39,44-45`,
-`packages/components/src/table/table.css:63,444`
-
-Cross-referencing every `var(--kj-…)` consumed in `packages/{core,components}/src` against every
-`--kj-…:` declared anywhere in the repo, these names are **read but never defined by
-`@kouji-ui/themes`**:
-
-`--kj-radius-sm`, `--kj-radius-md`, `--kj-radius-lg`, `--kj-font-size-sm|md|lg|xl|2xl|3xl|4xl`,
-`--kj-line-height-tight|snug|normal|relaxed|loose`, `--kj-color-link`, `--kj-color-link-visited`,
-`--kj-prose-max-width`, `--kj-bg-subtle`, `--kj-bg-subtle-hover`, `--kj-bg-muted`,
-`--kj-border-subtle`, `--kj-border-color`, `--kj-danger`, `--kj-danger-fg`, `--kj-danger-bg-subtle`,
-`--kj-primary`, `--kj-primary-contrast`, `--kj-fg-error`, `--kj-focus-ring-color`,
-`--kj-focus-ring-width`, `--kj-space-2xs`, `--kj-table-header-bg`, `--kj-overlay-z-index`,
-`--kj-backdrop-bg`.
-
-`--kj-radius-sm/md/lg` exist only in `packages/core/src/styles/docs-themes.css:20-22,46-48,69-71`, a
-docs-examples fixture that is not shipped. So:
-
-```css
-/* packages/components/src/action-sheet/action-sheet.css:32-60 */
-    border-radius: var(--kj-radius-md, 0.5rem);
-    background: var(--kj-bg-subtle, transparent);
-…
+/* sheet.css:71 */
+  .kj-sheet__handle:focus-visible {
     outline: var(--kj-focus-ring-width, 2px) solid var(--kj-focus-ring-color, var(--kj-primary));
-…
-    color: var(--kj-danger-fg, var(--kj-danger, #d92d20));
-```
-
-Every one of those resolves to the *fallback*, always, in every theme. `action-sheet` therefore has a
-fixed 8px radius and a hard-coded `#d92d20` destructive colour in `kouji` (radius 0, danger
-`oklch(55% .22 20)`) and in `retro` alike. And because `--kj-focus-ring-color` falls back to
-`var(--kj-primary)` — also undefined — the entire `outline` shorthand is invalid, so the focus ring on
-action-sheet items and on the sheet handle does not render at all (a WCAG 2.4.7 failure).
-
-`prose.css`'s own header (`:18-28`) lists these names under "Tokens read from the kouji theme layer" —
-the list is aspirational, not real, so prose type scale, link colour and code radius are unthemeable.
-
-One case has no fallback at all and is therefore dead:
-
-```css
-/* packages/components/src/sheet/sheet.css:74 */
+    outline-offset: -4px;
     border-radius: var(--kj-radius-sm);
+  }
+/* action-sheet.css:45 */
+  .kj-action-sheet__item:focus-visible,
+  .kj-action-sheet__cancel:focus-visible {
+    outline: var(--kj-focus-ring-width, 2px) solid var(--kj-focus-ring-color, var(--kj-primary));
+    outline-offset: 2px;
+  }
 ```
 
-`var()` with an undefined property and no fallback is invalid-at-computed-value-time → `border-radius`
-computes to its initial value.
+Neither `--kj-focus-ring-color` nor `--kj-focus-ring-width` nor `--kj-primary` is declared anywhere: a repo-wide grep for `--kj-(primary|focus-ring-color|focus-ring-width)\s*:` across every `.css`, `.ts`, `.scss` and `.html` outside `node_modules` returns **zero declarations**. So the fallback of `var(--kj-focus-ring-color, …)` is taken, that fallback is `var(--kj-primary)`, which is the guaranteed-invalid value — the whole `outline` shorthand becomes invalid at computed-value time, each longhand computes to `unset`, and because `outline-*` are non-inherited that is `outline-style: none`. It remains an author-origin declaration, so it also suppresses the UA `:focus-visible` ring. The element gets **no visible focus indicator at all**.
 
-**Why it matters:** seven component families look correct in the docs (where `docs-themes.css` happens
-to be loaded by example components) and lose their theming entirely in a consumer app. It also
-fractures the naming contract: `--kj-radius-md` vs `--kj-radius-field`, `--kj-font-size-md` vs
-`--kj-text-base`, `--kj-danger` vs `--kj-bg-danger`, `--kj-primary` vs `--kj-bg-primary`.
+Nothing rescues it elsewhere: `packages/themes/src/base.css` contains no `focus` or `outline` rule, there is no global `:focus-visible` reset in `packages/core/src/styles/` or `packages/themes/`, and no guard or test covers it — `packages/components/src/action-sheet/action-sheet.spec.ts` contains no focus assertion and `packages/components/src/sheet/` has no spec file at all, which is why this shipped in #20 and survived to HEAD. `fd6dd34e..HEAD` touched these files only via `2948c5b5`, a z-index stacking fix.
 
-**Fix:** pick one vocabulary. Either map the aliases in `base.css`
-(`--kj-radius-md: var(--kj-radius-box)`, `--kj-font-size-md: var(--kj-text-base)`,
-`--kj-focus-ring-color: var(--kj-border-focus)`, …) or rewrite the seven stylesheets onto the
-canonical names — the latter is cleaner. Then add a build-time check: collect every `var(--kj-*)` in
-`packages/*/src/**` and fail if a name is neither declared in `@kouji-ui/themes` nor a documented
-component knob. (Runtime-written properties — `--kj-slider-start`, `--kj-progress-fraction`,
-`--kj-toast-index`, `--kj-color-picker-x/y/hue`, `--kj-sheet-drag-offset`, `--kj-resize-delta`,
-`--kj-carousel-slides-per-view` — are legitimate and belong on the check's allowlist.)
-**Effort:** L
+**This reaches the consumer through the documented path, and only through it.** `action-sheet.css` is attached via `styleUrl` on `KjActionSheetComponent` (`kj-action-sheet-shell`), a documentation-only shell that the real `KjActionSheet` never renders. So `packages/components/src/overlay/overlay.css:44-45` — the two `@import` lines in the aggregator whose own header instructs consumers to register it — is the **only** route by which these rules reach an app. The defect therefore bites in precisely the supported registration, and `KjActionSheet`'s own TSDoc advertises a "Tab / Shift+Tab cycles focus across the action rows" contract that the missing ring silently breaks.
+
+**Why it matters** — WCAG 2.1 **2.4.7 Focus Visible** (Level A) and **1.4.11 Non-text Contrast** (AA), in a library whose `CLAUDE.md` mandates WCAG 2.1 AAA. The sheet drag handle is the keyboard affordance for resizing a bottom sheet; action-sheet items are its primary menu, and its cancel button is the escape route. A keyboard user has nothing to track on any of them.
+
+**Verification corrections (severity upheld at high).**
+1. **The real token is `--kj-border-focus`, not `--kj-bg-primary`.** The established focus token in this repo is `--kj-border-focus` alone — declared in all 15 files under `packages/themes/src/themes/` and used correctly at `packages/components/src/button/button.css:239-241` (`outline: 2px solid var(--kj-border-focus);`). `--kj-bg-primary` is unrelated and should not be named here.
+2. **`sheet.css:74`'s `border-radius: var(--kj-radius-sm)` is a separate cosmetic nit, not "the same class of problem".** An invalid `border-radius` resolves to `0` — a square corner on an element drawn with `outline-offset: -4px`, with no accessibility consequence. Its shipped counterparts are `--kj-radius-field` / `--kj-radius-box` (`packages/themes/src/themes/light.css:11-13`), not the docs-only `--kj-radius-sm`.
+3. **`direction-toggle.css:44-45` is not a third instance.** It uses the same `--kj-focus-ring-*` names but terminates in a valid `currentColor` fallback, so it degrades gracefully. Exactly two files are broken.
+
+**Fix** — replace both with the token the rest of the library already uses: `outline: 2px solid var(--kj-border-focus);` (what `button.css:239-241`, `checkbox.css:64`, `accordion.css:36` and ~20 others do). If a `--kj-focus-ring-*` knob is genuinely wanted, declare it in `base.css` under `kj.base` as `--kj-focus-ring-width: 2px; --kj-focus-ring-color: var(--kj-border-focus);` and keep the use sites. Add a focus assertion to `action-sheet.spec.ts`, a spec file for `sheet/`, and a lint rule that rejects any `var(--kj-…)` chain in `packages/**/*.css` whose innermost fallback is itself an undeclared `var()`.
 
 ---
 
-### F-7 No theme declares `color-scheme`, and there is no theme at all without `data-theme`
+### F-2 `orrery-light`: `fg-subtle` and the class-C intent tokens miss AA as text on `bg-body` / `bg-surface` / `bg-field`
 
-**Severity:** high · **Confidence:** high
-**Files:** all 15 in `packages/themes/src/themes/`, `packages/themes/src/base.css:29-184`,
-`apps/docs/src/app/lib/theme/serialize-theme.ts:26`, `apps/docs/src/app/app.ts:63-65`
+Severity: **medium** *(corrected during verification: was high)* · Confidence: **high** · Effort: **M**
 
-Grepping `color-scheme` across `packages/` returns **zero** hits. The only place it appears is the
-docs' own theme *generator*:
+Files: `packages/themes/src/themes/orrery-light.css:30,56-78`; `packages/components/src/link/link.css:12`; `packages/core/src/typography/prose.css:104`
 
-```ts
-// apps/docs/src/app/lib/theme/serialize-theme.ts:26
-  lines.push(`color-scheme: ${isDark ? 'dark' : 'light'};`);
-```
+The strongest, unambiguous call site first: `packages/components/src/link/link.css:12` sets `--kj-link-fg: var(--kj-fg-primary)` and `packages/core/src/typography/prose.css:104` sets `.kj-prose a { color: var(--kj-fg-primary) }`. On this theme that renders **normal-size link text at 3.84:1** against the body — below AA's 4.5:1.
 
-So a user-generated theme gets `color-scheme` and none of the 15 first-party themes do. In `kouji`,
-`dark`, `forest`, `nord`, `terminal` and `orrery` (all light-on-dark), the UA keeps light-mode
-defaults for scrollbars, `<input type="date">` / `type="color"` pickers, `<select>` popups,
-`::selection`, form-control chrome and Chrome's autofill highlight — white widgets on a `#0c0c0c`
-page.
+Computed ratios (sRGB, WCAG 2.x formula; validator sanity-checked at black-on-white = 21.00), reproduced independently during verification:
 
-Separately, `base.css`'s `:root` block (`:29-184`) defines only `--kj-base-*`, the spacing/type/motion
-aliases and the icon tokens. Not one semantic colour token has a `:root` default and there is no
-`@media (prefers-color-scheme: dark)` block anywhere. The app code admits the consequence:
-
-```ts
-// apps/docs/src/app/app.ts:63-65
-  // Inject the ThemeService here so it bootstraps on app start (not just when
-  // a child component happens to inject it). Without this the landing page
-  // never sets data-theme on <html>, leaving every --kj-color-* unresolved
-```
-
-A consumer who installs the packages and forgets `data-theme` gets transparent backgrounds and
-initial-value text colours on every component, with no console signal.
-
-**Why it matters:** `color-scheme` is one line per theme and is the difference between a dark theme
-that looks finished and one that leaks white native chrome. The missing default turns a one-line setup
-mistake into a completely unstyled app.
-
-**Fix:** add `color-scheme: dark|light` to each `[data-theme]` block and add it to the
-`themes.spec.ts` contract. Ship a `:root` default that aliases the light theme, plus
-`@media (prefers-color-scheme: dark)` aliasing dark, both in `kj.base` so any `[data-theme]` in
-`kj.shared` still wins.
-**Effort:** S
-
----
-
-### F-8 `--kj-color-icon-*` is resolved at `:root`, so nested `[data-theme]` subtrees get the wrong icon colours
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/themes/src/base.css:172-177`, `packages/core/src/icon/icon.directive.ts:107`
+| token | value | vs `--kj-bg-body: #dedede` | in-file comment claims | verdict |
+|---|---|---|---|---|
+| `--kj-fg-subtle` | `#6e6e6e` | **3.79:1** | `/* 4.6:1 */` (l.59) | fails AA 4.5 |
+| `--kj-fg-primary` / `--kj-fg-accent` | `#8d4dcc` | **3.84:1** | `/* 4.6:1 */` (l.73) | fails AA 4.5 |
+| `--kj-fg-info` | `#1c6dc8` | **3.83:1** | — | fails AA 4.5 |
+| `--kj-fg-success` | `#1e7d3e` | **3.85:1** | — | fails AA 4.5 |
+| `--kj-fg-warning` | `#996100` | **3.84:1** | — | fails AA 4.5 |
+| `--kj-fg-danger` | `#bf4240` | **3.84:1** | — | fails AA 4.5 |
+| `--kj-fg-default` | `#3b3b3b` | 8.33:1 | `/* 10.0:1 */` (l.57) | passes AAA |
+| `--kj-fg-muted` | `#515151` | 5.90:1 | `/* 7.1:1 */` (l.58) | passes AA (see note below) |
 
 ```css
-/* packages/themes/src/base.css:172-177 — inside @layer kj.base { :root { … } } */
+/* orrery-light.css:30 */    --kj-bg-body:      #dedede;
+/* orrery-light.css:59 */    --kj-fg-subtle:   #6e6e6e;  /*  4.6:1 */
+/* orrery-light.css:73 */    --kj-fg-primary: #8d4dcc;  /* 4.6:1 */
+```
+
+The inline annotations at l.57, l.58, l.59 and l.73 are **stale or unverified** — they match no background declared in the file (the closest is `--kj-bg-elevated` `#f7f7f7` at 10.46 / 7.41 / 4.76 / 3.14) — and should be corrected or dropped.
+
+**Scoping facts that bound the impact.** `orrery-light` is opt-in: it appears nowhere in TypeScript (no theme registry, no picker entry, not a default), ships as CSS via `packages/themes/src/index.css`, and activates only when a consumer sets `data-theme="orrery-light"`. It is 1 of 16 themes. `--kj-fg-disabled` (2.50:1) is explicitly exempt under the WCAG 1.4.3 inactive-control exception, and the file says so at l.60. On `--kj-bg-elevated` (`#f7f7f7` — popovers, dropdowns, menus) the class-C tokens reach 4.82:1 and **do** pass AA; the failure is specific to body (`#dedede`), surface (`#e8e8e8`) and field (`#e4e4e4`).
+
+**No gate catches this.** `packages/themes/src/themes.spec.ts` asserts token *presence* only (`REQUIRED_SHARED_TOKENS`), never contrast. `tools/a11y/src/contrast-utils.ts` exports `auditTokens` / `suggestFgs` and **nothing calls them** (grep for `auditTokens` across the repo: zero call sites). `apps/docs/.../contrast-score.service.ts` scores only a user's `DraftTheme` in the theme builder, not shipped themes. Nothing in `fd6dd34e..HEAD` touches this file.
+
+**Why it matters** — WCAG **1.4.3 Contrast (Minimum)** AA, against a repo-stated AAA target (`CLAUDE.md`, `rules/accessibility.md`).
+
+**Verification corrections (high → medium).** The arithmetic is exactly right and reproduces; three pieces of the original evidence do not survive and they were what inflated the severity.
+
+1. **The `l.39-41` citation is withdrawn.** That comment sits inside the `/* ── intent surfaces ── */` block (l.38-54) and describes the `--kj-bg-*` fills: "these keep its muted character while clearing 4.6:1. They are dark enough to carry white ink." White on those fills measures 7.59 (`#752cb3`), 5.16 (`#1c6dc8`), 5.17 (`#1e7d3e`), 5.17 (`#996100`), 5.16 (`#bf4240`) — the comment is **accurate as written** and makes no claim about the class-C `--kj-fg-*` tokens against the body.
+2. **"Every quoted ratio was measured against white … scaling each down by ~26%" is withdrawn.** Against white the tokens measure 11.20 / 7.94 / 5.10 / 3.36 — not the quoted 10.0 / 7.1 / 4.6 / 3.0. The annotations match no background in the file; they are stale, not white-referenced. The prescribed fix is to darken the foregrounds, not to re-derive the comments against white.
+3. **The `alert.css:33-36` citation is replaced.** Those lines set `--kj-alert-accent`, consumed at l.20 / l.42 as a 4px `border-left` / `border-top` and at l.89 as an icon `color` — graphical objects under WCAG **1.4.11**, whose bar is 3:1, which 3.84 *passes*. The accent is used as text only at **`alert.css:72`** (`.kj-alert__title`), which is the line to cite. The same applies to most other `--kj-fg-primary` consumers: `breadcrumb.css:106`, `input-mask.css:26-28`, `input-otp.css:44/53/55`, `menubar.css:52` are `outline`, `border-color` and `caret-color` — all 1.4.11 at 3:1, all passing.
+
+An opt-in theme with a ~15% shortfall against the bar, roughly half the originally cited call sites passing the correct criterion, and a third of the quoted evidence misread: medium, not high.
+
+**Separate, lower-priority note.** `--kj-fg-muted` at 5.90:1 clears AA but misses the repo's stated AAA target of 7:1 — a target miss, not a conformance failure.
+
+**Fix** — darken the class-C tokens by roughly 15% so each clears 4.5:1 on `#dedede` (not on white), and `--kj-fg-subtle` likewise; note that class C need not share hexes with the class-B `--kj-bg-*` fills, since the two serve opposite roles. Correct or delete the stale annotations at l.57-59 and l.73. Worth pairing with wiring the already-written, unused `auditTokens` helper into `themes.spec.ts` so every theme's fg/bg pairs are asserted — that catches this class of drift across all 16 themes rather than patching one.
+
+---
+
+### F-3 `retro`: focus ring at 2.27:1 and destructive-button text at 3.18:1
+
+Severity: **medium** *(corrected during verification: was high)* · Confidence: **high** · Effort: **S**
+
+Files: `packages/themes/src/themes/retro.css:25,44,58,72`
+
+```css
+/* retro.css */
+25:    --kj-bg-body:        #ede5d0;
+44:    --kj-bg-danger:          #c4625d;
+58:    --kj-fg-on-danger:    #ede5d0;
+72:    --kj-border-focus:     #7a9eb1;
+```
+
+Both items re-verified exact at HEAD:
+
+1. **`--kj-border-focus: #7a9eb1` measures 2.27:1 on `--kj-bg-body` (`#ede5d0`) and 2.01:1 on `--kj-bg-surface` (`#e4d8b4`)** — below the WCAG **1.4.11** 3:1 non-text floor, and the worst pair in the library. `--kj-border-focus` is *the* focus-indicator token: 33 call sites draw the ring as `outline: 2px solid var(--kj-border-focus); outline-offset: 2px` (`button.css:240`, `checkbox.css:64`, `accordion.css:36`, `combobox.css:18`, `carousel.css:87,144,165`, `cascade-select.css:26`, `color-picker.css:26,61,136,168,172`, `date-picker.css:27`, `calendar.css:107`, `chat-ai.css:136,294`, …). Because of the `outline-offset: 2px`, the gap exposes the *page background*, so the adjacent colour for 1.4.11 is `bg-body` / `bg-surface` — the worst case, not the control fill. Every focus indicator in the library is invisible-grade on retro.
+2. **`--kj-fg-on-danger: #ede5d0` on `--kj-bg-danger: #c4625d` measures 3.18:1** — failing WCAG **1.4.3** for the destructive button label at `button.css:79` and the seven other `fg-on-danger` consumers (badge, tag, toast, stepper, chat, overlay-badge).
+
+**The library self-fails its own written rule.** `apps/docs/src/app/lib/theme/theme-a11y-report.ts` lists `{ fg: 'fg-on-danger', bg: 'bg-danger' }` in `AA_NORMAL_PAIRS` at 4.5:1 — retro does not meet the standard the repo itself declares.
+
+**Nothing validates theme token *values*.** `packages/themes/src/themes.spec.ts` checks token **presence** only. `theme-a11y-report.ts` computes contrast but runs solely over `DraftTheme` objects from the docs theme generator and never sees the hand-authored built-in theme CSS; its `NON_TEXT_PAIRS` list holds only two `bg-elevated` pairs, so **`border-focus` is checked by nothing, anywhere**. Retro ships via `packages/themes/src/index.css:6`, and nothing in `fd6dd34e..HEAD` touched `packages/themes`.
+
+**Why it matters** — WCAG **1.4.11 Non-text Contrast** (focus indicator) and **1.4.3 Contrast (Minimum)**.
+
+**Verification corrections (high → medium).**
+- **Scope is retro alone.** A sweep of all 15 themes shows retro is the sole outlier on `bg-body` (next-worst is cyberpunk at 3.15). The **forest** items are demoted to a separate low / informational note below: forest's own focus ring is 6.46:1, and its two cited pairs (`fg-danger` / `bg-body` 4.33:1, `fg-subtle` / `bg-surface` 4.14:1) are sub-0.4 near-misses of AA on an otherwise healthy theme. Billing forest as a co-equal affected file alongside retro's 2.01:1 overstates the blast radius; `packages/themes/src/themes/forest.css` is removed from this finding's file list.
+- **The calibration parenthetical was incomplete.** cyberpunk (3.15) and dark (3.21) clear 3:1 on `bg-body` but **fall under it on `bg-surface`** (2.61 and 2.90) — so there is no enforced 3:1 floor to appeal to. That is the systemic point worth reporting, and it is the same root cause as above.
+- **Containment:** one opt-in theme out of 15, with the defaults clean (light 17.4, kouji 16.5, orrery 4.70) and a three-token fix. Medium, not high.
+
+**Explicitly not findings:** `fg-disabled` on `bg-disabled` measures 1.28–2.82:1 in all 15 themes, but WCAG 1.4.3 exempts inactive user-interface components. `border-default` on `bg-body` (1.12–1.63:1 in 13 themes) is exempt where the border is decorative — see Open Question 1 for the case where it is not.
+
+**Low / informational note (forest).** `forest.css:68` `--kj-fg-danger: #d96550` on `forest.css:26` `--kj-bg-body: #1a2820` = 4.33:1, and `fg-subtle` / `bg-surface` = 4.14:1 — both just under AA 4.5. Worth a one-step lightening, not a focus-indicator failure.
+
+**Fix** — retro: darken `--kj-border-focus` until it clears 3:1 on `#ede5d0` (aim for ≥ 4.5:1 so it also works as a border colour), and either darken `--kj-bg-danger` or swap `--kj-fg-on-danger` to a near-black ink. Then make it machine-enforced: add `border-focus × bg-body` and `border-focus × bg-surface` edges to `NON_TEXT_PAIRS` in `theme-a11y-report.ts`, and extend `packages/themes/src/themes.spec.ts` to parse each built-in theme's hex values and assert the same thresholds — which catches retro *and* the cyberpunk / dark surface dips in CI.
+
+---
+
+### F-4 No theme declares `color-scheme` — dark themes get light native UI
+
+Severity: **medium** · Confidence: **high** · Effort: **S**
+
+Files: all of `packages/themes/src/themes/*.css` (15 files); `packages/themes/src/base.css`
+
+```
+$ grep -rc 'color-scheme' packages/themes/src/     ->  0 matches in 0 files
+$ grep -rn 'prefers-color-scheme' packages/        ->  0 matches
+```
+
+The only `color-scheme` in the repo is emitted by the docs' *custom-theme serializer* (`apps/docs/src/app/lib/theme/serialize-theme.ts:26`), i.e. for user-generated themes only — the shipped presets don't get it.
+
+Several themes are light-text-on-dark (`kouji #0c0c0c`, `dark #1a1a1a`, `forest #1a2820`, `nord #2e3440`, `terminal`, `orrery`). Without `color-scheme: dark` on the theme root the UA keeps its light scheme: native `<select>` popups, date/colour/file pickers, `<input>` autofill chrome, the default scrollbar, form-control borders, `::selection` and the canvas background behind the document all render light.
+
+**Why it matters** — white flashes on overscroll and during navigation, unreadable native dropdown lists over dark app chrome, and `accent-color` / caret defaults that fight the theme. It is also what lets the browser's own forced-colors and reduced-transparency heuristics behave sensibly.
+
+**Fix** — add `color-scheme: light` or `dark` to each `[data-theme="X"]` block. The classification already exists, hardcoded in `apps/docs/src/app/services/theme.service.ts:24-38` (`THEME_SCHEME`). Extend `themes.spec.ts` with a companion assertion that every theme block declares `color-scheme`.
+
+---
+
+### F-5 With no `[data-theme]` the library renders unstyled — no `:root` fallback, no `prefers-color-scheme` default
+
+Severity: **medium** · Confidence: **high** · Effort: **M**
+
+Files: `packages/themes/src/base.css:29-184`; every `packages/themes/src/themes/*.css`
+
+`base.css`'s `:root` block declares only primitives (`--kj-base-*`), font/space/text aliases, motion and icon tokens. Not one of `--kj-bg-body`, `--kj-bg-surface`, `--kj-fg-default`, `--kj-border-default`, `--kj-shadow-md`, `--kj-radius-box`, `--kj-transition` has a `:root` value — each exists **only** inside a `[data-theme="X"]` rule:
+
+```
+$ grep -rn 'kj-bg-body\s*:' --include=*.css packages/
+packages/themes/src/themes/bauhaus.css:27    --kj-bg-body:        #f5efe1;
+packages/themes/src/themes/corporate.css:26  --kj-bg-body:        #f5f7fa;
+...(15 theme files, nothing else)
+```
+
+An app that installs `@kouji-ui/themes` and forgets `data-theme` on `<html>` gets `background: var(--kj-bg-body)` → guaranteed-invalid → transparent; `border: var(--kj-border) solid var(--kj-border-default)` → invalid-at-computed-value-time → `border: unset` (no border at all); `box-shadow: var(--kj-card-shadow)` → nothing. The library's own docs app documents this failure mode in a comment (`apps/docs/src/app/app.ts:64-67`: *"Without this the landing page never sets data-theme on `<html>`, leaving every `--kj-color-*` unresolved"*) — and papered over it by force-injecting `ThemeService` rather than fixing the CSS.
+
+**Why it matters** — the first-run experience for a new consumer is a blank page with invisible controls and no console error to explain it. There is also no `@media (prefers-color-scheme: dark)` anywhere, so "respect the OS" is not offered even as an opt-in.
+
+**Fix** — add a bare `:root` default set in `base.css` (aliasing one theme, e.g. `light`) so unthemed usage degrades to something readable, plus optionally `@media (prefers-color-scheme: dark) { :root:not([data-theme]) { … } }` aliasing `dark`. `kj.shared` already outranks `kj.base`, so an explicit `[data-theme]` keeps winning for free.
+
+---
+
+### F-6 `--kj-bg-overlay` is a dead token; every scrim and hover tint is hardcoded
+
+Severity: **medium** · Confidence: **high** · Effort: **S**
+
+Files: `packages/components/src/dialog/dialog.css:5`, `drawer/drawer.css:55`, `command-palette/command-palette.css:16`, `packages/core/src/primitives/overlay/overlay.css:44`, `alert/alert.css:123`, `toast/toast.css:113`
+
+```css
+/* dialog.css:2-5 */         .kj-dialog-overlay { position: fixed; inset: 0; background: rgb(0 0 0 / 0.5); … }
+/* drawer.css:51-56 */       [data-kj-drawer-container]::before { … background: rgb(0 0 0 / 0.5); … }
+/* command-palette.css:16 */ background: rgba(0, 0, 0, 0.7);
+/* core overlay.css:40-46 */ .kj-backdrop, .kj-overlay-backdrop { background: var(--kj-backdrop-bg, rgb(0 0 0 / 0.5)); }
+```
+
+`--kj-bg-overlay` is declared by all 15 themes and is **item 5 of `REQUIRED_SHARED_TOKENS`** (`themes.spec.ts:13`), yet a repo-wide grep finds it consumed by exactly zero stylesheets — only by the docs' theme serializer. `--kj-backdrop-bg` (the core primitive's knob) is likewise never declared by anything. So a theme cannot change its own scrim: `light.css:33` carefully sets `--kj-bg-overlay: rgba(26, 26, 26, 0.5)` and `orrery-light.css:34` sets `rgba(30, 30, 30, 0.34)`, and both are ignored.
+
+Two hover tints have the same problem with a visible symptom on dark themes:
+
+```css
+/* alert.css:123 */  .kj-alert__dismiss:hover { opacity: 1; background: rgb(0 0 0 / 0.06); }
+/* toast.css:113 */  .kj-toast-close:hover   { opacity: 1; background: rgb(0 0 0 / 0.08); }
+```
+
+6–8% black over a `#0c0c0c` (kouji) or `#1a1a1a` (dark) surface is imperceptible — the hover affordance on the alert and toast dismiss buttons does not exist in any dark theme.
+
+**Fix** — point every scrim at the token: `background: var(--kj-bg-overlay, rgb(0 0 0 / 0.5))`, and derive `--kj-backdrop-bg` from it in `base.css`. Replace the two hover tints with `color-mix(in oklch, var(--kj-fg-default) 8%, transparent)` so the tint follows the theme's ink. Add a themes-side spec that fails when a `REQUIRED_SHARED_TOKENS` entry has no consumer.
+
+---
+
+### F-7 Ten globally-injected stylesheets sit outside `@layer` and outrank everything
+
+Severity: **medium** · Confidence: **high** · Effort: **M**
+
+Files (no `@layer` anywhere in the file): `packages/components/src/table/table.css`, `table/table-filters/filters.css`, `calendar/calendar.css`, `date-picker/date-picker.css`, `datetime-picker/datetime-picker.css`, `date-range-presets/date-range-presets.css`, `command-palette/command-palette.css`, `editor/editor.css`, `input-mask/input-mask.css`, `packages/core/src/icon/icon.css`
+
+83 components in `packages/components/src` declare `encapsulation: ViewEncapsulation.None`, verified for every owner of the files above:
+
+```
+$ grep -h encapsulation packages/components/src/{table,calendar,date-picker,command-palette,input-mask,date-range-presets,datetime-picker}/*.ts
+  encapsulation: ViewEncapsulation.None,   (x7)
+```
+
+So each of these stylesheets is injected into `document.head` as **global, unlayered** CSS the moment the component instantiates. Per the cascade, unlayered author rules beat *every* layered author rule regardless of specificity or source order. Consequences:
+
+1. A consumer who does the recommended thing — wrapping their overrides in a named layer so kouji-ui can be overridden predictably — cannot override anything in these ten files.
+2. Theme-level component overrides can't reach them either: `kouji.css:126-134` puts its button override in `@layer kj.component`, which loses to any unlayered rule.
+3. `icon.css` is worse because it is a *published, permanently-registered* global (`core/package.json:57` exports `./icon/icon.css`; `angular.json:104` registers it via `styles.css`), so `.kj-icon { display: inline-block; width: 1em; … }` (`icon.css:13-20`) is unconditionally un-overridable by layered host CSS.
+
+**Fix** — wrap all ten in `@layer kj.component { … }`, matching the other 65 component stylesheets. Add a spec (mirroring `density.spec.ts`'s style) that walks `packages/{core,components}/src/**/*.css` and asserts every rule-bearing file opens with a `@layer kj.*` block.
+
+---
+
+### F-8 `base.css`'s `@layer` statement omits three layers that `prose.css` actually uses
+
+Severity: **medium** · Confidence: **high** · Effort: **S**
+
+Files: `packages/themes/src/base.css:7`; `packages/core/src/typography/prose.css:31,257,291`; `packages/themes/src/density.spec.ts:32-38`
+
+```css
+/* base.css:7 */
+@layer kj.reset, kj.base, kj.shared, kj.component;
+```
+
+```css
+/* prose.css:31  */ @layer kj.prose    { .kj-prose { … } }
+/* prose.css:257 */ @layer kj.tone     { [data-tone='lead'] { … } }
+/* prose.css:291 */ @layer kj.truncate { [data-truncate='1'] { … } }
+```
+
+`kj.prose`, `kj.tone` and `kj.truncate` are never named in the order statement, so they register on first encounter — i.e. **after** `kj.component`, giving prose typography and the tone/truncate attributes higher cascade priority than every component stylesheet. That is almost certainly backwards: `.kj-prose p` beating `.kj-card p` is a surprise, and a component that wants to restyle a `[data-tone="code"]` span inside itself cannot.
+
+Worse, the position is *load-order dependent*. `density.spec.ts:32-38` documents the statement as a published contract (*"Editing the `@layer kj.reset, kj.base, kj.shared, kj.component` statement desyncs consumers who re-declare it"*) — but a consumer who faithfully re-declares those four names still ends up with three unpinned kouji-ui layers whose position depends on import order. `packages/core/src/styles/docs-themes.css:6` adds a fourth and fifth unpinned name (`@layer kj.tokens, kj.theme;`).
+
+**Fix** — either fold prose into `kj.component` (simplest — it is component CSS), or extend the statement to `@layer kj.reset, kj.base, kj.shared, kj.prose, kj.component, kj.tone, kj.truncate;` and update `density.spec.ts:37`. Document the final order in the themes README so consumers re-declare the right thing. Either way, add an assertion that every `@layer` *name* used under `packages/` appears in `base.css`'s statement.
+
+---
+
+### F-9 `.kj-card[data-shadow="lift"]` is a no-op in all 15 themes
+
+Severity: **medium** · Confidence: **high** · Effort: **S**
+
+Files: `packages/components/src/card/card.css:14,21,40-46`, `packages/themes/src/base.css:9-25`
+
+```css
+/* card.css:40-46 */
+  /* Lift modifier — borrows the theme's button-shadow value so cards in
+     brutalist themes (kouji / bauhaus) get the same hard offset block as
+     primary buttons. Themes without an offset signature fall back to
+     `--kj-shadow-md` so the card still reads as elevated. */
+  .kj-card[data-shadow="lift"] {
+    --kj-card-shadow: var(--kj-button-shadow, var(--kj-shadow-md));
+```
+
+```css
+/* base.css:21-25 — @layer kj.reset */
+  [data-theme] {
+    --kj-button-shadow:        none;
+    --kj-button-shadow-hover:  none;
+    --kj-button-shadow-active: none;
+  }
+```
+
+`--kj-button-shadow` is a *declared, inherited* custom property on the theme root, so on any themed page `var(--kj-button-shadow, …)` resolves to `none` and the `--kj-shadow-md` fallback is unreachable. `box-shadow: var(--kj-card-shadow)` (`card.css:21`) therefore renders `none` — `data-shadow="lift"` does nothing, everywhere.
+
+The comments also describe behaviour that no longer exists. `base.css:18-19` says *"kouji + bauhaus set their offset blocks in their own `[data-theme="X"]` declarations"*, and `button.css:26` names *"kouji's `6px 6px 0 #2a2a2a` offset block"* — but a full grep shows **no theme file declares `--kj-button-shadow` at all**:
+
+```
+$ grep -rn 'kj-button-shadow' --include=*.css packages/themes/
+packages/themes/src/base.css:22   --kj-button-shadow:        none;
+packages/themes/src/base.css:23   --kj-button-shadow-hover:  none;
+packages/themes/src/base.css:24   --kj-button-shadow-active: none;
+```
+
+So the `kj.reset` block neutralises an override that was removed, and three code comments are stale. (The button itself is fine — a page can still set `--kj-button-shadow` at a scope *below* the theme root, which is what `button.css:224-234` and `speed-dial.css:57,119` rely on.)
+
+**Fix** — either drop the `kj.reset` `[data-theme]` block so `--kj-button-shadow` is genuinely unset (which makes both the card fallback and the button `var(name, none)` sites correct), or change `card.css:45` to `--kj-card-shadow: var(--kj-shadow-md);` and stop borrowing the button token. Correct `base.css:18-19` and `button.css:23-30`.
+
+---
+
+### F-10 `--kj-space-2xs` doesn't exist — `.kj-menubar` renders with no padding and no gap
+
+Severity: **medium** · Confidence: **high** · Effort: **S**
+
+Files: `packages/components/src/menubar/menubar.css:7-8,13,19`
+
+```css
+  .kj-menubar {
+    …
+    --kj-menubar-padding:      var(--kj-space-2xs);
+    --kj-menubar-gap:          var(--kj-space-2xs);
+    …
+    gap: var(--kj-menubar-gap);
+    …
+    padding: var(--kj-menubar-padding);
+```
+
+The spacing ladder runs `--kj-space-1 … --kj-space-11` plus t-shirts `xs/sm/md/lg/xl/2xl…6xl` (`density.css:50-73`) — there is no `2xs`. (The *type* ramp does have `--kj-text-2xs` and `--kj-text-3xs`, `density.css:81-82`, which is presumably where the name came from.) With no literal fallback, `--kj-menubar-padding` and `--kj-menubar-gap` are guaranteed-invalid, so `padding` and `gap` are invalid-at-computed-value-time and resolve to `unset` → `0` and `normal`.
+
+`menubar.ts:71-72` documents both as consumer knobs, so a consumer who sets them gets a working menubar and a consumer who doesn't gets a squashed one — hard to diagnose.
+
+**Fix** — `var(--kj-space-xs)` (4px, the intended value), or add `--kj-space-2xs: var(--kj-space-1)` (2px) to `density.css`'s `:root` if a sub-4px step is wanted. The lint in F-1 catches this class.
+
+---
+
+### F-11 Density scales spacing and type but not control heights — 3 of 69 stylesheets participate
+
+Severity: **medium** · Confidence: **high** · Effort: **L**
+
+Files: `packages/themes/src/density.css:98-110`; 66 of 69 stylesheets under `packages/components/src`
+
+`density.css:98-102` states the intent: *"sm/md/lg stay each component's semantic API; this shared ladder is what those variants resolve to, so density scales every variant uniformly instead of each component hardcoding a rem value."* Actual adoption:
+
+```
+$ grep -rl -e '--kj-ctl-h-' -e '--kj-row-h' --include=*.css packages/components/src
+packages/components/src/button/button.css
+packages/components/src/input/input.css
+packages/components/src/table/table.css
+```
+
+Three files. Meanwhile 74 declarations hardcode a control height and 56 hardcode spacing:
+
+```
+packages/components/src/alert/alert.css:118                       min-height: 2.75rem;
+packages/components/src/cascade-select/cascade-select.css:23,78   min-height: 2.75rem; /* 44px touch target */
+packages/components/src/chat/chat.css:77                          height: 2.25rem;
+packages/components/src/chat/chat-ai.css:287                      height: 2.75rem; /* WCAG 2.5.5 target */
+packages/components/src/action-sheet/action-sheet.css:29          min-height: 44px;
+packages/components/src/carousel/carousel.css:120                 min-height: 44px;
+packages/components/src/color-picker/color-picker.css:10          height: 44px;
+packages/components/src/alert/alert.css:110                       padding: 4px 8px;
+packages/components/src/cascade-select/cascade-select.css:42,60   padding: 4px;
+packages/components/src/combobox/combobox.css:45                  padding: 4px;
+packages/components/src/chat/chat-ai.css:124                      padding: 0.25rem 0.6rem;
+packages/components/src/color-picker/color-picker.css:157         gap: 6px;
+...(56 raw padding/margin/gap declarations in total)
+```
+
+The raw-spacing ones also violate `rules/code_style.md` (*"never ship raw `px`/`rem` for spacing … This applies to **every** stylesheet under `packages/components/src/**`"*). The 44px touch-target floors are a legitimate escape hatch — WCAG 2.5.5 is an absolute minimum that must not shrink under `compact`.
+
+**Why it matters** — `[data-density="compact"]` produces a half-scaled UI: padding and type shrink, but selects, combobox triggers, chat composers, cascade-selects and alerts keep their fixed heights. Rows stop aligning with adjacent controls, which is precisely the dense-IDE use case `density.css` was written for.
+
+**Fix** — sweep `packages/components/src/**/*.css`, replacing control heights with `var(--kj-ctl-h-{sm,md,lg})` and spacing literals with `--kj-space-*`, keeping (and commenting) the WCAG 2.5.5 floors as `max(var(--kj-ctl-h-md), 44px)`. Add a spec listing which stylesheets are allowed raw length literals.
+
+---
+
+### F-12 `prose.css` reads a token namespace no theme defines — typography is permanently on hardcoded fallbacks
+
+Severity: **medium** · Confidence: **high** · Effort: **M**
+
+Files: `packages/core/src/typography/prose.css:17-28, 31-39, 268-273`
+
+```css
+/* prose.css:24-28 — the file's own token manifest */
+     --kj-font-sans / --kj-font-mono / --kj-font-display
+     --kj-font-size-xs / sm / md / lg / xl / 2xl / 3xl / 4xl
+     --kj-line-height-tight / snug / normal / relaxed / loose
+     --kj-radius-sm / md
+     --kj-prose-max-width ...................... opt-out for CJK
+```
+
+```css
+/* prose.css:32-38 */
+  .kj-prose {
+    color: var(--kj-fg-default);
+    font-family: var(--kj-font-sans);
+    font-size: var(--kj-font-size-md, 1rem);
+    line-height: var(--kj-line-height-relaxed, 1.7);
+    max-width: var(--kj-prose-max-width, 65ch);
+```
+
+Counts in the file: **13** references to `--kj-font-size-*`, **10** to `--kj-line-height-*`, **3** to `var(--kj-radius-*)`, and **0** to `--kj-text-*` and **0** to `--kj-space-*`. None of `--kj-font-size-*`, `--kj-line-height-*`, `--kj-radius-sm/md` or `--kj-prose-max-width` is declared by `base.css`, `density.css` or any theme — the real names are `--kj-text-*` (`density.css:81-91`) and `--kj-radius-{box,field,selector}`.
+
+Consequence: every prose heading, paragraph, code block and blockquote is locked to its literal fallback. `.kj-prose` does not respond to `--kj-type-scale` (so `[data-density]` is a no-op for all long-form content), does not respond to a theme's radius identity (inline code always gets 4px corners, including in brutalist `kouji`/`bauhaus` which are radius-0), and none of the "themes can override" knobs its header advertises actually exist. `prose.css:22-23` also documents `--kj-color-link` / `--kj-color-link-visited`, which the rules never use — the real anchor rule is `prose.css:104`, using `--kj-fg-primary`.
+
+**Fix** — re-point onto the real taxonomy: `--kj-font-size-md` → `--kj-text-base`, `--kj-font-size-lg` → `--kj-text-lg`, `--kj-font-size-3xl/4xl` → `--kj-text-3xl/4xl` (both exist), `--kj-radius-sm` → `--kj-radius-field`, `--kj-radius-md` → `--kj-radius-box`. Add `--kj-line-height-*` and `--kj-prose-max-width` to `base.css` (they have no equivalent yet) and rewrite the header manifest to match.
+
+---
+
+### F-13 Unprefixed global attribute selectors ship in the published CSS
+
+Severity: **medium** · Confidence: **high** · Effort: **M**
+
+Files: `packages/core/src/typography/prose.css:258,264,268,277,292,302-308`; `packages/themes/src/density.css:120,125,130-131`
+
+```css
+/* prose.css — @layer kj.tone / kj.truncate, both unpinned (F-8) */
+258:  [data-tone='lead']       { color: …; font-size: …; line-height: …; }
+264:  [data-tone='muted']      { color: …; }
+268:  [data-tone='code']       { background-color: …; border-radius: …; font-family: …; padding: …; }
+277:  [data-tone='blockquote'] { border-inline-start: 4px solid …; font-style: italic; … }
+292:  [data-truncate='1']      { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+302:  [data-truncate]:not([data-truncate='1']) { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+```
+
+These are the only unprefixed selectors in the shipped globals (checked across `prose.css`, `icon.css`, `motion.css`, core `overlay.css` and all nine sheets in the components overlay aggregator — everything else is `.kj-*` or `[data-kj-*]`). `prose.css` ships as `@kouji-ui/core/typography/prose.css` and is registered globally (`angular.json:104`, via `core/src/styles.css`).
+
+`data-tone` and `data-truncate` are extremely generic attribute names. A host app that already uses `data-tone` for anything — chart series tone, notification tone, its own design system — will find kouji-ui restyling its elements with `font-style: italic`, a 4px inline-start border, or `white-space: nowrap`. Because `kj.tone` / `kj.truncate` register after `kj.component` (F-8), the host's own layered CSS loses.
+
+`density.css:120-134` has the milder version: `[data-density="compact"|"standard"|"comfortable"|"comfy"]` — global and unprefixed, but it only writes `--kj-*` custom properties, so a collision changes nothing visible unless the host also uses kouji-ui spacing.
+
+**Fix** — prefix to `[data-kj-tone]` / `[data-kj-truncate]` (matching the `[data-kj-motion]`, `[data-kj-icon-mode]`, `[data-kj-drawer-container]` convention already in use) and update the `KjLead` / `KjMuted` / `KjCode` / `KjBlockquote` / `KjTruncate` host bindings. This is a breaking change for anyone hand-typing the attribute, so pair it with a minor bump and keep the old selectors for one release. `[data-density]` can stay, but say so explicitly in the README.
+
+---
+
+### F-14 `core/src/styles.css` is documented as the entry point but is neither shipped nor shippable; `@kouji-ui/components` has no `exports` map
+
+Severity: **medium** · Confidence: **medium** · Effort: **M**
+
+Files: `packages/core/src/styles.css:1-21`, `packages/core/ng-package.json:7-27`, `packages/core/package.json:55-70`, `packages/components/package.json`, `packages/components/ng-package.json:7-13`
+
+```css
+/* core/src/styles.css:2-6 */
+   @kouji-ui/core — aggregated global stylesheet
+   Single entry-point for the core-only global CSS pieces that
+   ship without a corresponding Angular component …
+/* :19-21 */
+@import "./primitives/overlay/overlay.css";
+@import "./typography/prose.css";
+@import "./icon/icon.css";
+```
+
+`core/ng-package.json` copies four individual files to *flattened* output folders (`typography/prose.css`, `icon/icon.css`, `motion/motion.css`, `overlay/overlay.css`) and `core/package.json:55-70` exports exactly those four subpaths. `styles.css` is in neither list. Even if it were added as an asset, its three relative `@import`s point at `./primitives/overlay/…` and `./typography/…` — paths that don't exist in the flattened published layout, so they would resolve to nothing.
+
+Net effect: the "single entry-point" the file advertises does not exist for an installed consumer, who must instead register three or four raw `node_modules/...` paths by hand (as `components/src/overlay/overlay.css:7-11` correctly instructs). The docs app works only because `angular.json:104` registers the *source* path. `motion.css` is exported but pulled in by nothing — not by `styles.css`, not by `angular.json` — and `kjMotion` has zero usages in `packages/components` or `apps/docs`, so the motion presets are dead weight in practice.
+
+Asymmetry worth noting: `core/package.json` declares an `exports` map (CSS subpaths, but **no `"."` entry** — relying on ng-packagr to merge in the JS entry), while `components/package.json` declares **no `exports` map at all**. The documented consumer path `node_modules/@kouji-ui/components/src/overlay/overlay.css` is a filesystem path in `angular.json`, so Node's exports gate doesn't apply and it works — but `import '@kouji-ui/components/src/overlay/overlay.css'` from a bundler that honours `exports` would not resolve. `overlay-styles.spec.ts:182-196` asserts core's export entry exists but has no matching assertion for components.
+
+No cross-package relative `@import` exists — every `@import` under `packages/` stays inside its own package root, verified across all 30 of them.
+
+**Fix** — either (a) delete `styles.css` and document the four registerable files, or (b) keep it, ship it at the package root, and rewrite its imports to the *published* paths (`./overlay/overlay.css`, `./typography/prose.css`, `./icon/icon.css`, `./motion/motion.css`) via a build step. Add `"./src/overlay/overlay.css"` (or a `"./src/*.css"` wildcard) to `components/package.json` exports and extend `overlay-styles.spec.ts` to cover it. Decide whether `motion.css` belongs in the aggregator.
+
+---
+
+### F-15 Docs ship a hardcoded theme in the static HTML — guaranteed flash for every returning user; two themes unreachable
+
+Severity: **low** · Confidence: **high** · Effort: **S**
+
+Files: `apps/docs/src/index.html:2`, `apps/docs/src/app/services/theme.service.ts:7-16,49-67`
+
+```html
+<!-- index.html:2 -->
+<html lang="en" data-theme="kouji">
+```
+
+```ts
+/* theme.service.ts:49-66 */
+  constructor() {
+    afterNextRender(() => {
+      const fromUrl = new URLSearchParams(window.location.search).get('theme');
+      const fromStorage = localStorage.getItem('kj-theme');
+      …
+```
+
+`outputMode: "static"` (`angular.json:109`) prerenders every page with `data-theme="kouji"` (near-black). A returning visitor whose `localStorage.kj-theme` is `light`, `sakura` or `dune` sees the dark brand theme paint first, then flip after hydration — a full-page colour inversion, not a subtle flash. There is no blocking inline script in `<head>` to read storage before first paint.
+
+Separately, `Theme` / `AVAILABLE_THEMES` / `THEME_SCHEME` (`theme.service.ts:7-38`) list **13** themes. `packages/themes/src/index.css:16-17` ships **15** — `orrery` and `orrery-light` are imported into the bundle but have no entry in the union, so they cannot be selected in the docs, are absent from the theme picker, and have no directory under `reports/a11y/`. That is very likely why F-2's failures went unnoticed.
+
+**Fix** — add a small inline `<script>` in `index.html` `<head>` that reads `localStorage.kj-theme` / `?theme=` and sets `documentElement.dataset.theme` before the first stylesheet applies (and, once F-4 lands, `style.colorScheme` too). Add `orrery` and `orrery-light` to the three constants.
+
+---
+
+### F-16 `--kj-color-icon-*` are frozen to the root theme, so `[kjIconColor]` ignores nested themes
+
+Severity: **low** · Confidence: **high** · Effort: **S**
+
+Files: `packages/themes/src/base.css:29,166-177`; `packages/core/src/icon/icon.directive.ts:107`
+
+```css
+/* base.css:29 + 172-177 — inside `:root`, @layer kj.base */
     --kj-color-icon-muted:   var(--kj-fg-muted);
     --kj-color-icon-primary: var(--kj-fg-primary);
     --kj-color-icon-success: var(--kj-fg-success);
@@ -390,369 +504,243 @@ mistake into a completely unstyled app.
 ```
 
 ```ts
-// packages/core/src/icon/icon.directive.ts:107
+/* icon.directive.ts:107 */
     return c && c !== 'inherit' ? `var(--kj-color-icon-${c})` : null;
 ```
 
-Custom-property substitution happens **at the element that declares the property**, not at the use
-site. Because these are declared on `:root`, `--kj-color-icon-danger` computes once against the root
-theme's `--kj-fg-danger` and then inherits that *literal colour* everywhere. No theme redeclares them
-(grep `color-icon` under `packages/themes/src` returns only these six lines). Concretely: the docs set
-`<html data-theme="kouji">` (`apps/docs/src/index.html:2`) so icons resolve to the kouji palette;
-inside the theme generator's `data-theme="custom-draft"` preview stage
-(`apps/docs/src/app/pages/theme-generator/theme-generator.html:56`) every `[kjIconColor]` icon keeps
-the *outer* kouji palette instead of the draft's. The same applies to any micro-frontend that themes a
-subtree, and to a nested preview swatch.
+Custom-property `var()` substitution happens at the element carrying the declaration. These six are declared on `:root`, so they resolve against `:root`'s `--kj-fg-*` and then inherit that *already-resolved colour* down the tree. Inside a nested `[data-theme]` subtree — the theme-generator preview stage, or an overlay whose wrapper got `data-theme` copied by `body-portal.ts:57-61` — an icon with `[kjIconColor]="'danger'"` paints the **outer** theme's danger colour, not the subtree's. Every other semantic token is immune, because themes declare them directly on the `[data-theme]` element.
 
-**Why it matters:** this is precisely the per-subtree theming case the `@scope` work in
-`kouji.css:121-125` was written to support, defeated by six lines in `base.css`.
+If no `data-theme` is set at all (F-5) they are guaranteed-invalid and `color: var(--kj-color-icon-danger)` becomes `unset` → inherited colour, so coloured icons silently lose their colour.
 
-**Fix:** move the six declarations from `:root` into the `[data-theme]` reset block
-(`base.css:21-25`, `@layer kj.reset`) so each theme boundary re-resolves them. `[data-theme]` in
-`kj.reset` still loses to any theme that wants to pin a brand icon palette in `kj.shared`, which is
-the documented intent. Add a spec that renders a nested `[data-theme]` and asserts the computed icon
-colour.
-**Effort:** S
+**Fix** — move the six declarations out of `:root` and into `base.css`'s existing `@layer kj.reset { [data-theme] { … } }` block, so each theme root re-resolves them against its own `--kj-fg-*`.
 
 ---
 
-### F-9 SSR + FOUC: the theme is hard-coded in `index.html` and the real theme is applied only after hydration
+### F-17 `core/src/styles/docs-themes.css` is a rival token namespace living inside the library source
 
-**Severity:** medium · **Confidence:** high
-**Files:** `apps/docs/src/index.html:2`, `apps/docs/src/app/services/theme.service.ts:49-67`, `:93-97`
+Severity: **low** · Confidence: **medium** · Effort: **S**
 
-```html
-<!-- apps/docs/src/index.html:2 -->
-<html lang="en" data-theme="kouji">
-```
-
-```ts
-// apps/docs/src/app/services/theme.service.ts:49-61
-  constructor() {
-    afterNextRender(() => {
-      const fromUrl = new URLSearchParams(window.location.search).get('theme');
-      const fromStorage = localStorage.getItem('kj-theme');
-      …
-      } else if (isValid(fromStorage)) {
-        this.apply(fromStorage);
-```
-
-`afterNextRender` runs after hydration. A returning visitor whose stored theme is `light` gets the
-full SSR document painted in `kouji` (`--kj-bg-body: #0c0c0c`) and then a whole-page flip to
-`#ffffff` — the maximum-contrast version of FOUC. The same applies to the `?theme=` query parameter,
-which is the mechanism the a11y pipeline itself uses (`reports/a11y/mint/home.json` →
-`"url": "http://localhost:4200/?theme=mint"`): the scan measures a page whose first paint was kouji.
-There is no inline `<script>` in `<head>` reading `localStorage` or the query param before first
-paint, and `apps/docs/src/server.ts` does not rewrite `data-theme` from a cookie.
-
-`applyTransient` (`:93-97`) sets the signal then returns early on the server, so the SSR HTML can
-never carry the right attribute even if the theme were known.
-
-**Why it matters:** this is the reference implementation consumers will copy, and the docs site is the
-product demo. It also makes the automated a11y numbers less trustworthy than they look.
-
-**Fix:** move theme resolution to a blocking inline script in `index.html`
-(`try { document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') || localStorage.getItem('kj-theme') || 'kouji' } catch {}`),
-persist the choice to a cookie, and read that cookie in `server.ts` so the SSR document ships the
-right `data-theme`. Document the snippet in getting-started.
-**Effort:** M
-
----
-
-### F-10 Density scales two components; 36 stylesheets hard-code 99 font sizes it cannot reach
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/themes/src/density.css:98-110`, `packages/components/src/table/table.css:23-26`,
-`packages/components/src/{alert,avatar,badge,breadcrumb,calendar,card,cascade-select,…}/*.css`
-
-`density.css:103-110` publishes the whole point of the system:
+Files: `packages/core/src/styles/docs-themes.css:6-33`; 20+ `packages/core/src/*/_examples/*.ts`
 
 ```css
-    --kj-ctl-h-xs: round(calc(1.75rem * var(--kj-density)), 1px); /* 28px */
-    …
-    --kj-row-h: var(--kj-ctl-h-md);
-```
-
-Exactly **two** of 69 component stylesheets read that ladder — `button.css` and `input.css`. Every
-other control (select trigger, combobox, date-picker field, tag, pagination button, tabs, menubar
-item, cascade-select row…) hard-codes its height, e.g.
-`packages/components/src/cascade-select/cascade-select.css:23` `min-height: 2.75rem`,
-`packages/components/src/calendar/calendar.css:91` `height: 2rem`,
-`packages/components/src/carousel/carousel.css:119-120` `min-width/min-height: 44px`. Likewise 99
-literal `font-size` declarations across 36 files (`alert.css:50` `0.8125rem`, `avatar.css:57-69`,
-`badge.css:9,51,56,58`, `breadcrumb.css:19-25`, `button.css:163-184`, `calendar.css:10,24,41,73,95`,
-…) bypass `--kj-text-*` and so ignore `--kj-type-scale` entirely. Only 20 of 69 stylesheets reference
-any `var(--kj-text-…)` (57 of 69 do use `var(--kj-space-…)`, which is the one axis that works).
-
-The table then implements a *second*, conflicting density mechanism:
-
-```css
-/* packages/components/src/table/table.css:23-26 */
-  --kj-table-row-height: var(--kj-row-h);
-:host([data-density="compact"])     { --kj-table-row-height: 1.75rem; }
-:host([data-density="comfortable"]) { --kj-table-row-height: 2.75rem; }
-```
-
-At `compact`, `--kj-row-h` is `round(2.25rem × 0.85)` ≈ 31px while the table pins 28px; at
-`comfortable`, `round(2.25rem × 1.18)` ≈ 42px vs the table's 44px. Rows desync from every other
-control at both ends — and these `:host([data-density])` rules are unlayered (F-2), so they also beat
-the scalar unconditionally.
-
-**Why it matters:** `[data-density="compact"]` visibly changes two components and half-changes a
-third. A consumer reasonably expects it to change the app. The mechanism is sound; the adoption is not.
-
-**Fix:** sweep component stylesheets onto `--kj-ctl-h-*` for control heights and `--kj-text-*` for
-type; delete `table.css:25-26` and let `--kj-row-h` drive it. Add a spec asserting no
-`packages/components/src/**/*.css` contains a literal `font-size` or a literal control-root `height`.
-**Effort:** L
-
----
-
-### F-11 `docs-themes.css` writes contract token names into `:root` from a later layer
-
-**Severity:** medium · **Confidence:** medium
-**Files:** `packages/core/src/styles/docs-themes.css:6,10-32`
-
-```css
-/* packages/core/src/styles/docs-themes.css:6-31 */
+/* docs-themes.css:6-31 */
 @layer kj.tokens, kj.theme;
-
 @layer kj.tokens {
   :root,
   .kj-theme-default {
-    …
+    --kj-bg: #0c0c0c;  --kj-surface: #1a1a1a;  --kj-text: #f0ede6;
     --kj-border: #333;
-    --kj-shadow-sm: none;
-    --kj-shadow-md: none;
+    --kj-radius-sm: 0px;  --kj-radius-md: 0px;  --kj-radius-lg: 0px;
+    --kj-shadow-sm: none;  --kj-shadow-md: none;  --kj-shadow-hard: none;
     --kj-transition: opacity 0.15s;
 ```
 
-`--kj-border`, `--kj-shadow-sm`, `--kj-shadow-md` and `--kj-transition` are four of the 40+ names in
-`themes.spec.ts`'s `REQUIRED_SHARED_TOKENS` (`:31-40`). Because `kj.tokens` is undeclared in the
-canonical statement it sorts after `kj.shared`, so a `:root` write here beats `[data-theme="X"]` in
-every theme — layer order beats selector specificity. The file is `styleUrls`-imported by ~20 core
-`_examples` components (`packages/core/src/button/_examples/button.example.ts:8`,
-`packages/core/src/dialog/_examples/dialog.example.ts:72`, …), and those use
-`ViewEncapsulation.None`, so mounting any one of them injects the `:root` block globally.
+Four of these names — `--kj-border`, `--kj-shadow-sm`, `--kj-shadow-md`, `--kj-transition` — are entries in `themes.spec.ts`'s `REQUIRED_SHARED_TOKENS`, with completely different meanings and values. The file is pulled in by `styleUrls: ['../../styles/docs-themes.css']` on ~20 example components (`button.example.ts:8`, `dialog.example.ts:72`, …).
 
-Confidence is medium only because I did not run the app to observe the flattening; the cascade rules
-make it the expected outcome.
+Under Angular's default emulated encapsulation the `:root` selector is rewritten with the component's content attribute and never matches, so today this does **not** leak — the shadow/border/transition tokens stay inside the example. That is why this is low, not high. But it is a live hazard: the moment one of those examples adds `ViewEncapsulation.None` (83 components in `packages/components` already do), `--kj-border: #333`, `--kj-shadow-sm: none` and `--kj-transition: opacity 0.15s` land on the real `:root` and break the theme contract globally.
 
-It is also dead weight in `packages/core/src` — a docs fixture in a published library's source tree,
-excluded from `ng-package.json` assets but still compiled into the examples that ship with the docs.
+It is also the reason `--kj-radius-sm` *looks* declared (three declarations in this file) while being undeclared for any consumer — which is what `sheet.css:74` is relying on (F-1).
 
-**Why it matters:** an examples fixture silently flattens every theme's shadow, border and transition
-tokens page-wide the moment one example renders.
-
-**Fix:** rename its private tokens out of the `--kj-*` contract namespace (e.g. `--kjdocs-*`), drop
-the `:root` selector in favour of `.kj-theme-default` only, delete the `@layer kj.tokens, kj.theme;`
-statement (F-3), and move the file out of the published source tree into `apps/docs`.
-**Effort:** S
+**Fix** — move the file under `apps/docs` (it is docs-only; core's `ng-package.json` correctly doesn't ship it), rename its tokens off the `--kj-` prefix (`--docs-*`), and change the examples to use the real taxonomy so they double as documentation of the token system rather than contradicting it.
 
 ---
 
-### F-12 `[data-tone]` / `[data-truncate]` are bare global attribute selectors in a published package
+### F-18 Roughly fifteen invented token names in component CSS that resolve to nothing
 
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/typography/prose.css:257-284`, `:291+`
+Severity: **low** · Confidence: **high** · Effort: **M**
 
-```css
-/* packages/core/src/typography/prose.css:257-275 */
-@layer kj.tone {
-  [data-tone='lead'] { … }
+Beyond the two load-bearing cases in F-1 / F-10, component CSS reaches for token names that exist nowhere in `base.css`, `density.css` or any theme. These all have literal fallbacks, so nothing visibly breaks — but each is a documented-looking override hook that a consumer cannot actually use, and each is a naming-drift signal:
 
-  [data-tone='muted'] {
-    color: var(--kj-fg-muted, var(--kj-fg-default));
-  }
-
-  [data-tone='code'] {
-    background-color: var(--kj-bg-surface, transparent);
-    border-radius: var(--kj-radius-sm, 4px);
+```
+packages/components/src/action-sheet/action-sheet.css:33        var(--kj-bg-subtle, transparent)
+packages/components/src/action-sheet/action-sheet.css:42,77     var(--kj-bg-muted, var(--kj-border-muted))
+packages/components/src/action-sheet/action-sheet.css:57        var(--kj-danger-fg, var(--kj-danger, #d92d20))
+packages/components/src/action-sheet/action-sheet.css:60        var(--kj-danger-bg-subtle, …)
+packages/components/src/direction-toggle/direction-toggle.css:12  var(--kj-border-color, currentColor)
+packages/components/src/direction-toggle/direction-toggle.css:39  var(--kj-bg-subtle-hover, …)
+packages/components/src/date-range-presets/date-range-presets.css:8  var(--kj-border-subtle, transparent)
+packages/components/src/table/table.css:63                      var(--kj-table-header-bg, var(--kj-bg-surface))
+packages/components/src/table/table.css:444                     var(--kj-fg-error, var(--kj-fg-default))
+packages/components/src/button/button.css:129,134               var(--kj-segmented-bg-on, …) / var(--kj-segmented-fg-on, …)
+packages/components/src/rich-text/rich-text-editor.css:119      var(--kj-bg-subtle, var(--kj-bg-body))
 ```
 
-`data-tone` and `data-truncate` are generic, unprefixed attribute names claimed globally by a library
-stylesheet — and, per F-3, from a layer that outranks `kj.component`. Any host app or third-party
-widget already using `data-tone` (a common name in editor/chat/design-token code) gets silently
-restyled, with no way to opt out short of `!important`.
+Note `--kj-fg-error` vs the contract's `--kj-fg-danger`, `--kj-border-color` vs `--kj-border-default`, `--kj-danger` vs `--kj-fg-danger` / `--kj-bg-danger`. One fallback is also numerically wrong: `command-palette.css:60,104` use `var(--kj-space-lg, 1.25rem)` where `--kj-space-lg` is 1rem.
 
-`prose.css` is otherwise well-scoped (every element rule is a `.kj-prose` descendant), and a sweep for
-bare element selectors across `packages/{core,components}/src/**/*.css` found none, so this is the one
-real leak.
-
-**Why it matters:** the packages are framed as drop-in, and global attribute selectors are the classic
-way a component library breaks a host app.
-
-**Fix:** namespace to `[data-kj-tone]` / `[data-kj-truncate]` (matching the `data-kj-motion`,
-`data-kj-detent`, `data-kj-dragging` convention already used elsewhere), update the five directives
-that reflect them, and keep a deprecation alias for one minor.
-**Effort:** S
+**Fix** — either promote the useful ones (`--kj-table-header-bg`, `--kj-segmented-bg-on/fg-on` are reasonable component knobs — declare them alongside the other `--kj-<component>-*` knobs in the same file) or delete them in favour of the existing semantic tokens. The F-1 lint (reject a `var()` chain whose innermost fallback isn't a literal; warn on any `--kj-` name absent from a known-token manifest) catches the whole class.
 
 ---
 
-### F-13 ~28 KB of overlay CSS is shipped twice
+### F-19 `reports/a11y/_summary.json` cannot substantiate the theme contrast claims
 
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/components/src/overlay/overlay.css:26-34`, `angular.json` (docs `styles` array),
-`packages/components/src/{dialog,popover,tooltip,dropdown-menu,drawer,toast,confirm-popup,sheet,action-sheet}/*.ts`
+Severity: **low** · Confidence: **high** · Effort: **S**
 
-The aggregator imports nine stylesheets:
+Files: `reports/a11y/_summary.json`, `reports/a11y/<theme>/*.json`
 
-```css
-/* packages/components/src/overlay/overlay.css:26-34 */
-@import "../popover/popover.css";
-@import "../tooltip/tooltip.css";
-…
-@import "../action-sheet/action-sheet.css";
+```json
+{ "schemaVersion": 1, "timestamp": "2026-05-13T20:56:31.125Z",
+  "themes": { "mint": { "axeViolationsByImpact": {"critical":0,"serious":1,"moderate":0,"minor":0},
+                        "fontWarnings": 29, "lighthouseAvg": {"performance": 41} } } }
 ```
 
-and every one of those nine is *also* a `styleUrl` on its wrapper component (`dialog.ts:77`,
-`popover.ts:93`, `tooltip.ts:97`, `dropdown-menu.ts:123`, `drawer.ts:80`, `toast.ts:73` **and**
-`:103`, `confirm-popup.ts:107` **and** `:136`, `sheet.ts:81`, `action-sheet.ts:128`) with
-`ViewEncapsulation.None` (184 of 186 components in the two packages use `None`; only `table.ts:580`
-and `table-status-bar.ts:54` use `Emulated`). Those nine files total **27,943 bytes** — ~9% of all
-component CSS (316,108 bytes) — emitted once into the global `styles.css` bundle and again inlined
-into the component chunks. `toast.ts` and `confirm-popup.ts` each name their stylesheet twice, adding
-two more copies to the JS bundle.
+Reconciliation against this audit:
 
-**Why it matters:** bytes on the critical path, and two copies of the same rules at different points
-in the cascade make override behaviour harder to reason about. Universal `ViewEncapsulation.None` also
-means a component's CSS only exists in the document once that component has rendered, so a lazy route
-that first mounts a themed component paints unstyled for a frame.
+- The summary carries **one theme** (`mint`), though 13 theme directories exist on disk — and `orrery` / `orrery-light`, the two themes this audit found failing (F-2), have no directory at all, consistent with F-15's missing union entries.
+- Timestamp is 2026-05-13, roughly four months before HEAD; it predates every change in `fd6dd34e..HEAD` (the overlay stack rework, list scoping, the core CSS export).
+- Coverage is six docs pages (`/`, `getting-started`, `theme-generator`, `docs-button`, `docs-dialog`, `docs-tag`). axe's `color-contrast` rule only evaluates *rendered* nodes, so a token pair never painted on those six pages is untested — which is exactly why `retro`'s `fg-on-danger` and `orrery-light`'s class-C colours show clean.
+- The per-page payload records `axe.violations`, `fonts.samples` and `lighthouse`. It records **no computed contrast ratios**, so it cannot be diffed against the numbers in F-2 / F-3.
+- `mint/home.json` reports `violations: []`, `passes: 32` — a true result for that page, not evidence about the theme.
 
-**Fix:** pick one delivery path. Given `ViewEncapsulation.None` is already universal, drop the
-`styleUrl` from the nine wrappers and let the aggregator be the single source, or drop the aggregator
-and document per-component CSS imports. Either way, resolve F-1 first so the chosen path actually
-ships.
-**Effort:** M
+The one interesting signal it does carry: `mint/home.json` shows `h1 { font-family: "system-ui, -apple-system, sans-serif" }` while `body` is JetBrains Mono — i.e. `--kj-font-display` falling through to the `base.css:105` sans default. Correct by design, but worth knowing when reading the 29 `fontWarnings`.
+
+**Fix** — replace or augment this with a static contrast spec in `packages/themes` that parses every theme file, resolves `var()` / `oklch()` / `color-mix()`, and asserts the documented pairs. Static analysis covers all 15 themes in milliseconds and needs no browser; keep axe for the DOM-shaped rules it is actually good at.
+
+## Carried forward from the 2026-09-06 review
+
+Filed in the previous pass (report at `9aee150a`, audited at `fd6dd34e`), **not** re-filed by this
+audit, and re-verified as still true at HEAD. Ids F-1…F-19 above are unchanged.
+
+### F-20 `--kj-border-default` fails WCAG 1.4.11 (3:1) in 13 of 15 themes — it is the sole boundary of every idle input and unchecked checkbox
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-4; this pass demoted it to Open question 1, which this reconciliation does not endorse)*
+**Files:** 13 of 15 in `packages/themes/src/themes/`, `packages/components/src/input/input.css:11`, `packages/components/src/checkbox/checkbox.css:24`
+
+Re-verified at HEAD: `input.css:11` is `--kj-input-border-color: var(--kj-border-default);` and it is the element's **only** boundary (`input.css:31`, `border: … var(--kj-input-border-color)`); `checkbox.css:24` is `--kj-checkbox-border: var(--kj-border-default);` consumed at `:34`. Sample values unchanged: `kouji.css:88` `#1a1a1a` on `:27` `#0c0c0c` = 1.12:1; `light.css:79` `#e8e6e0` on `:29` `#ffffff` = 1.25:1; `retro.css:69` `#d6c89a` on `:25` `#ede5d0` = 1.33:1. The prev pass computed 1.12–1.63:1 across 13 themes, with only bauhaus (15.18) and cyberpunk (16.48) passing.
+
+The prev pass also established the two things that make this a real 1.4.11 failure rather than a decorative-border exemption, and both still hold: `--kj-border-strong` is no usable fallback (it misses 3:1 in 12 of 15), and no fill cue rescues identification — `--kj-bg-field` vs `--kj-bg-body` is 1.06–1.45:1 in every theme, and the unchecked `.kj-checkbox-box` is `bg-body` plus a 1px `border-default`. Where the control has **no perceivable boundary at all**, 1.4.11 applies; that is not the decorative case.
+
+This audit reached the same facts (Open question 1 quotes the same 1.12/1.14/1.25/1.26/1.63 figures and the same `light.css` field-on-body example) but filed them as a question rather than a finding. The prior pass verified it and is restored here as a finding.
+
+**Fix:** darken/lighten `--kj-border-default` per theme to ≥ 3:1 against both `bg-body` and `bg-field`, or introduce `--kj-border-control` for control boundaries and keep `--kj-border-default` decorative. Then machine-enforce it: `apps/docs/src/app/lib/theme/theme-a11y-report.ts` already models 1.4.11 but its `NON_TEXT_PAIRS` covers only `bg-elevated × bg-body/bg-surface` — add `border-default × bg-body` and `border-default × bg-field`, plus a contrast assertion in `packages/themes/src/themes.spec.ts`. (Same guard as F-3's fix; do them together.) **Effort:** M
 
 ---
 
-### F-14 `color-picker` hard-codes achromatic chrome that breaks in dark themes
+### F-21 ~28 KB of overlay CSS is shipped twice
 
-**Severity:** low · **Confidence:** high
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-13; now *more* live than when filed, because #71 shipped the aggregator)*
+**Files:** `packages/components/src/overlay/overlay.css:37-45`, `angular.json` (docs `styles` array), `packages/components/src/{dialog,popover,tooltip,dropdown-menu,drawer,toast,confirm-popup,sheet,action-sheet}/*.ts`
+
+The aggregator imports nine stylesheets (`overlay.css:37-45`), and every one is *also* a `styleUrl` on its wrapper component with `ViewEncapsulation.None` — re-verified at HEAD: `dialog.ts:77`, `popover.ts:93`, `tooltip.ts:97`, `sheet.ts:81`, `action-sheet.ts:128` (and `dropdown-menu.ts`, `drawer.ts`, `toast.ts` twice, `confirm-popup.ts` twice). Those nine files totalled 27,943 bytes at the prev pass — ~9% of all component CSS — emitted once into the global bundle and again inlined into component chunks.
+
+Worth re-filing precisely *because* prev F-1 was fixed: before `fb1d1956` the aggregator shipped nowhere, so the duplication was in-repo only. Now `packages/components/ng-package.json` copies `src/**/*.css` into the tarball and the aggregator's header tells consumers to register it, so a consumer who follows the documented setup **and** renders the wrapper components genuinely downloads both copies.
+
+Also: universal `ViewEncapsulation.None` means a component's CSS only exists in the document once that component has rendered, so a lazy route that first mounts a themed component paints unstyled for a frame.
+
+**Fix:** pick one delivery path — drop the `styleUrl` from the nine wrappers and let the aggregator be the single source, or drop the aggregator and document per-component CSS imports. Whichever wins, `overlay.css`'s own header must say so. **Effort:** M
+
+---
+
+### F-22 `color-picker` hard-codes achromatic chrome that breaks in dark themes
+
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-14)*
 **Files:** `packages/components/src/color-picker/color-picker.css:73-74,122-123,131-132`
+
+Unchanged at HEAD:
 
 ```css
 /* :73-74 */
     border: 2px solid #fff;
     box-shadow: 0 0 0 1px #000, 0 0 4px rgb(0 0 0 / 0.4);
-/* :122-123 */
+/* :122-123 and :131-132 */
     background: #fff;
     border: 2px solid #000;
 ```
 
-The spectrum gradients (`:93,99` `#ff0000, #ffff00, …`) and the alpha checkerboard
-(`:19,106,113` `conic-gradient(#ccc 25%, #fff 0 50%, …)`) are legitimately raw — they are the colour
-space, not chrome. The thumb/handle borders and backgrounds are not: `#fff` on a near-white swatch and
-`#000` rails against `kouji`'s `#0c0c0c` both disappear.
+The spectrum gradients and the alpha checkerboard are legitimately raw — they *are* the colour space. The thumb/handle chrome is not: `#fff` on a near-white swatch and `#000` rails against kouji's `#0c0c0c` both disappear. This is the only component CSS in the repo with truly un-tokenised colour; everywhere else a hex literal appears it is a `var(--kj-…, #hex)` fallback.
 
-This is the only component CSS in the repo with truly un-tokenised colour; everywhere else a hex
-literal appears it is a `var(--kj-…, #hex)` fallback (e.g. `alert.css:33-37`, `chat.css:128-153`,
-`file-upload.css:12-13`), which is defensible though it duplicates the palette in ~40 places.
-
-**Fix:** use `var(--kj-bg-elevated)` / `var(--kj-border-strong)` for thumb chrome, or keep the
-double-ring trick but source both rings from tokens.
-**Effort:** S
+**Fix:** source thumb chrome from `var(--kj-bg-elevated)` / `var(--kj-border-strong)`, or keep the double-ring trick with both rings tokenised. **Effort:** S
 
 ---
 
-### F-15 The theme generator emits two dead tokens and omits six required ones
+### F-23 The theme generator emits two dead tokens and omits six required ones
 
-**Severity:** low · **Confidence:** high
-**Files:** `apps/docs/src/app/lib/theme/serialize-theme.ts:44-45`, `:47-104`,
-`packages/themes/src/themes.spec.ts:15-20`
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-15)*
+**Files:** `apps/docs/src/app/lib/theme/serialize-theme.ts:44-45,47-104`, `packages/themes/src/themes.spec.ts:15-20`
 
-```ts
-// apps/docs/src/app/lib/theme/serialize-theme.ts:44-45
-  lines.push(`--kj-text-body: ${t.typography.bodyRem};`);
-  lines.push(`--kj-text-small: ${t.typography.smallRem};`);
-```
+Unchanged at HEAD — `serialize-theme.ts:44-45` still pushes `--kj-text-body` and `--kj-text-small`, names nothing in the library reads (the real names are `--kj-text-base` / `--kj-text-sm`, `packages/themes/src/density.css:84-85`), so the generator's typography sliders produce CSS that changes nothing. Conversely `REQUIRED_SHARED_TOKENS` mandates the six `--kj-bg-*-subtle` surfaces and `serializeToScopedBlock` emits none of them, so every generated theme fails the contract the built-in themes are held to. The generated block is also a raw unlayered `<style>`, so it outranks even `kj.component` — unlike a built-in theme in `kj.shared`.
 
-Grepping `--kj-text-body` / `--kj-text-small` across the repo returns only this file and its spec —
-nothing reads them. The real names are `--kj-text-base` / `--kj-text-sm`
-(`packages/themes/src/density.css:84-85`). So the generator's typography sliders produce CSS that
-changes nothing.
+Note this interacts with F-2 and F-3's fix: `serialize-theme.ts:26` *does* emit `color-scheme` (it is the only place in the repo that does — see F-4), so the generator is ahead of the shipped themes on one axis and behind on several others.
 
-Conversely, `REQUIRED_SHARED_TOKENS` (`themes.spec.ts:15-20`) mandates `--kj-bg-primary-subtle`,
-`--kj-bg-accent-subtle`, `--kj-bg-info-subtle`, `--kj-bg-success-subtle`, `--kj-bg-warning-subtle` and
-`--kj-bg-danger-subtle`, and `serializeToScopedBlock` emits **none** of the six. Every generated theme
-therefore fails the contract the built-in themes are held to, and `alert` / `badge` / `tag` subtle
-surfaces resolve to invalid → transparent.
-
-Two smaller gaps: the generated block is a raw `<style>` (unlayered, so it outranks even
-`kj.component`, unlike a built-in theme in `kj.shared`), and `--kj-chart-1..6` and
-`--kj-radius-box-lg` — present in all 15 themes — are absent from both `REQUIRED_SHARED_TOKENS` and
-the generator output, so the contract test would not catch a theme that dropped them.
-
-**Fix:** emit `--kj-text-base` / `--kj-text-sm`, derive and emit the six `*-subtle` surfaces
-(`color-mix(in oklch, <intent> 12%, var(--kj-bg-body))` matches what `orrery-light.css:43-54` does),
-wrap the block in `@layer kj.shared`, add `--kj-chart-*` / `--kj-radius-box-lg` / `color-scheme` to
-`REQUIRED_SHARED_TOKENS`, and run `serializeToScopedBlock`'s output through that same assertion.
-**Effort:** M
+**Fix:** emit `--kj-text-base` / `--kj-text-sm`; derive and emit the six `*-subtle` surfaces; wrap the block in `@layer kj.shared`; add `--kj-chart-*`, `--kj-radius-box-lg` and `color-scheme` to `REQUIRED_SHARED_TOKENS`; and run `serializeToScopedBlock`'s output through that same assertion. **Effort:** M
 
 ---
+
+## Changed since the 2026-09-06 review
+
+Previous report: `git show 9aee150a:reports/review/02-styles-theming.md`, audited at `fd6dd34e`.
+Range since: `fd6dd34e..HEAD` (8 commits). Every "Fixed" claim was verified against the code at HEAD.
+
+### Fixed
+
+- **prev F-1 — "Overlay primitive CSS and the documented overlay aggregator ship in no tarball — service-launched overlays lose their backdrop; sheets lose their skin."** Fixed by `fb1d1956` *fix(list,overlay): scope list items to their own container; publish the overlay surface CSS (#71)*. Verified at HEAD on all four counts the prev finding raised:
+  - `packages/core/ng-package.json` now carries a fourth `assets` entry — `{ "input": "src/primitives/overlay", "glob": "overlay.css", "output": "overlay" }` — alongside typography/icon/motion.
+  - `packages/core/package.json`'s `exports` map now opens with `"./overlay/overlay.css": { "style": "./overlay/overlay.css", "default": "./overlay/overlay.css" }`, so the backdrop rule (`packages/core/src/primitives/overlay/overlay.css:39-45`, `.kj-backdrop, .kj-overlay-backdrop { position:absolute; inset:0; background: var(--kj-backdrop-bg, …); pointer-events:auto }`) is installable. Service-launched dialog / drawer / sheet / command-palette backdrops now have a dim and a hit area.
+  - `packages/components/ng-package.json` now has `assets: [{ "input": "src", "glob": "**/*.css", "output": "src" }]`, so the aggregator and every component stylesheet are emitted — which is why service-launched sheets and action sheets are no longer unstyled.
+  - The cross-package relative `@import "../../../core/src/primitives/overlay/overlay.css"` is **gone**. `packages/components/src/overlay/overlay.css` now imports nine sibling paths only (`:37-45`) and its header explicitly documents why (`:27-34`: "The core primitive is NOT imported from here — CSS cannot reach across packages by relative path once installed").
+  - The guard the prev finding asked for exists: `packages/components/src/overlay/overlay-stacking.spec.ts:96-196` flattens the `@import` graph, asserts every overlay-family sheet is in the aggregator, and asserts the `ng-package.json` asset glob that makes the relative imports survive publication.
+
+  **One half is still open** and is re-filed as current **F-14**: `packages/core/src/styles.css` is still documented as an entry point but is neither shipped nor shippable, and `packages/components/package.json` still declares **no `exports` map at all** (verified — the file has `peerDependencies`, `dependencies`, `publishConfig` and no `exports` key), so the components CSS is reachable only by deep path into `node_modules/@kouji-ui/components/src/…`.
+
+No other previous styles finding is fixed. `2948c5b5` (#69) touched `sheet.css` / `action-sheet.css` only for the z-index migration.
+
+### Still open
+
+| prev id | prev title (abbreviated) | current id |
+|---|---|---|
+| F-2 | Ten globally-injected style sources skip `@layer kj.component` | **F-7** |
+| F-3 | `kj.prose` / `kj.tone` / `kj.truncate` not in the canonical `@layer` statement | **F-8** |
+| F-4 | `--kj-border-default` fails 1.4.11 in 13 of 15 themes | **F-20** (carried forward above; this pass had it as Open question 1) |
+| F-5 | `orrery-light` `fg-subtle` + six class-C intents below AA | **F-2** |
+| F-6 | A second, undefined token vocabulary — seven component families un-themed | split across **F-18** (the ~15 invented names), **F-1** (`--kj-focus-ring-*` / `--kj-primary`, the two that go invalid), **F-10** (`--kj-space-2xs`), **F-12** (the `prose.css` namespace), **F-6** (`--kj-bg-overlay`) |
+| F-7 | No `color-scheme`; no theme at all without `data-theme` | split into **F-4** (`color-scheme`) and **F-5** (no `:root` / `prefers-color-scheme` default) |
+| F-8 | `--kj-color-icon-*` resolved at `:root`, nested `[data-theme]` gets wrong icons | **F-16** |
+| F-9 | SSR + FOUC: theme hard-coded in `index.html` | **F-15** |
+| F-10 | Density scales two components; 36 sheets hard-code 99 font sizes | **F-11** |
+| F-11 | `docs-themes.css` writes contract token names into `:root` from a later layer | **F-17** |
+| F-12 | `[data-tone]` / `[data-truncate]` bare global attribute selectors | **F-13** |
+| F-13 | ~28 KB of overlay CSS shipped twice | **F-21** (carried forward above) |
+| F-14 | `color-picker` hard-codes achromatic chrome | **F-22** (carried forward above) |
+| F-15 | Theme generator emits two dead tokens, omits six required ones | **F-23** (carried forward above) |
+
+### Not reproduced
+
+- **Fixed:** prev F-1 only (and only the packaging half — see the caveat above, re-filed as current F-14).
+- **Missed by this pass and now restored:** prev F-13, F-14 and F-15. All three were re-verified true at HEAD and re-filed above as F-21…F-23. Honest cause: this pass worked from the token/cascade/contrast angle and did not re-walk delivery-path duplication, the one un-tokenised stylesheet, or the docs-side generator. prev F-13 in particular got *worse*, not better, because the aggregator now actually ships.
+- **Deliberately demoted rather than dropped:** prev F-4, filed this pass as Open question 1. The prev pass verified the ratios, verified that `--kj-border-strong` is no fallback, and verified that no fill cue rescues identification — that is a finding, and it is restored as F-20.
+- **Wrong in the previous pass:** nothing was refuted by this audit's evidence. Two prev findings were *narrowed* rather than contradicted: prev F-5's "measured against white" root-cause claim is withdrawn in current F-2's verification block (the annotations match no background in the file), and prev F-4's per-theme count (13 of 15, not 15) was already corrected in the prev pass's own verification.
+- **Out of this dimension's scope:** none — every prev finding is accounted for above.
+
+### New since then
+
+- **F-1 — two focus rings resolve to nothing.** New as a *finding*, though the prev pass found the mechanism: prev F-6 noted in passing that "because `--kj-focus-ring-color` falls back to `var(--kj-primary)` — also undefined — the entire `outline` shorthand is invalid". This pass promotes it to its own high finding with the full invalid-at-computed-value-time chain, the two exact files, and the crucial packaging detail the prev pass could not have known: after `#71` the aggregator ships, so `overlay.css:44-45` is now a live delivery path to consumers rather than a docs-only one.
+- **F-3 — `retro`'s focus ring at 2.27:1 and `fg-on-danger` at 3.18:1.** The prev pass listed both figures inside F-4's verification block as items to "split out into separate, lower-severity findings". This pass did that split. Counts as new only in the sense of being filed; the prior pass identified the values.
+- **F-5 — with no `[data-theme]` the library renders unstyled.** Separated from prev F-7 into its own finding.
+- **F-6 — `--kj-bg-overlay` is a dead token; every scrim and hover tint is hardcoded.** New.
+- **F-9 — `.kj-card[data-shadow="lift"]` is a no-op in all 15 themes.** New.
+- **F-14 — `core/src/styles.css` is neither shipped nor shippable; `@kouji-ui/components` has no `exports` map.** New, and it is the residue of prev F-1 that `#71` did not cover.
+- **F-19 — `reports/a11y/_summary.json` cannot substantiate the theme contrast claims.** New; the prev pass touched the a11y artefacts only to correct a "0 serious" reconciliation sentence.
 
 ## Recommended work items
 
-1. **Ship the overlay CSS** — F-1. Add `assets` + CSS `exports` to both packages, replace the
-   cross-package relative `@import`, add a `dist/` smoke test. Without it, service-launched dialogs,
-   drawers, sheets and the command palette have no backdrop hit-area and service-launched sheets are
-   unstyled. *(high, M)*
-2. **Close the cascade holes** — F-2, F-3, F-11. Wrap the eight unlayered `ViewEncapsulation.None`
-   stylesheets and two inline blocks in `@layer kj.component` (NOT `table.css` / `editor.css` /
-   `table-status-bar.ts` — those are deliberately `Emulated`); append `kj.prose, kj.tone, kj.truncate`
-   *after* `kj.component` in the canonical statement at `base.css:7`. Add the "first at-rule must be
-   `@layer`" lint. Do **not** expect `table.css`'s 11 `!important`s to go away — they override inline
-   `display:contents` host bindings, which no layer can reach. *(medium, S)*
-3. **Fix the contrast failures and make them enforceable** — F-4, F-5. Raise `--kj-border-default` to
-   ≥ 3:1 on `bg-body` and `bg-field` in the 13 failing themes (bauhaus and cyberpunk already pass);
-   darken `orrery-light`'s `fg-subtle` + six class-C intents to ≥ 4.5:1 on `#dedede`; fix `retro`'s
-   `checkbox` `border-focus` (2.27:1) and `fg-on-danger` (3.18:1). Extend `theme-a11y-report.ts`'s
-   `NON_TEXT_PAIRS` with `border-default × bg-body` / `× bg-field`, and add a per-theme contrast
-   assertion to `themes.spec.ts`. Register `orrery` / `orrery-light` in `theme.service.ts` so
-   `reports/a11y/` covers them, and re-run the scan on all 15. *(medium, M)*
-4. **Unify the token vocabulary** — F-6. Decide canonical names, rewrite the seven offending
-   stylesheets, add the "every `var(--kj-*)` must be declared" build check with a runtime-written
-   allowlist. Fix `sheet.css:74 border-radius: var(--kj-radius-sm)` (no fallback → dead) and the
-   invalid focus-ring `outline` shorthands in `action-sheet.css:47` / `sheet.css:72`. *(high, L)*
-5. **Add `color-scheme` and a default theme** — F-7. One line per theme plus a `:root` light default
-   and a `prefers-color-scheme: dark` alias in `kj.base`. *(high, S)*
-6. **Fix per-subtree theming** — F-8. Move `--kj-color-icon-*` from `:root` into the `[data-theme]`
-   block in `kj.reset`; add a nested-theme spec. *(medium, S)*
-7. **Kill the FOUC** — F-9. Inline head script + cookie + `server.ts` read. Re-run the a11y scan
-   afterwards so its numbers reflect a correctly-painted first frame. *(medium, M)*
-8. **Make density real** — F-10. Sweep control heights onto `--kj-ctl-h-*` and type onto
-   `--kj-text-*`; delete the table's competing `:host([data-density])` rules. *(medium, L)*
-9. **Stop leaking globals and bytes** — F-12, F-13. Namespace `[data-tone]` / `[data-truncate]` to
-   `data-kj-*`; pick one delivery path for the nine overlay stylesheets. *(medium, S + M)*
-10. **Polish** — F-14, F-15. Token-ise the colour-picker thumb chrome; fix the generator's dead and
-    missing tokens and hold generated themes to `REQUIRED_SHARED_TOKENS`. *(low, S + M)*
-
----
+1. **Fix the two dead focus rings and the dead menubar spacing** (F-1, F-10) — four one-line edits: `sheet.css:72` and `action-sheet.css:47` → `outline: 2px solid var(--kj-border-focus)`; `sheet.css:74` → `var(--kj-radius-field)`; `menubar.css:7-8` → `var(--kj-space-xs)`.
+2. **Add a token-resolution spec** (F-1, F-10, F-18) — walk `packages/**/*.css`, collect declarations and `var()` uses, fail on any chain whose innermost fallback is an undeclared `var()`, warn on undeclared names. Highest-leverage item on this list: it would have caught three of these findings mechanically.
+3. **Fix the contrast failures** (F-2, F-3) — `orrery-light` class-C + `fg-subtle`; `retro` `border-focus` + `fg-on-danger`; `forest` `fg-danger`. Correct the misleading inline ratio comments in the same pass.
+4. **Add a static contrast spec** (F-19, F-2, F-3) next to `themes.spec.ts`, covering all 15 themes and the pair list used above.
+5. **Declare `color-scheme` in every theme** (F-4) and assert it in `themes.spec.ts`.
+6. **Give `base.css` a `:root` fallback theme** (F-5) so an unthemed app degrades to readable instead of transparent.
+7. **Wrap the ten unlayered stylesheets in `@layer kj.component`** and pin the layer order (F-7, F-8) — including `icon.css` — and decide where `kj.prose` / `kj.tone` / `kj.truncate` belong. Update `density.spec.ts:37`.
+8. **Wire the scrims and hover tints to tokens** (F-6): `--kj-bg-overlay` into dialog / drawer / command-palette / core backdrop; `color-mix` for the alert and toast dismiss hovers.
+9. **Fix `.kj-card[data-shadow="lift"]`** and clean up the stale `--kj-button-shadow` comments in `base.css:18-19` / `button.css:23-30` (F-9).
+10. **Re-point `prose.css` onto the real token taxonomy** (F-12) and prefix `[data-tone]` / `[data-truncate]` (F-13) in the same breaking-change window.
+11. **Settle the packaging story** (F-14): fix or delete `core/src/styles.css`; add an `exports` map to `@kouji-ui/components`; extend `overlay-styles.spec.ts` to cover it; decide whether `motion.css` joins the aggregator.
+12. **Density sweep of `packages/components/src/**/*.css`** (F-11) — control heights onto `--kj-ctl-h-*`, spacing onto `--kj-space-*`, WCAG 2.5.5 floors kept as explicit `max()` with a comment.
+13. **Docs housekeeping** (F-15, F-16, F-17): pre-paint theme script in `index.html`; add `orrery` / `orrery-light` to the three theme constants; move `docs-themes.css` into `apps/docs` and rename its tokens; move `--kj-color-icon-*` into the `[data-theme]` reset block.
 
 ## Open questions
 
-- Is `--kj-fg-disabled` deliberately exempt from 4.5:1 (WCAG 1.4.3's disabled-control exception)? It
-  is below 4.5:1 in all 15 themes; if intentional it belongs in `rules/accessibility.md` and in a
-  comment in `base.css`, because right now it reads as 15 independent oversights.
-- Are `orrery` / `orrery-light` intended to ship, or in-progress? They are imported by `index.css` (so
-  they ship) but absent from `AVAILABLE_THEMES`, `THEME_SCHEME` and every a11y report; the
-  getting-started copy still says "the 13 themes".
-- What is the intended contract for `@kouji-ui/core`? `rules/architecture.md` says "directives only,
-  zero CSS", but the package ships `prose.css`, `icon.css`, `motion.css`,
-  `primitives/overlay/overlay.css` and `styles/docs-themes.css`. Either the rule or the package needs
-  updating.
-- Was `--kj-radius-sm/md/lg` meant to be a public shipped scale (it exists only in the docs fixture)
-  or should the seven consumers move to `--kj-radius-field` / `-box` / `-box-lg`?
-- Is per-subtree theming a supported guarantee? `kouji.css`'s `@scope` block implies yes; F-8 breaks
-  it for icons. If supported, it needs a documented list of what does and does not re-resolve at a
-  nested `[data-theme]`.
-- Does `apps/docs`'s `body { font-family: var(--kj-font-mono) }` (`apps/docs/src/styles.css:35`)
-  intentionally override each theme's `--kj-font-sans`? The a11y samples show body text in JetBrains
-  Mono under `mint` (`reports/a11y/mint/home.json`), which makes the docs a poor preview of what a
-  consumer sees. Related: 29 font warnings under `mint`, several of the form "computed font-family
-  resolved to system fallback 'system-ui' — theme web font may have failed to load", plus an `h1`
-  line-height ratio of 0.90 flagged against WCAG 1.4.12.
-- `reports/a11y/_summary.json` carries only one theme (`mint`) and a `lighthouseAvg.performance` of
-  41. Is the summary meant to aggregate all themes, and is the perf number a CSS-delivery symptom
-  (F-13) or unrelated?
+1. *(Answered by reconciliation: the prior pass verified this and it is now filed as **F-20**, not a question.)* **Is a 1.1–1.6:1 `--kj-border-default` on `bg-body` intentional?** Thirteen of fifteen themes sit there (`kouji` 1.12, `orrery-light` 1.14, `light` 1.25, `corporate` 1.26 … `forest` 1.63). Decorative borders are exempt from 1.4.11, but `input.css`, `select.css` and friends use `--kj-border-default` as the *only* boundary of a text field. Where the field's fill also matches the page (`light.css`: `bg-field #f6f6f4` on `bg-body #ffffff`) the control has no perceivable boundary at all and 1.4.11 does apply. Should there be a separate `--kj-border-control` held at ≥ 3:1?
+2. **What is the intended cascade position of `kj.prose` / `kj.tone` / `kj.truncate`?** Before or after `kj.component`? The answer decides whether a component can restyle prose inside itself, and it needs to be in the published layer statement either way.
+3. **Is `@scope` (`kouji.css:127`) inside the stated browser-support baseline?** It has no fallback path; in an engine without `@scope` the whole block is dropped and kouji's lime button hover disappears.
+4. **Should `--kj-button-shadow` still exist as a concept?** No theme sets it, `base.css` resets it, `button.css` documents pages opting in at their own scope, and `card.css` tries (and fails) to borrow it. Either give kouji/bauhaus their offset blocks back or retire the token.
+5. **`kjMotion` has zero usages** in `packages/components` and `apps/docs`, and `motion.css` is registered by nothing. Is the motion library staged for adoption, or should it absorb the hand-rolled `@keyframes` currently living in overlay / toast / drawer / command-palette CSS?
+6. **Were `orrery` / `orrery-light` meant to ship in `index.css` yet?** They are in the CSS bundle but absent from the docs theme union and from every a11y artefact — an intentional soft launch, or an incomplete landing?

@@ -1,554 +1,701 @@
 # Overlay System Review
 
-> **Adversarially verified 2026-09-15.** Findings below marked *(severity corrected during verification)* were re-checked against the source; corrections are inline. Refuted findings are preserved in **Refuted during verification** at the end of the findings list, not deleted.
-
 ## Verdict
 
-The overlay primitive is a genuinely well-shaped design: a strategy-bundle architecture (`mount` / `position` / `backdrop` / `focusTrap` / `scrollLock` / `liveAnnouncer` / `trigger`) behind DI tokens, a single state machine in `KjOverlayController`, a global `KjOverlayStack` that routes Escape and outside-click to the topmost overlay only, and a lazily-created singleton DOM container. The no-CDK policy in `rules/stack.md` is obeyed literally (zero `@angular/cdk` imports anywhere — verified by grep), and for the common cases the hand-rolled replacement is defensible. But the implementation has a set of **wiring gaps between layers that are individually small and collectively severe**: declarative overlays (popover, tooltip, select, combobox, dropdown-menu, tree/cascade-select, date-picker, color-picker, command-palette) **never call `KjOverlayController.dispose()`** — no `ngOnDestroy`, no `DestroyRef` — so destroying a host with an open overlay strands a stack entry, document-level listeners, portalled DOM, a `ResizeObserver` and (for the command palette) the body scroll lock until the next click or Escape anywhere on the page cleans them up. `closeOnEsc` / `closeOnOutside` are accepted at every public API level and silently dropped before reaching the stack, so `alert: true` dialogs are dismissible by outside click and Escape. Toasts register in the same stack as modals, so an open toast swallows the first Escape and the first outside click meant for the dialog under it. Per-component CSS `z-index` (100 … 1001) overrides the container's documented "last opened wins" sibling ordering, so a select inside a drawer paints *underneath* it. Focus restoration exists only where a focus-trap strategy was provided — which is popover, command palette and the three builder services — leaving dropdown-menu and menubar (which move real DOM focus into the panel) dropping focus to `<body>` on close.
+The overlay primitive is well factored — a strategy-per-concern design (`mount` / `position` / `backdrop` / `focusTrap` / `scrollLock` / `liveAnnouncer` / `trigger`), a single `KjOverlayStack` that owns Escape routing, outside-click routing and z-index assignment, one lazily created body-level container, and a per-overlay wrapper that is its own stacking context. The recent work (`--kj-overlay-z` + `applyOverlayZIndex`, `KjDismissPress`, the `isConnected` guard in `handlePointerDown`) genuinely fixed nested stacking and the retargeted-click dismissal bug; those paths are correct now and well tested. But the strategy bus is wired incompletely: `KjOverlayController.beginOpen()` never calls `focusTrap.onOpen()`, and `tabCycle()` puts *all* of its behaviour there — so every modal in the kit (dialog, drawer, sheet, action-sheet, command-palette-dialog) ships with no Tab containment and no focus restoration, while its own docs and `aria-modal="true"` promise both. Close policy has the same shape of gap: `closeOnEsc` / `closeOnOutside` are accepted at three public API levels and never reach `stack.register`. And the controller has a `dispose()` that only two of ~20 call sites invoke, so a declarative overlay destroyed while open strands its stack entry, its scroll lock and its scroll/resize listeners until the user's next click cleans them up. The engine is sound; the wiring between the engine and its consumers is where the defects are. **Grade: C−.**
 
-**Grade: C-** — strong bones, but the seams between primitive and consumers leak in ways that are user-visible and, in two cases, accessibility-blocking.
-
-*Post-verification: F-1 critical → high, F-3 high → medium, F-6 high → medium. No critical findings remain in this dimension; F-2, F-4 and F-5 were upheld at high.*
+> **Verification pass applied.** F-1 was corrected critical → high; F-2, F-3 and F-4 high → medium. Each correction is folded into the finding under "Verification correction", with the withdrawn claims named explicitly. Nothing was refuted outright in this dimension.
 
 ## What works
 
-- **Real strategy separation.** `packages/core/src/primitives/overlay/tokens.ts:6-54` defines seven narrow strategy interfaces and their tokens; `controller.ts:74-80` attaches them in a fixed order and `controller.ts:103-112` detaches in exact reverse. That is the right shape and it is consistently applied.
-- **Topmost-only Escape/outside routing is correctly implemented** in `stack.ts:99-112`, with listeners installed lazily on first registration and removed when the stack empties (`stack.ts:80-92`). `stack.spec.ts` covers `only the topmost receives Escape` and `respects closeOnEsc=false and closeOnOutside=false`.
-- **Singleton container with pointer-events isolation.** `container.ts:21-28` re-creates the root if it was detached (`_root.isConnected` check), and `overlay.css:18-33` makes the container/wrapper `pointer-events: none` with children re-enabled — app content behind a non-modal overlay stays clickable.
-- **Scroll-lock ref-counting is correct and leak-safe.** `strategies/scroll-lock/html-overflow.ts:7-34` ref-counts, saves/restores the original inline values, compensates for scrollbar width, and its `detach()` releases (`:42`) so a disposed overlay can't strand the lock.
-- **Portal restore is careful**: `strategies/mount/body-portal.ts:64-78` restores the panel to its *original sibling position*, not just its parent, and validates the saved `nextSibling` is still a child before using it.
-- **`display: contents` handling.** Both `anchored-to.ts:35-47` (`effectiveRect`) and `on-hover.ts:35-48` (`effectiveHoverTarget`) walk to the first laid-out descendant — a real-world problem (`<kj-button>` hosts) that most hand-rolled positioners get wrong.
-- **Theme-scope propagation through the portal** (`body-portal.ts:13-21`, `:58-61`) — the portalled wrapper inherits the trigger's nearest `data-theme`. Nice detail that CDK does not give you.
-- **Toast timer pause/resume is ref-counted by reason** (`toast/toast.service.ts:242-299`) for WCAG 2.2.1.
+- **Nested stacking is correct.** `KjOverlayStack.nextZIndex` (`packages/core/src/primitives/overlay/stack.ts:175-181`) takes `max(zIndex) + 1` over all open entries, never the count, so a middle overlay closing cannot make a later one sink below an earlier one. `applyOverlayZIndex` (`stack.ts:59-68`) stamps both the panel (`--kj-overlay-z`) and its `.kj-overlay-wrapper` (inline `z-index`), turning each wrapper into a per-overlay stacking context. Traced end-to-end: a drawer (builder → `<kj-overlay-wrapper>` at 1000) with a select opened inside it (`bodyPortal` → `createOverlayWrapper()` sibling at 1001) paints the select above the drawer. Covered by `stack.spec.ts:75-132` and `controller.spec.ts:89-130`.
+- **Ordering around the z-stamp is right.** `beginOpen` runs `mount.onOpen()` (which portals the panel into the wrapper) *before* `applyOverlayZIndex` (`controller.ts:126` vs `:136`), and `beginClose` runs `clearOverlayZIndex` *before* `mount.onClose()` un-portals (`controller.ts:148` vs `:161`), so `panel.parentElement` is the wrapper in both directions.
+- **Escape is routed to the topmost only** — `stack.ts:202-207` reads `topmost()` and nothing else. Tested at `stack.spec.ts:14-26`.
+- **The retargeted-click dismissal fix is real and well reasoned.** `KjDismissPress` (`dismiss-press.ts`) plus the `target.isConnected` guard in `stack.ts:209-219` correctly distinguish "the press began here" from "the click landed here because its original target was re-rendered away". 10 tests in `dismiss-press.spec.ts`.
+- **Scroll-lock refcounting is sound.** `html-overflow.ts:7-34` refcounts globally, saves/restores the previous `overflow` and `padding-right`, compensates the scrollbar width, and the per-instance `released` flag makes double-release a no-op. `detach()` releases too (`:42`).
+- **No-CDK policy is honoured and justified.** `rules/stack.md:8-11` forbids CDK / floating-ui; nothing in `packages/core/src/primitives/overlay/**` imports either. The hand-rolled replacement is a genuine equivalent in structure (strategy tokens, portal container, stack coordinator), not a stub — the gaps below are wiring bugs, not "we should have used CDK".
+- **SSR guards are consistent**: `container.ts:27`, `stack.ts:119/149/166`, `controller.ts:167`, every strategy's `ctx.platform.isBrowser` check, `_announce.ts:31`.
 
 ## Findings
 
-### F-1 Declarative overlays are not disposed on host destroy — orphaned overlay state persists until the next click or Escape
+### F-1 Overlay controller never invokes `focusTrap.onOpen` / `onClose` — Tab escapes every modal and focus is never returned
 
 **Severity:** high *(corrected during verification: was critical)* · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/wrapper.ts:45-49`, `packages/core/src/menubar/menubar-item.ts:156-161`, all declarative consumers
+**Files:** `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts`, `packages/core/src/primitives/overlay/strategies/focus-trap/inert-based.ts`, `packages/core/src/primitives/overlay/panel.ts`
 
-`KjOverlayController` defines `dispose()` but has no `ngOnDestroy` and never injects `DestroyRef`. The only two call sites in the repo are the builder's wrapper component and one manual hook in menubar:
+`beginOpen` (`controller.ts:123-141`) drives `mount` / `position` / `backdrop` / `scrollLock` and nothing else; `beginClose` (`:143-164`) is the mirror image. `s.focusTrap?.onOpen?.()` and `s.focusTrap?.onClose?.()` are called **nowhere in the repo** — a grep across `packages/core` and `packages/components` finds no other call site (`panel.ts` only *attaches* the strategy; `popover-content.ts:38` only calls `configure()`).
 
 ```ts
-// wrapper.ts:45-49 — builder/service path only
-constructor() {
-  inject(DestroyRef).onDestroy(() => this.controller.dispose());
-}
+// controller.ts:123-141
+  private beginOpen(): void {
+    if (!this.strategies) return;
+    const s = this.strategies;
+    s.mount.onOpen?.();
+    s.position.onOpen?.();
+    s.position.update();
+    s.backdrop?.onOpen?.();
+    s.scrollLock?.onOpen?.();
+    this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
+    ...
+    this.runTransition('open', () => {
+      this._state.set('open');
+      s.focusTrap?.focusFirst();      // ← :139, wired
+    });
+  }
+```
+
+Stated precisely, because the shape of the bug matters for the fix:
+
+1. **Initial focus DOES work.** `focusFirst()` is called at `controller.ts:139` and `restoreFocus()` at `controller.ts:147`. Only the two lifecycle hooks are dead.
+2. **`tabCycle` puts *all* of its stateful work in `onOpen`**, so the dead hook takes both behaviours with it:
+
+```ts
+// tab-cycle.ts:35-50
+    onOpen() {
+      if (!isEnabled()) return;
+      if (!ctx?.platform.isBrowser) return;
+      const panel = ctx.panelEl();
+      if (!panel) return;
+      returnTarget = (document.activeElement as HTMLElement) ?? null;   // ← only assignment
+      keyListener = (e: KeyboardEvent) => {
+        if (e.key !== 'Tab') return;
+        ...
+      };
+      panel.addEventListener('keydown', keyListener);                    // ← only registration
+    },
+```
+
+   The Tab `keydown` listener is never installed, so Tab from the last control inside a modal walks straight into the page behind it. And `returnTarget` has exactly one assignment site (`tab-cycle.ts:40`), so it stays `null` and the `restoreFocus()` the controller *does* call at `:147` is a permanent no-op:
+
+```ts
+// tab-cycle.ts:77-80
+    restoreFocus() {
+      if (!isEnabled()) return;
+      if (opts.returnFocus !== false) returnTarget?.focus();
+    },
+```
+
+**Affected:** every consumer that configures a `tabCycle(...)` bundle — `dialog.service.ts:34`, `drawer.service.ts:67`, `sheet.service.ts:82` (hence `KjActionSheetService`), `command-palette-dialog.ts:59-61`, and also `popover-content.ts:22` (the `kjTrap` path) and `date-picker-calendar.ts:45`, which the original write-up omitted.
+
+**Separate, co-located gap — nothing ever applies `inert` to siblings.** `solidBackdrop({ inert: true })` reaches `panel.ts:78` only to emit `aria-modal="true"`; `backdrop.inertSiblings` has no other consumer, and `inertBased()` is referenced nowhere outside its own spec. Wiring the two lifecycle hooks does **not** make `aria-modal="true"` honest, because `tabCycle` contains no inert logic at all. Track it as its own item (or an explicit sub-item of this one): modal panels currently advertise modality over a non-inert, non-trapping container, which actively misleads AT — the screen reader hides the background while the keyboard does not.
+
+**Docs promising what the code does not deliver:** `packages/components/src/dialog/dialog.ts:18` and `:32-33` ("Tab — Cycles focus within the dialog", "returned to the triggering element on close (`returnFocus: true`)", "Siblings outside the dialog are marked `inert`"), plus `drawer.ts:42` and `sheet.ts:40`.
+
+**Why it matters:** WCAG 2.1 AAA is the stated target (`CLAUDE.md`). This breaks 2.4.3 Focus Order and the WAI-ARIA APG dialog pattern for every modal surface in the kit.
+
+**Verification correction (critical → high).** Every quoted line was re-checked at HEAD and reproduces; nothing in `fd6dd34e..HEAD` touches it. The specs miss it by construction — `tab-cycle.spec.ts` invokes `s.onOpen!()` by hand, and `controller.spec.ts`'s stub strategy bundle omits `focusTrap` entirely. Two framing errors in the original write-up resize the finding rather than refute it: `focusFirst()` *is* wired so initial focus works, and the missing inert-siblings behaviour is a separate defect rather than a consequence of the dead hooks. The impact is keyboard and AT semantics across every modal, with no crash, no data loss and no loss of basic operability — Escape still closes via the stack. That is high, not critical.
+
+**Fix:**
+- `beginOpen`: add `s.focusTrap?.onOpen?.()` alongside `s.scrollLock?.onOpen?.()`; `beginClose`: add `s.focusTrap?.onClose?.()` in the close chain, *before* `restoreFocus()` so the Tab listener is off first. One line each.
+- Give `controller.spec.ts` a stub bundle that includes a `focusTrap` so the hook ordering is pinned by a test, and add a dialog-level test asserting focus returns to the trigger.
+- Separately, wire real inerting (fix `inertBased()` to inert the *overlay container's* siblings rather than `panel.parentElement.children`, or fold inert-setting into `tabCycle`) so `solidBackdrop({ inert: true })` and `aria-modal="true"` mean something.
+- Also add `s.liveAnnouncer?.onOpen/onClose` and `s.trigger?.onOpen/onClose`, which are skipped by the same omission.
+
+**Effort:** M
+
+---
+
+### F-2 `closeOnEsc` / `closeOnOutside` are declared on the builder and service APIs but never reach `KjOverlayStack`
+
+**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/builder.ts`, `packages/core/src/primitives/overlay/wrapper.ts`, `packages/core/src/primitives/overlay/backdrop.ts`, `packages/core/src/dialog/dialog.service.ts`, `packages/core/src/drawer/drawer.service.ts`, `packages/core/src/sheet/sheet.service.ts`
+
+`KjOverlayStack` supports the policy and is tested for it (`stack.spec.ts:46-54`), but `KjOverlayController.beginOpen` registers with only a callback, so both flags fall back to `true` for **every** overlay built through `KjOverlayBuilder`:
+
+```ts
+// controller.ts:131
+    this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
+```
+
+```ts
+// stack.ts:124-128
+      opts: {
+        onClose: opts.onClose,
+        closeOnEsc: opts.closeOnEsc ?? true,
+        closeOnOutside: opts.closeOnOutside ?? true,
+      },
+```
+
+`KjOverlayBuilderConfig` declares both (`builder.ts:29-30`) and `create()` (`builder.ts:93-121`) never reads either. `KjDialogOpenOptions.closeOnEsc` (`dialog.service.ts:16`) is declared and referenced nowhere else in the repo (grep-confirmed across `packages/`). The only option that *is* consumed is `closeOnOutside`, and only as the backdrop's `closeOnClick`:
+
+```ts
+// dialog.service.ts:30-33
+      backdrop: solidBackdrop({
+        inert: true,
+        closeOnClick: !alert && (opts.closeOnOutside ?? true),
+      }),
+```
+
+The identical one-way mapping exists at `drawer.service.ts:65` and `sheet.service.ts:80`.
+
+That mapping does not hold either. `wrapper.ts:30-33` makes the `<kj-backdrop>` a **sibling** of the panel while `markContentEl` is given the *panel* (`controller.ts:133`), so a backdrop press fails `top.contentEl.contains(target)` at `stack.ts:218`; and the stack's document-level capture `pointerdown` listener (`stack.ts:186`) runs before `KjBackdrop.onClick` (`backdrop.ts:48-51`), so `closeOnClick: false` is defeated before the backdrop's own handler can honour it. `KjDismissPress` / commit `e6aa28a5` (#73) fixed the *retargeted-click* case and does not guard this path.
+
+Net effect at HEAD. The defaults (`true` / `true`) are the intended behaviour, so ordinary dialogs, drawers and sheets behave correctly. Every explicit **opt-out** is silently ignored:
+- `KjDialog.open(Cmp, { alert: true })` — an `alertdialog`, whose whole point is that it must be answered — still closes on Escape *and* on a backdrop press.
+- `KjDialog.open(Cmp, { closeOnOutside: false })` still closes on a backdrop press; same for drawer and sheet.
+- `KjDialog.open(Cmp, { closeOnEsc: false })` has no effect whatsoever.
+
+The same line also mislabels the close reason: stack-driven dismissals always report `'esc'`, even for an outside press (F-11).
+
+**Why it matters:** a destructive-confirmation `alertdialog` that Escape dismisses is a data-loss footgun, and it is the documented behaviour of the option that it should not be.
+
+**Verification correction (high → medium).** The mechanism reproduces line-for-line at HEAD, and nothing covers it: `dialog.spec.ts` has no Escape or outside-press test, and `stack.spec.ts:46` exercises the flags only on a hand-made registration. Severity drops because the *defaults* are what the library wants, so no default-configured overlay misbehaves; only opt-outs no-op, and the fix is one line at `controller.ts:131`. Two corrections to the original text: the scope was under-reported (drawer and sheet have the identical gap, now listed above), and the claim that this is why `<kj-command-palette>` "forked the primitive" is **withdrawn** — the palette never uses `KjOverlayController` or `KjOverlayBuilder` at all. It is a template-declared component that registers with the stack for ordering / z-index only and keeps its own Escape and outside handlers by design, as the comment in its `portalIn()` states. F-6 stands on its own evidence.
+
+**Fix:** carry the policy on the controller. Add `closeOnEsc` / `closeOnOutside` to `KjOverlayStrategies` (or a `configureClosePolicy()` the panel directive can call), have `builder.create()` forward `config.closeOnEsc` / `config.closeOnOutside`, and pass them at `controller.ts:131`. Derive the close reason from the originating stack handler rather than hard-coding `'esc'`. Then pick one owner for outside-press — the stack *or* the backdrop, not both, since today the stack always pre-empts `KjBackdrop`'s press-ownership logic. Tests: an `alert: true` dialog survives Escape and a backdrop press; a drawer opened with `closeOnOutside: false` survives a backdrop press.
+
+**Effort:** M
+
+---
+
+### F-3 Declarative overlays never dispose their controller on host destroy, leaving an orphan stack entry until the next user gesture
+
+**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/wrapper.ts`, `packages/core/src/menubar/menubar-item.ts`, `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`, `packages/core/src/primitives/overlay/strategies/trigger/on-hover.ts`, `packages/core/src/command-palette/command-palette-dialog.ts`
+
+`KjOverlayController.dispose()` (`controller.ts:112-121`) is the only teardown path, and it is *not* an `ngOnDestroy` — Angular will never call it for a provider on an element injector, and the class injects no `DestroyRef`. Repo-wide there are exactly two callers:
+
+```
+packages/core/src/primitives/overlay/wrapper.ts:48:    inject(DestroyRef).onDestroy(() => this.controller.dispose());
+packages/core/src/menubar/menubar-item.ts:158:      try { this.controller.dispose(); } catch { /* already disposed */ }
+```
+
+`wrapper.ts` covers only builder-launched overlays (dialog / drawer / sheet / toast). The ~13 declarative consumers that provide `KjOverlayController` on their own host directive — `popover-trigger.ts:42`, `tooltip-trigger.ts:19`, `dropdown-menu-trigger.ts:75`, `select-root.ts:54`, `combobox-root.ts`, `cascade-select-root.ts`, `tree-select-root.ts`, `date-picker-trigger.ts`, `confirm-popup.ts`, `color-picker.ts`, `command-palette-dialog.ts:51` — hook nothing. `KjOverlayPanel` and `KjOverlayTrigger` have no destroy hook either (`grep DestroyRef packages/core/src/primitives/overlay/` returns only `wrapper.ts`). No guard, base class or test covers destroy-while-open, and nothing in `fd6dd34e..HEAD` addresses it.
+
+Destroying a host while its overlay is open (route change, `@if` flipping, a list row removed) therefore skips the whole strategy detach chain. What actually happens next:
+
+- The orphaned stack entry was registered with `closeOnOutside` / `closeOnEsc` defaulting to `true` (`stack.ts:126-127`, and see F-2), and its `contentEl` now contains nothing. So **the next document `pointerdown` anywhere — or Escape — closes it**, and `beginClose` runs the full `onClose` chain with the strategies still non-null: the `html-overflow` refcount is released, `anchoredTo.onClose` removes the `window` scroll/resize listeners and disconnects the `ResizeObserver`, `bodyPortal.onClose` removes the orphan wrapper, and `stackHandle.unregister()` pops the entry and uninstalls the document listeners. (`runTransition` still completes against the detached panel because `parseFloat('')` is `NaN`, so the safety `setTimeout(NaN)` fires immediately.)
+- Until that gesture: the page stays scroll-locked if the destroyed overlay held a lock (`KjCommandPaletteDialog` provides `htmlOverflow()` at `command-palette-dialog.ts:62`), the global capture `keydown` / `pointerdown` listeners stay installed, and the orphan `<div class="kj-overlay-wrapper">` stays painted over the new route.
+- That next gesture is **swallowed by the dead overlay** instead of reaching the app.
+
+**The strongest case is the one the original write-up buried.** `on-hover.ts:139-140` clears `openTimer` / `closeTimer` only in `detach()`. Destroying a tooltip trigger with a pending `openDelay` fires `toggle()` on the dead controller, and `bodyPortal.onOpen` re-attaches the Angular-destroyed panel element into a live wrapper — a visible ghost tooltip that nothing owns.
+
+**Why it matters:** in any app that mounts overlays inside routed views, routing away with a popover, dropdown or command palette open leaves a stale panel over the new page, eats the user's next click, and — for the command palette — leaves the page unscrollable until that click.
+
+**Verification correction (high → medium).** Every quoted line checks out verbatim at HEAD: `dispose()` has no `ngOnDestroy` / `DestroyRef`, the two callers are the only ones repo-wide, all 13 declarative controller-providers have zero destroy hooks, `anchored-to.ts:242` is `detach() { ctx = null; }` with listeners and the `ResizeObserver` torn down only in `onClose` (`:232-236`), and `command-palette-dialog.ts:51`/`:62` provide both the controller and `htmlOverflow()`, whose refcount (`html-overflow.ts:3`) releases only in `onClose` / `detach`. The gap is real. But two consequences claimed originally are **withdrawn**: "permanently unscrollable page … for the rest of the session", and "re-running `applyManual` on every page scroll for the rest of the session". Both end at the user's very next click, not at the end of the session, because the orphan's own default-`true` dismiss flags make it self-clean. Severity drops accordingly.
+
+**Fix:** give `KjOverlayController` an `ngOnDestroy` that calls `dispose()` — providers on an element injector get it for free — which covers all 13 consumers at once and lets `menubar-item.ts:156-158` drop its manual hook. Then fix the ordering inside it: `dispose()` currently calls `close()`, whose cleanup runs in `runTransition`'s deferred callback, *after* the synchronous `detach()` loop; make the destroy path tear down synchronously (`cancelTransition()`, unregister the handle, `scrollLock.onClose()`, `mount.onClose()`). Optionally make `anchoredTo.detach()` and `onHover.detach()` idempotently run their own `onClose` teardown. Test: open a declarative overlay, destroy the fixture, assert `stack.stackSize === 0`, no orphan `.kj-overlay-wrapper`, and `document.documentElement.style.overflow === ''` — **without** an intervening click.
+
+**Effort:** M
+
+---
+
+### F-4 Overlay-based toasts register as ordinary dismissible stack entries; the builder's `closeOnEsc` / `closeOnOutside` are never forwarded
+
+**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
+**Files:** `packages/core/src/toast/toast.service.ts`, `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/stack.ts`, `packages/core/src/primitives/overlay/builder.ts`, `packages/core/src/primitives/overlay/backdrop.ts`
+
+`beginOpen` registers unconditionally and with the stack's permissive defaults (`controller.ts:131` → `stack.ts:126-127`) — there is no notion of a transient or non-dismissible overlay posture — and `KjOverlayBuilderConfig.closeOnEsc` / `closeOnOutside` (`builder.ts:29-30`) are accepted but never passed to `stack.register` (F-2). Toasts go through the builder like any modal:
+
+```ts
+// toast.service.ts:158-167
+    const handle = this.builder.create({
+      mount: inPlace(),
+      position: corner({ position: opts.position ?? 'bottom-right' }),
+      backdrop: null,
+      focusTrap: null,
+      scrollLock: null,
+      ...
+    });
 ```
 ```ts
-// menubar/menubar-item.ts:156-161 — the only consumer that remembered
-this.destroyRef.onDestroy(() => {
-  this.bar.unregisterItem(this);
-  try { this.controller.dispose(); } catch { /* already disposed */ }
+// toast.service.ts:169-171
+    if (opts.component) {
+      this.builder.attachComponent(handle, opts.component, { data: opts.data });
+    }
+```
+```ts
+// toast.service.ts:201
+    handle.controller.open();
 ```
 
-Every other declarative overlay provides `KjOverlayController` on a directive's element injector — `popover-trigger.ts:42`, `tooltip-trigger.ts:19`, `dropdown-menu-trigger.ts:75`, `command-palette-dialog.ts:51`, `select-root.ts:53`, `color-picker.ts:89` — and neither `KjOverlayTrigger` nor `KjOverlayPanel` registers a destroy hook. Destroying the host while the overlay is open therefore skips `close()` entirely: the `KjOverlayStack` entry stays registered, `anchoredTo`'s `window` resize/capture-scroll listeners and its `ResizeObserver` stay live (`anchored-to.ts:242`'s `detach()` only nulls `ctx`), the `body-portal` wrapper stays in `.kj-overlay-container` with the panel inside it, and `htmlOverflow` keeps its refcount.
+**Scope — this is the overlay toast API only.** `show(opts)` and the `success` / `info` / `warn` / `error` sugar take the `openOverlay` path. The string / template queue API (`toast.show('…', …)` → `enqueue()`) never opens an overlay at all, and all three shipped examples (`toast.example.ts:215-236`, `toast.finance.example.ts:141-157`, `toast.retro.example.ts:131-138`) use that path. Nothing outside `toast.spec.ts` exercises the overlay path.
 
-**Impact, correctly scoped (verification correction).** This is **not permanent**. The orphaned stack entry is registered with `closeOnEsc`/`closeOnOutside` defaulting to `true` (`stack.ts:50-54`), so the next document-level `pointerdown` or Escape invokes the orphan's `onClose`, and `beginClose()` runs the whole teardown chain — `stackHandle.unregister()` plus `maybeRemoveListeners`, `scrollLock.onClose()` releasing the `html-overflow` refcount, `position.onClose()` removing the listeners and disconnecting the observer, and `body-portal.onClose()` returning the panel and removing the wrapper. The orphan also cannot steal Escape or outside-click from a live overlay: a later-opened overlay is pushed after it and wins `topmost()`, and when the orphan *is* topmost there is no live overlay the event would have reached.
+Consequences, for up to the toast's lifetime (4000 ms default, `KJ_TOAST_SONNER_STRATEGY`):
 
-The observable symptom is bounded but real: after routing away with a popover, dropdown or command palette open, the portalled panel stays painted over the new route — and for `kj-command-palette-dialog` the page stays scroll-locked — **until the user clicks or presses Escape**.
+1. **Escape goes to the toast.** The toast is the newest stack entry, so `stack.handleKeydown` (`stack.ts:202-207`) routes Escape to it. With a dialog open, one Escape press dismisses the invisible toast overlay and leaves the dialog up.
+2. **The dialog's backdrop swallows one press.** `KjBackdrop.onPress` bails when the overlay is not topmost:
+   ```ts
+   // backdrop.ts:44
+       if (this.controller && !this.controller.isTopmost()) return;
+   ```
+3. **A panel-less toast entry is dismissed by any pointerdown — and that heals the stack.** `toast.success({ message })` has no `opts.component`, so `attachComponent` is skipped, `bindPanel` (`builder.ts:148`) never runs, `markContentEl` is skipped (`controller.ts:133`), and the entry keeps `contentEl: null` — which makes `stack.ts:218` fall through to `onClose()` for *every* pointerdown on the page. Because closing also unregisters the entry, the stack self-heals after that first press: only the first Escape and the first outside press are lost, not the ones that follow.
 
-The backdrop is *not* part of this leak: `solidBackdrop` (`strategies/backdrop/solid.ts`) is a flag-only strategy whose `onOpen`/`onClose`/`detach` are empty; it creates no DOM and applies no `inert`. The real `<kj-backdrop>` component exists only on the builder path, which disposes correctly via the wrapper.
+`stack.ts:96-97` claims "Toasts are not part of the stack — they live in their own layer above it (`--kj-toast-z-index`, default `2000`)". For the overlay path that is false twice over: they *are* registered, and their panel's `z-index: var(--kj-toast-z-index, 2000)` (`toast.css:8`) is confined inside the wrapper's inline stack level, so a dialog opened after a toast paints over it (see F-10).
 
-**Fix:** give `KjOverlayController` an `ngOnDestroy` that calls `dispose()` — Angular invokes it for providers on a destroyed node injector — which covers every declarative consumer at once and makes `menubar-item.ts:158`'s manual try/catch redundant. Add a spec asserting that destroying a host with an open declarative overlay empties the stack, removes the portal wrapper and releases the scroll lock; no current spec covers destroy-while-open (`controller.spec.ts:77` only checks `dispose()` detach ordering, `builder.spec.ts:36` only the service path).
+**Verification correction (high → medium), with two claims withdrawn.**
+
+- **"A toast dies on the first click anywhere" is wrong on the dominant path.** With no `opts.component` the overlay wrapper renders nothing; the toast the user sees is rendered by `<kj-toast-viewport>` from `toasts()` (pushed at `toast.service.ts:185` on both paths). The stack closing the overlay never calls `KjToastService.dismiss`, so the visible toast and its timer are untouched. What closes is invisible.
+- **The tooltip half is withdrawn entirely.** WAI-ARIA APG and WCAG 1.4.13 both require Escape to dismiss a tooltip, so a tooltip taking Escape ahead of the dialog under it is the *correct* ordering; tooltips bind their panel through `KjOverlayPanel`, so their `contentEl` is set and outside-click routing is right; and `onHover` uses `closeDelay: 0` with `pointerleave` (`on-hover.ts:112-117`), so the tooltip is already closing before a pointer that left the trigger can reach a dialog scrim.
+- **Blast radius is narrower than "a toast is on screen is a normal state".** No example or doc in the repo uses the overlay toast path. Default duration is 4000 ms, not ~5 s.
+
+What remains is real but transient and self-healing: one swallowed Escape and one swallowed scrim press inside a ≤4 s window, on an API path nothing currently exercises. Medium.
+
+**Fix:** plumb `closeOnEsc` / `closeOnOutside` from `KjOverlayBuilderConfig` through `controller.open` into `stack.register` (F-2), and have `KjToastService.openOverlay` pass `false` for both — a toast should consume neither Escape nor outside clicks. Separately, either skip stack registration entirely for panel-less overlays or treat `contentEl: null` as "not dismissible by outside click" in `stack.handlePointerDown`; and route `success` / `info` / `warn` / `error` calls with no `opts.component` to `enqueue()` rather than building an empty overlay. Add a stack/toast spec asserting that with a dialog open and a toast showing, Escape closes the dialog and a scrim press dismisses it.
+
+**Effort:** M
+
+---
+
+### F-5 `data-side` is never written, so every popover / tooltip arrow is unpositioned
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/panel.ts`, `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`, `packages/components/src/popover/popover.css`, `packages/components/src/tooltip/tooltip.css`
+
+`anchoredTo` computes the resolved placement and exposes it as a signal (`anchored-to.ts:180` `_placement.set({ side: resolvedSide, align })`, surfaced as `placement` at `:200`), but nothing reads it. `KjOverlayPanel`'s host bindings are:
+
+```ts
+// panel.ts:40-46
+  host: {
+    '[id]':                  'panelId',
+    '[attr.role]':           'role()',
+    '[attr.aria-modal]':     'isModal() ? "true" : null',
+    '[attr.data-state]':     'state()',
+    '[attr.hidden]':         'state() === "closed" ? "" : null',
+  },
+```
+
+No `data-side`. `grep -rn "data-side" packages/core/src packages/components/src` finds only comments and the CSS consumers. The arrow rules are all side-scoped:
+
+```css
+/* packages/components/src/popover/popover.css:52 */
+  .kj-popover-content[data-side="top"]    .kj-popover-arrow { bottom: calc(var(--kj-popover-arrow-size) / -2); left: 50%; ... }
+```
+
+None of them can ever match, so `.kj-popover-arrow` keeps only the base rule (`popover.css:43-50`: `position: absolute` with no offsets) and renders at the panel's static position instead of on the anchored edge. Same for `.kj-tooltip-arrow` (`tooltip.css:49-52`). `packages/components/src/tooltip/tooltip.ts:64` documents `data-side — Mirrors the resolved placement for theme/arrow hooks`.
+
+**Fix:** have `KjOverlayPanel` read `KJ_OVERLAY_POSITION_STRATEGY.placement` and bind `'[attr.data-side]': 'placement()?.side ?? null'` and `'[attr.data-align]': 'placement()?.align ?? null'`. Test: open a popover with `kjSide="right"`, assert the host carries `data-side="right"` and flips to `"left"` when the strategy flips.
+
 **Effort:** S
 
 ---
 
-### F-2 `closeOnEsc` / `closeOnOutside` are accepted everywhere and plumbed nowhere
-
-**Severity:** high · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/builder.ts:27-31`, `packages/core/src/primitives/overlay/controller.ts:13-21,122`, `packages/core/src/dialog/dialog.service.ts:13-39`, `packages/core/src/drawer/drawer.service.ts:32,65`, `packages/core/src/sheet/sheet.service.ts:41,80`
-
-The stack supports per-overlay opt-out and is tested for it (`stack.ts:50-54`, `stack.spec.ts` "respects closeOnEsc=false and closeOnOutside=false"). But the controller registers with only a callback:
-
-```ts
-// controller.ts:122
-this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
-```
-
-so both flags fall back to `true` (`stack.ts:52-53`). Meanwhile `KjOverlayBuilderConfig` declares them:
-
-```ts
-// builder.ts:27-31
-export interface KjOverlayBuilderConfig extends KjOverlayStrategies {
-  panelRole: KjPanelRole;
-  closeOnEsc?: boolean;
-  closeOnOutside?: boolean;
-}
-```
-
-and `builder.create()` (`:93-121`) never reads either one. `KjDialog.open` exposes `closeOnEsc` in its options (`dialog.service.ts:16`) and **never references it again**; `closeOnOutside` is routed only into the backdrop element's click handler (`:32`), which the stack's global `pointerdown` bypasses entirely.
-
-Concrete consequences:
-- `dialog.open(C, { closeOnEsc: false })` still closes on Escape.
-- `dialog.open(C, { alert: true })` — an `alertdialog` that must not be casually dismissed — still closes on any pointerdown outside the panel, because `handlePointerDown` (`stack.ts:106-112`) only checks `contentEl`.
-- `dialog.open(C, { closeOnOutside: false })` closes on outside click anyway.
-
-Also note the reason is hard-coded: an outside click reports `'esc'` to `close()`.
-
-**Fix:** thread `closeOnEsc` / `closeOnOutside` from `KjOverlayBuilderConfig` into the controller (a `configure({closeOnEsc, closeOnOutside})` setter, or a new `KJ_OVERLAY_CLOSE_POLICY` token so declarative consumers can set it too) and have `beginOpen` forward them to `stack.register`. Default both to `false` when `panelRole === 'alertdialog'`. Add dialog specs for `closeOnEsc:false` and `alert:true`.
-
-**Verification corrections (finding upheld at high).**
-- **Widen the file list.** `packages/core/src/drawer/drawer.service.ts:32,65` and `packages/core/src/sheet/sheet.service.ts:41,80` have the identical defect — their `closeOnOutside` also reaches only `solidBackdrop({closeOnClick})` and is overridden by the stack's default-true outside handling.
-- **Root cause is single and narrow:** `KjOverlayStrategies` (`controller.ts:13-21`) carries no close flags, so neither `attachStrategies` nor `create` has a channel to pass them, and `controller.ts:122` registers with `onClose` alone. The declarative `panel.ts` path cannot supply them either.
-- **`close('outside')` is unreachable today.** The stack's capture-phase `pointerdown` (`stack.ts:106-112`) always fires before `KjBackdrop`'s bubbled `click`, and the subsequent `KjBackdrop.onClick` early-returns at `controller.ts:92` because the state is already `'closing'`. Every outside dismissal is therefore reported to consumers as reason `'esc'`; the register callback should take the reason from the originating handler rather than hard-coding it.
-- No guard, base class or test mitigates any of this: `dialog.spec.ts` only asserts `ref.controller` is truthy for `alert:true` and never exercises Escape or outside clicks, while `stack.spec.ts:46` confirms the stack *does* honour the flags when they are actually passed.
-**Effort:** M
-
----
-
-### F-3 Overlay toasts join the Esc/outside-click stack and swallow the first Escape meant for the dialog beneath
-
-**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/controller.ts:122`, `packages/core/src/toast/toast.service.ts:155-202`, `packages/core/src/primitives/overlay/stack.ts:50-54,110`
-
-`KjOverlayController.beginOpen` registers **every** overlay with the stack's defaults (`closeOnEsc: true`, `closeOnOutside: true`, `stack.ts:52-53`) and never forwards `KjOverlayBuilderConfig.closeOnEsc` / `closeOnOutside` (`builder.ts:29-30`) — those two fields are dead across the whole repo, which also silently drops `KjDialogOpenOptions.closeOnEsc` (`dialog.service.ts:16`). See F-2.
-
-`KjToastService.openOverlay` builds a real overlay and calls `handle.controller.open()`:
-
-```ts
-// toast.service.ts:158-167
-const handle = this.builder.create({
-  mount: inPlace(),
-  position: corner({ position: opts.position ?? 'bottom-right' }),
-  backdrop: null, focusTrap: null, scrollLock: null,
-  liveAnnouncer: variant === 'destructive' ? assertive() : polite(),
-  trigger: programmatic(),
-  panelRole: variant === 'destructive' ? 'alert' : 'status',
-});
-```
-
-so a toast becomes the **topmost stack entry** ahead of any dialog, drawer or sheet beneath it. The first Escape and the first outside `pointerdown` after a toast appears therefore go to the toast, not to the modal the user is working in.
-
-For the common `toast.success({ message })` path (no `opts.component`) `attachComponent` never runs, so `bindPanel` never runs, `this._panel()` is `null`, and `markContentEl` is skipped at `controller.ts:123` — leaving `contentEl: null`, which makes `stack.ts:110` treat *every* pointerdown as "outside".
-
-**Verification corrections (consequences were overstated).**
-1. **The toast does not visibly disappear on the first click** on the dominant path. With no component the overlay renders nothing — the wrapper's `panelAnchor` stays empty. The visible toast is rendered by `KjToastViewport` from `svc.toasts()` (`toast.ts:322`), and a stack-driven `controller.close()` bypasses `KjToastService.dismiss()`, so the queue entry and its timer survive. The user sees no change; only an invisible phantom overlay closes. The "dies on the first click" symptom is real only for the rarer `opts.component` path, where `bindPanel` *does* run and `contentEl` is set — the inverse of what was originally claimed.
-2. **The tooltip half is withdrawn.** WCAG 2.1 SC 1.4.13 (Content on Hover or Focus) and the APG both require Escape to dismiss a tooltip, and outside-pointerdown dismissal is equally expected. A tooltip taking Escape ahead of the dialog under it is the desired ordering, and tooltips bind their panel correctly through `KjOverlayPanel`, so their `contentEl` is set and outside-click detection works.
-
-What is genuinely broken is narrower: while an overlay-based toast is alive it silently swallows the first Escape and the first pointerdown that should have reached the dialog/drawer beneath — one press each per toast, non-destructive and self-clearing once the phantom unregisters — plus the queue entry and timer for that toast are orphaned because the close path bypassed `dismiss()`. No spec covers it: `stack.spec.ts` tests the primitive in isolation and `toast.spec.ts` never exercises Escape or outside-click.
-
-**Fix:** plumb `closeOnEsc`/`closeOnOutside` from the builder config through `attachStrategies` into `stack.register` (F-2), and have `KjToastService.openOverlay` pass `closeOnEsc: false, closeOnOutside: false` — a toast is a non-modal status surface. Optionally register nothing at all when the overlay has no panel. Add a spec asserting that with a dialog open and a toast showing, Escape closes the dialog.
-**Effort:** M
-
----
-
-### F-4 Per-component CSS `z-index` overrides the container's stacking contract — a select inside a drawer renders beneath it
-
-**Severity:** high *(upheld during verification)* · **Confidence:** high (re-verified against source)
-**Files:** `packages/core/src/primitives/overlay/overlay.css:18-33`, `packages/core/src/primitives/overlay/wrapper.ts:12-18`, `packages/components/src/*/*.css`
-
-`wrapper.ts` documents the contract: *"Sibling order in the container resolves stacking among open overlays — last opened wins."* The CSS backs that up — `.kj-overlay-container` is the only element with a `z-index` (`overlay.css:21`), and `.kj-overlay-wrapper` is `position:absolute` with `z-index:auto`, so it does **not** create a stacking context. Every panel therefore competes directly inside the container's single stacking context, where an explicit `z-index` beats DOM order. And the styled layer hands out ad-hoc numbers:
-
-```
-select/select.css:63          z-index: 100;
-combobox/combobox.css:48      z-index: 100;
-date-picker/date-picker.css:42  z-index: 50;
-speed-dial/speed-dial.css:24  z-index: 100;
-cascade-select.css:46 / :64   z-index: 200 / 1001;
-popover.css:28, dropdown-menu.css:28, dialog.css:9, drawer.css:16, sheet.css:26, confirm-popup.css:22, command-palette.css:18/33  z-index: 1000 / 1001;
-drawer.css:56                 z-index: 999;
-```
-
-A `<kj-select-content>` (z-index 100) opened from inside an open `.kj-drawer` (z-index 1000) is portalled into a *later* wrapper but paints **below** the drawer. Same for combobox/date-picker inside a dialog, sheet or command palette. The "last opened wins" invariant only holds between panels that happen to share a number.
-
-Two more symptoms in the same area: `dialog.css:2-10` styles `.kj-dialog-overlay` and `drawer.css:50-58` styles `[data-kj-drawer-container]::before` as scrims, but **neither selector is emitted by any TypeScript** (grep across `packages/*/src` finds zero producers) — dead hand-rolled backdrop CSS left over from a pre-primitive design. And `blurredBackdrop()` sets `class="kj-backdrop kj-backdrop--blur"` (`strategies/backdrop/blurred.ts:4`) but `kj-backdrop--blur` has **no rule anywhere** — the blurred backdrop is visually identical to the solid one.
-
-
-**Verification corrections (finding upheld at high; split into two).**
-
-**(a) Primary, high — per-component `z-index` breaks the container's DOM-order stacking contract.** Every cited fact reproduces. `.kj-overlay-container` is `position:fixed` + `z-index:var(--kj-overlay-z-index,1000)` (`overlay.css:18-23`) so it *is* the single stacking context; `.kj-overlay-wrapper` (`overlay.css:25-29`) is `position:absolute` with no z-index, transform, opacity or isolation, so it is *not* one, and `createOverlayWrapper()` (`container.ts:35-42`) and `builder.ts` set no inline z-index. Both panel kinds are positioned, so z-index applies to both: `anchored-to.ts:98,177` and `edge-sheet.ts:13` each set `panel.style.position = 'fixed'`. The full broken set (portalled panel → blocking panel): `select.css:63` (100), `combobox.css:48` (100), `tree-select.css:70` (100), `cascade-select.css:46` (200), `date-picker.css:42` (50), `datetime-picker.css:43` (50) versus `drawer.css:16`, `dialog.css:9`, `sheet.css:26`, `popover.css:28`, `dropdown-menu.css:28`, `tooltip.css:28`, `command-palette.css:18`, `color-picker.css:32`, `confirm-popup.css:22`, `toast.css:8` (all 1000). `KjOverlayStack` routes only Escape/outside-click by topmost — it never touches z-index or DOM order — and no spec anywhere asserts z-index or cross-overlay stacking. This is CSS-only with no runtime or data impact, but it is reachable with no opt-out across at least seven components.
-
-**(b) Secondary, low — three pieces of dead overlay CSS**, each verified independently of (a):
-- `[data-kj-drawer-container]::before` and its `:has()` override (`drawer.css:50-61`) never render; no TypeScript emits that attribute. `drawer.spec.ts:17,31` still queries it, so those helpers are stale too.
-- `.kj-dialog-overlay` (`dialog.css:2-10`) matches nothing in any template or TS file.
-- `.kj-backdrop--blur`, applied by `strategies/backdrop/blurred.ts:4`, has no rule anywhere in the repo, so `blurredBackdrop()` renders identically to `solidBackdrop()` — either add the `backdrop-filter` rule to `overlay.css` or delete the strategy.
-
-**Fix:** drop `z-index` from every panel that mounts into the overlay container and let sibling order decide, or have `createOverlayWrapper()` stamp a monotonically increasing z-index on each wrapper. Add a nested-overlay spec asserting a select panel opened inside an open drawer stacks above it. Handle (b) separately.
-**Effort:** M
-
----
-
-### F-5 No focus restoration for dropdown-menu, tree-select, confirm-popup (and menubar's projected submenu) — focus drops to `<body>` on close
-
-**Severity:** high *(upheld during verification; affected-component list corrected)* · **Confidence:** high
-**Files:** `packages/core/src/dropdown-menu/dropdown-menu-content.ts:244-256`, `packages/core/src/menubar/menubar.ts:202-305`, `packages/core/src/tree-select/tree-select-content.ts:123`
-
-`restoreFocus()` is only ever called from `controller.beginClose` → `s.focusTrap?.restoreFocus()` (`controller.ts:134`). Of the declarative consumers, **only `kj-popover-content` and `kj-command-palette-dialog` provide a `KJ_OVERLAY_FOCUS_TRAP_STRATEGY`**. dropdown-menu, menubar, select, combobox, cascade-select, tree-select, date-picker, color-picker, tooltip and confirm-popup provide none — so `focusTrap` is `null` and no restore happens.
-
-For the listbox-style ones that keep DOM focus on the trigger and use `aria-activedescendant`, that is fine. For the menus it is not — they move **real DOM focus into the panel**:
-
-```ts
-// dropdown-menu-content.ts:247-256 — roving focus follow
-effect(() => {
-  const item = nav.activeItem();
-  const host = item._host();
-  if (host && document.activeElement !== host) untracked(() => host.focus());
-});
-```
-
-On close, `body-portal.onClose` moves the panel out of the container and `beginClose` sets `hidden` on it (`controller.ts:144`) while `document.activeElement` is still inside it. The browser resets focus to `<body>`: the keyboard user loses their place entirely.
-
-**Why it matters:** WCAG 2.1 **2.4.3 Focus Order** and **2.4.7 Focus Visible**; APG's menu-button pattern explicitly requires focus to return to the button on close. The repo targets AAA.
-
-
-**Verification corrections (finding upheld at high; evidence corrected).**
-
-1. **Remove date-picker** from the "provides none" list — `date-picker-calendar.ts:42-46` *does* provide `KJ_OVERLAY_FOCUS_TRAP_STRATEGY` with `tabCycle({ returnFocus: true })`.
-2. **Remove select, combobox, cascade-select and tooltip.** `grep '\.focus('` across those folders finds nothing that moves focus into the panel; they keep focus on the trigger via `aria-activedescendant`, so there is nothing to restore. Their lack of a focus-trap strategy is correct, not a bug.
-3. **Fix the menubar citations.** `menubar.ts:202/207/251/305` focus `nav.activeItem()?._host()`, i.e. the top-level `[kjMenubarItem]` buttons in the bar — that is the restore *target*, not panel content. Menubar's real exposure is (a) indirect, because the documented pattern in `packages/components/src/menubar/_examples/menubar.with-submenu.example.ts` composes `kjMenubarItem` + `kjDropdownMenuTrigger` with `<kj-dropdown-menu-content>` and inherits the dropdown-menu defect, and (b) direct at `menubar-item.ts`'s `_ensureStrategiesAttached()`, which calls `attachStrategies({ mount: bodyPortal(), position: anchoredTo(...) })` with no `focusTrap` for the template-projected `[kjDropdownMenu]` path.
-4. **Add confirm-popup — the strongest case.** `confirm-popup-content.ts:71` does `requestAnimationFrame(() => this.focusDefault())` and `:108` `target.focus()` into the panel, with no focus-trap provider, so focus drops to `<body>` on close. Its own TSDoc at `confirm-popup-content.ts:20` advertises "outside-click and Escape close, focus restoration", which is untrue and must be corrected alongside the fix. `confirm-popup.spec.ts:300,332` assert focus lands in the panel on open but never assert where it goes on close.
-
-**Corrected scope:** dropdown-menu, tree-select, confirm-popup, and menubar's projected submenu.
-
-**Fix:** have these panels provide `KJ_OVERLAY_FOCUS_TRAP_STRATEGY` (`tabCycle({ returnFocus: true })`, or a restore-only variant that skips Tab cycling for non-modal menus), or make `KjOverlayPanel` default `focusTrap` to a restore-only strategy whenever the consumer provides none. Add a spec asserting `document.activeElement === trigger` after close for each.
-**Effort:** M
-
----
-
-### F-6 Re-opening during the close transition leaks the overlay's stack entry (and its document listeners)
-
-**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/controller.ts:82-128, 151-189`, `packages/core/src/primitives/overlay/stack.ts:44-92`
-
-`close()` performs all of its teardown inside `beginClose`'s deferred `runTransition` callback (`controller.ts:133-148` — `stackHandle.unregister()`, `scrollLock.onClose()`, `position.onClose()`, `mount.onClose()`), while `beginOpen` acquires synchronously (`controller.ts:121-122`). `open()` while `'closing'` calls `cancelTransition()` (`controller.ts:85`), which kills the rAF, the `longest+50ms` safety timeout and the transitionend/animationend listeners (`controller.ts:180-189`), so that callback never runs:
-
-```ts
-// controller.ts:82-88
-open(): void {
-  const cur = this._state();
-  if (cur === 'open' || cur === 'opening') return;
-  if (cur === 'closing') this.cancelTransition();   // ← close's done() is discarded
-  this._state.set('opening');
-  this.beginOpen();
-}
-// controller.ts:122 — beginOpen then overwrites the handle
-this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
-```
-
-Since `KjOverlayStack` entries are removed only through the handle closure (`stack.ts:63-67`), the old `StackEntry` stays in `_stack` for the life of the app, holding a reference to the controller and its panel element, and `maybeRemoveListeners` (`stack.ts:87`) can never remove the capture-phase document `keydown`/`pointerdown` listeners.
-
-**Verification corrections — both original repros are wrong, and the headline scroll-lock consequence is effectively unreachable.**
-- **Not via triggers.** Every trigger path goes through `KjOverlayTrigger` → `triggerStrategy.bindToggle(() => controller.toggle())` (`trigger.ts:58`), and `toggle()` (`controller.ts:98-101`) only calls `open()` when the state is exactly `'closed'`; during `'closing'` it calls `close()`, which returns early. **A trigger double-click can never re-open a closing overlay.**
-- **Not via the services.** `KjDialog.open()` (`dialog.service.ts:26-61`) builds a brand-new handle, controller and `htmlOverflow()` instance on every call and calls `controller.open()` exactly once; the closing controller is never re-opened. Same for `drawer.service.ts:59-96`, `sheet.service.ts` and `toast.service.ts`. The service-based overlays — the only ones that use `htmlOverflow()` via the builder — are structurally immune.
-- **The scroll-lock double-acquire is latent, not live.** `KJ_OVERLAY_SCROLL_LOCK_STRATEGY` is provided in exactly two places (`builder.ts:101` for one-shot service overlays, and `command-palette-dialog.ts:62`). The only component pairing a scroll lock with a reusable controller is `KjCommandPaletteDialog`, whose `onHotkey` trigger goes through `toggle()`. Every declarative overlay that *is* re-openable (popover, dropdown-menu, combobox, select, date-picker) has `scrollLock = null`. Treat it as a hazard for anyone adding a scroll lock to a declarative overlay, not as a live "body scroll never released" bug.
-
-**Actual reachable path:** the components that call `controller.open()` directly, since `isOpen()` is false during `'closing'` (`controller.ts:46`). Best repro — in a combobox, pick an option (`_finishSelect` → `close('programmatic')`, `combobox-root.ts:253`) and type another character within the panel's 140 ms transition (`setQuery` → `controller.open()`, `combobox-root.ts:226`): a ~190 ms window. Same shape at `combobox-root.ts:267`, `tree-select-trigger.ts:75`, `date-picker-trigger.ts:154/178`, `cascade-select-root.ts:188`.
-
-**Actual impact:** a memory + listener leak, one entry per interrupted toggle. Escape/outside-click routing to live overlays is **not** broken — new entries append above the stale one, and the stale entry's `onClose` is a no-op `close()` on an already-closed controller.
-
-**Fix:** in `open()`, release the previous cycle's resources before `beginOpen` — have `cancelTransition()` (or a new `abortPendingClose()`) run `this.stackHandle?.unregister(); this.stackHandle = null; this.strategies?.scrollLock?.onClose?.()` when the interrupted state was `'closing'`; symmetrically, cancelling an `'opening'` transition must not double-release. Also clear `this.rafId = 0` inside the rAF callback (`:160`). Add a controller spec covering close→open within the transition window that asserts `stack.stackSize` returns to 0 after the final close.
-**Effort:** M
-
----
-
-### F-7 `anchoredTo` is RTL-blind, viewport-only, and repositions synchronously on every scroll event
+### F-6 The styled `<kj-command-palette>` bypasses the overlay primitive and is not an accessible modal
 
 **Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts:124-241`
+**Files:** `packages/components/src/command-palette/command-palette.ts`
 
-Four distinct problems in the one positioner every anchored consumer uses:
+There are two command palettes. `KjCommandPaletteDialog` (core) composes the primitive properly. The styled component that every documented example uses does not: it renders its own shell + scrim, portals itself, and talks to `KjOverlayStack` directly — no `KjOverlayController`, no focus-trap strategy, no scroll-lock strategy:
 
-1. **No RTL.** `align: 'start'` is hard-coded to the left edge:
 ```ts
-// :162-170
-if (align === 'start')  left = tRect.left;
-if (align === 'end')    left = tRect.right - pRect.width;
+// command-palette.ts:376-382
+    this.stackHandle = this.stack.register(this.stackId, {
+      onClose: () => this.close(),
+      closeOnEsc: false,
+      closeOnOutside: false,
+    });
+    this.stack.markContentEl(this.stackId, this.dialog()?.nativeElement ?? shell);
+    applyOverlayZIndex(shell, this.stackHandle.zIndex);
 ```
-`KjDirectionality` exists at `packages/core/src/primitives/directionality/directionality.ts:34` and is used elsewhere (e.g. `a11y/roving-tabindex.ts:157`), but the positioner never consults it. In an RTL document every select/menu/popover aligns to the wrong edge.
 
-2. **Collision detection is viewport-only.** `flip`/`shift` compare against `window.innerWidth/innerHeight` (`:146`, `:150-175`) and ignore the nearest scrollable clipping ancestor. An anchored panel inside an `overflow:auto` container (a dialog body, a table cell, a drawer) is clipped rather than flipped. There is also no "detach/close when the anchor scrolls out of view" behaviour — no scroll strategy exists at all in the primitive.
+`grep -n "Tab\|focusTrap\|inert" packages/components/src/command-palette/command-palette.ts` matches exactly one line — a doc comment (`:134`). The template hard-codes `role="dialog" aria-modal="true"` (`:169-170`) over a background that is neither `inert` nor `aria-hidden`, Tab is uncontained, the page scrolls behind the modal, and focus is not restored to the trigger on close. `@doc-a11y` at `:133-139` asserts the opposite ("an inert siblings posture while open", "restores focus to the trigger").
 
-3. **Unthrottled, non-passive, capture-phase scroll handler:**
+Initial focus is also resolved globally rather than within the instance:
+
 ```ts
-// :213-216
-onScroll = () => applyManual();
-window.addEventListener('scroll', onScroll, true);
+// command-palette.ts:306-308
+      queueMicrotask(() => {
+        document.querySelector<HTMLInputElement>('.kj-command-palette__dialog .kj-command-palette__input')?.focus();
+      });
 ```
-`applyManual` does `getBoundingClientRect()` on two elements and then writes inline styles — a forced synchronous layout per scroll event on *every* scroll container in the page (capture phase). No `{ passive: true }`, no `requestAnimationFrame` coalescing.
 
-4. **First measurement can be of a hidden panel.** `beginOpen` sets `_state` to `'opening'` (a signal) and immediately calls `position.onOpen()` + `position.update()` (`controller.ts:118-119`), but the panel's `hidden` attribute is removed by a host binding (`panel.ts:45`) that only applies on the next change detection. Under zoneless CD the first `getBoundingClientRect()` therefore reads `0×0`, so the flip decision at `:150-153` is made on a zero-height panel. The `ResizeObserver` at `:219-223` papers over it with a second pass, which is also why panels visibly jump on open.
+Two palettes on a page and the wrong one gets focus.
 
-Also ~70 lines of the file are dead: `supportsCssAnchor()` hard-returns `false` (`:51-56`), so `applyCss`, `clearCss`, `positionAreaFor` and `_anchorIdCounter` (`:49-122`) are unreachable.
+(*Corrected during verification:* the earlier framing — that the palette forked the primitive *because* it is the only consumer needing `closeOnEsc: false` — does not hold. The component never touches `KjOverlayController` or `KjOverlayBuilder` at all; it registers with the stack purely for ordering and z-index, as the comment in its `portalIn()` says, and owns its Escape / outside handling by design. Fixing F-2 makes a rebuild on the primitive *possible*; it is not what caused the fork.)
 
-**Fix:** inject/accept `KjDirectionality` and mirror `start`/`end` in RTL; compute the clipping rect from the nearest scroll-clipping ancestor instead of the viewport; coalesce `resize`/`scroll` into one `requestAnimationFrame` and register scroll as `{ passive: true }`; have `beginOpen` await one frame (or un-hide the panel imperatively, as `beginClose` already hides it imperatively at `controller.ts:144`) before the first measurement. Delete the CSS-anchor branch or gate it behind a documented feature flag.
+**Fix:** after F-1 and F-2 land, rebuild `<kj-command-palette>` on `KjOverlayController` + `KjCommandPaletteDialog`'s strategy bundle (portal mount, `tabCycle({ initialFocus: 'first', returnFocus: true })`, `htmlOverflow()`), and replace the global `querySelector` with `viewChild('searchInput')`. If the fork must stay short-term, at minimum add a Tab handler scoped to `this.dialog()` and a scroll lock.
+
 **Effort:** L
 
 ---
 
-### F-8 No arrow/caret support, and `tabCycle`'s focusable query misses several focusable kinds
+### F-7 Unthrottled, non-passive scroll repositioning with a forced synchronous layout per event
 
 **Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:4`, `strategies/position/anchored-to.ts`
+**Files:** `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`
 
-**(a)** There is no arrow/caret positioning anywhere in the system — no arrow element, no arrow-offset math, no `placement`-driven arrow transform. `placement` is exposed (`tokens.ts:20`) and set (`anchored-to.ts:180`), but nothing consumes it and no component ships a tooltip/popover arrow. This is a visible feature gap versus CDK/floating-ui that consumers cannot fill without reaching into the panel's inline styles.
+```ts
+// anchored-to.ts:213-223
+      onResize = () => applyManual();
+      onScroll = () => applyManual();
+      window.addEventListener('resize', onResize);
+      window.addEventListener('scroll', onScroll, true);
+      const trigger = opts.trigger ? opts.trigger() : ctx.triggerEl();
+      const panel = ctx.panelEl();
+      if (typeof ResizeObserver !== 'undefined' && trigger && panel) {
+        resizeObserver = new ResizeObserver(() => applyManual());
+        resizeObserver.observe(trigger);
+        resizeObserver.observe(panel);
+      }
+```
 
-**(b)** The focus-trap's focusable selector is incomplete and unfiltered:
+`applyManual` writes `panel.style.width` / `minWidth` and then immediately reads `panel.getBoundingClientRect()` (`anchored-to.ts:139-145`), forcing a synchronous layout on every one of those events. The listener is registered in capture on `window`, so it fires for scrolls in *every* scroll container on the page, not just ancestors of the trigger, and it is not `{ passive: true }`. Every open select / combobox / date-picker / tooltip adds one of these.
+
+There is also no clipping-ancestor handling: `shift` clamps only to the viewport (`anchored-to.ts:172-175`), so a panel anchored to a trigger inside a scrolled `overflow: hidden` container keeps rendering at the trigger's last viewport position after the container scrolls it out of view, instead of detaching or repositioning.
+
+**Fix:** coalesce into one `requestAnimationFrame` (drop duplicate invalidations within a frame), register the scroll listener as `{ capture: true, passive: true }`, and split `applyManual` into a measure phase and a write phase so the rect read happens before any style write. Longer term, only listen on the trigger's actual scrollable ancestors (`overflow` walk) and add a `hide`/`detach` behaviour when the anchor leaves its clipping ancestor.
+
+**Effort:** M
+
+---
+
+### F-8 The panel is measured while `[hidden]` is still applied on first open
+
+**Severity:** medium · **Confidence:** medium
+**Files:** `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/panel.ts`
+
+`open()` sets `_state` to `'opening'` and calls `beginOpen()` synchronously; `beginOpen` positions immediately:
+
+```ts
+// controller.ts:126-128
+    s.mount.onOpen?.();
+    s.position.onOpen?.();
+    s.position.update();
+```
+
+The `hidden` attribute is only a host binding, cleared on the next change detection pass:
+
+```ts
+// panel.ts:45
+    '[attr.hidden]':         'state() === "closed" ? "" : null',
+```
+
+So `applyManual()`'s `panel.getBoundingClientRect()` (`anchored-to.ts:145`) runs against a `display: none` element and reads `0 × 0`. `flip` then never triggers (`:150-153` compare against a zero height/width), and `align: 'center'` puts the panel's left edge at the trigger's centre (`:164`). It self-corrects because `resizeObserver.observe(panel)` fires when the panel gains a box, but the first computed position is wrong and the correction depends on `ResizeObserver` being present and on the panel actually changing size.
+
+**Why it matters:** a select or popover near the bottom of the viewport does not flip on first open (it flips on the RO callback instead), and the initial paint can land at the wrong offset.
+
+**Fix:** either reposition after the state flip (call `s.position.update()` inside `runTransition`'s `done` callback as well), or have `mount.onOpen` remove `hidden` imperatively before measuring (the same trick `beginClose` already uses in reverse at `controller.ts:158-159`). A test asserting `flip` picks `top` for a trigger 20px from the viewport bottom would have caught this.
+
+**Effort:** S
+
+---
+
+### F-9 `anchoredTo` has no RTL awareness
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`
+
+`align` is resolved purely physically:
+
+```ts
+// anchored-to.ts:162-170
+    if (resolvedSide === 'top' || resolvedSide === 'bottom') {
+      if (align === 'start')  left = tRect.left;
+      if (align === 'center') left = tRect.left + (tRect.width - pRect.width) / 2;
+      if (align === 'end')    left = tRect.right - pRect.width;
+    }
+```
+
+`grep -rni "rtl|direction|dir=" packages/core/src/primitives/overlay --include=*.ts` returns nothing. In an RTL document, `align="start"` — the default for `kj-select-content` (`select-content.ts:53`) and the natural reading for a dropdown — still pins the panel's *left* edge to the trigger's left edge, i.e. it aligns to the visual end. Flipping `side: 'left' | 'right'` is likewise not mirrored.
+
+**Fix:** read the computed `direction` of the trigger once per `applyManual()` and swap `start`/`end` (and `left`/`right` sides) when it is `rtl`. Consider exposing logical `inline-start` / `inline-end` names on `KjAlign`.
+
+**Effort:** S
+
+---
+
+### F-10 Two z-index escapes from the stack: a hard-coded sub-panel level and wrapper-clamped toasts
+
+**Severity:** medium · **Confidence:** medium
+**Files:** `packages/components/src/cascade-select/cascade-select.css`, `packages/components/src/toast/toast.css`, `packages/core/src/primitives/overlay/stack.ts`
+
+The `--kj-overlay-z` migration missed the cascade-select sub-panel, which is hand-positioned (`cascade-select-sub-panel.ts:111` reads the parent option's rect) and hard-codes its level while the root panel next to it reads the variable:
+
+```css
+/* packages/components/src/cascade-select/cascade-select.css:46 */
+    z-index: var(--kj-overlay-z, 200);
+/* packages/components/src/cascade-select/cascade-select.css:64 */
+    z-index: 1001;
+```
+
+A cascade-select opened inside a dialog gets a stack level of 1001+; its sub-panel is stuck at a literal 1001 and can land behind the panel it belongs to.
+
+Separately, `stack.ts:96-97` states toasts "live in their own layer above [the stack] (`--kj-toast-z-index`, default `2000`)". That holds for the `<kj-toast-viewport>` queue path, which renders in the app tree. It does not hold for the `KjOverlayBuilder` path: the toast panel is inside a `.kj-overlay-wrapper` whose inline `z-index` the stack sets to its own level (`stack.ts:66`), which makes the wrapper a stacking context — `z-index: var(--kj-toast-z-index, 2000)` on the panel (`toast.css:8`) cannot lift it out. A dialog opened after a toast gets a higher wrapper level and paints over it, scrim included.
+
+**Fix:** switch the sub-panel to `z-index: var(--kj-overlay-z, 1001)` (it inherits the custom property from the root panel's wrapper). For toasts, either give the toast layer a wrapper outside the stack's numbering (a dedicated `.kj-overlay-container--toast` at `--kj-toast-z-index`) or drop the claim from the `KjOverlayStack` TSDoc — but do not leave the doc and the code disagreeing.
+
+**Effort:** S
+
+---
+
+### F-11 `KjCloseReason` is public API that carries no information
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/stack.ts`
+
+The stack hard-codes one reason for both of its dismissal paths:
+
+```ts
+// controller.ts:131
+    this.stackHandle = this.stack.register(this.id, { onClose: () => this.close('esc') });
+```
+
+so an outside-click close reports `'esc'`. And the reason is dropped on arrival anyway:
+
+```ts
+// controller.ts:143
+  private beginClose(_reason?: KjCloseReason): void {
+```
+
+Nothing downstream can distinguish esc / outside / programmatic, even though `KjCloseReason` is exported from `types.ts:24` and `KjDropdownMenuCloseReason` (`dropdown-menu-trigger.ts:29-34`) advertises a richer set it has to synthesise itself.
+
+**Fix:** pass the real reason from `stack.handleKeydown` / `handlePointerDown` through `KjOverlayRegistration.onClose(reason)`, store it on the controller, and expose `readonly closeReason: Signal<KjCloseReason | null>` so `KjDialogRef.afterClosed$` and `kjMenuClosed` can report it.
+
+**Effort:** S
+
+---
+
+### F-12 Multiple Angular apps on one page share the container but not the id counter or the z-stack
+
+**Severity:** low · **Confidence:** medium
+**Files:** `packages/core/src/primitives/overlay/container.ts`, `packages/core/src/primitives/overlay/id.ts`, `packages/core/src/primitives/overlay/stack.ts`
+
+`_root` is module scope:
+
+```ts
+// container.ts:24-33
+let _root: HTMLElement | null = null;
+
+export function getOverlayContainer(): HTMLElement | null {
+  ...
+```
+
+while `KjId` (`id.ts:10`) and `KjOverlayStack` (`stack.ts:107`) are `providedIn: 'root'` — one instance *per application injector*. Two Angular apps sharing a bundle on one page therefore share the container DOM but each mint `kj-overlay-1` / `kj-panel-1` (duplicate DOM ids, and `aria-controls` can resolve to the other app's panel) and each start their z-stack at `KJ_OVERLAY_Z_BASE_DEFAULT = 1000`, so wrapper levels collide and ordering falls back to DOM insertion order. The same split means Escape routing is per-app: app A's dialog does not know app B's dialog is on top of it.
+
+If each app bundles its own copy of `@kouji-ui/core`, `_root` also splits and two containers appear.
+
+**Fix:** seed `KjId` from a per-app prefix (an injectable `KJ_ID_NAMESPACE` token, defaulting to a random 4-char suffix) so ids cannot collide, and move the container handle behind a DI-provided holder so the container, the stack and the id minter all share one scope. Document the micro-frontend posture in `rules/architecture.md`.
+
+**Effort:** M
+
+---
+
+### F-13 Dead scroll-lock CSS referencing a removed service
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/components/src/popover/popover.css`
+
+```css
+/* packages/components/src/popover/popover.css:57-60 */
+  /* Modal-mode body scroll lock. Multiple stacked modals coordinate via
+     a counter in KjOverlayService; this just hides body overflow when the
+     attribute is present. */
+  body[data-kj-scroll-lock="true"] {
+```
+
+There is no `KjOverlayService` in the repo, and nothing writes `data-kj-scroll-lock` — the current lock sets `documentElement.style.overflow` (`html-overflow.ts:15`). Stale rule + stale comment in a published stylesheet.
+
+**Fix:** delete the rule and its comment.
+
+**Effort:** S
+
+## Carried forward from the 2026-09-06 review
+
+The findings below were filed in the previous pass (report at commit `9aee150a`, audited against
+`fd6dd34e`), were **not** re-filed by this audit, and were re-verified as still true at HEAD. They are
+restored here with their prior ids noted. Ids F-1…F-13 above are unchanged.
+
+### F-14 No focus restoration for dropdown-menu, tree-select, confirm-popup (and menubar's projected submenu)
+
+**Severity:** high · **Confidence:** high · *(carried forward — prev F-5)*
+**Files:** `packages/core/src/dropdown-menu/dropdown-menu-content.ts`, `packages/core/src/confirm-popup/confirm-popup-content.ts`, `packages/core/src/tree-select/tree-select-content.ts`, `packages/core/src/menubar/menubar-item.ts`
+
+Re-verified at HEAD: `grep KJ_OVERLAY_FOCUS_TRAP_STRATEGY packages/core/src packages/components/src` finds providers in exactly **three** components — `popover-content.ts:22`, `date-picker-calendar.ts:44` and `command-palette-dialog.ts:59` (plus the token definition, `builder.ts:100` and `panel.ts:70`). dropdown-menu, menubar's projected `[kjDropdownMenu]` path, tree-select and confirm-popup provide none, so `focusTrap` is `null` and `restoreFocus()` is never even reached. These are the panels that move **real DOM focus into the panel** (`dropdown-menu-content.ts` roving-focus effect; `confirm-popup-content.ts:71` `requestAnimationFrame(() => this.focusDefault())`), so on close the browser drops focus to `<body>` and a keyboard user loses their place. `confirm-popup-content.ts:20`'s own TSDoc advertises "focus restoration".
+
+This is **distinct from F-1**: F-1 is that the controller never invokes the hooks of a trap that *was* provided; F-14 is that four consumers provide no trap at all. Fixing F-1 alone leaves F-14 open.
+
+**Fix:** have these panels provide `tabCycle({ returnFocus: true })` (or a restore-only variant that skips Tab cycling for non-modal menus), or default `focusTrap` on `KjOverlayPanel` to a restore-only strategy when the consumer supplies none. Spec per component: open → arrow to item 2 → Escape → `document.activeElement === trigger`. **Effort:** M
+
+---
+
+### F-15 Re-opening during the close transition leaks the overlay's stack entry and its document listeners
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-6)*
+**Files:** `packages/core/src/primitives/overlay/controller.ts:91-96,123-164,186-200`
+
+Still exact at HEAD. `close()` does all teardown inside `beginClose`'s deferred `runTransition` callback (`controller.ts:143-164`), while `open()` acquires synchronously. `open()` during `'closing'` calls `cancelTransition()` (`:95`), which clears the rAF, the `longest+50 ms` safety timeout and the transition listeners (`:186-200`) — so that pending `done()` never runs — and `beginOpen` then overwrites `this.stackHandle` at `:131`. Because stack entries are removed only through the handle closure, the old `StackEntry` stays in `_stack` for the life of the app and `maybeRemoveListeners` can never uninstall the capture-phase document `keydown` / `pointerdown` listeners.
+
+Not reachable through triggers (`toggle()` at `:106-109` only opens from `'closed'`) or the services (each builds a fresh controller). Reachable through the components that call `controller.open()` directly — e.g. a combobox: pick an option (`combobox-root.ts:253` → `close('programmatic')`) and type another character within the panel's ~140 ms transition. Same shape at `combobox-root.ts:267`, `tree-select-trigger.ts:75`, `date-picker-trigger.ts:154/178`, `cascade-select-root.ts:188`.
+
+**Fix:** have `cancelTransition()` (or a new `abortPendingClose()`) release the previous cycle's resources when the interrupted state was `'closing'` — unregister the handle, `scrollLock.onClose()` — rather than discarding the callback; do not double-release when cancelling an `'opening'` transition. **Effort:** M
+
+---
+
+### F-16 Transition duration is measured from the pre-transition state, and only the first duration in a list
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-10)*
+**Files:** `packages/core/src/primitives/overlay/controller.ts:165-184`, `packages/core/src/primitives/overlay/panel.ts:44`
+
+`runTransition` is called from `beginOpen` / `beginClose` immediately after `_state.set(...)`, but `data-state` is a host binding applied on the next change detection (`panel.ts:44`), so `getComputedStyle(panel)` reads the **previous** state's styles. A stylesheet that defines its duration under `[data-state="open"]` / `[data-state="closing"]` — the normal pattern — measures `0 s`, falls into the `longest === 0` branch and resolves on the next rAF, cutting the animation off (for close, `done()` immediately sets `hidden` and un-portals). Separately, `parseFloat('0.2s, 0.3s')` is `0.2`, so only the first duration of a comma-separated list is honoured and the 50 ms safety margin can fire early. And `dispose()` (`:112-121`) never calls `cancelTransition()`, so a deferred `done()` runs against already-detached strategies.
+
+**Fix:** write `data-state` imperatively on the panel before measuring (the code already does imperative attribute writes in `beginClose`), or measure on the next frame; take `Math.max` over the split duration list including `transition-delay`; call `cancelTransition()` at the top of `dispose()`. **Effort:** S
+
+---
+
+### F-17 `kjMount` on `<kj-dropdown-menu-content>` is read in the constructor and is therefore always `'portal'`
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-11)*
+**Files:** `packages/core/src/dropdown-menu/dropdown-menu-content.ts:226-240`, `packages/core/src/dropdown-menu/dropdown-menu-trigger.ts:83-85`
+
+Still exact at HEAD — `const m = this.kjMount();` sits at `dropdown-menu-content.ts:229`, inside the constructor. Signal inputs are not populated at construction, so `kjMount()` always returns the declared default and the `'inline'` / `'point'` branches are unreachable from the content element; the documented `KjDropdownMenuMount` API does not work. The trigger works around the same problem by reading a raw DOM attribute in a factory (`dropdown-menu-trigger.ts:83-85`, case-sensitivity-fragile). The whole `deferredMount` / `deferredPosition` shell exists to allow late delegate selection — it just is not driven from an effect.
+
+**Fix:** move delegate selection into an `effect()` (the shells already handle `setDelegate` after `attach` / `onOpen`), then drop the `getAttribute('kjTrigger')` hack in favour of `switchableTriggerEvent`. **Effort:** S
+
+---
+
+### F-18 Declarative overlays cannot render a backdrop, so `solidBackdrop` on them is inert configuration
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-12)*
+**Files:** `packages/core/src/primitives/overlay/builder.ts:137`, `packages/core/src/command-palette/command-palette-dialog.ts:54-57`
+
+`KjBackdrop` is instantiated in exactly one place repo-wide — `builder.ts:137`, `wrapper.backdropAnchor().createComponent(KjBackdrop, …)` — i.e. only on the service-launched path (grep for `KjBackdrop` outside specs returns the class, that one `createComponent`, the barrel export, and type imports). `kj-command-palette-dialog` declares a full modal bundle including `solidBackdrop({ inert: true, closeOnClick: true })`: the strategy is injected by `KjOverlayPanel` and drives `aria-modal="true"` (`panel.ts:78`), but **no scrim element is ever created**, so `closeOnClick` is dead and the page behind the palette has no visual or pointer barrier. Any future declarative modal has the same hole.
+
+**Fix:** have `KjOverlayPanel`'s mount path create `KjBackdrop` into the portal wrapper when `KJ_OVERLAY_BACKDROP_STRATEGY` is non-null, torn down where the wrapper is removed. **Effort:** M
+
+---
+
+### F-19 Consumers hand-write ARIA onto the panel, fighting the panel's own host bindings
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-14)*
+**Files:** `packages/core/src/confirm-popup/confirm-popup-content.ts:96-98,104-106`, `packages/core/src/menubar/menubar-item.ts:177`
+
+`rules/architecture.md` is explicit — "ARIA — Always in `host` object. Never via `Renderer2` or direct DOM manipulation." Still violated at HEAD: `confirm-popup-content.ts` calls `panel.setAttribute('role', 'alertdialog')`, `setAttribute('aria-modal', 'false')` and `setAttribute('aria-describedby', …)` twice (`:96-98` and `:104-106`) over attributes `KjOverlayPanel` owns as host bindings (`panel.ts:42-43`), scheduled behind a `queueMicrotask` + `requestAnimationFrame` pair so AT can observe the wrong role first. `menubar-item.ts:177` stamps `role="menu"` by hand.
+
+**Fix:** confirm-popup provides `{ provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'alertdialog' }` plus an `aria-describedby` host binding on its own directive; menubar projects through `KjOverlayPanel` or provides the role token. The mechanism already exists and every other consumer uses it. **Effort:** S
+
+---
+
+### F-20 `tabCycle`'s focusable query is incomplete and unfiltered, and there are no focus sentinels
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-8b)*
+**Files:** `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:4,49`
+
+Unchanged at HEAD:
+
 ```ts
 // tab-cycle.ts:4
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 ```
-Missing: `[contenteditable]`, `audio[controls]`, `video[controls]`, `iframe`, `details > summary`, `area[href]`. And `querySelectorAll` returns elements that are `display:none`, `visibility:hidden`, inside a closed `<details>`, or inside an `inert` subtree — so `els[0]`/`els[els.length-1]` can be invisible, making Shift+Tab wrap to nothing. It also never looks into shadow roots.
 
-**(c)** The trap listens on the panel only (`:49`), so it cannot recover focus that escaped the panel by any route other than Tab from the first/last element (programmatic focus, browser find-in-page, a click on background content that isn't inert). CDK solves this with sentinel anchor elements; this implementation has neither anchors nor a `focusin` guard.
+Missing `[contenteditable]`, `audio[controls]`, `video[controls]`, `iframe`, `details > summary`, `area[href]`; and `querySelectorAll` returns elements that are `display:none`, `visibility:hidden`, inside a closed `<details>` or inside an `inert` subtree, so `els[0]` / `els[els.length-1]` can be invisible and Shift+Tab wraps to nothing. It never looks into shadow roots, and the listener is on the panel only, so focus that escaped by any route other than Tab (programmatic focus, find-in-page, a click on non-inert background) is never recovered.
 
-**Fix:** extend the selector, filter with `offsetParent !== null || getClientRects().length` plus a `closest('[inert]')` check, and add focus sentinels or a document-level `focusin` guard for real modality. Add a first-class arrow: expose the resolved `placement` on the panel as `data-side`/`data-align` and accept an `arrowEl` in `anchoredTo` opts to position it along the cross axis.
-**Effort:** M
+Latent today only because F-1 means the listener is never installed at all — it becomes live the moment F-1 is fixed, which is why it belongs in the same changeset.
+
+**Fix:** extend the selector, filter on `offsetParent !== null || getClientRects().length` plus a `closest('[inert]')` check, and add focus sentinels or a document-level `focusin` guard. **Effort:** M
 
 ---
 
-### F-9 `inertBased` focus trap inerts the wrong siblings — it is a no-op for portalled overlays
+### F-21 Speed-dial bypasses the overlay system entirely
 
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/strategies/focus-trap/inert-based.ts:11-29`
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-15)*
+**Files:** `packages/core/src/speed-dial/speed-dial.ts:65`, `packages/core/src/speed-dial/speed-dial-trigger.ts:36,49`
+
+Re-verified: `grep "KjOverlayController\|KjOverlayStack" packages/core/src/speed-dial/*.ts` returns **nothing**. Speed-dial is documented as an overlay-family component and advertises menu-button ARIA, but owns its state with a plain `linkedSignal` (`speed-dial.ts:65`). Consequences: no outside-click dismissal at all; Escape only works while focus is on the trigger, because the handler is a host binding on the trigger element (`speed-dial-trigger.ts:36`), so Escape from an action button does nothing; and it is not in the stack, so a speed-dial open over a dialog and the dialog both answer the same Escape.
+
+**Fix:** register it with `KjOverlayStack` for Escape / outside-click (minimal, keeps the inline DOM), or migrate it to `KjOverlayTrigger` + `inPlace()`. **Effort:** M
+
+---
+
+### F-22 A click on the trigger during the close animation is swallowed
+
+**Severity:** low · **Confidence:** medium · *(carried forward — prev F-18)*
+**Files:** `packages/core/src/primitives/overlay/controller.ts:106-109`
 
 ```ts
-onOpen() {
-  const panel = ctx.panelEl();
-  if (!panel?.parentElement) return;
-  for (const sibling of Array.from(panel.parentElement.children)) {
-    if (sibling === panel) continue;
-    ...el.setAttribute('inert', '');
+  toggle(): void {
+    if (this._state() === 'closed') this.open();
+    else this.close('programmatic');   // during 'closing', close() early-returns
+  }
 ```
 
-It inerts the panel's **immediate DOM siblings**. But every overlay in this system lives inside a `.kj-overlay-wrapper` whose only other children are the backdrop and the panel — `body-portal.ts:62` (`w.appendChild(panel)`) and `builder.attachComponent` (`builder.ts:137-144`, backdrop + panel into the wrapper's two anchors). So the strategy inerts the backdrop and nothing else. The application root (`<app-root>`, the real background content) is a sibling of `.kj-overlay-container` under `<body>` and is never touched.
+Suppressing close-then-reopen on the same press is correct, but the same path means a user who clicks the trigger while a close animation from *some other* cause is still running gets nothing at all. With a 200 ms panel transition that is a reachable dead zone.
 
-Nothing currently uses `inertBased()` (the three services all use `tabCycle`), so this is latent rather than live — but it is exported from `strategies/index.ts:17` as a supported strategy, and `solidBackdrop({ inert: true })` sets `isModal()` → `aria-modal="true"` on the panel (`panel.ts:43, 78`) *without* any actual inerting. Background content is never `inert` and never `aria-hidden` for any overlay in the library.
-
-**Fix:** inert the siblings of the **overlay container**, not of the panel — i.e. walk `getOverlayContainer()!.parentElement.children` and skip the container. Restore on close (already correct). Keep `aria-modal` as the AT story but back it with real `inert` so pointer and keyboard modality match.
-**Effort:** S
+**Fix:** let `toggle()` treat `'closing'` as "reopen" — but only after F-15, otherwise it makes the stack leak easier to hit. **Effort:** S
 
 ---
 
-### F-10 Transition duration is measured from the pre-transition state, and only the first duration in a list
+### F-23 Three more pieces of dead overlay CSS
 
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/controller.ts:151-178`
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-4b; complements F-13)*
+**Files:** `packages/components/src/dialog/dialog.css:2-10`, `packages/components/src/drawer/drawer.css:51-61`, `packages/core/src/primitives/overlay/strategies/backdrop/blurred.ts:4`
 
-```ts
-const cs = panel ? getComputedStyle(panel) : null;
-const transitionMs = cs ? parseFloat(cs.transitionDuration) * 1000 : 0;
-const animationMs  = cs ? parseFloat(cs.animationDuration)  * 1000 : 0;
-```
+- `.kj-dialog-overlay` (`dialog.css:2`) matches nothing: the only reference to that class name anywhere in `packages/` is `overlay-stacking.spec.ts:273`, which asserts its `z-index` — a test pinning a rule nothing renders.
+- `[data-kj-drawer-container]::before` and its `:has()` override (`drawer.css:51`, `:59`) never render; no TypeScript emits that attribute. `drawer.spec.ts:17,31` still query it, so those helpers are stale too.
+- `.kj-backdrop--blur` is applied by `blurredBackdrop()` (`blurred.ts:4`) and has **no rule anywhere** in the repo, so `blurredBackdrop()` renders identically to `solidBackdrop()`.
 
-`runTransition` is called from `beginOpen`/`beginClose` immediately after `_state.set(...)`. `data-state` is a host binding (`panel.ts:44`) applied on the next change detection, so `getComputedStyle` reads the styles of the **previous** state. A stylesheet that defines the duration under `[data-state="open"]` or `[data-state="closing"]` (the normal pattern) measures `0s` on the opening/closing pass, falls into the `longest === 0` branch (`:159`) and resolves on the next rAF — cutting the animation off, since `done()` for close immediately sets `hidden` (`:144`) and un-portals.
-
-Separately, `parseFloat('0.2s, 0.3s')` returns `0.2` — only the first duration of a comma-separated list is considered, so the 50 ms safety margin at `:177` can fire before a longer second property finishes.
-
-There is also no cleanup of `transitionDeadline` / `transitionListener` in `dispose()` — `dispose()` (`:103-112`) calls `close()` (which arms a timeout) and then detaches every strategy synchronously, so the deferred `done()` runs against detached strategies. It happens to be survivable today (each strategy's `detach()` is defensive), but it is an unguarded ordering.
-
-**Fix:** flip the order — set `data-state` imperatively on the panel before measuring (the codebase already does imperative attribute writes at `:144`), or measure on the next animation frame. Use `Math.max(...cs.transitionDuration.split(',').map(parseFloat))` including `transition-delay`. Call `cancelTransition()` at the top of `dispose()`.
-**Effort:** S
+**Fix:** delete the two dead rules and their stale spec helpers; either add the `backdrop-filter` rule for `.kj-backdrop--blur` to `packages/core/src/primitives/overlay/overlay.css` or delete the strategy. **Effort:** S
 
 ---
 
-### F-11 `kjMount` on `<kj-dropdown-menu-content>` is read in the constructor and therefore always `'portal'`
+## Changed since the 2026-09-06 review
 
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/dropdown-menu/dropdown-menu-content.ts:212-226`
+Previous report: `git show 9aee150a:reports/review/01-overlay.md`, audited at `fd6dd34e`. Range since:
+`fd6dd34e..HEAD` (8 commits). Every "Fixed" claim below was verified against the code at HEAD, not
+taken from either report.
 
-```ts
-constructor() {
-  const mount = inject(KJ_OVERLAY_MOUNT_STRATEGY) as KjDeferredMount;
-  const trigDir = inject(KjDropdownMenuTrigger, { optional: true });
-  const m = this.kjMount();          // ← signal input, not yet set
-  if (m === 'inline') { ... }
-  else if (m === 'point' && trigDir) { ... }
-  else { mount.setDelegate(bodyPortal()); position.setDelegate(anchoredTo(...)); }
-}
-```
+### Fixed
 
-Signal inputs are not populated at construction time, so `this.kjMount()` always returns the declared default `'portal'` and the `'inline'` / `'point'` branches are unreachable from the content element. The documented API (`:98-102`, `KjDropdownMenuMount` at `dropdown-menu-trigger.ts:26`) does not work.
+- **prev F-4(a) — "Per-component CSS `z-index` overrides the container's stacking contract — a select inside a drawer renders beneath it."** Fixed by `2948c5b5` *fix(overlay): nested overlays always stack above their opener (#69)*. Verified at HEAD: `applyOverlayZIndex` (`packages/core/src/primitives/overlay/stack.ts:59-68`) writes `--kj-overlay-z` on the panel and both `--kj-overlay-z` **and an inline `z-index`** on its `.kj-overlay-wrapper`, so each wrapper becomes its own stacking context; `nextZIndex` (`stack.ts:175-181`) is `max(zIndex) + 1` over open entries, not the count; `clearOverlayZIndex` (`stack.ts:71-80`) reverses it before the panel leaves the wrapper. All 17 overlay panel stylesheets now read the variable — `select.css:63`, `combobox.css:48`, `tree-select.css:70`, `cascade-select.css:46`, `date-picker.css:42`, `datetime-picker.css:43`, `dialog.css:9`, `drawer.css:16` and `:56`, `sheet.css:26`, `popover.css:28`, `dropdown-menu.css:28`, `tooltip.css:28`, `command-palette.css:18` and `:33`, `color-picker.css:32`, `confirm-popup.css:22` — and `packages/components/src/overlay/overlay-stacking.spec.ts` is a real regression test over the flattened cascade. The prev review's traced repro (a select opened inside an open drawer) now paints correctly. **One escape survives** and is re-filed as current **F-10**: `cascade-select.css:64` still hard-codes `z-index: 1001`.
 
-The trigger works around the same problem with a raw DOM attribute read in a factory — which is itself a smell and is case-sensitivity-fragile:
-```ts
-// dropdown-menu-trigger.ts:83-85
-const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
-const kind = el.getAttribute('kjTrigger') ?? el.getAttribute('kjtrigger');
-```
+No other previous overlay finding is fixed. For the record, the other two behavioural commits in the range fixed things the previous review did not flag: `e6aa28a5` (#73) made a backdrop dismiss only a press that *began* on it, and `415123ad` (#67) stopped a confirm-popup inside a dialog from closing the dialog. `fb1d1956` (#71) fixed the *styles* dimension's prev F-1 (unshipped overlay CSS), not an overlay-dimension finding.
 
-Note the whole `deferredMount`/`deferredPosition` shell (`:52-94`) exists precisely to allow late delegate selection — it just isn't driven from an effect.
+### Still open
 
-**Fix:** move the delegate selection into an `effect()` (the shells already handle `setDelegate` after `attach`/`onOpen` via their `attached`/`opened` flags), matching how `KjPopoverTrigger` drives `switchableTriggerEvent` (`popover-trigger.ts:72-86`). Then drop the `getAttribute` hack in the trigger factory and use `switchableTriggerEvent` there too.
-**Effort:** S
+| prev id | prev title (abbreviated) | current id |
+|---|---|---|
+| F-1 | Declarative overlays are not disposed on host destroy | **F-3** (same defect, same "orphan until next gesture" scoping) |
+| F-2 | `closeOnEsc` / `closeOnOutside` accepted everywhere, plumbed nowhere | **F-2** |
+| F-3 | Overlay toasts join the Esc/outside-click stack | **F-4** |
+| F-4(b) | Three pieces of dead overlay CSS | **F-23** (carried forward above) |
+| F-5 | No focus restoration for dropdown-menu / tree-select / confirm-popup / menubar | **F-14** (carried forward above) |
+| F-6 | Re-opening during the close transition leaks the stack entry | **F-15** (carried forward above) |
+| F-7 | `anchoredTo` RTL-blind, viewport-only, synchronous scroll reposition | split across **F-7** (scroll cost + clipping ancestor), **F-8** (measures a hidden panel), **F-9** (RTL); the dead CSS-anchor branch is Open question 4 |
+| F-8(a) | No arrow/caret support; resolved `placement` consumed by nothing | **F-5** (`data-side` / `data-align` never bound) |
+| F-8(b) | `tabCycle` focusable query incomplete/unfiltered, no sentinels | **F-20** (carried forward above) |
+| F-9 | `inertBased` inerts the wrong siblings | folded into **F-1**'s "separate, co-located gap" sub-item and Open question 2 |
+| F-10 | Transition duration measured from the pre-transition state | **F-16** (carried forward above) |
+| F-11 | `kjMount` read in the constructor | **F-17** (carried forward above) |
+| F-12 | Declarative overlays cannot render a backdrop | **F-18** (carried forward above) |
+| F-13 | Container / `KjId` module-global state, raw `document` | **F-12**, partially — current F-12 covers only the duplicate-id and per-app z-stack half. The SSR module-global half (`_root`, `_announce.ts`'s region map, the scroll-lock counters, `typeof document` instead of `DOCUMENT`/`PLATFORM_ID`) is **still open, not re-filed here**; it belongs to `06-ssr.md`. |
+| F-14 | Hand-written ARIA on the panel | **F-19** (carried forward above) |
+| F-15 | Speed-dial bypasses the overlay system | **F-21** (carried forward above) |
+| F-16 | Scroll lock is desktop-only; `cssClip` compensates nothing | still open, **not re-filed** — this pass demoted it to Open question 5. The prev pass was right that `overflow:hidden` on `<html>` does not lock iOS Safari and that `cssClip` has no scrollbar compensation; it deserves a finding, not a question. |
+| F-17 | `aria-expanded` stamped on every trigger, tooltips included | still open, **not re-filed** — demoted to Open question 3 this pass. Verified unchanged at HEAD (`trigger.ts:27-31` binds `aria-expanded` unconditionally; `on-hover.ts` reports `ariaHasPopup: null`). The prev pass was right; it is a WCAG 4.1.2 issue and should be a low finding. |
+| F-18 | Trigger click during the close animation is swallowed | **F-22** (carried forward above) |
 
----
+### Not reproduced
 
-### F-12 Declarative overlays cannot render a backdrop, so `solidBackdrop` on them is inert configuration
+Every previous finding was accounted for above — none of them was silently dropped. Specifically:
 
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/builder.ts:136-138`, `packages/core/src/command-palette/command-palette-dialog.ts:54-57`
+- **Fixed:** prev F-4(a) only.
+- **Missed by this pass and now restored** (the previous review was right and this audit did not look): prev F-5, F-6, F-8(b), F-10, F-11, F-12, F-14, F-15, F-18, and prev F-4(b). All ten were re-verified true at HEAD and re-filed above as F-14…F-23. Being honest about the cause: this pass concentrated on the strategy-bus wiring (F-1–F-4) and the positioner, and simply did not re-walk the per-consumer surface (dropdown-menu, menubar, confirm-popup, speed-dial) or the transition machinery.
+- **Deliberately demoted rather than dropped:** prev F-16 and F-17, now Open questions 5 and 3. Both are still true at HEAD; the demotion is a judgment call this reconciliation does not endorse.
+- **Out of this dimension's scope:** the SSR half of prev F-13, tracked in `06-ssr.md`.
+- **Wrong in the previous pass:** nothing. No prior overlay finding was refuted by this audit's evidence.
 
-`KjBackdrop` is instantiated in exactly one place:
-```ts
-// builder.ts:136-138
-if (handle.config.backdrop) {
-  wrapper.backdropAnchor().createComponent(KjBackdrop, { injector: handle.injector });
-}
-```
-i.e. only on the service-launched path. `kj-command-palette-dialog` declares a full modal bundle including `solidBackdrop({ inert: true, closeOnClick: true })` — the strategy is injected by `KjOverlayPanel` (`panel.ts:69`) and drives `aria-modal="true"` (`panel.ts:78`), but **no scrim element is ever created**, so `closeOnClick` is dead and the page behind the palette has no visual or pointer barrier (only the global stack `pointerdown` accidentally closes it). Any future declarative modal has the same hole.
+### New since then
 
-**Fix:** have `KjOverlayPanel`'s mount path create the backdrop into the portal wrapper when `KJ_OVERLAY_BACKDROP_STRATEGY` is non-null — e.g. `bodyPortal` returns the wrapper and the panel directive creates `KjBackdrop` as its first child via a `ViewContainerRef`/`createComponent`, torn down in the same place the wrapper is removed.
-**Effort:** M
-
----
-
-### F-13 Overlay container and `KjId` use module-global state and raw `document`, not `DOCUMENT` / `APP_ID`
-
-**Severity:** medium · **Confidence:** medium
-**Files:** `packages/core/src/primitives/overlay/container.ts:19-42`, `packages/core/src/primitives/overlay/id.ts:10-17`, `strategies/live-announcer/_announce.ts:15-28`
-
-```ts
-// container.ts:19-28
-let _root: HTMLElement | null = null;
-export function getOverlayContainer(): HTMLElement | null {
-  if (typeof document === 'undefined') return null;
-  ...
-  document.body.appendChild(_root);
-```
-
-Three consequences:
-- **SSR:** the guard is `typeof document === 'undefined'`, not Angular's `DOCUMENT` token / `isPlatformBrowser`. Every other file in the primitive uses `PLATFORM_ID` (`controller.ts:36-37`, `stack.ts:36-37`). In a server process where a DOM shim installs a global `document` (a common setup), `_root` becomes a **module-level singleton shared across requests** — cross-request DOM retention. The same applies to `_announce.ts`'s module-level `regions` map (`:15`) and both scroll locks' module-level `_count`/`_saved` (`html-overflow.ts:3-5`, `css-clip.ts:3-4`).
-- **Multiple app instances on one page** share one container (arguably fine) but each gets its own root-injector `KjId`, so both mint `kj-panel-1`, `kj-overlay-1`, … → **duplicate DOM ids** and cross-app `aria-controls` collisions.
-- **Id determinism:** `id.ts:7-8` claims stability "across SSR boundaries", but the counter is a single shared sequence consumed by overlays, panels and form fields in creation order. Any `@defer` block, lazy route, or overlay opened before hydration shifts every subsequent id, breaking `id`/`aria-controls` hydration matching. `menubar-item.ts:177` sidesteps `KjId` entirely with its own `_menubarPanelId` counter.
-
-**Fix:** turn the container into an injectable (`providedIn: 'root'`) that takes `DOCUMENT` and `PLATFORM_ID`, so each app instance gets its own root and SSR never touches globals; do the same for the live-region registry and the scroll-lock counters. Seed `KjId` with `inject(APP_ID)` so parallel apps can't collide, and soften the TSDoc claim about SSR determinism (or make it real by deriving ids from a stable structural key).
-**Effort:** M
-
----
-
-### F-14 Consumers hand-write ARIA onto the panel, fighting the panel's own host bindings
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/confirm-popup/confirm-popup-content.ts:85-100`, `packages/core/src/menubar/menubar-item.ts:176-178`
-
-`rules/architecture.md` is explicit: *"ARIA — Always in `host` object. Never via `Renderer2` or direct DOM manipulation."* Two consumers do exactly that, and one of them races the framework:
-
-```ts
-// confirm-popup-content.ts:85-90 (and repeated at :95-98)
-private promoteRole(): void {
-  const panel = this.findPanel();
-  panel.setAttribute('role', 'alertdialog');
-  panel.setAttribute('aria-modal', 'false');
-  panel.setAttribute('aria-describedby', this.ctx.messageId);
-}
-```
-
-but `KjOverlayPanel` owns that attribute as a host binding:
-```ts
-// panel.ts:42-43
-'[attr.role]':       'role()',
-'[attr.aria-modal]': 'isModal() ? "true" : null',
-```
-`role()` is a `computed` over a constant (`panel.ts:74, 77`) so Angular will not usually re-write it — but any CD pass that re-evaluates the binding (or a future change making the role reactive) silently reverts `alertdialog` → `dialog`. The promotion is also scheduled in a `queueMicrotask` + `requestAnimationFrame` pair (`:70-73`), so there is a window where AT sees the wrong role. The right fix is a token: `{ provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'alertdialog' }` on the confirm-popup content — the mechanism already exists and every other consumer uses it.
-
-`menubar-item.ts:176-178` similarly stamps `role="menu"` and an id by hand instead of going through `KJ_OVERLAY_PANEL_ROLE` / `KjId`.
-
-**Fix:** confirm-popup provides `KJ_OVERLAY_PANEL_ROLE: 'alertdialog'` and an `aria-describedby` host binding on its own directive; menubar projects through `KjOverlayPanel` (or provides the role token) instead of `setAttribute`.
-**Effort:** S
-
----
-
-### F-15 Speed-dial bypasses the overlay system entirely
-
-**Severity:** low · **Confidence:** high
-**Files:** `packages/core/src/speed-dial/speed-dial.ts:89-126`, `packages/core/src/speed-dial/speed-dial-trigger.ts:29-54`
-
-Speed-dial is documented as an overlay-family component (`packages/components/src/speed-dial/`) and advertises menu-button ARIA (`aria-haspopup="menu"`, `aria-expanded`, `aria-controls`) but owns its state with a plain `linkedSignal` and never touches `KjOverlayController`, `KjOverlayStack`, or any strategy. Consequences:
-
-- **No outside-click dismissal at all** — the actions stay fanned out until the trigger is clicked again.
-- **Escape only works while focus is on the trigger**: the handler is a host binding on the trigger element (`speed-dial-trigger.ts:36`), so pressing Escape while focus is on an action button does nothing.
-- Not in the stack, so a speed-dial open over a dialog and the dialog both respond to the same Escape.
-
-This is the clearest case of the "18 consumers, one primitive" claim not holding. (`time-picker` also appears in the overlay list but is genuinely an inline segmented input, not an overlay — no issue there.)
-
-**Fix:** either register speed-dial with `KjOverlayStack` for Escape/outside-click (minimal change, keeps the inline DOM), or migrate it to `KjOverlayTrigger` + `inPlace()`/`inPlaceSibling()` like `kjMount="inline"` dropdown menus.
-**Effort:** M
-
----
-
-### F-16 Scroll lock is desktop-only: `overflow:hidden` on `<html>` does not lock iOS Safari, and `cssClip` compensates nothing
-
-**Severity:** low · **Confidence:** medium
-**Files:** `packages/core/src/primitives/overlay/strategies/scroll-lock/html-overflow.ts:10-20`, `strategies/scroll-lock/css-clip.ts:10-27`
-
-`htmlOverflow` is well built for desktop — it ref-counts and compensates scrollbar width (`:12-19`). But iOS Safari ignores `overflow: hidden` on `<html>`/`<body>` for touch scrolling; the standard workaround is `position: fixed` + preserved `scrollTop` + restore. With a full-screen drawer or sheet open (both use `htmlOverflow`), the page behind still rubber-band scrolls on iPhone and the scroll position is lost on close.
-
-`cssClip` sets `overflow: clip` (`:16`) with **no scrollbar-width compensation at all** — unlike its sibling — so the page shifts horizontally by the scrollbar width every time an overlay using it opens. It is currently unused by any consumer but is exported (`strategies/index.ts:21`).
-
-**Fix:** add an iOS branch to `htmlOverflow` (detect coarse pointer + `maxTouchPoints`, or just always use the fixed-body technique, which is safe everywhere): save `window.scrollY`, set `position:fixed; top:-Ns; width:100%`, restore and `scrollTo` on release. Mirror the scrollbar compensation into `cssClip` or delete it.
-**Effort:** M
-
----
-
-### F-17 `aria-expanded` is stamped on every trigger, including tooltip triggers
-
-**Severity:** low · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/trigger.ts:26-31`, `packages/core/src/tooltip/tooltip-trigger.ts:15-25`
-
-```ts
-// trigger.ts:27-30
-'[attr.aria-haspopup]': 'ariaHasPopup() ?? null',
-'[attr.aria-expanded]': 'isOpen()',
-'[attr.aria-controls]': 'panelId() ?? null',
-```
-
-`aria-expanded` is unconditional. `KjTooltipTrigger` composes `KjOverlayTrigger` and its strategy reports `ariaHasPopup: null` (`on-hover.ts:121`), so a tooltip trigger ends up with `aria-expanded="false"` and `aria-controls="kj-panel-N"` and **no** `aria-describedby`. Per WAI-ARIA, a tooltip is associated to its trigger with `aria-describedby`; `aria-expanded` on a button that only shows a tooltip is meaningless-to-misleading (WCAG 4.1.2 *Name, Role, Value*), and `aria-controls` has weak AT support for this pattern.
-
-**Fix:** make the ARIA shape strategy-driven — bind `aria-expanded` only when `ariaHasPopup() !== null` (or add an explicit `exposesExpanded` flag to `KjTriggerEventStrategy`), and have the tooltip trigger emit `aria-describedby` pointing at the panel id instead.
-**Effort:** S
-
----
-
-### F-18 A click on the trigger during the close animation is swallowed
-
-**Severity:** low · **Confidence:** medium
-**Files:** `packages/core/src/primitives/overlay/controller.ts:98-101`, `packages/core/src/primitives/overlay/stack.ts:106-112`
-
-`pointerdown` (capture, document) fires before `click`. For an open select/popover, clicking the trigger runs `stack.handlePointerDown` → the trigger is outside `contentEl` → `onClose()` → state `'closing'`. Then the trigger's own `click` listener fires `toggle()`:
-
-```ts
-// controller.ts:98-101
-toggle(): void {
-  if (this._state() === 'closed') this.open();
-  else this.close('programmatic');   // 'closing' → close() early-returns at :92
-}
-```
-
-Closing-then-reopening is correctly suppressed, which is the desired behaviour — but the same path means a user who clicks the trigger *while a close animation from some other cause is still running* gets nothing at all. With a 200 ms panel transition this is a reachable dead zone.
-
-**Fix:** let `toggle()` treat `'closing'` as "reopen": `if (state === 'closed' || state === 'closing') this.open(); else this.close(...)` — which requires F-6's cancel-cleanup fix first, otherwise it makes the stack leak easier to hit.
-**Effort:** S
-
----
+- **F-1 — the controller never invokes `focusTrap.onOpen` / `onClose`.** Genuinely new. The previous pass circled it from two sides (prev F-5 on consumers that provide no trap, prev F-9 on `inertBased` inerting the wrong siblings) but never identified that the controller drops the lifecycle hooks for the traps that *are* provided — which is why popover, date-picker and the command palette also have no Tab containment and no focus restoration despite configuring `tabCycle({ returnFocus: true })`.
+- **F-6 — the styled `<kj-command-palette>` bypasses the overlay primitive.** New. The prior review treated the palette only as a *consumer* of the primitive (prev F-1 lists `command-palette-dialog.ts:51` among the leaking providers); it never noticed that the component every documented example uses is a second, hand-rolled palette with `role="dialog" aria-modal="true"` over a non-inert background, no scroll lock, and a global `document.querySelector` for initial focus.
+- **F-10 — the residual z-index escapes.** New, and partly a consequence of the `#69` fix: `cascade-select.css:64`'s hard-coded `1001` was missed by the `--kj-overlay-z` migration, and making each wrapper a stacking context is precisely what now clamps a toast panel's `--kj-toast-z-index` inside its wrapper level, contradicting the `KjOverlayStack` TSDoc at `stack.ts:96-97`.
+- **F-11 — `KjCloseReason` carries no information.** Promoted to a first-class finding; the prior pass noted the hard-coded `'esc'` only as a bullet inside prev F-2.
+- **F-13 — dead `body[data-kj-scroll-lock="true"]` rule in `popover.css:57-60`,** referencing a `KjOverlayService` that does not exist. New.
 
 ## Recommended work items
 
-1. **[F-1]** Add an `ngOnDestroy` calling `dispose()` to `KjOverlayController`; add a regression spec asserting `stack.stackSize === 0` and no orphan `.kj-overlay-wrapper` after destroying a fixture with an open popover. *(high, S)*
-2. **[F-6, F-18]** Make `cancelTransition()` flush the pending `done()` instead of discarding it; zero `rafId` in the rAF callback; then allow `toggle()` to reopen from `'closing'`. *(medium, M)*
-3. **[F-2, F-3]** Introduce a close policy (`closeOnEsc`, `closeOnOutside`, `modal`) carried from `KjOverlayBuilderConfig` / a new DI token into `stack.register`; route the real `KjCloseReason` through `onClose`. Exclude `status`/`alert` roles from modal Escape routing (tooltips stay in the stack — WCAG 1.4.13 requires Escape dismissal). Specs: `alert:true` dialog survives outside click; toast does not steal Escape from a dialog. *(high for F-2 / medium for F-3, M)*
-4. **[F-5]** Move focus capture/restore into `KjOverlayController` (or provide a restore-only trap on dropdown-menu, tree-select, confirm-popup and menubar's projected submenu). Spec: open menu → arrow to item 2 → Escape → `document.activeElement === trigger`. *(high, M)*
-5. **[F-4]** Strip `z-index` from every overlay panel stylesheet; introduce a single `--kj-overlay-layer` set on the wrapper if layering classes are needed. Delete dead `.kj-dialog-overlay` / `[data-kj-drawer-container]::before` rules; add the missing `.kj-backdrop--blur`. *(high, M)*
-6. **[F-7]** `anchoredTo` pass: RTL via `KjDirectionality`, clipping-ancestor collision rects, rAF-coalesced passive scroll/resize, measure after the panel is visible, delete the dead CSS-anchor branch. *(medium, L)*
-7. **[F-12, F-9]** Let the declarative path render `KjBackdrop` into the portal wrapper, and fix `inertBased` to inert the container's siblings so `aria-modal` is backed by real inerting. *(medium, M)*
-8. **[F-11]** Drive `deferredMount`/`deferredPosition` delegate selection from an `effect()`; replace the `getAttribute('kjTrigger')` hack with `switchableTriggerEvent`. *(medium, S)*
-9. **[F-10]** Write `data-state` imperatively before measuring transition duration; parse the max of a comma-separated duration list incl. delay; `cancelTransition()` at the top of `dispose()`. *(medium, S)*
-10. **[F-13]** Convert the container, live-region registry and scroll-lock counters to root-provided injectables over `DOCUMENT`/`PLATFORM_ID`; seed `KjId` from `APP_ID`; correct the SSR determinism claim in `id.ts`. *(medium, M)*
-11. **[F-14]** Replace `setAttribute` ARIA in confirm-popup and menubar with `KJ_OVERLAY_PANEL_ROLE` + host bindings, per `rules/architecture.md`. *(medium, S)*
-12. **[F-8]** Extend and filter the focusable selector; add focus sentinels or a `focusin` guard; ship first-class arrow support driven by the already-exposed `placement` signal. *(medium, M)*
-13. **[F-17]** Gate `aria-expanded` on `ariaHasPopup !== null`; wire tooltip triggers with `aria-describedby`. *(low, S)*
-14. **[F-15]** Register speed-dial with `KjOverlayStack` (or migrate it to the trigger/panel primitives) so it gets Escape and outside-click. *(low, M)*
-15. **[F-16]** iOS-safe body scroll lock (`position:fixed` + scroll restore); scrollbar compensation in `cssClip` or delete it. *(low, M)*
-16. **Docs drift:** `rules/architecture.md` still names a `KjOverlayService` that does not exist and prescribes `afterNextRender()` for SSR safety where the code uses `PLATFORM_ID`. Update the rule to describe the actual builder/controller/strategy architecture.
+1. **Wire the missing strategy lifecycle hooks** (F-1) — add `focusTrap` / `liveAnnouncer` / `trigger` `onOpen` to `beginOpen` and `onClose` to `beginClose`, and make `inertBased()` actually reachable so `aria-modal="true"` is backed by an inert background. Ship with a controller test that asserts every configured strategy gets both hooks, and a dialog test that asserts focus returns to the trigger.
+2. **Deliver the close policy to the stack** (F-2) — thread `closeOnEsc` / `closeOnOutside` from `KjOverlayBuilderConfig` and `KjDialogOpenOptions` through the controller into `stack.register`; pick one owner for outside-press (stack *or* backdrop, not both). Regression test: `alert: true` survives Escape and a scrim click.
+3. **Make the controller destroy-safe** (F-3) — `ngOnDestroy` on `KjOverlayController` with synchronous teardown (cancel transition, unregister, release scroll lock, un-portal). Test that destroying a fixture with an open command palette leaves `stackSize === 0` and the page scrollable.
+4. **Introduce a non-modal overlay posture** (F-4) — `modal: false` for toast and tooltip so they neither take Escape nor become `topmost`; stop `KjToastService.openOverlay` building a panel-less overlay for the sugar methods.
+5. **Bind `data-side` / `data-align` on `KjOverlayPanel`** (F-5) — one host binding restores arrows across popover and tooltip.
+6. **Fold `<kj-command-palette>` back onto the primitive** (F-6) — (2) makes this possible rather than unblocking it (the palette never used the primitive in the first place); delete the hand-rolled portal/stack code and the global `querySelector` focus.
+7. **Positioning pass** (F-7, F-8, F-9) — rAF-coalesce and make passive, measure after the panel is visible, mirror `align` in RTL.
+8. **Z-index cleanup** (F-10) — cascade sub-panel onto `--kj-overlay-z`; decide whether toasts really are above the stack and make the code and the `KjOverlayStack` TSDoc agree.
+9. **Housekeeping** (F-11, F-12, F-13) — real close reasons, namespaced ids, delete the dead `data-kj-scroll-lock` rule.
 
 ## Open questions
 
-1. **Is stack participation meant to be universal?** `controller.ts:122` registers every overlay unconditionally. Was the intent "everything dismissible participates" (in which case F-3 needs a modal/non-modal split) or "only modals"? The `KjOverlayRegistration` interface already has the fields for either answer.
-2. **Was `inertBased()` ever exercised?** Nothing consumes it and its semantics only make sense for the pre-portal, in-place design. Should it be fixed (F-9) or deleted?
-3. **CSS Anchor Positioning** — `supportsCssAnchor()` is hard-disabled with a comment about Chrome `span-*` inconsistencies. Is the dead branch being kept for a near-term retry, or is manual math the permanent answer? If permanent, ~70 lines should go.
-4. **Clipping-container collision** — is anchoring inside a scrollable container (select inside a dialog body, popover inside a table) a supported scenario? If yes, F-7(2) is higher than medium.
-5. **`KjOverlayHandle.destroy()` vs. `queueMicrotask`** — all three services (`dialog.service.ts:56`, `drawer.service.ts:92`, `sheet.service.ts:108`) defer `handle.destroy()` by a microtask after the close transition already completed. Is the microtask load-bearing for `afterClosed$` ordering, or vestigial? It widens the window in which a disposed controller's deferred callbacks can still run.
-6. **Multiple Angular apps / micro-frontends on one page** — is that a supported target? The answer decides whether F-13's `APP_ID` seeding and per-app container are required or merely nice.
-7. **Is a `close-on-scroll` / `reposition` scroll strategy wanted?** CDK ships four; this system ships an implicit "always reposition". For a select anchored to a row in a virtualised table, "close on scroll" is usually the better default.
+- Is the `KjBackdrop` + `KjDismissPress` click path meant to be the *only* outside-dismiss mechanism, with `KjOverlayStack.handlePointerDown` reserved for overlays that have no backdrop (popover, select, dropdown)? Today both run for modals and the stack's `pointerdown` always pre-empts the backdrop's `click`, which makes the careful press-ownership logic unreachable for dialog / drawer / sheet.
+- Was `inertBased()` intended for the portalled case? As written it inerts `panel.parentElement.children`, which for a portalled panel is the overlay wrapper's own children — it would need to target `document.body`'s children outside `.kj-overlay-container` to do anything useful.
+- Should `KjOverlayTrigger` keep emitting `aria-expanded` / `aria-controls` for `role="tooltip"` panels (`trigger.ts:27-31`)? The APG tooltip pattern wants `aria-describedby` on the trigger and no expanded state.
+- `supportsCssAnchor()` is hard-coded to `return false` (`anchored-to.ts:51-56`) and `applyCss` / `clearCss` / `positionAreaFor` are ~60 lines of unreachable code. Keep as a staged path behind a flag, or delete until CSS Anchor Positioning stabilises?
+- Is iOS body-scroll behaviour in scope? `htmlOverflow()` sets `overflow: hidden` on `<html>`, which iOS Safari historically ignores for `position: fixed` overlays (the usual fix is `position: fixed` + `top: -scrollY` on `<body>` with restore). No consumer currently opts into `cssClip()`, which has the same limitation.

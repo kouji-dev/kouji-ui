@@ -1,132 +1,807 @@
 # Accessibility Review
 
-> **Adversarially verified 2026-09-15.** Findings below marked *(severity corrected during verification)* were re-checked against the source; corrections are inline. Refuted findings are preserved in **Refuted during verification** at the end of the findings list, not deleted.
-
-Scope: `packages/core/src/a11y/*`, `packages/core/src/primitives/*`, every interactive widget in `packages/core` + `packages/components`, `packages/themes`, plus reconciliation with the prior automated scan in `reports/a11y/`.
-Method: static reading only (no builds, no test runs, no browser). Every finding cites `file:line` with the real code.
+Scope: `packages/core/src/a11y/*`, `packages/core/src/primitives/*`, every interactive widget in `@kouji-ui/core` + `@kouji-ui/components`, `packages/core/src/motion`, `packages/themes`, reconciled against `reports/a11y/_summary.json`.
+Method: static read of the source at HEAD (`9aee150a`), tracing every keydown listener back to the element that actually holds DOM focus in real usage. Target per `CLAUDE.md` / `rules/accessibility.md`: **WCAG 2.1 AAA**.
 
 ## Verdict
 
-kouji-ui has an unusually **thoughtful a11y vocabulary** — a selection model that drives `aria-selected`/`aria-checked`, `aria-posinset`/`aria-setsize` stamping, an overlay stack that routes Escape to only the topmost layer, a reduced-motion signal, a focus-mode-aware list navigator, a genuinely complete slider and color-picker. But the **primitives are better than the assembly**: several widgets compose the right pieces and never connect the last wire, and the result is that some flagship components are *not operable by keyboard at all*. The three worst are select / cascade-select (the listbox panel owns the keyboard contract but never receives focus, and it is portalled to `<body>` so trigger keystrokes cannot even bubble to it), the data table (every cell is `tabindex="-1"` and nothing holds the grid's tab stop, so the whole `KjTableKeyboardNav` implementation is unreachable), and the tooltip (hover-only trigger, no `aria-describedby` — invisible to both keyboard and screen-reader users, while the docblock claims the opposite). A secondary claim originally made here was **refuted during verification**: `aria-modal="true"` on dialog/drawer/sheet/command-palette is backed by a real pointer-blocking backdrop, a working `tabCycle` Tab trap, topmost-only Escape routing and a scroll lock — the APG modal pattern — so the absent `inert` attribute is documentation drift (five docblocks claim it), not a conformance failure. Several docblocks assert behaviour the code does not implement, which is the most dangerous pattern here: consumers will trust `@doc-a11y` and ship inaccessible apps. AAA-specific items (7:1 contrast, 44px default targets, reduced motion in component CSS, timeouts) are inconsistently honoured — the team clearly knows the criteria (comments cite them by number) but enforcement stops at the components that got explicit attention.
+The primitive layer is genuinely well built — `KjSliderThumb`, `KjStepper`, `KjInputOtpCell`, `KjAccordion`, `KjTabs`, `KjCarousel`, `KjToast` and `KjFileUpload` each carry a complete, *bound* ARIA surface and a real keyboard contract, and `packages/core/src/motion` is one of the cleanest reduced-motion implementations I have read. But the overlay-backed list family is broken at the level that matters most: `KjSelect`, `KjTreeSelect` and `KjCascadeSelect` mount `KjListNavigator` — the directive that owns Arrow/Home/End/type-ahead/Enter — on a body-portalled panel that **nothing ever focuses**. Those three widgets open and close by keyboard but cannot be *navigated* by one, so choosing an option needs a pointer, while their `@doc-keyboard` blocks advertise a full APG contract. The data grid has the same shape of defect (no roving tabindex, so the default configuration has no tab stop in the body), and the tooltip has no focus trigger and no `aria-describedby` at all. These are Level-A failures on flagship components of a library whose stated target is AAA, and the specs do not catch them because they dispatch `KeyboardEvent`s directly onto the unfocusable panel. `KjInputOtp` is the inverse shape: its completion branch is dead code (`!val.includes('')` is always `false`), so `(kjComplete)` never emits and the completion announcement never happens — which is the only reason a genuinely destructive `KjLiveRegion` host composition has not yet detonated.
 
-**Grade: D+**
-
-*Post-verification: F-1 upheld at critical (scope refined — Escape and open-from-trigger still work; everything after opening is dead). F-2 **refuted** and re-filed as a low doc-accuracy fix. One critical finding remains in this dimension.* — strong intent and strong primitives, undermined by broken keyboard paths in three high-traffic widgets, and documentation that overstates conformance. Recoverable: most fixes are small and local, and the primitives needed already exist in the repo.
+**Grade: D.**
 
 ## What works
 
-- **Selection / ARIA state plumbing is genuinely good.** `packages/core/src/primitives/list/item.ts:39-43` binds `aria-selected`, `aria-checked` (tri-state `mixed` for cascade), `aria-posinset`, `aria-setsize`, `aria-keyshortcuts` — all *bound*, none static, all derived from the shared `KjSelectionModel`.
-- **Slider is APG-complete.** `packages/core/src/slider/slider-thumb.ts:51-68` binds `role="slider"`, `aria-valuemin/max/now/text`, `aria-orientation`, `aria-readonly`; `onKeydown` covers Arrow/Page/Home/End plus RTL sign flipping and **Escape-to-cancel-drag**, and `slider-track.ts:34` gives a click-to-position alternative so the control is not drag-only.
-- **Color picker** (`packages/core/src/color-picker/color-picker.ts:470-483`) models the saturation/value area as a real `role="slider"` with keyboard stepping and `aria-valuetext` — better than most commercial libraries.
-- **Accordion content** does the hard thing correctly: `aria-hidden` **and** `inert` on the collapsed panel (`packages/core/src/accordion/accordion.ts:394-395`) plus a `prefers-reduced-motion` guard in `packages/components/src/accordion/accordion.css:65-67`.
-- **Toast** has pause-on-hover/focus with ref-counted depth, an F6 entry hotkey, Escape dismissal and focus restore (`packages/core/src/toast/toast.ts:175-190, 299-390`) — more than Radix or Material ship.
-- **Icon defaults to decorative**: `aria-hidden="true"` unless `kjIconLabel` is given, which then swaps in `role="img"` + `aria-label` (`packages/core/src/icon/icon.directive.ts:70-72`).
-- **Field** auto-mints ids and maintains a real `aria-describedby` chain with help/error precedence (`packages/core/src/field/field-error.ts:33-59`, `field-help.ts:44`).
-- **Overlay stack** correctly routes Escape and outside-pointer to the topmost overlay only (`packages/core/src/primitives/overlay/stack.ts:99-112`).
-- **Reduced motion exists as a first-class signal** (`packages/core/src/motion/reduced-motion.ts`) and `motion.css:82-89` degrades to a 1ms fade.
-- No positive `tabindex` anywhere in `packages/core` or `packages/components` (verified by grep).
+- **Motion / 2.3.3** — `packages/core/src/motion/motion.css:78+` collapses every preset to a 1 ms opacity fade under `prefers-reduced-motion`, and `KjReducedMotion` (`packages/core/src/motion/reduced-motion.ts`) is SSR-safe and live. `KjOverlayController.runTransition` (`packages/core/src/primitives/overlay/controller.ts:169`) reads the media query before waiting on `animationend`. Spinner, progress-bar, carousel, drawer and sheet all honour it.
+- **Slider** — `packages/core/src/slider/slider-thumb.ts:50-71`: `role="slider"`, bound `aria-valuemin/max/now/text`, `aria-orientation`, `aria-readonly`, per-thumb `tabindex`, full Arrow/Page/Home/End contract, `touch-action: none` and pointer capture (2.5.7 satisfied — arrows are a non-drag path).
+- **Stepper** — `packages/core/src/stepper/stepper.ts:268-280, 443-451`: `aria-current="step"`, `aria-controls`/`aria-labelledby` pairing, `inert` + `hidden` on inactive content, and a deliberate, documented decision *not* to force roles onto `<ol>`/`<li>`.
+- **Command palette** — `packages/core/src/command-palette/command-input.ts:28-44` hosts the navigator on the **input**, which is where focus actually is; `command-palette-dialog.ts:55-66` adds `tabCycle({initialFocus:'first'})`, a backdrop and `aria-label="Command palette"`. This is the pattern the select family should copy.
+- **Combobox** — `packages/core/src/combobox/combobox-input.ts:41-72`: navigator on the input, `role="combobox"`, `aria-autocomplete`, `aria-busy`, Alt+ArrowDown/Up, Escape, Tab-closes.
+- **Input OTP** (ARIA surface) — `packages/core/src/input-otp/input-otp.ts:60-65, 305-326`: bound `aria-invalid` gated on `touched`, per-cell `aria-label`, roving `tabindex`, `autocomplete="one-time-code"` on cell 0 only, paste/copy handling.
+- **Toast** — `packages/core/src/toast/toast.ts:175-190` and `:250-300`: pause-on-hover **and** pause-on-focus, F6 to enter the viewport, Escape to leave with focus restore, `role="alert"` for destructive / `role="status"` otherwise. A real 2.2.1 answer, not a token one.
+- **Icons** — `packages/core/src/icon/icon.directive.ts:97-103`: decorative by default (`aria-hidden="true"`), `role="img"` + `aria-label` only when `kjIconLabel` is set. No unlabelled informative icons found.
+- **List scoping** — `ownListItems()` (`packages/core/src/primitives/list/scope.ts:35-43`) correctly stops a nested composite's rows being stolen, renumbered (`aria-posinset`) or activated by an outer container.
 
 ## Findings
 
-### F-1 Select and cascade-select listboxes are not keyboard operable
+### F-1 Select, tree-select and cascade-select cannot be navigated by keyboard once open: the list navigator listens on a panel that never receives focus
 
-**Severity:** critical *(upheld during verification)* · **Confidence:** high · **Effort:** M
-**Files:** `packages/core/src/select/select-content.ts:30-40`, `packages/core/src/select/select-trigger.ts:49-63`, `packages/components/src/select/select.ts:80-86`, `packages/core/src/cascade-select/cascade-select-panel.ts:38-60`
+**Severity:** critical *(upheld during verification; title and scope corrected)* · **Confidence:** high
+**Files:** `packages/core/src/select/select-content.ts:30-38`, `packages/components/src/select/select.ts:80-86`, `packages/core/src/primitives/list/navigator.ts:41-44`, `packages/core/src/primitives/list/item.ts:127-132`, `packages/core/src/primitives/overlay/controller.ts:139`, `packages/core/src/primitives/overlay/strategies/mount/body-portal.ts:62`, `packages/core/src/tree-select/tree-select-content.ts:73, 119-125`, `packages/core/src/cascade-select/cascade-select-panel.ts:55`
 
-The keyboard contract lives on the **panel** (`KjListNavigator` composed onto `kj-select-content`), but nothing ever moves DOM focus into the panel, and the panel is portalled into `<body>`:
-
-```ts
-// select-content.ts
-hostDirectives: [
-  { directive: KjOverlayPanel, inputs: ['kjFor'] },
-  KjListNavigator,                       // <- (keydown) host listener lives here
-],
-providers: [
-  { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'listbox' as const },
-  { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },   // <- moved to <body>
-  ...
-]
-// NOTE: no KJ_OVERLAY_FOCUS_TRAP_STRATEGY provider anywhere in the select cluster
-```
-
-`KjOverlayController.beginOpen()` calls `s.focusTrap?.focusFirst()` (`controller.ts:126`) — `focusTrap` is `null` for select, so focus stays on the trigger `<button>`. Keydown from the trigger bubbles up the *trigger's* ancestor chain; the panel is a child of `<body>`, so it never sees the event. Result: after opening a select, **ArrowDown / ArrowUp / Home / End / Enter / type-ahead all do nothing**. The same holds for cascade-select, whose panel even declares `'tabindex': '-1'` (`cascade-select-panel.ts:55`) but is never `.focus()`ed — `grep '\.focus()'` over both clusters returns only `KjSelect.focus()`, which focuses the *trigger*.
-
-Secondarily, `aria-activedescendant` is bound on the panel (`navigator.ts:42`) — an element that never holds focus, which is invalid per ARIA (the attribute must be on the focused element).
-
-The only keyboard test dispatches the event straight at the panel (`select.spec.ts:134: panel.dispatchEvent(new KeyboardEvent('keydown', …))`), which is why this passes CI.
-
-**Why it matters:** SC 2.1.1 Keyboard (A) — a core form control cannot be operated without a mouse. SC 4.1.2 Name, Role, Value (A) — `aria-activedescendant` on an unfocused element conveys no state to AT.
-
-**Fix:** either (a) provide a focus strategy so the panel takes focus on open (cascade's panel already has `tabindex="-1"`; **select's `KjSelectContent` declares no `tabindex` at all**, so it needs one added before a programmatic `focus()` would even work) per APG listbox-popup, or (b) keep focus on the trigger, move `KjListNavigator` onto the **trigger** (as the combobox already does at `combobox-input.ts:50`) and bind `aria-activedescendant` there. Option (b) matches APG's select-only combobox and is the smaller change. The in-repo precedent for (a) is `dropdown-menu-content.ts:137,150` and `tree-select-content.ts:32,64`, which pin `kjFocusMode` to `'roving'` and get DOM focus-follow from `navigator.ts:105-111`. Either way, restore focus to the trigger on close.
-
-**Verification notes (finding upheld at critical; every cited fact reproduced).**
-- No `KJ_OVERLAY_FOCUS_TRAP_STRATEGY` is provided anywhere in the select or cascade-select cluster — repo-wide it exists only in `command-palette-dialog.ts`, `date-picker-calendar.ts` and `popover-content.ts`. `tokens.ts:50` declares the token with no factory and `panel.ts:70` injects it optional, so `controller.ts:126`'s `s.focusTrap?.focusFirst()` is a verified no-op.
-- Options are not an alternative focus target: `item.ts:127-132` returns `tabindex="-1"` for every item unless `kjFocusMode` is `'roving'`, and both panels pin `'activedescendant'`.
-- **Scope refinement — not literally every key is dead.** Escape still closes, because `KjOverlayStack.ensureListeners()` (`stack.ts:82`) installs a capture-phase `keydown` listener on `document` independent of focus, and opening works because the trigger is a native `<button>` (Enter/Space fire `click`). The accurate statement is: **everything after opening is dead** — ArrowUp/Down, Home/End, PageUp/Down, Enter/Space activation, type-ahead and cascade's ArrowRight — while Escape and open-from-trigger still work.
-- **The docs are currently untrue.** The `@doc-keyboard` blocks at `components/src/select/select.ts:12-19` and `components/src/cascade-select/cascade-select.ts:48-61` advertise the full APG contract. `select.spec.ts:134` gives false confidence by dispatching `keydown` directly on the panel; `components/src/select/select.spec.ts` and `cascade-select.spec.ts` contain no keydown or focus assertions, and no e2e spec exercises select keyboard. The regression test must dispatch from `document.activeElement` after a real trigger click.
-
-### F-2 Five TSDoc blocks claim modal content is marked `inert`; nothing ever sets the attribute
-
-**Severity:** low *(corrected during verification: the original critical a11y finding was **refuted** — see "Refuted during verification"; this is the residual doc-accuracy issue)* · **Confidence:** high · **Effort:** S
-**Files:** `packages/components/src/dialog/dialog.ts:33-35`, `packages/components/src/drawer/drawer.ts:67`, `packages/components/src/sheet/sheet.ts:67`, `packages/components/src/action-sheet/action-sheet.ts:116`, `packages/components/src/command-palette/command-palette.ts:124`
-
-`inertBased()` (`strategies/focus-trap/inert-based.ts:20-22`) is the only code in the repo that sets the DOM `inert` attribute, and no service wires it — dialog/drawer/sheet all pass `focusTrap: tabCycle(...)`. But five docblocks tell consumers otherwise, e.g. *"Siblings outside the dialog are marked `inert` while it is open, so assistive tech sees only the dialog tree"* (`dialog.ts:31-35`).
-
-**This is documentation drift, not a WCAG failure** — see the refuted entry for why. The correct wording is that outside content is excluded via `aria-modal="true"` plus a pointer-blocking backdrop and a Tab focus trap, not via the `inert` attribute.
-
-**Optional hardening (not a conformance requirement).** AT support for `aria-modal` is imperfect on some older screen-reader/browser pairs, so a belt-and-braces layer applying `inert` (or `aria-hidden`) to the **application root** — every `<body>` child other than `.kj-overlay-container` — while a modal overlay is open would be an improvement. It must be a **new** mechanism, not `inertBased()`: that function only walks `panel.parentElement.children`, which for service-launched overlays is the per-overlay wrapper containing just `<kj-backdrop>`, so it would inert the backdrop and nothing else. It also must not displace `tabCycle` in the single `focusTrap` slot; it belongs on the backdrop strategy's currently-empty `onOpen`/`onClose` (`solid.ts:18-21`) or as a separate overlay-stack-level concern.
-
-**Fix:** correct the five docblocks. Treat the hardening layer as a separate, optional item.
-
-### F-3 Tooltips never open on keyboard focus and are not referenced by `aria-describedby`
-
-**Severity:** high · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/tooltip/tooltip-trigger.ts:18-25`, `packages/core/src/primitives/overlay/strategies/trigger-event/on-hover.ts` (0 occurrences of `focus`), `packages/core/src/tooltip/tooltip-content.ts`
+**What actually breaks.** The trigger is a native `<button>`, so Enter/Space fire a synthetic click and the panel **does** open by keyboard; `KjOverlayStack` installs a document-level capture keydown listener (`stack.ts:185, 203`) independent of focus, so Escape **does** still close it. Between those two points the widget is dead to the keyboard. The panel is physically `appendChild`ed into the overlay wrapper under `document.body` when it opens:
 
 ```ts
-providers: [
-  KjOverlayController,
-  { provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY, useFactory: () => onHover({ openDelay: 200, closeDelay: 0 }) },
-  { provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'tooltip' as const },
-],
+// packages/core/src/primitives/overlay/strategies/mount/body-portal.ts:62
+      wrapper.appendChild(el);
 ```
 
-`onHover` binds only `pointerenter` / `pointerleave` (`on-hover.ts:91-117`); `grep -c focus on-hover.ts` → `0`. And `grep -rn aria-describedby packages/core/src/tooltip packages/core/src/primitives/overlay` → no matches; the trigger instead gets `aria-expanded` + `aria-controls` from `KjOverlayTrigger` (`trigger.ts:27-30`), which is wrong markup for a tooltip (a tooltip is not an expandable region).
+while DOM focus stays on the trigger. The whole keyboard contract is bound to the panel’s own host:
 
-The shipped documentation claims both behaviours exist — `packages/components/src/tooltip/tooltip.ts:56` *"Tab — Moves focus onto the trigger; opens the tooltip (no delay on focus)"* and `:62` *"aria-describedby — wired from the trigger to the content's id while open"*.
+```ts
+// packages/core/src/primitives/list/navigator.ts:41-44
+  host: {
+    '[attr.aria-activedescendant]': 'kjFocusMode() === "activedescendant" ? activeId() : null',
+    '(keydown)': '_onKeydown($event)',
+  },
+```
 
-**Why it matters:** SC 2.1.1 (A) — tooltip content is unreachable without a pointer. SC 1.4.13 Content on Hover or Focus (AA) — the criterion presumes focus parity. SC 4.1.2 (A) — the tooltip text is never associated with its trigger, so screen readers announce nothing.
-**Fix:** compose hover + focus trigger strategies (`strategies/trigger-event/compose.ts` and `on-focus.ts` already exist), and bind `[attr.aria-describedby]="isOpen() ? panelId() : null"` on the trigger for `role="tooltip"` panels while suppressing `aria-expanded` for that role.
+The trigger’s keydown cannot bubble to a `<body>` child, so **ArrowUp/ArrowDown, Home/End, PageUp/PageDown, type-ahead and Enter/Space-to-activate are all unreachable** — the user cannot choose an option without a pointer. Every item is `tabindex="-1"` outside roving mode (`item.ts:127-132`), and `listboxClickTrigger()` wraps `onClick()`, which registers only a `click` listener (`on-click.ts:26`), so there is no alternative entry point.
 
-### F-4 Data-grid keyboard navigation can never be entered
+**Root cause per component**
 
-**Severity:** high · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/table/table-cell.ts:7-15`, `packages/core/src/table/table-keyboard.ts:25-32`, `packages/components/src/table/table.ts:332,391,455,526`
+- **`kj-select-content`** provides no `KJ_OVERLAY_FOCUS_TRAP_STRATEGY` (a repo-wide grep shows only command-palette, date-picker, popover and the builder provide that token), so `panel.ts:70` injects `null` and `controller.ts:139`’s `s.focusTrap?.focusFirst()` is a no-op. It also carries **no `tabindex` at all** — so adding a focus-trap strategy alone would not fix it; the panel could not take focus even if something tried.
+- **`kj-tree-select-content`** binds `(keydown)` on the panel (`:73`) and re-implements the roving focus-**follow** effect (`:119-125`), but nothing ever puts DOM focus in the panel and every item reads `tabindex="-1"` (`item.ts:127-132`) until an active item exists. (The seed effect at `navigator.ts:93-98` is gated on `kjFocusMode() === 'roving'`, which stays `'activedescendant'` because host-directive inputs cannot be defaulted — see F-15 — but that is **not** the blocker: `moveBy()` at `navigator.ts:141-145` explicitly handles a null active by starting at `-1`. The missing DOM focus is the blocker.)
+- **`kjCascadeSelectPanel`** has `'tabindex': '-1'` (`:55`) but nothing ever calls `.focus()` on it.
 
-Every rendered cell is hard-coded to `tabindex="-1"`:
+**Why it matters** SC 2.1.1 Keyboard (A) — the library’s flagship data-input widgets can be opened but not operated without a pointer. SC 4.1.2 — `aria-activedescendant` is published on an element that never holds focus, so AT has nothing to follow. The `@doc-keyboard` blocks in `packages/components/src/select/select.ts:11-19`, `packages/components/src/cascade-select/cascade-select.ts:48-54` and `packages/components/src/tree-select/tree-select.ts:173-179` document a contract the code cannot deliver, and `cascade-select.ts:61` additionally claims `aria-activedescendant` sits on the *trigger* — it is bound on the panel.
+
+**Fix** Mirror what `packages/core/src/dropdown-menu/dropdown-menu-content.ts:244-270` already does deliberately for exactly this reason — seed the navigator **and** move focus on open — or, for the activedescendant components, add `tabindex="-1"` to the panel *plus* a focus strategy that focuses the panel on open and restores the trigger on close. The combobox shows the other valid answer: it hosts the navigator on the focused `<input>` (`combobox-input.ts:41-72`). Select, tree-select and cascade-select got neither treatment.
+
+**Test gap** `packages/core/src/select/select.spec.ts:134` passes only because it dispatches the keydown **directly at the panel element**, which masks the bug rather than covering it. The regression test must drive focus from the trigger (see F-14).
+
+**Effort:** L
+
+---
+
+### F-2 `KjInputOtp` completion is dead code — `!val.includes('')` is always false; the `KjLiveRegion` host composition is a latent DOM-wipe behind it
+
+**Severity:** medium *(corrected during verification: filed as critical; the critical consequence is unreachable at HEAD)* · **Confidence:** high
+**Files:** `packages/core/src/input-otp/input-otp.ts:52-56, 259, 262`, `packages/core/src/a11y/live-region.ts:41, 46`, `packages/components/src/input-otp/input-otp.ts:108-128`, `packages/core/src/input-otp/input-otp.spec.ts`
+
+Two coupled defects, not one critical break.
+
+**(1) The present-tense bug — completion never fires.**
+
+```ts
+// packages/core/src/input-otp/input-otp.ts:259
+    const complete = val.length >= this.kjLength() && !val.includes('');
+```
+
+Every JavaScript string contains the empty string, so `!val.includes('')` is a constant `false` and the `complete` branch is **unreachable**. Verified: `'123456'.length >= 6 && !'123456'.includes('')` → `false`. Consequence: `(kjComplete)` never emits, `kjAutoSubmit` is inert, the documented "Code complete" announcement at `:262` never happens, and `input-otp.autosubmit.example.ts` demonstrates a feature that does not work.
+
+The a11y angle is **SC 4.1.3 Status Messages** (no status announcement on completion), not SC 2.4.3 Focus Order.
+
+**Fix** Drop the `!val.includes('')` clause and test emptiness per cell instead — e.g. `val.length === this.kjLength() && !val.split('').some(c => c === '')`, or simply `val.length === this.kjLength()`, since `value` is built by joining the char array and short cells contribute nothing to length. Add spec coverage in `packages/core/src/input-otp/input-otp.spec.ts`, which currently has **none** for completion (grep for `complete|announce` hits only an `autocomplete` attribute test) — which is why the dead branch survived.
+
+**(2) The latent bug it masks — announcing would delete the widget.**
+
+```ts
+// packages/core/src/a11y/live-region.ts:41,46
+    el.textContent = '';
+    // Brief timeout lets screen readers detect the content change.
+    setTimeout(() => { el.textContent = message; …
+```
+
+```ts
+// packages/core/src/input-otp/input-otp.ts:52-56
+  hostDirectives: [
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
+    KjFormControl,
+    KjLiveRegion,
+  ],
+```
+
+`packages/components/src/input-otp/input-otp.ts:109-128` renders the `@for` cells as children of that same `<div kjInputOtp>` host. So fixing (1) would make the first announcement delete every `<input kjInputOtpCell>` and the `@for` anchor comments, destroying the focused element. This is the **only** `KjLiveRegion` host directive in the repo on an element that owns rendered children.
+
+**Fix** Fix (1) and (2) together: give the OTP its own visually-hidden live-region *child* — the pattern `carousel.ts`, `rich-text-editor.ts` and `textarea.ts` already use via `viewChild` — instead of the host directive; and harden `KjLiveRegion.announce()` to write into a dedicated owned text node rather than clobbering host `textContent`. The hardening is worth doing at the primitive level regardless, since `KjLiveRegion` is public API and nothing stops a consumer applying it to a host with children.
+
+**Effort:** S
+
+---
+
+### F-3 The data grid implements no roving tabindex, so its body has no tab stop
+
+**Severity:** high *(upheld during verification; wording narrowed)* · **Confidence:** high
+**Files:** `packages/components/src/table/table.ts:332, 391, 455, 526`, `packages/core/src/table/table-cell.ts:7-15`, `packages/core/src/table/table-keyboard.ts:25-27, 67-70`, `packages/core/src/a11y/roving-tabindex.ts`
+
+**Evidence**
 
 ```html
-<td kjTableCell [kjCell]="c" tabindex="-1" …>
+<!-- packages/components/src/table/table.ts:332 (and 391, 455, 526 — every cell template) -->
+<td kjTableCell [kjCell]="c" tabindex="-1"
 ```
 
-and `KjTableCell` itself binds no tabindex (`role: 'gridcell'` + `aria-colindex` + `data-pin` only). `KjTableKeyboardNav.onKeyDown` bails on the first line unless the event already originated inside a cell:
+A grep for `tabindex` across `packages/components/src/table` and `packages/core/src/table` returns only those four lines plus `table-header.ts:23` (`canSort() ? "0" : null`) and a spec assertion — **no cell ever receives `tabindex="0"`**, statically or reactively. `KjTableCell` sets only `role="gridcell"`, `aria-colindex` and `data-pin`. The grid host (`table.ts:239-243`) is `<table kjTableKeyboardNav role="grid" …>` with no `tabindex`, and there is no `focus()` call, `focusin` handler or roving-tabindex logic anywhere in `packages/components/src/table/table.ts`. The navigation directive both enters and exits through cell focus:
 
 ```ts
-const startEl = (event.target as HTMLElement).closest<HTMLElement>('[kjTableCell]');
-if (!startEl) return;
+// packages/core/src/table/table-keyboard.ts:25-27
+  onKeyDown(event: KeyboardEvent): void {
+    const startEl = (event.target as HTMLElement).closest<HTMLElement>('[kjTableCell]');
+    if (!startEl) return;
 ```
 
-Since no cell ever holds `tabindex="0"`, keyboard focus can never land in the grid body (only the sortable `<th>`s are reachable, via `table-header.ts:23`). The entire Arrow / Home / End / Ctrl+Home / PageUp / PageDown implementation is unreachable.
+**The precise claim** The grid implements no roving tabindex, so **in the default configuration the `<tbody>` contains zero tab stops**: Tab goes header row → past the whole body. Two exceptions worth naming, neither of which rescues it:
 
-**Why it matters:** SC 2.1.1 (A) — grid content, row selection and inline editing are mouse-only.
-**Fix:** make the grid a roving-tabindex composite — exactly one cell holds `tabindex="0"` (last-focused, defaulting to the first data cell), the rest `-1`; bind it from `KjTableCell` rather than the template so consumers cannot break the invariant.
+- With `kjSelectionMode` set, each row's `kj-checkbox` *is* a tab stop — but it lives in a bare `<td class="kj-table-select-cell">` carrying no `kjTableCell`, so `table-keyboard.ts:25-27` still returns and the arrow keys do nothing from there.
+- A custom `cellTpl` containing a link or button is also a tab stop, and from it arrow navigation **does** work, because `closest('[kjTableCell]')` resolves to the enclosing `<td>`.
 
-### F-5 Column resizing is drag-only, with no keyboard path
+**Why it matters** SC 2.1.1 Keyboard (A). Sortable headers do get `tabindex="0"` (`table-header.ts:23`), so a keyboard user reaches the header row and then arrows into nothing — ArrowDown from a `<th>` hits the null guard and returns. The affected surface is not just navigation: `onCellKeydown` (`table.ts:897`) gates **F2 inline edit, Space row-selection and Ctrl/Cmd+A select-all** on a focused `kjTableCell`, so all three are keyboard-inoperable. The library's own example documents mouse-only entry ("Click into the grid and try the keys", `_examples/table.keyboard.example.ts:13`).
 
-**Severity:** high · **Confidence:** high · **Effort:** M
+**Fix** The primitive already ships: `KjRovingTabindex` at `packages/core/src/a11y/roving-tabindex.ts`, used by list, carousel, stepper and date-range-presets. `KjTableKeyboardNav` should adopt it — or bind `[attr.tabindex]` on `KjTableCell` to an active-cell signal with the first rendered cell defaulting to `0` — so exactly one cell is tabbable and focus moves with the arrow handler. Delete the hard-coded `tabindex="-1"` from the four templates so consumers cannot break the invariant.
+
+**Test gap** `table-keyboard.spec.ts` only ever focuses cells programmatically (`cells[0].focus()`), so it passes with no tab stop in existence, and the axe check at `table.spec.ts:65` cannot test tab reachability.
+
+**Effort:** M
+
+---
+
+### F-4 Tooltips never open on keyboard focus and are never linked with `aria-describedby`
+
+**Severity:** high *(upheld during verification; failing criteria corrected)* · **Confidence:** high
+**Files:** `packages/core/src/tooltip/tooltip-trigger.ts:19-25, 31`, `packages/core/src/primitives/overlay/strategies/trigger-event/on-hover.ts:116-117`, `packages/core/src/primitives/overlay/trigger.ts:26-31`, `packages/components/src/tooltip/tooltip.ts:56, 62`, `packages/core/src/popover/popover-trigger.ts:70-85`
+
+**Evidence**
+
+```ts
+// packages/core/src/tooltip/tooltip-trigger.ts:19-25
+    {
+      provide: KJ_OVERLAY_TRIGGER_EVENT_STRATEGY,
+      useFactory: () => onHover({ openDelay: 200, closeDelay: 0 }),
+    },
+```
+
+```ts
+// packages/core/src/primitives/overlay/strategies/trigger-event/on-hover.ts:116-117
+    listenTarget.addEventListener('pointerenter', onEnter);
+    listenTarget.addEventListener('pointerleave', onLeave);
+```
+
+`onHover` wires `pointerenter`/`pointerleave` only — there is no `focus`/`focusin`/`blur` path anywhere in the file. (`onFocus()` exists as a sibling strategy; the tooltip does not compose it.) And the trigger primitive publishes no description relationship:
+
+```ts
+// packages/core/src/primitives/overlay/trigger.ts:26-31
+  host: {
+    '[attr.aria-haspopup]':  'ariaHasPopup() ?? null',
+    '[attr.aria-expanded]':  'isOpen()',
+    '[attr.aria-controls]':  'panelId() ?? null',
+    '[attr.data-state]':     'state()',
+  },
+```
+
+A repo-wide grep for `describedby` returns **zero** hits in any tooltip file. `controller.ts` sets no ARIA attributes (its only `setAttribute` is `hidden`, line 159); `panel.ts:40-46` binds only id/role/aria-modal/data-state/hidden; `tooltip-content.ts` adds nothing; `tooltip-group.ts` is an explicit no-op. `tooltip.spec.ts` asserts only `aria-expanded === "false"` and `role="tooltip"` + `hidden` — nothing covers focus or description wiring.
+
+The consequence is concrete, not theoretical: the content is body-portalled (`bodyPortal()` in `tooltip-content.ts:21`), so it is not a DOM descendant of the trigger, and with no `aria-describedby` there is **no accessible relationship at all** — a screen-reader user hovering *or* focusing the trigger gets nothing.
+
+**Why it matters** SC 2.1.1 Keyboard (A) — keyboard users can never surface the tooltip. SC 4.1.2 Name, Role, Value (A) — the `role="tooltip"` panel is never linked to its trigger, so it is never announced even for mouse users.
+
+> **Correction:** SC 1.4.13 Content on Hover or Focus does **not** apply here. 1.4.13 governs content that *does* appear on hover/focus and requires it be dismissible / hoverable / persistent; it does not mandate that hover content also be focus-triggerable. Its Dismissible leg is in fact satisfied — `stack.ts:203` routes Escape to the topmost registered overlay.
+
+**Documentation mismatch** `packages/components/src/tooltip/tooltip.ts:56` documents "Tab — Moves focus onto the trigger; opens the tooltip (no delay on focus)" and `:62` documents "aria-describedby — wired from the trigger to the content's id while open". Neither exists. The docs must be corrected alongside the code, or consumers ship the defect believing it handled.
+
+**Fix** The primitive already exists one directory over — `popover-trigger.ts:70-85` composes `composeTriggerEvents(onHover({…, interactive: true}), onFocus(), onClick({openOnly: true}))`. `KjTooltipTrigger` should provide `composeTriggerEvents(onHover({ openDelay, closeDelay }), onFocus())`, and `KjOverlayTrigger` should bind `[attr.aria-describedby]="panelId()"` (in place of `aria-expanded`/`aria-controls`) when the panel role is `'tooltip'`.
+
+**Split out of this finding** — `trigger.ts:28` binds `[attr.aria-expanded]="isOpen()"` **unconditionally** on `KjOverlayTrigger`, so every tooltip trigger reports expanded/collapsed state that the APG tooltip pattern does not use. Real, confirmed, but a separate lower-severity defect: it should be suppressed when `KJ_OVERLAY_PANEL_ROLE` is `'tooltip'` (or when the strategy reports `ariaHasPopup: null`). In passing: `kjDisabled` on `KjTooltipTrigger` (`tooltip-trigger.ts:31`) is declared but never read by any strategy, so the documented `[kjDisabled]="true"` example is also inert — another separate defect.
+
+**Effort:** M
+
+---
+
+### F-5 Roving focus-follow steals focus on mount (menubar, and any inline roving list)
+
+**Severity:** medium *(corrected during verification: filed as high)* · **Confidence:** high *(raised from medium — the path was traced hop by hop)*
+**Files:** `packages/core/src/menubar/menubar.ts:299-306, 311-320`, `packages/core/src/primitives/list/navigator.ts:98-107`
+
+**Evidence**
+
+```ts
+// packages/core/src/menubar/menubar.ts:299-320
+    effect(() => {
+      const nav = this._nav();
+      if (!nav) return;
+      const list = this.items();
+      if (nav.activeId() !== null) return;
+      const first = list.find((i) => !i.disabled());
+      if (first) untracked(() => nav.setActive(first.id));
+    });
+
+    // Roving focus follow: mirror the navigator's `activeItem()` into DOM
+    // focus. Same rationale as the seed — `KjListNavigator`'s built-in
+    // focus-follow gates on its own `kjFocusMode()`.
+    effect(() => {
+      const nav = this._nav();
+      if (!nav) return;
+      const item = nav.activeItem();
+      if (!item) return;
+      const host = item._host();
+      if (host && typeof document !== 'undefined' && document.activeElement !== host) {
+        untracked(() => host.focus());
+      }
+    });
+```
+
+`menubar.ts:311-320` mirrors the navigator's active item into DOM focus **with no gate on whether the user has interacted**. Paired with the seed at `:299-306`, which sets the active id to the first non-disabled item as soon as `items()` resolves, the first `<button kjMenubarItem>` is focused on first render — on a fresh page `document.activeElement` is `<body>`, so the `!== host` check passes. Bar items are real `<button kjMenubarItem>` hosts (`KjMenubarItem` composes `KjListItem` on the same element), so they are natively focusable and `.focus()` cannot silently no-op. Nothing guards it: no `interacted` flag, no open-state gate, no platform or `afterNextRender` gate, and nothing in `packages/components/src/menubar/menubar.ts` (styling only).
+
+**This is a primitive-level gap, not a menubar quirk.** `KjListNavigator` carries the same unguarded focus-follow:
+
+```ts
+// packages/core/src/primitives/list/navigator.ts:98-107
+      if (this.kjFocusMode() !== 'roving') return;
+      …
+      if (host && document.activeElement !== host) host.focus();
+```
+
+so **any** list that opts into `kjFocusMode="roving"` while rendered inline steals focus on mount too. `KjDropdownMenuContent:248-269` carries the identical pair of effects and is correctly unaffected, because the overlay service only instantiates that component when the menu opens — focusing there is the intended APG behaviour.
+
+**Why it matters** SC 2.4.3 Focus Order (A) / 3.2.1 On Focus — the page moves focus (and scroll position) to the first menu item on load, before any interaction. It does not block use (one Tab or click recovers), loses no state, and is a one-line guard — hence medium.
+
+> **Correction:** drop the "two menubars would fight over it" claim. `document.activeElement` is not reactive and is read outside `untracked`, so neither effect re-runs on focus loss; the last bar to flush simply wins. There is no ping-pong.
+
+**Fix** Fix it once in the primitive (`navigator.ts:98-107`): only follow focus when the active id changed in response to a keyboard/pointer interaction or an overlay open, not on the seeding transition from `null` — then delete the menubar's duplicate. The seed effects must stay; they are what makes `tabindex="0"` reachable by Tab.
+
+**Test gap** No spec covers initial render (`menubar.spec.ts` only asserts focus after an explicit `items[n].focus()`). Add one asserting `document.activeElement` is still `document.body` after `fixture.detectChanges()` on a freshly rendered menubar.
+
+**Effort:** S
+
+---
+
+### F-6 A calendar with no selected value gives the grid no tab stop when today is out of range
+
+**Severity:** medium *(corrected during verification: filed as high; the total-lockout case has a different root cause, split out below)* · **Confidence:** high
+**Files:** `packages/core/src/calendar/calendar.ts:131-132, 135-138, 166-167`, `packages/core/src/calendar/calendar-day.ts:43-44, 81-94`, `packages/components/src/calendar/calendar.ts:96-110, 129-134`
+
+**Evidence**
+
+```ts
+// packages/core/src/calendar/calendar.ts:130-132
+    // Seed focusedDate from kjStartAt or kjValue or today.
+    const seed = this.kjStartAt() ?? this.kjValue() ?? new Date();
+    this.kjFocusedDate.set(startOfDay(seed));
+```
+
+Nothing clamps this against `kjMin` / `kjMax` / `kjDisabledDates`. Note that `kjStartAt()` and `kjValue()` read in the constructor always return their defaults — input bindings are not applied yet — so the constructor seed is *always* `new Date()`, and `kjStartAt` is not even exposed on `KjCalendarComponent`. The day cell then reflects that state as a **native** `disabled` attribute while holding the grid's only `tabindex="0"`:
+
+```ts
+// packages/core/src/calendar/calendar-day.ts:43-44
+    '[attr.tabindex]': 'isFocused() ? "0" : "-1"',
+    '[attr.disabled]': 'isDisabled() ? "" : null',
+```
+
+A disabled `<button>` is not focusable, so the roving effect at `calendar-day.ts:85-92` no-ops and Tab skips the grid: every other cell is `-1`.
+
+**Scope** This only fires when `kjValue` is **null** — `calendar.ts:135-138` re-seeds `kjFocusedDate` from any selected value, which is in range by definition. And focus still reaches the grid *indirectly*: the themed component renders real prev/next buttons (`packages/components/src/calendar/calendar.ts:96-110`) that are ordinary tab stops, and one Next press moves `focusedDate` onto an enabled cell, after which the roving effect pulls DOM focus into the grid. So for the common near-bound and weekday-only configurations this is a **degraded tab order, not a lockout**.
+
+**Why it matters** SC 2.1.1 Keyboard (A) / SC 2.4.3 Focus Order (A), and an APG date-picker-grid deviation — a `role="grid"` whose single roving cell is also `disabled` has no reachable tab stop.
+
+**Fix** Clamp the seed to the first selectable date (or compute the roving cell as the nearest enabled date), and **never emit `tabindex="0"` on a cell that also gets `disabled`**. Separately, swap the native `disabled` attribute for `aria-disabled="true"` plus a click guard so a disabled cell stays focusable, per the APG date-picker pattern.
+
+**Effort:** M
+
+**Secondary defect, and the genuinely high-impact case — should be filed separately.** The skip loop's bound guards break as soon as the candidate is outside the bound, rather than only when it steps *past* the bound in the direction of travel:
+
+```ts
+// packages/core/src/calendar/calendar.ts:166-167
+```
+
+With `kjMin` more than a month in the future, `moveFocus('month', 1)` breaks on iteration 0 and **Next becomes a permanent no-op**, so no day is reachable by keyboard at all. `kjMax` more than a month in the past is the mirror case, and the same guard makes Prev unable to return to a partially-bounded earlier month (from Oct 15 with `kjMin` = Sep 20, Sep 20–30 are unreachable). Add specs for: `kjMin` = today + 3 months with no value, `kjMax` = today − 3 months, and a prev/next round trip across a partially-bounded month.
+
+---
+
+### F-7 Service-launched dialogs, drawers and sheets have no accessible name, and the documented way to give one does not exist
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/components/src/dialog/dialog.ts:22-38`, `packages/core/src/dialog/dialog.ts:15-26`, `packages/core/src/primitives/overlay/builder.ts:129-150`, `packages/components/src/dialog/_examples/*.ts`
+
+**Evidence**
+
+The doc block tells consumers to point at a component that is not in the repo:
+
+```
+// packages/components/src/dialog/dialog.ts:24
+ *   aria-labelledby — wire to the id of your `<kj-dialog-title>` so the dialog has an accessible name
+```
+
+`grep -rn "dialog-title|DialogTitle" packages/` returns only that line and an unrelated comment in `popover-title.ts`. `KjDialog` (the body component) binds nothing but a class:
+
+```ts
+// packages/core/src/dialog/dialog.ts:15-22
+@Component({
+  selector: 'kj-dialog',
+  standalone: true,
+  hostDirectives: [{ directive: KjOverlayPanel }],
+  …
+  host: { class: 'kj-dialog' },
+```
+
+and every shipped example produces a nameless dialog — e.g. `dialog.default.example.ts:11-14` renders `<kj-dialog><h2>Hello</h2><p>Dialog body</p></kj-dialog>` with no `aria-label`/`aria-labelledby`. `grep aria-label packages/components/src/{dialog,drawer,sheet}/_examples` returns no matches.
+
+**Why it matters** SC 4.1.2 Name, Role, Value (A) and SC 2.4.6 Headings and Labels (AA): a `role="dialog"` with no accessible name is announced as just "dialog", with no indication of what opened. Every consumer copying an example inherits the defect.
+
+**Fix** Ship `KjDialogTitle` (`[kjDialogTitle]` + `<kj-dialog-title>`) that mints an id, and have `KjDialog`/`KjOverlayPanel` bind `[attr.aria-labelledby]` to the registered title id (mirror `KjAccordionItem`'s `headerId`/`contentId` pairing). Add an `aria-label` passthrough on `KjDialogOpenOptions` for title-less dialogs, warn in dev mode when a panel opens with neither, and update all six examples.
+
+**Effort:** M
+
+---
+
+### F-8 `solidBackdrop({ inert: true })` never applies `inert`, yet the panel asserts `aria-modal="true"`
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/strategies/backdrop/solid.ts:13-23`, `packages/core/src/primitives/overlay/panel.ts:43, 78`, `packages/core/src/dialog/dialog.service.ts:30-33`
+
+**Evidence**
+
+```ts
+// packages/core/src/primitives/overlay/strategies/backdrop/solid.ts:13-23
+export function solidBackdrop(opts: KjSolidBackdropOpts = {}): KjSolidBackdropStrategy {
+  return {
+    inertSiblings: opts.inert ?? true,
+    closeOnClick: opts.closeOnClick ?? true,
+    className: opts.className ?? 'kj-backdrop',
+    attach() {},
+    onOpen() {},
+    onClose() {},
+    detach() {},
+  };
+}
+```
+
+Every lifecycle hook is empty. The only consumer of the flag is:
+
+```ts
+// packages/core/src/primitives/overlay/panel.ts:78
+  readonly isModal = computed(() => !!this.backdrop?.inertSiblings);
+```
+
+which feeds `'[attr.aria-modal]': 'isModal() ? "true" : null'` (`panel.ts:43`). The working `inertBased()` strategy (`packages/core/src/primitives/overlay/strategies/focus-trap/inert-based.ts:44-52`) is exported but used by nothing outside its own spec.
+
+**Why it matters** SC 4.1.2 / 2.4.3: the dialog claims modality it does not enforce. `tabCycle` keeps Tab inside the panel, but nothing else does — a screen-reader virtual cursor, browser find, a programmatic `.focus()` from app code, or mobile swipe navigation all still reach background content, while `aria-modal="true"` tells AT they cannot. For dialogs opened through the builder the "siblings" of the panel are other overlay wrappers, not the app root, so even wiring `inertBased()` in unchanged would inert the wrong subtree.
+
+**Fix** Make `solidBackdrop.onOpen/onClose` apply `inert` to the *application* root siblings of `.kj-overlay-container` (and to sibling wrappers below this overlay's stack level), removing it on close and on `detach`. `KjOverlayStack` already tracks levels and content elements (`packages/core/src/primitives/overlay/stack.ts`), so drive it from there so nested overlays un-inert correctly.
+
+**Effort:** M
+
+---
+
+### F-9 `kj-field` does not put `aria-invalid`, `aria-required` or `aria-describedby` on the control, although `@doc-aria` says it does
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/components/src/field/field.ts:55-57, 65-70`, `packages/core/src/field/field.ts:39-50`, `packages/core/src/field/field-label.ts:20-26`, `packages/core/src/input/input.ts:61-67`
+
+**Evidence**
+
+```
+// packages/components/src/field/field.ts:55-57
+ *   aria-describedby — Auto-composed from any kj-field-help / kj-field-error siblings via controlId / describedByIds
+ *   aria-invalid     — Reflected on the projected control when [kjInvalid] is true
+ *   aria-required    — Reflected on the projected control when [kjRequired] is true
+```
+
+None of the three happens. `KjField`'s host block writes only `data-*` (`field.ts:44-49`). `KjInput` never injects `KJ_FIELD`; its `aria-invalid` comes from its **own** input:
+
+```ts
+// packages/core/src/input/input.ts:62
+    '[attr.aria-invalid]': 'formCtrl.touched() && kjInvalid() ? "true" : null',
+```
+
+`grep -rn "aria-required" packages/core/src packages/components/src` finds no binding at all — only doc prose plus one manual `[attr.aria-required]` inside `field.required.example.ts:39`. The label meanwhile always publishes a `for`:
+
+```ts
+// packages/core/src/field/field-label.ts:22
+    '[attr.for]': 'ctx.controlId()',
+```
+
+so a consumer who omits `[id]="f.controlId()"` gets a `<label for="kj-field-3">` pointing at nothing, silently and with no dev warning.
+
+**Why it matters** SC 3.3.1 Error Identification (A) — `<kj-field [kjInvalid]="true">` paints the error tone and shows the message but leaves the control without `aria-invalid`, so AT users get no programmatic error state. SC 1.3.1 / 4.1.2 for the dangling `for`; SC 3.3.2 for the missing `aria-required`.
+
+**Fix** Add a `KjFieldControl` directive (or extend `KjInput`/`KjTextarea`/`KjSelectTrigger` to inject `KJ_FIELD` optionally) that binds `[attr.id]`, `[attr.aria-describedby]`, `[attr.aria-invalid]` (OR of the field's state and the control's own) and `[attr.aria-required]` from the field context, and apply it inside the themed wrappers so the default path needs no manual plumbing. Until then, correct the `@doc-aria`/`@doc-a11y` blocks so they describe the manual contract.
+
+**Effort:** M
+
+---
+
+### F-10 Calendar day buttons declare `role="gridcell"` inside a `<td>` that is already a gridcell, under a `role="application"` root
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/calendar/calendar-day.ts:36-38`, `packages/components/src/calendar/calendar.ts:128-134`, `packages/core/src/calendar/calendar.ts:69-75`
+
+**Evidence**
+
+```ts
+// packages/core/src/calendar/calendar-day.ts:36-38
+  host: {
+    'role': 'gridcell',
+    'type': 'button',
+```
+
+```html
+<!-- packages/components/src/calendar/calendar.ts:128-134 -->
+<td class="kj-calendar__cell">
+  <button class="kj-calendar__day" kjCalendarDay [kjDate]="d">{{ d.getDate() }}</button>
+</td>
+```
+
+Inside `<table role="grid">` (`calendar-grid.ts:24`) the `<td>` already maps to `gridcell`, so the markup nests `gridcell > gridcell` — a `gridcell` whose owning element is another cell, not a `row`. The button's native `button` role is also overwritten, so the control loses its role while keeping `aria-disabled`/`aria-selected`. Separately the root is:
+
+```ts
+// packages/core/src/calendar/calendar.ts:70-71
+    'role': 'application',
+    'aria-roledescription': 'calendar',
+```
+
+**Why it matters** SC 1.3.1 Info and Relationships (A) and SC 4.1.2 — the grid structure is invalid (axe `aria-required-parent` / `aria-required-children` territory) and the interactive role is lost. `role="application"` additionally forces NVDA/JAWS out of browse mode for the whole subtree, which is exactly the mode a `role="grid"` is meant to be read in.
+
+**Fix** Put `role="gridcell"` on the `<td>` (or `role="presentation"` on the `<td>` and leave the `<button>` a button) and drop the role override from `KjCalendarDay`; move `tabindex` to whichever element owns the gridcell role. Remove `role="application"` from `KjCalendar` — `role="grid"` plus the existing key handling already gives the right interaction model, and `aria-roledescription="calendar"` can move to the grid.
+
+**Effort:** M
+
+---
+
+### F-11 The date-picker popup traps Tab while declaring `aria-modal="false"`
+
+**Severity:** medium · **Confidence:** medium
+**Files:** `packages/core/src/date-picker/date-picker-calendar.ts:39-51`, `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:173-181`
+
+**Evidence**
+
+```ts
+// packages/core/src/date-picker/date-picker-calendar.ts:43-51
+    {
+      provide: KJ_OVERLAY_FOCUS_TRAP_STRATEGY,
+      useFactory: () => tabCycle({ returnFocus: true }),
+    },
+  ],
+  host: {
+    '[attr.aria-modal]': '"false"',
+    '[attr.aria-label]': '"Choose date"',
+  },
+```
+
+```ts
+// packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:177-179
+        const first = els[0], last = els[els.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+```
+
+There is no backdrop and no `enabled` gate — unlike `packages/core/src/popover/popover-content.ts:33,39`, which exposes `kjTrap` defaulting to `false` — so Tab cycles forever inside a popup that tells AT it is non-modal.
+
+**Why it matters** SC 2.1.2 No Keyboard Trap (A) — the only escape is Escape, and the widget's own ARIA says it should not be trapping. Users who Tab expecting to leave the popup (the behaviour `aria-modal="false"` promises) are stuck.
+
+**Fix** Either make the popup genuinely modal (add `solidBackdrop`, set `aria-modal="true"`) or, preferably for a date picker, expose the same `kjTrap` opt-in as the popover and default it to `false`, letting Tab move out and close the popup — matching `KjCascadeSelectPanel`'s `Tab` → `hide()` behaviour.
+
+**Effort:** S
+
+---
+
+### F-12 `KjRovingTabindex` moves focus onto disabled items
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/a11y/roving-tabindex.ts:148-183`; consumers `packages/core/src/tabs/tabs.ts:250`, `packages/core/src/stepper/stepper.ts:376`, `packages/core/src/carousel/carousel.ts:21`, `packages/core/src/list/list.ts:12`
+
+**Evidence**
+
+```ts
+// packages/core/src/a11y/roving-tabindex.ts:164-182
+    if (horizontalActive && event.key === forwardKey) {
+      next = (next + 1) % all.length;
+    } …
+    event.preventDefault();
+    this.activeIndex.set(next);
+    all[next].el.nativeElement.focus();
+```
+
+`all` is every registered item (`:86-93`); there is no disabled filter anywhere in the directive, and `KjRovingTabindexItemDirective` has no disabled input. `KjTab` publishes `aria-disabled` (`tabs.ts:250`) and `KjStepLabel` publishes a native `[attr.disabled]` (`stepper.ts:376`) — in the latter case `.focus()` silently does nothing, so `activeIndex` advances while focus does not and the next arrow press moves two positions. Contrast `KjListNavigator.navigable` (`packages/core/src/primitives/list/navigator.ts:80-83`), which does filter.
+
+**Why it matters** SC 2.4.3 Focus Order (A) and an APG deviation: composite-widget arrow navigation should skip disabled items, and focus must never be left on an element that cannot take it. A disabled tab in the middle of a strip becomes a dead stop.
+
+**Fix** Give `KjRovingTabindexItemDirective` a `disabled` signal (fed from an input or from `aria-disabled`), filter it out of the navigable set in `onKeydown`, and clamp `activeIndex` to a navigable item in the sync effect at `:118-121`.
+
+**Effort:** S
+
+---
+
+### F-13 Sortable table headers are focusable `<th>` elements with no control role or name
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/table/table-header.ts:21-29`
+
+**Evidence**
+
+```ts
+// packages/core/src/table/table-header.ts:21-29
+  host: {
+    '[style.cursor]':   'canSort() ? "pointer" : null',
+    '[attr.tabindex]':  'canSort() ? "0" : null',
+    '[attr.aria-sort]': 'canSort() ? ariaSort() : null',
+    '[attr.data-sort]': 'canSort() ? sortDir() : null',
+    '(click)':          'onHeaderClick()',
+    '(keydown.enter)':  'onHeaderClick()',
+    '(keydown.space)':  '$event.preventDefault(); onHeaderClick()',
+  },
+```
+
+The element keeps its `columnheader` role. AT announces "Column name, column header, sorted ascending" with no hint that Enter/Space does anything and no name for the action.
+
+**Why it matters** SC 4.1.2 Name, Role, Value (A) — an interactive control with no control role or accessible action name. (`aria-sort` is correctly bound, which is the good half.)
+
+**Fix** Follow the APG sortable-grid pattern: render a real `<button>` inside the `<th>` for the sort affordance, keeping `aria-sort` on the `<th>` and moving `tabindex` to the button. If the `<th>` must stay the target, add a visually-hidden "Sort by {column}" label wired via `aria-describedby`.
+
+**Effort:** M
+
+---
+
+### F-14 Keyboard specs dispatch events on elements a user can never focus, so they pass while the feature is broken
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/select/select.spec.ts:126-136`, `packages/core/src/tree-select/tree-select.spec.ts:403-413`, `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.spec.ts:123-128`
+
+**Evidence**
+
+```ts
+// packages/core/src/select/select.spec.ts:130-136
+    let panel = document.querySelector('kj-select-content') as HTMLElement | null;
+    if (!panel) panel = container.querySelector('kj-select-content') as HTMLElement;
+    panel.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    fixture.detectChanges();
+    expect(panel.getAttribute('aria-activedescendant')).toMatch(/^kj-list-item-\d+$/);
+```
+
+```ts
+// packages/core/src/tree-select/tree-select.spec.ts:403-412
+  it('ArrowDown on the panel moves focus to the first node', async () => {
+    …
+    const panel = q('kj-tree-select-content')!;
+    fireEvent.keyDown(panel, { key: 'ArrowDown' });
+```
+
+Both dispatch directly on the panel. As F-1 establishes, nothing ever focuses that panel, so these assertions describe a path no user can take — and they are the only keyboard coverage those two widgets have. `tab-cycle.spec.ts:126-127` is honest about the same class of gap ("jsdom doesn't move focus on the synthetic event") but then asserts a tautology (`activeElement === a || activeElement === b`).
+
+**Why it matters** This is why F-1 shipped. Green keyboard specs that skip the focus step give false assurance on the exact criterion (2.1.1) the library claims to meet at AAA.
+
+**Fix** Adopt a house rule for keyboard specs: begin every keyboard test by asserting where focus is (`expect(document.activeElement).toBe(trigger)`), dispatch from `document.activeElement`, and assert the focus move as well as the ARIA change. Add a shared `pressKey(el, key)` helper that throws when `el !== document.activeElement`, then re-audit every `dispatchEvent(new KeyboardEvent(` / `fireEvent.keyDown(` call site under `packages/` against that rule.
+
+**Effort:** M
+
+---
+
+### F-15 Roving menus still publish `aria-activedescendant`, and a code comment claims a mechanism Angular does not provide
+
+**Severity:** low · **Confidence:** medium
+**Files:** `packages/core/src/primitives/list/navigator.ts:41-44`, `packages/core/src/dropdown-menu/dropdown-menu-content.ts:144-153`, `packages/core/src/menubar/menubar.ts:44-47`
+
+**Evidence**
+
+```ts
+// packages/core/src/dropdown-menu/dropdown-menu-content.ts:146-151
+    // The KjListNavigator host directive reads `kjOrientation` and
+    // `kjFocusMode` as signal inputs; setting the matching static
+    // attributes here seeds their initial values for the menu pattern
+    // (vertical orientation + roving DOM focus per WAI-ARIA APG).
+    'kjOrientation': 'vertical',
+    'kjFocusMode': 'roving',
+```
+
+Static attributes in a component's own `host` metadata are applied as DOM attributes; they do not bind host-directive inputs. `KjMenubar:44-47` and `dropdown-menu-content.ts:244-248` state the opposite ("host-directive inputs cannot be defaulted from a composing directive — same workaround"), which is exactly why both re-implement the seed and focus-follow effects. The consequence is that `kjFocusMode()` stays `'activedescendant'`, so the navigator keeps publishing:
+
+```ts
+// packages/core/src/primitives/list/navigator.ts:42
+    '[attr.aria-activedescendant]': 'kjFocusMode() === "activedescendant" ? activeId() : null',
+```
+
+on the `role="menu"` / `role="menubar"` host while DOM focus is on the child `menuitem`.
+
+**Why it matters** SC 4.1.2 — two competing focus signals on one widget. AT follows DOM focus so the practical impact is small (hence low), but it is a latent trap: anyone who later "fixes" the input wiring will also silently flip `KjListItem.tabIndex` for every item.
+
+**Fix** Delete the two misleading static attributes, correct the comment, and make `KjListNavigator` read `KJ_LIST_FOCUS_MODE` (the token both consumers already override) instead of its own input when the token is provided. That single change retires the duplicated seed/focus effects in `KjMenubar`, `KjDropdownMenuContent` and `KjTreeSelectContent` and makes the `aria-activedescendant` binding correct everywhere.
+
+**Effort:** S
+
+---
+
+### F-16 Tab panels are never focusable
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/src/tabs/tabs.ts:332-338`
+
+**Evidence**
+
+```ts
+// packages/core/src/tabs/tabs.ts:332-338
+  host: {
+    '[attr.role]': '"tabpanel"',
+    '[attr.id]': 'tabs.panelId(kjPanelValue())',
+    '[attr.aria-labelledby]': 'tabs.tabId(kjPanelValue())',
+    '[attr.hidden]': 'isActive() ? null : ""',
+    '[attr.data-state]': 'isActive() ? "active" : "inactive"',
+  },
+```
+
+No `tabindex`. Per APG, a tabpanel containing no focusable element (or one that scrolls) needs `tabindex="0"` so Tab from the tab strip lands in the panel content.
+
+**Why it matters** SC 2.1.1 (A) for scrollable panels — a keyboard user cannot scroll a text-only panel — and SC 2.4.3, since Tab from the active tab jumps past the panel entirely.
+
+**Fix** Bind `'[attr.tabindex]': 'isActive() ? "0" : null'` on `KjTabPanel`. (APG allows an unconditional `0`; gating on active keeps hidden panels out of the order regardless of `hidden` support.)
+
+**Effort:** S
+
+---
+
+### F-17 AAA gaps: a sub-7:1 text token, sub-44px default controls, three unguarded animations
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/themes/src/themes/light.css:30,59`, `packages/themes/src/themes/mint.css:29,56`, `packages/themes/src/themes/nord.css:25,50`, `packages/components/src/button/button.css:173,179,289`, `packages/components/src/toast/toast.css:75`, `packages/components/src/table/table.css:432`, `packages/components/src/select/select.ts:36-37`
+
+**Evidence**
+
+*1.4.6 Contrast (Enhanced, AAA — 7:1).* Computed from the shipped tokens, `--kj-fg-subtle` on `--kj-bg-surface` gives **5.41:1** in `light` (`#6a6a6a` on `#ffffff`), **6.00:1** in `mint` (`#4a6a5a` on `#ffffff`) and **5.49:1** in `nord` (`#b8c0cd` on `#3b4252`). `sakura` (7.05) and `corporate` (7.53) pass. `--kj-fg-muted` passes everywhere (8.86 / 9.86 / 7.45).
+
+*2.5.5 Target Size (AAA — 44×44).* `--kj-button-height: var(--kj-ctl-h-md)` is 36px at the default size (`button.css:173`); only `lg` reaches 44px (`button.css:179`). The select documents the same default explicitly:
+
+```
+// packages/components/src/select/select.ts:37
+ *   Default trigger height is 36px. Apply `data-size="lg"` on `<kj-select>` to bump the trigger to 2.75rem (44px)…
+```
+
+*2.3.3 / 2.2.2.* The three loudest offenders:
+
+```css
+/* packages/components/src/toast/toast.css:75 */    animation: kj-toast-enter 0.35s cubic-bezier(0.21, 0.61, 0.35, 1);
+/* packages/components/src/table/table.css:432 */   animation: kj-table-loading-pulse 1.4s ease-in-out infinite;
+/* packages/components/src/button/button.css:289 */ animation: kj-button-spinner-rotate 0.6s linear infinite;
+```
+
+> **Correction (carried back from the 2026-09-06 pass, which was right and this pass understated).** "Everything else animated does guard" is false. Re-counted at HEAD: **61** stylesheets under `packages/components/src` + `packages/core/src` declare `animation:` or `transition:`, and only **23** contain a `prefers-reduced-motion` block. The 24 animated-and-unguarded files are alert, breadcrumb, button, card, checkbox, field, input, input-group, input-otp, link, list, number-input, pagination, password-input, radio, spinner, stepper, table, tabs, tag, textarea, time-picker, toast, tree-select (plus `core/src/styles/docs-themes.css`). There is also **no global guard in `packages/themes`** (`grep prefers-reduced-motion packages/themes/src` → no matches), and `motion.css:82` guards only the opt-in `.kj-motion` class. `spinner.css:128-133` is not a counter-example: it keys off a `data-reduced-motion="true"` attribute set by the `KjReducedMotion` directive, a JS mechanism, not a media query — a good pattern, but one only four components use.
+
+**Why it matters** The repo's stated target is AAA; these are the remaining systematic AAA gaps. The infinite `kj-table-loading-pulse` also engages SC 2.2.2 Pause, Stop, Hide (A) for content that animates for more than 5 s.
+
+**Fix** Darken/lighten `--kj-fg-subtle` per theme until it clears 7:1 against `--kj-bg-surface`, and add that check to the theme-generation script so new themes cannot regress. For motion, do not patch three files — add **one** shared guard in `packages/themes/src/base.css` (`@media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }`) and keep per-component blocks only where a bespoke fallback is wanted (the `data-reduced-motion` pattern at `spinner.css:128-133` is the model). Already tracked in the team's own post-merge notes ("reuse `KjReducedMotion` everywhere"). For 2.5.5, either raise `--kj-ctl-h-md` to 44px or document the 36px default as an explicit, tested AA-only mode rather than per-component prose.
+
+**Effort:** M
+
+---
+
+### F-18 The toast viewport is a `role="region"` live region wrapping `role="status"` live regions
+
+**Severity:** low · **Confidence:** medium
+**Files:** `packages/core/src/toast/toast.ts:174-181, 77-79`
+
+**Evidence**
+
+```ts
+// packages/core/src/toast/toast.ts:175-180
+    'role': 'region',
+    'tabindex': '-1',
+    '[attr.aria-live]': '"polite"',
+    '[attr.aria-atomic]': '"false"',
+    '[attr.aria-relevant]': '"additions removals"',
+```
+
+while each toast inside it is itself a live region:
+
+```ts
+// packages/core/src/toast/toast.ts:77-79
+  readonly role = computed(() =>
+    this.kjToastVariant() === 'destructive' ? 'alert' : 'status',
+  );
+```
+
+**Why it matters** SC 4.1.3 Status Messages (AA): nested live regions are a known double-announcement source — the inner `status`/`alert` fires, and the outer region's `additions` relevance fires for the same node. The themed wrapper does supply `aria-label="Notifications"` (`packages/components/src/toast/toast.ts:94`), so the bare-core viewport is also an unnamed landmark.
+
+**Fix** Keep the live region on exactly one level. Simplest: drop `aria-live`/`aria-atomic`/`aria-relevant` from `KjToastViewport` and let each `[kjToast]`'s `status`/`alert` role announce; keep `role="region"` plus the required `aria-label` for the F6 landmark behaviour. Verify with NVDA and VoiceOver that a single announcement results.
+
+## Recommended work items
+
+1. **F-1** — Fix the select / tree-select / cascade-select focus model (panel `tabindex="-1"` + panel focus on open + seeded active item + trigger key handling + focus restore). This is the blocking item; nothing else in this report changes the fact that three flagship widgets cannot be navigated without a pointer.
+2. **F-2** — Fix the `!val.includes('')` completion guard (`(kjComplete)` / `kjAutoSubmit` are inert today) **and**, in the same change, move `KjInputOtp` off the host-composed live region and make `KjLiveRegion.announce()` non-destructive — otherwise the first fix detonates the second defect.
+3. **F-3** — Adopt the existing `KjRovingTabindex` (or an equivalent active-cell binding) on grid cells so the data grid body has a tab stop at all.
+4. **F-14** — Adopt the "dispatch from `document.activeElement`" spec rule and add the `pressKey` helper *before* landing F-1/F-3, so the fixes are actually verified.
+5. **F-4** — Tooltip: compose `onFocus`, add `aria-describedby`, suppress `aria-expanded` for the tooltip role.
+6. **F-6** and **F-10** — Calendar: clamp the seeded focus date, swap native `disabled` for `aria-disabled`, fix the nested-gridcell structure, drop `role="application"`.
+7. **F-5** — Gate the roving focus-follow so it does not fire on the seeding transition — fix it in `navigator.ts:98-107` (the primitive), then delete the menubar's duplicate.
+8. **F-7** and **F-8** — Overlay modality: ship `KjDialogTitle` + `aria-labelledby` wiring, and make `inert` real (or stop claiming `aria-modal`).
+9. **F-9** — `KjFieldControl` so `id` / `aria-describedby` / `aria-invalid` / `aria-required` are automatic; then correct the `@doc-aria` blocks.
+10. **F-12**, **F-13**, **F-11**, **F-16** — Roving skips disabled; sortable header becomes a real control; date-picker trap becomes opt-in; tabpanel gets `tabindex`.
+11. **F-17** — AAA sweep: `--kj-fg-subtle` ≥ 7:1 per theme (with a generator-side check), three missing reduced-motion guards, and a decision on the 36px default control height.
+12. **F-15**, **F-18** — Cleanups: retire the duplicated seed/focus effects by having `KjListNavigator` read `KJ_LIST_FOCUS_MODE`; de-nest the toast live regions.
+
+### Reconciliation with `reports/a11y/_summary.json`
+
+The stored scan (timestamped `2026-05-13`, four months stale relative to HEAD) reports one `serious` axe violation and 29 font warnings for `mint`, and carries **no data at all for the other 13 themes** — `themes` holds a single `mint` key even though `reports/a11y/` contains per-page JSON for 14 themes. Structurally it cannot see any finding in this report:
+
+- It audits six static docs pages (`home`, `getting-started`, `docs-button`, `docs-dialog`, `docs-tag`, `theme-generator`). No select, combobox, tree-select, cascade-select, table, calendar, menubar, tooltip or OTP page is scanned.
+- It is a snapshot scan: nothing is opened, focused or typed into. Every finding above except F-10, F-13, F-16 and F-17 only exists *after* an interaction, so axe never reaches the DOM state that fails.
+- axe tests contrast at the **AA** thresholds (4.5:1 / 3:1). The 7:1 AAA target this repo sets is never evaluated — hence 5.41:1 body text passing silently (F-17).
+- axe cannot detect "the keydown handler is on an element that never receives focus" (F-1, F-3), "focus is stolen on mount" (F-5), "`aria-modal` is asserted without inert" (F-8), or "`announce()` deletes the widget" (F-2). These are behavioural, not static-DOM, defects.
+- `lighthouseAvg` records only `performance: 41`; the Lighthouse *accessibility* category is not captured at all.
+
+Treat the scan as a regression net for static markup on docs pages, not as coverage. The gap it leaves is precisely the set of Level-A keyboard failures above.
+
+## Open questions
+
+1. `KjCalendar`'s `role="application"` looks deliberate (`aria-roledescription: 'calendar'` sits alongside it). Was it added to work around a specific AT behaviour, or inherited from an earlier non-grid implementation? That determines whether F-10's second half is a straight removal.
+2. Is the 36px default control height a settled product decision (AA default, AAA opt-in via `data-size="lg"`), or should `--kj-ctl-h-md` become 44px? Several `@doc-touch` blocks already document the opt-in, so it may be intentional — but it conflicts with the stated AAA target.
+3. `inertBased()` exists, is exported, and is used by nothing. Was it superseded by `tabCycle`, or is wiring it into `solidBackdrop` (F-8) the intended path?
+4. For `<kj-select>`, should the fix follow APG *listbox* (focus moves into the panel) or *combobox 1.2* (focus stays on the trigger, `aria-activedescendant` on the trigger)? The `@doc-a11y` block at `packages/components/src/select/select.ts:40` says "combobox/listbox pattern" without committing, and the choice changes where the trigger's `aria-activedescendant` and `aria-controls` must live.
+5. `KjFieldError` carries `role="alert"` **and** `aria-live="polite"` (`packages/core/src/field/field-error.ts:31-32`) and is toggled via `hidden`. Was the polite override deliberate (to avoid interrupting typing)? If so, `role="status"` would express it without the contradiction.
+
+---
+
+## Carried forward from the 2026-09-06 review
+
+The five findings below were filed in the previous pass (commit `9aee150a`, auditing `fd6dd34e`), were **not** re-filed by this pass, and I re-verified each of them at HEAD. They are still true. They are restored here with their prior-pass ids noted so nothing is lost; see the reconciliation section for the full accounting.
+
+### F-19 `KjRovingTabindex` loses the tab stop on removal and cannot be seeded to the selected item *(prior pass F-6)*
+
+**Severity:** high · **Confidence:** high
+**Files:** `packages/core/src/a11y/roving-tabindex.ts:94, 102-104, 117-121`; consumers `tabs.ts`, `stepper.ts`, `carousel.ts`, `list.ts`, `date-range-presets.ts`
+
+**Verified at HEAD** — unchanged since the prior pass; `git log fd6dd34e..HEAD -- packages/core/src/a11y` is empty.
+
+```ts
+// packages/core/src/a11y/roving-tabindex.ts:94
+  private readonly activeIndex = signal(0);            // private, no setter, no public API
+
+// :102-104
+  unregister(item: KjRovingTabindexItemDirective): void {
+    this.registered.update((all) => all.filter((i) => i !== item));
+  }
+
+// :117-121
+    effect(() => {
+      const all = this.items();
+      all.forEach((item, i) => item.active.set(i === this.activeIndex()));
+    });
+```
+
+Two defects. **(1) Stale index after removal.** Close the *last* tab while it is active (`KjTab` ships `kjClosable` + Delete): `activeIndex` stays at `N-1` while `items().length` drops to `N-1`, so no item satisfies `i === activeIndex()` and **every** item renders `tabindex="-1"` — the composite drops out of the tab sequence entirely, and the focused element was just removed so focus falls to `<body>`. **(2) No way to seed the active item.** `activeIndex` starts at `0` and only changes via `focusin` / arrow keys, so a tab strip whose selected tab is the 3rd still puts the tab stop on the 1st — contrary to the APG tabs pattern. `roving-tabindex.spec.ts` covers neither (its tests are all arrow direction / orientation / RTL).
+
+This is distinct from **F-12** (which covers the missing *disabled* filter in the same directive); all three want the same refactor.
+
+**Why it matters** SC 2.1.1 Keyboard (A) — the widget becomes unreachable by Tab; SC 2.4.3 Focus Order (A) — focus lost to `<body>` on DOM removal.
+
+**Fix** Clamp in the effect (`Math.min(activeIndex(), all.length - 1)`) and move focus to the clamped neighbour when the active item is destroyed; expose `setActiveItem(item)` publicly and have `KjTab` / `KjStep` / indicators sync it to the selected value. **Effort:** M
+
+### F-20 `tabCycle` trap leaks: hidden elements count, an empty panel lets Tab escape, and outside focus is never recaptured *(prior pass F-8)*
+
+**Severity:** high · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:4, 30, 44`
+
+**Verified at HEAD** — unchanged:
+
+```ts
+// tab-cycle.ts:4
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+// :30
+    return Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+// :44
+        if (els.length === 0) return;
+```
+
+Three holes: **(a)** no `display:none` / `[hidden]` / `visibility` filter, so a collapsed accordion or hidden step inside the dialog can become the "first"/"last" focusable and `.focus()` silently no-ops, dumping focus on `<body>` — note `packages/core/src/a11y/focus-trap.ts:45` *does* filter, so the two implementations disagree; **(b)** when the panel has no focusables, `focusFirst()` focuses the panel itself at `tabindex="-1"`, but that element is not in `focusables()`, so `els.length === 0` returns early and Tab walks straight into the page behind a dialog that asserts `aria-modal="true"` (see F-8); **(c)** the listener is attached to the panel, so once focus is outside for any reason it can never be pulled back.
+
+**Why it matters** SC 2.4.3 Focus Order (A) — focus leaves a modal into content the screen reader has been told to ignore.
+
+**Fix** Filter `focusables()` by visibility, treat the panel itself as the fallback stop when the list is empty, and attach the keydown listener on `document` gated on `stack.isTopmost` so out-of-panel focus is recaptured. Consolidate the four different "focusable" queries in the repo (`a11y/focus-trap.ts:5`, `tab-cycle.ts:4`, `inert-based.ts:61`, `toast.ts:306`) into one helper. **Effort:** S
+
+### F-21 Column resizing is drag-only, with no keyboard path *(prior pass F-5)*
+
+**Severity:** high · **Confidence:** high
 **Files:** `packages/components/src/table/table.ts:277-285`
 
+**Verified at HEAD** — unchanged:
+
 ```html
+<!-- packages/components/src/table/table.ts:279-285 -->
 <span
   class="kj-table-resize-handle"
   role="separator"
@@ -137,380 +812,83 @@ Since no cell ever holds `tabindex="0"`, keyboard focus can never land in the gr
 ></span>
 ```
 
-No `tabindex`, no `keydown`, no `aria-valuenow/min/max`. The only way to resize is a pointer drag along a path.
+No `tabindex`, no `keydown`, no `aria-valuenow`/`min`/`max`. The only way to resize a column is a pointer drag along a path.
 
-**Why it matters:** SC 2.1.1 (A) — functionality unavailable from the keyboard. SC 2.5.1 Pointer Gestures (A) — a path-based drag with no single-pointer alternative. (Also SC 2.5.7 Dragging Movements in WCAG 2.2.)
-**Fix:** make the handle a focusable `role="separator"` with `tabindex="0"`, `aria-valuenow/min/max` (column width), ArrowLeft/ArrowRight ±1 step, Shift+Arrow ±10, Home/End for min/max, Enter/Escape to commit/cancel, and `aria-valuetext` for the announced width.
+**Why it matters** SC 2.1.1 Keyboard (A) — functionality unavailable from the keyboard. SC 2.5.1 Pointer Gestures (A) — a path-based drag with no single-pointer alternative. (Also SC 2.5.7 Dragging Movements in WCAG 2.2.)
 
-### F-6 `KjRovingTabindex` loses the tab stop and cannot be pointed at the selected item
+**Fix** Make the handle a focusable `role="separator"` with `tabindex="0"`, `aria-valuenow/min/max` (column width), ArrowLeft/ArrowRight ±1 step, Shift+Arrow ±10, Home/End for min/max, Enter/Escape to commit/cancel, and `aria-valuetext` for the announced width. **Effort:** M
 
-**Severity:** high · **Confidence:** high · **Effort:** M
-**Files:** `packages/core/src/a11y/roving-tabindex.ts:94,102-104,117-122`
+### F-22 An open accordion panel is clipped at 1000px *(prior pass F-16)*
 
-```ts
-private readonly activeIndex = signal(0);            // private, no setter, no public API
-…
-unregister(item) { this.registered.update(all => all.filter(i => i !== item)); }
-…
-effect(() => {
-  const all = this.items();
-  all.forEach((item, i) => item.active.set(i === this.activeIndex()));   // -> tabindex 0 / -1
-});
-```
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/components/src/accordion/accordion.css:46, 60`
 
-Two distinct defects:
+**Verified at HEAD** — unchanged: `.kj-accordion-content { overflow: hidden; max-height: 0; }` at `:46` and `[data-state="open"] { max-height: 1000px; }` at `:60`.
 
-1. **Stale index after removal.** Close the *last* tab while it is active (`KjTab` ships `kjClosable` + Delete, `tabs.ts:302-307`): `activeIndex` stays at `N-1` while `items().length` drops to `N-1`, so no item satisfies `i === activeIndex()` and **every** item renders `tabindex="-1"`. The composite drops out of the tab sequence entirely, and the focused element was just removed so focus falls to `<body>`.
-2. **No way to seed the active item.** `activeIndex` starts at `0` and only changes via `focusin` / arrow keys. A tab strip whose selected tab is the 3rd still puts the tab stop on the 1st tab, contradicting the APG tabs pattern (the *selected* tab is the one in the tab sequence). Same for `KjStepper`, `KjList`, `KjCarouselIndicators`, `KjDateRangePresets`.
+Content taller than 1000px — easily reached at 200% zoom or with an enlarged font — is clipped with no scrollbar, and the clipped region is unreachable.
 
-`roving-tabindex.spec.ts` covers neither case (13 tests, all about arrow direction/orientation/RTL).
+**Why it matters** SC 1.4.4 Resize Text (AA) and SC 1.4.10 Reflow (AA) — content is lost when text is enlarged.
 
-**Why it matters:** (1) SC 2.1.1 (A) — the widget becomes unreachable by Tab; SC 2.4.3 Focus Order (A) — focus is lost to `<body>` on DOM removal. (2) SC 2.4.3 / APG deviation.
-**Fix:** clamp in the effect (`Math.min(activeIndex(), all.length - 1)`) and move focus to the clamped neighbour when the active item is destroyed; expose `setActiveItem(item)` publicly and have `KjTab` / `KjStep` / indicators sync it to the selected value.
+**Fix** Animate `grid-template-rows: 0fr → 1fr` (or `interpolate-size: allow-keywords` / `calc-size(auto)`), and drop `overflow: hidden` once open. **Effort:** S
 
-### F-7 Calendar: `role="application"` root, inverted grid structure, natively `disabled` day cells
+### F-23 `KjFocusTrap` — the documented public primitive — is dead code that sets no initial focus and restores none *(prior pass F-9)*
 
-**Severity:** high · **Confidence:** high · **Effort:** M
-**Files:** `packages/core/src/calendar/calendar.ts:69-73`, `packages/core/src/calendar/calendar-day.ts:36-45`, `packages/core/src/calendar/calendar-grid.ts:24`, `packages/components/src/calendar/calendar.ts:111-137`
+**Severity:** low *(lowered from the prior pass's medium: verification for `05-micro-frontends.md` established the directive has zero consumers, so no shipped component is affected)* · **Confidence:** high
+**Files:** `packages/core/src/a11y/focus-trap.ts:26-45`, `packages/core/src/a11y/index.ts:3`
 
-```ts
-// calendar.ts root
-host: { 'role': 'application', 'aria-roledescription': 'calendar', … }
-```
-```ts
-// calendar-day.ts — the role lands on the <button>, not on the <td>
-host: { 'role': 'gridcell', 'type': 'button', …, '[attr.disabled]': 'isDisabled() ? "" : null' }
-```
-```html
-<!-- components/calendar template -->
-<table class="kj-calendar__grid" kjCalendarGrid>   <!-- role="grid" from calendar-grid.ts:24 -->
-  <tr><td class="kj-calendar__cell"><button kjCalendarDay …></button></td></tr>
-```
+**Verified at HEAD** — a repo-wide grep for `kjFocusTrap` / `KjFocusTrap` returns only `focus-trap.ts` itself, its spec, and the barrel export at `a11y/index.ts:3`. No shipped component applies it; every real overlay uses `tabCycle()`.
 
-Three problems: (a) `role="application"` switches screen readers out of browse mode for the whole calendar — an APG last resort, unnecessary here because `grid` already owns the arrow keys; (b) the accessibility tree becomes `grid > row > cell > gridcell` — `gridcell` is not a permitted child of `cell`, and putting it on the `<button>` also *erases* the button role from the day control (axe `aria-required-parent`); (c) `[attr.disabled]` on the day `<button>` makes disabled dates unfocusable, so if `focusedDate()` resolves to a disabled date the grid's single tab stop cannot be reached.
+The primitive `rules/accessibility.md` advertises as "Trap focus in container" only intercepts Tab (`:42`). It never focuses anything on enable (`focusFirst()` exists but nothing calls it), never records or restores the previously focused element, and installs its handler on `document` unconditionally — so two enabled traps would both act on every Tab. Its `FOCUSABLE` list also omits `[contenteditable]` without `="true"`, `audio[controls]`, `video[controls]`, `iframe`, `details`/`summary`, and does not sort by tabindex.
 
-**Why it matters:** SC 1.3.1 Info and Relationships (A), SC 4.1.2 Name, Role, Value (A), SC 2.1.1 (A) for the unreachable tab stop.
-**Fix:** drop `role="application"` (keep `aria-roledescription`); put `role="gridcell"` on the `<td>` with the `<button>` as its only child (APG datepicker); replace native `disabled` with `aria-disabled="true"` + a click guard so disabled dates stay focusable and announced.
+**Why it matters** A public, documented a11y primitive that does not do what the docs say. Any consumer who builds an overlay on it strands focus on `<body>` at open and at close (SC 2.4.3). Low only because nothing in the library uses it.
 
-### F-8 `tabCycle` trap leaks: hidden elements count, and focus outside the panel is never recaptured
+**Fix** Either wire it properly — on enable store `document.activeElement` and call `focusFirst()`; on disable/destroy restore — or delete it and point the docs at `tabCycle`. Either way, consolidate it with F-20's focusable-query cleanup. **Effort:** S
 
-**Severity:** high · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:136,159-182,196-209`
 
-```ts
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), …, [tabindex]:not([tabindex="-1"])';
-const focusables = () => Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));   // no visibility filter
-…
-keyListener = (e) => {
-  if (e.key !== 'Tab') return;
-  const els = focusables();
-  if (els.length === 0) return;                       // <- Tab escapes the modal
-  …
-};
-panel.addEventListener('keydown', keyListener);       // <- only fires while focus is INSIDE the panel
-```
+## Changed since the 2026-09-06 review
 
-Three holes: (a) no `display:none` / `[hidden]` / `visibility` filter, so a collapsed accordion or hidden step inside the dialog can become the "first"/"last" focusable and `.focus()` silently no-ops, dumping focus on `<body>` (`KjFocusTrap` at `a11y/focus-trap.ts:45` *does* filter — the two implementations disagree); (b) when the panel has no focusables, `focusFirst()` focuses the panel itself at `tabindex="-1"` (good) but that element is not in `focusables()`, so `els.length === 0` returns early and Tab walks straight into the page behind the dialog — which F-2 has left fully interactive while `aria-modal="true"` hides it from AT; (c) the listener is on the panel, so once focus is outside for any reason it can never be pulled back.
+Previous review: commit `9aee150a`, auditing `fd6dd34e`. Main has since advanced 8 commits. Every "fixed" claim below was checked against the code at HEAD, not taken from either report.
 
-**Why it matters:** SC 2.4.3 Focus Order (A) — focus leaves a modal into content the screen reader cannot see.
-**Fix:** filter `focusables()` by visibility, treat the panel itself as the fallback stop when the list is empty, and attach the keydown listener on `document` (gated on `stack.isTopmost`) so out-of-panel focus is recaptured.
+### Fixed
 
-### F-9 `KjFocusTrap` (the documented public primitive) sets no initial focus and restores none
+- **Prior F-14 — "Overlays dismiss on `pointerdown`, not on the up-event" — fixed for the backdrop path only.** `e6aa28a5` ("a backdrop dismisses only a press that began on it") added `packages/core/src/primitives/overlay/dismiss-press.ts`. `KjBackdrop` now arms on `(pointerdown)`/`(mousedown)` and dismisses on `(click)` only if the press began on the scrim (`backdrop.ts:18-20, 41-52`; `KjDismissPress.owns()` at `dismiss-press.ts:41-51`, which also lets `detail === 0` keyboard-synthesised clicks through). Verified at HEAD. **SC 2.5.2 Pointer Cancellation is now satisfied for backdrop-bearing overlays** — a press that starts on the scrim and releases on the panel produces a `click` on a common ancestor, so the backdrop handler never fires.
+  **Residual, still open:** `KjOverlayStack.handlePointerDown` (`stack.ts:209-219`) still calls `top.opts.onClose()` on the **down** event for outside presses, which is the path every backdrop-less overlay takes — select, popover, tooltip, dropdown-menu, date-picker. Those still cannot be aborted before release. The same commit did add `if (target && !target.isConnected) return;` at `stack.ts:217`, which fixes a separate retarget bug but not the down-vs-up semantics.
 
-**Severity:** medium · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/a11y/focus-trap.ts:5-9,37-71`
+No other prior accessibility finding was fixed in `fd6dd34e..HEAD`. `git log` over `packages/core/src/a11y`, `packages/core/src/calendar`, `packages/core/src/table`, `packages/core/src/tooltip` and `packages/components/src/table` is empty for the range.
 
-The primitive `rules/accessibility.md` advertises as "Trap focus in container" only intercepts Tab. It never focuses anything on enable (`focusFirst()` exists at `:68` but nothing calls it), never records or restores the previously focused element, and installs its handler on `document` unconditionally — so two enabled traps on the page both act on every Tab. Its `FOCUSABLE` list also omits `[contenteditable]` without `="true"`, `audio[controls]`, `video[controls]`, `iframe`, `details/summary`, and it does not sort by tabindex.
+### Still open
 
-**Why it matters:** SC 2.4.3 Focus Order (A) — opening and closing an overlay built on this primitive strands focus on `<body>`.
-**Fix:** on enable → store `document.activeElement` and call `focusFirst()`; on disable/destroy → restore. Consolidate the four different "focusable" queries in the repo (`a11y/focus-trap.ts:5`, `tab-cycle.ts:136`, `inert-based.ts:61`, `toast.ts:306`) into one helper.
+| Prior | Current | Note |
+|---|---|---|
+| F-1 Select/cascade-select not keyboard operable (critical) | **F-1** | Broadened to include tree-select; title corrected in this pass to "cannot be navigated once open" (the widget does open and close by keyboard). |
+| F-3 Tooltip: no focus trigger, no `aria-describedby` (high) | **F-4** | Unchanged code; this pass drops the SC 1.4.13 citation and splits out the `aria-expanded` sub-claim. |
+| F-4 Data grid cannot be entered (high) | **F-3** | Unchanged code; wording narrowed to "no roving tabindex → no tab stop in the default configuration". |
+| F-7 Calendar: `role="application"`, inverted grid, `disabled` day cells (high) | **F-6** + **F-10** | Split: F-6 takes the unreachable-tab-stop half, F-10 the role/structure half. Both verified unchanged (`calendar.ts:70`, `calendar-day.ts:43-44`). |
+| F-2 Five TSDoc blocks claim `inert` (low) | **F-8** | Re-filed from the doc angle to the mechanism angle (`solidBackdrop`'s hooks are still empty; `inertBased()` still has no consumer). |
+| F-15 Default control size below the AAA touch target (medium) | **F-17** | Folded into the AAA-gaps finding. |
+| F-19 Tab panels no tab stop; sortable headers no role (low) | **F-16** + **F-13** | Split into two findings. |
+| F-6 `KjRovingTabindex` (high) | **F-19** *(restored)* + **F-12** | This pass filed only the missing disabled-filter (F-12) and missed the stale-index and no-seed defects. Re-verified and restored as F-19. |
+| F-8 `tabCycle` trap leaks (high) | **F-20** *(restored)* | Missed by this pass. Re-verified at HEAD and restored. |
+| F-5 Column resize is drag-only (high) | **F-21** *(restored)* | Missed by this pass. Re-verified at HEAD and restored. |
+| F-16 Accordion clipped at 1000px (medium) | **F-22** *(restored)* | Missed by this pass. Re-verified at HEAD and restored. |
+| F-9 `KjFocusTrap` sets no initial focus (medium) | **F-23** *(restored, lowered to low)* | Missed by this pass. Re-verified; lowered because the directive has zero consumers. |
+| F-10 `prefers-reduced-motion` ignored by most component CSS (medium) | **F-17** *(corrected in place)* | **The prior pass was right and this pass understated it.** F-17 originally claimed only three files were unguarded and that "everything else does guard"; the real count at HEAD is 24 animated stylesheets with no guard out of 61, plus no global guard in `packages/themes`. F-17 now carries that correction and the shared-guard fix. |
+| F-22 `field-error` combines `role="alert"` with `aria-live="polite"` (low) | — | Demoted by this pass to **Open question 5** rather than a finding. The code is unchanged (`field-error.ts:31-32`); it should be a finding again, or the open question should be closed with a decision. |
 
-### F-10 `prefers-reduced-motion` is ignored by most component CSS
+### Not reproduced
 
-**Severity:** medium · **Confidence:** high · **Effort:** M
-**Files:** `packages/components/src/toast/toast.css:75`, `packages/components/src/button/button.css:63-65,216`, `packages/components/src/tabs/tabs.css:69-84`, `packages/components/src/table/table.css:432`, `packages/components/src/stepper/stepper.css`, `packages/components/src/tag/tag.css`, `+ ~18 more`
+Honest accounting of prior findings this pass neither re-filed nor verified:
 
-`motion.css:82-89` guards only the opt-in `.kj-motion` class, and there is no global guard in `packages/themes/src/base.css` (grep for `prefers-reduced-motion` in `packages/themes` → no matches). Of the ~50 component stylesheets declaring `animation:`/`transition:`, only 20 contain a `prefers-reduced-motion` block. Unguarded examples with real movement:
+- **Out of this pass's scope, not re-checked** — F-11 (focus indicator removed in command-palette / time-picker / rich-text), F-12 (RTL honoured only by slider and avatar-group), F-13 (hard-coded English UI/ARIA strings), F-17 (no status announcements for filter/sort/pagination), F-18 (`KjTypeAhead` has no APG same-letter cycle), F-20 (toast auto-dismiss fixed at 4 s), F-21 (`KjListNavigator` hijacks Home/End/PageUp/PageDown inside text fields). This pass traced keyboard/focus ownership and ARIA wiring; it did not re-audit CSS focus indicators, directionality, i18n, live-region coverage or type-ahead semantics. None of the corresponding files changed in `fd6dd34e..HEAD`, so **assume all seven are still open** until someone checks. They are not "dropped".
+- **Correctly not re-filed** — the prior pass's refuted original F-2 ("`aria-modal="true"` with nothing made `inert`", filed critical, refuted to a doc-accuracy issue). This pass reached the same place independently via F-8, which reports the mechanism at medium without the SC 4.1.2 / 2.4.3 claims the verification rejected.
 
-```css
-/* toast.css:75 */   animation: kj-toast-enter 0.35s cubic-bezier(0.21, 0.61, 0.35, 1);
-/*                   keyframes: translateY(100%) scale(0.95) -> none */
-/* button.css:216 */ transform: translateY(var(--kj-button-hover-translate, var(--kj-hover-translate, -2px)));
-/* table.css:432 */  animation: kj-table-loading-pulse 1.4s ease-in-out infinite;
-```
+### New since then
 
-`KjReducedMotion` exists but is consumed by only four components (`spinner.ts`, `skeleton.ts`, `sheet.ts`, `progress-bar.ts`).
-
-**Why it matters:** SC 2.3.3 Animation from Interactions (AAA) — the stated target. The infinite `kj-table-loading-pulse` also brushes SC 2.2.2 Pause, Stop, Hide (A) for moving content running longer than 5s.
-**Fix:** add one shared guard in `packages/themes/src/base.css` (`@media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }`), then keep per-component blocks only where a bespoke fallback is wanted. Already tracked in the team's own post-merge notes ("reuse KjReducedMotion everywhere").
-
-### F-11 Focus indicator removed with no accessible replacement
-
-**Severity:** medium · **Confidence:** high · **Effort:** S
-**Files:** `packages/components/src/command-palette/command-palette.css:75,96`, `packages/components/src/time-picker/time-picker.css:75-77`, `packages/components/src/rich-text/rich-text-editor.css:213`
-
-```css
-/* command-palette.css — and no :focus / :focus-visible / :focus-within rule anywhere in the file */
-.kj-command-palette__input { border: none; outline: none; … }
-/* time-picker.css */
-.kj-time-picker__segment:focus { outline: none; background: color-mix(in oklab, var(--kj-bg-primary) 12%, transparent); }
-/* rich-text-editor.css — compensated only by a border-color change on the wrapper (:42-45) */
-.kj-rte__content { outline: none; … }
-```
-
-A 12%-opacity tint cannot reach the 3:1 non-text contrast needed to read as a focus indicator, and the time-picker segment is the *only* focus target while editing hours/minutes.
-
-**Why it matters:** SC 2.4.7 Focus Visible (AA), SC 1.4.11 Non-text Contrast (AA); against the AAA target, SC 2.4.13 Focus Appearance requires a ≥2px perimeter at ≥3:1 against both adjacent colours.
-**Fix:** restore a 2px `outline`/`box-shadow` ring (`var(--kj-border-focus)`) with `outline-offset` on all three; for AAA, audit each theme's `--kj-border-focus` against both the control fill and the page background (e.g. `light.css:82` is `#1a1a1a`).
-
-### F-12 RTL is not honoured outside slider and avatar-group
-
-**Severity:** medium · **Confidence:** medium · **Effort:** M
-**Files:** `packages/core/src/primitives/directionality/directionality.ts` (consumers: `slider.ts`, `avatar-group.ts` only), `packages/core/src/primitives/list/navigator.ts:194-203`, `packages/core/src/calendar/calendar-grid.ts:54-59`, `packages/core/src/a11y/roving-tabindex.ts:124-136`
-
-`KjListNavigator` maps ArrowRight → `moveBy(+1)` unconditionally; `KjCalendarGrid` maps ArrowLeft → previous day unconditionally. Only `KjRovingTabindex` flips, and it does so with a bespoke `getComputedStyle` + `closest('[dir]')` helper rather than the `KjDirectionality` primitive — so the repo has two directionality mechanisms and neither is used by the list / menu / calendar clusters.
-
-**Why it matters:** SC 1.3.2 Meaningful Sequence (A) / SC 2.4.3 Focus Order (A) — in an RTL locale the arrow keys move focus opposite to the visual order (menubar, cascade-select sub-panels, calendar, horizontal listboxes).
-**Fix:** inject `KjDirectionality` in `KjListNavigator`, `KjCalendarGrid`, `KjMenubar` and `KjCarousel`; reduce `KjRovingTabindex.resolveRtl()` to a call into the same primitive. Confidence on user impact is *medium* — I did not run an RTL page — but the code paths take no direction input at all.
-
-### F-13 Built-in UI/ARIA strings are hard-coded English despite an i18n package
-
-**Severity:** medium · **Confidence:** high · **Effort:** M
-**Files:** `packages/components/src/calendar/calendar.ts:99,107`, `packages/components/src/table/table.ts:282`, `packages/core/src/file-upload/file-upload.ts:258-319` + dropzone `kjLabel` default, `packages/core/src/color-picker/color-picker.ts:472,573,614,657`, `packages/components/src/chat/prompt-input.ts:87,96`
-
-```html
-<button … aria-label="Previous month">               <!-- calendar -->
-<span role="separator" aria-label="Resize column">   <!-- table -->
-```
-```ts
-this.announce(`${target.file.name} removed`);         // file-upload
-'[attr.aria-label]': '"Color saturation and value"',  // color-picker
-```
-
-`packages/core/src/i18n` exists and `KjToastClose` already resolves its label through it (`toast.ts:424-453`), so the pattern is established but not applied.
-
-**Why it matters:** SC 3.1.2 Language of Parts (AA) — an English accessible name inside a French page is read with French phonemes and is unintelligible; it also diverges from the consumer's localised visible label (SC 2.5.3 Label in Name).
-**Fix:** route every default label and every `announce()` string through the i18n token bundle (same mechanism as `'toast.close'`), keeping English as the fallback.
-
-### F-14 Overlays dismiss on `pointerdown`, not on the up-event
-
-**Severity:** medium · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/primitives/overlay/stack.ts:83,106-112`
-
-```ts
-document.addEventListener('pointerdown', this._onPointerDown, true);
-…
-private handlePointerDown(e: PointerEvent): void {
-  const top = this.topmost();
-  if (!top || !top.opts.closeOnOutside) return;
-  …
-  top.opts.onClose();
-}
-```
-
-A user who presses outside an open select / date-picker / dialog cannot abort by moving back onto the panel before releasing.
-
-**Why it matters:** SC 2.5.2 Pointer Cancellation (A) — the function executes on the down-event with no abort or undo.
-**Fix:** record the pointerdown target and close on the matching `pointerup`/`click` only when both down and up landed outside the panel (this also stops a text selection that starts inside the panel from dismissing it).
-
-### F-15 Default control size is below the AAA touch target, and the docs claim otherwise
-
-**Severity:** medium · **Confidence:** high · **Effort:** M
-**Files:** `packages/components/src/button/button.css:164-186,249-256`, `packages/components/src/button/button.ts:28-30`
-
-```css
-&[data-size='sm'] { --kj-button-height: var(--kj-ctl-h-sm); }  /* 32px */
-&[data-size='md'] { --kj-button-height: var(--kj-ctl-h-md); }  /* 36px  <- DEFAULT */
-&[data-size='lg'] { --kj-button-height: var(--kj-ctl-h-lg); }  /* 44px (AAA touch target) */
-/* Only data-size='icon' gets min-width/min-height: 2.75rem */
-```
-against the docblock: *"`sm`, `md`, `lg` — `md` is the default. `sm` keeps a 44px touch target via padding so it stays WCAG 2.5.5 compliant."* — `sm` is 32px tall with `padding-y: 0.25rem`; nothing brings it to 44px. The CSS comment at `:251-252` invokes an "equivalent-inline exception", which applies to targets inside a sentence of text, not standalone buttons.
-
-**Why it matters:** SC 2.5.5 Target Size (AAA) — the stated project target; every default-size button fails, as do `xs` (28px) and `sm` (32px).
-**Fix:** either raise `--kj-ctl-h-md` to 44px at default density (keeping smaller heights for the compact density mode, and say so in the docs), or add an invisible `::after` hit-area expansion to 44×44 for all sizes (the slider already does this via `--kj-slider-thumb-hit`). Correct the docblock now regardless.
-
-### F-16 An open accordion panel is clipped at 1000px
-
-**Severity:** medium · **Confidence:** high · **Effort:** S
-**Files:** `packages/components/src/accordion/accordion.css:42-63`
-
-```css
-.kj-accordion-content { overflow: hidden; max-height: 0; … }
-.kj-accordion-content[data-state="open"] { max-height: 1000px; … }
-```
-
-Content taller than 1000px — easily reached at 200% zoom or with an enlarged font — is clipped with no scrollbar (`overflow: hidden`), and the clipped region is unreachable.
-
-**Why it matters:** SC 1.4.4 Resize Text (AA) and SC 1.4.10 Reflow (AA) — content is lost when text is enlarged.
-**Fix:** animate `grid-template-rows: 0fr → 1fr` (or `interpolate-size: allow-keywords` / `calc-size(auto)`), and drop `overflow: hidden` once open.
-
-### F-17 No status announcements for filtering, sorting or pagination
-
-**Severity:** medium · **Confidence:** medium · **Effort:** M
-**Files:** `packages/core/src/combobox/combobox-root.ts`, `packages/core/src/primitives/list/filterable-list.ts`, `packages/core/src/table/table.ts`, `packages/components/src/pagination/pagination.ts`
-
-`grep -rln 'announce('` over both packages returns only carousel, chat, file-upload, input-otp, rich-text and the overlay live-announcer strategies. Combobox / command-palette announce *empty* results via `role="status"` (`packages/components/src/combobox/combobox.ts:179-180,210-211`) but never the non-zero count ("6 results available"), never the loading→loaded transition (`aria-busy` is bound on the input at `combobox-input.ts:63`, but `aria-busy` alone is not an announcement), and the table never announces a sort change or a page change.
-
-**Why it matters:** SC 4.1.3 Status Messages (AA) — a screen-reader user typing in a combobox gets no feedback that the option list changed until they arrow into it.
-**Fix:** reuse the existing helper (`strategies/live-announcer/_announce.ts`) — debounced result counts for `KjFilterableList`, "Sorted by Name ascending" on sort toggle, "Page 3 of 12" on page change.
-
-### F-18 `KjTypeAhead` does not implement the APG same-letter cycle
-
-**Severity:** low · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/primitives/list/type-ahead.ts:27-39`, `packages/core/src/primitives/list/navigator.ts:228-246`
-
-```ts
-const hit = items.find(i => !i.disabled() && i.label().toLowerCase().startsWith(needle));
-```
-
-The search always starts at index 0, never at the item after the active one, so pressing "a" repeatedly re-selects the same first "A…" item instead of cycling (APG: *"if the same character is typed in succession, focus moves to each item starting with that character in turn"*). Space is also consumed by `case ' '` in the navigator before it can extend a multi-word buffer ("New " + "York").
-
-**Why it matters:** APG listbox/menu deviation — a keyboard-efficiency gap rather than a hard SC failure (2.1.1 is still met).
-**Fix:** pass the active id into `match()`, scan from `activeIndex + 1` with wraparound, special-case a repeated single character, and append Space to a non-empty buffer when the target is not a text field.
-
-### F-19 Tab panels have no tab stop; sortable headers have no interactive role
-
-**Severity:** low · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/tabs/tabs.ts:331-336`, `packages/core/src/table/table-header.ts:21-28`
-
-`KjTabPanel` binds `role`, `id`, `aria-labelledby`, `hidden` — but no `tabindex="0"`, so a panel whose content has no focusable element cannot be reached or scrolled by keyboard (APG explicitly calls for `tabindex="0"` in that case). `KjTableHeader` puts `tabindex="0"` + click/Enter/Space on the `<th>` itself, leaving the accessible role as `columnheader` with nothing conveying that it is operable.
-
-**Why it matters:** SC 2.1.1 (A) for scroll-only panels; SC 4.1.2 (A) for the header — the role does not convey that the control is actionable.
-**Fix:** bind `[attr.tabindex]="isActive() ? '0' : null"` on `KjTabPanel`; in the table, move the handler onto a `<button>` inside the `<th>` (keeping `aria-sort` on the `<th>`).
-
-### F-20 Toast auto-dismiss is 4s with no user-adjustable timing
-
-**Severity:** low · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/toast/toast.strategy.ts:45,60`, `packages/core/src/toast/toast.service.ts:269-297`
-
-```ts
-duration: 4000,   // default strategy
-duration: 5000,   // plain list strategy
-```
-
-Pause-on-hover/focus and the F6 hotkey mitigate this well (`toast.ts:280-296`), but a screen-reader user who is not hovering has four seconds to reach the viewport with F6 before the message is gone, and there is no way to turn the timer off or extend it ×10.
-
-**Why it matters:** SC 2.2.1 Timing Adjustable (A) — the accepted remedies are turn-off / adjust / extend; SC 2.2.6 Timeouts (AAA) if any toast carries data the user must act on.
-**Fix:** support `duration: 0` (never auto-dismiss) through `provideKjToast`, honour an app-level "no timeouts" setting, and document that destructive/undo toasts must use `duration: 0`.
-
-### F-21 `KjListNavigator` hijacks Home/End/PageUp/PageDown inside text fields
-
-**Severity:** low · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/primitives/list/navigator.ts:204-219,265-273`
-
-`case ' '` correctly defers to a text field via `isTextEntry(e.target)`, but `Home`, `End`, `PageUp` and `PageDown` call `e.preventDefault()` unconditionally. On the combobox — where the navigator is hosted on the `<input>` (`combobox-input.ts:50`) — the user can no longer move the caret to the start or end of their query.
-
-**Why it matters:** APG combobox deviation; a text-editing convention every user relies on is silently removed (SC 3.2.2 / 2.1.1 expectations rather than a hard failure).
-**Fix:** apply the same `isTextEntry(e.target)` guard to Home/End (and to the Page keys when the input has a non-empty value).
-
-### F-22 `field-error` combines `role="alert"` with `aria-live="polite"`
-
-**Severity:** low · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/field/field-error.ts:31-32`
-
-```ts
-role: 'alert',
-'aria-live': 'polite',
-```
-
-`role="alert"` carries an implicit `aria-live="assertive"`; the explicit `polite` overrides it, producing a hybrid AT implementations handle inconsistently.
-
-**Why it matters:** SC 4.1.3 Status Messages (AA) — validation errors may be delayed or dropped depending on the screen reader.
-**Fix:** pick one — `role="alert"` alone for blocking errors, or `role="status"` + `aria-live="polite"` for advisory ones.
-
-## Refuted during verification
-
-### F-2 (original) "`aria-modal="true"` is emitted but nothing is ever made `inert`" — **REFUTED** (was: critical)
-
-The mechanical observations are accurate (`solidBackdrop`'s hooks are no-ops, no service wires `inertBased()`, so no DOM `inert` attribute is ever set on app content), but the **a11y conclusion built on them does not follow**, and the implied remediation is provably wrong. Re-filed as **F-2 (low)**, a doc-accuracy fix.
-
-1. **No SC 4.1.2 failure.** `aria-modal="true"` is an ARIA declaration of modality, not an assertion that the DOM `inert` attribute is present. Per ARIA 1.2 it tells AT to ignore content outside the element. These overlays genuinely **are** modal, so the announced state matches reality:
-   - `overlay.css:35-41` — `.kj-backdrop { position:absolute; inset:0; pointer-events:auto }` inside `.kj-overlay-container { position:fixed; inset:0; z-index:1000 }` (`container.ts:24-27`) — a full-viewport scrim that blocks all pointer access to app content.
-   - `tabCycle` (`tab-cycle.ts:41-49`) actively traps Tab/Shift+Tab, wrapping at first/last.
-   - `KjOverlayStack` routes Escape and outside-click to the topmost overlay only (`stack.ts:20-23`).
-   - `htmlOverflow()` locks background scroll.
-   This is exactly the WAI-ARIA APG modal-dialog pattern (`aria-modal` + scripted focus trap); the APG's own `dialog-modal` reference implementation sets no `inert` on siblings either.
-2. **The finding's own remedy would not work**, which undermines the "nothing is ever made inert" framing. `inertBased()` (`inert-based.ts:17-24`) iterates `panel.parentElement.children`. For every service-launched overlay the panel's parent is the per-overlay `<kj-overlay-wrapper>` (`builder.ts:111-118,137-148`; `wrapper.ts:30-33`), whose only other child is `<kj-backdrop>`. Wiring `inertBased()` into dialog/drawer/sheet would inert the backdrop (breaking click-outside close) and leave the entire application tree untouched — and, since there is a single `focusTrap` slot, it would also **replace** `tabCycle`, losing Tab wrapping, `returnFocus`, and the no-focusables panel fallback (`tab-cycle.ts:64-75`).
-3. **`inertSiblings` is the modality flag, not an instruction to write `inert`.** It is declared on `KjBackdropStrategy` (`tokens.ts:24`) with exactly one consumer — `panel.ts:78` `isModal()`. It is consistent end to end and tested: `none.ts` sets it false and `drawer.spec.ts:213` asserts `aria-modal` is null for the non-modal drawer, while `drawer.spec.ts:94` asserts `"true"` for the modal one. Poor naming, not a contradiction.
-4. **The SC 2.4.3 claim is not self-standing** — the finding itself conceded it only holds "combined with F-8". SC 2.4.3 concerns meaningful focus order, and the presence or absence of the `inert` attribute does not determine it; the Tab trap is functional in the ordinary case.
-
-**Disposition.** Drop the SC 4.1.2 and SC 2.4.3 citations — neither is failed by the current code. The residual doc drift is tracked as F-2 (low) above.
-
-<details>
-<summary>Original F-2 text, preserved</summary>
-
-**F-2 (original, refuted)** `aria-modal="true"` is emitted but nothing is ever made `inert`
-
-**Severity as originally filed:** critical · **Confidence:** high · **Effort:** S
-**Files:** `packages/core/src/primitives/overlay/strategies/backdrop/solid.ts:13-23`, `packages/core/src/primitives/overlay/panel.ts:78`, `packages/core/src/dialog/dialog.service.ts:30-34`, `packages/core/src/drawer/drawer.service.ts:64`, `packages/core/src/sheet/sheet.service.ts:79`, `packages/core/src/command-palette/command-palette-dialog.ts:56`
-
-```ts
-export function solidBackdrop(opts: KjSolidBackdropOpts = {}): KjSolidBackdropStrategy {
-  return {
-    inertSiblings: opts.inert ?? true,   // read by NOTHING except panel.isModal
-    closeOnClick: opts.closeOnClick ?? true,
-    className: opts.className ?? 'kj-backdrop',
-    attach() {}, onOpen() {}, onClose() {}, detach() {},   // <- all no-ops
-  };
-}
-```
-
-```ts
-// panel.ts:78
-readonly isModal = computed(() => !!this.backdrop?.inertSiblings);  // -> [attr.aria-modal]
-```
-
-`inertBased()` (`strategies/focus-trap/inert-based.ts:20-22`) is the only code in the repo that sets `inert`, and **no service wires it** — dialog/drawer/sheet all pass `focusTrap: tabCycle(...)`. So background content stays in the tab order and in the DOM tree while the panel announces itself as modal. The dialog docblock states the opposite: *"Siblings outside the dialog are marked `inert` while it is open, so assistive tech sees only the dialog tree"* (`packages/components/src/dialog/dialog.ts:31-35`).
-
-**Why it matters:** SC 4.1.2 (A) — the programmatic state (`aria-modal="true"`) contradicts reality. SC 2.4.3 Focus Order (A) — combined with F-8 the keyboard can leave the dialog into content that `aria-modal` has hidden from the screen reader, stranding the user in content AT will not read.
-**Fix:** compose `inertBased()` alongside `tabCycle()` in the dialog/drawer/sheet/command-palette builders (or have `tabCycle` set `inert` on the panel's sibling elements when the backdrop reports `inertSiblings`), and add a spec asserting siblings carry `inert` while open. Correct the docblock either way.
-</details>
-
----
-
-## Reconciliation with `reports/a11y/`
-
-**What the prior scan is:** an axe + Lighthouse + font-metrics sweep over **6 docs pages** (`home`, `getting-started`, `theme-generator`, `docs-button`, `docs-dialog`, `docs-tag`) × **13 themes**, captured 2026-05-13 (`reports/a11y/_summary.json`). It reports 0 axe violations everywhere except one `serious` in `mint`, with 38–43 passes per page.
-
-**What it caught that is real:** the font heuristics. Every theme reports the same warnings (`reports/a11y/bauhaus/docs-button.json`):
-```json
-{ "selector": "h1", "issue": "line-height ratio 1.00 below 1.2 (WCAG 1.4.12)" },
-{ "selector": "p",  "issue": "fontSize 10px below 12px minimum (WCAG 1.4.4)" }
-```
-The 10px sources are real and pixel-fixed: `apps/docs/src/app/components/docs-nav-tree/docs-nav-tree.css:53`, `docs-sidebar/docs-sidebar.css:70`, `navbar/navbar.css:62`, plus several `0.625rem` rules in the theme-generator panels. Worth fixing in the docs app, although "12px minimum" is the scan's own heuristic rather than a literal SC.
-
-**What it structurally cannot catch — which is where every finding above lives:**
-1. **Only the closed, idle state.** axe runs on load: the dialog is closed, the select panel unmounted, no tooltip open. F-1, F-2, F-3 and F-8 are all open-state defects.
-2. **No keyboard simulation.** axe never presses Tab or ArrowDown, so F-1, F-4, F-5, F-6, F-18 and F-21 are invisible by construction.
-3. **Six pages out of ~70 components.** No page covers table, calendar, combobox, cascade-select, menubar, carousel, slider, file-upload, stepper, rich-text, time-picker or color-picker.
-4. **No reduced-motion / RTL / zoom profile.** F-10, F-12 and F-16 need `emulateMedia`, `dir="rtl"` and a 200%-zoom viewport respectively.
-5. **Low-signal run.** Lighthouse performance scores of 0 (bauhaus) and 41 (mint) suggest the harness raced the dev server; treat the snapshot as inconclusive rather than as evidence of conformance.
-
-The unit specs share defect (2): `select.spec.ts:134` dispatches the keydown directly onto the portalled panel, so it passes while the real user path (key pressed on the trigger) is dead. A11y specs must drive the element the **user** focuses.
-
-## Recommended work items
-
-1. **Restore keyboard operation of select + cascade-select** — F-1. Move `KjListNavigator` to the trigger (APG select-only combobox) or add a focus strategy; rewrite the spec to key off the trigger element.
-2. **Correct the five `inert` docblocks** — F-2. Do **not** wire `inertBased()` next to `tabCycle()`: it walks `panel.parentElement.children`, which is the per-overlay wrapper, so it would inert the backdrop and nothing else while displacing `tabCycle` in the single `focusTrap` slot. If belt-and-braces inerting is wanted, build a separate app-root mechanism on the backdrop strategy's empty `onOpen`/`onClose`.
-3. **Give the grid a tab stop** — F-4; and make the resize handle keyboard-operable — F-5.
-4. **Fix the roving primitive** — F-6. Clamp the stale index, move focus on active-item removal, expose a public active-item setter and sync it from tabs / stepper / carousel indicators / list.
-5. **Tooltip focus + `aria-describedby`** — F-3. Compose `onFocus` with `onHover`; suppress `aria-expanded` for `role="tooltip"` panels.
-6. **Consolidate the two focus traps** — F-8, F-9. One focusable query, visibility filtering, document-level listener gated on `isTopmost`, initial focus + restore in `KjFocusTrap`.
-7. **Calendar ARIA rebuild** — F-7. Drop `role="application"`, move `gridcell` to the `<td>`, swap native `disabled` for `aria-disabled`.
-8. **One global reduced-motion guard in `themes/base.css`** — F-10, then delete redundant per-component blocks.
-9. **Focus-visible audit** — F-11. Re-add rings to the command-palette input, time-picker segments and rich-text surface; verify `--kj-border-focus` contrast per theme against the AAA 2.4.13 shape.
-10. **Announcements** — F-17, F-22. Result counts, sort changes, page changes through the existing `announce()` helper; settle `alert` vs `status` in `field-error`.
-11. **Pointer / target / timing pass** — F-14 (close on up-event), F-15 (44px default or hit-area expansion + doc correction), F-20 (`duration: 0` support).
-12. **i18n the built-in strings** — F-13, including the `announce()` messages in file-upload.
-13. **RTL sweep** — F-12. One `KjDirectionality` consumed by every arrow-key handler.
-14. **Polish** — F-16 (accordion clipping), F-18 (type-ahead cycle), F-19 (tabpanel tabindex, header button), F-21 (Home/End in text fields), plus the docs-app 10px type from the prior scan.
-15. **Raise the a11y harness ceiling** — axe on *open* overlay states, a Playwright keyboard-contract suite per APG pattern (Tab in → arrows → Home/End → Escape → focus returned), and reduced-motion + RTL + 200%-zoom profiles.
-
-## Open questions
-
-- Is `role="application"` on the calendar deliberate (a specific screen-reader bug it works around) or inherited from an early draft? It changes the F-7 fix substantially.
-- Was `inertSiblings` meant to be consumed by `KjOverlayPanel` (an `[attr.inert]` binding on siblings) rather than by a focus-trap strategy? That would be a smaller fix for F-2 than composing two strategies.
-- For select: does the team want the APG *select-only combobox* (focus stays on the trigger, `aria-activedescendant` on it) or the *listbox-popup* pattern (focus moves into the panel)? The current code is half of each.
-- Is the 36px default control height a deliberate density decision with a documented "use `lg` for touch" escape hatch, or should default density move to 44px? F-15's fix depends on the answer.
-- `reports/a11y/` shows Lighthouse performance 0 on several runs — was that captured against a cold dev server, and should the snapshot be regenerated before being treated as a baseline?
-- Should `KjRovingTabindex` and `KjListNavigator` be merged? They now implement overlapping — and divergent (RTL handling, wrap policy, disabled-skipping) — versions of the same contract.
+- **F-2** `KjInputOtp` completion is dead code (`!val.includes('')` is always `false`), with a latent `KjLiveRegion` DOM-wipe behind it. Not seen by the prior pass at all.
+- **F-5** Roving focus-follow steals focus on mount — menubar, and the same unguarded effect in the `KjListNavigator` primitive.
+- **F-7** Service-launched dialogs / drawers / sheets have no accessible name, and the documented `<kj-dialog-title>` does not exist in the repo.
+- **F-9** `kj-field` does not put `aria-invalid` / `aria-required` / `aria-describedby` on the control despite `@doc-aria` saying it does.
+- **F-14** Keyboard specs dispatch events on elements a user can never focus — the methodological reason F-1 and F-3 shipped.
+- **F-15** Roving menus still publish `aria-activedescendant`, and a code comment claims a host-directive-input mechanism Angular does not provide.
+- **F-18** The toast viewport is a `role="region"` live region wrapping `role="status"` live regions.
+- **F-17** now carries two items the prior pass did not quantify: the sub-7:1 `--kj-fg-subtle` token in `light` / `mint` / `nord`, computed per theme.

@@ -1,843 +1,1201 @@
 # Customization / Extensibility API Review
 
-> **Adversarially verified 2026-09-15.** Findings below marked *(severity corrected during verification)* were re-checked against the source; corrections are inline. Refuted findings are preserved in **Refuted during verification** at the end of the findings list, not deleted.
-
-Scope: `packages/core/src/presets/*`, DI config tokens across `packages/core` + `packages/components`,
-content projection / template escape hatches, i18n + locale, icon registry, motion, directionality,
-CSS override mechanism, and the declared vs actual public API surface.
-Micro-frontend (MFE) co-existence treated as a first-class constraint.
-
----
+Aspect: customization & extensibility, with micro-frontend (MFE) usage as a first-class constraint.
+Scope audited at HEAD (`9aee150a`, rebased on `origin/main`): `packages/core/src/presets/*`, every
+`InjectionToken` / `provide*` in `packages/core` + `packages/components`, content-projection slots,
+`packages/core/src/i18n`, `packages/core/src/locale`, the icon registry, motion, directionality, and
+both `public-api.ts` files.
 
 ## Verdict
 
-There is not *one* customization story here — there are **four**, and they do not agree.
-(1) An **open, DI-driven string-preset system** (`bindPresets` + `KJ_VARIANT_PRESET`/`KJ_SIZE_PRESET` +
-`provideKj<Component>()`) that is genuinely good: three-level resolution (explicit input > cascade
-context > configured default), works at root / route / component-subtree, dev-mode allowlist warning.
-(2) A **closed TypeScript union** story (`KjBadgeVariant`, `KjInputVariant`, `KjToastVariant`,
-`card`'s inline `'default' | 'outline' | 'subtle'`) on ~10 components that no `provideKj*` can touch.
-(3) A **CSS-custom-property / `@layer`** story that is the only real per-instance escape hatch — and is
-silently defeated on every non-default variant because variant rules declare the knobs on the element.
-(4) A **typed i18n catalog** (`KjTranslateService`, `EN_CATALOG`) that only three components use, while
-pagination, breadcrumb, spinner, color-picker, command-palette and date-picker keep a *second,
-duplicate* copy of the same English strings inside their config tokens — `EN_CATALOG['pagination.next']`
-and `KJ_PAGINATION_DEFAULTS.nextLabel` are both `'Next page'`, and the pagination directive reads the
-latter, so switching locale does nothing for it.
-
-**Post-verification correction to this paragraph.** The original verdict claimed the global surfaces
-are broadly unscopable and that two MFEs would fight over them. Adversarial verification cut that
-down substantially. What survives: `KjLocale` is `providedIn: 'root'`, so `provideKjLocale`'s TSDoc
-promise of route-level sub-tree scoping (`locale.config.ts:49-50`) is false — a one-line doc fix
-(F-1, low), and the design spec says locale is deliberately a global concern. What was **refuted**:
-`provideIcons` documents and tests "later calls win on key collision" (no scoping promise to break);
-translation catalogs are `multi: true` and merge additively **keyed by locale tag**, so they never
-collide; listing `KjLocale` in a route's `providers` is a working one-line escape hatch today; and
-two bootstrapped apps get separate root injectors anyway. The scroll lock **is** token-driven
-(`KJ_OVERLAY_SCROLL_LOCK_STRATEGY`, `tokens.ts:51`) and `<html dir>` has an opt-in seam
-(`provideKjDocumentDirection` is separately registered; `provideKjLocale({direction:'rtl'})` scopes
-without it) — so the original F-2 was refuted in full. The redeeming detail stands: the *preset*
-system, the toast strategy, the overlay strategy tokens and the table filter/editor contracts are all
-plain `Provider`s and do scope correctly.
+There is not one customization story — there are **four**, and they contradict each other. (1) A
+DI-driven preset system (`KjVariant` / `KjSize` + `bindPresets(KJ_*_CONFIG)` + `provideKj*`) that is
+genuinely good, genuinely per-subtree overridable, and covers about a dozen components. (2) A
+hand-rolled copy of that same system in `KjAlert`, whose own TSDoc claims it uses (1) and does not.
+(3) Closed TypeScript literal unions (`KjBadgeVariant`, `'default' | 'outline' | 'subtle'`, …) on
+roughly twenty styled components, with no config token at all — extending those means CSS custom
+properties in a parallel class namespace rather than the library's own `data-variant` slot
+*(corrected during verification: these are **not** fork-or-`$any()`; see F-2)*. (4)
+Hard-coded English strings and hard-coded defaults inside component templates that no token, input, or
+catalog can reach. Story (1) should win everywhere. The MFE picture is narrower than this review first claimed
+*(corrected during verification — see F-1)*: `KjLocale`, `KjTranslateService` and `KJ_ICON_REGISTRY`
+are `providedIn: 'root'` singletons that read their config token from the **root** injector, so
+`provideKjLocale()`, `provideKjTranslations()` and `provideIcons()` placed on a **route or a sub-app
+inside a single host injector tree** are silently ignored — but independently bootstrapped remotes
+each own a root injector and configure all three normally, `provideIconResolver` /
+`provideIconLoader` work at route level, `KJ_OVERLAY_Z_BASE` is correctly a document-level app-wide
+token, and exactly one docstring (`locale.config.ts:50`) promises the scoping that does not work. The
+class-override escape hatch documented in `rules/code_style.md` ("layer a
+single class on the host") is inert for the ~90 components whose host is `display: contents`. Nothing
+here makes the library unusable — the preset system, the theme `[data-theme]` scoping, the chat
+renderer registry, and the overlay strategy tokens are real, well-built extension points — but the
+surface is inconsistent enough that a consumer will hit a dead end within a day, and an MFE consumer
+will hit a silent one.
 
 **Grade: C**
 
-*Post-verification: F-1 critical → low (scope cut to one TSDoc sentence), F-2 **refuted** and re-filed as a low container-seam nit. No critical findings remain in this dimension.*
-
----
+> **Verification pass applied.** F-1 was corrected high → low (scope cut from four singletons to one
+> docstring sentence plus one loose phrase); F-2 and F-3 were corrected high → medium. Each correction
+> is folded into the finding under "Verification correction(s)", with withdrawn claims named
+> explicitly. Nothing was refuted outright in this dimension.
 
 ## What works
 
-- **`bindPresets` is the right shape.** `packages/core/src/presets/bind-presets.ts:24-43` translates a
-  per-component config token into the two shared preset tokens via `useFactory` + `inject`, so the
-  lookup walks the **element** injector chain. Because `provideKjButton` returns `Provider[]`
-  (`packages/core/src/button/config.ts:38`), it drops into a component's own `providers: []` — real
-  per-subtree override, not just per-app.
-- **Three-level resolution is explicit and tested.** `resolvedVariant = kjVariant() || fallback?.() ||
-  preset.default` (`packages/core/src/presets/variant.ts:88-90`), with `KJ_VARIANT_FALLBACK` for
-  compound parents (button-group, pagination). `variant.spec.ts:51-74` covers cascade-vs-explicit
-  precedence directly.
-- **The unset-vs-empty distinction is deliberate.** `transform: (v?: string) => v || undefined`
-  (`variant.ts:81`) keeps `""` from masquerading as a choice, with a comment explaining the ng-packagr
-  `.d.ts` narrowing that forced the explicit field annotation (`variant.ts:72-78`).
-- **Dev-mode allowlist warning.** `variant.ts:93-102` / `size.ts:88-97` name the offending value *and*
-  print the allowed set.
-- **`@layer kj.reset, kj.base, kj.shared, kj.component` (`packages/themes/src/base.css:7`)** is the
-  correct answer to specificity wars — consumer CSS outside a layer beats everything the library ships,
-  regardless of selector weight.
-- **The `var(--knob, default)` discipline in `button.css`** (`packages/components/src/button/button.css:11-34`)
-  is a genuinely sophisticated fix: knobs are read at their use site instead of declared on `.kj-button`,
-  so an ancestor (including the `display:contents` host) can set them. It is guarded by a real postcss
-  test (`packages/components/src/button/button.css.spec.ts:21-45`).
-- **Strategy tokens are a proper headless seam.** `packages/core/src/primitives/overlay/tokens.ts:47-54`
-  exposes mount / position / backdrop / focus-trap / scroll-lock / live-announcer / trigger-event as
-  swappable interfaces, and they are exported (`primitives/overlay/index.ts:2`).
-- **Toast has a three-tier extension ladder** — named preset, preset + overrides, fully custom
-  (`packages/core/src/toast/toast.strategy.ts:84,99,107`). This is the model the rest of the library
-  should copy.
-- **Table filter / editor plugin contracts are excellent.** `KjFilterParams`
-  (`packages/core/src/table/filter-params.ts:27-42`) accepts a component *or* a `TemplateRef`, with
-  `injectKjFilterParams()` and a deliberately unexported token so consumers cannot provide a malformed
-  value (`filter-params.ts:52-57`). `KJ_EDITOR_CONTRACT`
-  (`packages/components/src/table/table-editors/index.ts:33-35`) is the same idea for cell editors.
-- **`provideKjChat`** (`packages/core/src/chat/chat-registry.ts:65`) is a clean type→component registry
-  returning a plain `Provider`, so it scopes to a route *or* a component.
-- **i18n keys are compile-checked** — `KjTranslationKey = keyof typeof EN_CATALOG`
-  (`packages/core/src/i18n/catalogs/en.ts:42`) means a typo in a translated catalog fails `tsc`.
-
----
+- **The preset system is the right design.** `packages/core/src/presets/variant.ts:88-90` and
+  `size.ts:83-85` resolve `explicit input > KJ_*_FALLBACK context > preset default`, the fallback
+  token lets a compound parent cascade (`packages/core/src/button/button.ts:90-103` bridges the button
+  group), and `bindPresets` (`packages/core/src/presets/bind-presets.ts:24-43`) puts the config
+  translation on the *directive's* `providers`, so an element-injector override actually works. Both
+  directives have real spec coverage for every branch of the chain
+  (`variant.spec.ts:51-86`, `size.spec.ts:46-69`).
+- **Per-subtree preset override genuinely works** and is demonstrated:
+  `packages/components/src/button/_examples/button.configured.example.ts:9-14` puts
+  `provideKjButton({ variants: [...KJ_BUTTON_DEFAULTS.variants, 'brand', 'warning'], … })` on a
+  *component's* `providers` array. This is the one config mechanism in the library that is
+  MFE-safe by construction.
+- **Variant/size values are open strings, not closed unions, in the preset path.**
+  `kjVariant: InputSignalWithTransform<string | undefined, string | undefined>` — a consumer adds
+  `brand` with a CSS rule and a `provideKjButton` call and never forks.
+- **Themes are attribute-scoped, not `:root`-scoped.** `packages/themes/src/themes/kouji.css:7-13`
+  keys on `[data-theme="kouji"]` inside `@layer kj.shared`; density
+  (`packages/themes/src/density.css:32-38`) uses inherited registered custom properties. Two MFEs on
+  one page *can* run different themes and different densities by putting `data-theme` /
+  `--kj-density` on their own root element. This is the strongest MFE story in the repo.
+- **The chat renderer registry is the customization API done right.**
+  `packages/core/src/chat/chat-registry.ts:46-67` — plain `Provider`, consumed by direct `inject()`
+  in the component (`packages/components/src/chat/chat-thread.ts:113`), so "the nearest injector
+  wins" is true as documented.
+- **Overlay behaviour is fully strategy-swappable** via eight tokens
+  (`packages/core/src/primitives/overlay/tokens.ts:47-54`) with published interfaces — a consumer can
+  replace positioning, backdrop, focus trap or mount target without touching the component.
+- **Cascade layers protect consumer CSS.** Component rules live in `@layer kj.component`
+  (`packages/components/src/button/button.css:10`), declared last in
+  `packages/themes/src/base.css:7`, so any *unlayered* consumer rule beats them regardless of
+  specificity.
 
 ## Findings
 
-### F-1 `provideKjLocale` TSDoc claims route-level sub-tree scoping that `providedIn:'root'` cannot deliver
+### F-1 `provideKjLocale`'s docstring promises route-level scoping that the root-scoped `KjLocale` cannot honour
 
-**Severity:** low *(corrected during verification: was critical; scope cut from three subsystems to one doc sentence)* &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
+**Severity:** low *(corrected during verification: was high; scope cut from four singletons to one docstring sentence plus one loose phrase)* · **Confidence:** high · **Effort:** S
 
-**Files:** `packages/core/src/locale/locale.config.ts:49-50`, `packages/core/src/locale/locale.ts:76-80`,
-`packages/core/src/i18n/translate.config.ts:28`
+**Files:** `packages/core/src/locale/locale.ts`, `packages/core/src/locale/locale.config.ts`,
+`packages/core/src/i18n/translate.service.ts`, `packages/core/src/i18n/translate.config.ts`,
+`packages/core/src/icon/icon.tokens.ts`
 
 **Evidence**
 
 ```ts
-// locale.config.ts:49-50 (doc comment)
- * Call once at the application scope (`bootstrapApplication`'s `providers`) or
- * on a route to scope a sub-tree.
-```
-```ts
-// locale.ts:76-80 — the only reader
+// packages/core/src/locale/locale.ts:76-80
 @Injectable({ providedIn: 'root' })
 export class KjLocale {
+  private readonly defaultLocale = inject(LOCALE_ID);
+  private readonly directionality = inject(KjDirectionality);
   private readonly config = inject(KJ_LOCALE_CONFIG);
 ```
 
-Because `KjLocale` is `providedIn: 'root'` it always instantiates in the root environment injector and reads root's `KJ_LOCALE_CONFIG`, so a route-level `provideKjLocale(...)` is silently ignored. That matches the **stated design intent** — `docs/superpowers/specs/2026-07-07-locale-provider-design.md:137` says "app/route-scoped (**locale is a global concern**)"; the "route" half of that phrase leaked into the TSDoc. Only the doc sentence is wrong.
+```ts
+// packages/core/src/locale/locale.config.ts:50  ← the claim
+ * Call once at the application scope (`bootstrapApplication`'s `providers`) or
+ * on a route to scope a sub-tree.
+```
 
-**Verification corrections — the original finding was massively over-scoped. Three of its six cited files carry no contradicted promise.**
+A `providedIn: 'root'` record is materialised in the root `EnvironmentInjector`, so `inject(KJ_LOCALE_CONFIG)` (`locale.ts:80`) resolves against **root** and a `provideKjLocale({...})` placed in a lazy route's `providers` is silently ignored. `provideKjLocale` returns `EnvironmentProviders` (`locale.config.ts:68-74`), so route-level use type-checks, compiles, and does nothing.
 
-- **REFUTED: the icon registry.** `provideIcons` (`icon.providers.ts:12-16`) documents exactly the behaviour the finding called a defect — "Call multiple times to compose icon sets; **later calls win on key collision**" — and `icon.providers.spec.ts` asserts it ("merges multiple provideIcons calls (last wins on collision)"). The quoted `icon.tokens.ts:26-31` contains no scoping claim whatsoever. Drop the icon registry from this finding entirely.
-- **REFUTED: the i18n consequence.** `KJ_TRANSLATION_CATALOGS` is `multi: true` and the service merges every group into a map **keyed by locale tag** (`translate.service.ts:59-66`). Two consumers shipping `fr` and `en-GB` catalogs both register and both work; `selectCatalog()` picks by the active tag. There is no last-writer-wins collision for translations, and `register()` is a public runtime API for adding catalogs later. `provideKjTranslations`'s "for the enclosing injector" is loose wording; its own `@example` shows `bootstrapApplication`, not a route.
-- **REFUTED: "no re-provisioning escape hatch exists."** The `grep 'provide: KjLocale'` used as proof shows nothing — listing a `providedIn:'root'` class in a child injector's `providers` array is standard Angular and creates a scoped instance whose constructor resolves `KJ_LOCALE_CONFIG` from *that* injector. `providers: [KjLocale, provideKjLocale({locale:'de-DE'})]` on a route works today with zero library change. Two further hatches already ship and are tested: per-element inputs (`kjLocale` / `kjCurrency` on `KjNumberInput` at `number-input.ts:141-146`, `locale` on `KjDatePicker`; `locale.spec.ts` asserts "an explicit kjLocale still overrides the provider"), and the runtime `setLocale` / `setDirection` / `setCurrency` API.
-- **REFUTED: the multi-MFE framing.** Two MFEs that bootstrap separate Angular applications have separate root injectors and therefore separate `KjLocale` instances — `fr-FR` beside `en-GB` is trivially satisfiable.
+Root scoping is the deliberate design — `locale.ts:52` calls `KjLocale` the "Application-wide source of truth" and exposes `setLocale` / `setDirection` / `setCurrency` for runtime changes. **The fix is therefore to delete the "or on a route to scope a sub-tree" clause, not to rearchitect the service.**
 
-Nothing crashes; there is no data, a11y or security impact; the sole real call site is `provideKjLocale()` at root (`apps/docs/src/app/app.config.ts:34`); the workaround is one line.
+**Secondary, same root cause, no doc claims it works.** `KjTranslateService` (`translate.service.ts:52,60`) reads `KJ_TRANSLATION_CATALOGS` once in its root-scoped constructor, so a route-level `provideKjTranslations` is likewise ignored. `translate.config.ts:28`'s "Registers … for the enclosing injector" is loose phrasing — it should read "for the application" — and its only worked example is `bootstrapApplication`, not a route. Mitigated by the public `register(locale, catalog)` escape hatch (`translate.service.ts:71-75`), which is the supported way to add a catalog late.
+
+**One-line note on icons.** `KJ_ICON_REGISTRY`'s factory (`icon.tokens.ts:29-34`) runs in root, so route-level `provideIcons` entries never reach it. The registry is a shared mutable signal that the async loader writes into (`icon.resolver.ts:23-40`), i.e. global by design, so the right fix is a docstring line on `provideIcons` saying it is application-scoped.
+
+**Verification corrections (high → low).** The Angular mechanism is stated correctly and the quotes exist, but nearly everything layered on top fails checking.
+
+- **"Three document the opposite" is false — exactly one docstring does.** `stack.ts:34` says "Override per app via DI" and `stack.ts:95` says "Change the base app-wide with `KJ_OVERLAY_Z_BASE` (DI)" — the docs state exactly what the code does. `icon.providers.ts:14-18` (`provideIcons`) says nothing about routes or remotes. Only `locale.config.ts:50` actively instructs a pattern that no-ops. A grep of every `.md` and `.ts` outside `reports/review/` for `provideKjLocale|provideKjTranslations|provideIcons` near route/lazy/remote/MFE returns **zero** hits; the only place that documents route/remote scoping is this review report itself.
+- **`KJ_OVERLAY_Z_BASE` is dropped from the finding entirely.** `KjOverlayStack` is a document-level coordinator — one set of document `keydown` / `pointerdown` listeners, one stack array, one monotonic z-ladder. A per-route base would be semantically incoherent (two sub-trees issuing overlapping z-indices into one document defeats the stack's purpose), and the token is already documented as app-wide. Counting it as an affected singleton was padding.
+- **`provideIconResolver` / `provideIconLoader` are dropped — they DO work at route and remote level.** A route `EnvironmentInjector` holds an explicit record for `KJ_ICON_RESOLVER` / `KJ_ICON_LOADER`, and `R3Injector` checks its own records before falling back to the token's `providedIn: 'root'` ɵprov, so a directive under that route gets the route's override. Only `KJ_ICON_REGISTRY` — never explicitly provided anywhere — ignores route-level `provideIcons`. "Two remotes cannot have different icon sets" is overstated.
+- **The MFE framing is withdrawn.** Independently bootstrapped remotes each own their own root `EnvironmentInjector`, so `provideKjLocale` in each remote's `bootstrapApplication` works correctly. The limitation applies only to sub-apps or routes mounted **inside a single host injector tree** — a real but much narrower case than "MFE is broken".
+- **"Completely silent, no recourse" is overstated.** Root scoping is self-documented on the services, and `KjTranslateService.register()` exists precisely so catalogs can be added after construction.
+- The specs (`icon.providers.spec.ts:16-42`, `locale.spec.ts:8-16`) cover root only — but those specs match the *intended* root-scoped contract, so their scope is not itself evidence of a gap. Nothing in `fd6dd34e..HEAD` touches any of this.
+
+What is left is one misleading docstring sentence and one loose phrase, affecting an advanced scoping scenario that is otherwise undocumented. Every documented primary path works. That is a docs fix.
 
 **Fix.**
-1. Drop "or on a route to scope a sub-tree" from `locale.config.ts:49-50` and say the provider is application-scoped. Optionally add one line noting that a consumer who genuinely needs a scoped instance can list `KjLocale` alongside it in the route's `providers`.
-2. Apply the same wording tightening to `provideKjTranslations` (`translate.config.ts:28`, "for the enclosing injector" → "for the application").
+1. Delete "or on a route to scope a sub-tree" from `locale.config.ts:50`; say the provider is application-scoped. Optionally add one line noting that a consumer who genuinely needs a scoped instance can list `KjLocale` alongside it in the route's `providers`.
+2. Change `translate.config.ts:28` from "for the enclosing injector" to "for the application", and point at `register()` for late catalogs.
+3. Add one line to `provideIcons`' TSDoc stating that the registry is application-scoped.
 
 ---
 
-### F-2 Service-launched overlays bypass the mount strategy when choosing their root container
+### F-2 Variant/size extensibility splits across two undocumented mechanisms; the components package's ~19 closed unions are extensible only via CSS custom properties, not the `data-variant` slot
 
-**Severity:** low *(corrected during verification: the original critical finding was **refuted** — see "Refuted during verification" below; this is the residual accurate nit)* &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
+**Severity:** medium *(corrected during verification: was high — consumers are not blocked)* · **Confidence:** high · **Effort:** L
 
-**Files:** `packages/core/src/primitives/overlay/builder.ts:118`, `packages/core/src/primitives/overlay/container.ts:19-41`,
-`packages/core/src/primitives/overlay/tokens.ts:17`
+**Files:** `packages/core/src/badge/badge.ts`, `packages/components/src/card/card.ts`,
+`packages/components/src/checkbox/checkbox.ts`, `packages/components/src/toggle/toggle.ts`,
+`packages/components/src/input/input.ts`, `packages/components/src/table/table.ts`,
+`packages/components/src/divider/divider.ts`, `packages/core/src/toast/toast.service.ts`, and the
+preset-driven counterparts in `packages/core/src/presets/*`
+
+**Evidence** (re-verified verbatim at HEAD)
+
+Preset-driven (open, configurable, cascade-aware):
+
+```ts
+// packages/core/src/presets/variant.ts:79-82
+readonly kjVariant: InputSignalWithTransform<string | undefined, string | undefined> = input(
+  undefined as string | undefined,
+  { transform: (v?: string) => v || undefined },
+);
+```
+
+Closed-union (no config token, no `provideKj*`, no fallback chain):
+
+```ts
+// packages/core/src/badge/badge.ts:3
+export type KjBadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
+
+// packages/components/src/card/card.ts:82,107
+readonly variant = input<'default' | 'outline' | 'subtle'>('default');
+readonly size = input<'sm' | 'md' | 'lg'>('md');
+
+// packages/components/src/table/table.ts:600
+readonly kjVariant = input<'bordered' | 'striped' | 'clean'>('bordered');
+
+// packages/components/src/toggle/toggle.ts:104,112
+readonly size = input<'sm' | 'md' | 'lg'>('md');
+readonly appearance = input<'press' | 'switch'>('press');
+```
+
+Counted at HEAD: `bindPresets` is used by 11 directives/components
+(`button`, `link`, `tag`, `textarea`, `spinner`, `progress-bar`, `chat-bubble`, `breadcrumb`,
+`pagination`, `tabs`, plus the spec fixture). Against that, an independent sweep found 18 inline
+stylistic closed unions plus ~5 alias-typed ones — so "~19" is, if anything, conservative.
+
+The `segmented` fix in `fd6dd34e` was a symptom of the *other* half of the same problem: the variant
+value shipped with CSS but was missing from `KJ_BUTTON_DEFAULTS.variants`, so it produced a dev-mode
+warning. (Note the commit message's claim that the button "fell back to `default`" is not what the
+code does — `variant.ts:88-97` only `console.warn`s in dev mode and still reflects the unknown value.
+The fix was correct; the diagnosis in the message was not, and the message is worth correcting.)
+
+**Why it matters — corrected.** Consumers are **not** blocked. Every cited component ships its CSS in
+`@layer kj.component`, where each variant rule does nothing but reassign custom properties, and those
+properties are a documented public contract via `@doc-css-var` (card, badge, checkbox, input, toggle
+and divider all carry one). `card.ts` documents `--kj-card-bg` with the literal text "Background fill.
+Variant rules set this; override to brand-paint a one-off" — so the headline scenario, a brand card, is
+an explicitly supported path: `<kj-card class="brand-card">` plus `.brand-card { --kj-card-bg: … }` in
+an unlayered consumer rule. No `$any()`, no fork. Same for a subtle badge via
+`--kj-badge-bg` / `-fg` / `-border-color`.
+
+The real cost is threefold:
+
+1. **Consumers cannot reuse the library's own `data-variant` slot.** Their extensions live in a
+   parallel class namespace, and a structurally-*new* variant (a new toggle appearance, say) still
+   needs hand-written CSS rather than a config entry.
+2. **Which mechanism a component uses is discoverable only by reading the source.** There is no
+   theming or customization doc, and `rules/architecture.md` documents the package split without
+   mentioning variant extensibility at all.
+3. **`KjBadge` (`packages/core/src/badge/badge.ts:3`) and `KjToast` are the genuine inconsistencies** —
+   stylistic variants living in the zero-CSS *core* package but typed closed against CSS that ships in
+   `packages/components`.
+
+There is also a coherent, if unwritten, rationale for the split: core is zero-CSS so the *theme* owns
+the vocabulary (open preset + `provideKj*`), while components own their CSS so the union is closed
+against what actually ships. The closed unions in core are almost all behavioural enums
+(`kjOrientation`, `kjMaskMode`, `kjFormat`, `kjSelectionMode`), not style variants.
+
+**Note the one component with no escape hatch:** `packages/components/src/table/table.ts` is the only
+cited component with **no `@doc-css-var` block**, so it lacks even the CSS-custom-property route.
+
+**Verification correction (high → medium).** Every quoted line is verbatim-accurate; the counts hold;
+the two mechanisms genuinely exist and are documented nowhere. What does not hold is the load-bearing
+consequence — "their only options are `$any()` in the template or forking the component" — which the
+`@doc-css-var` contract contradicts. This is an API-consistency and documentation gap, not a blocked
+consumer.
+
+**Fix.**
+1. Document the core-open / components-closed rule in `rules/architecture.md`, and state the three
+   supported levers in order (CSS custom properties on the host → `provideKj*` where it exists → an
+   unlayered global rule).
+2. Add a `@doc-css-var` block to `packages/components/src/table/table.ts`.
+3. Move `badge` and `toast` onto `bindPresets` to match the rest of core.
+4. Longer term, migrate the remaining closed unions onto the preset system: add
+   `packages/core/src/<c>/config.ts` following `button/config.ts`, compose
+   `{ directive: KjVariant, inputs: ['kjVariant'] }` / `KjSize` via `hostDirectives`, spread
+   `bindPresets(KJ_*_CONFIG)` into `providers`, widen the input to `string | undefined`, and keep the
+   literal union as a documentation alias only. Add a lint/CI check that a component with a
+   `data-variant` or `data-size` host binding composes `KjVariant` / `KjSize`.
+5. Correct `fd6dd34e`'s commit message — the preset validator warns, it does not fall back.
+
+---
+
+### F-3 `KjSpinnerConfig.animations` is never read, and the closed `kjAnimation` type blocks the extension its TSDoc recommends
+
+**Severity:** medium *(corrected during verification: was high)* · **Confidence:** high · **Effort:** S
+
+**Files:** `packages/core/src/spinner/config.ts`, `packages/core/src/spinner/spinner.ts`,
+`packages/components/src/spinner/spinner.ts`, `docs/component-analyses/feedback/spinner.md:307`
+
+**Evidence** (all exact at HEAD)
+
+```ts
+// packages/core/src/spinner/config.ts:7
+export type KjSpinnerAnimation = 'spin' | 'dots' | 'pulse' | 'bars';
+
+// packages/core/src/spinner/config.ts:16-19
+/**
+ * Default Spinner presets shipped by kouji-ui. Exported so consumers can
+ * spread them when extending: `[...KJ_SPINNER_DEFAULTS.animations, 'ring']`.
+ */
+
+// packages/core/src/spinner/config.ts:36-39
+ * Configures the Spinner presets for the enclosing injector. Replaces (does
+ * not merge) `variants`, `sizes`, and `animations`; spread
+ * `KJ_SPINNER_DEFAULTS.*` to extend.
+```
+
+```ts
+// packages/core/src/spinner/spinner.ts:66-68
+readonly kjAnimation = input<KjSpinnerAnimation>(
+  (this.config.defaults.animation as KjSpinnerAnimation) ?? 'spin',
+);
+
+// packages/components/src/spinner/spinner.ts:148
+readonly kjAnimation = input<KjSpinnerAnimation>('spin');
+```
+
+`animations: string[]` (`config.ts:12`) is consumed by **nothing**: `bindPresets`
+(`packages/core/src/presets/bind-presets.ts`) translates only `variants`, `sizes`,
+`defaults.variant` and `defaults.size` into the shared preset tokens. The field is not validated, not
+reflected, not consulted anywhere.
+
+Its evident intended purpose was dev-mode validation: `KjVariant` / `KjSize` warn on unknown values
+against their preset lists (see `packages/core/src/presets/size.spec.ts`, "warns once in dev mode for
+an unknown value"), and `kjAnimation` has no equivalent. Meanwhile the TSDoc at `config.ts:17-18` and
+`:37-39`, echoed at `docs/component-analyses/feedback/spinner.md:307`, tells consumers to extend the
+list — but `input<KjSpinnerAnimation>` is a closed literal union in both the core directive
+(`spinner.ts:66-68`) and the styled wrapper (`components/spinner.ts:148`), under
+`"strictTemplates": true` (`tsconfig.json:33`), so `<kj-spinner kjAnimation="ring">` is a compile
+error. The `as KjSpinnerAnimation` cast at `spinner.ts:67` is the code admitting the mismatch.
+
+**The partial escape hatch the original write-up omitted.** `defaults.animation` **is** read, at
+`spinner.ts:67`, and the cast means `provideKjSpinner({ defaults: { animation: 'ring' } })` does
+reflect `data-animation="ring"` at runtime. So the *global default* is extensible even though the
+per-instance input and the `animations` list are not — the config is not wholly inert.
+
+**Why it matters.** The library ships a config field, documents exactly how to extend it, and makes
+the per-instance extension a compile error. A consumer following the TSDoc writes code that does not
+compile against a config field that has no effect.
+
+**Verification correction (high → medium).** The core claim holds line-for-line and no guard, test or
+recent commit addresses it; spinner is the only core config with a preset list beyond
+`variants` / `sizes`, so it is an isolated oversight rather than a systemic one. Severity drops
+because there is no runtime breakage, no regression, and no accessibility or correctness impact: the
+`defaults.animation` route works, and the blast radius is one optional field on one component, reached
+only by a consumer attempting a niche custom-keyframe extension. That is a docs/DX defect with a
+trivial fix.
+
+**Fix.** Either/or:
+- **(a)** Widen to `KjSpinnerAnimation | (string & {})` on both the directive and the wrapper
+  (defaulting from `config.defaults.animation`) and wire dev-mode validation against
+  `config.animations`, mirroring the `KjSize` / `KjVariant` warn at `presets/size.ts:87-98`; or
+- **(b)** Drop the `animations` field entirely and correct both docstrings plus
+  `docs/component-analyses/feedback/spinner.md:307`.
+
+Not a runtime bug — no existing behaviour is broken either way. (The generalised version of (a) is a
+third preset directive, `KjPresetAttr`, so `animation`, `appearance`, `tone` and friends all ride the
+same resolution chain instead of each growing a bespoke field.)
+
+---
+
+### F-4 `provideKj*` takes `Partial<Config>`, which is one level deep — changing a single default forces restating all of them, and two providers disagree on merge depth
+
+**Severity:** medium · **Confidence:** high · **Effort:** S
+
+**Files:** `packages/core/src/pagination/config.ts`, `packages/core/src/breadcrumb/config.ts`,
+`packages/core/src/button/config.ts`, `packages/core/src/spinner/config.ts` (and every other
+`config.ts`)
+
+**Evidence**
+
+```ts
+// packages/core/src/pagination/config.ts:70-81
+/**
+ * Configures the Pagination presets / labels for the enclosing injector.
+ * Shallow-merges over the defaults — pass only the fields you want to
+ * override.
+ */
+export function provideKjPagination(config: Partial<KjPaginationConfig>): Provider[] {
+  return [
+    {
+      provide: KJ_PAGINATION_CONFIG,
+      useValue: { ...KJ_PAGINATION_DEFAULTS, ...config },
+    },
+  ];
+}
+```
+
+```ts
+// packages/core/src/breadcrumb/config.ts:73-83  ← the sibling does it differently
+export function provideKjBreadcrumb(config: Partial<KjBreadcrumbConfig>): Provider[] {
+  return [
+    {
+      provide: KJ_BREADCRUMB_CONFIG,
+      useValue: {
+        ...KJ_BREADCRUMB_DEFAULTS,
+        ...config,
+        defaults: { ...KJ_BREADCRUMB_DEFAULTS.defaults, ...(config.defaults ?? {}) },
+      },
+    },
+  ];
+}
+```
+
+`Partial<T>` makes `defaults` optional but keeps *its* members required. So
+`provideKjSpinner({ defaults: { animation: 'dots' } })` is a type error — the caller must also restate
+`variant`, `size` and `ariaLabel` (`config.ts:13`). Breadcrumb's deep merge at line 80 is therefore
+unreachable through the typed signature; pagination's docstring promise at line 72-73 ("pass only the
+fields you want to override") is false for the whole `defaults` sub-object.
+
+**Why it matters.** The most common customization request — "make `lg` the default button size" —
+requires the consumer to copy the other defaults out of the source and keep them in sync forever. A
+library minor that adds a field to `defaults` silently reverts every consumer that pinned it. And two
+sibling providers behave differently, so the consumer cannot learn one rule.
+
+**Fix.** Type every provider as a deep-partial and deep-merge in one shared helper:
+
+```ts
+type KjDeepPartial<T> = { [K in keyof T]?: T[K] extends object ? KjDeepPartial<T[K]> : T[K] };
+function mergeConfig<T>(defaults: T, config: KjDeepPartial<T>): T { /* 2-level merge */ }
+```
+
+Then `provideKjX(config) => [{ provide: TOKEN, useValue: mergeConfig(DEFAULTS, config) }]` for all of
+them, and fix the `variants` / `sizes` doc lines to say arrays still *replace* (the intended
+behaviour). Spec it once against the helper.
+
+---
+
+### F-5 The documented "layer a single class on the host" escape hatch is inert for ~90 of ~130 styled components
+
+**Severity:** medium · **Confidence:** high · **Effort:** M
+
+**Files:** `rules/code_style.md`, `packages/components/src/button/button.ts`,
+`packages/components/src/button/button.css`, and 88 other components
+
+**Evidence**
+
+```
+rules/code_style.md:68-70
+- When you must extend a kj component, layer a single class on the host —
+  do not override its internal classes. If you find yourself needing more
+  than a small visual delta, propose a new variant in the core package.
+```
+
+```ts
+// packages/components/src/button/button.ts:114-136
+    <button
+      [type]="kjType()"
+      kjButton
+      class="kj-button"
+      ...
+  host: { style: 'display: contents;' },
+```
+
+The component's own CSS already documents the consequence:
+
+```
+packages/components/src/button/button.css:12-19
+    /* Component knobs are NOT declared here.
+       A custom property declared on an element always beats an inherited one,
+       so declaring the knobs on .kj-button made them unreachable from an
+       ancestor — including the <kj-button> host, which is display:contents and
+       is the only thing a consumer can put an inline style on. …
+```
+
+`grep -c "display: contents"` over `packages/components/src` (excluding specs/examples/playgrounds)
+returns **90**; `grep -c "host: { class:"` returns **42**. So there are two host contracts:
+host-is-the-styled-element (tabs `tabs.ts:124`, spinner `spinner.ts:121`, alert `alert.ts:129`) and
+host-is-a-`display:contents`-wrapper (button, badge, card, calendar…). On the second group,
+`<kj-button class="danger-zone">` puts the class on an element that paints nothing; the visual element
+is the inner `.kj-button` and the only selector that reaches it is `.danger-zone .kj-button`, i.e.
+exactly the "override its internal classes" the rule forbids. Which group a component is in is not
+documented anywhere.
+
+**Why it matters.** The rule is the project's own answer to "the component is 90% right, what now?",
+and for two thirds of the kit the answer silently does nothing. Consumers will discover the
+`display:contents` split by trial and error and end up writing global `!important` rules.
+
+**Fix.** Pick one contract. Either move the styled element onto the host everywhere (delete the
+`display:contents` wrappers; `host: { class: 'kj-button' }` on a `<kj-button>` that *is* the button),
+or — cheaper and non-breaking — add a documented `kjClass` input on every wrapper that forwards to the
+inner element's `[class]`, plus a short "Overriding a single instance" doc page stating the three
+supported levers in order: (1) CSS custom properties on the host (inherits through
+`display: contents`), (2) `kjClass` on the inner element, (3) an unlayered global rule, which always
+beats `@layer kj.component`. Document the merge order explicitly — it is nowhere today.
+
+---
+
+### F-6 `KjAlert` hand-rolls the preset system, and its config TSDoc claims it uses `bindPresets` when it does not
+
+**Severity:** medium · **Confidence:** high · **Effort:** S
+
+**Files:** `packages/core/src/alert/config.ts`, `packages/core/src/alert/alert.ts`
+
+**Evidence**
+
+```ts
+// packages/core/src/alert/config.ts:3-8  ← the claim
+/**
+ * Shape of the Alert preset configuration. Mirrors `KjButtonConfig` —
+ * `bindPresets(KJ_ALERT_CONFIG)` translates this into the shared
+ * `KJ_VARIANT_PRESET` / `KJ_SIZE_PRESET` tokens consumed by the
+ * `KjVariant` / `KjSize` host directives composed on `KjAlert`.
+ */
+```
+
+```ts
+// packages/core/src/alert/alert.ts:58-81 — no hostDirectives, no bindPresets
+@Directive({
+  selector: '[kjAlert]',
+  standalone: true,
+  exportAs: 'kjAlert',
+  providers: [
+    { provide: KJ_ALERT, useExisting: KjAlert },
+  ],
+  host: {
+    ...
+    '[attr.data-variant]': 'variant()',
+    '[attr.data-size]': 'size()',
+```
+
+```ts
+// packages/core/src/alert/alert.ts:100-109 — a second implementation of the same resolution
+readonly kjVariant: InputSignalWithTransform<string, string | undefined> = input(
+  this.preset.defaults.variant,
+  { transform: (v?: string) => v || this.preset.defaults.variant },
+);
+```
+
+```ts
+// packages/core/src/alert/alert.ts:217-227 — a second copy of the dev-mode warn
+        if (!this.preset.variants.includes(v)) {
+          console.warn(
+            `[kj-alert] unknown variant "${v}". Allowed values: ${this.preset.variants.join(', ')}.`,
+```
+
+`grep -n "hostDirectives\|bindPresets" packages/core/src/alert/alert.ts` confirms neither appears in
+the `KjAlert` decorator (the only `hostDirectives` in the file is `[KjButton]` on the dismiss
+directive at line 388).
+
+**Why it matters.** Third mechanism, third behaviour. Because `kjVariant` defaults to a concrete value
+rather than `undefined`, `KjAlert` cannot participate in the `KJ_VARIANT_FALLBACK` cascade at all — an
+alert can never inherit a variant from a compound parent the way a button can. And the TSDoc sends a
+maintainer looking for `bindPresets` wiring that isn't there.
+
+**Fix.** Convert `KjAlert` to `hostDirectives: [{ directive: KjVariant, inputs: ['kjVariant'] },
+{ directive: KjSize, inputs: ['kjSize'] }]` + `providers: [...bindPresets(KJ_ALERT_CONFIG)]`, delete
+the duplicated inputs and the duplicated warn effect, and expose `variant`/`size` for
+`KjAlertContext` from the composed directives. If the alert genuinely needs the variant value in TS
+(it does — `mode()` derives from it at `alert.ts:150+`), inject `KjVariant` and read
+`resolvedVariant()`.
+
+---
+
+### F-7 The i18n catalog is not the source of truth it claims to be; component labels are a second, competing i18n surface and many are not overridable at all
+
+**Severity:** medium · **Confidence:** high · **Effort:** L
+
+**Files:** `packages/core/src/i18n/catalogs/en.ts`, `packages/core/src/pagination/config.ts`,
+`packages/core/src/breadcrumb/config.ts`, `packages/core/src/spinner/config.ts`,
+`packages/components/src/calendar/calendar.ts`, `packages/components/src/chat/prompt-input.ts`
+
+**Evidence**
+
+```ts
+// packages/core/src/i18n/catalogs/en.ts:1-6  ← the claim
+/**
+ * Canonical English (`en`) message catalog — the **source of truth** for
+ * kouji-ui's visible / assistive-text strings. Every translation key the
+ * library understands is spelled exactly once here; …
+```
+
+The catalog has 13 keys (`en.ts:11-34`), and only three non-i18n files consume `KjTranslateService`:
+`packages/core/src/toast/toast.ts`, `packages/components/src/avatar/avatar-group.ts`,
+`packages/components/src/tag/tag.ts`.
+
+The same strings are simultaneously hard-coded in a config token, which pagination actually reads:
+
+```ts
+// packages/core/src/pagination/config.ts:48-56
+  navigationLabel: 'Pagination',
+  previousLabel: 'Previous page',
+  nextLabel: 'Next page',
+  firstLabel: 'First page',
+  lastLabel: 'Last page',
+  ellipsisLabel: 'More pages',
+  pageItemLabel: (page) => `Page ${page}`,
+  infoTemplate: (page, totalPages) => `Page ${page} of ${totalPages}`,
+```
+
+```ts
+// packages/core/src/pagination/pagination.ts:73
+    '[attr.aria-label]': 'config.navigationLabel',
+```
+
+— duplicating `en.ts:21-28` (`'pagination.nav'`, `'pagination.previous'`, …) key for key, while
+`pagination.ts` never touches `KjTranslateService`.
+
+And a third tier is not overridable by anything:
+
+```html
+<!-- packages/components/src/calendar/calendar.ts:99 -->
+          aria-label="Previous month"
+<!-- packages/components/src/chat/prompt-input.ts:87 -->
+            aria-label="Stop generating"
+```
+
+`grep -rn 'aria-label="[A-Z]'` over `packages/components/src` (excluding specs/examples/playgrounds)
+returns 24 hits.
+
+**Why it matters.** A French consumer must (a) call `provideKjTranslations({ fr: FR_CATALOG })` for
+toast/tag/avatar, (b) call `provideKjPagination({ previousLabel: 'Page précédente', … })` and
+`provideKjBreadcrumb(…)` and `provideKjSpinner(…)` for the config-token tier — each requiring the full
+`defaults` object per F-4 — and (c) fork the calendar and the prompt input. Three mechanisms, one of
+which has no escape hatch, for one job. `MEMORY.md` already records "route all internal strings
+through i18n" as a post-merge follow-up; this finding is the concrete inventory.
+
+**Fix.** Make the catalog the only surface. Add the missing keys to `EN_CATALOG`
+(`breadcrumb.*`, `spinner.loading`, `calendar.prevMonth`, `calendar.nextMonth`, `chat.stop`,
+`chat.typing`, `chat.sources`, `alert.dismiss`, …), have `KjPagination` / `KjBreadcrumb` /
+`KjSpinner` read them through `KjTranslateService`, and delete the label fields from those config
+tokens (keep the `(page, total) => string` *formatters* only where interpolation genuinely differs
+per locale — the catalog's `{page}` / `{total}` placeholders already cover most of them). Add a CI
+grep that fails on a literal `aria-label="…"` in `packages/components/src` templates.
+
+---
+
+### F-8 `provideIcons()` is silently dead below the root injector while `provideLucideIcons()` works anywhere but writes to a page-global registry
+
+**Severity:** medium · **Confidence:** high · **Effort:** M
+
+**Files:** `packages/core/src/icon/icon.tokens.ts`, `packages/core/src/icon/icon.providers.ts`,
+`packages/components/src/icon/lucide/provide-lucide-icons.ts`
+
+**Evidence**
+
+```ts
+// packages/core/src/icon/icon.providers.ts:12-25
+/**
+ * Register a map of icon names to CSS-ready values. Call multiple times to
+ * compose icon sets; later calls win on key collision.
+ */
+export function provideIcons(map: Record<string, string>): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: KJ_ICON_ENTRIES, useValue: map, multi: true },
+  ]);
+}
+```
+
+```ts
+// packages/components/src/icon/lucide/provide-lucide-icons.ts:98-105
+export function provideLucideIcons(): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    provideEnvironmentInitializer(() => {
+      const registry = inject(KJ_ICON_REGISTRY);
+      registry.update((m) => ({ ...m, ...buildLucideRegistry() }));
+    }),
+  ]);
+}
+```
+
+`KJ_ICON_REGISTRY` is `providedIn: 'root'` (`icon.tokens.ts:29`) and merges `KJ_ICON_ENTRIES` in its
+root-scoped factory (lines 31-44). So `provideIcons()` on a route or remote contributes entries to a
+`KJ_ICON_ENTRIES` multi-provider the root factory never reads. `provideLucideIcons()` takes the
+opposite route — an environment initializer that *mutates* the root registry signal — so it "works"
+from any injector, but by writing into shared page-global state where a second remote's icon named
+`close` overwrites the first's.
+
+**Why it matters.** Two icon-registration APIs with opposite and undocumented scoping semantics, one
+of which fails silently. In an MFE, remotes cannot own their icon namespace at all.
+
+**Fix.** Make `KJ_ICON_REGISTRY` injector-scoped: drop `providedIn: 'root'` and have `provideIcons()`
+(and a new `provideKjIconRegistry()` for the root default) register the registry alongside the entries,
+so `injectKjIconResolver()` (`icon.resolver.ts:22-25`) resolves the nearest registry and a child
+registry can chain to its parent for misses. Convert `provideLucideIcons()` to a plain
+`provideIcons(buildLucideRegistry())` so both APIs share one mechanism. Add a spec that provides
+different icon maps on two sibling child environment injectors and asserts each resolves its own.
+
+---
+
+### F-9 `--kj-overlay-z-base` on `:root` overrides the DI token, so a host page can silently retarget every remote's overlay stack
+
+**Severity:** medium · **Confidence:** high · **Effort:** S
+
+**Files:** `packages/core/src/primitives/overlay/stack.ts`
+
+**Evidence**
+
+```ts
+// packages/core/src/primitives/overlay/stack.ts:161-173
+  /**
+   * Base level of the stack: `--kj-overlay-z-base` on `:root` when it holds
+   * a number, otherwise the `KJ_OVERLAY_Z_BASE` token (default `1000`).
+   */
+  get baseZIndex(): number {
+    if (this.isBrowser && typeof getComputedStyle === 'function') {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--kj-overlay-z-base').trim();
+      const n = raw === '' ? NaN : Number(raw);
+      if (Number.isFinite(n)) return n;
+    }
+    return this.configuredBase;
+  }
+```
+
+The read is unconditionally against `document.documentElement` — the page root, not the overlay's own
+subtree — and the CSS value *wins* over the explicit DI token.
+
+**Why it matters.** In an MFE, the base z-index is a shared, page-global setting that whichever bundle
+happens to write `:root { --kj-overlay-z-base }` owns. A remote that deliberately sets
+`KJ_OVERLAY_Z_BASE` via DI to sit above the host's chrome is silently overruled. Combined with F-1
+(`KJ_OVERLAY_Z_BASE` is root-only), there is no per-remote overlay layering at all.
+
+**Fix.** Read the custom property from the overlay's own container element (or the nearest ancestor
+that declares it) rather than `documentElement`, and invert the precedence: an explicit DI token
+should win over a stylesheet default. At minimum, resolve the DI token first and fall back to the CSS
+property, and say so in the TSDoc at lines 34-36.
+
+---
+
+### F-10 Documentation examples on `_examples` barrels leak into the published package API (and drag the 1 600-name Lucide list with them)
+
+**Severity:** medium · **Confidence:** high · **Effort:** S
+
+**Files:** `packages/components/src/icon/index.ts`, `packages/components/src/input-mask/index.ts`,
+`packages/components/src/icon/_examples/index.ts`
+
+**Evidence**
+
+```ts
+// packages/components/src/icon/index.ts
+export * from './lucide/index';
+export {
+  KjIconGalleryExample,
+  KjIconUsageExample,
+} from './_examples';
+```
+
+```ts
+// packages/components/src/input-mask/index.ts
+export { KjInputMaskComponent } from './input-mask';
+export {
+  KjInputMaskExample,
+  KjInputMaskUsageExample,
+  KjInputMaskCreditCardExample,
+  KjInputMaskDateExample,
+  KjInputMaskValidationExample,
+  KjInputMaskCustomTokensExample,
+} from './_examples';
+```
+
+```ts
+// packages/components/src/icon/_examples/index.ts:1-2  ← says it is docs-only
+// AUTO-GENERATED by scripts/migrate-examples.mjs (manually augmented)
+// One barrel per component folder — used by the docs app as a lazy chunk.
+```
+
+Both barrels are reachable from `packages/components/src/public-api.ts:33,36`, which is the
+`ng-package.json` `entryFile`. `icon.gallery.example.ts:12` imports `LUCIDE_ICON_NAMES` from the
+30 KB generated `icon-names.generated.ts`, so that array lands in the package's main entry point.
+No other component barrel does this — `grep "_examples" packages/components/src/*/index.ts` returns
+only these two.
+
+**Why it matters.** Eight demo components become part of the supported public API (semver-bound, and
+now the consumer's problem to tree-shake), and the docs-only Lucide name list is pulled into every
+app that imports anything from `@kouji-ui/components`.
+
+**Fix.** Delete the `_examples` re-exports from both `index.ts` files; the docs app should import them
+via the `@kouji-ui/components/*` deep path or the dedicated `example-components.ts` entry, exactly as
+the other 60-odd components already do. Add a CI check that `public-api.ts`'s transitive import graph
+contains no `_examples/` or `*.playground.ts` file.
+
+---
+
+### F-11 The preset system's own extension points are marked `@internal` but exported, so a consumer building a kouji-style component has no supported entry
+
+**Severity:** medium · **Confidence:** medium · **Effort:** S
+
+**Files:** `packages/core/src/presets/bind-presets.ts`, `packages/core/src/presets/variant.ts`,
+`packages/core/src/presets/size.ts`, `packages/core/src/presets/index.ts`,
+`packages/core/src/public-api.ts`, `packages/core/tsconfig.lib.json`
+
+**Evidence**
+
+```ts
+// packages/core/src/presets/bind-presets.ts:17-26
+/**
+ * Returns providers that translate a per-component config token into the
+ * shared preset tokens (`KJ_VARIANT_PRESET`, `KJ_SIZE_PRESET`). Spread into a
+ * consumer directive's `providers` array.
+ *
+ * @internal
+ */
+export function bindPresets<T extends KjBindablePresetConfig>(
+```
+
+```ts
+// packages/core/src/presets/variant.ts:52-62
+ * Internal preset directive composed via `hostDirectives` by every stylistic
+ * component to expose a configurable `variant` input … App code does not
+ * import this directly.
+ *
+ * @internal
+ */
+```
+
+```ts
+// packages/core/src/public-api.ts
+// -- Internal presets (composed via hostDirectives; filtered from docs) --
+export * from './presets/index';
+```
+
+Neither `tsconfig.lib.json` nor `tsconfig.lib.prod.json` sets `stripInternal`, so `KjVariant`,
+`KjSize`, `bindPresets`, `KjBindablePresetConfig`, `KJ_VARIANT_PRESET`, `KJ_SIZE_PRESET`,
+`KJ_VARIANT_FALLBACK` and `KJ_SIZE_FALLBACK` all ship in the published `.d.ts` and are importable.
+(`KJ_ICON_ENTRIES` at `icon.tokens.ts:9-12` is the same contradiction.)
+
+**Why it matters.** `bindPresets` + a config token is exactly what a consumer needs to build their own
+`<acme-chip>` that participates in the same `provideKj*` story, and the docstring says "consumer
+directive's `providers` array" in one breath and `@internal` / "App code does not import this
+directly" in the next. The symbols are shipped either way, so the only effect of the tag is to tell
+consumers not to use the thing they need.
+
+**Fix.** Decide. Either promote `KjVariant` / `KjSize` / `bindPresets` / the four tokens to supported
+public API — drop `@internal`, write the "build your own preset-driven component" doc, and treat their
+shape as semver-bound — or set `stripInternal: true` in `tsconfig.lib.prod.json` and accept that
+`hostDirectives` composition across package boundaries breaks. Promoting is the right call; it is the
+one mechanism worth standardising on (see F-2).
+
+---
+
+### F-12 Input naming is inconsistent across (and within) components: `variant` vs `kjVariant`
+
+**Severity:** low · **Confidence:** high · **Effort:** M
+
+**Files:** `packages/components/src/input/input.ts`, `packages/components/src/badge/badge.ts`,
+`packages/components/src/card/card.ts`, `packages/components/src/toggle/toggle.ts`,
+`packages/components/src/tabs/tabs.ts`, `CLAUDE.md`, `rules/architecture.md`
+
+**Evidence**
+
+```ts
+// packages/components/src/input/input.ts:129-130  ← both conventions, same class
+readonly variant = input<KjInputVariant>('default');
+readonly kjSize = input<KjInputSize>('md');
+```
+
+```ts
+// packages/components/src/badge/badge.ts:90-91
+readonly variant = input<KjBadgeVariant>('default');
+readonly size = input<'xs' | 'sm' | 'md' | 'lg'>('md');
+
+// packages/components/src/tabs/tabs.ts:138
+readonly variant = input<string | undefined>(undefined);
+
+// packages/components/src/button/button.ts:146-148
+readonly kjVariant = input<string | undefined>(undefined);
+readonly kjSize = input<string | undefined>(undefined);
+```
+
+`rules/architecture.md` ("Host directives") states: "All forwarded inputs keep the `kj` prefix."
+`tabs.ts:118` forwards `{ directive: KjVariant, inputs: ['kjVariant: variant'] }` — i.e. it explicitly
+*strips* the prefix, against the rule.
+
+**Why it matters.** A consumer cannot write `<kj-badge kjVariant="…">` or `<kj-button variant="…">`;
+which spelling a component takes is memorised per component. Content-projection slot names have the
+same split — `[kjAlertIcon]` (`alert.ts:118`), `[kjBulkAction]` (`table-toolbar.ts:150`),
+`[secondary]` (`empty-state.ts:258`), `[prefix]`/`[suffix]` (`field.ts:229,235`),
+`[kj-file-upload-actions]` (`file-upload.ts:154`) — camel-prefixed, bare, and kebab-prefixed in the
+same package.
+
+**Fix.** Standardise on `kj`-prefixed for both inputs and projection-slot attribute selectors. Ship the
+rename with deprecated aliases (`inputs: ['kjVariant', 'kjVariant: variant']` is not legal, so add an
+explicitly deprecated second input that forwards) for one minor, then drop them. Fold this into the
+F-2 migration so each component is touched once.
+
+---
+
+### F-13 Documentation-truth defects in `provide*` / config TSDoc
+
+**Severity:** low · **Confidence:** high · **Effort:** S
+
+**Files:** `packages/components/src/button/button.ts`, `packages/core/src/tag/config.ts`,
+`packages/core/src/badge/badge.ts`, `packages/core/src/chat/chat-registry.ts`
+
+**Evidence**
+
+```ts
+// packages/components/src/button/button.ts:50-52  ← wrong config shape
+ * @doc-example Configured presets
+ *   `provideKjButton({ variant: 'primary' })` sets the default for every
+ *   button in the injection scope.
+```
+
+`KjButtonConfig` (`packages/core/src/button/config.ts:3-7`) has no `variant` field — the correct call
+is `provideKjButton({ defaults: { variant: …, size: … } })`, as the linked example file itself does
+(`button.configured.example.ts:10-13`). `'primary'` is also not in `KJ_BUTTON_DEFAULTS.variants`
+(`config.ts:14`).
+
+```ts
+// packages/core/src/tag/config.ts:10-15  ← claim
+/**
+ * Default Tag presets shipped by kouji-ui. Variant list is intentionally
+ * kept in lock-step with `KjBadge` … a non-interactive Tag and a Badge with
+ * the same `kjVariant` must look identical.
+ */
+```
+
+```ts
+// packages/core/src/tag/config.ts:17-27     → default, primary, secondary, success,
+//                                             warning, danger, info, outline, ghost
+// packages/core/src/badge/badge.ts:3        → default, secondary, destructive, outline
+```
+
+Only `default`, `secondary` and `outline` are shared; `destructive` exists on Badge and not on Tag
+(Tag's CSS aliases it at `packages/components/src/tag/tag.css:40-41`), and six Tag variants have no
+Badge counterpart. They are not in lock-step and cannot be — Badge has no config token to widen (F-2).
+
+```ts
+// packages/core/src/chat/chat-registry.ts:28-32  ← claim
+   * Renderers by item `type`. Merged OVER the built-in defaults, so naming a
+   * built-in type replaces it and any other name adds one.
+```
+
+There are no built-in defaults: the token factory is `() => ({ renderers: {} })` (line 48) and
+`provideKjChat` does `useValue: config` (line 66) — a straight replace, with no merge of any kind.
+
+**Why it matters.** Each of these sends a consumer down a path that does not compile, does not match,
+or does not merge. TSDoc is the only customization documentation the library has (there is no theming
+or customization guide in `apps/docs` — `getting-started.html:15` is a single line about
+`[data-theme]`), so it has to be right.
+
+**Fix.** Correct the three docstrings. For Tag/Badge, either add `provideKjBadge` and genuinely share
+one variant list between them, or delete the lock-step claim.
+
+---
+
+### F-14 Wrapper components re-declare host-directive inputs "for the docs extractor", publishing a `.d.ts` default that contradicts the configurable one
+
+**Severity:** low · **Confidence:** medium · **Effort:** S
+
+**Files:** `packages/components/src/alert/alert.ts`, `packages/components/src/spinner/spinner.ts`,
+`packages/components/src/tabs/tabs.ts`
+
+**Evidence**
+
+```ts
+// packages/components/src/alert/alert.ts:132-137
+export class KjAlertComponent {
+  // Inputs are forwarded via `hostDirectives.inputs` above. Re-declared here
+  // only to surface them in the docs extractor (which inspects the wrapper
+  // class). The actual signal lives on the composed directive.
+  readonly kjVariant = input<string>('info');
+  readonly kjSize = input<string>('md');
+```
+
+```ts
+// packages/components/src/spinner/spinner.ts:148,156
+readonly kjAnimation = input<KjSpinnerAnimation>('spin');
+readonly kjAriaLabel = input<string>('Loading');
+```
+
+The composed directive's copies are config-driven (`packages/core/src/alert/alert.ts:100-109`,
+`packages/core/src/spinner/spinner.ts:66-76`), so behaviour is correct — but the wrapper's shadow
+inputs are separate signal instances with hard-coded defaults that appear in the published types and
+in the generated docs. In the spinner's case the wrapper's copy is also what renders:
+`spinner.ts:117` interpolates `{{ kjAriaLabel() }}` — the hard-coded `'Loading'` — into the
+visually-hidden label, while the host's `aria-label` comes from the directive's config-driven copy. A
+`provideKjSpinner({ defaults: { …, ariaLabel: 'Chargement' } })` therefore produces
+`aria-label="Chargement"` on the host and a hidden span reading "Loading".
+
+**Why it matters.** The published API lies about the default (`'info'` / `'spin'` / `'Loading'` are
+presented as fixed when they are configurable), and the spinner ships two different accessible-name
+sources that can disagree. It also doubles the input signals instantiated per component.
+
+**Fix.** Teach the docs extractor to follow `hostDirectives` (it already has to, for
+`KjVariant`/`KjSize` forwarding) and delete the shadow inputs. Until then, have the spinner template
+read the directive's signal — `inject(KjSpinner).kjAriaLabel()` — not its own copy.
+
+---
+
+### F-15 No per-subtree direction: `KjDirectionality` reads only `<html dir>` / `<body dir>` and `provideKjDocumentDirection()` writes only `<html dir>`
+
+**Severity:** low · **Confidence:** high · **Effort:** M
+
+**Files:** `packages/core/src/primitives/directionality/directionality.ts`,
+`packages/core/src/locale/document-direction.ts`
+
+**Evidence**
+
+```ts
+// packages/core/src/primitives/directionality/directionality.ts:81-88
+  private read(): KjDirection {
+    const doc = this.doc;
+    if (!doc) return 'ltr';
+    const htmlDir = doc.documentElement?.getAttribute('dir');
+    const bodyDir = doc.body?.getAttribute('dir');
+    const value = (htmlDir ?? bodyDir ?? '').toLowerCase();
+    return value === 'rtl' ? 'rtl' : 'ltr';
+  }
+```
+
+```ts
+// packages/core/src/locale/document-direction.ts:50-56
+      effect(() => {
+        const dir = locale.direction();
+        const html = doc.documentElement;
+        if (html.getAttribute('dir') !== dir) {
+          html.setAttribute('dir', dir);
+        }
+      });
+```
+
+The service is `providedIn: 'root'` (line 33) with a `MutationObserver` on `documentElement` only
+(lines 65-69), so a `dir="rtl"` on an intermediate wrapper is invisible to it. The one place in the kit
+that *does* honour a nearest ancestor is `packages/core/src/a11y/roving-tabindex.ts:134`
+(`el.closest('[dir]')`) — which means arrow-key direction and visual direction can disagree inside an
+RTL subtree.
+
+**Why it matters.** A page hosting an Arabic widget beside an English one cannot be expressed: the
+direction is a single global, `KjLocale` is a root singleton (F-1), and the only writer targets
+`<html>`. CSS logical properties would make per-subtree direction work for free if the TS side agreed.
+
+**Fix.** Make `KjDirectionality` element-aware: `inject(ElementRef).nativeElement.closest('[dir]')`
+first, falling back to the document read, observing that ancestor. Keep the root service as the
+document-level default. Scope `provideKjDocumentDirection()`'s write to an opt-in target element.
+
+---
+
+## Carried forward from the 2026-09-06 review
+
+Filed in the previous pass (report at `9aee150a`, audited at `fd6dd34e`), **not** re-filed by this
+audit, and re-verified as still true at HEAD. Ids F-1…F-15 above are unchanged.
+
+### F-16 Per-instance CSS override is silently defeated by every non-default variant — on the `display:contents` components
+
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-3; the half of it that current F-2 and F-5 between them leave uncovered)*
+**Files:** `packages/components/src/button/button.css:10-31,80-94`, `packages/components/src/button/button.ts:135-136`, `packages/components/src/button/button.css.spec.ts:47-50`
+
+A custom property declared **on** an element always beats an inherited one. `button.css` says so itself, at `:10-22`, and then states the exception that is the defect:
+
+```
+packages/components/src/button/button.css:21-22
+       Variant and size rules still DECLARE knobs on the element on purpose:
+       that is the component's own logic and must win.
+```
+
+```css
+/* button.css:85-88 */
+  .kj-button[data-variant="ghost"] {
+    --kj-button-bg: transparent;
+    --kj-button-fg: var(--kj-fg-default);
+```
+
+For a component whose host is `display: contents` — button, and the other ~89 counted in F-5 — the only element a consumer can reach is the host, so `<kj-button kjVariant="ghost" style="--kj-button-bg: hotpink">` works for `default` (whose knobs are deliberately left undeclared) and is a **no-op** for `ghost`, `outline`, `destructive`, `link` and `segmented`. The authors hit this and patched exactly one variant with a second indirection knob (`--kj-segmented-bg-on`, `button.css:111-114`) — a per-variant one-off, not a pattern. `button.css.spec.ts:47-50` codifies the *opposite* invariant, so the gap is deliberate but undocumented as a limitation.
+
+**Why this is not already covered.** Current **F-5** covers the *class*-on-the-host half (a class on a `display:contents` host reaches nothing). Current **F-2**'s verification block establishes that the CSS-custom-property route *does* work — but its worked example is `<kj-card>`, whose host **is** the styled element (`card.ts:70-77`, `host: { 'class': 'kj-card' }`), so an unlayered `.brand-card { --kj-card-bg: … }` lands on the same element and wins. That reasoning does **not** transfer to the `display:contents` group, where the consumer's declaration is on an ancestor and the variant rule's declaration is on the element. Both statements are true; which one applies depends on which host contract the component uses, and nothing documents that.
+
+**Fix:** pick one and apply it library-wide — (a) variant rules set a second-tier knob read with the public knob as the outer fallback (`--kj-button-bg: var(--kj-button-bg-user, var(--kj-button-bg-variant))`, generalising the `--kj-segmented-*` trick), or (b) ship an explicit documented per-instance hatch (`kjClass` / `kjStyle` forwarding to the inner element) and state in every `@doc-css-var` block that ancestor custom properties only reach knobs the active variant does not declare. Extend `button.css.spec.ts`'s postcss assertions to every component stylesheet. **Effort:** M
+
+---
+
+### F-17 Service-launched overlays bypass the mount strategy when choosing their root container
+
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-2)*
+**Files:** `packages/core/src/primitives/overlay/builder.ts:118`, `packages/core/src/primitives/overlay/container.ts`, `packages/core/src/primitives/overlay/tokens.ts:17`
+
+Unchanged at HEAD:
 
 ```ts
 // builder.ts:118 — goes straight to the module global
 getOverlayContainer()?.appendChild(wrapperRef.location.nativeElement);
 ```
 
-The builder never goes through the injected `KJ_OVERLAY_MOUNT_STRATEGY.resolveContainer()` seam (`tokens.ts:17`) that the declarative overlays use — and that seam *is* provided per component in 9+ places (select, tooltip, popover, date-picker, color-picker, tree-select, combobox, cascade-select, dropdown-menu).
+The builder never goes through the injected `KJ_OVERLAY_MOUNT_STRATEGY.resolveContainer()` seam (`tokens.ts:17`) that the declarative overlays use — and that seam *is* provided per component in 9+ places (select, tooltip, popover, date-picker, color-picker, tree-select, combobox, cascade-select, dropdown-menu). So an app that wants dialogs, drawers, sheets or toasts rooted somewhere other than `document.body` — a shadow root, a fullscreen element, an MFE-owned host node — can override the container for popovers and tooltips but not for the builder-launched family.
 
-**Consequence.** An app that wants dialogs, drawers, sheets or toasts rooted somewhere other than `document.body` — a shadow root, a fullscreen element, an MFE-owned host node — can override the container for popovers and tooltips but **not** for the builder-launched family.
-
-**Fix.** Have the builder call `config.mount.resolveContainer()` with `getOverlayContainer()` as the fallback, or add a `KJ_OVERLAY_CONTAINER` token whose default factory is `getOverlayContainer`.
+**Fix:** have the builder call `config.mount.resolveContainer()` with `getOverlayContainer()` as the fallback, or add a `KJ_OVERLAY_CONTAINER` token whose default factory is `getOverlayContainer`. **Effort:** S
 
 ---
 
-### F-3 Per-instance CSS override is silently defeated by every non-default variant
+### F-18 `bindPresets` lives in core for 11 directives but in components for tabs; `KjIconDirective` breaks the naming rule
 
-**Severity:** high &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** M
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-8)*
+**Files:** `packages/components/src/tabs/tabs.ts:15,120`, `packages/core/src/icon/icon.directive.ts:75`
 
-**Files:** `packages/components/src/button/button.css:77-135`,
-`packages/components/src/button/button.ts:135-136`,
-`packages/components/src/button/button.css.spec.ts:47-50`
+Re-verified at HEAD: `grep -rn "bindPresets" packages/components/src --include=*.ts` (excluding specs) returns exactly **two** hits — `tabs.ts:15` (the import) and `tabs.ts:120` (`providers: [...bindPresets(KJ_TABS_CONFIG)]`) — plus a comment in `tag.ts:125`. Every other `bindPresets` call site is in `packages/core`. So `@kouji-ui/core`'s tabs directive is not preset-aware: a headless consumer of core gets no `data-variant` on tabs, and `provideKjTabs` does nothing for them.
 
-**Evidence**
+Separately `packages/core/src/icon/icon.directive.ts:75` declares `export class KjIconDirective`, which breaks `CLAUDE.md`'s class-naming rule (drop the Angular type suffix unless two things in the same feature would collide) — and the file name `icon.directive.ts` breaks the matching file-name rule.
 
-```css
-/* button.css:85-90 — a variant rule DECLARES the knob on the element */
-  .kj-button[data-variant="ghost"] {
-    --kj-button-bg: transparent;
-    --kj-button-fg: var(--kj-fg-default);
-    --kj-button-border-color: transparent;
-  }
-```
-```ts
-// button.ts:135-136 — the host paints nothing; the inner <button> does
-  encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
-```
-```css
-/* button.css:111-114 — the authors hit this and patched exactly one variant */
-     The on-state pulls through `--kj-segmented-bg-on` / `-fg-on` rather than
-     naming the surface directly: variant rules declare knobs on the element
-     and would otherwise beat a consumer's ancestor value, which is the one
-     thing this variant needs to stay themable. */
-```
-
-**Why it matters.** A custom property declared **on** an element always beats an inherited one. The only
-element a consumer can reach is `<kj-button>` — the `display:contents` host — so
-`<kj-button kjVariant="ghost" style="--kj-button-bg: hotpink">` works for `default` (whose knobs are
-undeclared) and is a no-op for `ghost`, `outline`, `destructive`, `link` and `segmented`. The documented
-`@doc-css-var` list on `button.ts:69-89` ("Background fill. Variant rules set this; override to
-brand-paint a one-off") promises behaviour that only holds for one variant. The `segmented` case was
-patched with a second indirection knob (`--kj-segmented-bg-on`) — a per-variant one-off, not a pattern.
-`button.css.spec.ts:47-50` codifies the *opposite* invariant ("variant and size rules DO still declare
-knobs on the element"), so the gap is deliberate but undocumented as a limitation.
-
-**Fix.** Pick one and apply it library-wide:
-- **(a)** Variant rules set a *second-tier* knob read with the public knob as the outer fallback:
-  `--kj-button-bg: var(--kj-button-bg-user, var(--kj-button-bg-variant))` — generalising the
-  `--kj-segmented-*` trick; or
-- **(b)** Ship an explicit, documented "per-instance override" hatch: a `kjClass`/`kjStyle` input (or a
-  documented `kj-button > .kj-button { … }` unlayered rule) and state in `@doc-css-var` that ancestor
-  custom properties only reach knobs the active variant does not declare.
-
-Whichever is chosen, extend `button.css.spec.ts`'s postcss assertions to every component stylesheet.
+**Fix:** move the tabs preset wiring into the core `KjTabs` directive so all 12 live in one place; rename `KjIconDirective` → `KjIcon` and `icon.directive.ts` → `icon.ts` (or document the collision that justifies the suffix). **Effort:** S
 
 ---
 
-### F-4 10 of 69 component stylesheets are unlayered, breaking the override contract
+### F-19 `provideKj*` config functions are not re-exported from `@kouji-ui/components`
 
-**Severity:** high &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
+**Severity:** medium · **Confidence:** high · *(carried forward — prev F-9)*
+**Files:** `packages/components/src/public-api.ts`
 
-**Files:** `packages/components/src/calendar/calendar.css`, `…/command-palette/command-palette.css`,
-`…/date-picker/date-picker.css`, `…/date-range-presets/date-range-presets.css`,
-`…/datetime-picker/datetime-picker.css`, `…/editor/editor.css`, `…/input-mask/input-mask.css`,
-`…/overlay/overlay.css`, `…/table/table-filters/filters.css`, `…/table/table.css`;
-`packages/themes/src/base.css:7`; `packages/components/package.json` (peerDependencies)
-
-**Evidence**
-
-```
-$ for f in $(find packages/components/src -name "*.css"); do grep -q "@layer" "$f" || echo "$f"; done
-packages/components/src/calendar/calendar.css
-packages/components/src/command-palette/command-palette.css
-packages/components/src/date-picker/date-picker.css
-packages/components/src/date-range-presets/date-range-presets.css
-packages/components/src/datetime-picker/datetime-picker.css
-packages/components/src/editor/editor.css
-packages/components/src/input-mask/input-mask.css
-packages/components/src/overlay/overlay.css
-packages/components/src/table/table-filters/filters.css
-packages/components/src/table/table.css
-```
-```css
-/* packages/themes/src/base.css:7 — the ONLY place the layer order is declared */
-@layer kj.reset, kj.base, kj.shared, kj.component;
-```
-
-`packages/components/package.json` peerDependencies list `@kouji-ui/core`, `@angular/*`, lexical,
-`lucide-static`, `rxjs` — **`@kouji-ui/themes` is not a dependency or peer dependency of components.**
-
-**Why it matters.** Two compounding problems.
-(1) Unlayered CSS always beats layered CSS. The 10 files above therefore outrank every
-`@layer kj.component` rule *and* any consumer override that a consumer politely put in their own layer —
-so the merge order is "59 components behave one way, 10 (including table and every date component, the
-ones people most want to restyle) behave another", with nothing documenting which is which.
-(2) The layer-order statement lives in `@kouji-ui/themes`, which `@kouji-ui/components` does not depend
-on. A consumer installing only `core` + `components` (the "headless + styled wrappers, bring your own
-tokens" path the Getting Started page advertises) never evaluates that statement, so `kj.component`'s
-position relative to their own layers is decided by first-appearance order — non-deterministic across
-bundlers and code-split chunks.
-
-**Fix.**
-1. Wrap the 10 unlayered stylesheets in `@layer kj.component { … }`.
-2. Move the `@layer kj.reset, kj.base, kj.shared, kj.component;` statement into a tiny
-   `@kouji-ui/components` entry stylesheet (or emit it at the top of every component stylesheet — the
-   statement is idempotent) so layer order does not depend on `@kouji-ui/themes` being installed.
-3. Add a lint/test step asserting every `packages/components/src/**/*.css` is fully inside `@layer kj.*`.
-
----
-
-### F-5 Four competing variant/size mechanisms; ~10 components are closed to extension
-
-**Severity:** high &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** L
-
-**Files:** `packages/core/src/badge/badge.ts:3`, `packages/core/src/toast/toast.service.ts:11,14`,
-`packages/components/src/input/input.ts:20,25`, `packages/components/src/card/card.ts:82,107`,
-`packages/components/src/empty-state/empty-state.ts:17`, `packages/components/src/chat/chat.ts:24,35`,
-vs. `packages/core/src/button/config.ts:13-17` and 10 sibling `config.ts` files
-
-**Evidence**
-
-```ts
-// core/src/badge/badge.ts:3 — closed union, no config token, no provideKjBadge
-export type KjBadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
-```
-```ts
-// components/src/card/card.ts:82,107 — closed AND anonymous (not even an exported type)
-  readonly variant = input<'default' | 'outline' | 'subtle'>('default');
-  readonly size = input<'sm' | 'md' | 'lg'>('md');
-```
-```ts
-// core/src/textarea/config.ts:10-19 — doc claims parity with input, values disagree
- * Default Textarea presets shipped by kouji-ui. Variant list mirrors `KjInput`
- * — outlined / filled …
-export const KJ_TEXTAREA_DEFAULTS: KjTextareaConfig = {
-  variants: ['outlined', 'filled'],
-```
-```ts
-// components/src/input/input.ts:20 — the actual KjInput variants
-export type KjInputVariant = 'default' | 'sunken';
-```
-
-Only 11 directives call `bindPresets` (`button`, `breadcrumb`, `chat-bubble`, `link`, `pagination`,
-`progress-bar`, `spinner`, `tabs`, `tag`, `textarea`, `alert`), while `grep -rlo data-variant
-packages/components/src --include=*.css` shows 20 component families keying CSS on `data-variant` —
-badge, button-group, card, divider, empty-state, input, list, overlay-badge, table and toast have
-variant-driven CSS with **no** config token at all.
-
-**Why it matters.** "Can I add a brand variant without forking?" has three different answers depending on
-which component you point at: yes via `provideKjX({variants:[...DEFAULTS.variants,'brand']})`; no, edit
-the union and rebuild; or no, and the union is inline so you cannot even name the type in your own code.
-The `fix(button): allow "segmented" as a variant` commit (`fd6dd34e`) is a direct symptom: `segmented`
-CSS and the button-group shell shipped, and the runtime allowlist in `KJ_BUTTON_DEFAULTS.variants` was
-never widened — nothing in CI ties the CSS `[data-variant="…"]` selectors to the config allowlist.
-(Note: the commit message says the variant "fell back to `default`"; reading `variant.ts:88-102`, the
-validator only `console.warn`s and still reflects the value, so the real symptom was a warning flood
-plus whatever the button-group cascade resolved. The structural point — a runtime allowlist maintained
-by hand, untested against the CSS — stands either way.)
-The textarea/input doc-vs-code mismatch above is a second symptom of the same split.
-
-**Fix.**
-1. Give every variant-bearing component a `config.ts` + `provideKj<X>` + `bindPresets`, and deprecate the
-   closed unions to `string` (keeping the union exported as a *documented default set*, e.g.
-   `type KjBadgeVariant = 'default' | 'secondary' | … | (string & {})` for autocomplete without closure).
-2. Add a build-time test per component: every `[data-variant="X"]` / `[data-size="X"]` selector in the
-   component's CSS must appear in that component's `*_DEFAULTS`, and vice versa. That single test would
-   have caught `segmented` before release.
-3. Reconcile `KJ_TEXTAREA_DEFAULTS.variants` with `KjInputVariant`, or fix the doc comment.
-
----
-
-### F-6 The i18n catalog and the config-token label fields duplicate the same strings; the catalog loses
-
-**Severity:** high &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** M
-
-**Files:** `packages/core/src/i18n/catalogs/en.ts:20-33`,
-`packages/core/src/pagination/config.ts:44-58`,
-`packages/core/src/pagination/pagination-previous.ts:46`, `…/pagination-next.ts:45`,
-`packages/core/src/breadcrumb/config.ts:44-56`,
-`packages/core/src/color-picker/color-picker.ts:472,573,614,657`,
-`packages/core/src/command-palette/command-list.ts:19`, `…/command-palette-dialog.ts:70`,
-`packages/core/src/date-picker/date-picker-calendar.ts:50`
-
-**Evidence**
-
-```ts
-// i18n/catalogs/en.ts:21-28
-  'pagination.nav': 'Pagination',
-  'pagination.previous': 'Previous page',
-  'pagination.next': 'Next page',
-  …
-  'pagination.pageOf': 'Page {page} of {total}',
-```
-```ts
-// pagination/config.ts:48-56 — the SAME strings, a second time
-  navigationLabel: 'Pagination',
-  previousLabel: 'Previous page',
-  nextLabel: 'Next page',
-  …
-  infoTemplate: (page, totalPages) => `Page ${page} of ${totalPages}`,
-```
-```ts
-// pagination-previous.ts:46 — and this is the copy that actually renders
-    '[attr.aria-label]': 'config.previousLabel',
-```
-```ts
-// color-picker.ts:472 — a third pattern: not translatable at all
-    '[attr.aria-label]': '"Color saturation and value"',
-```
-
-`grep -rln "KjTranslateService|kjTranslate"` over both packages (excluding specs/examples) matches only
-`core/src/toast/toast.ts`, `components/src/avatar/avatar-group.ts` and `components/src/tag/tag.ts`.
-
-**Why it matters.** `provideKjLocale({locale:'fr-FR'}) + provideKjTranslations({fr: FR_CATALOG})` — the
-documented i18n path (`translate.config.ts:35-45`) — leaves pagination, breadcrumb, spinner's
-`ariaLabel`, the color picker, the command palette and the date picker in English. The consumer's only
-recourse is to *also* call `provideKjPagination({previousLabel: '…'})` per component per language, and
-for the hard-coded `'[attr.aria-label]': '"Hue"'` cases there is no recourse at all short of forking.
-Three mechanisms for one concern, and the one with the type-checked keys and locale reactivity is the
-least used. (The repo's own memory notes "route all internal strings through i18n" as a post-merge
-follow-up — it is still open.)
-
-**Fix.**
-1. Make the config-token label fields *optional overrides* over the catalog: default them to `undefined`
-   and have each directive resolve `config.previousLabel ?? i18n.translate('pagination.previous')`.
-   That keeps the per-instance/per-subtree override and makes locale switching work.
-2. Add catalog keys for the color-picker / command-palette / date-picker hard-coded labels and route them
-   through `KjTranslateService`.
-3. Add an ESLint rule (or a grep test) banning string literals in `'[attr.aria-label]'` host bindings.
-
----
-
-### F-7 `provideKj*` naming, token-description naming, and the `kj` input prefix are all inconsistent
-
-**Severity:** medium &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** M
-
-**Files:** `packages/components/src/tabs/tabs.ts:138`, `…/badge/badge.ts:90-91`, `…/card/card.ts:82,107`,
-`…/input/input.ts:129`, `…/toast/toast.ts:131`, `…/toggle/toggle.ts:104,112`, `…/avatar/avatar.ts:97`,
-`…/checkbox/checkbox.ts:107`, `…/tree-select/tree-select.ts:121`;
-`packages/core/src/icon/icon.providers.ts:19,34,45`; `packages/core/src/chart/echarts.ts:74`;
-`packages/core/src/editor/editor.providers.ts:25`
-
-**Evidence**
-
-```ts
-// components/src/tabs/tabs.ts:138 — bare `variant`, while <kj-button> uses kjVariant
-  readonly variant = input<string | undefined>(undefined);
-```
-
-12 bare style inputs in total vs 23 `kj`-prefixed ones:
-`avatar.size`, `badge.variant`, `badge.size`, `card.variant`, `card.size`, `checkbox.size`,
-`input.variant`, `tabs.variant`, `toast.variant`, `toggle.size`, `toggle.appearance`, `tree-select.size`.
-
-`rules/code_style.md`: *"Every `input()`, `model()`, `output()` exposes a `kj`-prefixed name externally.
-**No exceptions.** Applies to both core directives and styled wrappers."*
-
-Provider function naming splits too: `provideKjButton` / `provideKjLocale` / `provideKjTranslations`
-(prefixed) vs `provideIcons` / `provideIconResolver` / `provideIconLoader` / `provideECharts` /
-`provideMonaco` / `provideMonacoLanguages` / `provideLucideIcons` (unprefixed).
-Token *descriptions* use three conventions simultaneously: `'kj.button.config'`, `'KjAccordion'`,
-`'KJ_OVERLAY_MOUNT_STRATEGY'`.
-
-**Why it matters.** The prefix is the library's collision-avoidance story — the thing that lets a kouji
-component sit next to another library's directive in an MFE host template. An unprefixed `variant` /
-`size` / `appearance` input is exactly the name a competing library will also want. It is also a pure
-learnability tax: `<kj-button kjVariant>` vs `<kj-tabs variant>` vs `<kj-card variant>` for the same
-concept. Token descriptions only surface in DI error messages, but three conventions make those
-messages harder to grep.
-
-**Fix.** Rename the 12 bare inputs to `kjVariant` / `kjSize` / `kjAppearance` with a deprecation alias
-(`{alias: 'variant'}`) for one minor, rename the unprefixed `provide*` functions with re-exported
-deprecated aliases, and settle token descriptions on the dotted `'kj.<feature>.<thing>'` form used by the
-newer config tokens. Add an ESLint rule for the input prefix so it stops regressing.
-
----
-
-### F-8 `bindPresets` lives in core for 10 components and in components for tabs; `KjIconDirective` breaks the naming rule
-
-**Severity:** medium &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
-
-**Files:** `packages/components/src/tabs/tabs.ts:114-120`, vs `packages/core/src/button/button.ts`,
-`packages/core/src/pagination/pagination.ts:70`, etc.; `packages/core/src/icon/icon.directive.ts:75`
-
-**Evidence**
-
-```ts
-// components/src/tabs/tabs.ts:118-120 — the ONLY bindPresets call outside packages/core
-    { directive: KjVariant, inputs: ['kjVariant: variant'] },
-…
-  providers: [...bindPresets(KJ_TABS_CONFIG)],
-```
-
-`grep -rln bindPresets packages/core/src` → 11 directives; `grep -rn KJ_TABS_CONFIG packages/core` →
-only `tabs/config.ts` itself. So `@kouji-ui/core`'s `KjTabs` directive is **not** preset-aware; a
-headless consumer of core gets no `data-variant` on tabs at all, and `provideKjTabs` silently does
-nothing unless they use the styled `<kj-tabs>`.
-
-```ts
-// icon/icon.directive.ts:75 — CLAUDE.md: drop the suffix unless a collision exists
-export class KjIconDirective {
-```
-
-There is no `icon.ts` / `KjIcon` in `packages/core/src/icon/`, so there is no collision to justify either
-the `.directive` file suffix or the `Directive` class suffix.
-
-**Why it matters.** The tabs split means the headless/styled boundary is not where the docs say it is:
-"`@kouji-ui/core` — directives only" (`rules/architecture.md`) is true for markup but not for
-configuration, and a headless consumer discovers the gap only at runtime. The `KjIconDirective` name is
-a public-API wart that cannot be fixed without a major.
-
-**Fix.** Move `bindPresets(KJ_TABS_CONFIG)` and the `KjVariant` host directive onto core's `KjTabs`, and
-have the styled wrapper forward. Rename `KjIconDirective` → `KjIcon` / `icon.directive.ts` → `icon.ts`
-with a deprecated alias export.
-
----
-
-### F-9 `provideKj*` config functions are not re-exported from `@kouji-ui/components`
-
-**Severity:** medium &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
-
-**Files:** `packages/components/src/public-api.ts:73-130`,
-`packages/components/src/button/index.ts`, `…/tag/index.ts`, `…/tabs/index.ts` (all `export * from './x'`)
-
-**Evidence**
-
-`packages/components/src/public-api.ts` re-exports exactly 15 classes and 37 types from
-`@kouji-ui/core` (lines 77-130) — chosen, per the comment on lines 73-76, only to satisfy AOT template
-type-checking (NG3004). **No `provideKj*` function and no `KJ_*_CONFIG` / `KJ_*_DEFAULTS` symbol is in
-that list.** A consumer must write:
+Re-verified at HEAD: `grep -c "provideKj" packages/components/src/public-api.ts` returns **0**. The file re-exports a hand-picked set of classes and types from `@kouji-ui/core` purely to satisfy AOT template type-checking (NG3004); no `provideKj*` function and no `KJ_*_CONFIG` / `KJ_*_DEFAULTS` symbol is in that list. A consumer of the styled package must import from a second package to configure the component they just imported:
 
 ```ts
 import { KjButtonComponent } from '@kouji-ui/components';
-import { provideKjButton, KJ_BUTTON_DEFAULTS } from '@kouji-ui/core'; // <- second package
+import { provideKjButton, KJ_BUTTON_DEFAULTS } from '@kouji-ui/core'; // ← second package
 ```
 
-(`@kouji-ui/core` *is* a peer dependency of components, so the package is present — but it is not a
-declared direct dependency of the consumer's app, and nothing in their `@kouji-ui/components`
-autocomplete hints that these functions exist.)
+This is the discoverability half of F-2: the preset system is the good mechanism, and the package a consumer actually installs does not surface it.
 
-**Why it matters.** The customization entry point is split across two packages with no barrel, which is
-the single biggest discoverability problem in the whole surface: a consumer reading
-`<kj-button kjVariant="…">` in the docs has no path from the component to its configuration function.
-It also means the "styled" install path advertised on the Getting Started page
-(`apps/docs/src/app/pages/getting-started/getting-started.html:13-15`) is not self-sufficient for
-configuration. There is no `theming` or `customization` route in `apps/docs/src/app/app.routes.ts` at
-all — only `getting-started`, `headless`, `components`, `theme-generator`, `roadmap`.
-
-**Fix.** Re-export every `provideKj*`, `KJ_*_CONFIG` and `KJ_*_DEFAULTS` from
-`packages/components/src/public-api.ts` (or, better, from each `components/src/<x>/index.ts` alongside
-the component it configures), and add a "Customization" docs page listing the provider per component,
-the three override levels, and the CSS merge order from F-3/F-4.
+**Fix:** re-export every `provideKj*`, `KJ_*_CONFIG` and `KJ_*_DEFAULTS` from `packages/components/src/public-api.ts`, and add a CI check that each component barrel exports its own config trio. **Effort:** S
 
 ---
 
-### F-10 `provideKjChat`'s doc promises a merge over built-in defaults that does not exist
+### F-20 Motion has no configuration surface at all
 
-**Severity:** medium &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-13)*
+**Files:** `packages/core/src/motion/motion.ts`, `packages/core/src/motion/index.ts`
 
-**Files:** `packages/core/src/chat/chat-registry.ts:27-49,65-67`,
-`packages/components/src/chat/chat-thread.ts:124-127`
+`kjMotion` is a free-form `input.required<string>()` with no preset token, no allowlist and no dev warning, and the whole public surface of the motion module is two exports (`KjReducedMotion`, `KjMotion` + `KjMotionState`). There is no `provideKjMotion`, so a consumer cannot register a named animation, cannot override a built-in one, and gets no feedback for a typo — the opposite of every other stylistic axis in the library. (Cross-reference: `02-styles-theming.md` Open question 5 notes `kjMotion` has zero usages in `packages/components` and `apps/docs`, and `motion.css` is registered by nothing.)
 
-**Evidence**
-
-```ts
-// chat-registry.ts:28-32 (doc on `renderers`)
-   * Renderers by item `type`. Merged OVER the built-in defaults, so naming a
-   * built-in type replaces it and any other name adds one.
-```
-```ts
-// chat-registry.ts:46-49 — there are no built-in defaults
-export const KJ_CHAT_CONFIG = new InjectionToken<KjChatConfig>('KJ_CHAT_CONFIG', {
-  providedIn: 'root',
-  factory: () => ({ renderers: {} }),
-});
-// chat-registry.ts:65-67 — and nothing merges
-export function provideKjChat(config: KjChatConfig): Provider {
-  return { provide: KJ_CHAT_CONFIG, useValue: config };
-}
-```
-```ts
-// chat-thread.ts:126 — plain lookup, no merge with any default map
-    return this.config.renderers[message.type] ?? this.config.fallback ?? null;
-```
-
-Also: `provideKjChat` takes `KjChatConfig` (not `Partial<>`), so a nested `provideKjChat` on a route
-*replaces* the parent's renderer map entirely rather than extending it — the opposite of the `multi:true`
-composition used by `provideIcons` (`icon.providers.ts:22-24`) and `provideKjTranslations`
-(`translate.config.ts:53-55`).
-
-**Why it matters.** Two MFEs, or a route that wants "the app's renderers plus one more", cannot compose.
-The API reads as additive and behaves as replacing, and the doc comment actively asserts the additive
-behaviour. Low blast radius today (the default map is empty) but it will bite the moment built-in
-renderers are added, which the recent `feat(chat): … type -> component item registry` work implies.
-
-**Fix.** Either make `provideKjChat` `multi: true` with a merging factory (matching `provideIcons`), or
-take `Partial<KjChatConfig>` and merge over an exported `KJ_CHAT_DEFAULTS`. Correct the doc either way.
+**Fix:** give motion the same preset shape as variant/size — `KJ_MOTION_CONFIG` + `provideKjMotion({ animations, defaults })` — or state in the TSDoc that the token is a raw CSS-animation-name passthrough and that registering keyframes is the consumer's job. **Effort:** S
 
 ---
 
-### F-11 `provideKj*` merge semantics are inconsistent across the 11 config tokens
+### F-21 `@angular/cdk` is a peer dependency of both packages despite the no-CDK policy
 
-**Severity:** medium &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
+**Severity:** low · **Confidence:** high · *(carried forward — prev F-14)*
+**Files:** `packages/core/package.json:32`, `packages/components/package.json:28`, `rules/stack.md`
 
-**Files:** `packages/core/src/breadcrumb/config.ts:73-84` vs `packages/core/src/pagination/config.ts:70-82`
-and the 9 other `config.ts` files
+Unchanged at HEAD: `"@angular/cdk": "^22.0.0"` is declared in both `peerDependencies` blocks, and `packages/core/package.json:20` even lists `cdk` in its npm `keywords` while the description reads "Headless Angular 21 UI primitives — directives over CDK". `rules/stack.md:8-11` forbids CDK, and the `01-overlay.md` audit re-confirmed that nothing under `packages/core/src/primitives/overlay/**` imports it. So every consumer is forced to install a package the library does not use, and the package metadata advertises the opposite of the stated architecture.
 
-**Evidence**
-
-```ts
-// breadcrumb/config.ts:77-81 — deep-merges the nested `defaults`
-      useValue: {
-        ...KJ_BREADCRUMB_DEFAULTS,
-        ...config,
-        defaults: { ...KJ_BREADCRUMB_DEFAULTS.defaults, ...(config.defaults ?? {}) },
-      },
-```
-```ts
-// pagination/config.ts:71-79 — doc says "Shallow-merges", code does NOT merge `defaults`
- * Configures the Pagination presets / labels for the enclosing injector.
- * Shallow-merges over the defaults — pass only the fields you want to override.
-…
-      useValue: { ...KJ_PAGINATION_DEFAULTS, ...config },
-```
-
-`Partial<KjPaginationConfig>` only widens the *top* level, so `defaults` — if supplied at all — must be
-supplied complete (`{variant, size, siblingCount, boundaryCount}`). To change only `siblingCount` a
-consumer must restate three unrelated fields; to change only a breadcrumb `linkUnderline` they need not.
-
-**Why it matters.** Not a runtime bug (TypeScript catches a partial `defaults`), but it makes the
-provider API unlearnable: the same call shape has different ergonomics per component, and the pagination
-doc comment is wrong about its own behaviour. It also makes every future field added to a `defaults`
-object a breaking change for anyone who overrode that object.
-
-**Fix.** Extract one `mergeKjConfig<T>(defaults, partial)` helper that deep-merges the `defaults`
-sub-object, type the parameter as a recursive `DeepPartial<T>`, and use it in all 11 `provideKj*`
-functions. Fix the pagination doc comment.
+**Fix:** verify with a repo-wide `@angular/cdk` import grep, then drop the peer dependency from both packages, remove the `cdk` keyword, and correct the core package description. **Effort:** S
 
 ---
 
-### F-12 `ViewEncapsulation.None` on 81 components leaks global CSS across micro-frontends
+## Changed since the 2026-09-06 review
 
-**Severity:** medium &nbsp;|&nbsp; **Confidence:** medium &nbsp;|&nbsp; **Effort:** L
+Previous report: `git show 9aee150a:reports/review/03-customization.md`, audited at `fd6dd34e`.
+Range since: `fd6dd34e..HEAD` (8 commits). Every claim below was verified against the code at HEAD.
 
-**Files:** `packages/components/src/button/button.ts:135` and 80 other components;
-`CLAUDE.md` / `rules/code_style.md` ("Encapsulation")
+### Fixed
 
-**Evidence**
+**Nothing.** None of the 14 previous customization findings is fixed at HEAD. The eight commits in the
+range are three `chore: version packages` releases and four overlay / list / CSS-packaging fixes
+(`415123ad` #67, `2948c5b5` #69, `fb1d1956` #71, `e6aa28a5` #73), none of which touches the preset
+system, the config tokens, the i18n surface, the icon registry, the public-api barrels or the package
+manifests. Spot-verified at HEAD for the findings most likely to have drifted:
 
-```ts
-// components/src/button/button.ts:135-136
-  encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
-```
-```
-$ grep -rln "ViewEncapsulation.None" packages/components/src --include=*.ts | grep -v spec | wc -l
-81
-$ grep -rln "@Component" packages/components/src --include=*.ts | grep -v spec | grep -v example | wc -l
-152
-$ grep -rn "display: contents" packages/components/src --include=*.ts | grep -v spec | wc -l
-91
-```
+- `builder.ts:118` still calls `getOverlayContainer()` directly (prev F-2 → F-17 above).
+- `button.css:21-22` still states "Variant and size rules still DECLARE knobs on the element on purpose" (prev F-3 → F-16 above).
+- `grep -c "provideKj" packages/components/src/public-api.ts` = 0 (prev F-9 → F-19 above).
+- `chat-registry.ts:28-29` still promises "Merged OVER the built-in defaults" while `:48`'s factory is `() => ({ renderers: {} })` and `provideKjChat` (`:65-67`) is a bare `useValue` with no merge (prev F-10).
+- `breadcrumb/config.ts:80` deep-merges `defaults` while `pagination/config.ts` does not (prev F-11).
+- `grep -rln "ViewEncapsulation.None" packages/components/src --include=*.ts | grep -v spec | wc -l` = **81** (prev F-12).
+- `@angular/cdk` still in both peer blocks (prev F-14 → F-21 above).
 
-`rules/code_style.md`: *"Do not use `encapsulation: ViewEncapsulation.None`. Component styles must stay
-scoped. The only exception is generated SVG that needs global classes."*
+### Still open
 
-**Why it matters (MFE).** With `None`, every `.kj-*` rule is injected into the document head. Two MFEs on
-one page running **different versions** of `@kouji-ui/components` inject two competing `.kj-button` rule
-sets into the same global cascade; since both live in `@layer kj.component`, the winner is whichever
-bundle's `<style>` was appended last — i.e. load order, which is not under either team's control. It is
-also how F-4's unlayered files become a cross-MFE problem rather than a local one.
+| prev id | prev title (abbreviated) | current id |
+|---|---|---|
+| F-1 | `provideKjLocale` TSDoc claims route-level scoping | **F-1** — and the two passes now converge: this audit filed it at high across four singletons, verification cut it back to essentially the prev pass's own scope and severity (one docstring sentence, low). The prev pass was right the first time. |
+| F-2 | Service-launched overlays bypass the mount strategy | **F-17** (carried forward above) |
+| F-3 | Per-instance CSS override defeated by every non-default variant | **F-5** (the class-on-host half) + **F-16** (the custom-property half, carried forward above) |
+| F-4 | 10 of 69 component stylesheets are unlayered | still open, **not re-filed here** — covered in `02-styles-theming.md` **F-7**. The prev finding's *second* half is not covered there either: the `@layer` order statement lives only in `@kouji-ui/themes/base.css:7`, and `@kouji-ui/components` does not depend on `@kouji-ui/themes` (re-verified — its `peerDependencies` list `@kouji-ui/core`, `@angular/*`, lexical, `lucide-static`, `rxjs`, and no themes package), so a consumer on the "core + components, bring your own tokens" path never evaluates it and `kj.component`'s position is decided by first-appearance order. Worth adding to `02-styles-theming.md` F-7. |
+| F-5 | Four competing variant/size mechanisms; ~10 components closed | **F-2** (recounted at two mechanisms and ~19 closed unions) |
+| F-6 | i18n catalog and config-token labels duplicate; catalog loses | **F-7** |
+| F-7 | `provideKj*` / token-description / `kj` prefix naming inconsistent | **F-12** |
+| F-8 | `bindPresets` in components for tabs; `KjIconDirective` naming | **F-18** (carried forward above) |
+| F-9 | `provideKj*` not re-exported from `@kouji-ui/components` | **F-19** (carried forward above) |
+| F-10 | `provideKjChat`'s doc promises a merge that does not exist | **F-13** (folded into the documentation-truth finding) |
+| F-11 | `provideKj*` merge semantics inconsistent across 11 config tokens | **F-4** |
+| F-12 | `ViewEncapsulation.None` on 81 components leaks global CSS across MFEs | still open, **not re-filed** — out of this pass's scope; tracked in `05-micro-frontends.md`. Count re-verified at 81. Current F-5 covers the `display:contents` consequence of the same host contract but not the cross-MFE leakage. |
+| F-13 | Motion has no configuration surface | **F-20** (carried forward above) |
+| F-14 | `@angular/cdk` peer dependency despite the no-CDK policy | **F-21** (carried forward above) |
+| F-2 (original) | "Overlay container and scroll lock are module-level globals with no DI seam" | **refuted in the previous pass** and correctly not revived. This audit independently reached the same place: current "What works" lists the eight overlay strategy tokens as a real extension point, and the residual page-global-state concern is `05-micro-frontends.md`'s, not this dimension's. |
 
-Confidence is **medium** on severity, not on the facts: the choice is clearly deliberate (it is what makes
-`display:contents` + `.kj-button` styling work at all, and it gives the CSS-custom-property theming its
-reach), and a full move to scoped styles is a redesign, not a fix. What is *not* deliberate is that the
-project's own rule file forbids it with no recorded exception.
+### Not reproduced
 
-**Fix (in order of cost).**
-1. Immediately: record the decision and its MFE consequences in `rules/code_style.md` — either carve out
-   a documented exception for styled wrappers, or open an issue to migrate. A rule 81 files violate is
-   worse than no rule.
-2. Document the "one kouji-ui version per page" constraint for MFE consumers, and consider a build flag
-   that prefixes the class namespace (`.kj-button` → `.kj-v1-button`) for side-by-side deployments.
-3. Longer term, evaluate `:host`-scoped styles + a `display:contents`-free host for the components whose
-   styling does not need to cross into projected content.
+- **Fixed:** none.
+- **Missed by this pass and now restored:** prev F-2, F-3 (partially), F-8, F-9, F-13, F-14 — re-filed above as F-16…F-21. Honest cause: this pass organised itself around the preset system, the config-token merge semantics and the i18n surface, and did not re-walk the overlay builder's container seam, the barrel exports, the motion module or the package manifests.
+- **Deliberately deferred to another dimension:** prev F-4 (unlayered stylesheets → `02-styles-theming.md` F-7) and prev F-12 (`ViewEncapsulation.None` leakage → `05-micro-frontends.md`). Both are still true at HEAD; neither is dropped, but neither is re-argued here.
+- **Wrong in the previous pass:** nothing. The one previously-refuted item (original F-2 on module-level globals) stayed refuted.
+- **Where this pass was wrong and the prev pass was right:** current F-1. This audit widened prev F-1 from one docstring sentence at low back out to four root singletons at high, including `KJ_OVERLAY_Z_BASE` (which is correctly app-wide) and `provideIconResolver` / `provideIconLoader` (which do work at route level), and revived the "two remotes cannot have different locales" framing the prev pass had already refuted. Verification has reverted it. Recording it so the regression is visible rather than silently re-corrected.
 
----
+### New since then
 
-### F-13 Motion has no configuration surface at all
-
-**Severity:** low &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
-
-**Files:** `packages/core/src/motion/motion.ts:158-179`, `packages/core/src/motion/index.ts:1-2`
-
-**Evidence**
-
-```ts
-// motion.ts:172 — free-form string, no preset token, no allowlist, no dev warning
-  readonly kjMotion = input.required<string>();
-```
-```ts
-// motion/index.ts — the whole public surface
-export { KjReducedMotion } from './reduced-motion';
-export { KjMotion, type KjMotionState } from './motion';
-```
-
-There is no `KJ_MOTION_CONFIG`, no `provideKjMotion`, and no `KJ_MOTION_PRESET` — unlike variant and
-size, which both get a token, an allowlist and a dev-mode warning. Preset names
-(`fade`, `slide-up-fade`, `scale-spring`, …) exist only as prose in the TSDoc at `motion.ts:121-123` and
-as keyframes in `motion.css`.
-
-**Why it matters.** Motion is the one place where the *same* preset mechanism would obviously apply
-(named preset → `data-kj-motion` attribute → CSS), and it is the one place it was not used. A typo in
-`kjMotion="slide-up-fde"` is silent; there is no app-level "our brand uses `scale-spring` everywhere"
-default; and consumers cannot register a custom preset name in a way the library acknowledges (though,
-because there is no validation, an unknown name does work — it just reflects and relies on the consumer's
-own CSS). Inconsistency more than breakage.
-
-**Fix.** Add `KJ_MOTION_CONFIG` + `provideKjMotion({presets, default})` and route `KjMotion` through a
-preset directive mirroring `KjVariant`/`KjSize`, including the dev-mode allowlist warning. Reuse
-`bindPresets` by generalising it to arbitrary preset axes (see work item 6).
-
----
-
-### F-14 `@angular/cdk` is a peer dependency of both packages despite the no-CDK policy
-
-**Severity:** low &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** S
-
-**Files:** `packages/core/package.json` (peerDependencies), `packages/components/package.json`
-(peerDependencies), `rules/stack.md`
-
-**Evidence**
-
-```json
-// packages/components/package.json
-  "peerDependencies": {
-    "@angular/cdk": "^22.0.0",
-```
-```json
-// packages/core/package.json
-  "peerDependencies": {
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
-    "@angular/cdk": "^22.0.0",
-```
-
-`rules/stack.md`: *"Zero external UI deps. No Angular CDK. No floating-ui. No third-party UI primitives."*
-`packages/core/package.json`'s own `description` also still reads *"Headless Angular 21 UI primitives —
-directives over CDK"* while the peers pin `^22.0.0`.
-
-**Why it matters for customization.** A peer dependency is part of the public contract: consumers must
-install CDK to use kouji-ui, and MFE hosts must reconcile a CDK version they were told the library does
-not use. It also muddies the "headless core is usable standalone" claim — which is already weakened by
-core shipping five stylesheets (`icon/icon.css`, `motion/motion.css`, `primitives/overlay/overlay.css`,
-`styles.css`, `typography/prose.css`) against `rules/architecture.md`'s "directives only, zero CSS".
-
-**Fix.** If CDK is genuinely unused, drop it from both peer dependency lists and fix core's `description`.
-If it is used, amend `rules/stack.md` to record the exception and say where. Separately, either move
-core's stylesheets to `@kouji-ui/themes` or amend the "zero CSS" rule.
-
----
-
-## Refuted during verification
-
-### F-2 (original) "Overlay container and scroll lock are module-level globals with no DI seam" — **REFUTED** (was: critical)
-
-The original finding is preserved verbatim at the end of this section. It was refuted during adversarial verification: its own cited evidence contradicts it on 2 of 3 files, and the central mechanism ("a DI seam would fix this") does not hold.
-
-1. **The scroll lock IS token-driven** — it is line 51 of the very token list the finding cites as proof it "was left out": `KJ_OVERLAY_SCROLL_LOCK_STRATEGY = new InjectionToken<KjScrollLockStrategy>(…)` (`primitives/overlay/tokens.ts:51`). `panel.ts:71` injects it (`inject(KJ_OVERLAY_SCROLL_LOCK_STRATEGY, { optional: true })`) and `builder.ts:101` provides it per-overlay from config. Three built-ins ship (`css-clip.ts`, `html-overflow.ts`, `none.ts`) and consumers already swap them per component — `command-palette-dialog.ts:62` provides `htmlOverflow()` instead of the default. `_count`/`_saved` are private state of one implementation, and they **must** be module-shared: `document.documentElement.style.overflow` is a single page-global slot, so nested/concurrent overlays inside one app need one refcount. Hoisting the counter into DI would break nested dialogs, not fix anything.
-2. **`<html dir>` has a seam, and it is opt-in.** `provideKjDocumentDirection()` is a separate, explicitly-registered provider ("Register once at the application scope"); an MFE that must not own `<html dir>` simply does not register it. Per-scope direction is fully representable without it: `provideKjLocale({ direction: 'rtl' })` is `EnvironmentProviders`, and `KjLocale.direction` (`locale.ts:97-106`) returns the explicit value and never consults `KjDirectionality`/`<html dir>` unless direction is `'auto'`. The RTL CSS is subtree-scoped descendant selectors (`[dir="rtl"] .kj-breadcrumb-list …`, `[dir="rtl"] .kj-progress-bar__fill`, overlay-badge) plus CSS logical properties across 19 stylesheets — none require `<html dir>`. So "an RTL MFE beside an LTR MFE is unrepresentable" is **false**: set `dir="rtl"` on the MFE root and provide `direction: 'rtl'`. The effect is also idempotent by design and SSR-guarded, with all three behaviours covered in `document-direction.spec.ts`.
-3. **The MFE consequence does not follow from the claimed cause.** Two separately-bundled copies of `@kouji-ui/core` also mean two copies of every `InjectionToken` and two root injectors — token identity is per-module-instance. Adding `KJ_OVERLAY_CONTAINER` would produce two distinct tokens in two distinct injectors and coordinate exactly nothing. The only real remedy for cross-copy coordination is document-level shared state (a refcount on an `<html>` dataset attribute, or a `globalThis` registry) — a different fix from the one proposed. Nothing in the repo indicates multi-copy MFE hosting is a supported scenario.
-4. **The container claims are overstated.** `getOverlayContainer()` self-heals (`if (_root && _root.isConnected) return _root`), and the declarative path is already overridable through `KjMountStrategy.resolveContainer()` behind `KJ_OVERLAY_MOUNT_STRATEGY`. Stacking is token-driven in CSS (`z-index: var(--kj-overlay-z-index, 1000)`), and two sibling `position:fixed; inset:0; pointer-events:none` roots do not compete destructively — children carry `pointer-events:auto` and ties resolve by insertion order.
-
-**Disposition.** The residual accurate nit was re-filed as **F-2 (low)** above. The cross-page-state coordination gap (the `<html>` overflow refcount and container dedupe across duplicate library copies) is tracked in the micro-frontend dimension (`05-micro-frontends.md` F-3), where it belongs — and its fix is a document-level registry, not an injection token.
-
-<details>
-<summary>Original F-2 text, preserved</summary>
-
-**F-2 (original, refuted) Overlay container and scroll lock are module-level globals with no DI seam**
-
-**Severity as originally filed:** critical &nbsp;|&nbsp; **Confidence:** high &nbsp;|&nbsp; **Effort:** M
-
-**Files:** `packages/core/src/primitives/overlay/container.ts:19-41`,
-`packages/core/src/primitives/overlay/strategies/scroll-lock/css-clip.ts:3-37`,
-`packages/core/src/locale/document-direction.ts:41-59`
-
-**Evidence**
-
-```ts
-// container.ts:19-28
-let _root: HTMLElement | null = null;
-export function getOverlayContainer(): HTMLElement | null {
-  if (typeof document === 'undefined') return null;
-  if (_root && _root.isConnected) return _root;
-  _root = document.createElement('div');
-  _root.className = 'kj-overlay-container';
-  document.body.appendChild(_root);
-```
-```ts
-// css-clip.ts:3-16
-let _count = 0;
-let _saved: string | null = null;
-…
-      if (_count === 1) {
-        _saved = document.documentElement.style.overflow;
-        document.documentElement.style.overflow = 'clip';
-      }
-```
-```ts
-// document-direction.ts:50-55 — writes <html dir> from an env initializer
-      effect(() => {
-        const dir = locale.direction();
-        const html = doc.documentElement;
-        if (html.getAttribute('dir') !== dir) html.setAttribute('dir', dir);
-```
-
-**Why it matters.** `_root`, `_count` and `_saved` are per-**module-instance**, not per-app. Two MFEs
-each bundling `@kouji-ui/core` get two independent copies: two `.kj-overlay-container` divs competing for
-z-stacking, and two scroll-lock counters that both believe they own `documentElement.style.overflow` —
-MFE-A closing its dialog restores `overflow: ''` while MFE-B's modal is still open, so the page scrolls
-behind an open modal. `<html dir>` is worse: it is single-valued page state, so an RTL MFE next to an
-LTR MFE is unrepresentable. The whole rest of the overlay system is token-driven
-(`primitives/overlay/tokens.ts:47-54`) — the container and scroll lock are the two pieces that were left
-out, and the file's own doc comment even enshrines the global ("Per-overlay code MUST go through
-`getOverlayContainer`", `container.ts:8-11`).
-
-**Fix.**
-1. Add `KJ_OVERLAY_CONTAINER = new InjectionToken<() => HTMLElement>(…)` with a root factory that keeps
-   today's behaviour, and a `provideKjOverlayContainer(el | () => el)` so an MFE can mount overlays
-   inside its own shadow/DOM subtree. Replace the `let _root` module state with a service.
-2. Move the scroll-lock refcount into an injectable (root-scoped by default) so nested/concurrent locks
-   are counted per app, not per module copy.
-3. Note in `document-direction.ts` that it is explicitly single-app-only, and offer a subtree
-   alternative that sets `dir` on the MFE's own root element instead of `<html>`.
-
----
-</details>
-
----
+- **F-3 — `KjSpinnerConfig.animations` is never read and `kjAnimation` is closed.** New; the sharpest single instance of the closed-union problem and the only core config with a preset list beyond `variants` / `sizes`.
+- **F-5 — the "layer a single class on the host" escape hatch is inert for ~90 of ~130 components.** New as a *rule-vs-reality* finding. The prev pass found the custom-property half (prev F-3); the class half, the 90/42 host-contract split, and the fact that `rules/code_style.md` prescribes the inert lever are new.
+- **F-6 — `KjAlert` hand-rolls the preset system and its TSDoc claims otherwise.** New. Prev F-5 counted alert among the closed components but did not catch that it *reimplements* `bindPresets` while documenting that it uses it.
+- **F-8 — `provideIcons()` dead below root while `provideLucideIcons()` works anywhere but writes to a page-global registry.** New; prev F-1's verification explicitly *removed* the icon registry from scope, and this pass found the asymmetry between the two provider functions, which is a different (and real) point.
+- **F-9 — `--kj-overlay-z-base` on `:root` overrides the DI token.** New, and only reachable after `2948c5b5` (#69) introduced `KJ_OVERLAY_Z_BASE` and the CSS-custom-property read at `stack.ts:162-167`. A genuinely post-`fd6dd34e` finding.
+- **F-10 — `_examples` barrels leak into the published package API** (dragging the 1,600-name Lucide list). New.
+- **F-11 — the preset system's own extension points are `@internal` but exported.** New; the corollary of F-2's "the preset system should win everywhere".
+- **F-14 — wrapper components re-declare host-directive inputs "for the docs extractor".** New.
+- **F-15 — no per-subtree direction.** New here, though the prev pass's refutation of original-F-2 argued the opposite case (that `provideKjLocale({direction:'rtl'})` plus `dir` on the MFE root is sufficient). These two need reconciling: current F-15 says `KjDirectionality` reads only `<html dir>` / `<body dir>`, which is a narrower and checkable claim than "RTL subtrees are unrepresentable" — the CSS is subtree-scoped either way, so the open question is whether the *service* needs to be element-aware or whether the explicit-direction provider is the supported answer.
 
 ## Recommended work items
 
-Ordered by MFE risk, then by how many downstream decisions they unblock.
+Ordered by (MFE blast radius × cheapness).
 
-*Post-verification the two former critical items were removed from this list: F-1 collapsed to a one-line TSDoc fix and F-2 was refuted. Fold both into item 8 (doc accuracy) plus the residual low F-2 container-seam nit.*
-
-1. **Fix the CSS override contract.** (F-4 then F-3) First wrap the 10 unlayered stylesheets in
-   `@layer kj.component` and move the layer-order statement out of `@kouji-ui/themes` — cheap, and it
-   unblocks everything else. Then pick one per-instance override mechanism (generalise the
-   `--kj-segmented-*` two-tier knob, or ship an explicit `kjClass`/`kjStyle` hatch), apply it library-wide,
-   and write the merge order down: *unlayered consumer CSS > `kj.component` > `kj.shared` (themes) >
-   `kj.base` > `kj.reset`; within a component, element-declared knobs beat inherited ones.*
-2. **Close the i18n fork.** (F-6) Make config-token label fields optional overrides that default to
-   `KjTranslateService` lookups; add catalog keys for the hard-coded color-picker / command-palette /
-   date-picker labels; add a lint rule banning literals in `'[attr.aria-label]'`.
-3. **One variant story.** (F-5, F-8) `config.ts` + `provideKj<X>` + `bindPresets` for every
-   variant-bearing component, in **core** (including tabs); soften the closed unions to
-   `'a' | 'b' | (string & {})`; add the CSS-selector ⇄ `*_DEFAULTS` parity test that would have caught
-   `segmented`.
-4. **Generalise `bindPresets` to N axes and unify merge semantics.** (F-11, F-13) Today it hard-codes
-   `variants`/`sizes`; spinner already needs a third axis (`animations`, `spinner/config.ts:23`) and
-   motion needs a fourth. A `bindPreset(configToken, 'animations', KJ_ANIMATION_PRESET)` form plus a
-   shared deep-merging `mergeKjConfig<T>` helper covers both.
-5. **Make the components package self-sufficient.** (F-9) Re-export every `provideKj*` / `KJ_*_CONFIG` /
-   `KJ_*_DEFAULTS` from `@kouji-ui/components`, and add a Customization docs page listing the provider
-   per component and the three override levels.
-6. **Naming cleanup with deprecation aliases.** (F-7, F-8) `kj`-prefix the 12 bare style inputs,
-   `Kj`-prefix the 7 unprefixed `provide*` functions, rename `KjIconDirective` → `KjIcon`, settle token
-   descriptions on `'kj.<feature>.<thing>'`. Add an ESLint rule for the input prefix.
-7. **Fix `provideKjChat` composition** (F-10) — `multi: true` with a merging factory, or
-   `Partial<>` + `KJ_CHAT_DEFAULTS`. Correct the doc either way.
-8. **Record or retire the policy violations.** (F-12, F-14) Either carve documented exceptions into
-    `rules/code_style.md` / `rules/stack.md` for `ViewEncapsulation.None`, the CDK peer dep and core's
-    five stylesheets, or open migration issues. Also publish the "one kouji-ui version per page" MFE
-    constraint.
-
----
+1. **Correct every false `provide*` / config docstring.** F-1 (`locale.config.ts:50`'s "or on a
+   route to scope a sub-tree", `translate.config.ts:28`'s "enclosing injector", plus a scope line on
+   `provideIcons`), F-6 (alert `bindPresets`), F-13 (button `variant:`, Tag/Badge lock-step, chat
+   "merged over defaults"). Pure doc change, no behaviour risk, kills the worst consumer-misleading —
+   and after verification this *is* the whole of F-1. — *F-1, F-6, F-13* · S
+2. **Fix the spinner `animations` contradiction.** Widen `kjAnimation` to `string | undefined` on both
+   directive and wrapper, add the dev-mode warn against `config.animations`. Smallest concrete
+   instance of the closed-union problem; ships as a patch. — *F-3* · S
+3. **Remove the `_examples` re-exports from `icon/index.ts` and `input-mask/index.ts`** and add a CI
+   check on `public-api.ts`'s import graph. — *F-10* · S
+4. **Introduce `mergeConfig` / `KjDeepPartial` and retype every `provideKj*`.** One helper + one spec,
+   then a mechanical sweep of the 14 config files; also unifies breadcrumb's divergent merge. — *F-4* · S/M
+5. **Decide the root-vs-scoped question for `KjLocale`, `KjTranslateService` and
+   `KJ_ICON_REGISTRY`** for the sub-app-inside-one-injector-tree case, and add child-
+   `EnvironmentInjector` specs for each. *(Corrected during verification: `KJ_OVERLAY_Z_BASE` is
+   correctly app-wide and is dropped from this item; separately bootstrapped remotes already work, so
+   this is a scoping nicety rather than the MFE blocker it was billed as — item 1 is the actual fix
+   for the documented promise.)* — *F-1, F-8, F-9* · M
+6. **Promote `KjVariant` / `KjSize` / `bindPresets` / the four preset tokens to supported public API**
+   (drop `@internal`, document "build your own preset-driven component"). Prerequisite for item 7. —
+   *F-11* · S
+7. **Migrate every closed-union variant/size/appearance input to the preset system**, one component per
+   changeset, standardising the `kj` prefix in the same pass. Add a CI rule: a `data-variant` /
+   `data-size` host binding requires the composed preset directive. Do the cheap half first: document
+   the core-open / components-closed rule in `rules/architecture.md`, add the missing `@doc-css-var`
+   block to `table.ts`, and move `badge` / `toast` onto `bindPresets`. — *F-2, F-12* · L
+8. **Settle the host contract and write the missing "Overriding a single instance" doc page** — the
+   three levers, their merge order, and the `display:contents` split. Add `kjClass` forwarding to the
+   wrappers if the `display:contents` hosts stay. — *F-5* · M
+9. **Route all component labels through `KjTranslateService`**, add the missing `EN_CATALOG` keys,
+   delete the duplicate label fields from the pagination / breadcrumb / spinner configs, and CI-grep
+   for literal `aria-label="…"`. — *F-7* · L
+10. **Convert `KjAlert` to the composed preset directives** and delete its duplicated resolution and
+    warn effect. — *F-6* · S
+11. **Delete the shadow inputs on the alert / spinner / tabs wrappers** once the docs extractor follows
+    `hostDirectives`; fix the spinner's hidden-label source immediately regardless. — *F-14* · S
+12. **Make `KjDirectionality` element-aware** so an RTL subtree is expressible. — *F-15* · M
 
 ## Open questions
 
-1. **Is multi-MFE co-existence actually a target?** Nothing in `rules/*.md` mentions it. Several findings
-   (F-1, F-2, F-12) are non-issues for a single-app consumer and expensive to fix. If MFE support is in
-   scope it should be a stated rule with a conformance test; if not, it should be documented as
-   unsupported so consumers do not discover it the hard way.
-2. **Was `ViewEncapsulation.None` + `display:contents` a considered trade against the `rules/code_style.md`
-   ban, or drift?** The `button.css` comments show deep awareness of the custom-property consequences,
-   which reads as deliberate — but no ADR or rule exception records it.
-3. **Should `KjTranslationKey` stay closed?** It is correct for library-owned strings, but if config-token
-   labels move behind the catalog (work item 4), consumers overriding one string will need either a
-   per-key override map or an open key space. Which?
-4. **Is `@angular/cdk` actually imported anywhere**, or is the peer dependency vestigial? I did not audit
-   imports — that belongs to the dependency/architecture aspect.
-5. **Does `provideKjButton` in a component's `providers` survive `ng-packagr` + AOT in a consumer app?**
-   `bindPresets` uses `useFactory` + `inject`, which is fine in source; I did not verify the emitted
-   `.d.ts` / partial-compilation output, and `variant.ts:72-78` shows ng-packagr has already surprised
-   this codebase once on this exact file.
-6. **What is the intended headless story for tabs?** Core's `KjTabs` has no `KjVariant` host directive
-   (F-8), so a core-only consumer gets no `data-variant`. Is that intentional (tabs chrome is
-   "styled-only") or an oversight?
+- Is MFE (two remotes, one page, one Angular root) a supported target, or is the target "one app per
+  page, possibly with lazy routes"? The severity of F-1, F-8 and F-9 differs by a grade between those
+  two answers, and nothing in `CLAUDE.md` or `rules/` states which it is.
+- Are the closed unions (`KjBadgeVariant`, card/checkbox/toggle/table) a deliberate "this component's
+  design does not admit new variants" call, or just components that predate `bindPresets`? If
+  deliberate, the docs should say "not extensible by design" rather than leaving the consumer to
+  discover it from `strictTemplates`.
+- `rules/code_style.md:72-76` forbids `ViewEncapsulation.None`, yet every component in
+  `packages/components` uses it. Is that rule scoped to `apps/docs` only? If so it should say so; if
+  not, the F-5 host-contract decision changes shape.
+- Does the docs extractor's inability to read `hostDirectives` inputs have a tracked issue? Three
+  components carry shadow-input workarounds for it (F-14), and the same limitation is what drove
+  `tabs.ts:118` to strip the `kj` prefix (F-12).
+- Should `KjTranslationKey` stay a closed union derived from `EN_CATALOG`? It is the right call for
+  the library's own strings, but it means a consumer cannot add their own keys to the same service —
+  is a second, consumer-owned catalog namespace wanted, or is that explicitly out of scope?

@@ -1,100 +1,36 @@
 # Micro-Frontend Readiness Review
 
-> **Adversarially verified 2026-09-15.** Findings below marked *(severity corrected during verification)* were re-checked against the source; corrections are inline. Refuted findings are preserved in **Refuted during verification** at the end of the findings list, not deleted.
-
-Scope: can two or more independently-deployed Angular apps, each possibly a different
-version of `@kouji-ui/core` + `@kouji-ui/components` + `@kouji-ui/themes`, run
-simultaneously on one page (Module Federation / Native Federation / web components)
-without interfering?
-
 ## Verdict
 
-**Grade: D.** The library is written as if it owns the page. The architectural bones
-are unusually good for MFE — a `kj-` prefix with zero offenders across ~250 selectors
-and every CSS class, a real `@layer kj.reset, kj.base, kj.shared, kj.component`
-cascade contract, DI-based registries for icons/chat/locale/i18n, and lazy +
-DI-overridable loading of the heavy deps (echarts, monaco, lexical). But everything
-that has to be *unique per page* is instead unique *per module copy*: 44 module-scope
-`let x = 0` id counters plus a `providedIn: 'root'` `KjId` all restart at `0` in every
-copy, so two instances mint the identical `kj-field-1` / `kj-panel-1` / `kj-overlay-1`
-DOM ids and silently break `aria-labelledby` / `aria-controls` / `label[for]` across
-the whole page. Two document-level keyboard handlers (`KjOverlayStack`,
-`KjFocusTrap`) act on every keystroke in the document with no check for which app
-owns the focus, so Escape closes overlays in *both* apps and an open dialog in app A
-steals Tab focus out of app B. 80 components ship `ViewEncapsulation.None` with
-global stylesheets that both copies inject into the same `@layer kj.component` under
-identical selectors — last-injected wins, for both apps. None of this is
-unfixable — most of it is a mechanical "move the module-global into a root-provided
-injectable and seed it from `APP_ID`" change — but as it stands, shipping two
-versions of this library on one page produces silent a11y corruption and visual
-bleed, not a crash, which is the worst failure mode to debug.
+**Micro-frontends are not a declared, supported target anywhere in this repo.** I grepped every `*.md`, `*.json` and `*.ts` outside `node_modules`/`reports` for `micro-frontend`, `module federation`, `native federation`, `mfe`, `web component`, `custom element`, `createCustomElement` — the only hits are the word "component" inside prose. `rules/stack.md` names Angular 21+, Turborepo and pnpm; `rules/architecture.md` describes one app per page (`@kouji-ui/core` directives + `@kouji-ui/components` wrappers); `apps/docs/src/app/app.config.ts` is a single `bootstrapApplication`. There is no federation config, no `sharedMappings`, no `APP_ID` usage (`grep -rn APP_ID packages/ apps/` returns nothing), and no version-scoping hook in the CSS. So everything below is framed as **what must change to support two or more independently-deployed Angular apps on one page**, not as defects against a stated contract.
 
+The good news: the library is not architecturally hostile to it. There is zero `window`/`globalThis` namespace pollution, zero `customElements.define`, no CDK coupling in code, consistent `kj-` class prefixing, `[data-theme]`-scoped theme values, and it is zone-agnostic (no `NgZone` anywhere). The bad news is concentrated in three places: **~43 module-scope id counters plus a per-root `KjId`, none of which carries an app-scoped namespace**; **document-level coordination (`<html>` scroll lock, Escape/pointerdown capture listeners, the overlay container) that has no cross-instance protocol**; and **unversioned global class names plus a bare-`:root` token layer, so two *different versions* of the library in one document overwrite each other**.
 
-*Post-verification: F-1 critical → medium (two distinct mechanisms, partial mitigations, and a prior recorded v1 tradeoff at `docs/component-analyses/actions/context-menu.md:610-614`), F-2 critical → low (the focus-theft and listener-count evidence was refuted). No critical findings remain in this dimension — but the grade still reflects that multi-app-per-page is an undeclared, unsupported deployment mode.*
+Two framings from the first pass did not survive verification and are corrected in place. The cascade problem is **not** about `@layer` — the layers are neutral, removing them changes nothing, and versioning the layer names would make the winner *less* predictable; the colliding identifiers are the class names (F-5, refuted and re-filed at low). And the overlay layer already has the DI mount seam the first pass said was missing — `KJ_OVERLAY_MOUNT_STRATEGY` + the public, tested `inContainer()` — so the real gap is only that shipped components pin `bodyPortal()` in component-level providers (F-4, now low). Thirteen stylesheets shipping with no `@layer` at all (F-6) is a live single-app customization hazard and stands.
+
+**Grade: C−** — readiness is low, but lower-stakes than the first pass concluded: nothing here breaks a single-app consumer, most of the remediation is a documented topology contract plus a DI-seeded id scheme, and the two items originally sized as architectural rewrites (the cascade, the overlay container) turn out to be a docs line and a provider indirection.
 
 ## What works
 
-- **`kj-` prefix discipline is complete.** Every component/directive selector is
-  `kj-*` or `[kj*]` (`grep` over `selector:` in both packages yields exactly one
-  non-`kj` selector, `my-filter`, in a docs example). Every CSS class selector in
-  `packages/components/src/**/*.css` is `.kj-*` — zero unprefixed offenders. Two
-  copies can't collide on a *name*; they collide on *identity*, which is the
-  fixable half.
-- **Real `@layer` contract.** `packages/themes/src/base.css:7` declares
-  `@layer kj.reset, kj.base, kj.shared, kj.component;` and every component
-  stylesheet opens with `@layer kj.component {` (73 files). CSS layers merge by
-  name across stylesheets, so a second copy re-declaring the same statement is a
-  no-op and layer *ordering* stays deterministic regardless of load order. This
-  removes the classic "which bundle loaded first" cascade lottery — only
-  same-layer same-selector specificity ties remain (F-4).
-- **Registries are DI, not module globals.** `KJ_ICON_REGISTRY`
-  (`packages/core/src/icon/icon.tokens.ts:26`), `KJ_CHAT_CONFIG`
-  (`packages/core/src/chat/chat-registry.ts:46`), `KjTranslateService`
-  (`packages/core/src/i18n/translate.service.ts:52`), `KjLocale`
-  (`packages/core/src/locale/locale.ts:76`) all hold their state on the injector,
-  so each app instance gets its own. This is the correct shape.
-- **Heavy deps are lazy and swappable.** `chart.ts:135` `await import('echarts')`,
-  `editor.loader.ts:63` `await import('@monaco-editor/loader')`,
-  `rich-text-editor.ts:224` `await import('./engine')` (the only place lexical is
-  value-imported). All three are overridable via DI (`provideECharts`,
-  `provideMonaco`, `KJ_MONACO_CONFIG.loader`), so a shell can hand every remote one
-  shared instance.
-- **`bodyPortal` already propagates theme scope.**
-  `strategies/mount/body-portal.ts:13-21,57-61` walks up from the trigger for the
-  nearest `[data-theme]` and copies it onto the portalled wrapper. This is exactly
-  the primitive an MFE needs — it just isn't applied on the service-launched path
-  (F-7).
-- **Change-detection agnostic.** Zero `NgZone`, zero `zone.js`, zero
-  `runOutsideAngular` in either package; state is `signal`/`computed`/`effect`
-  only. The library works unchanged in a zone-based host and a zoneless one, which
-  is a genuine MFE prerequisite most libraries fail.
-- **Zero `@angular/cdk` imports** in the whole source tree, despite the peer dep —
-  one fewer shared singleton to negotiate, once the stale peer is dropped (F-12).
-- **Zero `window.*` / `globalThis.*` / `customElements.define` registrations.**
-  Nothing claims a global name.
-
----
+- **No global namespace pollution.** `grep -rn "customElements|window\.__|globalThis\.__|\(window as any\)|createCustomElement" packages/*/src` returns nothing. Nothing registers itself on `window` or the custom-element registry, so two copies cannot throw `NotSupportedError` or clobber each other's globals.
+- **Consistent `kj-` class prefixing.** Every class token across all 93 stylesheets is `.kj-*`; the only non-`kj-` selectors are `:root` (3 files), `[data-theme]` (`packages/themes/src/base.css:21`) and `.monaco-editor` overrides. No unprefixed class offenders found.
+- **Theme *values* are subtree-scopable.** Every theme file scopes to `[data-theme="X"]` (`packages/themes/src/themes/corporate.css:10`, `bauhaus.css:10`, …), so two MFEs *can* run different themes side by side by stamping `data-theme` on their own roots — provided they resolve the same token names.
+- **`@layer` is used by 80 of 93 stylesheets**, with the order declared once at `packages/themes/src/base.css:7` (`@layer kj.reset, kj.base, kj.shared, kj.component;`). The mechanism to make load order deterministic already exists; it just isn't complete or namespaced.
+- **Zone-agnostic.** No `NgZone`, `provideZoneChangeDetection` or `provideZonelessChangeDetection` appears in `packages/*/src` — all reactivity is signals + `afterNextRender`. The library imposes no zone choice on a host, so a zoneless shell and a zone-based remote can both consume it.
+- **Every DOM touch is SSR-guarded** (`isPlatformBrowser` / `typeof document === 'undefined'`), and the heavy deps are behind DI + dynamic import (`packages/core/src/chart/chart.ts:135` `await import('echarts')`, `packages/core/src/editor/editor.loader.ts:63` `await import('@monaco-editor/loader')`), both overridable via `provideECharts` / `provideMonaco`.
+- **The recent overlay work is genuinely better for this target.** `packages/core/src/primitives/overlay/stack.ts:59-79` moves stacking onto per-wrapper `--kj-overlay-z` + inline `z-index` instead of hard-coded component `z-index`, and `packages/core/src/primitives/list/scope.ts:35-43` (`ownListItems`) fixes cross-composite content-query bleed. Both reduce the surface a second instance can disturb.
 
 ## Findings
 
-### F-1 Id minting has no document-global seed, so ids collide when two Angular roots or two library copies share a page
+### F-1 No app-scoped namespace for generated ids — collides only when two Angular roots share a document
 
-**Severity:** medium *(corrected during verification: was critical)* · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/id.ts:10-17`,
-`packages/core/src/primitives/overlay/panel.ts:40,65`,
-`packages/core/src/primitives/overlay/controller.ts:39-40`,
-`packages/core/src/field/field.ts:10,52,78,81,84`,
-`packages/core/src/field/field-error.ts:4,43,52-53`,
-`packages/core/src/primitives/list/item.ts:17,108`,
-`packages/core/src/alert/alert.ts:19,89`,
-`packages/core/src/stepper/stepper.ts:29,106,244,300`, + ~33 more
+**Severity:** medium *(corrected during verification: filed as high)* · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/id.ts:10-16`, `packages/core/src/primitives/overlay/panel.ts:65`, `packages/core/src/primitives/overlay/trigger.ts:47`, `packages/core/src/field/field.ts:10, 84, 87`, `packages/core/src/field/field-error.ts:4, 54`, `packages/core/src/field/field-help.ts:4, 39`, `packages/core/src/primitives/list/item.ts:17, 108`, `packages/core/src/combobox/combobox-root.ts:32` (+ ~38 more module-scope counters)
 
-**Two distinct mechanisms that fail under opposite conditions — the original finding conflated them and got the safer one backwards.**
-
-**(a) `KjId` is `providedIn: 'root'`, i.e. per Angular *application injector*.** Two bootstrapped roots on one page collide **even when they share a single library copy** — this is the more fragile of the two, not the fix. Its ids become real DOM ids at `panel.ts:40` (`'[id]': 'panelId'`, minted at `:65`) and `controller.ts:40`.
+**Evidence**
 
 ```ts
-// packages/core/src/primitives/overlay/id.ts:10-17
+// packages/core/src/primitives/overlay/id.ts:10-16
 @Injectable({ providedIn: 'root' })
 export class KjId {
   private _counter = 0;
@@ -105,262 +41,204 @@ export class KjId {
 }
 ```
 
-**(b) ~41 module-scope id counters are per *module instance*,** so they are **safe under a shared singleton** (the normal Module Federation / import-map setup) and collide only when the library is genuinely duplicated — separate versions, non-shared federation remotes.
-
 ```ts
-// packages/core/src/field/field.ts:10,52,84
+// packages/core/src/field/field.ts:10, 84
 let kjFieldIdCounter = 0;
-private readonly uid = ++kjFieldIdCounter;
 readonly controlId = computed(() => this.kjFieldId() ?? `kj-field-${this.uid}`);
 ```
 
-**Evidence corrections.**
-- `field.ts:84` is `controlId`, **not** `fieldId`.
-- At least **2 of the 44** grep hits are not id counters at all: `primitives/overlay/strategies/scroll-lock/css-clip.ts:3` and `html-overflow.ts:3` are scroll-lock **refcounts**. Duplicate copies there leak the scroll lock rather than colliding ids — a separate bug, tracked in F-3.
+~43 module-scope counters across `packages/core` and `packages/components`, plus `KjId` (`providedIn: 'root'`), each start at `0` per bundle copy / per root injector. There is no `APP_ID` seed and no prefix token anywhere in the repo.
 
-**Existing mitigations the original finding omitted (coverage is partial, not absent).** `primitives/list/item.ts:108` honours a host-supplied id (`host.id || 'kj-list-item-N'`), and explicit id inputs exist at `field.ts:78/81`, `field-help.ts:35`, `field-error.ts:43`, `list/group.ts:61/111`, `cascade-select-sub-panel.ts:84`. Overlay panel/controller, alert, stepper and most others expose no override.
+**Why it matters, split by deployment shape** — IDREF resolution (`document.getElementById`) is document-wide, so the two mechanisms fail under opposite conditions and must not be conflated:
 
-**Why the severity drops.** These strings are still written into the DOM as real `id` attributes and referenced by `aria-labelledby`, `aria-describedby`, `aria-controls`, `aria-activedescendant` and `label[for]`, so the blast radius described below is real *in the deployment mode it describes*. But `docs/component-analyses/actions/context-menu.md:610-614` records this exact multi-app risk as a **knowingly accepted v1 tradeoff**, and nothing in the repo — no `APP_ID` seeding, no federation config, no docs — claims MFE support. This is a latent readiness gap in an undeclared deployment mode with partial mitigations, not a critical defect in shipped usage. It is the case for *revisiting* that prior decision, not a newly discovered break.
+- **Shared-singleton federation** (the common shape). The module counters are shared and therefore safe; only `KjId` collides, because it is per root injector. Its sole DOM-visible output is `kj-panel-N` (`panel.ts:65`, bound `[id]`), consumed by `overlay/trigger.ts:47` as `aria-controls` — an advisory IDREF with weak AT support. Low real-world harm. The other two `mint()` call sites are bookkeeping keys, not DOM ids: `controller.ts:40` (`controller.id`) and `command-palette.ts:258` feed `KjOverlayStack` (`stack.ts:136, 150, 158`) and never reach the DOM.
+- **Duplicate-bundle / multi-Angular-root pages.** The module counters collide too, and this is where the genuine exposure lives: `field-label.ts:22` binds a real `for=`, and the field-error / field-help ids feed `aria-describedby`, so app B's `<label for="kj-field-3">` can label app A's input and app B's description can resolve to app A's error text — silent WCAG 1.3.1 / 4.1.2 failures that no smoke test catches.
 
-**Blast radius when it does bite.** `document.getElementById` returns the **first** match in document order, so app B's dialog trigger says `aria-controls="kj-panel-1"` and a screen reader resolves it to **app A's** panel; app B's `<label for="kj-field-3">` labels app A's input; `aria-describedby="kj-field-error-2"` announces app A's validation error under app B's field. Silent WCAG 1.3.1 / 4.1.2 failures that no smoke test catches.
+**Mitigations that already exist** (the finding as filed said there were none): per-element id overrides at `kjFieldId` / `kjFieldLabelId` (`field.ts:84, 87`), `kjFieldErrorId` (`field-error.ts:54`), `kjFieldHelpId` (`field-help.ts:39`), and `KjListItem` honours a pre-existing host `id` (`item.ts:108`). `KjId` itself is a plain class with one public method, so an app-level `{ provide: KjId, useValue: <prefixed subclass> }` replaces it wholesale — exactly as its TSDoc at `id.ts:7-8` says. No seed parameter is needed to swap a one-method class. The real gap is the inverse: the ~40 module-scope counters have **no** override mechanism at all.
 
-**Fix.** Seed every counter from one document-global prefix:
-1. Inject `APP_ID` (or a `KJ_ID_PREFIX` token defaulting to a per-app random/`APP_ID`-derived string) inside `KjId`: `mint(prefix) { return \`kj-${this.appId}-${prefix}-${++this._counter}\`; }`. Consumers set `{ provide: APP_ID, useValue: 'checkout' }` per remote.
-2. Route the ~41 module-scope counters through `KjId` or a `globalThis`-keyed registry so a second copy **continues** the sequence instead of restarting it.
-3. For anything outside an injection context, fall back to `crypto.randomUUID()` (already used correctly in `toast.service.ts`).
-4. Add a lint rule banning `let <name>Id/Uid/Counter = 0` at module scope in `packages/*/src`.
-5. Add a spec that bootstraps two TestBed roots and asserts no minted id repeats.
+**Scope** Zero impact on every single-app consumer, which is the only usage the repo documents. Nothing in the repo claims micro-frontend support, and `docs/component-analyses/actions/context-menu.md:611-613` already records multi-Angular-app pages as a known, accepted-for-v1 risk. Frame this as MFE-readiness hardening, not a live defect.
+
+**Fix** Inject `APP_ID` into `KjId` and route the module-scope counters through it — the pattern Angular CDK adopted as `_IdGenerator` in v19. Add a lint rule banning `let <name>Id/Uid/Counter = 0` at module scope in `packages/*/src`, and a spec that bootstraps two TestBed roots and asserts no minted id repeats.
 
 **Effort:** M
 
 ---
 
-### F-2 Escape and hotkey routing is per-root-injector, so two apps on one page close/open independently
+### F-2 Scroll-lock refcount is module-scoped, so duplicated bundles can strand `<html>` overflow
 
-**Severity:** low *(corrected during verification: was critical; the focus-theft and listener-count evidence was refuted)* · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/stack.ts:34,80-112`,
-`packages/components/src/command-palette/command-palette.ts:255-263`,
-`packages/core/src/primitives/overlay/strategies/trigger-event/on-hotkey.ts:40-47`
+**Severity:** medium *(corrected during verification: filed as high)* · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/strategies/scroll-lock/html-overflow.ts:3-5, 13-19`, `packages/core/src/primitives/overlay/strategies/scroll-lock/css-clip.ts:3-4, 14-17, 23-26`, `packages/core/src/primitives/overlay/container.ts:24`
 
-```ts
-// stack.ts:80-85, 99-112 — one KjOverlayStack per ROOT INJECTOR, i.e. per app
-private ensureListeners(): void {
-  if (this._listenersInstalled) return;
-  document.addEventListener('keydown', this._onKeydown, true);
-  document.addEventListener('pointerdown', this._onPointerDown, true);
-  ...
-private handleKeydown(e: KeyboardEvent): void {
-  if (e.key !== 'Escape') return;
-  const top = this.topmost();
-  if (!top || !top.opts.closeOnEsc) return;
-  top.opts.onClose();          // no check that `e` originated in THIS app's tree
-}
-```
-
-`KjOverlayStack` is `providedIn: 'root'`, so each bootstrapped Angular app owns a separate stack plus its own capture-phase `document` keydown/pointerdown pair. **When two apps each have an open overlay at the same time, a single Escape closes the topmost in both**, and two `onHotkey('mod+k')` bindings (`on-hotkey.ts:45`, `command-palette.ts:255-263`) both fire. Outside-click cross-fire has the same shape: `handlePointerDown` (`stack.ts:106-112`) closes app B's topmost overlay on any click inside app A.
-
-**Bounded impact.** Listeners are installed only while an overlay is registered and torn down at zero (`stack.ts:87-92`). No data loss, no focus stealing, no a11y regression in any shipped component. Duplicate `mod+k` is a consumer-chosen chord collision no library guard can resolve without a cross-app registry.
-
-**Verification corrections — two claims removed as unsupported.**
-- **REFUTED: "an enabled `KjFocusTrap` in app A reacts to Tab in app B and calls `first.focus()`".** `kjFocusTrap` has **zero usages anywhere in the repo** outside its own file, spec and barrel export — no shipped component applies it. Every real overlay (dialog, drawer, sheet, popover, command-palette-dialog, date-picker-calendar) uses `tabCycle()` (`strategies/focus-trap/tab-cycle.ts`), which binds `keydown` to the **panel element**, not `document`, and only acts when `document.activeElement === first/last`. It cannot react to a Tab that happened in another app, so the "yanks focus into app A's modal" consequence does not follow for any library component. (`a11y/focus-trap.ts` remains dead code worth removing or wiring — see F-15 / 04-accessibility F-9.)
-- **REFUTED: "listener count reaches four figures".** `KjFocusRing`'s two capture listeners only assign a private `_lastWasPointer` boolean (the standard focus-visible heuristic), are removed on destroy, and have no cross-app effect whatsoever; 29 consumer files, not four figures.
-- **The implied fix is also wrong.** Inspecting `e.target` does not work — Escape with focus on `<body>` after a backdrop click has a target in neither app, and target-scoping would break the primary single-app case.
-
-**Fix.** The real options are a `window`-level shared stack/hotkey registry, or a documented MFE contract stating that multi-app-per-page overlay coordination is out of scope. Fold this into the `MICRO-FRONTENDS.md` recommendation (item 6 below) rather than shipping it as a blocker.
-
-**Effort:** M
-
----
-
-### F-3 Two competing module-global scroll-lock refcounts leave `<html>` permanently `overflow: hidden`
-
-**Severity:** high · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/strategies/scroll-lock/html-overflow.ts:3-5,10-32`,
-`packages/core/src/primitives/overlay/strategies/scroll-lock/css-clip.ts:3-4,10-37`
+**Evidence**
 
 ```ts
-// html-overflow.ts:3-5, 10-14
+// packages/core/src/primitives/overlay/strategies/scroll-lock/html-overflow.ts:3-5
 let _count = 0;
 let _savedOverflow: string | null = null;
 let _savedPaddingRight: string | null = null;
-...
-if (_count === 1) {
-  _savedOverflow = html.style.overflow;   // snapshots "clip" if css-clip got here first
-  html.style.overflow = 'hidden';
 ```
 
 ```ts
-// css-clip.ts:3-4, 14-17
+// packages/core/src/primitives/overlay/strategies/scroll-lock/css-clip.ts:3-4, 15
 let _count = 0;
 let _saved: string | null = null;
-...
-if (_count === 1) {
   _saved = document.documentElement.style.overflow;
-  document.documentElement.style.overflow = 'clip';
 ```
 
-**Why it matters.** Reference counting is present (good) but the counters are
-**module-global and there are two of them**, both writing the same
-`document.documentElement.style.overflow` with no shared arbiter.
+Both strategies keep their refcount and saved value in **module scope** while mutating the **page-scoped** `document.documentElement.style`. When two independently bundled copies of `@kouji-ui/core` share a page and their locks overlap, the second copy captures the *first copy's applied value* as its "original" (`html-overflow.ts:13-14`, `css-clip.ts:15`).
 
-- **Even in one app, today:** `htmlOverflow()` is used by dialog
-  (`dialog.service.ts:35`), drawer (`drawer.service.ts:68`), sheet
-  (`sheet.service.ts:83`) and the command palette
-  (`command-palette-dialog.ts:62`); `cssClip()` is the alternative strategy a
-  consumer can wire. Open a `cssClip` overlay, then a dialog: `htmlOverflow`
-  snapshots `_savedOverflow = 'clip'`, sets `'hidden'`; close the dialog → restores
-  `'clip'`; close the cssClip overlay → restores `''`. Order-dependent, and the
-  reverse order leaves `overflow: hidden` on `<html>` **permanently** — the page
-  can never scroll again until reload.
-- **Across two copies:** each copy has its own `_count`. App A opens a dialog
-  (`_countA = 1`, saves `''`, sets `hidden`). App B opens a dialog (`_countB = 1`,
-  saves **`hidden`**, sets `hidden`). App A closes → restores `''` → **app B's modal
-  is now scrollable behind its own backdrop**. App B closes → restores `hidden` →
-  page permanently locked. A hard user-visible break, not a cosmetic one.
-- **SSR bonus.** The guard is `typeof document === 'undefined'`, not `PLATFORM_ID`
-  (which `controller.ts:36-37` and `stack.ts:36-37` use correctly). Under a DOM
-  shim on the server, `_count` is process-global and leaks across requests.
+**The precondition the finding omitted: non-LIFO release.** LIFO self-heals — A opens saving `''`, B opens saving `'hidden'`, B closes restoring `'hidden'` (still correct while A is open), A closes restoring `''`. Only A-closing-before-B strands the page: the last release writes back `'hidden'` / `'clip'`, leaving the page unscrollable with no overlay open until a reload or until app code resets `overflow`.
 
-**Fix.** One `providedIn: 'root'` `KjScrollLock` service taking `DOCUMENT` +
-`PLATFORM_ID`, owning a single refcount and a single saved-style snapshot; both
-strategies become thin callers of it. For the cross-app case, refcount in a
-`document.documentElement` data attribute (`data-kj-scroll-lock="<n>"`) so *any*
-copy sees the shared depth — the dead selector
-`body[data-kj-scroll-lock="true"]` at `packages/components/src/popover/popover.css:60`
-suggests this was the original design and got lost. (Nothing currently sets that
-attribute; either wire it or delete the rule.)
+> **Correction:** the double-padding claim is false and is dropped. Copy B computes `scrollbarWidth = window.innerWidth - html.clientWidth` **after** copy A has already set `overflow: hidden`, which removes the document scrollbar, so `clientWidth === innerWidth`, `scrollbarWidth === 0`, and the `if (scrollbarWidth > 0)` guard at `html-overflow.ts:16` short-circuits — the `getComputedStyle(html).paddingRight` read at `:17` is never reached by the second copy.
+
+**Not scroll-lock-specific.** `packages/core/src/primitives/overlay/container.ts:24` (`let _root: HTMLElement | null = null;`) is the same module-singleton-vs-page-resource pattern and is documented as deliberate. This is a systemic "one copy of `@kouji-ui/core` per page" assumption rather than an isolated defect — which, together with the duplicated-bundle + concurrent-overlays + non-LIFO-close trigger chain and zero impact on single-bundle consumers, is why high overstates it.
+
+**Fix** Key the refcount and saved values off a cross-realm global (e.g. a `Symbol.for('kj-scroll-lock')` record on `globalThis`) so every copy shares one counter, or have each release read the live computed value instead of a module-cached snapshot — and state the single-copy assumption explicitly if MFE duplication is out of scope. Neither `css-clip.spec.ts` nor `html-overflow.spec.ts` covers nesting or a second strategy instance.
 
 **Effort:** M
 
 ---
 
-### F-4 `ViewEncapsulation.None` on 80 components — two versions overwrite each other's styles in the same layer
+### F-3 `KjOverlayStack` does not coordinate across multiple Angular root injectors (documented-limitation gap)
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/components/src/button/button.ts:134-135` (+ 79 more in
-`packages/components/src`), `packages/core/src/primitives/overlay/wrapper.ts:36`
-(+ 10 more in `packages/core/src`), `packages/themes/src/density.css:7`
+**Severity:** low *(corrected during verification: filed as high)* · **Confidence:** high *(on the mechanism; the user-visible consequence needs two apps with overlays open at the same instant)*
+**Files:** `packages/core/src/primitives/overlay/stack.ts:81-107, 183-188, 202-207`, `docs/component-analyses/actions/context-menu.md:612-615`
+
+**Evidence**
 
 ```ts
-// packages/components/src/button/button.ts:134-135
-  styleUrl: './button.css',
-  encapsulation: ViewEncapsulation.None,
+// packages/core/src/primitives/overlay/stack.ts:107
+@Injectable({ providedIn: 'root' })
+export class KjOverlayStack {
 ```
 
-```css
-/* packages/themes/src/density.css:7 — the design is explicitly global */
-   Components use ViewEncapsulation.None, so a [data-density] selector
+```ts
+// packages/core/src/primitives/overlay/stack.ts:183-188
+  private ensureListeners(): void {
+    if (this._listenersInstalled) return;
+    document.addEventListener('keydown', this._onKeydown, true);
+    document.addEventListener('pointerdown', this._onPointerDown, true);
 ```
 
-Counts: `ViewEncapsulation.None` appears in **80** non-spec, non-example files under
-`packages/components/src` and **11** under `packages/core/src`; 73 of them pair it
-with a `styleUrl`. This also directly contradicts the project's own rule —
-`rules/code_style.md`: "**Encapsulation:** Do not use `ViewEncapsulation.None`.
-Component styles must stay scoped."
+```ts
+// packages/core/src/primitives/overlay/stack.ts:202-207
+  private handleKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'Escape') return;
+    const top = this.topmost();
+    if (!top || !top.opts.closeOnEsc) return;
+    top.opts.onClose();
+  }
+```
 
-**Why it matters.** `ViewEncapsulation.None` makes Angular inject the stylesheet
-into `document.head` verbatim, once per *component definition class*. Two copies of
-`@kouji-ui/components` = two distinct classes = **two `<style>` blocks with byte-wise
-identical selectors** (`.kj-button`, `.kj-dialog-panel`, …) in the same
-`@layer kj.component`. Layers tie, specificity ties, so the **later-injected sheet
-wins for both apps**. Consequences:
+`providedIn: 'root'` instantiates per **root injector**, so a page hosting several *independently bootstrapped* Angular apps gets one stack and one pair of `document` capture listeners per app. `KjOverlayController.beginOpen()` registers unconditionally, so a single Escape can dismiss the topmost overlay in each app, and each stack independently starts its z-index at `KJ_OVERLAY_Z_BASE` (1000), so cross-app overlay layering is also undefined.
 
-- Whichever remote lazily instantiates a `kj-button` *last* silently restyles every
-  button on the page, including the other app's.
-- Version skew becomes a page-wide regression: a padding change in v0.10 applies to
-  the v0.9 remote too.
-- It is order-dependent on *runtime instantiation*, not build order, so it changes
-  as the user navigates. Effectively untestable.
-- The global stylesheets registered in `angular.json`
-  (`packages/core/src/styles.css`, `packages/components/src/overlay/overlay.css`,
-  `packages/themes/src/index.css`) are loaded once per app bundle too — same
-  duplication, same last-wins.
+**Scope it correctly.** This does **not** affect the common Module Federation shape — one shell app lazy-loading federated routes or components into the shell's injector — which has a single root injector and behaves exactly as designed, even with `@kouji-ui/core` shared as a singleton. It affects only multi-`bootstrapApplication` / custom-element hosts.
 
-**Fix.** Pick one:
-- **(a) Preferred, smallest behavioural delta:** keep `None` but make the selectors
-  version-scoped. Ship a `KJ_STYLE_SCOPE`-driven attribute on every component host
-  (`data-kj-v="0.9"`, injected by a `provide` fn, defaulted to the package version at
-  build time) and emit component CSS nested under
-  `@layer kj.component { [data-kj-v="0.9"] & { … } }` via a build step. Two versions
-  then write two disjoint selector sets.
-- **(b)** Move to `ViewEncapsulation.Emulated` per the project's own rule; keep only
-  the genuinely global pieces (overlay container chrome, prose, icon) in the
-  aggregator stylesheets. This costs a `::ng-deep`-free rewrite of anything that
-  styles projected content.
-- **(c) Minimum viable:** document that `@kouji-ui/*` must be declared
-  `singleton: true, strictVersion: true` in every federation config, and fail the
-  build otherwise.
+**Why it is low, not high**
 
-**Effort:** L
+- **Not a claimed capability.** A full grep of the repo turns up exactly one mention of micro-frontends anywhere (`docs/component-analyses/actions/context-menu.md:612-615`); there is no MFE entry point, no MFE doc, no MFE spec, and `rules/stack.md` / `rules/architecture.md` say nothing about cross-root coordination.
+- **Already triaged in-repo.** That same file raises this exact issue for the sibling `KjContextMenuRegistry`: *"Provided in 'root' so all triggers across the app coordinate. Risk: micro-frontend or multi-Angular-app pages might have two registries and lose the 'one open at a time' guarantee. Acceptable for v1; document."* This is a knowingly accepted design tradeoff. The only genuine gap is that the `KjOverlayStack` docstring does not carry the same caveat.
+- **Consequence is cosmetic and recoverable** — over-dismissal of a second app's overlay. No data loss, no a11y regression, no stuck state, no security impact. Two independently bootstrapped apps would exhibit the same over-dismissal with *any* dialog implementation, since neither can see the other's overlays without a `window`-keyed global.
+
+**Fix** The actionable item is documentation, not code: add a caveat to the `KjOverlayStack` class docstring (`stack.ts:81-106`) stating that stack coordination and z-index allocation are scoped to one Angular root injector, and that multi-root pages should either share one injector or set distinct `KJ_OVERLAY_Z_BASE` values per app. If cross-root coordination is ever actually wanted, treat it as an enhancement (a `window`-keyed shared registry behind an opt-in token) and weigh it against version skew between two library copies and broken test isolation.
+
+**Separate low/nit item, unrelated to MFE:** `handleKeydown` ignores `e.defaultPrevented`, so a consumer handler that calls `preventDefault()` on Escape is still overridden. That is a single-app issue.
+
+**Effort:** S (docs) / M (if a shared registry is ever built)
 
 ---
 
-### F-5 `@kouji-ui/themes` writes `:root` tokens globally — the last-loaded copy re-themes every app on the page
+### F-4 Built-in overlay components pin `bodyPortal()`, so a shadow-DOM MFE cannot host them in its own subtree
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/themes/src/base.css:7,28-30`,
-`packages/themes/src/density.css:40-41,120-131`,
-`packages/themes/src/themes/*.css` (17 theme files),
-`packages/themes/src/index.css:1-17`
+**Severity:** low *(corrected during verification: filed as high; two of its three sub-claims did not survive)* · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/container.ts:24-33`, `packages/core/src/primitives/overlay/tokens.ts` (`KJ_OVERLAY_MOUNT_STRATEGY`), `packages/core/src/primitives/overlay/strategies/mount/in-container.ts`, `packages/core/src/popover/popover-content.ts:20`, `packages/core/src/select/select-content.ts:36`, `packages/core/src/tooltip/tooltip-content.ts:21`, `packages/core/src/dialog/dialog.service.ts:28`
 
-```css
-/* packages/themes/src/base.css:7,28-30 */
-@layer kj.reset, kj.base, kj.shared, kj.component;
-@layer kj.base {
-  :root {
-    /* ── color palette ── */
+**What is actually missing**
+
+The overlay layer **already has the DI seam** this finding originally said was absent: `KJ_OVERLAY_MOUNT_STRATEGY` with `KjMountStrategy.resolveContainer()`, plus a purpose-built, tested, publicly exported strategy `inContainer(target: HTMLElement | (() => HTMLElement))` (`strategies/mount/in-container.ts`, covered by `in-container.spec.ts`, exported through `strategies/index.ts` → `primitives/overlay/index.ts` → `packages/core/src/public-api.ts`). `KjOverlayBuilder.create(config)` takes `config.mount`, and `KjOverlayPanel` (`panel.ts:91`) injects the token — so a consumer building overlays on the primitives **can already mount into an arbitrary element or shadow root today**.
+
+The real, much narrower gap is that every *shipped component* pins `bodyPortal()` in its own **component-level** `providers`:
+
+```ts
+// packages/core/src/select/select-content.ts:36 (same shape in popover-content.ts:20,
+// tooltip-content.ts:21, dropdown-menu-content.ts, dialog/drawer/sheet/toast services)
+    { provide: KJ_OVERLAY_MOUNT_STRATEGY, useFactory: () => bodyPortal() },
 ```
 
-```css
-/* packages/themes/src/themes/dark.css:6-7 — attribute-scoped, and therefore fine */
-@layer kj.shared {
-  [data-theme="dark"] {
-```
+A component-level provider cannot be overridden from an ancestor injector, so a host cannot redirect the built-in overlays without wrapping them. A shadow-DOM-isolated MFE therefore cannot host `<kj-select>`, `<kj-popover>`, a dialog or a toast inside its own subtree — it would have to rebuild them on `KjOverlayBuilder` / `KjOverlayPanel`.
 
-**Why it matters.** `:root` is `<html>` — there is exactly one per page. Two apps
-each shipping `@kouji-ui/themes` (`index.css` pulls in base + density + all 17
-themes) both declare `:root { --kj-base-* }` inside `@layer kj.base`. Same layer,
-same specificity → **later stylesheet wins, for both apps**. A token-value change
-between 0.1.1 and 0.2.0 silently repaints the other app.
+**Fix** Let each component resolve its mount strategy from an app-level token (e.g. a `KJ_OVERLAY_DEFAULT_MOUNT`, or a `KJ_OVERLAY_CONTAINER` factory consulted by `bodyPortal()` / `getOverlayContainer()`) instead of hardcoding it.
 
-The `[data-theme="x"]` blocks are better — they're attribute-scoped, so an app that
-sets `data-theme` on *its own root element* rather than on `<html>` gets correct
-scoping, and `bodyPortal` even propagates it to portalled panels
-(`body-portal.ts:57-61`). The structural problem is only the `:root`/`kj.base` half
-plus `density.css`'s `:root` block (`density.css:40-41`).
-
-Note the *good* news, which should be preserved: because `@layer` statements merge
-by name, a second copy re-declaring `@layer kj.reset, kj.base, kj.shared, kj.component;`
-is a no-op — **layer ordering stays deterministic no matter which bundle loads
-first**. That removes the load-order lottery that usually makes this scenario
-hopeless; only the same-layer tie remains.
-
-**Fix.**
-1. Change `:root` → `:root, [data-kj-scope]` in `base.css` and `density.css`, and
-   document `[data-kj-scope]` as the per-app mount attribute. An app that puts
-   `data-kj-scope data-theme="dark"` on its own root element then owns its tokens
-   and cannot be overwritten by a sibling's `:root` block (attribute selector beats
-   `:root` on specificity).
-2. Publish `@kouji-ui/themes` with the major version in the token prefix, or ship a
-   `--kj-v` guard, so a value change can't be mistaken for the same token.
-3. Add a documented "shell owns the tokens, remotes own nothing" mode: remotes
-   import no theme CSS at all and inherit from the shell's scope.
+> **Corrections — the z-index half of this finding does not hold and is restated as a documentation note.**
+>
+> - Containers are created **lazily** on the first `getOverlayContainer()` call (first overlay opened), not at bootstrap, so "whichever app bootstrapped second always paints above the first" does not follow. Two duplicated (non-shared) copies each append their own `.kj-overlay-container` on first overlay open, and DOM insertion order then decides which app's overlays paint above.
+> - Each `.kj-overlay-container` is its own stacking context (`position: fixed` + `z-index`), so the inner 1000/1001 levels are irrelevant across apps — `--kj-overlay-z-base` / `KJ_OVERLAY_Z_BASE` were never the knob for this. The relevant knob is `--kj-overlay-z-index` on the container, which is already in the line the finding quoted: `overlay.css:21` is `z-index: var(--kj-overlay-z-index, var(--kj-overlay-z-base, 1000))`. It is settable per copy via the exported `getOverlayContainer()`, and it is documented (`packages/core/CHANGELOG.md:68-69`) and tested (`stack.spec.ts:113, 123`), contradicting "nothing tells a host to use it".
+> - The premise needs two module copies at all. Sharing `@kouji-ui/core` as a federation singleton removes the duplicate entirely — which is precisely what the module-level singleton buys. Converting the container to a DI-provided service would give one container **per Angular root injector**, i.e. two containers even when the library is shared: strictly worse for the collision this complained about.
 
 **Effort:** M
 
 ---
 
-### F-6 99 module-scope `InjectionToken`s — a shell's `provide*` call never reaches a remote on a different copy
+### F-5 kouji-ui has no supported story for two *different versions* of the library in one document
 
-**Severity:** high · **Confidence:** high
-**Files:** 99 occurrences of `new InjectionToken` across `packages/core/src` and
-`packages/components/src`; representative:
-`packages/core/src/icon/icon.tokens.ts:12,26,57,71`,
-`packages/core/src/locale/locale.config.ts:39`,
-`packages/core/src/chat/chat-registry.ts:46`,
-`packages/core/src/editor/editor.tokens.ts:28`,
-`packages/core/src/chart/echarts.ts:45`,
-`packages/core/src/table/table-storage.ts:74`
+**Severity:** low *(corrected during verification: filed as high as "the `@layer kj.*` cascade is global and unversioned"; the layer framing was **REFUTED** — the original text and the refuting reasoning are preserved under "Refuted during verification" at the end of this report)* · **Confidence:** high
+
+**The accurate version.** Component rules key off **unversioned class names** (`.kj-button` and 61 other stylesheets under `@layer kj.component`), and `packages/themes/src/base.css:29` / `density.css:41` write the primitive palette and density scalars onto bare `:root`. If a host page loads two different versions of the library, whichever sheet is registered later wins for same-name declarations document-wide.
+
+**This is a property of the class names, not of the cascade layers.** Strip every `@layer` line from the repo and the two-version collision is byte-identical — as it is for every CSS library that ships stable class names (Bootstrap, Material, Tailwind). Versioning the *layer* names would not fix it and would make the winner **less** predictable: with `@layer kj-v1.component, kj-v2.component` the winner is fixed document-wide by whichever `@layer` statement registered first. The only real fixes are versioned **class names** or shadow DOM.
+
+**Caveats that bound it further**
+
+- Two copies of the **same** version are harmless — the emitted rules and `:root` values are identical, so there is no observable effect. The consequence needs *version skew*, not merely two copies.
+- **Renaming** a token between versions is harmless: differently-named custom properties coexist on `:root`, so v1's `base.css` keeps declaring v1's names and v2's declares v2's. Only a same-name / different-value redeclaration collides.
+- Per-theme values are already safely scoped to `[data-theme="X"]` under `kj.shared` (verified: `grep '^\s*:root' packages/themes/src` matches only `base.css:29` and `density.css:41`), so only the slow-moving primitive / spacing layer is exposed — the least-churning surface in the repo.
+
+**Not the first thing that breaks.** Two copies means two Angular injectors duplicating `providedIn: 'root'` singletons — `KjOverlayStack` (`packages/core/src/primitives/overlay/stack.ts:38, 107`), `KjOverlayBuilder` (`builder.ts:82`), `KjDialogService`, `KjDrawerService`, `KjContextMenuRegistry`, `KjLocale`, `KjTranslate`. Overlay stacking, z-index ordering and focus-trap ownership break well before a padding delta is noticed. The 184 `ViewEncapsulation.None` sites confirm global styling is the deliberate, documented architecture, not an oversight in the layer statement.
+
+**Suggested action** Extend the existing accepted-v1 note at `docs/component-analyses/actions/context-menu.md:611-614` into a short "single copy per document" line in the install docs. Do **not** file this as a cascade bug.
+
+**Effort:** S
+
+---
+
+### F-6 Thirteen stylesheets ship with no `@layer`, so they beat every layered rule on the page
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/components/src/table/table.css:1`, `packages/components/src/calendar/calendar.css:1`, `packages/components/src/command-palette/command-palette.css:1`, `packages/components/src/date-picker/date-picker.css`, `packages/components/src/date-range-presets/date-range-presets.css`, `packages/components/src/datetime-picker/datetime-picker.css`, `packages/components/src/editor/editor.css`, `packages/components/src/input-mask/input-mask.css`, `packages/components/src/table/table-filters/filters.css`, `packages/core/src/icon/icon.css:1`
+
+**Evidence**
+
+```css
+/* packages/components/src/table/table.css:1-2 — no @layer wrapper */
+/* Density + variant tokens. All spacing via --kj-base-space-*.
+ *
+```
+
+```css
+/* packages/components/src/calendar/calendar.css:1 */
+.kj-calendar {
+```
+
+Of the 93 stylesheets, 13 contain no `@layer`; four of those are pure `@import` aggregators (`packages/core/src/styles.css`, `packages/components/src/overlay/overlay.css`, `packages/themes/src/index.css`, and they inherit their imports' layers) — the remaining **nine ship real unlayered rules**.
+
+**Why it matters**
+Unlayered CSS beats *all* layered CSS regardless of specificity. So `.kj-table` from the table stylesheet outranks anything in `kj.component`, including a consumer's own `@layer` override and the other copy's layered rules. In an MFE that inverts the intended precedence unpredictably: the copy whose *unlayered* sheet loads later wins over both copies' layered sheets. It also means the cascade-namespacing fix in F-5 would leave these nine files unprotected.
+
+Within a single app this is already a customization hazard — a consumer who follows the `@layer` convention cannot override the table or the calendar.
+
+**Fix**
+Wrap all nine in `@layer kj.component { … }`. Mechanical, one commit, no behaviour change for consumers who do not use layers. Add a lint rule or a CI grep (`for f in packages/**/*.css; do grep -q '@layer' "$f" || fail; done`) so the invariant holds.
+
+**Effort:** S
+
+---
+
+### F-7 100 module-scope `InjectionToken`s: two copies mean every `provideKj*` silently misses
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/icon/icon.tokens.ts:12,26,57,71`, `packages/core/src/toast/toast.strategy.ts:70`, `packages/core/src/primitives/overlay/stack.ts:37`, `packages/core/src/table/table-storage.ts:69`, `packages/core/src/chart/echarts.ts:45`, `packages/core/src/chat/chat-registry.ts:46`, `packages/core/src/field/field.context.ts`, `packages/core/src/primitives/list/tokens.ts` (+ 92 more)
+
+**Evidence**
 
 ```ts
 // packages/core/src/icon/icon.tokens.ts:26-29
@@ -370,200 +248,141 @@ export const KJ_ICON_REGISTRY = new InjectionToken<
   providedIn: 'root',
 ```
 
-**Why it matters.** `InjectionToken` identity is **object identity**, not the
-description string. Two copies of the module create two different objects that both
-call themselves `'KJ_ICON_REGISTRY'`. Angular's DI does not deduplicate them and
-does not warn — the injector simply misses and falls back to the token's
-`providedIn: 'root'` factory. Failures are therefore **silent defaults**, not errors:
-
-| Shell calls | Remote on a different copy gets instead | Visible symptom |
-|---|---|---|
-| `provideLucideIcons()` / `provideIcons(...)` | empty registry, then `KJ_ICON_RESOLVER` default `(name) => name` (`icon.tokens.ts:59`) | every icon renders as its literal name |
-| `provideKjLocale({locale:'fr'})` | `KJ_LOCALE_CONFIG` default → Angular `LOCALE_ID` | dates/numbers/currency in the wrong locale, `isRtl` wrong |
-| `provideKjTranslations(...)` | `KjTranslateService` with only `EN_CATALOG` (`translate.service.ts:56`) | ARIA strings + visible labels revert to English |
-| `provideECharts(...)` | `KJ_ECHARTS` default `null` → `await import('echarts')` (`chart.ts:135`) | a second ~1 MB echarts download |
-| `provideMonaco(...)` | `KJ_MONACO_CONFIG` default → CDN `@monaco-editor/loader` | a second Monaco, plus CDN egress the shell explicitly opted out of |
-| `provideKjChat({renderers})` | `{ renderers: {} }` (`chat-registry.ts:48`) | custom chat item types render as plain text |
-| `provideKjTableStorage(...)` | default localStorage adapter | see F-13 |
-| `provideKjDocumentDirection()` | — (shell's effect still writes `<html dir>`) | see F-9 |
-
-That is the full blast radius of the **29 exported `provide*` functions**
-(`provideECharts provideIconLoader provideIconResolver provideIcons provideKjAlert
-provideKjBreadcrumb provideKjButton provideKjChat provideKjChatBubble
-provideKjDocumentDirection provideKjFilterParams provideKjInputMaskTokens
-provideKjLink provideKjLocale provideKjPagination provideKjProgressBar
-provideKjRichText provideKjSpinner provideKjTableStorage provideKjTabs provideKjTag
-provideKjTextarea provideKjToastListStrategy provideKjToastSonnerStrategy
-provideKjToastStrategy provideKjTranslations provideLucideIcons provideMonaco
-provideMonacoLanguages`). Every one of them becomes a no-op across a copy boundary.
-
-**Fix.**
-1. **Document the contract**: `@kouji-ui/core` and `@kouji-ui/components` MUST be
-   declared `singleton: true` in every federation config, and the shell must own
-   every `provide*` call. This is the only real answer for token identity — there
-   is no way to make two distinct `InjectionToken` objects equal.
-2. **Make the failure loud.** Add a dev-mode `globalThis.__KJ_VERSIONS__` set that
-   each copy pushes its version into on first load, and warn once in `ngDevMode`
-   when the set size > 1, listing the versions. Ten lines, and it converts every
-   symptom in the table above from "mysterious" to "one console line".
-3. For the handful of tokens a shell genuinely wants to share across copies
-   (icons, locale, translations), offer a documented escape hatch that reads from a
-   well-known `globalThis` key rather than DI.
-
-**Effort:** M (S for the fingerprint warning alone, which is the highest
-value-per-line item in this report)
-
----
-
-### F-7 Service-launched overlays escape their app's theme, density and direction scope
-
-**Severity:** high · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/builder.ts:113-118`,
-`packages/core/src/primitives/overlay/container.ts:19-28`,
-`packages/core/src/primitives/overlay/strategies/mount/in-place.ts:12-18`
-(contrast: `strategies/mount/body-portal.ts:13-21,57-61`)
-
 ```ts
-// builder.ts:113-118 — no theme / density / dir propagation
-const wrapperRef = createComponent(KjOverlayWrapper, { ... });
-this.appRef.attachView(wrapperRef.hostView);
-wrapperRef.changeDetectorRef.detectChanges();
-getOverlayContainer()?.appendChild(wrapperRef.location.nativeElement);
-```
-
-```ts
-// body-portal.ts:57-61 — the declarative path DOES do it
-const theme = closestTheme(ctx.triggerEl() ?? originalParent);
-if (theme) w.setAttribute('data-theme', theme);
-else w.removeAttribute('data-theme');
-```
-
-**Why it matters.** F-5's recommended MFE pattern — and the pattern
-`body-portal.ts` was written for — is "each app sets `data-theme` / `data-density` /
-`dir` on **its own root element**". But `KjOverlayBuilder` appends every
-service-launched overlay (dialog via `dialog.service.ts:35`, drawer
-`drawer.service.ts:68`, sheet `sheet.service.ts:83`, toast
-`toast.service.ts:openOverlay`, action-sheet) directly into the singleton
-`.kj-overlay-container`, which lives at `document.body` level — **outside both apps'
-root elements**. Those overlays therefore inherit `<html>`'s tokens, not their
-owning app's. In a two-app page where the shell is light and the remote is dark,
-every one of the remote's dialogs, drawers, sheets and toasts renders light. Same
-for `[data-density]` and for RTL (`dir`) — a drawer that should slide from the right
-in an Arabic remote slides from the left.
-
-Also: `_root` is a module-level `let` (`container.ts:19`), so whether one container
-or two exist on the page depends entirely on whether the bundler shared the module —
-an invisible, config-dependent difference in DOM structure.
-
-**Fix.**
-1. Extract `closestTheme()` into a shared `inheritScope(from, to)` helper that
-   copies `data-theme`, `data-density` and `dir` (and, once F-5 lands,
-   `data-kj-scope`) — then call it from `KjOverlayBuilder.create()` using the
-   launching injector's root element, not just from `bodyPortal`.
-2. Convert `getOverlayContainer()` into a `providedIn: 'root'` `KjOverlayContainer`
-   service over `DOCUMENT`/`PLATFORM_ID`, so each app deterministically owns one
-   container it can scope, instead of the current "depends on your bundler".
-
-**Effort:** M
-
----
-
-### F-8 No z-index stratification seam — 20 hard-coded literals and one global `--kj-overlay-z-index`
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/overlay.css:18-23`,
-`packages/components/src/dialog/dialog.css:9`, `drawer/drawer.css:16,56`,
-`dropdown-menu/dropdown-menu.css:28`, `popover/popover.css:28`,
-`confirm-popup/confirm-popup.css:22`, `color-picker/color-picker.css:32`,
-`command-palette/command-palette.css:18,33`, `cascade-select/cascade-select.css:46,64`,
-`combobox/combobox.css:48`, `select/select.css:63`,
-`date-picker/date-picker.css:42`, `datetime-picker/datetime-picker.css:43`
-
-```css
-/* overlay.css:18-23 — the only tokenised one */
-.kj-overlay-container {
-  position: fixed; inset: 0;
-  z-index: var(--kj-overlay-z-index, 1000);
-  pointer-events: none;
-}
-```
-```css
-/* dialog.css:9 */            z-index: 1000;
-/* drawer.css:56 */           z-index: 999;
-/* select.css:63 */           z-index: 100;
-/* command-palette.css:33 */  z-index: 1001;
-```
-
-**Why it matters.** Two apps produce two `.kj-overlay-container` elements (when the
-module isn't shared), both at `z-index: 1000` on `document.body` — stacking then
-falls to DOM insertion order, i.e. whichever app mounted first loses forever. App
-B's modal dialog can render *beneath* app A's tooltip. And because the container
-lives outside both apps' subtrees, an app-scoped `--kj-overlay-z-index` set on its
-own root element never reaches it — there is no per-app override seam at all, only
-the one global `:root` value.
-
-The 20 literal z-indexes in component CSS compound this: they are also global (per
-F-4) so they can't be re-based per app either.
-
-**Fix.** Replace every literal with a `var(--kj-z-*, default)` token
-(`--kj-z-dropdown`, `--kj-z-overlay`, `--kj-z-modal`, `--kj-z-toast`), give
-`KjOverlayContainer` (F-7) an injectable base-z input, and document a shell-assigned
-band per remote (shell 1000–1999, remote-a 2000–2999, …). Once the container is a
-per-app injectable, this becomes a one-provider change for consumers.
-
-**Effort:** S (tokens) + folded into F-7 for the container
-
----
-
-### F-9 `provideKjDocumentDirection()` claims to be "the single writer of `<html dir>`" — two apps make that false
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/locale/document-direction.ts:18-19,41-58`,
-`packages/core/src/primitives/directionality/directionality.ts:55-72,81-88`
-
-```ts
-// document-direction.ts:18-19 (TSDoc) — true per app, false per page
- * This is the single writer of `<html dir>`; {@link KjDirectionality} stays the
- * *reader* that feeds `KjLocale`'s `'auto'` derivation.
-
-// document-direction.ts:50-56
-effect(() => {
-  const dir = locale.direction();
-  const html = doc.documentElement;
-  if (html.getAttribute('dir') !== dir) html.setAttribute('dir', dir);
+// packages/core/src/primitives/overlay/stack.ts:37-40
+export const KJ_OVERLAY_Z_BASE = new InjectionToken<number>('KJ_OVERLAY_Z_BASE', {
+  providedIn: 'root',
+  factory: () => KJ_OVERLAY_Z_BASE_DEFAULT,
 });
 ```
 
-**Why it matters.** Both apps registering this provider both write `<html dir>`;
-the last effect to run wins, and the loser's `KjDirectionality` MutationObserver
-(`directionality.ts:59-69`) dutifully picks up the *other* app's value. An Arabic
-remote inside an English shell renders LTR (or flips the entire shell to RTL),
-depending on bootstrap order. It does not oscillate — each effect depends only on
-its own `locale.direction()` — so the breakage is quiet and order-dependent, which
-makes it harder to diagnose than a loop would be. There is no *technical* conflict
-with two apps having genuinely different directions: `dir` is inheritable and
-`KjLocale.setDirection()` already supports an explicit per-app value; the problem is
-purely that the write target is `<html>` rather than the app's own root, and that
-`KjDirectionality.read()` (`directionality.ts:81-88`) only ever consults
-`documentElement` / `body`.
+`grep -rn "new InjectionToken" packages/core/src packages/components/src --include=*.ts | grep -v spec | wc -l` → **100**.
 
-**Fix.** Add `provideKjDirectionScope(elementRefOrSelector)` that writes `dir` onto
-the app's own root element instead of `documentElement`, and make
-`KjDirectionality.read()` walk up from the injecting element
-(`element.closest('[dir]')`) rather than reading `documentElement`/`body`. Keep
-`provideKjDocumentDirection()` for the single-app case and add a TSDoc note that it
-must be registered by exactly one app per page.
+**Why it matters**
+`InjectionToken` identity is object identity. Two ES-module copies produce 100 pairs of distinct tokens with identical debug names — and Angular's error messages print the *name*, so a DI miss reads as "NullInjectorError: No provider for KJ_ICON_REGISTRY" against a token that visibly *is* provided. Blast radius, in descending order:
+
+- **Configuration tokens** (`KJ_ICON_REGISTRY`, `KJ_ICON_LOADER`, `KJ_TOAST_STRATEGY`, `KJ_OVERLAY_Z_BASE`, `KJ_TABLE_STORAGE`, `KJ_ECHARTS`, `KJ_MONACO_CONFIG`, `KJ_MONACO_LANGUAGE_LOADERS`, `KJ_CHAT_CONFIG`, `KJ_INPUT_MASK_*`): the shell calls `provideLucideIcons()` / `provideECharts()` once at bootstrap and the remote's components see the **default** factory instead. Icons render as bare names (`icon.tokens.ts:59` — the default resolver returns the name unchanged), charts fall back to the full 1 MB `import('echarts')`, toasts use different stacking. Degraded, not fatal.
+- **Context tokens** (`KJ_FIELD`, `KJ_TABS`, `KJ_ACCORDION`, `KJ_LIST_NAVIGATOR_CONFIG`, `KJ_SELECT`, …, per `rules/architecture.md`'s signal-context pattern): these are how parent and child directives talk. If a host ever projects a remote's `<ng-content>` child into a shell's `[kjField]` parent — the whole point of composition across a boundary — the child's `inject(KJ_FIELD)` returns `null` because it is looking for the *other copy's* token. Composition across the boundary is impossible without a shared singleton.
+
+**Fix**
+There is no code fix that makes two copies share token identity. The remediation is documentation + configuration:
+1. Publish an MFE guide stating `@kouji-ui/core` and `@kouji-ui/components` **must** be `shared: { singleton: true, strictVersion: false }` in every federation config, with a `requiredVersion` range.
+2. Make the failure loud: where a context token is genuinely required, `inject(KJ_FIELD)` currently returns `null` silently in several places — add a dev-mode `console.warn` naming the likely cause ("no `[kjField]` ancestor, or two copies of @kouji-ui/core are loaded").
+3. Consider exporting a `KJ_CORE_VERSION` const and a tiny `assertSingleKoujiCore()` dev-mode check that writes a marker to `document.documentElement.dataset` and warns on a second, differing write. Ten lines, and it turns a whole class of invisible DI misses into one console message.
 
 **Effort:** M
 
 ---
 
-### F-10 Live-region registry is a module-level map appended to `document.body`
+### F-8 Unscoped document hotkey listeners: two MFEs both answer one ⌘K
 
 **Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/primitives/overlay/strategies/live-announcer/_announce.ts:15-28,30-35`
+**Files:** `packages/core/src/primitives/overlay/strategies/trigger-event/on-hotkey.ts:40-47`, `packages/components/src/command-palette/command-palette.ts:289-300`
+
+**Evidence**
 
 ```ts
+// packages/core/src/primitives/overlay/strategies/trigger-event/on-hotkey.ts:40-47
+  const install = () => {
+    if (installed || typeof document === 'undefined') return;
+    listener = (e: KeyboardEvent) => {
+      if (matches(e, parsed)) { e.preventDefault(); toggle?.(); }
+    };
+    document.addEventListener('keydown', listener);
+    installed = true;
+  };
+```
+
+```ts
+// packages/components/src/command-palette/command-palette.ts:291-300
+      const handler = (e: KeyboardEvent) => {
+        const chord = this.kjHotkey();
+        if (chord && this.matchesHotkey(e, chord)) {
+          e.preventDefault();
+          this.kjOpen.update(v => !v);
+        }
+      };
+      document.addEventListener('keydown', handler);
+```
+
+**Why it matters**
+Both handlers bind on `document`, both call `preventDefault()`, neither calls `stopPropagation()` and neither checks `e.defaultPrevented`. With a shell command palette and a remote command palette — a completely ordinary MFE shape, since `mod+k` is the de-facto default — one keypress toggles **both**, opening two modal palettes stacked on each other with two focus traps competing. The same applies to any two `onHotkey()`-driven overlays that happen to pick the same chord.
+
+**Fix**
+Guard both handlers with `if (e.defaultPrevented) return;` as the first line and keep the existing `preventDefault()`. That gives first-listener-wins semantics for free and costs one line in each place. Document that MFE consumers should pass distinct `kjHotkey` chords. Add a spec dispatching one `mod+k` against two palettes and asserting one opens.
+
+**Effort:** S
+
+---
+
+### F-9 Command palette focuses by global `document.querySelector` on an unscoped class
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/components/src/command-palette/command-palette.ts:303-309`
+
+**Evidence**
+
+```ts
+// packages/components/src/command-palette/command-palette.ts:303-309
+    effect(() => {
+      if (!this.kjOpen()) return;
+      if (!isPlatformBrowser(this.platformId)) return;
+      queueMicrotask(() => {
+        document.querySelector<HTMLInputElement>('.kj-command-palette__dialog .kj-command-palette__input')?.focus();
+      });
+    });
+```
+
+**Why it matters**
+This is the only global DOM query in either package (`document.getElementById` in `packages/core/src/skip-link/skip-link.ts:78` is correct — it resolves a caller-supplied id by design). `querySelector` returns the **first match in document order**, not this instance's input. Two palettes on the page — two MFEs, or even one app that renders a second palette — and opening the second one moves focus into the *first* one's search box, which is `hidden` when closed. Focus then lands on a hidden element or is dropped to `<body>`, so the opened palette cannot be typed into (WCAG 2.4.3 Focus Order, 2.1.1 Keyboard).
+
+This is a defect in a single app too, not only under MFE; it just becomes near-certain with two independently-deployed apps.
+
+**Fix**
+Replace with a `viewChild<ElementRef<HTMLInputElement>>('paletteInput')` on the template's `.kj-command-palette__input` and focus `viewChild()?.nativeElement`. Same microtask timing, instance-scoped. Add a spec rendering two palettes and asserting the second one's own input receives focus.
+
+**Effort:** S
+
+---
+
+### F-10 `body[data-kj-scroll-lock]` is styled but never written, and its comment names a class that does not exist
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/components/src/popover/popover.css:57-61`
+
+**Evidence**
+
+```css
+/* packages/components/src/popover/popover.css:57-61 */
+  /* Modal-mode body scroll lock. Multiple stacked modals coordinate via
+     a counter in KjOverlayService; this just hides body overflow when the
+     attribute is present. */
+  body[data-kj-scroll-lock="true"] {
+    overflow: hidden;
+  }
+```
+
+`grep -rn "data-kj-scroll-lock" packages/ apps/` finds **only this rule** — nothing in any `.ts` file ever sets the attribute. `grep -rn "KjOverlayService" packages/ --include=*.ts` finds **one hit, in a spec comment** (`packages/core/src/menubar/menubar.spec.ts:10`); the class does not exist. The actual scroll lock writes `document.documentElement.style.overflow` inline (F-2), never a body attribute.
+
+**Why it matters**
+Small, but directly in the path of the MFE fix. A dead selector plus a comment describing a refcounting service that was deleted is exactly the kind of thing someone building cross-copy scroll-lock coordination will find, believe, and build on. It also ships in the published `@kouji-ui/components/src/overlay/overlay.css` bundle (`packages/components/src/overlay/overlay.css:37`), so consumers see a documented-looking hook that does nothing.
+
+**Fix**
+Either delete the rule and the comment, **or** — better, and this is what F-2 wants anyway — make it the real mechanism: have the scroll-lock strategies set `document.documentElement.dataset.kjScrollLock` with a page-wide refcount and move this rule to `html[data-kj-scroll-lock]` in `packages/core/src/primitives/overlay/overlay.css` where the other container chrome lives.
+
+**Effort:** S
+
+---
+
+### F-11 Live-region singletons are per-copy, and are not discovered from the DOM
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/strategies/live-announcer/_announce.ts:15-28`
+
+**Evidence**
+
+```ts
+// packages/core/src/primitives/overlay/strategies/live-announcer/_announce.ts:15-28
 const regions: Partial<Record<KjLivePoliteness, HTMLElement>> = {};
 
 const ensureRegion = (politeness: KjLivePoliteness): HTMLElement => {
@@ -573,329 +392,366 @@ const ensureRegion = (politeness: KjLivePoliteness): HTMLElement => {
   region.setAttribute('data-kj-live-region', politeness);
   ...
   document.body.appendChild(region);
+  regions[politeness] = region;
 ```
 
-**Why it matters.** Three problems, in descending order:
-- **Two copies → two `[data-kj-live-region="polite"]` nodes** on `document.body`.
-  Screen readers track every live region on the page; two toasts firing near
-  simultaneously from two apps can interleave or drop announcements, and there is no
-  way for an app to label its region (`aria-label` / app name) so the user can tell
-  which app is speaking.
-- **No `isConnected` re-check** (unlike `container.ts:23`, which does have one), so
-  if anything removes the node the announcer goes permanently silent.
-- **SSR:** the guard is `typeof document === 'undefined'` (`:31`), not `PLATFORM_ID`.
-  Under a DOM shim, `regions` is process-global and retains DOM across requests.
+**Why it matters**
+The element already carries a discoverable marker (`data-kj-live-region`), but `ensureRegion` only consults its own module-level `regions` map. Two copies ⇒ four `<div data-kj-live-region>` elements in `<body>`. Not a correctness failure — each app announces into its own region and screen readers handle multiple live regions — but it multiplies with every copy, and the node is never removed (no teardown at all), so it also leaks across app unmount/remount cycles, which is the normal lifecycle for a federated remote.
 
-**Fix.** Convert to a `providedIn: 'root'` `KjLiveAnnouncer` over
-`DOCUMENT`/`PLATFORM_ID` that owns its own pair of regions (per app), tags them with
-`APP_ID`, and re-creates on `!isConnected`. Same refactor shape as F-3 and F-7 —
-land them together.
+**Fix**
+Look the region up in the DOM before creating one: `document.querySelector(\`[data-kj-live-region="${politeness}"]\`) ?? create()`. Three lines, makes the region genuinely page-wide, and works across copies without any shared module state. (Keep the module map as a fast path.)
 
 **Effort:** S
 
 ---
 
-### F-11 Command palette focuses by global `document.querySelector`
+### F-12 `lucide-static` is a required, statically-imported peer — ~300 KB duplicated per copy
 
 **Severity:** medium · **Confidence:** high
-**Files:** `packages/components/src/command-palette/command-palette.ts:266-273`
+**Files:** `packages/components/src/icon/lucide/provide-lucide-icons.ts:8,47-59`, `packages/components/package.json:35` (peer, not in `peerDependenciesMeta`)
+
+**Evidence**
 
 ```ts
-effect(() => {
-  if (!this.kjOpen()) return;
-  if (!isPlatformBrowser(this.platformId)) return;
-  queueMicrotask(() => {
-    document.querySelector<HTMLInputElement>('.kj-command-palette__dialog .kj-command-palette__input')?.focus();
-  });
-});
+// packages/components/src/icon/lucide/provide-lucide-icons.ts:8
+import * as lucideIcons from 'lucide-static';
 ```
-
-**Why it matters.** `document.querySelector` returns the **first** match in the
-whole document. Two apps each mounting a command palette (a near-certainty — both
-will bind `mod+k`, see F-2) means app B opening its palette focuses **app A's**
-input. The user types into an invisible or unrelated field. It also fails inside a
-single app if a palette is ever rendered twice (e.g. a docs page showing the
-example). Everything needed to do this correctly is already in scope — the
-component has its own `ElementRef` and could use a `viewChild`.
-
-**Fix.** `viewChild<ElementRef<HTMLInputElement>>('input')` on the panel component
-and `.nativeElement.focus()`, or scope the query to the overlay wrapper this
-controller owns (`controller.panelEl()?.querySelector(...)`).
-
-**Effort:** S
-
----
-
-### F-12 Stale required `@angular/cdk` peer dep, and a hard `^22.0.0` Angular pin with no mixed-major story
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/package.json` (peerDependencies, description, keywords),
-`packages/components/package.json` (peerDependencies), `rules/stack.md`
-
-```jsonc
-// packages/core/package.json — peerDependencies
-"@angular/common": "^22.0.0",
-"@angular/core":   "^22.0.0",
-"@angular/cdk":    "^22.0.0",      // ← zero imports anywhere in the source
-"@angular/forms":  "^22.0.0",
-```
-
-`grep -rn "from '@angular/cdk" packages/*/src` → **0 matches**. A case-insensitive
-`cdk` grep over all `.ts`/`.html` in both packages returns nothing outside docs
-prose. `rules/stack.md` says plainly: "**Zero external UI deps** — No Angular CDK."
-Yet the package `description` still says "directives over CDK" and `keywords` lists
-`"cdk"`.
-
-**Why it matters for MFE.**
-- Every federation config has to negotiate `@angular/cdk` as another shared
-  singleton — a version constraint that can *block* an otherwise-valid pairing —
-  for a dependency the library never loads. It also forces every consumer to
-  install ~1 MB they don't use.
-- The `^22.0.0` pin on `@angular/core` is the real coupling. Angular is not
-  designed for two majors on one page: `@angular/core` must be
-  `singleton: true, strictVersion: true` or you get duplicated DI, duplicated
-  `ApplicationRef`, and hydration corruption. So **a remote on kouji-ui (Angular 22)
-  cannot coexist with a remote on Angular 21** except through hard isolation
-  (iframes, or true custom-element boundaries with separate platform instances) —
-  and the library offers no custom-element build (`createCustomElement` /
-  `@angular/elements` appears nowhere in the repo). This is a legitimate design
-  position, but it is undocumented, and it is the *first* thing an MFE adopter needs
-  to know.
-- Widening the peer to `>=21 <23` is cheap insurance if a CI matrix confirms it —
-  a narrow pin buys nothing and costs pairings.
-
-**Fix.**
-1. Drop `@angular/cdk` from both `peerDependencies`; remove `"cdk"` from
-   `keywords` and "over CDK" from `description`.
-2. Widen the Angular peer range to the real verified floor, backed by a CI matrix
-   build.
-3. Add a `MICRO-FRONTENDS.md` stating the contract plainly: Angular must be a
-   strict-version singleton; `@kouji-ui/*` should be a singleton; if you cannot
-   guarantee that, the supported isolation boundary is X.
-
-**Effort:** S
-
----
-
-### F-13 Table state persists to `localStorage` with an empty default key prefix
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/table/table-storage.ts:25-40,49-52,59-62`,
-`packages/components/src/table/table.ts:615-616,853-855,868-870`
 
 ```ts
-// table-storage.ts:50-52
-export function localStorageAdapter(opts: LocalStorageAdapterOptions = {}): KjStorageAdapter {
-  return wrap(safeLocal, opts.keyPrefix ?? '');      // ← default: no prefix at all
-}
-// table-storage.ts:59-61 — and this is the DEFAULT when nobody provides one
-function defaultAdapter(): KjStorageAdapter {
-  return safeLocal() ? localStorageAdapter() : inMemoryAdapter();
-}
-```
-```ts
-// components/src/table/table.ts:615, 853-855
-readonly kjStorageKey = input<string | null>(null);
-const key = this.kjStorageKey();
-const adapter = this.kjStorageAdapter() ?? this.tokenStorage;
-```
-
-**Why it matters.** `localStorage` is per-origin, and all MFEs on a page share one
-origin. The default adapter writes `localStorage[kjStorageKey]` with no namespace.
-Two apps each with a table keyed `"users"` — an entirely natural choice — read and
-write the same record. App A's column pinning, sort and filter state silently
-overwrite app B's, and a schema change between library versions makes the JSON
-unparseable for the other app (handled — `JSON.parse` is try/caught at `:32` — but
-the state is then silently lost). Per F-6, a shell's `provideKjTableStorage()` with
-a prefix does not reach a remote on a different copy, so the *default* is what most
-MFE setups actually get.
-
-**Fix.** Default `keyPrefix` to `kj.${APP_ID}.` (via an injection-context-aware
-default factory rather than the free function), and document `keyPrefix` as
-mandatory for multi-app pages. `defaultAdapter()` at `:59` is the one place to
-change.
-
-**Effort:** S
-
----
-
-### F-14 Duplicated payload: non-peer bundled deps and a module-cached 300 KB icon map
-
-**Severity:** low · **Confidence:** high
-**Files:** `packages/components/src/icon/lucide/provide-lucide-icons.ts:8,47-59,98-105`,
-`packages/core/package.json` (`dependencies: @tanstack/angular-table`),
-`packages/core/ng-package.json` (`allowedNonPeerDependencies`),
-`packages/components/package.json` (`dependencies: @tanstack/virtual-core, marked`),
-`packages/components/src/chat/markdown.ts:1`
-
-```ts
-// provide-lucide-icons.ts:8,47-50
-import * as lucideIcons from 'lucide-static';          // static, whole set
+// packages/components/src/icon/lucide/provide-lucide-icons.ts:47-50
 /** Lazily build the kebab-name → encoded-data-url map once per app. */
 let _registryEntries: Record<string, string> | null = null;
 function buildLucideRegistry(): Record<string, string> {
   if (_registryEntries) return _registryEntries;
 ```
+
+The TSDoc at `provide-lucide-icons.ts:68-72` states the cost and the reason plainly: "~300 KB gzipped for the whole set… Vite/esbuild can't reliably code-split per-icon dynamic imports against `lucide-static`'s package layout, so a single static namespace import is the predictable choice."
+
+**Why it matters**
+For one app this is a deliberate, documented trade. For N independently-deployed apps it multiplies: the static namespace import cannot be split out of the entry chunk, so every remote that calls `provideLucideIcons()` ships its own 300 KB — and `_registryEntries` memoises **per copy**, so the encode work runs N times too. Unlike echarts, lexical and monaco (all `optional: true` peers behind dynamic `import()` — `packages/core/package.json:88-120`), `lucide-static` is a **required, non-optional** peer of `@kouji-ui/components`, so a host cannot decline it.
+
+Contrast with the deps that *are* MFE-friendly: `echarts` (`packages/core/src/chart/chart.ts:135`), `monaco-editor` (`editor.loader.ts:63`), `lexical` — all lazy, all overridable by DI (`provideECharts`, `provideMonaco`), all optional peers. Those dedupe fine under federation sharing. `@tanstack/angular-table` and `@tanstack/virtual-core` are hard `dependencies` (`packages/core/package.json:123-125`, `packages/components/package.json:47-50`) rather than peers, so each copy bundles its own — acceptable, they are small and stateless.
+
+**Fix**
+1. Move `lucide-static` into `peerDependenciesMeta` as `optional: true` — the provider is opt-in already, so nothing else needs it.
+2. Offer `provideLucideIconsLazy()` that returns an async `KJ_ICON_LOADER` resolving names on demand (the token already exists: `packages/core/src/icon/icon.tokens.ts:71`), so remotes can opt out of the 300 KB entirely.
+3. In the MFE guide, recommend the **shell** calls `provideLucideIcons()` and remotes rely on the shared `KJ_ICON_REGISTRY` — which only works if F-7's singleton requirement is met.
+
+**Effort:** M
+
+---
+
+### F-13 Monaco's global AMD loader is memoised per copy
+
+**Severity:** medium · **Confidence:** medium
+**Files:** `packages/core/src/editor/editor.loader.ts:24-37,59-69`
+
+**Evidence**
+
 ```ts
-// components/src/chat/markdown.ts:1
-import { marked, type Token, type TokensList } from 'marked';   // static
+// packages/core/src/editor/editor.loader.ts:24-37
+@Injectable({ providedIn: 'root' })
+export class KjEditorLoader {
+  ...
+  private promise: Promise<KjMonaco> | null = null;
+  load(): Promise<KjMonaco> {
+    if (!this.promise) {
+      this.promise = this.config.loader ? this.config.loader() : this.loadFromCdn();
+    }
+    return this.promise;
+  }
 ```
 
-**Why it matters.** The shared-dependency picture splits cleanly:
+```ts
+// packages/core/src/editor/editor.loader.ts:59-69
+  private async loadFromCdn(): Promise<KjMonaco> {
+    const mod = await import('@monaco-editor/loader');
+    const loader = mod.default;
+    if (this.config.vsPath) {
+      loader.config({ paths: { vs: this.config.vsPath } });
+    }
+    return loader.init() as Promise<KjMonaco>;
+  }
+```
 
-| Dep | How it loads | Dedupable in federation? |
-|---|---|---|
-| `echarts` | `await import('echarts')` (`chart.ts:135`), overridable via `provideECharts` | yes — lazy + DI seam |
-| `monaco-editor` | `await import('@monaco-editor/loader')` (`editor.loader.ts:63`), overridable via `provideMonaco` | yes |
-| `lexical` + `@lexical/*` | `await import('./engine')` (`rich-text-editor.ts:224`) — the only value imports live inside that lazy chunk (`engine.ts:37-39`) | yes |
-| `@tanstack/angular-table` | **`dependencies`** of core, listed in `allowedNonPeerDependencies` — bundled into the FESM | no — ships twice |
-| `@tanstack/virtual-core` | **`dependencies`** of components | no — ships twice |
-| `marked` | **`dependencies`** of components, static import at `markdown.ts:1` | no — ships twice, eagerly |
-| `lucide-static` | peer, but a **static namespace import** of the whole set (`~300 KB gzipped`, per the file's own TSDoc at `:68`) | no — ~600 KB for two apps |
+**Why it matters**
+The docstring's promise — "every `KjEditor` on the page shares a single Monaco instance" (`editor.loader.ts:7-8`) — holds only within one root injector and one copy. `@monaco-editor/loader` works by injecting a `<script>` for `vs/loader.js` and driving the page-global AMD `require`; two copies each get their own module instance, each believes it is uninitialised, and each calls `loader.init()`. Whether that races or is idempotent depends on `@monaco-editor/loader`'s own internals, which I did not read — hence medium confidence — but two apps calling `loader.config({ paths: { vs } })` with **different `vsPath` values** is unambiguously last-write-wins on a single global, so an MFE pinning its own Monaco build can silently get the other app's.
 
-Plus `_registryEntries` is a module-level memo — per copy, so the 300 KB decode work
-also runs twice.
+Note this is the only place the library reaches for a third-party CDN at runtime; the rest is all bundler-resolved.
 
-The three heavy editors are handled well and should be held up as the pattern; the
-fix is to move the other four to the same shape.
-
-**Fix.** Promote `@tanstack/angular-table`, `@tanstack/virtual-core` and `marked` to
-`peerDependencies` (with `peerDependenciesMeta.optional` where the feature is
-opt-in) so a federation `shared` block can dedupe them. Make `markdown.ts` load
-`marked` via `await import('marked')` behind a `KJ_MARKDOWN_PARSER` token, matching
-`KJ_ECHARTS`. For lucide, offer `provideLucideIcons({ subset: [...] })` and move
-`buildLucideRegistry`'s memo onto the registry service so it is per-injector.
+**Fix**
+1. Guard on a page-wide marker rather than a module field: check `document.documentElement.dataset.kjMonaco` before `init()`, and if another copy already initialised, resolve from the global `window.monaco`.
+2. Document that in an MFE the **shell** should call `provideMonaco({ loader: () => import('monaco-editor') })` with a self-hosted build, and remotes should inherit it — again contingent on F-7's singleton.
 
 **Effort:** M
 
 ---
 
-### F-15 Zone-agnostic (a strength) but document listeners and observers scale per-instance
+### F-14 `@angular/cdk` is a required peer of both packages and is never imported
 
-**Severity:** low · **Confidence:** medium
-**Files:** `packages/core/src/primitives/interaction/focus-ring.ts:46-47`,
-`packages/core/src/a11y/focus-trap.ts:62`, `packages/core/src/chart/chart.ts:190-197`,
-`packages/components/src/editor/editor.ts:136-139`
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/package.json:32`, `packages/components/package.json:28`
 
-Verified absences: zero `NgZone`, zero `runOutsideAngular`, zero `zone.js` imports,
-zero `markForCheck`, and only three `detectChanges()` calls
-(`menubar-item.ts:169`, `builder.ts:117`, `table-cell-editor-outlet.ts:100`), all on
-a specific `ComponentRef`/view rather than the app. State is `signal`/`computed`/
-`effect` throughout. **The library is genuinely safe in a zone-based host and a
-zoneless one**, which is a real MFE prerequisite and worth stating explicitly in the
-README — it means a zoneless shell can host a zone-based remote using kouji-ui, and
-vice versa, without the library caring.
+**Evidence**
 
-The cost side: `KjFocusRing` adds two capture-phase `document` listeners **per
-instance** (`:46-47`) and is composed via `hostDirectives` in 35 directives across
-31 files. In a zone-based host, zone.js patches `addEventListener`, so every
-keystroke anywhere on the page schedules one tick per listener. Two apps × hundreds
-of focusable elements makes this measurable. `chart.ts:192` and `editor.ts:138` each
-also attach a `MutationObserver` to `document.documentElement` per instance — a
-20-chart dashboard in each of two apps is 40 observers on the same node, all firing
-on every theme toggle.
+```json
+// packages/core/package.json:30-34
+  "peerDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/cdk": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+```
 
-Confidence is medium because the perf claim is reasoned from the code, not measured.
+`grep -rn "@angular/cdk" packages/core/src packages/components/src --include=*.ts` returns **nothing**. The only mention in the whole source tree is `packages/core/src/rich-text/DESIGN.md:11` — "**No `@angular/cdk`** (strict repo policy)" — matching `rules/stack.md`'s "Zero external UI deps / No Angular CDK". `packages/core/package.json:20` also lists `"cdk"` as a published keyword and the description reads "directives over CDK", both stale.
 
-**Fix.** Hoist to root-provided singletons: one `KjInputModality` service (one
-listener pair, one signal, every focus ring reads it — folds into F-2's fix) and one
-`KjThemeObserver` service exposing a `themeVersion` signal that charts/editors read
-in a `computed`. Document the zone-agnostic guarantee in the README.
+**Why it matters**
+Federation configs mirror peer dependencies. Declaring CDK as a required peer means every host installs it, every federation config has to add it to `shared` with a version range, and two remotes on different Angular majors now have one more package that must be reconciled — for a dependency the library does not use. It also blocks a remote pinned to a CDK major that does not exist yet, purely on paper. Minor on its own, but it is free to remove and it directly contradicts the stated stack policy.
 
-**Effort:** M
+**Fix**
+Drop `@angular/cdk` from both `peerDependencies`, drop the `"cdk"` keyword and fix the `description` in `packages/core/package.json`. Also tighten the `@angular/*` peer ranges into a documented compatibility matrix (`^22.0.0` today) so MFE hosts know which library version pairs with which Angular major.
+
+**Effort:** S
 
 ---
 
-## MFE hardening plan / recommended work items
+### F-15 `<html dir>` and table storage keys have no per-app ownership
 
-Ordered by blast radius — how much of the page each one corrupts, and how silently.
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/src/locale/document-direction.ts:41-57`, `packages/core/src/table/table-storage.ts:49-62,69-71`, `packages/components/src/table/table.ts:855-872`
 
-1. **[F-6] Ship the duplicate-copy fingerprint warning, today.** A
-   `globalThis.__KJ_VERSIONS__` set + a one-time `ngDevMode` console warning listing
-   every loaded version. ~10 lines. It does not fix anything, but it converts every
-   other finding in this report from "mysterious behaviour" to "one console line",
-   and it is the only item here that is free. *(high, S)*
-2. **[F-1] Unify id minting and seed it from `APP_ID`.** Route the ~41 module
-   counters through `KjId` (two of the 44 grep hits are scroll-lock refcounts, not
-   ids — see F-3), make `mint()` emit `kj-<appId>-<prefix>-<n>`, add a lint rule
-   banning module-scope counters. Note `KjId` itself is the *more* fragile half: it
-   is per root injector, so it collides even under a shared singleton copy.
-   *(medium, M)*
-3. **[F-2] Decide the cross-app Escape/hotkey contract.** A `window`-level shared
-   stack + hotkey registry, or a documented statement that multi-app overlay
-   coordination is out of scope (fold into item 6). Do **not** origin-check
-   `e.target` — Escape after a backdrop click belongs to neither app. The focus-trap
-   and focus-ring items from the original finding were refuted and are dropped.
-   *(low, M)*
-4. **[F-3, F-7, F-10] One "kill the module globals" pass over the overlay
-   primitive.** Convert `container.ts`'s `_root`, `_announce.ts`'s `regions`, and
-   both scroll-lock refcounts into `providedIn: 'root'` services over
-   `DOCUMENT` + `PLATFORM_ID`; collapse the two scroll-lock counters into one
-   `KjScrollLock` with a `data-kj-scroll-lock` depth attribute so separate copies
-   still coordinate; extract `closestTheme` into `inheritScope()` and call it from
-   `KjOverlayBuilder.create()` so service-launched overlays keep their app's theme,
-   density and direction. All four share one refactor shape — do them together.
-   Also fixes the SSR cross-request retention they share. *(high, M)*
-5. **[F-11] Replace the command palette's `document.querySelector` with a
-   `viewChild`.** Two lines, removes a guaranteed cross-app focus bug. *(medium, S)*
-6. **[F-12] Drop the phantom `@angular/cdk` peer; widen the Angular peer range;
-   write `MICRO-FRONTENDS.md`.** The doc states the contract: Angular as a
-   strict-version singleton, `@kouji-ui/*` as a singleton, the shell owns every
-   `provide*` call, one app owns `<html dir>`, assign z-index bands per remote.
-   Cheap, and it is what an adopter reads first. *(medium, S)*
-7. **[F-13] Namespace the default table storage key with `APP_ID`.** One line in
-   `defaultAdapter()`. *(medium, S)*
-8. **[F-8] Tokenise every z-index** (`--kj-z-dropdown/-overlay/-modal/-toast`) and
-   give the new `KjOverlayContainer` an injectable base-z. Folds naturally into
-   item 4. *(medium, S)*
-9. **[F-5] Scope the theme tokens.** `:root` → `:root, [data-kj-scope]` in
-   `base.css` and `density.css`; document `[data-kj-scope]` as the per-app mount
-   attribute; document the "shell owns the tokens, remotes import no theme CSS"
-   mode. *(high, M)*
-10. **[F-9] Add `provideKjDirectionScope()`** writing `dir` to the app root, and make
-    `KjDirectionality` read via `element.closest('[dir]')`. Correct the "single
-    writer" TSDoc at `document-direction.ts:18`. *(medium, M)*
-11. **[F-4] Decide the encapsulation strategy — the one genuinely large item.**
-    Either version-scope the global selectors via a build-time `data-kj-v` attribute,
-    or move to `Emulated` per `rules/code_style.md`. Until then, `singleton: true`
-    on `@kouji-ui/components` is load-bearing and must be documented as such
-    (item 6). *(high, L)*
-12. **[F-14] Move `@tanstack/*` and `marked` to peer deps; lazy-load `marked` behind
-    a token; offer a lucide subset and make its memo per-injector.** *(low, M)*
-13. **[F-15] Hoist the per-instance `document` listeners and `MutationObserver`s
-    into root services; document the zone-agnostic guarantee.** Largely subsumed by
-    item 3. *(low, M)*
+**Evidence**
+
+```ts
+// packages/core/src/locale/document-direction.ts:49-56
+      const locale = inject(KjLocale);
+      effect(() => {
+        const dir = locale.direction();
+        const html = doc.documentElement;
+        if (html.getAttribute('dir') !== dir) {
+          html.setAttribute('dir', dir);
+        }
+      });
+```
+
+```ts
+// packages/core/src/table/table-storage.ts:49-51, 59-62
+/** Adapter backed by `localStorage`. No-ops in SSR. Optional `keyPrefix`. */
+export function localStorageAdapter(opts: LocalStorageAdapterOptions = {}): KjStorageAdapter {
+  return wrap(safeLocal, opts.keyPrefix ?? '');
+}
+...
+function defaultAdapter(): KjStorageAdapter {
+  return safeLocal() ? localStorageAdapter() : inMemoryAdapter();
+}
+```
+
+```ts
+// packages/components/src/table/table.ts:866-872
+      const adapter = this.kjStorageAdapter() ?? this.tokenStorage;
+      if (!adapter) return;
+      adapter.write(key, this.t.state());
+```
+
+**Why it matters**
+*Direction:* `provideKjDocumentDirection` is opt-in and the write is idempotent, and its docstring correctly calls it "the single writer of `<html dir>`" — but that is true per app. Two apps that both register it and both resolve `direction: 'auto'` from different `KjLocale` configs write opposing values into the same attribute in a loop, each effect re-firing on the other's mutation via `KjDirectionality`'s `MutationObserver` (`packages/core/src/primitives/directionality/directionality.ts:59-69`). Two apps with *the same* direction are fine, which is why this is low rather than higher.
+
+*Storage:* the default adapter's `keyPrefix` is `''` and `table.ts:872` writes the raw `kjStorageKey()`. Two MFEs that each ship a table with `kjStorageKey="users"` read and write the same `localStorage` entry, so one app's column order / filters land in the other's table. Both apps then persist a state shape from a possibly different library version.
+
+**Fix**
+- Default the storage `keyPrefix` to `` `kj:${inject(APP_ID)}:` `` (or make `KJ_TABLE_STORAGE`'s factory inject `APP_ID`), and document `provideKjTableStorage(localStorageAdapter({ keyPrefix: 'remote-a:' }))` in the MFE guide.
+- Document that exactly one app may call `provideKjDocumentDirection()`, and add a dev-mode warning when a second `<html dir>` writer is detected (same `dataset` marker trick as F-7's `assertSingleKoujiCore`).
+
+**Effort:** S
+
+## Recommended work items
+
+Ordered by blast radius — how much of the page each item can corrupt, and how hard it is to retrofit later.
+
+1. **Write and publish the MFE contract** (addresses F-7, F-5, F-12, F-13, F-14, F-15). Before any code: a `docs/` page stating the supported topology. Minimum viable contract — one shared singleton copy of `@kouji-ui/core` + `@kouji-ui/components` (`shared: { singleton: true }`), one copy of the themes/components CSS registered by the shell only, one `provideKjDocumentDirection()`, one `provideLucideIcons()`, distinct `KJ_OVERLAY_Z_BASE` per app, distinct table `keyPrefix`. This is the cheapest thing on the list and it converts most of the findings from "broken" to "documented constraint". Also add the Angular/CDK compatibility matrix (F-14) and drop the unused CDK peer.
+2. **Ship the two one-line guards, then decide whether the coordination layer is wanted at all** (F-8, F-3, F-2). The `defaultPrevented` guards in `on-hotkey.ts` and `stack.handleKeydown` are single-app correctness fixes worth landing now. The page-wide `document.documentElement.dataset` refcount + arbiter behind F-2 and F-3 is only worth building if multi-root hosting is actually a goal — F-3 is already triaged in-repo as an accepted v1 limitation, so the cheap answer there is a docstring caveat on `KjOverlayStack`.
+3. **Let shipped components resolve their mount strategy from an app-level token** (F-4). The primitive seam already exists (`KJ_OVERLAY_MOUNT_STRATEGY` + `inContainer()`); what is missing is that `popover-content.ts`, `select-content.ts`, `tooltip-content.ts`, `dropdown-menu-content.ts` and the dialog/drawer/sheet/toast services pin `bodyPortal()` in **component-level** providers, which an ancestor injector cannot override. Add a `KJ_OVERLAY_DEFAULT_MOUNT` (or a `KJ_OVERLAY_CONTAINER` factory consulted by `bodyPortal()`) and have each component read it.
+4. **Unify id generation on a seedable `KjId`** (F-1). Add `KJ_ID_PREFIX` defaulting to `APP_ID`, then migrate the 38 non-crypto module counters. Large but mechanical, and it also removes a class of SSR-hydration fragility. Blocks nothing else, so it can run in parallel.
+5. **Wrap the nine unlayered stylesheets in `@layer kj.component`** (F-6) — one commit, plus a CI grep to keep it true. This is a real single-app customization fix. Do **not** pursue a versioned-layer namespace (F-5, refuted): it would not fix the two-version collision and would make the winner less predictable. Instead add a one-line “single copy of the library per document” note to the install docs.
+6. **Fix the two instance-scoping defects that are already bugs today** (F-9, F-11). The palette's `document.querySelector` → `viewChild`, and the live region's DOM-first lookup. Both are a handful of lines, both are correctness fixes independent of MFE, both have obvious specs.
+7. **Make `lucide-static` optional and offer a lazy registry** (F-12). Move it to `peerDependenciesMeta`, add `provideLucideIconsLazy()` over the existing `KJ_ICON_LOADER` token.
+8. **Clean up the misleading scroll-lock hook** (F-10). Fold into item 2 — make `data-kj-scroll-lock` the real mechanism rather than deleting it.
+9. **Add multi-instance specs.** Every fix above needs a test that instantiates the thing twice: two `TestBed` roots with different `APP_ID` (F-1, F-7), two strategy instances over one jsdom document (F-2), two `KjOverlayStack`s (F-3), two palettes (F-8, F-9). Without these the invariants regress on the next refactor.
 
 ## Open questions
 
-1. **Is MFE actually a supported target, or a hypothetical?** This is the same
-   question `reports/review/01-overlay.md:515` raises. The answer changes the grade
-   materially: as a single-app library, F-1/F-2/F-6 are non-issues and the grade is
-   a B. As an MFE-capable library, they are release blockers. Nothing in
-   `rules/*.md`, the READMEs or the package metadata takes a position.
-2. **Which federation flavour?** Module Federation with `singleton: true` on
-   `@kouji-ui/*` makes F-4, F-5, F-6 and half of F-1 disappear for free, and makes
-   F-2, F-3 and F-7 *worse* (one shared container, one shared stack, all apps'
-   overlays interleaved in it). Independent copies make the opposite trade. The
-   hardening plan differs enough that this should be decided before item 4 is
-   written.
-3. **Is a web-component (`@angular/elements`) distribution on the roadmap?** It is
-   the only route that survives two Angular majors on one page. Nothing in the repo
-   references `createCustomElement`, and it would interact badly with
-   `ViewEncapsulation.None` (F-4) — shadow DOM would break the global stylesheets
-   the whole components package depends on.
-4. **Who owns `<html>` in the intended topology?** Four separate mechanisms write or
-   read it: `provideKjDocumentDirection` (`dir`), both scroll locks (`style.overflow`,
-   `style.paddingRight`), `KjDirectionality`'s MutationObserver, and
-   `chart.ts`/`editor.ts`'s theme observers on `documentElement`. If the answer is
-   "the shell, exclusively", several findings collapse into "remotes must not call
-   these providers" — a doc fix rather than a code fix.
-5. **What is the intended `data-theme` mount point?** `bodyPortal`'s `closestTheme`
-   walk (`body-portal.ts:13-21`) implies "an arbitrary subtree element", but
-   `themes/src/base.css:29` writes tokens at `:root` and the docs app sets the
-   attribute on `documentElement` (`apps/docs/src/app/services/theme.service.ts:96`).
-   These are two different contracts and F-5's fix depends on which one is real.
-6. **Was `body[data-kj-scroll-lock="true"]` (`popover.css:60`) ever wired?** Nothing
-   in either package sets that attribute. Its comment describes exactly the
-   cross-copy coordination mechanism F-3 recommends building — was it removed, and
-   if so, why?
+1. **Is MFE actually wanted?** Nothing in the repo suggests it. If the answer is "no, one app per page", most of this backlog collapses to items 5, 6 and 8 (which are single-app defects anyway) and the rest becomes a documented non-goal. Worth deciding explicitly before spending item 4's effort.
+2. **Which topology?** Module Federation with `singleton: true` is a very different contract from "each remote ships its own copy" or "remotes are custom elements in shadow roots". The shadow-root case in particular changes everything about F-4 and F-5 (styles would need `adoptedStyleSheets`, and the overlay container would have to live per-root) and is not addressed above.
+3. **Do two *versions* of the library need to coexist, or only two apps?** Two apps sharing one version is mostly solvable with DI seeding (F-1, F-4, F-15). Two versions is a much harder CSS problem (F-5) and probably needs the `@layer kj-<major>` build variant.
+4. **Is Escape-closes-one-overlay-page-wide the right semantic?** F-3 assumes yes. An argument exists for "each app handles its own Escape", in which case the fix is per-app event scoping (listen on the app's host element, not `document`) rather than page-wide arbitration — a different and possibly cleaner design.
+5. **`@monaco-editor/loader` internals** (F-13): does a second `init()` from a second module copy race or no-op? I did not read the dependency's source. Worth five minutes before designing the guard.
+6. **Would a `sideEffects`-safe secondary entry-point layout help?** Both packages are single-entry (`packages/core/ng-package.json`, `packages/components/ng-package.json`). Secondary entry points (`@kouji-ui/core/overlay`, `/table`, …) would let federation share at a finer grain and let a remote pull only what it uses — but they also multiply the token-identity surface in F-7. Probably not worth it; flagging in case someone assumes otherwise.
+
+## Refuted during verification
+
+### F-5 (original) "The `@layer kj.*` cascade is global and unversioned — the second copy silently restyles the first" — **REFUTED** (was: high)
+
+The stated mechanism is wrong, one of the four evidence claims is factually incorrect CSS, another is miscounted, and the residual truth is a documented, accepted v1 limitation. Re-filed as **F-5 (low)** above, a documentation gap.
+
+1. **The rename claim is false CSS.** "A renamed `--kj-base-*` token in the newer version leaves the older app resolving `var()` fallbacks" does not happen. Custom properties with **different names do not collide** on `:root` — v1's `base.css` keeps declaring v1's names and v2's declares v2's, and both sets coexist. A rename is the one change that is harmless in this scenario. Only a same-name / different-value redeclaration bites.
+2. **Miscount.** "80 stylesheets open with `@layer kj.component`" — `grep -rl` over `packages/*/src` returns **62** files, not 80.
+3. **The mechanism is misattributed to layers.** The colliding global identifier is the class name `.kj-button`, not the layer name. Remove every `@layer` line and the two-version collision is unchanged. Worse, the implied fix (versioned layer names) **degrades** the situation: with `@layer kj-v1.component, kj-v2.component`, the winner is fixed document-wide by whichever `@layer` statement registered first, which is less predictable than source order. The only real fixes — versioned class names, or shadow DOM — are not named in the finding.
+4. **The consequence requires version skew, not two copies.** Two copies of the same version emit identical rules and identical `:root` values, so there is no observable effect. The headline "the second copy silently restyles the first" only follows from two *different versions* in one document. The `:root` surface singled out (`base.css:29-183` primitives/radii/space/text ladders; `density.css:41-60` `--kj-density: 1` and the spacing ladder) is also the most stable, least-churning surface in the repo: `grep '^\s*:root' packages/themes/src` matches only `base.css:29` and `density.css:41`, because every per-theme value lives under `[data-theme="X"]` in `kj.shared`, which the finding itself concedes is safe.
+5. **Already handled / triaged, and not the first-order blocker.** `docs/component-analyses/actions/context-menu.md:611-614` records the project's explicit position: *"Provided in 'root' so all triggers across the app coordinate. Risk: micro-frontend or multi-Angular-app pages might have two registries and lose the 'one open at a time' guarantee. Acceptable for v1; document."* So "there is no opt-in scope hook at all" is not a discovery. And CSS is not what breaks first: two copies means two injectors duplicating `providedIn: 'root'` singletons — `KjOverlayStack` (`stack.ts:38, 107`), `KjOverlayBuilder` (`builder.ts:82`), `KjDialogService`, `KjDrawerService`, `KjLocale`, `KjTranslate` — so overlay stacking, z-index ordering and focus-trap ownership fail well before a padding delta is noticed.
+
+**Verified evidence that does hold:** `base.css:7` layer statement; `base.css:28-31` palette on bare `:root` inside `kj.base`; `density.css:41` `:root` inside `kj.base`; and no version token in any CSS selector, layer name or custom property.
+
+<details>
+<summary>Original F-5 text, preserved</summary>
+
+### F-5 The `@layer kj.*` cascade is global and unversioned — the second copy silently restyles the first
+
+**Severity:** high · **Confidence:** high
+**Files:** `packages/themes/src/base.css:7,29`, `packages/themes/src/density.css:41`, all 80 `@layer kj.component { … }` stylesheets, `packages/components/src/overlay/overlay.css:37-45`
+
+**Evidence**
+
+```css
+/* packages/themes/src/base.css:7 */
+@layer kj.reset, kj.base, kj.shared, kj.component;
+```
+
+```css
+/* packages/themes/src/base.css:28-31 */
+@layer kj.base {
+  :root {
+    /* ── color palette ── */
+    --kj-base-gray-50:  oklch(98% 0    0);
+```
+
+```css
+/* packages/components/src/button/button.css:9 (representative of 80 files) */
+@layer kj.component {
+```
+
+`grep -rn "kj-v\|version" packages/*/src --include=*.css` finds no version token in any selector, layer name or custom property.
+
+**Why it matters**
+Layer names are page-global identifiers. Two copies of `@kouji-ui/components` both write `.kj-button` into `@layer kj.component`; within one layer the later-registered sheet wins for the **whole document**, so App A's buttons get App B's v2 padding and App B's get A's v1 border. The `[data-theme]` scoping on theme *values* does not save this — it scopes tokens, not the component rules that consume them.
+
+The same applies one level down: `packages/themes/src/base.css:29` and `density.css:41` write the entire base primitive palette and density scale onto bare `:root`. Two versions of `@kouji-ui/themes` ⇒ the later-loaded `kj.base` block silently rethemes the other app, and a renamed or removed `--kj-base-*` token in the newer version leaves the older app's components resolving `var()` fallbacks.
+
+There is no opt-in scope hook: nothing accepts a per-app class or attribute that the component rules could nest under.
+
+**Fix**
+Give the cascade a version/instance namespace, opt-in so single-app consumers are unaffected:
+1. Publish a build variant (or a PostCSS step in `ng-package.json` assets) that emits `@layer kj-<major>.component` and nests every rule under `[data-kj-scope="<id>"]`. Consumers register one or the other.
+2. Ship an explicit `@layer` *order* declaration in a standalone `@kouji-ui/themes/layers.css` so the ordering is correct even when `base.css` is not loaded first (today the order at `base.css:7` only applies if that file is parsed before any `kj.*` rule).
+3. Document the minimum contract in an MFE guide: **one version of `@kouji-ui/themes` and `@kouji-ui/components` CSS per page**, loaded by the shell, with remotes not registering their own stylesheets. This is the realistic near-term answer and costs nothing but prose.
+
+**Effort:** L
+
+</details>
+
+---
+
+## Carried forward from the 2026-09-06 review
+
+Two findings from the previous pass (commit `9aee150a`, auditing `fd6dd34e`) were not re-filed by this pass. I re-verified both at HEAD; both are still true, so they are restored here with their prior-pass ids noted.
+
+### F-16 Service-launched overlays escape their app's theme, density and direction scope *(prior pass F-7)*
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/primitives/overlay/builder.ts:111-118`, contrast `packages/core/src/primitives/overlay/strategies/mount/body-portal.ts:13-21, 57-61`
+
+**Verified at HEAD** — the builder still appends the wrapper straight into the singleton container with no scope propagation:
+
+```ts
+// packages/core/src/primitives/overlay/builder.ts:111-118
+    const wrapperRef = createComponent(KjOverlayWrapper, {
+      environmentInjector: this.env,
+      elementInjector: injector,
+    });
+    this.appRef.attachView(wrapperRef.hostView);
+    wrapperRef.changeDetectorRef.detectChanges();
+    getOverlayContainer()?.appendChild(wrapperRef.location.nativeElement);
+```
+
+while the **declarative** path does do it:
+
+```ts
+// packages/core/src/primitives/overlay/strategies/mount/body-portal.ts:57-61
+      // Propagate the closest ancestor's `data-theme` so the portalled
+      const theme = closestTheme(ctx.triggerEl() ?? originalParent);
+      if (theme) w.setAttribute('data-theme', theme);
+      else w.removeAttribute('data-theme');
+```
+
+`closestTheme()` is private to `body-portal.ts`; a repo-wide grep finds it nowhere else. So every service-launched overlay — dialog (`dialog.service.ts`), drawer, sheet, toast, action-sheet — lands in the body-level `.kj-overlay-container`, **outside both apps' root elements**, and inherits `<html>`'s tokens rather than its owning app's. In a two-app page where the shell is light and the remote is dark, every one of the remote's dialogs, drawers, sheets and toasts renders light. Same for `[data-density]` and for `dir`: a drawer that should slide from the right in an Arabic remote slides from the left.
+
+Note this is **not only** an MFE issue — it also breaks any single app that scopes a theme to a subtree (the repo's own theme-generator preview pane is the case `body-portal.ts:9-12` was written for). The declarative overlays handle it; the service-launched ones do not.
+
+**Fix** Extract `closestTheme()` into a shared `inheritScope(from, to)` helper that copies `data-theme`, `data-density` and `dir`, and call it from `KjOverlayBuilder.create()` using the launching injector's root element — not just from `bodyPortal`. Folds naturally into F-4's mount-token work. **Effort:** M
+
+### F-17 Zone-agnostic (a strength) but document listeners and observers scale per instance *(prior pass F-15)*
+
+**Severity:** low · **Confidence:** medium *(the perf claim is reasoned from the code, not measured)*
+**Files:** `packages/core/src/primitives/interaction/focus-ring.ts:45-46`, `packages/core/src/chart/chart.ts:190-191`, `packages/components/src/editor/editor.ts:134-135`
+
+**Verified at HEAD** — `KjFocusRing` still adds two capture-phase `document` listeners **per instance**:
+
+```ts
+// packages/core/src/primitives/interaction/focus-ring.ts:45-46
+      document.addEventListener('keydown', onKeydown, true);
+      document.addEventListener('pointerdown', onPointerdown, true);
+```
+
+and it is composed via `hostDirectives` across **31** non-spec files. Teardown is correct (`destroyRef.onDestroy` removes all four), so this is a scaling cost, not a leak. In a zone-based host, zone.js patches `addEventListener`, so every keystroke anywhere on the page schedules one tick per listener; two apps × hundreds of focusable elements makes that measurable. Separately, `chart.ts:191` and `editor.ts:135` each attach a `MutationObserver` to `document.documentElement` per instance — a 20-chart dashboard in each of two apps is 40 observers on one node, all firing on every theme toggle.
+
+The strength half is worth keeping in the report and stating in the README: no `NgZone`, no `runOutsideAngular`, no `zone.js` import, no `markForCheck`, and only three `detectChanges()` calls, all on a specific `ComponentRef`/view. **The library is genuinely safe in a zone-based host and a zoneless one**, which is a real MFE prerequisite — a zoneless shell can host a zone-based remote using kouji-ui, and vice versa.
+
+**Fix** Hoist to root-provided singletons: one `KjInputModality` service (one listener pair, one signal, every focus ring reads it) and one `KjThemeObserver` exposing a `themeVersion` signal that charts and editors read in a `computed`. **Effort:** M
+
+
+## Changed since the 2026-09-06 review
+
+Previous review: commit `9aee150a`, auditing `fd6dd34e`. Main has since advanced 8 commits, including real overlay work. Every "fixed" claim below was checked against the code at HEAD.
+
+### Fixed
+
+- **Prior F-8 — "No z-index stratification seam — 20 hard-coded literals and one global `--kj-overlay-z-index`" — substantially fixed by `2948c5b5` ("nested overlays always stack above their opener").** Verified at HEAD:
+  - A DI seam now exists: `KJ_OVERLAY_Z_BASE` (`stack.ts:37-40`, `providedIn: 'root'`, factory returning `KJ_OVERLAY_Z_BASE_DEFAULT` = 1000 at `:29`), injected by `KjOverlayStack` at `:111`.
+  - A runtime seam now exists: `KjOverlayStack.baseZIndex` (`stack.ts:165-172`) reads `--kj-overlay-z-base` off `:root` when it holds a number, falling back to the token; `nextZIndex` (`:175-181`) assigns each opening overlay one level above the current topmost, and `register()` hands that value back on the handle.
+  - The container rule is now two-tier: `packages/core/src/primitives/overlay/overlay.css:21` is `z-index: var(--kj-overlay-z-index, var(--kj-overlay-z-base, 1000))`.
+  - The component-CSS literals the prior finding listed are gone: `dialog.css:9`, `drawer.css:16, 56`, `dropdown-menu.css:28`, `popover.css:28`, `confirm-popup.css:22`, `color-picker.css:32`, `command-palette.css:18, 33`, `cascade-select.css:46`, `combobox.css:48`, `select.css:63`, `date-picker.css:42`, `datetime-picker.css:43` and `sheet.css:26` all now read `z-index: var(--kj-overlay-z, <default>)`. One literal survives — `cascade-select.css:64` is still a bare `z-index: 1001`.
+  - Coverage exists: `stack.spec.ts:113-115` assert that `KJ_OVERLAY_Z_BASE` moves the whole stack.
+  This is exactly the seam the prior pass asked for. What it does **not** do is give each *app* its own container (that is F-4's residual), which is why F-4 still exists at low.
+
+- **Not a prior finding, but relevant to the same surface:** cross-composite content-query bleed is now handled — `fb1d1956` added `ownListItems()` (`packages/core/src/primitives/list/scope.ts:35-43`) plus `scope.spec.ts`, so a nested composite's rows are no longer stolen, renumbered or activated by an outer container. Verified at HEAD. This reduces, but does not remove, the surface a second instance can disturb.
+
+No other prior MFE finding was fixed in the range. Verified unchanged at HEAD: `id.ts:10-16`, `container.ts:24`, both scroll-lock modules, `_announce.ts:15-28`, `command-palette.ts`'s `document.querySelector` focus, `document-direction.ts`, `table-storage.ts`'s empty default `keyPrefix`, and `@angular/cdk` still a required peer of **both** packages (`packages/core/package.json:32`, `packages/components/package.json:28`) with `"cdk"` still in core's `keywords` at `:20`.
+
+### Still open
+
+| Prior | Current | Note |
+|---|---|---|
+| F-1 Id minting has no document-global seed (medium) | **F-1** | Same finding; this pass raised it to high and verification put it back at medium. The two mechanisms (per-root `KjId` vs ~43 module counters) are now split by deployment shape rather than conflated. |
+| F-3 Two competing module-global scroll-lock refcounts (high) | **F-2** | Same code, unchanged. Corrected to medium: the double-padding claim is false, and the corruption needs non-LIFO release. |
+| F-2 Escape / hotkey routing is per-root-injector (low) | **F-3** + **F-8** | Split into the stack half (F-3, back at low after verification — the prior pass had already landed on low; this pass re-raised it to high and verification reversed that) and the hotkey half (F-8, medium). |
+| F-4 `ViewEncapsulation.None` on 80 components (high) + F-5 `@kouji-ui/themes` writes `:root` globally (high) | **F-5** *(refuted, re-filed low)* | The prior pass had the **mechanism right** — identical global class names in one layer, last sheet wins — and framed it as an encapsulation/token problem, which is accurate. This pass re-framed it as an `@layer` defect, which verification refuted. The surviving claim matches the prior pass's F-4 more closely than this pass's F-5. Prior F-4's count of 80 `ViewEncapsulation.None` files stands; this pass's "80 `@layer kj.component` stylesheets" was a miscount (62). |
+| F-6 99 module-scope `InjectionToken`s (high) | **F-7** | Same finding, now 100 tokens. |
+| F-9 `provideKjDocumentDirection()` (medium) + F-13 table `localStorage` prefix (medium) | **F-15** | Merged into one low finding. Arguably under-weighted: the table-storage default `keyPrefix` of `''` is a live collision risk for any two tables sharing a key, MFE or not. |
+| F-10 Live-region registry is a module-level map (medium) | **F-11** | Unchanged code, lowered to low; the "no `isConnected` re-check" and SSR-process-global sub-points from the prior pass are not carried over and should be. |
+| F-11 Command palette focuses by global `document.querySelector` (medium) | **F-9** | Unchanged code, same severity. |
+| F-12 Stale `@angular/cdk` peer + hard `^22.0.0` Angular pin (medium) | **F-14** | The CDK half is carried (lowered to low). The **mixed-major Angular story** — the prior pass's more important half — is only touched in passing; it is the first thing an MFE adopter needs and deserves to stay explicit. |
+| F-14 Duplicated payload: non-peer bundled deps + 300 KB icon map (low) | **F-12** | The lucide half is carried at medium. The prior pass's recommendation to promote `@tanstack/angular-table`, `@tanstack/virtual-core` and `marked` to peers so federation can dedupe them is **dropped** by this pass, which calls them "acceptable, they are small and stateless". That is a judgement change, not new evidence. |
+| F-7 Service-launched overlays escape theme/density/dir scope (high) | **F-16** *(restored)* | Missed by this pass. Re-verified at HEAD (`builder.ts:111-118` still has no propagation; `closestTheme()` is still private to `body-portal.ts`) and restored. |
+| F-15 Per-instance document listeners and observers (low) | **F-17** *(restored)* | Missed by this pass. Re-verified at HEAD and restored, including the zone-agnostic strength worth documenting. |
+
+### Not reproduced
+
+- Nothing from the prior MFE pass was silently dropped as wrong. The two omissions (prior F-7, F-15) are restored above as F-16 and F-17.
+- Prior F-8's z-index half is genuinely **fixed**, not merely unreproduced — see the Fixed section for the line-level evidence.
+- The prior pass's refuted claims (an enabled `KjFocusTrap` reacting to Tab in another app; "listener count reaches four figures") stay refuted — nothing at HEAD reopens either, and `KjFocusTrap` still has zero consumers (now also filed as `04-accessibility.md` F-23).
+
+### New since then
+
+- **F-6** Thirteen stylesheets ship with no `@layer` at all, so they beat every layered rule on the page — nine of them with real rules. A live single-app customization hazard the prior pass did not spot, and the most actionable CSS item in this report.
+- **F-8** Unscoped `document` hotkey listeners: `on-hotkey.ts:40-47` and `command-palette.ts:291-300` both bind on `document`, both `preventDefault()`, neither checks `e.defaultPrevented`. Two one-line guards.
+- **F-10** `body[data-kj-scroll-lock]` is styled (`popover.css:57-61`) but never written, and its comment names a `KjOverlayService` that does not exist.
+- **F-13** Monaco's global AMD loader is memoised per copy, and two copies calling `loader.config({ paths: { vs } })` with different paths is last-write-wins on one page-global.

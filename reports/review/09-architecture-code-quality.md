@@ -1,96 +1,42 @@
 # Architecture, Directive Design & Code Quality Review
 
-> **Adversarially verified 2026-09-15.** Findings below marked *(severity corrected during verification)* were re-checked against the source; corrections are inline. Refuted findings are preserved in **Refuted during verification** at the end of the findings list, not deleted.
-
-Aspect: architecture / directive design / code quality
-Scope: `packages/core` (603 .ts), `packages/components` (764 .ts), judged against
-`CLAUDE.md`, `RULES.md`, `rules/architecture.md`, `rules/code_style.md`,
-`rules/tsdoc.md`, `rules/stack.md`, then against Angular 22 practice.
-Method: static read + grep only. No builds, no test runs, no source edits.
-
----
-
 ## Verdict
 
-`@kouji-ui/core` is a genuinely good headless library: one overlay engine with a
-clean strategy/token design used by all 15 overlay families, a real list-behaviour
-primitive set (`navigator` / `selection` / `type-ahead` / `filterable-list`) that
-14 features compose rather than re-implement, a disciplined import graph (227 of
-~260 cross-directory edges point at `primitives/`), 1,270 test cases, zero
-`Renderer2`, zero `@angular/cdk` imports, and ~99% compliance with the mandatory
-`kj` input prefix. `@kouji-ui/components` is a different animal: 70% TSDoc
-coverage on inputs, 101 unprefixed public inputs, 26 boolean inputs that silently
-do nothing when used as bare attributes, 19 features with zero real tests, three
-`it.todo` placeholder specs, and two visibly different naming/composition eras
-sitting side by side. The decisive problem is governance, not craft: **CI has not
-run a single test since 2026-05-07** and ESLint enforces none of the seven rules
-files, so every rule in `rules/` is advisory prose that the codebase drifts away
-from at exactly the rate you would predict. This is not one coherent architecture —
-it is a very strong core primitive layer (era 3), a large mid-era styled wrapper
-layer that predates the current conventions (era 2), and a small recent slice
-(chat, table, direction-toggle) that follows them (era 3 again), with the rules
-files describing a fourth thing that nobody enforces.
+One coherent architecture, described by a rules set that has fallen behind it in three specific, load-bearing places. The *code* is genuinely modern and largely consistent: signal inputs everywhere (only 7 decorator holdovers across ~750 source files), zero `Renderer2`, real reusable primitives (`primitives/list/{navigator,selection,filterable-list,scope}`, `primitives/overlay/{controller,stack,panel,strategies}`) that feature directives actually compose rather than re-implement, a clean strategy-based overlay with no duplicated positioning math, and 1,366 real behavioural tests. The *rules* say core has zero CSS (it ships 592 lines and 16 `@Component`s), say `ViewEncapsulation.None` is banned (188 uses), and say every public binding carries a `kj` prefix "no exceptions" (102 unprefixed bindings in `@kouji-ui/components`, 7 classes mixing both conventions). None of those three rules is machine-enforced — ESLint checks only the selector prefix, there is no stylelint, and CI has not run a single test since 2026-05-07, under which gate 47 of the repo's 50 release tags shipped. The one finding a consumer will trip over today is the missing `booleanAttribute` transform on ~95 boolean inputs, which silently no-ops the bare-attribute form the library teaches elsewhere — including in the `<kj-tag kjTagSelectable>` TSDoc snippet (IDE hover on the published `.d.ts`; **not** the docs site, which renders only correctly-bound `@doc-example` files). **Grade: B−** — good bones, unpoliced edges, and a release pipeline that publishes without testing.
 
-**Grade: B-** — core alone would be an A-; components and the unenforced/unrun
-quality gates pull it down hard.
-
----
-
-
-*Post-verification: F-1 upheld at critical and widened — `release.yml` triggers on a green CI, so ~20 npm releases since 2026-05-07, `core@1.0.0` included, were published behind a gate that ran no tests. No other finding in this dimension was re-rated.*
+> **Verification (2026-09-15).** F-1 was attacked on every axis and **held at high** — its scale claim was in fact *understated* (274 spec files / 2,042 `it()` blocks, not 214 / 1,366). F-2 was **downgraded high → medium**: the mechanism is real but the "published example is broken" framing, one cited snippet, the `tabindex="0"` claim, and the 105 count all overstate it. Correction notes are inline in each finding. Statistics elsewhere in this verdict (188 `ViewEncapsulation.None`, 102 unprefixed bindings, 592 lines of core CSS, 1,366 tests) were **not** re-verified in this pass — the test count above is now known to be wrong, so treat the others as unaudited.
 
 ## What works
 
-- **One overlay engine, universally adopted.** `packages/core/src/primitives/overlay/`
-  (builder / controller / stack / panel / trigger + `strategies/{mount,position,
-  backdrop,focus-trap,scroll-lock,live-announcer,trigger-event}`) is composed by
-  all 15 overlay-ish features — `select-content.ts`, `dropdown-menu-content.ts`,
-  `tooltip-content.ts`, `popover-content.ts`, `dialog.ts`, `drawer.ts`, `sheet.ts`,
-  `toast.ts`, `date-picker-calendar.ts`, `color-picker.ts`, `cascade-select-panel.ts`,
-  `combobox-listbox.ts`, `command-palette-dialog.ts`, `confirm-popup-content.ts`,
-  `tree-select-content.ts`. `rules/architecture.md`'s "never reimplement per
-  component" is actually honoured.
-- **Real list primitives.** `packages/core/src/primitives/list/` (navigator 9.5K,
-  selection 12.7K, item 9.5K, group, type-ahead, filterable-list) each with its own
-  spec, consumed by select / combobox / command-palette / dropdown-menu / menubar /
-  cascade-select / tree-select.
-- **Clean dependency direction.** Zero `@kouji-ui/components` imports in
-  `packages/core/src` (the two hits are prose in TSDoc). No relative cross-package
-  imports. Zero `@angular/cdk` imports anywhere in source despite the no-CDK rule
-  being easy to break.
-- **`host` object discipline.** Zero `Renderer2` usages in either package; ARIA is
-  bound in `host` exactly as `rules/architecture.md` demands (see
-  `packages/core/src/slider/slider-thumb.ts:49-70`, 20 host bindings, no DOM writes).
-- **Injection context is correct.** Every `effect()` outside a constructor is
-  properly wrapped — `dialog.service.ts:48` / `drawer.service.ts` / `sheet.service.ts`
-  / `toast.service.ts` use `runInInjectionContext(this.env, …)`;
-  `locale/document-direction.ts:41-57` uses `provideEnvironmentInitializer`.
-  I found no injection-context violations.
-- **Core signal API is modern and consistent.** 511 `input()`/`model()`/`output()`
-  declarations, 25 `input.required`, 130 `booleanAttribute` / 17 `numberAttribute`
-  transforms, and only 7 unprefixed public members across 603 files.
-- **The context (`*.context.ts`) pattern is real and consistent.** 34 context files,
-  97 `InjectionToken`s, interface-typed tokens with `useExisting: forwardRef(...)`
-  from the root — e.g. `slider.context.ts` documents a 25-member contract that four
-  sibling directives consume without touching the concrete class.
-- **Core test suite is substantive, not ceremonial.** 1,270 cases across 143 specs;
-  spot-checks are behavioural (`accordion.spec.ts:227` "skips disabled items during
-  arrow navigation", `menubar.spec.ts:279` "ArrowRight skips a disabled bar item",
-  `navigator.spec.ts`, `type-ahead.spec.ts`).
-- **Barrel hygiene at the top level is clean.** Every feature folder in both packages
-  is exported from `public-api.ts` except the two CSS-only folders (`core/src/styles`,
-  `components/src/overlay`).
-
----
+- **Dependency direction is clean.** `packages/core/src` contains zero imports from `@kouji-ui/components` or `@kouji-ui/themes` (only prose references inside TSDoc); `packages/components` imports `@kouji-ui/core` through the public entry point 228 times and never deep-imports `../../core/src`.
+- **Context pattern is uniform and idiomatic.** All 34 `*.context.ts` files follow one shape — an exported `interface Kj*Context` of `Signal<…>` + methods, and an `InjectionToken` beside it (`packages/core/src/tabs/tabs.context.ts:14-32`, `packages/core/src/field/field.context.ts:8-28`). Roots provide with `useExisting: forwardRef(() => Self)` (52 sites); children inject the token, never the class. `skipSelf` is used correctly where a root can nest inside itself (`packages/core/src/button/button.ts:88`).
+- **Overlay is a real strategy system, not copy-paste.** `KjPopoverContent` and `KjTooltipContent` differ only in provider values (`packages/core/src/popover/popover-content.ts:18-23` vs `packages/core/src/tooltip/tooltip-content.ts:20-23`) — mount, position and focus-trap behaviour all come from injected strategies.
+- **List primitives are genuinely shared.** `KjFilterableList` is composed by both filtering consumers (`combobox-root.ts:77`, `command-palette.ts:65`); `scope.ts` / `ownListItems` (added since `fd6dd34e`) fixed nested-list bleed once, centrally, for all seven list roots.
+- **Modern lifecycle dominates.** 113 `afterNextRender`/`afterRender` sites and 72 `DestroyRef` sites against 34 legacy lifecycle hooks — and the surviving hooks carry written justifications (`packages/core/src/chat/chat.ts:33-37`, `packages/core/src/tabs/tabs.ts:217-221`).
+- **Core test coverage and test quality.** 145 spec files in `packages/core/src` over 68 features; only `overflow/` has none. Specs assert behaviour, not existence — `packages/components/src/overlay/overlay-styles.spec.ts` walks `document.styleSheets` for a rule that both matches and fills the panel, and asserts `ng-package.json` actually ships the sheet.
+- **TSDoc discipline at class level is high**: 253/260 exported `Kj*` classes in core and 248/257 in components carry a leading TSDoc block (the 9 misses in components are all `*.playground.ts` demo hosts).
+- **A docs bundle budget exists and is enforced** — `angular.json:124-133` (`initial` 800 kB warn / 1500 kB error), and CI does run `pnpm build`.
 
 ## Findings
 
-### F-1 CI has not run a single test since 2026-05-07 — and every npm publish since then was gated on it
+### F-1 CI runs no tests; 47 of 50 releases shipped under a lint-and-build-only gate
 
-**Severity:** critical *(upheld during verification; consequence widened)* · **Confidence:** high
-**Files:** `.github/workflows/ci.yml:34-40`, `.github/workflows/release.yml`, `.github/workflows/deploy-docs.yml`, `.husky/pre-push`
+**Severity:** high · **Confidence:** high
+**Files:** `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.husky/pre-push`
+
+> **Verification (2026-09-15).** Refutation attempted on every axis; the finding **held at
+> high**. Quotes are verbatim, the git claims reproduce exactly (`4b7487fe`, 2026-05-07,
+> "chore(ci): disable test + e2e steps temporarily"; 50 `@kouji-ui/*` tags total, 47 after
+> that timestamp), and no mitigation exists anywhere — the only test invocations under
+> `.github/` are the three commented lines, `pre-push` is the only husky hook, and there is
+> no alternate CI config at the repo root. One causal overreach in "why it matters" is
+> corrected below; it does not touch the finding's substance or severity.
 
 ```yaml
+# .github/workflows/ci.yml:28-40
+      - name: Lint
+        run: pnpm lint
+
       - name: Build
         run: pnpm build
 
@@ -103,777 +49,835 @@ quality gates pull it down hard.
       #   run: pnpm test:e2e
 ```
 
-`git log -S "temporarily disabled" -- .github/workflows/ci.yml` → `2026-05-07 4b7487fe chore(ci): disable test + e2e steps temporarily`. That commit is both the one that disabled them **and the most recent commit touching `ci.yml`** — it was never reverted, and 369 commits have landed since. The job now runs only Install / Lint / Build.
+```yaml
+# .github/workflows/release.yml:4-14
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+...
+    if: ${{ github.event.workflow_run.conclusion == 'success' && ... }}
+```
 
-**The release-pipeline consequence (added during verification).** `.github/workflows/release.yml` triggers on `workflow_run: workflows: ["CI"], conclusion == 'success'` and runs `changesets/action@v1` with `publish: pnpm release`. Because a green CI now means lint + build only, **every npm publish since 2026-05-07 has been gated on a check that executed zero tests**. Roughly 20 `chore: version packages` release commits have shipped under that gate, including `core@1.0.0` / `components@1.0.0` (2026-07-03) and five in the last two weeks (#57, #59, #62, #64, #65). `deploy-docs.yml` chains off the same CI success signal. The blast radius is **published packages consumed downstream**, not merely an internal quality gap.
+Quantified: the disabling commit is `4b7487fe` (2026-05-07). 47 of the repo's 50 `@kouji-ui/*` tags point at commits dated after it — i.e. every release from `@kouji-ui/core@0.1.1` / `@kouji-ui/components@0.1.1` onward was published to npm with the entire test suite unexecuted. The gate `release.yml` waits on is `CI`, and `CI` is `pnpm lint && pnpm build`.
 
-**No compensating control exists.** The repo has exactly three workflows (`ci.yml`, `deploy-docs.yml` which only curls Render, `release.yml` which only runs changesets) and none invokes a test runner. `.husky/pre-push` never ran tests even before the disable — it runs `pnpm lint` and `changeset status --since=origin/main`, and self-skips when `$CI`/`$GITHUB_ACTIONS` is set. So the disable removed the only automated test execution anywhere in the repo. The scripts are live, not vestigial (root `package.json`: `"test": "turbo run test"`, `"test:e2e": "turbo run test:e2e"`).
+The fallback is also empty: `.husky/pre-push` runs `pnpm lint` and `changeset status` only, and its own comment says it skips in CI because "the workflow already enforces" these gates — true for lint, false for tests.
 
-**Volume (counts corrected).** ~1,292 core + ~478 components test cases — ~1,770 total across 143 + 65 spec files, plus 20+ Playwright e2e specs under `apps/docs/e2e`. (The originally reported 1,270 / 476 is a counting-methodology delta that does not change the conclusion.) Every other finding in this report is downstream of this one: 3 `it.skip` in core (`cascade-select.spec.ts:44`, `dropdown-menu.spec.ts:49` and `:60`), 3 `it.todo` stubs in components (`dropdown-menu`, `popover`, `tooltip` — each a single "rewrite for new overlay API" line), and the whole components coverage hole below survived precisely because nothing red-flags them. Two further `test.skip` calls in `apps/docs/e2e` are legitimate conditional env guards, **not** rot — do not count them. "Temporarily" is now the longest-standing architectural decision in the repo.
+**Why it matters:** **274** spec files carrying **2,042** `it()`/`test()` blocks, plus
+**22** Playwright specs under `apps/docs/e2e/`, are dead weight in the pipeline.
+*(Counts recounted at HEAD; the first draft said 214 spec files / 1,366 blocks / 23 e2e
+specs — the scale was **understated**, not exaggerated.)*
 
-**Fix:** Re-enable the `Test` step first — it needs no browser download and it gates the release path. Treat E2E as a separate follow-up. Make `release.yml` depend on a CI run that includes tests **before the next publish**. If some specs are genuinely broken, quarantine them explicitly (`test.fails`, or a named `vitest --exclude` list checked into `vitest.workspace.ts` with an owner) rather than disabling the whole gate. Add `pnpm test` to `pre-push` behind a changed-package filter so the "run only what's relevant" rule still holds locally.
-**Effort:** M
+The team writes substantial regression specs alongside every fix — `backdrop-press.spec.ts`
+(243 lines) and `dismiss-press.spec.ts` (154 lines) in `e6aa28a5`; `nested-list-scope.spec.ts`
+(274), `overlay-styles.spec.ts` (208) and `list/scope.spec.ts` (99) in `fb1d1956` — yet the
+pipeline will never execute one of them. Those specs were authored *as part of* the fixes, so
+they did not pre-exist to catch the bugs; the real consequence is forward-looking: **these
+exact bugs can regress silently into a subsequent publish with nothing to catch them.**
+*(An earlier draft implied the overlay/backdrop/list-scoping regressions "reached npm first"
+because the suite was not running. That causal claim is withdrawn — it is not what happened.)*
+
+Two aggravating details:
+
+- **The docs deploy rides the same gate.** `.github/workflows/deploy-docs.yml:4-8` also keys
+  on `workflow_run: workflows: ["CI"]` with `conclusion == 'success'` (`:18`), so the Render
+  docs deploy is gated on lint-and-build only too.
+- **The hook's stated rationale is now false.** `.husky/pre-push:3-4` says it skips in CI
+  because "the workflow already enforces" these gates — true for lint, false for tests. No
+  layer — local hook, CI, or release — runs the suite, and the hook's comment actively
+  conceals that.
+
+Finally, the steps were **not** disabled for lack of working scripts: `"test": "turbo run test"`
+and `"test:e2e": "turbo run test:e2e"` are live tasks in the root `package.json:7,10`. Re-enabling
+is a matter of uncommenting plus fixing whatever failures prompted `4b7487fe`. The "temporarily"
+in the comment has now spanned 2026-05-07 → 2026-09-15 — just over four months and 47 releases.
+
+**Fix:** Re-enable `pnpm test` in `ci.yml`. If some specs are currently red, quarantine those *files* explicitly (a `vitest --exclude` list checked into the config with a tracking issue per entry) rather than the whole step; a named quarantine list shrinks, a commented-out step does not. Add `pnpm test:e2e` as a separate job so a flaky browser run cannot block publishing on its own. **Effort: S** (the step already exists; the work is triaging whatever is red).
 
 ---
 
-### F-2 `afterOpened$` is public API on three overlay refs and never emits
+### F-2 ~95 boolean inputs omit `booleanAttribute`, so the bare-attribute form the library teaches elsewhere silently no-ops
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/core/src/dialog/dialog.ref.ts:10-12`,
-`packages/core/src/drawer/drawer.ref.ts:20-23`,
-`packages/core/src/sheet/sheet.ref.ts:21-24`
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/tag/tag.ts:41,59,82,95,114,125-131,134-137,140-145,175,200`,
+`packages/components/src/tag/tag.ts:43`, `packages/core/src/a11y/disabled.ts:24,31`,
+`packages/core/src/button/button.ts:125-131`, `apps/docs/src/lib/examples.ts:45-47`
 
-```ts
-  private readonly _afterOpened = new Subject<void>();
-  private readonly _afterClosed = new Subject<R | undefined>();
-  /** Emits once after the drawer has finished opening. */
-  readonly afterOpened$: Observable<void> = this._afterOpened.asObservable();
+> **Verification (2026-09-15).** The core defect is real and every quoted line is accurate.
+> **Downgraded high → medium**: four overstatements did not survive — the "published
+> `@example` is broken" framing, one of the two cited broken snippets, the `tabindex="0"`
+> claim, and the count. Net: one genuinely broken artifact (a TSDoc snippet visible on IDE
+> hover) plus a real latent API-surface inconsistency across ~95 inputs.
+
+**The mechanism (confirmed).** `booleanAttribute` is applied to **225** inputs and omitted
+on roughly **95** — 34 `input(false)`, 1 `input(true)`, and ~58 `input<boolean>(…)`.
+*(The first draft's 105 double-counts multi-line declarations that **do** carry a transform:
+`confirm-popup.ts:71`, `field.ts:59/65/72`, `input-group-addon.ts:68`, `toast.ts:231`.)*
+
+A bare attribute binds the string `''`, which is falsy, so an untransformed input stays
+`false`. Angular does **not** type-check static attributes against inputs, so there is no
+compile error. Meanwhile shipped examples do teach the bare form on inputs that *do*
+transform (`dropdown-menu/_examples/dropdown-menu.disabled.example.ts:15`,
+`cascade-select/_examples/cascade-select.disabled.example.ts:43`). The same attribute name
+therefore works on one directive and silently no-ops on another.
+
+The contrast proves the mechanism: `accordion.ts:88` has the transform and
+`accordion.spec.ts:202,229` drive real focus assertions through the bare form, whereas
+`list.ts:160` lacks it and `list.spec.ts:136` bare-attributes `kjArrowNavigation` in a test
+that asserts nothing about the flag. No lint rule, no policy doc, no fix in history, no
+selector fallback.
+
+**(a) The shipped `@example` — correctly scoped.** `packages/components/src/tag/tag.ts:43`
+(mirrored at `packages/core/src/tag/tag.ts:41`) ships:
+
+```
+ * <kj-tag kjTagSelectable [(kjTagSelected)]="on">Filter</kj-tag>
 ```
 
-`grep -rn "_afterOpened" packages/` returns exactly these six lines — the declaration
-and the `asObservable()` in each of the three files. **`.next()` is never called.**
-`_afterClosed` is correctly fired in `close()`; `_afterOpened` is not fired anywhere.
+With `tag.ts:82` (`readonly kjTagSelectable = input(false);`) untransformed,
+`computedRole()` at `:129` never returns `'button'` and `computedPressed()` at `:142` stays
+`null` — so the chip in that snippet is not interactive.
 
-**Why it matters:** A documented, typed, published API (`@doc-category Core/Overlay`)
-that silently never emits. A consumer awaiting `afterOpened$` hangs forever with no
-error. This is the kind of defect a test would have caught instantly — see F-1 and
-the zero-test dialog/drawer/sheet wrappers in F-5.
+*But the "published docs are broken" framing fails.* `apps/docs/src/lib/examples.ts:45-47`
+states plainly that plain `@example` tags "are **NOT** used as doc site previews", and
+`getJsDocExamples` has **zero call sites** in `apps/`. Every rendered `@doc-example` file
+uses the correct bound form — `[kjTagSelectable]="true"` at
+`tag.selectable.example.ts:24-26`, `tag.list.example.ts:24-28`, `tag.usage.example.ts:47-49`.
+**The exposure is IDE hover on the emitted `.d.ts`, not the docs site.**
 
-**Fix:** Emit from the controller's state transition to `'open'` (the refs already
-mirror `controller.state`), or delete `afterOpened$` from all three and point
-consumers at `state()` / `isOpen()`. Then add the spec.
-**Effort:** S
+**(b) `kjTagDisabled` has two owners with divergent transforms — the real API bug.**
+
+```ts
+// packages/core/src/tag/tag.ts:59
+{ directive: KjDisabled, inputs: ['kjDisabled: kjTagDisabled'] },   // KjDisabled DOES transform (disabled.ts:31)
+// packages/core/src/tag/tag.ts:95
+readonly kjTagDisabled = input(false);                              // this copy does NOT
+// packages/core/src/tag/tag.ts:114
+readonly disabled: Signal<boolean> = computed(() => this.kjTagDisabled() || …);
+```
+
+`KjTag.disabled()` gates `computedTabindex()` (`:135`), `onClick()` (`:175`) and `remove()`
+(`:200`), and both owners host-bind `[attr.aria-disabled]` on the **same element**
+(`tag.ts:67` vs `disabled.ts:24`). Under a bare attribute the two disagree.
+
+**Withdrawn (did not survive verification)**
+
+- *The second "broken snippet".* `tag-list.ts:32-33` nests its chips under
+  `kjTagListRole="listbox"`, so `computedRole()` returns `'option'` at `tag.ts:127` **before**
+  the `kjTagSelectable` branch at `:129` is reached, and `onClick` toggles on `'option'`
+  (`tag.ts:180`). That snippet is fine.
+- *"The tag keeps `tabindex="0"`."* Wrong in the case described: with bare `kjTagDisabled`
+  alone, `computedRole()` is `null`, so `computedTabindex()` returns `null` at `:135` — no
+  `tabindex` is emitted at all. The focusable-but-unguarded chip requires the **mixed** form
+  `<kj-tag [kjTagSelectable]="true" kjTagDisabled>`, which nothing in the repo writes.
+- *The button case is latent, not live.* There are **zero** bare-attribute uses of
+  `kjDisabled` / `kjLoading` / `kjFullWidth` on `<kj-button>` anywhere in the repo;
+  `button.ts:125-131` is inconsistency waiting to be tripped, not a live defect.
+
+**Fix:** Add `transform: booleanAttribute` across the untransformed boolean inputs, starting
+with `tag.ts:82` and `:95` so the two `kjTagDisabled` owners agree — better, delete the
+duplicate `kjTagDisabled` field and read the composed `KjDisabled` instance
+(`inject(KjDisabled).disabled`) so one public name has one owner. Add an ESLint rule or a
+docgen check enforcing the transform (`eslint.config.js` has none today). Add one spec per
+affected directive exercising the **bare-attribute** form: `tag.spec.ts` only ever uses the
+bound form (lines 22, 35, 56, 83, 97), and `list.spec.ts:136` bare-attributes
+`kjArrowNavigation` in a test that asserts nothing about it. **Effort: M**
 
 ---
 
-### F-3 101 public inputs in `@kouji-ui/components` have no `kj` prefix
+### F-3 `@angular/cdk` is a required peer dependency of both published packages and nothing imports it
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/components/src/**` — e.g. `badge/badge.ts:90-98`,
-`card/card.ts:82,107,108,173,193`, `avatar/avatar.ts:88-103`,
-`accordion/accordion.ts:104,135,136`, `chart/chart.ts:93-109`,
-`cascade-select/cascade-select.ts:129,132`, `checkbox/checkbox.ts:105,106`,
-`input/input.ts:127-137`
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/package.json`, `packages/components/package.json`, `rules/stack.md`
 
-```ts
-// packages/components/src/badge/badge.ts:90
-  readonly variant = input<KjBadgeVariant>('default');
-  readonly size = input<'xs' | 'sm' | 'md' | 'lg'>('md');
-  readonly dot = input(false, { transform: booleanAttribute });
-  readonly bg = input<string>('');
+```jsonc
+// packages/core/package.json:4
+  "description": "Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.",
+// packages/core/package.json:20
+    "cdk",
+// packages/core/package.json:32  (inside peerDependencies, NOT peerDependenciesMeta)
+    "@angular/cdk": "^22.0.0",
 ```
 
-`rules/code_style.md`: *"Every `input()`, `output()`, `model()` exposes a
-`kj`-prefixed name externally. **No exceptions.** Applies to both core directives
-and styled wrappers."* Counts: components 377 prefixed / 101 unprefixed (79%);
-core 504 prefixed / 7 unprefixed (99%). None of the 101 uses an `alias: 'kj…'`
-escape hatch (checked: 0 matches).
+```
+rules/stack.md:9   No Angular CDK. No floating-ui. No third-party UI primitives.
+```
 
-`input/input.ts` shows the incoherence inside a single class — `kjSize` is prefixed
-while `type`, `variant`, `value`, `placeholder`, `invalid`, `disabled`,
-`autocomplete`, `inputmode` are not.
+`grep -rn "@angular/cdk\|Cdk" packages/core/src packages/components/src --include=*.ts --include=*.html` returns **zero** matches. Twelve other peers are marked optional in `peerDependenciesMeta`; CDK is not. `packages/components/package.json:28` repeats it.
 
-**Why it matters:** Two conventions in one published API surface. `[variant]` and
-`[bg]` on `kj-badge` will collide with consumer directives and with any future
-Angular-native attribute. Fixing it later is a major breaking change for every
-consumer; fixing it now, at 0.9.0, is cheap.
+Note `CLAUDE.md` also still instructs "Is focus trapped in modals (`CdkFocusTrap`)?" while the actual implementation is `packages/core/src/a11y/focus-trap.ts`.
 
-**Fix:** Add `alias: 'kjX'` to all 101 in one pass (non-breaking: keeps the class
-member name, changes only the template-facing name), ship as a `minor` with a
-codemod note, then drop the old names at 1.0. Enforce with a custom ESLint rule
-(see F-15) so it cannot regress.
-**Effort:** M
+**Why it matters:** every consumer of `@kouji-ui/core` is forced to install (or is auto-installed, under npm 7+ peer auto-install) an Angular CDK they will never load, and a CDK major that lags the consumer's Angular produces a hard peer conflict on a dependency the library does not use. The package description and keywords advertise a CDK relationship the no-CDK rule explicitly forbids.
+
+**Fix:** Delete `@angular/cdk` from both `peerDependencies` blocks and from the root `package.json` dependency if nothing in `apps/docs` needs it; drop the `cdk` keyword; rewrite the core description ("Angular 21" is also stale — the peer range is `^22.0.0`). Update the `CdkFocusTrap` mention in `CLAUDE.md` to `KjFocusTrap`. **Effort: S**
 
 ---
 
-### F-4 26 boolean inputs in `components` lack `booleanAttribute`, so bare-attribute usage silently does nothing
+### F-4 `kjOffset` transform swallows `0` at six overlay anchor points
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/components/src/button/button.ts:149-151`,
-`accordion/accordion.ts:104,136`, `card/card.ts:173`, `checkbox/checkbox.ts:105,106`,
-`cascade-select/cascade-select.ts:132`, `chat/prompt-input.ts:122,124`,
-`color-picker/color-picker.ts:177,181`, `breadcrumb/breadcrumb.ts:223`, +14 more
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/core/src/{popover/popover-content,tooltip/tooltip-content,select/select-content,combobox/combobox-listbox,tree-select/tree-select-content,date-picker/date-picker-calendar}.ts`
 
 ```ts
-// packages/components/src/button/button.ts:149
-  readonly kjDisabled = input(false);
-  readonly kjLoading = input(false);
-  readonly kjFullWidth = input(false);
+// packages/core/src/popover/popover-content.ts:32
+  readonly kjOffset = input<number, unknown>(8, { transform: (v) => Number(v) || 8 });
+// packages/core/src/tooltip/tooltip-content.ts:32
+  readonly kjOffset = input<number, unknown>(8, { transform: (v) => Number(v) || 8 });
+// packages/core/src/select/select-content.ts:56-58
+  readonly kjOffset = input<number, unknown>(4, {
+    transform: v => Number(v) || 4,
+  });
 ```
 
-The *core* directive these forward to (`packages/core/src/primitives/interaction/
-disabled.ts:30`) does it correctly:
+(identical shape at `combobox-listbox.ts:41`, `tree-select-content.ts:106`, `date-picker-calendar.ts:59`)
 
-```ts
-  readonly disabled = input<boolean, unknown>(false, { alias: 'kjDisabled', transform: booleanAttribute });
-```
+**Why it matters:** `[kjOffset]="0"` — a flush-to-trigger panel, exactly what a select listbox or segmented dropdown wants — is coerced to the default gap. So is any expression that evaluates to `0`. There is no error; the panel just sits 4 or 8 px away from where the consumer asked. `NaN` is correctly caught by the same expression, which is presumably why it was written this way.
 
-96 other inputs in `packages/components` do use `booleanAttribute`, so this is
-inconsistency, not policy.
-
-**Why it matters:** `<kj-button kjLoading>` — the natural, documented-looking HTML —
-resolves to the empty string, which is falsy, so the spinner never renders and the
-button is not disabled. The developer gets no error. Only `[kjLoading]="true"` works.
-Same for `<kj-card padded>`, `<kj-checkbox indeterminate>`, `<kj-accordion-item
-disabled>`.
-
-**Fix:** Add `{ transform: booleanAttribute }` to all 26. Mechanical, safe
-(`booleanAttribute(true) === true`), one commit.
-**Effort:** S
+**Fix:** Replace all six with one shared helper in `primitives/overlay`, e.g. `const pxOffset = (fallback: number) => (v: unknown) => { const n = Number(v); return Number.isFinite(n) ? n : fallback; };`. While there, factor the whole repeated trio (`kjSide` / `kjAlign` / `kjOffset` plus the `inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>` cast, which appears in 8 files) into a `withAnchoredPosition()` helper — it would also delete 9 unchecked `as ReturnType<typeof …>` casts. **Effort: S**
 
 ---
 
-### F-5 19 component features have zero real tests, including every overlay wrapper
+### F-5 `ViewEncapsulation.None` is banned by the rules and used 188 times — undocumented deliberate decision, not drift
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/components/src/{cascade-select,checkbox,command-palette,dialog,
-icon,input-group,input-mask,input-otp,menubar,overflow,overlay,radio,sheet,toast,
-toggle,tree-select}/` (no spec file at all), plus three placeholder specs:
+**Severity:** medium · **Confidence:** high
+**Files:** `rules/code_style.md:72-77`, 81 files in `packages/components/src`, 11 in `packages/core/src`, 4 in `apps/docs`
+
+```
+rules/code_style.md:73-77
+**Encapsulation:**
+- Do not use `encapsulation: ViewEncapsulation.None`. Component styles
+  must stay scoped. The only exception is generated SVG that needs
+  global classes ...
+```
+
+188 occurrences. Of 174 components in `packages/components/src` that declare an `encapsulation` key, 81 files use `None`; only 2 uses of `Emulated` exist in the whole repo. The core uses are all overlay panels (`packages/core/src/primitives/overlay/wrapper.ts:36`, `popover/popover-content.ts:25`, `tooltip/tooltip-content.ts:26`, `select/select-content.ts:44`, `dialog/dialog.ts:20`, `drawer/drawer.ts:43`, `sheet/sheet.ts:52`, `toast/toast.ts:475`, `dropdown-menu/dropdown-menu-content.ts:143`, `tree-select/tree-select-content.ts:79`, `command-palette/command-palette-dialog.ts:68`).
+
+**This is a deliberate architecture, not accidental drift.** It is the direct consequence of two documented design choices: (a) every component's CSS is authored as `@layer kj.component { .kj-* { … } }` in a shared cascade layer — 80 of 93 stylesheets do this; (b) the panels that must be painted are rendered by *headless core directives*, so a wrapper-scoped style would never reach them. `packages/components/src/overlay/overlay.css:13-26` spells the reasoning out at length, and `overlay-styles.spec.ts` pins it. Emulated encapsulation would break the whole model.
+
+**Why it matters as written:** the rule as stated is simply false, which makes the rules file untrustworthy and makes future review of it noise. Practically, `None` everywhere means every `.kj-*` class is a global identifier with no compiler help: a consumer (or a second copy of the package) authoring `.kj-card` collides silently, and nothing in the build detects it. It also blocks ever adopting `:host`-scoped theming without a repo-wide rewrite.
+
+**Fix:** Rewrite `rules/code_style.md:72-77` to state the real policy — *component styles ship as global `@layer kj.component` rules under the `.kj-` namespace; `ViewEncapsulation.None` is required, not forbidden; every selector must be prefixed `.kj-`* — and add the one genuine constraint that follows (no unprefixed class selectors under `packages/*/src/**/*.css`). Back it with a spec that parses every stylesheet and fails on a top-level selector not matching `.kj-` / `:root` / `[data-…]`, which today nothing checks. **Effort: S** for the rule, **M** for the guard.
+
+---
+
+### F-6 `@kouji-ui/core` is not headless: 592 lines of themed CSS and 16 `@Component`s, and its own aggregator never ships
+
+**Severity:** medium · **Confidence:** high
+**Files:** `rules/architecture.md:4`, `packages/core/src/styles.css`, `packages/core/src/typography/prose.css`, `packages/core/ng-package.json`, `packages/core/package.json`
+
+```
+rules/architecture.md:4
+- `@kouji-ui/core` — directives only, zero CSS, zero components
+```
+
+Actual: 6 stylesheets totalling 592 lines (`typography/prose.css` 312, `motion/motion.css` 90, `styles/docs-themes.css` 82, `primitives/overlay/overlay.css` 47, `icon/icon.css` 40, `styles.css` 21), with 60 `var(--kj-…)` theme-token references between them — so the "headless" package is also theme-coupled. And 16 files declare `@Component`, not `@Directive`.
+
+Four of the six are exported (`packages/core/package.json` `exports`) and copied by `packages/core/ng-package.json` `assets`. **`styles.css` is neither** — yet it advertises itself as the entry point:
+
+```css
+/* packages/core/src/styles.css:1-9 */
+   @kouji-ui/core — aggregated global stylesheet
+   --------------------------------------------------------------
+   Single entry-point for the core-only global CSS pieces that
+   ship without a corresponding Angular component ...
+```
+```css
+/* packages/core/src/styles.css:19-21 */
+@import "./primitives/overlay/overlay.css";
+@import "./typography/prose.css";
+@import "./icon/icon.css";
+```
+
+`ng-package.json` copies the three imported files to *flattened* output dirs (`overlay/`, `typography/`, `icon/`), so even if `styles.css` were shipped its relative `@import`s would not resolve from `node_modules`.
+
+**Why it matters:** a consumer following that header registers a file that does not exist in the tarball. More broadly, the zero-CSS claim is the load-bearing promise of a headless package — it is what lets someone adopt `@kouji-ui/core` and bring their own styling system. `prose.css` alone restyles every `h1`–`h6`, `p`, `a`, `blockquote`, `code`, `pre`, `ul`, `ol`, `table` under `.kj-prose` against kouji tokens; that is a design system, not a primitive.
+
+**Fix:** Two options — pick one and write it down. (a) Keep the CSS and correct `rules/architecture.md:4` to "directives plus a small set of opt-in, separately-exported stylesheets; no component-scoped styles", then either publish `styles.css` (add it to `assets` with dist-relative imports) or delete it and document the four individual entry points. (b) Move `prose.css` + `styles/docs-themes.css` into `@kouji-ui/themes` where token-coupled CSS belongs, leaving core with only the two behaviour-critical sheets (overlay chrome, icon mask). **Effort: M**
+
+---
+
+### F-7 102 unprefixed public bindings in `@kouji-ui/components`, 7 classes mixing both conventions
+
+**Severity:** medium · **Confidence:** high
+**Files:** 25 files under `packages/components/src`; `rules/code_style.md:14-15`
+
+```
+rules/code_style.md:14-15
+## `kj` prefix on all public bindings
+Every `input()`, `output()`, `model()` exposes a `kj`-prefixed name externally. No exceptions. Applies to both core directives and styled wrappers.
+```
 
 ```ts
-// packages/components/src/popover/popover.spec.ts (entire file, 5 lines)
+// packages/components/src/input/input.ts:128-138
+  readonly type = input<KjInputType>('text');
+  readonly variant = input<KjInputVariant>('default');
+  readonly kjSize = input<KjInputSize>('md');
+  readonly value = input<string>('');
+  readonly placeholder = input<string>('');
+  readonly invalid = input(false);
+  readonly disabled = input(false);
+```
+```ts
+// packages/components/src/select/select.ts:99-102
+  readonly placeholder = input<string>('Select…');
+  readonly disabled = input(false);
+  readonly multiple = input(false);
+  readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
+```
+
+102 unprefixed `input`/`model`/`output` declarations across 25 component files. Core is nearly clean: 7, of which `packages/core/src/primitives/list/item.ts:68` (`activate`) and `packages/core/src/rich-text/rich-text-editor.ts:128-134` (`valueChange`, `textChange`, `jsonChange`, `announce`) are real public outputs. Seven classes mix both styles in one API: `input/input.ts`, `select/select.ts`, `chat/chat-thread.ts`, `rich-text/rich-text-editor.ts`, `table/table.ts`, `table/table-cell-editor-outlet.ts`, `time-picker/time-picker.ts`.
+
+Meanwhile 53 component files *do* use the prefix consistently (`color-picker.ts` has `kjDisabled`/`kjInvalid`; `pagination.ts` has `kjDisabled`), so `<kj-select [disabled]>` and `<kj-color-picker [kjDisabled]>` are both correct API today.
+
+**Why it matters:** this is the most consumer-visible inconsistency in the library. There is no way to guess the right spelling; you must look it up per component. It also makes any future standardisation a breaking change across half the package.
+
+**Fix:** Decide the real policy — a strong case exists for "element components (`<kj-*>`) use bare names because the element is already namespaced; attribute directives use `kj*`" — write it into `rules/code_style.md`, then normalise the 7 mixed classes to whichever side wins, keeping the old name as a deprecated alias (`input(…, { alias: 'kjSize' })`) for one minor. **Effort: M**
+
+---
+
+### F-8 Components package test shape: 15 features with zero specs, 3 of the 69 spec files are pure `it.todo`
+
+**Severity:** medium · **Confidence:** high
+**Files:** `packages/components/src/**`
+
+`packages/components/src`: 318 source files, 69 spec files (core, for contrast: 431 / 145). Features with **zero** spec file: `cascade-select`, `checkbox`, `command-palette`, `dialog`, `icon`, `input-group`, `input-mask`, `input-otp`, `menubar`, `overflow`, `radio`, `sheet`, `toast`, `toggle`, `tree-select`.
+
+Three more are stubs:
+
+```ts
+// packages/components/src/popover/popover.spec.ts (entire file)
 import { describe, it } from 'vitest';
 
 describe('KjPopover (wrapper)', () => {
   it.todo('rewrite for new overlay API (KjPopoverTrigger / KjPopoverContent primitives)');
 });
 ```
+(identical at `dropdown-menu/dropdown-menu.spec.ts:4` and `tooltip/tooltip.spec.ts:4`)
 
-Identical stubs at `components/src/dropdown-menu/dropdown-menu.spec.ts:4` and
-`components/src/tooltip/tooltip.spec.ts:4`. Core also carries 3 `it.skip`:
-`core/src/cascade-select/cascade-select.spec.ts:44`,
-`core/src/dropdown-menu/dropdown-menu.spec.ts:49,60`.
+Plus three skipped a11y assertions in core: `packages/core/src/cascade-select/cascade-select.spec.ts:44`, `packages/core/src/dropdown-menu/dropdown-menu.spec.ts:49` and `:60` (`it.skip(... aria-haspopup ...)`).
 
-Shape: core 143 specs / 1,270 cases across 72 features (2 uncovered: `overflow`,
-`styles`). Components 65 specs / 476 cases across 73 features — 19 uncovered, and
-the median covered feature has 5 cases. 41 of 476 assertions are `should create` /
-bare `toBeTruthy()`.
+Quality where specs exist is good — `packages/components/src/skip-link/skip-link.spec.ts` asserts role, text, href and class; `table/table-export.spec.ts` asserts CSV escaping of commas, quotes and newlines; only 71 `toBeTruthy()` / "should create"-style assertions exist across 1,366 tests.
 
-**Why it matters:** The uncovered set is exactly the highest-risk surface —
-focus traps, scroll lock, Escape routing, portal mount/unmount, live-region
-announcements. `dialog`, `sheet`, `toast`, `tooltip`, `popover`, `dropdown-menu`,
-`tree-select`, `menubar` are all untested at the wrapper layer, and F-2 is the proof
-that something is already broken there.
+**Why it matters:** the gaps are not random. `dialog`, `sheet`, `toast`, `command-palette`, `menubar` and the three `it.todo` wrappers are precisely the overlay family — the subsystem that has taken four bug-fix releases in the last week (`fb1d1956`, `e6aa28a5`, and the `stack.ts` / `dismiss-press.ts` work in `fd6dd34e..HEAD`). Core covers the mechanism; nothing covers the wrapper composition consumers actually type.
 
-**Fix:** Per `CLAUDE.md`'s own per-feature test rule, add one behavioural spec per
-uncovered feature (open/close, focus restore, Escape, ARIA wiring), and convert the
-three `it.todo` stubs against the current overlay API. Do it in priority order:
-dialog → sheet → toast → tooltip/popover/dropdown-menu → the rest.
-**Effort:** L
+**Fix:** Write the three `it.todo` specs against the current trigger/content API first — the shape already exists in `packages/components/src/overlay/backdrop-press.spec.ts` and `overlay-stacking.spec.ts`, so it is largely a copy of the host-component pattern. Then one behavioural spec each for `dialog`, `sheet`, `toast`, `command-palette` (open → focus lands → Escape → focus returns). Resolve or delete the three `it.skip` a11y cases. **Effort: M**
 
 ---
 
-### F-6 `KjTabList` fights its own composed primitive with an event-swallowing hack, and its TSDoc documents a mechanism that does not exist
+### F-9 Only one of seven rules files is machine-enforced; no stylelint over 93 stylesheets
 
-**Severity:** high · **Confidence:** high
-**Files:** `packages/core/src/tabs/tabs.ts:178-228`, `packages/core/src/a11y/roving-tabindex.ts:111`
+**Severity:** medium · **Confidence:** high
+**Files:** `eslint.config.js`, `packages/themes/package.json`, `rules/*`
 
-The doc block claims:
+`eslint.config.js` (83 lines) configures exactly two project-specific rules beyond the recommended sets:
 
-```ts
- * Orientation is read from the parent `KJ_TABS` context and forwarded to the
- * roving primitive through its `kjRovingOrientation` input via a host binding
- * on the exposed input.
+```js
+// eslint.config.js:26-41
+      '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'kj', style: 'camelCase' }],
+      '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'kj', style: 'kebab-case' }],
 ```
 
-The implementation does no such thing:
+So of the seven rules files, the only mechanically enforced clause is `code_style.md:12` ("All selectors … `kj` prefix mandatory"). Everything else is prose CI cannot see: the `kj` prefix on *bindings* (F-7), the `ViewEncapsulation` ban (F-5), "zero CSS in core" (F-6), "no `ngOnInit`" and "no `@Input()`/`@Output()`" (F-13), "one directive per file" (F-12), the class/file naming rule (F-11), the whole of `rules/tsdoc.md` (F-10), and every token rule in `code_style.md:43-61`.
+
+There is no stylelint config anywhere (`.stylelintrc*` / `stylelint.config.*` absent), and `packages/themes/package.json` sets `"lint": "echo 'no lint for css-only package'"` — so 93 CSS files, including all of `@kouji-ui/themes`, get zero static checking.
+
+On the specific questions asked:
+- **No test asserts the `@layer` convention** — and 13 stylesheets sit outside it: `components/src/{calendar,command-palette,date-picker,date-range-presets,datetime-picker,editor,input-mask,overlay}.css`, `components/src/table/table.css`, `components/src/table/table-filters/filters.css`, `core/src/icon/icon.css`, `core/src/styles.css`, `themes/src/index.css`. Their rules outrank every layered rule in the cascade regardless of specificity.
+- **No test asserts theme contrast.** `packages/themes/src/themes.spec.ts` and `density.spec.ts` exist but check token structure and density scaling, not ratios.
+- **Tarball contents *are* partially asserted** — `overlay-styles.spec.ts:166-196` checks both packages' `ng-package.json` assets and core's `exports` map.
+- **No library size budget exists.** The only budget is the docs app (`angular.json:124-133`).
+
+**Fix:** Add the cheap, high-value ESLint rules first — a `no-restricted-syntax` set banning `ngOnInit`/`ngOnDestroy`/`ngAfterViewInit` declarations, `@Input(`/`@Output(`, and `Renderer2` under `packages/*/src`, plus a rule for the binding prefix once F-7 settles the policy. Add stylelint with `selector-class-pattern: ^kj-` and a required `@layer kj.*`. Move the clauses that cannot be linted (design process, WAI-ARIA reading) into a PR checklist so the rules files contain only enforceable statements. **Effort: M**
+
+---
+
+### F-10 TSDoc input/output coverage: 7% missing in core, 29% missing in components
+
+**Severity:** low · **Confidence:** high
+**Files:** `rules/tsdoc.md:4,68-69`, `packages/components/src/**`
+
+```
+rules/tsdoc.md:4      All exported directives, classes, interfaces, type aliases, enums, methods, inputs, outputs.
+rules/tsdoc.md:68-69  ## Inputs/outputs — Single-line `/** */`. State purpose + default value.
+```
+
+Measured over public `input`/`model`/`output` declarations (excluding `private`/`protected`, specs, examples, playgrounds): **core 37 of 511 undocumented (7%)**, **components 143 of 482 undocumented (29%)**.
 
 ```ts
-@Directive({
-  selector: '[kjTabList]',
-  hostDirectives: [KjRovingTabindex],      // ← no `inputs:` forwarding
-  host: { '[attr.role]': '"tablist"', … }, // ← no kjRovingOrientation binding
-})
-export class KjTabList implements OnInit, OnDestroy {
-  private readonly keydownFilter = (event: KeyboardEvent): void => {
-    const orientation = this.tabs.orientation();
-    if (orientation === 'horizontal') {
-      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-        // Off-axis: prevent the composed KjRovingTabindex from acting.
-        event.stopImmediatePropagation();
-      }
-    } …
-  };
+// packages/components/src/alert/alert.ts:136-140  — five consecutive, none documented
+  readonly kjVariant = input<string>('info');
+  readonly kjSize = input<string>('md');
+  readonly kjAlertMode = input<KjAlertMode | undefined>(undefined);
+  readonly kjAlertStatic = input(false, { transform: booleanAttribute });
+  readonly kjAlertRole = input<string | undefined>(undefined);
+```
+```ts
+// packages/core/src/popover/popover-content.ts:30-33  — the entire public surface of the panel
+  readonly kjSide   = input<KjSide>('bottom');
+  readonly kjAlign  = input<KjAlign>('center');
+  readonly kjOffset = input<number, unknown>(8, { transform: (v) => Number(v) || 8 });
+  readonly kjTrap   = input(false, { transform: booleanAttribute });
+```
 
-  ngOnInit(): void {
-    this.el.nativeElement.addEventListener('keydown', this.keydownFilter, true);
-  }
+`@doc-description` (the one-line page summary the docs site renders in lists and search) appears 60 times against 68 `@doc-is-main` markers in components — 8 primary pages ship with no summary.
+
+On the "`@doc-*` asserting behaviour with no spec" question: the `@doc-keyboard` / `@doc-aria` blocks in the 15 zero-spec component features (F-8) do describe real keyboard contracts — e.g. `packages/components/src/menubar/menubar.ts:40` documents wrapping on `[kjLoop]` — but in every case checked, the mechanism *is* exercised by the core spec (`packages/core/src/menubar/menubar.spec.ts:331` asserts exactly that wrap). The wrapper-level claim is unverified; the underlying behaviour is not. The genuine untested doc-claim is `packages/components/src/toast/toast.ts:37-41`, whose `F6` / `Escape` lines are hedged with "when the host app wires it" / "Optional" and correspond to nothing in either package.
+
+**Fix:** Documenting an input is a one-line change; do it per file as each is touched, and add an ESLint rule scoped to `PropertyDefinition` whose initialiser is `input`/`model`/`output` so the number cannot grow. Add the 8 missing `@doc-description` lines. Rewrite the `toast` `@doc-keyboard` block to state only what the library does. **Effort: M**
+
+---
+
+### F-11 34 classes carry an Angular type suffix with no collision; `icon.directive.ts` breaks the file rule too
+
+**Severity:** low · **Confidence:** medium
+**Files:** `CLAUDE.md` "Class Naming Rule", `rules/code_style.md:8-11`, `packages/core/src/icon/`, `packages/components/src/**`
+
+Of 169 `Kj*Component` / `Kj*Directive` / `Kj*Service` classes, 135 have a same-base counterpart somewhere in the two packages (so the suffix is earned) and **34 do not**: `KjCardComponent` + 6 siblings (`packages/components/src/card/card.ts:81,106,124,139,154,172,192`), `KjEmptyStateComponent` + 4 (`empty-state/empty-state.ts:136,185,212,232,268`), `KjTableToolbarComponent` (`table/table-toolbar.ts:189`), `KjTablePaginationComponent` (`table/table-pagination.ts:139`), `KjTableStatusBarComponent` (`table/table-status-bar.ts:56`), `KjTableSidePanelComponent` (`table/table-side-panel.ts:211`), `KjCellTemplateDirective` (`table/table-cell-template.ts:29`), `KjDatetimePickerComponent` (`datetime-picker/datetime-picker.ts:114`), `KjRovingTabindexItemDirective` (`packages/core/src/a11y/roving-tabindex.ts:38`), `KjRichTextExtensionDirective` (`packages/core/src/rich-text/rich-text-extension.ts:29`), and 15 more.
+
+The clearest one also breaks the file-name half of the rule:
+
+```
+packages/core/src/icon/icon.directive.ts       → class KjIconDirective (icon.directive.ts:75)
+packages/core/src/icon/icon.directive.spec.ts
+```
+
+No `KjIcon` class and no `icon.ts` exist in that folder, so nothing collides — and `rules/tsdoc.md:41-55` uses this very directive as its worked example, documenting it as `@doc-name icon`. It is also the only `*.directive.ts` / `*.component.ts` / `*.pipe.ts` file left in either package.
+
+`KjRovingTabindexItemDirective` is a near-miss worth deciding by hand: `KjRovingTabindex` exists, but the base name `KjRovingTabindexItem` does not, so by the letter of the rule the suffix should go. That is the kind of call CLAUDE.md says to "discuss before deciding" — hence medium confidence on the exact count.
+
+**Why it matters:** low impact, but it is the single most mechanically checkable rule in `CLAUDE.md`, and 34 exported public names disagree with it — the same story as F-5 and F-7: the rules file is no longer a description of the code.
+
+**Fix:** Rename `icon.directive.ts` → `icon.ts`, `icon.directive.spec.ts` → `icon.spec.ts`, `KjIconDirective` → `KjIcon` (a breaking export rename — bundle it with the next minor and keep a deprecated alias export for one release). For the other 33, either rename or relax the rule to "element components keep `Component`" and say so; do not leave 34 silent exceptions. **Effort: M**
+
+---
+
+### F-12 "One directive per file" is violated by ~30 files, several holding 7–9 directives in 400–900 lines
+
+**Severity:** low · **Confidence:** high
+**Files:** `rules/architecture.md:25-26` and the files listed below
+
+```
+rules/architecture.md:25-26
+## One directive per file
+Exception: tightly-coupled pair where child is never used standalone and both are < 30 lines.
+```
+
+Files with more than two `@Directive`/`@Component` declarations (count · lines · path):
+
+```
+9 · 919L · packages/core/src/carousel/carousel.ts
+9 · 434L · packages/components/src/pagination/pagination.ts
+8 · 582L · packages/components/src/command-palette/command-palette.ts
+8 · 399L · packages/components/src/carousel/carousel.ts
+7 · 698L · packages/core/src/color-picker/color-picker.ts
+7 · 544L · packages/core/src/stepper/stepper.ts
+7 · 284L · packages/components/src/breadcrumb/breadcrumb.ts
+7 · 279L · packages/components/src/confirm-popup/confirm-popup.ts
+7 · 194L · packages/components/src/card/card.ts
+6 · 417L · packages/core/src/alert/alert.ts
+… 20 more with 3–6
+```
+
+Directly alongside features that *do* follow the rule: `packages/core/src/select/` splits into `select-root.ts` / `select-trigger.ts` / `select-content.ts` / `select-option.ts`, and `packages/core/src/breadcrumb/` into six files. The two shapes coexist feature-by-feature with no visible principle — the clearest evidence in the codebase of two authoring eras layered on each other.
+
+Related, minor: six files are pure re-export barrels that are not `index.ts`, against `code_style.md:34` ("No barrel re-exports beyond `index.ts`") — `packages/core/src/{select/select.ts, combobox/combobox.ts, cascade-select/cascade-select.ts, tree-select/tree-select.ts, popover/popover.ts, tooltip/tooltip.ts}`. These exist to give the split-file features a single import path, so the rule, not the files, is probably what is wrong.
+
+**Fix:** Split the 900- and 700-line files at minimum (`core/carousel`, `core/color-picker`, `core/stepper`, `components/command-palette`) following the `select/` layout, which gives each directive its own spec target too. Then amend `rules/architecture.md:25-26` to the threshold you will actually hold ("a file declares at most one *root* directive plus its non-standalone children, and stays under ~300 lines"), and restate the barrel clause to permit the `<feature>.ts` aggregator pattern. **Effort: L**
+
+---
+
+### F-13 Scattered pre-signal holdovers: 34 lifecycle hooks, 6 `@Output()`, 4 `@ViewChild`, 3 `@HostListener`
+
+**Severity:** low · **Confidence:** high
+**Files:** see below; `rules/code_style.md:20-29`
+
+```
+rules/code_style.md:21     - `input()`, `model()`, `output()` — never `@Input()`/`@Output()`
+rules/code_style.md:26-29  - No `ngOnInit`, `ngOnDestroy`, `ngAfterViewInit` · DOM access → `afterNextRender()` · Cleanup → `DestroyRef.onDestroy()`
+```
+
+```ts
+// packages/core/src/file-upload/file-upload.ts:139-145
+  @Output() readonly kjSelect = new EventEmitter<File[]>();
+  @Output() readonly kjReject = new EventEmitter<KjFileRejection[]>();
+  @Output() readonly kjRemove = new EventEmitter<KjUploadableFile>();
+```
+(mirrored verbatim at `packages/components/src/file-upload/file-upload.ts:252-254`)
+
+```ts
+// packages/components/src/input/input.ts:140-141
+  @ViewChild(KjInput, { static: true })
+  protected innerInput?: KjInput;
+```
+(also `components/src/carousel/carousel.ts:161`, `components/src/color-picker/color-picker.ts:194`, `components/src/file-upload/file-upload.ts:257`)
+
+```ts
+// packages/core/src/drawer/drawer.ts:118 · sheet/sheet.ts:140 · command-palette/command-input.ts:72
+  @HostListener('keydown.escape')
+```
+— against `rules/architecture.md:14` ("ARIA / host bindings always in the `host` object").
+
+34 real lifecycle-hook bodies remain. Most are *justified in writing* — parent/child registration ordering (`packages/core/src/chat/chat.ts:33-37` explains why DOM traversal beat a registry; `packages/core/src/tabs/tabs.ts:217-221` explains why a capture-phase listener must attach before the composed `KjRovingTabindex` host binding) — so this is a documented, bounded exception rather than neglect. The genuinely stale ones are resource-cleanup hooks that `DestroyRef` already covers elsewhere in the same codebase:
+
+```ts
+// packages/components/src/file-upload/file-upload.ts:293-296
   ngOnDestroy(): void {
-    this.el.nativeElement.removeEventListener('keydown', this.keydownFilter, true);
+    for (const url of this.previewCache.values()) URL.revokeObjectURL(url);
+    this.previewCache.clear();
   }
+```
+
+against 72 sites that use `inject(DestroyRef).onDestroy(…)` (e.g. `packages/core/src/primitives/overlay/wrapper.ts:46`).
+
+Note the `ngOnInit` + `addEventListener` pattern (`tabs.ts:217`, `carousel.ts:452`, `input-otp.ts:163`, `combobox-input.ts:89`, `command-input.ts:64`) also executes during server rendering, unlike the `afterNextRender` form used everywhere else — an SSR-consistency concern flagged here and owned by the SSR review.
+
+**Fix:** Convert the 6 `@Output()`/`EventEmitter` pairs to `output<T>()` (drop-in), the 4 `@ViewChild`s to `viewChild.required()`, the 3 `@HostListener`s to `host: { '(keydown.escape)': … }`. Convert the pure-cleanup `ngOnDestroy`s to `DestroyRef.onDestroy`. Leave the registration/ordering hooks and add a line to `rules/code_style.md` naming that exception explicitly, so it stops reading as 34 violations. **Effort: S**
+
+---
+
+### F-14 Misuse diagnostics are inconsistent and mostly untree-shakeable; missing-parent errors come from Angular, not the library
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/src/form/form.ts:162`, 25 `isDevMode()` sites, 34 `*.context.ts`
+
+Two dev-guard idioms coexist. One is tree-shaken out of production builds:
+
+```ts
+// packages/core/src/form/form.ts:161-166
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        console.warn(
+          '[KjForm] <form kjForm> has no `[formGroup]` or `ngForm` binding. ...',
+        );
+      }
+```
+
+The other — used 25 times, and the only one used outside `form.ts` — is a runtime function call the optimiser cannot fold away, so both the branch and its message strings ship to production:
+
+```ts
+// packages/core/src/alert/alert.ts:213-221
+    if (isDevMode()) {
+      effect(() => {
+        const v = this.kjVariant();
+        if (!this.preset.variants.includes(v)) {
+          console.warn(
+            `[kj-alert] unknown variant "${v}". Allowed values: ${this.preset.variants.join(', ')}.`,
+          );
+```
+
+Where diagnostics exist they are good — `packages/core/src/progress-bar/progress-bar.ts:182-210` throws on `kjMin >= kjMax` and warns once on out-of-range values; `packages/core/src/list/list.ts:188-200` warns that a `kjAs="nav"` list is an unnamed landmark. But they cover only ~12 of ~68 features (alert, breadcrumb, form, kbd, list, pagination, presets/size, presets/variant, progress-bar and a few more), and the library contains just 4 `throw new Error` sites in total.
+
+The gap that matters most is the context contract. Children inject their parent token non-optionally (`packages/core/src/tabs/tabs.ts:200,260,342`; `packages/core/src/calendar/calendar-day.ts:53`; `packages/core/src/breadcrumb/breadcrumb-item.ts:29`), so misuse *does* fail loudly — but with Angular's generic `NG0201: No provider for InjectionToken KjTabs`, which names neither the child directive nor the parent selector the author needs to add. Several of these also cast a token typed as an interface straight to the implementing class (`packages/core/src/accordion/accordion.ts:241` `inject(KJ_ACCORDION) as KjAccordion`; `carousel/carousel.ts:440,555,637`), which defeats the interface boundary the context pattern exists to create.
+
+**Fix:** Standardise on `ngDevMode` and migrate the 25 `isDevMode()` guards (mechanical; also removes their strings from production bundles). Add a shared `injectParent(TOKEN, { child: 'KjTab', parent: '[kjTabs]' })` helper in `primitives/` that throws an `ngDevMode`-guarded message naming both, and route the 34 contexts through it. Replace the `as KjAccordion` / `as KjCarousel` casts by widening the context interface to include what children actually need. **Effort: M**
+
+---
+
+### F-15 `KJ_COMPONENTS_VERSION` reports `0.0.1` for a package at `0.9.3`
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/components/src/public-api.ts`, `packages/components/package.json`
+
+```ts
+// packages/components/src/public-api.ts:1-2
+// Public API for @kouji-ui/components
+export const KJ_COMPONENTS_VERSION = '0.0.1';
+```
+```jsonc
+// packages/components/package.json:3
+  "version": "0.9.3",
+```
+
+Nothing in the repo reads it (`grep -rn KJ_COMPONENTS_VERSION` returns only the declaration), so it is a published export whose only effect is to be wrong. `@kouji-ui/core` has no equivalent.
+
+Related barrel note, for the record: both public APIs are otherwise in sync with their folders — the only unexported directories are `packages/core/src/styles/` (docs-only CSS) and `packages/components/src/overlay/` (the aggregator stylesheet plus four spec files), both correct.
+
+**Fix:** Delete the export, or generate it at build time from `package.json` and add the equivalent to `@kouji-ui/core`. Deleting is one line and one changeset. **Effort: S**
+
+---
+
+### F-16 `KjDisabled` is composed by 26 directives and hand-rolled by 15
+
+**Severity:** low · **Confidence:** high
+**Files:** `packages/core/src/primitives/interaction/disabled.ts` and the 15 consumers listed below
+
+The primitive exists and is exactly what `rules/architecture.md:11` prescribes:
+
+```ts
+// packages/core/src/primitives/interaction/disabled.ts:20-31
+@Directive({
+  selector: '[kjDisabled]',
+  host: {
+    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.data-disabled]': 'disabled() ? "" : null',
+  },
+})
+export class KjDisabled {
+  readonly disabled = input<boolean, unknown>(false, { alias: 'kjDisabled', transform: booleanAttribute });
 }
 ```
 
-`KjRovingTabindex` has had the exact input needed since the same commit
-(`roving-tabindex.ts:111`, `readonly kjRovingOrientation = input<'horizontal' |
-'vertical' | 'both'>('both')`), and three siblings use it correctly:
-`core/src/list/list.ts:100` and `core/src/stepper/stepper.ts:71`
-(`inputs: ['kjRovingOrientation: kjOrientation']`), `core/src/tag/tag-list.ts:45`.
+26 core files compose it. 15 declare their own `kjDisabled` input and re-bind `aria-disabled` / `data-disabled` by hand instead: `button/button.ts`, `link/link.ts:99`, `button-group/button-group.ts`, `field/field.ts`, `file-upload/file-upload.ts`, `menubar/menubar-item.ts`, `number-input/number-stepper.ts`, `pagination/pagination-item.ts`, `password-input/password-input.ts`, `popover/popover-trigger.ts`, `select/select-trigger.ts`, `speed-dial/speed-dial.ts`, `time-picker/time-picker-meridiem.ts`, `tree-select/tree-select-trigger.ts`, `breadcrumb/breadcrumb-ellipsis.ts`. `[attr.aria-disabled]` appears in 37 separate host blocks.
 
-**Why it matters:** Triple violation in one class — banned lifecycle interfaces
-(`rules/code_style.md`: "No `ngOnInit`, `ngOnDestroy`"), manual DOM listener where
-a host binding + `DestroyRef` is the house style, and a capture-phase
-`stopImmediatePropagation` that will swallow *any* other consumer keydown handler
-on the tablist. Worst of all, the TSDoc asserts the clean design while the code does
-the dirty one, so a reader auditing the file believes it is fine.
+Some hand-rolls are justified (`KjButton` OR-s in a group's cascading disabled and intercepts clicks in the capture phase — `packages/core/src/button/button.ts:145-165`; `packages/core/src/select/select-trigger.ts:72` calls its own flag "advisory"), but most are not, and each one is an independent chance to forget `booleanAttribute` — which is precisely how F-2 happened.
 
-**Fix:** Replace the whole class body with
-`hostDirectives: [{ directive: KjRovingTabindex, inputs: [] }]` plus a host binding
-that feeds `tabs.orientation()` into `kjRovingOrientation`, exactly as `stepper.ts`
-does. Delete `keydownFilter`, `ngOnInit`, `ngOnDestroy`. Keep the doc block.
-**Effort:** S
-
----
-
-### F-7 Two naming eras coexist; the CLAUDE.md naming rule is followed in core and inverted in components
-
-**Severity:** medium · **Confidence:** high
-**Files:** 160 classes across `packages/components/src/**` vs 27 that omit the suffix
-
-`CLAUDE.md`: *"Omit the Angular type suffix (`Directive`, `Component`, `Service`,
-`Pipe`) from class names **unless** two things in the same feature would otherwise
-share the same base name."*
-
-Era A (majority, 160 classes) keeps the suffix unconditionally:
-`KjBadgeComponent`, `KjCardComponent`, `KjCardCoverComponent`, `KjCardHeaderComponent`,
-`KjCardTitleComponent`, `KjCarouselViewportComponent`, `KjBreadcrumbListComponent`, …
-Era B (27 classes, all recent) follows the rule: `KjChatMessage`, `KjChatThread`,
-`KjPromptInput`, `KjDirectionToggle`, `KjTableVirtual`, `KjTextEditor`,
-`KjNumberFilter`, `KjBulkAction`, `KjTableEmptyTemplate`. `git log` dates confirm the
-split (card.ts 2026-05-15, badge.ts 2026-07-03 vs chat-message.ts 2026-09-06).
-
-Four classes keep `Directive` with **no** collision at all:
-- `packages/core/src/icon/icon.directive.ts:75` — `KjIconDirective` (also the only
-  `.directive.ts` filename in core; nothing else in that folder is named `icon`)
-- `packages/core/src/a11y/roving-tabindex.ts:38` — `KjRovingTabindexItemDirective`
-- `packages/core/src/rich-text/rich-text-extension.ts:29` — `KjRichTextExtensionDirective`
-- `packages/components/src/table/table-cell-template.ts:29` — `KjCellTemplateDirective`
-
-**Why it matters:** The rule exists to make the public API predictable; with both
-conventions live, a consumer cannot guess whether the symbol is `KjSelect` or
-`KjSelectComponent`. If the *real* policy is "core drops the suffix, components keep
-it to disambiguate across packages", that is a defensible design — but it is not what
-`CLAUDE.md` says, so either the rule or the code is wrong.
-
-**Fix:** Decide and write it down. Recommended: amend `CLAUDE.md` to state the
-cross-package disambiguation explicitly ("a styled wrapper over a core directive of
-the same name keeps `Component`"), then fix the 27 Era-B outliers to match, and drop
-the gratuitous `Directive` suffix from the four classes above (+ rename
-`icon.directive.ts` → `icon.ts`).
-**Effort:** M
-
----
-
-### F-8 `@angular/cdk` is a peer dependency of both published packages despite zero CDK imports
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/package.json:23,32`, `packages/components/package.json:28`
-
-```json
-  "description": "Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.",
-  "keywords": ["angular","ui","headless","directives","cdk","a11y","wcag"],
-  "peerDependencies": { "@angular/cdk": "^22.0.0", … }
-```
-
-`grep -rn "from '@angular/cdk" packages apps` → **0 matches.** `rules/stack.md`:
-*"Zero external UI deps. No Angular CDK."* The code obeys; the manifest does not.
-The description also still says "Angular 21" while peers require `^22.0.0`, and
-`CLAUDE.md`'s accessibility checklist still tells authors to use `CdkFocusTrap`
-(the real one is
-`packages/core/src/primitives/overlay/strategies/focus-trap/`).
-
-Related unapproved deps: `rules/stack.md`'s approved table lists only
-`@tanstack/angular-table` and `apache-echarts`, yet `packages/components/package.json`
-ships `marked` and `@tanstack/virtual-core` as runtime `dependencies`, and both
-packages carry the `lexical` (9 packages) and `monaco-editor` peer families.
-
-**Why it matters:** Every consumer is forced to install a large dependency the
-library never loads, and the npm page advertises the opposite of the project's
-headline technical differentiator ("zero external UI deps").
-
-**Fix:** Drop `@angular/cdk` from both `peerDependencies`, from the root
-`dependencies`, and from `keywords`; rewrite the two `description` strings
-("Angular 22", "no CDK"); remove the `CdkFocusTrap` reference from `CLAUDE.md`.
-Update `rules/stack.md`'s approved table to list what actually ships, or remove the
-deps that should not.
-**Effort:** S
-
----
-
-### F-9 `core` is not headless: 17 hard-coded class names, 2 inline style declarations, 5 stylesheets, 12 element components
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/core/src/overlay-badge/overlay-badge.ts:56`,
-`overlay-badge/overlay-badge-content.ts:46`, `dropdown-menu/dropdown-menu-*.ts`,
-`select/select-option.ts:31`, `sheet/sheet.ts:41`, `drawer/drawer.ts:33`,
-`popover/popover-title.ts:32`, `command-palette/command-item.ts:46`,
-`combobox/combobox-option.ts:30`, `confirm-popup/confirm-popup-message.ts:30`;
-`core/src/styles.css`, `core/src/icon/icon.css`, `core/src/typography/prose.css`,
-`core/src/motion/motion.css`, `core/src/primitives/overlay/overlay.css`
-
-```ts
-// packages/core/src/overlay-badge/overlay-badge-content.ts:46
-    'style': 'position: absolute; pointer-events: none;',
-// packages/core/src/overlay-badge/overlay-badge.ts:56
-    'style': 'position: relative;',
-// packages/core/src/dropdown-menu/dropdown-menu-content.ts:144
-    'class': 'kj-dropdown-menu',
-```
-
-`rules/architecture.md`: *"`@kouji-ui/core` — directives only, zero CSS, zero
-components."* Reality: 17 literal `class: 'kj-*'` hosts, 2 literal inline `style`
-declarations, 5 CSS files (3 of them shipped as package `exports`), and 12
-element-selector `@Component`s (`kj-dialog`, `kj-drawer`, `kj-sheet`, `kj-toast`,
-`kj-select-content`, `kj-popover-content`, `kj-tooltip-content`,
-`kj-dropdown-menu-content`, `kj-tree-select-content`, `kj-backdrop`,
-`kj-overlay-wrapper`, `kj-command-palette-dialog`).
-
-To be fair: the ~40 `[style.--kj-*]` custom-property bindings (slider fractions,
-progress fraction, avatar-group count, carousel slides-per-view) are *correct*
-headless practice — they publish a data channel, not a look. The problem is only the
-literal class names and the two inline `style` strings, which hard-wire the styled
-layer's class contract into the headless one. `core/src/styles/docs-themes.css` is a
-docs-app concern living in the library source (referenced only by `_examples/` and
-`apps/docs/src/lib/examples.ts:39`).
-
-**Why it matters:** A consumer using core headlessly gets `class="kj-dropdown-menu"`
-on their element whether they want it or not, and cannot reproduce
-`kj-overlay-badge`'s layout without knowing that core already set
-`position: relative`. It also means the "zero CSS" selling point in the package
-description is false.
-
-**Fix:** Move the 17 class names and 2 inline styles into the `@kouji-ui/components`
-wrappers (or to `data-kj-*` attributes if the CSS needs a hook that survives the
-headless path). Either genuinely hold the line or amend `rules/architecture.md` to
-say "core ships structural CSS for the overlay/icon/prose primitives only" — which is
-the honest description of the current design. Move `docs-themes.css` under
-`apps/docs/`.
-**Effort:** M
-
----
-
-### F-10 `ViewEncapsulation.None` used 183 times against an explicit "do not use" rule
-
-**Severity:** medium · **Confidence:** high
-**Files:** 172 occurrences in `packages/components/src` (80 files), 11 in
-`packages/core/src`, 4 in `apps/docs/src` — e.g.
-`components/src/action-sheet/action-sheet.ts:129`, `button/button.ts:134`,
-`input/input.ts:119`
-
-`rules/code_style.md`: *"Do not use `encapsulation: ViewEncapsulation.None`.
-Component styles must stay scoped. The only exception is generated SVG that needs
-global classes."*
-
-**Why it matters:** This is not drift, it is the library's actual styling
-architecture (every wrapper is `host: { style: 'display: contents;' }` + a global
-`.kj-*` class from a `styleUrl`), applied 183 times. A rule that 100% of the styled
-layer violates is worse than no rule — it trains authors to ignore `rules/`. It also
-means the `styleUrl` CSS files are effectively global, which is why F-9's core class
-names leak in the first place.
-
-**Fix:** Rewrite the rule to describe the real policy: "styled wrappers use
-`ViewEncapsulation.None` with a `@layer kj.component` stylesheet and `kj-`-prefixed
-class names; app-level components must stay scoped." Then add a lint rule that
-enforces the `@layer` + `kj-` prefix requirement, which is the property you actually
-care about.
-**Effort:** S (rule) / M (if you instead decide to scope the styles)
-
----
-
-### F-11 Five bespoke `ControlValueAccessor`s bypass `KjFormControl`, and `KjFormControl` exposes half of what the rules promise
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/components/src/input/input.ts:96-102,127,140,155-168`,
-`components/src/textarea/textarea.ts:146`, `components/src/input-otp/input-otp.ts:103`,
-`components/src/color-picker/color-picker.ts:107`,
-`core/src/rich-text/rich-text-editor.ts:97`;
-`packages/core/src/primitives/forms/form-control.ts:43-51`
-
-`rules/architecture.md`: *"All form inputs compose `KjFormControl` via
-`hostDirectives`. Single `ControlValueAccessor`. Exposes: `value`, `disabled`,
-`touched`, `dirty`, `valid`, `invalid`."*
-
-`KjFormControl` exposes three of those six — `value`, `disabled`, `touched`.
-`dirty`, `valid`, `invalid` do not exist. And five other classes register their own
-`NG_VALUE_ACCESSOR`, forwarding by hand:
-
-```ts
-// packages/components/src/input/input.ts:140
-  @ViewChild(KjInput, { static: true })
-  protected innerInput?: KjInput;
-  …
-  writeValue(val: unknown): void { this.innerInput?.formCtrl.writeValue(val); }
-  registerOnChange(fn: (value: unknown) => void): void { this.innerInput?.formCtrl.registerOnChange(fn); }
-```
-
-Note the same class uses `viewChild()` (signal) for `nativeInput` two lines above and
-the `@ViewChild` decorator here — two eras in nine lines.
-
-**Why it matters:** Five hand-written CVA shims are five places to get `touched`,
-`disabled` propagation, or `setDisabledState` subtly wrong, and the missing
-`dirty`/`valid`/`invalid` means wrapper authors reach for `formCtrl.touched() &&
-kjInvalid()` ad hoc (`core/src/input/input.ts:61-62`) instead of a shared contract.
-
-**Fix:** Add `dirty`, `valid`, `invalid` to `KjFormControl` (it already owns the
-`_onChange` hook, so `dirty` is a one-liner). Replace the five bespoke CVAs with
-`hostDirectives: [KjFormControl]` + `exportAs`, or, where the wrapper must forward,
-extract a single `KjFormControlProxy` directive instead of copying the shim.
-**Effort:** M
-
----
-
-### F-12 Concrete duplication: two identical overlay refs, five copy-pasted cell editors, two competing navigation primitives
-
-**Severity:** medium · **Confidence:** high
-
-**(a) `KjDrawerRef` and `KjSheetRef` are byte-identical apart from names.**
-`packages/core/src/drawer/drawer.ref.ts` (63 lines) vs
-`packages/core/src/sheet/sheet.ref.ts` (64 lines) — `diff` differs only in the class
-name, the three doc sentences, and the error string. `KjDialogRef` (42 lines) is the
-same shape minus the state signals. All three carry the dead `afterOpened$` of F-2.
-
-**(b) Five table cell editors re-implement the same commit state machine.**
-`packages/components/src/table/table-editors/{text,number,date,select,boolean}-editor.ts`:
-
-```ts
-// text-editor.ts:40-80 — and, verbatim, in number-editor.ts:40-89
-  private settled = false;
-  private mounted = false;
-  …
-  protected cancel(): void {
-    if (this.settled) return;
-    this.settled = true;
-    this.ctx.cancel();
-  }
-  protected onFocusOut(event: FocusEvent): void {
-    if (!this.mounted || this.settled) return;
-    const next = event.relatedTarget as Node | null;
-    if (next && this.hostEl.nativeElement.contains(next)) return;
-    this.commit();
-  }
-```
-
-plus the identical
-`constructor() { this.draft.set(…); afterNextRender(() => { this.X()?.focus(); this.mounted = true; }); }`.
-
-**(c) Two competing roving/navigation primitives.** `core/src/a11y/roving-tabindex.ts`
-(DI-registered, used by list, stepper, tag-list, tabs, carousel, date-range-presets)
-and `core/src/primitives/list/navigator.ts` (used by select, combobox, command-palette,
-dropdown-menu, menubar, cascade-select, tree-select). Both own arrow-key handling,
-disabled-skipping, and orientation. Twelve more files hand-roll `'ArrowDown'`
-handling on top: `calendar-grid.ts`, `color-picker.ts`, `date-picker-trigger.ts`,
-`number-input.ts`, `time-picker-segment.ts`, `time-picker-meridiem.ts`,
-`table-keyboard.ts`, `tree-select-trigger.ts`, `accordion.ts`, `carousel.ts`,
-`menubar.ts`, `tabs.ts`.
-
-**Why it matters:** (a) and (b) are pure copy-paste — a fix to the focus-out guard
-lands in one of five files. (c) is the more expensive one: two primitives with
-overlapping responsibility means every new composite widget author must first work
-out which one applies, and the answer is currently "whichever era the neighbouring
-feature was written in".
-
-**Fix:** (a) Extract `KjOverlayRef<T, R>` in `primitives/overlay/` and have
-`KjDialogRef`/`KjDrawerRef`/`KjSheetRef` extend it (keeps the three token identities
-for DI). (b) Extract a `KjCellEditorHost` host-directive owning
-`settled`/`mounted`/`onFocusOut`/`commit`/`cancel`; each editor keeps only its
-`draft` type and template. (c) Decide which primitive is canonical, document the
-split (`roving-tabindex` = static composite toolbars; `list/navigator` = collections
-with selection/type-ahead), and make the other delegate.
-**Effort:** (a) S · (b) M · (c) L
-
----
-
-### F-13 Dev-mode diagnostics exist in 12 of ~74 core features, with four different message prefixes
-
-**Severity:** medium · **Confidence:** high
-**Files:** only `core/src/{alert,breadcrumb,kbd,list,pagination,presets/size,
-presets/variant,progress-bar,typography/blockquote,typography/code,typography/lead,
-typography/truncate}.ts` guard with `isDevMode()`; plus `core/src/form/form.ts:162`
-(the single `ngDevMode` usage) and `core/src/rich-text/engine.ts` (`console.error`).
-
-The good pattern, from `packages/core/src/progress-bar/progress-bar.ts:183-214`:
-
-```ts
-    if (isDevMode()) {
-      effect(() => {
-        const lo = this.kjMin(); const hi = this.kjMax();
-        if (lo >= hi) {
-          throw new Error(`[kj] KjProgressBar: kjMin (${lo}) must be less than kjMax (${hi}).`);
-        }
-      });
-```
-
-and `alert.ts:213-260`, which warns on unknown variant, unknown size, missing
-accessible name, empty content, and `assertive`+`success`. That is excellent.
-
-Everywhere else, misuse is silent. A `[kjSliderThumb]` outside `[kjSlider]` produces
-Angular's raw `NG0201: No provider for InjectionToken KjSlider` — and 50
-`inject(..., { optional: true })` calls across core mean many parent/child mistakes
-produce no error at all, just a dead widget. Message prefixes are inconsistent:
-`[kj-alert]`, `[kj] KjProgressBar:`, `[KjForm]`, `[KjRichTextEditor]`.
-
-**Why it matters:** For a primitives library, misuse diagnostics *are* the API
-documentation. 84% of features give none.
-
-**Fix:** Add a tiny `assertParent(token, childName, parentSelector)` helper in
-`core/src/a11y/` or `primitives/` that throws a formatted message under
-`ngDevMode`, and use it at every non-optional context `inject()` site (~80 call
-sites, mechanical). Standardise on `ngDevMode` rather than `isDevMode()` so the
-blocks are tree-shaken out of production bundles, and on one prefix format
-(`[kjSliderThumb]` — the selector, which is what the developer typed).
-**Effort:** M
-
----
-
-### F-14 TSDoc: 30% of component inputs undocumented, and the themed-example system is essentially unused
-
-**Severity:** medium · **Confidence:** high
-**Files:** `rules/tsdoc.md` vs `packages/**`
-
-Measured (declarations of `input`/`model`/`output` with a preceding `/** */`):
-- core: **474/511 (92.8%)** documented
-- components: **339/482 (70.3%)** documented — e.g. `button/button.ts:149-151`
-  (`kjDisabled`, `kjLoading`, `kjFullWidth` all bare, while `kjVariant` and `kjSize`
-  immediately above have full blocks), `alert/alert.ts:136-140`,
-  `accordion/accordion.ts:104,135,136`
-
-`@doc-*` tag coverage:
-
-| tag | core | components |
-|---|---|---|
-| unique `@doc-name` pages | 70 | 69 |
-| `@doc-is-main` | 65 | 68 |
-| `@doc-description` | 72 | 60 |
-| `@doc-theme` | **7** | **0** |
-| `@doc-keyboard` | 2 | 58 |
-| `@doc-aria` | 3 | 67 |
-
-- **`@doc-theme` is used by exactly two symbols** — `core/src/button/button.ts:61-65`
-  and `core/src/toast/toast.ts:27-31` — despite `rules/tsdoc.md` devoting a whole
-  section ("Themed example references": shadcn / retroui.dev / Ant Design) to it.
-- **Six themed example files are orphaned**: `core/src/dialog/_examples/dialog.{retro,
-  finance}.example.ts`, `popover/_examples/popover.{retro,finance}.example.ts`,
-  `tooltip/_examples/tooltip.{retro,finance}.example.ts` are registered in
-  `core/src/example-components.ts:43,44,50,51,56,58` but referenced by no
-  `@doc-file`/`@doc-theme` tag anywhere — they render on no docs page.
-- 5 core pages have a `@doc-name` but no `@doc-is-main`.
-- `core/src/radio/radio.context.ts` is a 3-line file with zero TSDoc, while every
-  other context file documents each member (contrast `slider.context.ts`).
-- **`rules/tsdoc.md` documents 7 tags; the generator supports ~20.**
-  `grep -rho "doc-[a-z-]*" tools scripts apps/docs` yields `doc-a11y`, `doc-aria`,
-  `doc-blocks`, `doc-callout`, `doc-css-var`, `doc-import`, `doc-keyboard`,
-  `doc-order`, `doc-prereqs`, `doc-related`, `doc-tags`, `doc-title`, `doc-touch`,
-  `doc-typo` — none of which the rules file mentions.
-
-**Why it matters:** Authors follow `rules/tsdoc.md`, which is missing two-thirds of
-the vocabulary; the richest tags (`@doc-keyboard`, `@doc-aria`, `@doc-touch`) are
-therefore near-absent from core, where the keyboard contracts actually live.
-
-**Fix:** (1) Regenerate the tag table in `rules/tsdoc.md` from the extractor's
-supported set, with a one-line purpose each. (2) Close the 143 undocumented
-components inputs. (3) Either wire the six orphaned retro/finance examples into
-`@doc-theme` blocks or delete them. (4) Add an extractor check that fails the build
-on a `@doc-name` page with no `@doc-is-main` or no `@doc-description`.
-**Effort:** M
-
----
-
-### F-15 ESLint enforces none of the seven rules files — this is the root cause of every drift finding
-
-**Severity:** medium · **Confidence:** high
-**Files:** `eslint.config.js` (whole file, 82 lines)
-
-The only project-specific rules configured are `@angular-eslint/directive-selector`
-and `component-selector` (the `kj` prefix on *selectors*). Nothing checks:
-
-| Rule in `rules/` | Enforced? | Drift found |
-|---|---|---|
-| `kj` prefix on every input/output/model | no | 101 violations (F-3) |
-| No `@Input()`/`@Output()` | no | 6 `@Output` + `EventEmitter` in `core/file-upload/file-upload.ts:139-145`, `components/file-upload/file-upload.ts:252-254` |
-| No lifecycle interfaces | no | 23 classes `implements OnInit/OnDestroy/AfterViewInit/AfterContentInit` |
-| No `ViewEncapsulation.None` | no | 183 (F-10) |
-| Class/file suffix rule | no | 187 (F-7) |
-| One directive per file | no | 33 files with 3+ (`core/src/carousel/carousel.ts` = 9 directives in 919 lines) |
-| No Observables / `Subject` for state | no | 6 `Subject`s in the three overlay refs; `rxjs/operators` `debounceTime` in `components/src/table/table-filters/text-filter.ts:12` |
-| Always `inject()`, no constructor params | no | 6 (`drawer.ref.ts:32`, `sheet.ref.ts:33`, `input-mask.engine.ts:38`, …) |
-| Decorator queries → signal queries | no | 4 `@ViewChild` (`components/{carousel:161,color-picker:194,file-upload:257,input:140}`), 3 `@HostListener` (`core/{command-input:72,drawer:118,sheet:140}`) |
-
-**Why it matters:** Prose rules with no enforcement decay monotonically. The measured
-gap between core (written when the rules were fresh and small) and components
-(written across three eras) is exactly what an unenforced style guide produces.
-
-**Fix:** Add, in rough order of value/effort: `@angular-eslint/prefer-signals`,
-`no-input-rename`, `use-component-view-encapsulation`, `prefer-output-emitter-ref`,
-plus two ~30-line custom rules — "public signal members must match `/^kj[A-Z]/` (or
-carry an `alias:` that does)" and "boolean-defaulted `input()` must declare
-`transform: booleanAttribute`". Land them as `warn` first, burn the backlog, then
-flip to `error`.
-**Effort:** M
-
----
-
-### F-16 Public-API drift: stale version constant, 8 example components published, an unpublishable wildcard import path
-
-**Severity:** medium · **Confidence:** high
-**Files:** `packages/components/src/public-api.ts:2`,
-`packages/components/src/icon/index.ts:2-5`,
-`packages/components/src/input-mask/index.ts:3-10`, `tsconfig.json:12-17`,
-`packages/core/package.json` (`exports`)
-
-```ts
-// packages/components/src/public-api.ts:2
-export const KJ_COMPONENTS_VERSION = '0.0.1';   // package.json says 0.9.0
-```
-
-```ts
-// packages/components/src/icon/index.ts — demo code in the published API
-export { KjIconGalleryExample, KjIconUsageExample } from './_examples';
-// packages/components/src/input-mask/index.ts — six more
-export { KjInputMaskExample, KjInputMaskUsageExample, KjInputMaskCreditCardExample,
-         KjInputMaskDateExample, KjInputMaskValidationExample,
-         KjInputMaskCustomTokensExample } from './_examples';
-```
-
-```jsonc
-// tsconfig.json:14 — resolves in-repo, does not exist in the published package
-"@kouji-ui/core/*": ["packages/core/src/*"],
-```
-
-`packages/core/package.json`'s `exports` map lists only three CSS subpaths; ng-packagr
-emits one flat FESM. Any `@kouji-ui/core/<subpath>` import therefore typechecks
-locally and fails for consumers. Today only `apps/docs/src/app/services/
-example-registry.service.ts:9` uses it (`@kouji-ui/core/examples`), but the wildcard
-also lets any package file bypass `public-api.ts` silently.
-
-**Why it matters:** `KJ_COMPONENTS_VERSION` is a lie any consumer can read; 8 demo
-components inflate the published bundle and appear in IDE autocomplete; the wildcard
-path is a build-passes-then-breaks-for-users trap.
-
-**Fix:** Generate `KJ_COMPONENTS_VERSION` from `package.json` at build time or delete
-it. Drop the `_examples` re-exports from the two `index.ts` files (the docs app reads
-them through `example-components.ts`, not the barrel). Replace
-`"@kouji-ui/core/*"` with explicit entries for the paths you actually intend
-(`/examples`, the three CSS files) and mirror them in each package's `exports` map.
-**Effort:** S
-
----
-
-### F-17 `kj-menubar` is published but functionally incomplete, per its own TODO, with zero tests
-
-**Severity:** low · **Confidence:** high
-**Files:** `packages/components/src/menubar/menubar.ts:126-129`,
-`packages/components/src/public-api.ts`
-
-```ts
- * TODO: menubar+dropdown-menu wiring pending overlay-migration follow-up.
- * In this version, menubar items are plain action buttons without submenu
- * support. Submenu wiring will be reintroduced via the new dropdown-menu
- * API (`<kj-dropdown-menu-content [kjFor]="t">` on the panel side).
-```
-
-`components/src/menubar/` has no spec file. `core/src/menubar/` does (`menubar.spec.ts`).
-
-**Why it matters:** A menubar without menus is shipped at 0.9.0 under a name that
-promises otherwise, and nothing tests the reduced behaviour either. Related stale
-TODO: `core/src/stepper/stepper.ts:23` references "when the Progress Bar primitive
-lands at `packages/core/src/feedback/progress-bar/`" — the primitive exists, at
-`packages/core/src/progress-bar/`.
-
-**Fix:** Either finish the dropdown wiring or mark the export experimental and say so
-on the docs page. Delete the stale stepper TODO.
-**Effort:** S (label) / M (finish)
-
----
-
-### F-18 Shared filter contract lives inside one sibling's file instead of a `*.context.ts`
-
-**Severity:** low · **Confidence:** high
-**Files:** `packages/components/src/table/table-filters/text-filter.ts:19-30`,
-imported by `select-filter.ts:12`, `date-filter.ts`, `number-filter.ts`
-
-```ts
-// declared in text-filter.ts
-export const KJ_FILTER_CONTEXT = new InjectionToken<KjFilterContext>('kj.filter.context');
-// consumed in select-filter.ts:12
-import { KJ_FILTER_CONTEXT, type KjFilterContext } from './text-filter';
-```
-
-`rules/architecture.md`'s folder layout mandates `<component>.context.ts`. Also note
-the token string is `'kj.filter.context'` while all 34 core context tokens use the
-class-name form (`'KjSlider'`, `'KjAccordion'`).
-
-**Why it matters:** Three filters import a peer filter purely for a token —
-a needless edge in the import graph and a latent cycle if `text-filter` ever needs
-something from a sibling. It is also the only place in the repo where the context
-convention is broken.
-
-**Fix:** Move `KjFilterContext` + `KJ_FILTER_CONTEXT` to
-`table-filters/filters.context.ts`, re-export from `table-filters/index.ts`, and
-normalise the token description to `'KjTableFilter'`.
-**Effort:** S
+**Fix:** For the directives with no extra semantics (`select-trigger`, `tree-select-trigger`, `popover-trigger`, `pagination-item`, `menubar-item`, `time-picker-meridiem`, `number-stepper`, `breadcrumb-ellipsis`), replace the local input with `hostDirectives: [{ directive: KjDisabled, inputs: ['kjDisabled'] }]` and read `inject(KjDisabled).disabled`. For the ones that compose extra state (`KjButton`, `KjTagList`), compose `KjDisabled` for the attribute reflection and keep only the `effectiveDisabled` computed locally. **Effort: M**
 
 ---
 
 ## Recommended work items
 
-Ordered by (risk removed ÷ effort).
-
-1. **Re-enable tests in CI, before the next publish** — F-1. `release.yml` triggers on a
-   green CI, so every npm publish since 2026-05-07 (including `core@1.0.0`) shipped
-   untested. Nothing else on this list is durable until a red build is possible
-   again. Quarantine broken specs explicitly.
-2. **Fix or remove `afterOpened$`** on the three overlay refs, and add the spec —
-   F-2. One hour, removes a live API lie.
-3. **Add `booleanAttribute` to the 26 boolean inputs** — F-4. Mechanical, fixes
-   `<kj-button kjLoading>` and 25 siblings.
-4. **Rewrite `KjTabList`** to forward `kjRovingOrientation` through `hostDirectives`,
-   deleting `keydownFilter` + the two lifecycle hooks — F-6, F-15.
-5. **Manifest cleanup** — drop `@angular/cdk` peers/keywords, fix the "Angular 21"
-   and "over CDK" descriptions, generate `KJ_COMPONENTS_VERSION`, drop the eight
-   `_examples` re-exports, tighten the tsconfig path map — F-8, F-16.
-6. **Land the lint rules as warnings** — F-15. Two custom rules (kj-prefix,
-   booleanAttribute) plus four stock Angular ESLint rules. This is what stops
-   findings F-3/F-4/F-7/F-10/F-18 from reappearing.
-7. **Alias the 101 unprefixed component inputs** — F-3. Non-breaking as an alias
-   pass; schedule the member renames for 1.0.
-8. **Reconcile the rules files with reality** — F-7 (naming), F-9 (core CSS policy),
-   F-10 (`ViewEncapsulation.None`), F-11 (`KjFormControl` member list), F-14
-   (`@doc-*` tag table). Half of these are a rules edit, not a code change; do the
-   edit deliberately rather than leaving rules that are 100% violated.
-9. **Extract the three duplication primitives** — F-12: `KjOverlayRef` base (S),
-   `KjCellEditorHost` (M), then the roving-vs-navigator decision (L).
-10. **Add `assertParent()` dev diagnostics** at the ~80 non-optional context inject
-    sites, standardising on `ngDevMode` and the selector-name prefix — F-13.
-11. **Close the components test hole** — F-5. Priority order: dialog, sheet, toast,
-    tooltip/popover/dropdown-menu, tree-select, menubar, then the rest.
-12. **TSDoc backfill** — F-14: 143 component inputs, the five missing
-    `@doc-is-main`, `radio.context.ts`, and the six orphaned themed examples.
-13. **Small cleanups** — F-17 (menubar label + stale stepper TODO), F-18
-    (`filters.context.ts`).
-
----
+1. **Re-enable tests in CI.** Uncomment `pnpm test` in `.github/workflows/ci.yml`; quarantine red *files* by name in the vitest config with an issue each, never the whole step. Add `test:e2e` as its own job. → **F-1**
+2. **Sweep `booleanAttribute` onto every boolean input in both packages**, then delete the duplicate `kjTagDisabled` field in `KjTag` so one public name has one owner. Add a bare-attribute spec per directive touched. → **F-2**, unblocks **F-16**
+3. **Drop the phantom CDK peer dependency** from both `package.json` files, fix the core description and keywords (`Angular 21` → 22, remove `cdk`), and correct the `CdkFocusTrap` reference in `CLAUDE.md`. → **F-3**
+4. **Extract `withAnchoredPosition()`** into `primitives/overlay`: one `pxOffset` transform that respects `0`, one typed strategy accessor, six call sites deleted, nine unchecked casts gone. → **F-4**
+5. **Reconcile the three false rules with the code they describe** — `rules/code_style.md:72-77` (encapsulation), `rules/architecture.md:4` (zero CSS), `rules/code_style.md:14-15` (binding prefix). Each becomes either a corrected statement of the real design or a tracked migration; nothing stays as prose the code contradicts. → **F-5**, **F-6**, **F-7**
+6. **Publish or delete `packages/core/src/styles.css`.** If published, add it to `ng-package.json` assets and rewrite its `@import`s for the flattened dist layout; if deleted, document the four individual CSS entry points in the core README. → **F-6**
+7. **Make the surviving rules machine-enforced**: ESLint `no-restricted-syntax` for lifecycle hooks / `@Input` / `@Output` / `Renderer2`; a binding-prefix rule once item 5 settles the policy; stylelint with `selector-class-pattern: ^kj-` and a required `@layer kj.*`; a spec that fails on an unlayered or unprefixed stylesheet. → **F-9**, guards **F-5**, **F-7**, **F-13**
+8. **Close the overlay-family test gap in components**: rewrite the three `it.todo` wrapper specs against the trigger/content API, add one behavioural spec each for `dialog`, `sheet`, `toast`, `command-palette`, and resolve the three `it.skip` a11y cases in core. → **F-8**
+9. **Split the four largest multi-directive files** (`core/carousel` 919L, `core/color-picker` 698L, `core/stepper` 544L, `components/command-palette` 582L) along the `select/` layout, then restate `rules/architecture.md:25-26` as the threshold you will actually hold. → **F-12**
+10. **Standardise dev diagnostics** on `ngDevMode` and add an `injectParent(TOKEN, { child, parent })` helper that throws a message naming the missing parent selector; route all 34 contexts through it and drop the `as Kj*` casts. → **F-14**
+11. **Mechanical cleanups**, one PR: 6 `@Output()` → `output()`, 4 `@ViewChild` → `viewChild.required()`, 3 `@HostListener` → `host`, pure-cleanup `ngOnDestroy` → `DestroyRef`, delete `KJ_COMPONENTS_VERSION`. → **F-13**, **F-15**
+12. **Naming**: rename `icon.directive.ts` / `KjIconDirective` → `icon.ts` / `KjIcon` with a deprecated alias export, and decide (then document) whether element components keep the `Component` suffix. → **F-11**
 
 ## Open questions
 
-1. **Is the `Component` suffix on styled wrappers intentional cross-package
-   disambiguation?** If yes, `CLAUDE.md` should say so and the 27 Era-B classes are
-   the bugs. If no, 160 classes need renaming before 1.0. This decision blocks F-7
-   and should be made before any more components are added.
-2. **Is `ViewEncapsulation.None` + global `.kj-*` classes the intended styling
-   architecture?** 183 usages say yes; `rules/code_style.md` says no. If yes, F-9's
-   core class names become defensible and the rule needs rewriting; if no, the
-   styled layer needs a large refactor.
-3. **Which navigation primitive is canonical** — `KjRovingTabindex` or
-   `KjListNavigator`? Without an answer, F-12(c) cannot be scoped and the next
-   composite widget will pick a third path.
-4. **Why were tests disabled on 2026-05-07?** The commit says "being fixed in a
-   separate scope". Knowing how many specs actually fail today changes F-1 from
-   "flip a flag" to a multi-day effort — worth measuring before planning.
-5. **Are `lexical`, `monaco-editor`, `marked`, `@tanstack/virtual-core` and
-   `culori` approved?** `rules/stack.md` lists only `@tanstack/angular-table` and
-   `apache-echarts`, with "New dep needs → raise explicitly. Default: no." Five
-   unlisted runtime/peer deps ship today. Either the table is stale or the policy
-   was bypassed.
-6. **Should `docs-themes.css` and the `_examples/` trees live inside the published
-   packages at all?** They are currently compiled as part of the library source tree
-   and two of them leak into the public API.
+1. **Is the `ViewEncapsulation.None` + global `@layer kj.component` model the intended permanent architecture?** Everything in the code says yes and `rules/code_style.md` says no. If yes, the rule needs rewriting *and* the `.kj-` namespace needs a lint guard, because it is the only thing preventing collisions. If no, this is a repo-wide migration, not a rule violation.
+2. **What is the real binding-naming policy for `@kouji-ui/components`?** "Element components use bare names, attribute directives use `kj*`" would justify 102 of the 109 unprefixed bindings and is defensible — but seven classes currently do both, so somebody has to pick. Is a deprecation cycle acceptable for the renames?
+3. **Why was CDK ever a peer dependency?** Nothing imports it and `rules/stack.md` forbids it. Is there an unlanded plan that needs it, or is it a leftover from a pre-rewrite era (the core description still says "directives over CDK")?
+4. **Are the three `it.todo` overlay wrapper specs waiting on an API decision**, or just unwritten? The message says "rewrite for new overlay API", but that API landed and has been through four bug-fix releases since.
+5. **Should `prose.css` live in core at all?** It is 312 lines that restyle every HTML text element against `--kj-*` tokens — the single biggest contradiction of "headless". Moving it to `@kouji-ui/themes` would make the zero-CSS claim nearly true again.
+6. **Is `@layer` omission on the 13 unlayered stylesheets deliberate** (a deliberate escape from the layer cascade for `table.css`, `calendar.css`, `editor.css`) **or an oversight?** Those files currently outrank every layered rule regardless of specificity, which either is the point or is a latent theming bug.
+
+---
+
+## Changed since the 2026-09-06 review
+
+Previous review: `reports/review/09-architecture-code-quality.md` at commit `9aee150a`,
+auditing `fd6dd34e`. `main` has since advanced 8 commits. Every claim below was verified
+against the code at HEAD.
+
+### Fixed
+
+**Nothing fully fixed.** One partial improvement, verified:
+
+- **prev F-5 — "19 component features have zero real tests, including every overlay
+  wrapper" — *partially improved*.** `fb1d1956` added
+  `packages/components/src/overlay/overlay-styles.spec.ts` (208 lines), which walks
+  `document.styleSheets` for a rule that both matches and fills the panel and asserts
+  `ng-package.json` actually ships the sheet — a real behavioural spec for a feature that
+  had none. The same range added `packages/core/src/primitives/list/scope.spec.ts` (99),
+  `dismiss-press.spec.ts` (154) and `backdrop-press.spec.ts` (243), and extended
+  `stack.spec.ts` and `confirm-popup.spec.ts`. This pass counts **15** component features
+  with zero specs (current F-8), down from prev's 19. The gap is narrower, not closed —
+  and, per F-1, none of these specs is executed by CI.
+
+No other previous finding is addressed by `fd6dd34e..HEAD`. The range is four bug fixes
+plus two version-packages commits; it contains no lint-config, naming, prefix,
+encapsulation, TSDoc or packaging work.
+
+### Still open
+
+| prev | current | note |
+| --- | --- | --- |
+| prev F-1 — CI has not run a test since 2026-05-07, every publish gated on it | **F-1** | Unchanged and independently re-verified this pass. Prev's scale figures were **understated** — 274 spec files / 2,042 `it()` blocks, not prev's counts. Two aggravators added: `deploy-docs.yml` rides the same gate, and `.husky/pre-push`'s stated rationale is now false. |
+| prev F-3 — 101 public inputs in `components` have no `kj` prefix | **F-7** | Unchanged; this pass counts 102 and adds 7 classes mixing both conventions. |
+| prev F-4 — 26 boolean inputs in `components` lack `booleanAttribute` | **F-2** | Same defect, widened to both packages (~95 inputs). Prev scoped it to `components` only and missed the `kjTagDisabled` two-owner divergence, which is the sharpest instance. |
+| prev F-5 — 19 component features with zero real tests | **F-8** | Partially improved; see *Fixed*. |
+| prev F-7 — two naming eras coexist; the CLAUDE.md naming rule is inverted in components | **F-11** | Unchanged (34 classes carrying an Angular type suffix with no collision). |
+| prev F-8 — `@angular/cdk` is a peer dependency of both packages with zero CDK imports | **F-3** | Unchanged. |
+| prev F-9 — `core` is not headless | **F-6** | Unchanged; this pass quantifies it as 592 lines of themed CSS and 16 `@Component`s. |
+| prev F-10 — `ViewEncapsulation.None` used 183 times against an explicit rule | **F-5** | Unchanged; count now 188 — it **grew**. |
+| prev F-13 — dev-mode diagnostics in 12 of ~74 core features, four message prefixes | **F-14** | Unchanged; this pass adds that the diagnostics are mostly untree-shakeable. |
+| prev F-14 — 30% of component inputs undocumented; themed-example system unused | **F-10** | Unchanged (7% missing in core, 29% in components). |
+| prev F-15 — ESLint enforces none of the seven rules files | **F-9** | Unchanged, and still the root cause of most drift findings in both reviews. |
+| prev F-16 — public-API drift (stale version constant, 8 examples published, wildcard path) | **F-15** + (lazy report) **F-7** | Split: the stale `KJ_COMPONENTS_VERSION` is F-15 here; the published example components are F-7 in `07-lazy-loading-bundle.md`. |
+
+### Not reproduced
+
+Six previous findings have no counterpart in this pass. **All six were re-checked at HEAD
+and all six are still true.** This is an attention gap in the new audit — none of them was
+fixed, and none of them was wrong. All six are re-filed below.
+
+- **prev F-2 — `afterOpened$` is public API on three overlay refs and never emits.** Still
+  true, and this is the most serious of the six. `grep -rn "_afterOpened" packages` returns
+  **only the declaration and the `asObservable()` line** in each of
+  `dialog/dialog.ref.ts:10,12`, `drawer/drawer.ref.ts:20,23` and `sheet/sheet.ref.ts:21,24`.
+  There is no `.next()` anywhere. Re-filed as **F-17**.
+- **prev F-6 — `KjTabList` fights its own composed primitive with an event-swallowing
+  hack.** Still true: `tabs.ts:220` still carries the comment *"so we can swallow off-axis
+  arrow keys per the parent KjTabs orientation"* above a capture-phase
+  `stopImmediatePropagation` filter. Re-filed as **F-18**.
+- **prev F-11 — five bespoke `ControlValueAccessor`s bypass `KjFormControl`.** Still true:
+  `grep -rln ControlValueAccessor` returns `primitives/forms/form-control.ts` plus exactly
+  five bespoke implementations — `core/rich-text/rich-text-editor.ts`,
+  `components/color-picker/color-picker.ts`, `components/input/input.ts`,
+  `components/input-otp/input-otp.ts`, `components/textarea/textarea.ts`. Re-filed as
+  **F-19**.
+- **prev F-12 — concrete duplication (identical overlay refs, five copy-pasted cell
+  editors, two competing navigation primitives).** Still true: `drawer.ref.ts` and
+  `sheet.ref.ts` remain near-identical, and all five editors are still present
+  (`table/table-editors/{text,number,date,select,boolean}-editor.ts`). This pass files only
+  the `KjDisabled` duplication (F-16) and misses the rest. Re-filed as **F-20**.
+- **prev F-17 — `kj-menubar` is published but functionally incomplete, per its own TODO,
+  with zero tests.** Half true and re-filed corrected: the TODO survives verbatim at
+  `packages/components/src/menubar/menubar.ts:126` ("menubar+dropdown-menu wiring pending
+  overlay-migration follow-up") and `packages/components/src/menubar/` still has **no
+  spec**. But the *headless* `packages/core/src/menubar/` does have one —
+  `menubar.spec.ts`, 16.3 KB, added in `9acdb072`, i.e. **before** `fd6dd34e`. Prev's
+  "zero tests" was too broad. Re-filed, corrected, as **F-21**.
+- **prev F-18 — shared filter contract lives inside one sibling's file instead of a
+  `*.context.ts`.** Still true: `KJ_FILTER_CONTEXT` is still declared in
+  `table-filters/text-filter.ts` and imported from there by `date-filter.ts:11`,
+  `number-filter.ts:13` and `select-filter.ts:12`. Re-filed as **F-22**.
+
+### New since then
+
+- **F-4** — `kjOffset` transform swallows `0` at six overlay anchor points. No prev
+  counterpart; a genuine behavioural bug the previous pass missed.
+- **F-12** — "one directive per file" violated by ~30 files, several holding 7+.
+- **F-16** — `KjDisabled` is composed by 26 directives and hand-rolled by 15. Overlaps prev
+  F-12's duplication theme but is a distinct, larger instance.
+
+### Re-filed from the previous review
+
+Correct at `fd6dd34e`, still correct at HEAD, missed by this pass. Ids continue this
+report's sequence.
+
+#### F-17 `afterOpened$` is public API on three overlay refs and never emits *(carried over from prev F-2)*
+
+**Severity:** high · **Confidence:** high · **Effort:** S
+**Files:** `packages/core/src/dialog/dialog.ref.ts:10,12`,
+`packages/core/src/drawer/drawer.ref.ts:20,23`, `packages/core/src/sheet/sheet.ref.ts:21,24`
+
+Each ref declares `private readonly _afterOpened = new Subject<void>()` and exposes
+`readonly afterOpened$: Observable<void> = this._afterOpened.asObservable()`. A repo-wide
+`grep -rn "_afterOpened" packages --include=*.ts` returns **six lines — the three
+declarations and the three `asObservable()` calls.** `.next()` is never called, and
+`.complete()` is never called, anywhere.
+
+**Why it matters.** This is shipped public API on three of the library's most-used overlay
+services. A consumer wiring `ref.afterOpened$.subscribe(() => input.focus())` gets code
+that compiles, type-checks, runs, and silently never fires — the worst failure shape a
+library can ship, because there is no error to debug. It is also a semver trap: fixing it
+changes observable behaviour for anyone who has already worked around it.
+
+**Fix.** Either emit it — call `_afterOpened.next()` from the same place the open
+transition completes (the overlay controller's open path, after the panel is attached and
+the focus trap is armed) and `complete()` it on close — or delete it from all three refs in
+the next major. Do not leave it declared-and-dead. Add a spec per ref asserting the
+subscriber fires exactly once per open, which is the test that would have caught this.
+
+#### F-18 `KjTabList` swallows its own composed primitive's events instead of configuring it *(carried over from prev F-6)*
+
+**Severity:** medium · **Confidence:** high · **Effort:** S
+**Files:** `packages/core/src/tabs/tabs.ts:~178-228` (comment at `:220`),
+`packages/core/src/a11y/roving-tabindex.ts`
+
+`KjTabList` composes `KjRovingTabindex` via `hostDirectives` but forwards no inputs to it.
+Instead it installs a capture-phase `keydown` listener on its own host whose only purpose is
+to `stopImmediatePropagation()` off-axis arrow keys before the composed primitive sees them —
+the comment at `tabs.ts:220` says so explicitly ("so we can swallow off-axis arrow keys per
+the parent KjTabs orientation").
+
+**Why it matters.** This is a directive fighting the primitive it deliberately composed,
+which is exactly the coupling `rules/architecture.md`'s primitive pattern exists to prevent.
+`stopImmediatePropagation` on a capture listener is also a blunt instrument: it silences
+every other capture-phase listener on that element, present and future. Prev additionally
+found the TSDoc describing an input-forwarding mechanism that does not exist — verify that
+doc block is still inaccurate when fixing this.
+
+**Fix.** Give `KjRovingTabindex` an orientation input (it may already accept one) and forward
+it through `hostDirectives: [{ directive: KjRovingTabindex, inputs: ['kjRovingOrientation'] }]`
+bound from the `KJ_TABS` context, then delete the keydown filter and the manual
+`addEventListener`/`removeEventListener` pair. Update the TSDoc to describe what the code
+does.
+
+#### F-19 Five bespoke `ControlValueAccessor`s bypass `KjFormControl` *(carried over from prev F-11)*
+
+**Severity:** medium · **Confidence:** high · **Effort:** M
+**Files:** `packages/core/src/primitives/forms/form-control.ts`,
+`packages/core/src/rich-text/rich-text-editor.ts`,
+`packages/components/src/{color-picker/color-picker,input/input,input-otp/input-otp,textarea/textarea}.ts`
+
+The repo ships a `KjFormControl` primitive and then five components implement
+`ControlValueAccessor` by hand instead of composing it. That is five independent
+implementations of `writeValue` / `registerOnChange` / `registerOnTouched` / `setDisabledState`,
+five chances to diverge on touched-state timing, disabled propagation, and
+`NG_VALUE_ACCESSOR` provider shape — and five places to fix whenever Angular's forms
+semantics shift.
+
+**Fix.** Audit what each bespoke CVA needs that `KjFormControl` does not provide, extend the
+primitive to cover it, then migrate the five. Where a component genuinely cannot compose it
+(rich-text's async engine load is the plausible exception), document why in the class TSDoc so
+the exception is deliberate rather than accidental. Add a lint rule forbidding a raw
+`NG_VALUE_ACCESSOR` provider outside `primitives/forms/`.
+
+#### F-20 Concrete duplication beyond `KjDisabled`: overlay refs and table cell editors *(carried over from prev F-12)*
+
+**Severity:** medium · **Confidence:** high · **Effort:** M
+**Files:** `packages/core/src/drawer/drawer.ref.ts` vs `packages/core/src/sheet/sheet.ref.ts`
+vs `packages/core/src/dialog/dialog.ref.ts`;
+`packages/components/src/table/table-editors/{text,number,date,select,boolean}-editor.ts`
+
+- **(a)** `KjDrawerRef` and `KjSheetRef` are near-identical apart from names, doc sentences
+  and an error string; `KjDialogRef` is the same shape minus the state signals. All three
+  carry the dead `afterOpened$` of F-17, which is itself evidence of copy-paste.
+- **(b)** The five table cell editors re-implement the same commit state machine —
+  `settled` / `mounted` flags, the identical `cancel()` and `onFocusOut()` bodies, and the
+  identical `constructor() { this.draft.set(…); afterNextRender(() => { this.X()?.focus(); this.mounted = true; }); }`.
+
+This pass files the `KjDisabled` instance (F-16) but not these. They are the same pathology:
+a shared behaviour that was copied rather than extracted, in a codebase that is otherwise
+good at extracting primitives.
+
+**Fix.** Extract one `KjOverlayRef<TState>` base and have dialog/drawer/sheet parameterise it.
+Extract a `KjCellEditorBase` (or a `useCellEditor()` composable) holding the settle/commit/
+focus-out state machine, leaving each editor with only its input rendering and value parsing.
+Both are mechanical and well covered by `editors.spec.ts`.
+
+#### F-21 `kj-menubar` is published while functionally incomplete, and the styled wrapper has no spec *(carried over from prev F-17, corrected)*
+
+**Severity:** medium · **Confidence:** high · **Effort:** M
+**Files:** `packages/components/src/menubar/menubar.ts:126`,
+`packages/components/src/menubar/` (no `*.spec.ts`),
+`packages/components/src/menubar/menubar.usage.example.ts:9`
+
+The TODO survives verbatim at HEAD: *"TODO: menubar+dropdown-menu wiring pending
+overlay-migration follow-up"*, with a matching `TODO(overlay-migration)` in the usage example
+at `:9`. `packages/components/src/menubar/` contains `index.ts`, `menubar.css`,
+`menubar.playground.ts`, `menubar.ts`, `menubar.usage.example.ts` and `_examples/` — and **no
+spec file** — while the component is exported from `public-api.ts` and published.
+
+**Correction to the previous review:** prev said "with zero tests". The *headless*
+`packages/core/src/menubar/` does have `menubar.spec.ts` (16.3 KB), added in `9acdb072`,
+before `fd6dd34e`. The gap is the styled wrapper only.
+
+**Why it matters.** A published component whose own source says its primary composition
+(menubar + dropdown-menu) is not wired is a semver commitment to something that does not work
+yet, and the wrapper has no test to say which parts do. The overlay migration the TODO waits
+on has since landed substantially (`2948c5b5`, `fb1d1956`, `e6aa28a5`), so the blocker may
+already be gone.
+
+**Fix.** Either finish the dropdown-menu wiring now that the overlay work has landed and add a
+`menubar.spec.ts` covering the wrapper, or mark the component `@experimental` in its TSDoc and
+say so in the README until it is complete.
+
+#### F-22 Shared filter contract lives inside one sibling's file instead of a `*.context.ts` *(carried over from prev F-18)*
+
+**Severity:** low · **Confidence:** high · **Effort:** S
+**Files:** `packages/components/src/table/table-filters/text-filter.ts` (declares
+`KJ_FILTER_CONTEXT` + `KjFilterContext`), imported from there by `date-filter.ts:11`,
+`number-filter.ts:13`, `select-filter.ts:12`, and re-exported via `table-filters/index.ts:2`
+
+`rules/architecture.md`'s folder layout mandates `<component>.context.ts`, and all 34 other
+context files in the repo follow it. This is the only place the convention is broken: three
+sibling filters import a peer filter purely to get a token — a needless edge in the import
+graph and a latent cycle if `text-filter` ever needs something from a sibling. Prev also noted
+the token description is `'kj.filter.context'` while every core context token uses the
+class-name form (`'KjSlider'`, `'KjAccordion'`).
+
+**Fix.** Move `KjFilterContext` + `KJ_FILTER_CONTEXT` into
+`table-filters/filters.context.ts`, keep the re-export from `table-filters/index.ts`, and
+normalise the token description to `'KjTableFilter'`. `filters.spec.ts` already imports the
+token from the barrel, so the spec needs no change.

@@ -1,157 +1,274 @@
-# kouji-ui Review Backlog
+# kouji-ui System Review — Backlog
 
-Generated 2026-09-15 from `reports/review/` after adversarial verification. One line per surviving work item; refuted findings are excluded (see `03-customization.md` and `04-accessibility.md`, section *Refuted during verification*).
+Round 2 · 2026-09-15 · HEAD rebased on `origin/main`. Flat, issue-ready checklist of all **184 surviving findings** from [README.md](README.md). Refuted findings are excluded (micro-frontends F-5's original "`@layer` cascade is global and unversioned" framing; its accurate low-severity re-file is included). Findings fixed by `main` are excluded — they live only in the README's *Fixed since the last review* table.
 
-Format: `[SEVERITY][DIMENSION][effort] title — finding ids — files`. Dimensions: `OVL` overlay, `STY` styles/theming, `CUS` customization, `A11Y` accessibility, `MFE` micro-frontends, `SSR` server rendering, `BUN` lazy-loading/bundle, `PERF` performance, `ARCH` architecture/code quality.
+Format: `- [ ] [SEV][dim][effort] title — finding ids — files`
 
-
-## Wave 1 — blockers (13 items)
-
-The two remaining criticals, everything that blocks SSR/prerender or a working install from the published tarballs, and the WCAG-A keyboard failures on flagship components.
-
-- [ ] `[CRIT][ARCH][M]` Re-enable tests in CI before the next publish (release.yml gates on a green CI that runs none) — ARCH F-1 — `.github/workflows/ci.yml, .github/workflows/release.yml, .husky/pre-push`
-- [ ] `[CRIT][A11Y][M]` Restore keyboard operation of select and cascade-select listboxes — A11Y F-1 — `packages/core/src/select/select-content.ts, packages/core/src/cascade-select/cascade-select-panel.ts, packages/components/src/select/select.ts`
-- [ ] `[HIGH][OVL][S]` Dispose KjOverlayController on host destroy (add ngOnDestroy) — OVL F-1 — `packages/core/src/primitives/overlay/controller.ts, packages/core/src/primitives/overlay/wrapper.ts`
-- [ ] `[HIGH][SSR][S]` KjLink injects its external-link a11y suffix twice (server + hydration) — SSR F-3 — `packages/core/src/link/link.ts`
-- [ ] `[HIGH][SSR][S]` Three unguarded global `document` dereferences inside server-reachable effects — SSR F-2 — `packages/core/src/primitives/list/navigator.ts, packages/core/src/tree-select/tree-select-content.ts, packages/core/src/chart/chart.ts`
-- [ ] `[HIGH][A11Y][S]` Tooltips never open on keyboard focus and are not referenced by aria-describedby — A11Y F-3 — `packages/core/src/tooltip/tooltip-trigger.ts, packages/core/src/primitives/overlay/strategies/trigger-event/on-hover.ts`
-- [ ] `[HIGH][A11Y][S]` Data-grid keyboard navigation can never be entered (no tab stop) — A11Y F-4 — `packages/core/src/table/table-cell.ts, packages/core/src/table/table-keyboard.ts`
-- [ ] `[HIGH][OVL][M]` Plumb closeOnEsc / closeOnOutside from builder config into stack.register; route the real close reason — OVL F-2, OVL F-3 — `packages/core/src/primitives/overlay/builder.ts, packages/core/src/primitives/overlay/controller.ts, packages/core/src/dialog/dialog.service.ts`
-- [ ] `[HIGH][OVL][M]` Focus restoration for dropdown-menu, tree-select, confirm-popup, menubar submenu — OVL F-5 — `packages/core/src/dropdown-menu/dropdown-menu-content.ts, packages/core/src/confirm-popup/confirm-popup-content.ts, packages/core/src/tree-select/tree-select-content.ts`
-- [ ] `[HIGH][STY][M]` Ship overlay primitive CSS + the documented aggregator in both tarballs — STY F-1, BUN F-5, SSR F-7 — `packages/components/ng-package.json, packages/core/ng-package.json, packages/components/src/overlay/overlay.css`
-- [ ] `[HIGH][A11Y][M]` Column resizing is drag-only with no keyboard path — A11Y F-5 — `packages/components/src/table/table.ts`
-- [ ] `[HIGH][SSR][M]` apps/docs/src/server.ts is dead code — wire it back up or delete it — SSR F-1 — `angular.json, apps/docs/src/server.ts, vercel.json`
-- [ ] `[MED][SSR][L]` Give both packages a "." export and working entry fields (unresolvable under Vite/Node/Analog) — SSR F-6, BUN F-10, ARCH F-16 — `packages/core/package.json, packages/components/package.json, tsconfig.json`
-
-
-## Wave 2 — structural (51 items)
-
-Architecture, customization, styling-contract and bundle restructures. Most of these need a decision recorded before the code changes.
-
-- [ ] `[HIGH][STY][S]` No theme declares color-scheme, and there is no theme at all without data-theme — STY F-7 — `packages/themes/src/base.css, packages/themes/src/themes/dark.css`
-- [ ] `[HIGH][ARCH][S]` afterOpened$ is published API on three overlay refs and never emits — ARCH F-2 — `packages/core/src/dialog/dialog.ref.ts, packages/core/src/drawer/drawer.ref.ts, packages/core/src/sheet/sheet.ref.ts`
-- [ ] `[HIGH][ARCH][S]` 26 boolean inputs in components lack booleanAttribute — bare-attribute usage silently does nothing — ARCH F-4 — `packages/components/src/button/button.ts, packages/components/src/card/card.ts, packages/components/src/checkbox/checkbox.ts`
-- [ ] `[HIGH][ARCH][S]` KjTabList fights its own composed primitive with an event-swallowing hack — ARCH F-6 — `packages/core/src/tabs/tabs.ts, packages/core/src/a11y/roving-tabindex.ts`
-- [ ] `[HIGH][BUN][S]` Example components leak into the published public API through two barrels — BUN F-2, ARCH F-16 — `packages/components/src/icon/index.ts, packages/components/src/input-mask/index.ts`
-- [ ] `[HIGH][CUS][S]` 10 unlayered component stylesheets + the @layer order statement lives in a package components does not depend on — CUS F-4, STY F-2, STY F-3 — `packages/components/src/calendar/calendar.css, packages/core/src/icon/icon.css, packages/themes/src/base.css`
-- [ ] `[HIGH][A11Y][S]` tabCycle focus trap leaks: hidden elements count, out-of-panel focus never recaptured — A11Y F-8, OVL F-8 — `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts`
-- [ ] `[HIGH][PERF][S]` Chat message runs DomSanitizer.sanitize on every change-detection cycle — PERF F-1 — `packages/components/src/chat/chat-message.ts, packages/components/src/chat/chat-thread.ts`
-- [ ] `[HIGH][PERF][S]` Table persistence writes localStorage synchronously on every row click — PERF F-3 — `packages/components/src/table/table.ts, packages/core/src/table/table-storage.ts`
-- [ ] `[HIGH][MFE][M]` One 'kill the module globals' pass: container, live-region registry, both scroll-lock refcounts — MFE F-3, MFE F-7, MFE F-10, OVL F-13, CUS F-2 — `packages/core/src/primitives/overlay/container.ts, packages/core/src/primitives/overlay/strategies/scroll-lock/html-overflow.ts, packages/core/src/primitives/overlay/strategies/live-announcer/_announce.ts`
-- [ ] `[MED][MFE][M]` Seed id minting from APP_ID; route the ~41 module counters through KjId — MFE F-1 — `packages/core/src/primitives/overlay/id.ts, packages/core/src/field/field.ts, packages/core/src/primitives/list/item.ts`
-- [ ] `[HIGH][MFE][M]` @kouji-ui/themes writes :root tokens globally — last-loaded copy re-themes every app — MFE F-5 — `packages/themes/src/base.css, packages/themes/src/density.css`
-- [ ] `[HIGH][MFE][M]` 99 module-scope InjectionTokens — a shell's provide* never reaches a remote on a different copy — MFE F-6 — `packages/core/src/icon/icon.tokens.ts, packages/core/src/locale/locale.config.ts, packages/core/src/chart/echarts.ts`
-- [ ] `[HIGH][CUS][M]` Per-instance CSS override is silently defeated by every non-default variant — CUS F-3 — `packages/components/src/button/button.css, packages/components/src/button/button.ts`
-- [ ] `[HIGH][CUS][M]` The i18n catalog and the config-token label fields duplicate the same strings; the catalog loses — CUS F-6, A11Y F-13 — `packages/core/src/i18n/catalogs/en.ts, packages/core/src/pagination/config.ts, packages/core/src/breadcrumb/config.ts`
-- [ ] `[HIGH][A11Y][M]` KjRovingTabindex loses the tab stop on item removal and cannot be seeded to the selected item — A11Y F-6 — `packages/core/src/a11y/roving-tabindex.ts, packages/core/src/tabs/tabs.ts`
-- [ ] `[HIGH][A11Y][M]` Calendar uses role=application, inverts the grid structure, natively disables day cells — A11Y F-7 — `packages/core/src/calendar/calendar.ts, packages/core/src/calendar/calendar-day.ts, packages/core/src/calendar/calendar-grid.ts`
-- [ ] `[HIGH][OVL][M]` Strip per-component z-index; let the overlay container's sibling order decide stacking — OVL F-4, MFE F-8 — `packages/core/src/primitives/overlay/overlay.css, packages/components/src/select/select.css, packages/components/src/drawer/drawer.css`
-- [ ] `[HIGH][PERF][M]` Every open anchored overlay forces two synchronous layouts per scroll event — PERF F-2, OVL F-7 — `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`
-- [ ] `[HIGH][PERF][M]` Selection model does linear key scans and per-item subtree recursion — PERF F-4 — `packages/core/src/primitives/list/selection.ts, packages/core/src/primitives/list/item.ts`
-- [ ] `[HIGH][PERF][M]` Table virtualization never measures a row — fixed estimate only — PERF F-5 — `packages/components/src/table/table-virtual.ts, packages/components/src/table/table.ts`
-- [ ] `[HIGH][BUN][M]` The entire Lucide icon set is namespace-imported and eagerly wired in the docs root config — BUN F-1 — `packages/components/src/icon/lucide/provide-lucide-icons.ts, apps/docs/src/app/app.config.ts`
-- [ ] `[HIGH][ARCH][M]` 101 public inputs in @kouji-ui/components have no kj prefix — ARCH F-3 — `packages/components/src/badge/badge.ts, packages/components/src/card/card.ts, packages/components/src/input/input.ts`
-- [ ] `[MED][ARCH][M]` ESLint enforces none of the seven rules files — root cause of every drift finding — ARCH F-15 — `eslint.config.js`
-- [ ] `[MED][SSR][M]` inject(DOCUMENT) vs global `document` is inconsistent and unenforced by lint — SSR F-4 — `eslint.config.js, rules/code_style.md`
-- [ ] `[MED][STY][M]` --kj-border-default fails WCAG 1.4.11 (3:1) in 13 of 15 themes — STY F-4 — `packages/themes/src/themes/*.css, packages/components/src/input/input.css, packages/components/src/checkbox/checkbox.css`
-- [ ] `[MED][STY][M]` orrery-light: fg-subtle + six class-C intents below AA on its own #dedede body — STY F-5 — `packages/themes/src/themes/orrery-light.css, apps/docs/src/app/services/theme.service.ts`
-- [ ] `[MED][OVL][M]` Overlay toasts swallow the first Escape / outside click meant for the dialog beneath — OVL F-3 — `packages/core/src/toast/toast.service.ts, packages/core/src/primitives/overlay/stack.ts`
-- [ ] `[MED][OVL][M]` Re-opening during the close transition leaks the stack entry and its document listeners — OVL F-6, OVL F-18 — `packages/core/src/primitives/overlay/controller.ts, packages/core/src/primitives/overlay/stack.ts`
-- [ ] `[MED][MFE][S]` No z-index stratification seam — 20 hard-coded literals and one global token — MFE F-8 — `packages/core/src/primitives/overlay/overlay.css, packages/components/src/dialog/dialog.css`
-- [ ] `[MED][MFE][S]` Stale required @angular/cdk peer dep; hard ^22.0.0 Angular pin with no mixed-major story — MFE F-12, CUS F-14, ARCH F-8 — `packages/core/package.json, packages/components/package.json, rules/stack.md`
-- [ ] `[MED][BUN][S]` Hardcoded `await import('echarts')` fallback forces the full ~1 MB chunk — BUN F-6 — `packages/core/src/chart/chart.ts, packages/core/src/chart/echarts.ts`
-- [ ] `[LOW][BUN][S]` 412 example files and 68 playgrounds compiled into every library build — BUN F-8 — `packages/core/tsconfig.lib.json, packages/components/tsconfig.lib.json`
-- [ ] `[MED][CUS][S]` No provideKj* function or config token is re-exported from @kouji-ui/components — CUS F-9 — `packages/components/src/public-api.ts, packages/components/src/button/index.ts`
-- [ ] `[MED][A11Y][S]` KjFocusTrap primitive sets no initial focus and restores none (and has zero consumers) — A11Y F-9 — `packages/core/src/a11y/focus-trap.ts`
-- [ ] `[MED][A11Y][S]` Focus indicator removed with no accessible replacement — A11Y F-11 — `packages/components/src/command-palette/command-palette.css, packages/components/src/time-picker/time-picker.css`
-- [ ] `[MED][A11Y][M]` prefers-reduced-motion is ignored by most component CSS — A11Y F-10 — `packages/components/src/toast/toast.css, packages/components/src/button/button.css`
-- [ ] `[MED][A11Y][M]` RTL is honoured only by slider and avatar-group — A11Y F-12, OVL F-7 — `packages/core/src/primitives/list/navigator.ts, packages/core/src/primitives/directionality/directionality.ts`
-- [ ] `[MED][PERF][S]` Filterable-list effect writes three signals per item on every keystroke — PERF F-7 — `packages/core/src/primitives/list/filterable-list.ts, packages/core/src/primitives/list/item.ts`
-- [ ] `[MED][PERF][S]` Table re-scans cell templates and allocates a fresh outlet context per cell, per cycle — PERF F-8 — `packages/components/src/table/table.ts`
-- [ ] `[MED][PERF][S]` Zoneless is implicit and never exercised by the tests — PERF F-15 — `packages/core/src/test-setup.ts, packages/components/src/test-setup.ts, apps/docs/src/test-setup.ts`
-- [ ] `[MED][ARCH][S]` Manifest / public-API drift: stale version constant, wildcard import path, phantom peers — ARCH F-16, ARCH F-8 — `packages/components/src/public-api.ts, tsconfig.json, packages/core/package.json`
-- [ ] `[MED][ARCH][S]` ViewEncapsulation.None used 183 times against an explicit 'do not use' rule — write the ADR — ARCH F-10, ARCH F-9, CUS F-12, MFE F-4 — `rules/code_style.md, packages/components/src/button/button.ts, packages/core/src/styles.css`
-- [ ] `[HIGH][MFE][L]` Decide the encapsulation strategy (version-scope the global selectors, or move to Emulated) — MFE F-4, ARCH F-10, CUS F-12 — `packages/components/src/button/button.ts, packages/themes/src/density.css, rules/code_style.md`
-- [ ] `[HIGH][STY][L]` A second, undefined token vocabulary leaves seven component families un-themed — STY F-6 — `packages/core/src/typography/prose.css, packages/components/src/sheet/sheet.css, packages/components/src/editor/editor.css`
-- [ ] `[MED][STY][L]` Density scales two components; 36 stylesheets hard-code 99 font sizes it cannot reach — STY F-10 — `packages/themes/src/density.css, packages/components/src/table/table.css`
-- [ ] `[HIGH][CUS][L]` Four competing variant/size mechanisms; ~10 components closed to extension — CUS F-5, CUS F-8, CUS F-11, CUS F-13 — `packages/core/src/badge/badge.ts, packages/components/src/input/input.ts, packages/core/src/button/config.ts`
-- [ ] `[HIGH][BUN][L]` No secondary entry points: one flat barrel, one FESM, no size budget or CI gate — BUN F-3, BUN F-4 — `packages/core/ng-package.json, packages/components/ng-package.json, angular.json`
-- [ ] `[MED][BUN][M]` marked and @tanstack/virtual-core are hard dependencies every consumer installs — BUN F-4, MFE F-14 — `packages/components/package.json, packages/components/src/chat/markdown.ts, packages/core/package.json`
-- [ ] `[HIGH][PERF][L]` Virtualization exists only in the table; option lists, chat, trees render everything — PERF F-6 — `packages/core/src/primitives/list/item.ts, packages/components/src/chat/chat-thread.ts`
-- [ ] `[HIGH][ARCH][L]` 19 component features have zero real tests, including every overlay wrapper — ARCH F-5 — `packages/components/src/popover/popover.spec.ts, packages/components/src/dialog, packages/components/src/toast`
-
-
-## Wave 3 — polish (65 items)
-
-Everything remaining: low-severity defects, doc-truth fixes, and mediums that are local and safe to batch.
-
-- [ ] `[MED][OVL][S]` inertBased focus trap inerts the wrong siblings — no-op for portalled overlays; fix or delete — OVL F-9 — `packages/core/src/primitives/overlay/strategies/focus-trap/inert-based.ts`
-- [ ] `[MED][OVL][S]` Transition duration measured pre-transition, and only the first duration in a list is read — OVL F-10 — `packages/core/src/primitives/overlay/controller.ts, packages/core/src/primitives/overlay/panel.ts`
-- [ ] `[MED][OVL][S]` kjMount on <kj-dropdown-menu-content> is read in the constructor and is always 'portal' — OVL F-11 — `packages/core/src/dropdown-menu/dropdown-menu-content.ts, packages/core/src/dropdown-menu/dropdown-menu-trigger.ts`
-- [ ] `[MED][OVL][M]` Declarative overlays cannot render a backdrop, so solidBackdrop on them is inert config — OVL F-12 — `packages/core/src/primitives/overlay/builder.ts, packages/core/src/command-palette/command-palette-dialog.ts`
-- [ ] `[MED][OVL][S]` Consumers hand-write ARIA onto the panel, fighting the panel's own host bindings — OVL F-14 — `packages/core/src/confirm-popup/confirm-popup-content.ts, packages/core/src/menubar/menubar-item.ts`
-- [ ] `[LOW][OVL][M]` Speed-dial bypasses the overlay system entirely — no outside-click dismissal — OVL F-15 — `packages/core/src/speed-dial/speed-dial.ts, packages/core/src/speed-dial/speed-dial-trigger.ts`
-- [ ] `[LOW][OVL][M]` Scroll lock is desktop-only: overflow:hidden does not lock iOS Safari; cssClip compensates nothing — OVL F-16 — `packages/core/src/primitives/overlay/strategies/scroll-lock/html-overflow.ts, packages/core/src/primitives/overlay/strategies/scroll-lock/css-clip.ts`
-- [ ] `[LOW][OVL][S]` aria-expanded is stamped on every trigger, including tooltip triggers — OVL F-17, A11Y F-3 — `packages/core/src/primitives/overlay/trigger.ts, packages/core/src/tooltip/tooltip-trigger.ts`
-- [ ] `[MED][STY][S]` --kj-color-icon-* resolves at :root, so nested [data-theme] subtrees get wrong icon colours — STY F-8 — `packages/themes/src/base.css, packages/core/src/icon/icon.directive.ts`
-- [ ] `[MED][STY][M]` SSR + FOUC: theme hard-coded in index.html, real theme applied only after hydration — STY F-9 — `apps/docs/src/index.html, apps/docs/src/app/services/theme.service.ts, apps/docs/src/server.ts`
-- [ ] `[MED][STY][S]` docs-themes.css writes contract token names into :root from a later layer — STY F-11 — `packages/core/src/styles/docs-themes.css, packages/themes/src/themes.spec.ts`
-- [ ] `[MED][STY][S]` [data-tone] / [data-truncate] are bare global attribute selectors in a published package — STY F-12 — `packages/core/src/typography/prose.css`
-- [ ] `[MED][STY][M]` ~28 KB of overlay CSS is shipped twice (global bundle + styleUrl injection) — STY F-13 — `packages/components/src/overlay/overlay.css, packages/components/src/dialog/dialog.ts, angular.json`
-- [ ] `[LOW][STY][S]` color-picker hard-codes achromatic chrome that breaks in dark themes — STY F-14 — `packages/components/src/color-picker/color-picker.css`
-- [ ] `[LOW][STY][M]` The theme generator emits two dead tokens and omits six the contract requires — STY F-15 — `apps/docs/src/app/lib/theme/serialize-theme.ts, packages/themes/src/themes.spec.ts`
-- [ ] `[LOW][CUS][S]` provideKjLocale TSDoc promises route-level sub-tree scoping it cannot deliver — CUS F-1 — `packages/core/src/locale/locale.config.ts, packages/core/src/i18n/translate.config.ts`
-- [ ] `[LOW][CUS][S]` Service-launched overlays bypass KJ_OVERLAY_MOUNT_STRATEGY when choosing the root container — CUS F-2 — `packages/core/src/primitives/overlay/builder.ts, packages/core/src/primitives/overlay/container.ts`
-- [ ] `[MED][CUS][M]` provideKj* naming, token descriptions and the kj input prefix are all inconsistent — CUS F-7 — `packages/components/src/tabs/tabs.ts, packages/core/src/icon/icon.providers.ts`
-- [ ] `[MED][CUS][S]` bindPresets lives in core for 10 components and in components for tabs; core KjTabs is not preset-aware — CUS F-8 — `packages/components/src/tabs/tabs.ts, packages/core/src/tabs/tabs.ts`
-- [ ] `[MED][CUS][S]` provideKjChat's doc promises a merge over built-in defaults that does not exist — CUS F-10 — `packages/core/src/chat/chat-registry.ts, packages/components/src/chat/chat-thread.ts`
-- [ ] `[MED][CUS][S]` provideKj* merge semantics differ across the 11 config tokens; pagination's doc contradicts its code — CUS F-11 — `packages/core/src/breadcrumb/config.ts, packages/core/src/pagination/config.ts`
-- [ ] `[LOW][CUS][S]` Motion has no configuration surface at all, unlike every other preset axis — CUS F-13 — `packages/core/src/motion/motion.ts, packages/core/src/motion/index.ts`
-- [ ] `[LOW][A11Y][S]` Five TSDoc blocks claim modal content is marked inert; nothing ever sets the attribute — A11Y F-2 — `packages/components/src/dialog/dialog.ts, packages/components/src/drawer/drawer.ts, packages/components/src/sheet/sheet.ts`
-- [ ] `[MED][A11Y][S]` Overlays dismiss on pointerdown rather than the up-event — A11Y F-14 — `packages/core/src/primitives/overlay/stack.ts`
-- [ ] `[MED][A11Y][M]` Default control size is below the AAA touch target and the docs claim otherwise — A11Y F-15 — `packages/components/src/button/button.css, packages/components/src/button/button.ts`
-- [ ] `[MED][A11Y][S]` An open accordion panel is clipped at max-height 1000px — A11Y F-16 — `packages/components/src/accordion/accordion.css`
-- [ ] `[MED][A11Y][M]` No status announcements for filtering, sorting or pagination — A11Y F-17 — `packages/core/src/primitives/list/filterable-list.ts, packages/core/src/table/table.ts, packages/components/src/pagination/pagination.ts`
-- [ ] `[LOW][A11Y][S]` KjTypeAhead does not implement the APG same-letter cycle — A11Y F-18 — `packages/core/src/primitives/list/type-ahead.ts`
-- [ ] `[LOW][A11Y][S]` Tab panels have no tab stop; sortable headers have no interactive role — A11Y F-19 — `packages/core/src/tabs/tabs.ts, packages/core/src/table/table-header.ts`
-- [ ] `[LOW][A11Y][S]` Toast auto-dismiss is 4s with no adjustable or disableable timing — A11Y F-20 — `packages/core/src/toast/toast.strategy.ts, packages/core/src/toast/toast.service.ts`
-- [ ] `[LOW][A11Y][S]` KjListNavigator hijacks Home/End/PageUp/PageDown inside text fields — A11Y F-21 — `packages/core/src/primitives/list/navigator.ts`
-- [ ] `[LOW][A11Y][S]` field-error combines role="alert" with aria-live="polite" — A11Y F-22 — `packages/core/src/field/field-error.ts`
-- [ ] `[LOW][MFE][M]` Escape and hotkey routing is per-root-injector, so two apps close/open independently — MFE F-2 — `packages/core/src/primitives/overlay/stack.ts, packages/core/src/primitives/overlay/strategies/trigger-event/on-hotkey.ts`
-- [ ] `[MED][MFE][M]` provideKjDocumentDirection claims to be 'the single writer of <html dir>' — MFE F-9 — `packages/core/src/locale/document-direction.ts, packages/core/src/primitives/directionality/directionality.ts`
-- [ ] `[MED][MFE][S]` Command palette focuses by global document.querySelector — MFE F-11 — `packages/components/src/command-palette/command-palette.ts`
-- [ ] `[MED][MFE][S]` Table state persists to localStorage with an empty default key prefix — MFE F-13 — `packages/core/src/table/table-storage.ts, packages/components/src/table/table.ts`
-- [ ] `[LOW][MFE][M]` Duplicated payload: non-peer bundled deps and a module-cached 300 KB icon map — MFE F-14, BUN F-4 — `packages/components/src/icon/lucide/provide-lucide-icons.ts, packages/core/package.json`
-- [ ] `[LOW][MFE][M]` Document listeners and observers scale per-instance (zone-agnostic otherwise) — MFE F-15, PERF F-16 — `packages/core/src/primitives/interaction/focus-ring.ts, packages/core/src/a11y/focus-trap.ts`
-- [ ] `[MED][SSR][M]` Prerendering bakes the build date into every calendar — SSR F-5 — `packages/core/src/calendar/calendar.ts, packages/core/src/date-range-presets/date-range-presets.ts`
-- [ ] `[MED][SSR][M]` Incremental hydration explicitly disabled with no stated reason — SSR F-8 — `apps/docs/src/app/app.config.ts, apps/docs/src/app/app.ts`
-- [ ] `[MED][SSR][M]` The prerender proves far less about the library than it appears to (~7 of ~120 components) — SSR F-9 — `apps/docs/src/app/components/code-preview/code-preview.ts, packages/core/src/example-components.ts`
-- [ ] `[MED][SSR][S]` Every prerendered page ships its content visibility:hidden behind a splash screen — SSR F-10 — `apps/docs/src/app/services/loading.service.ts, apps/docs/src/app/app.ts`
-- [ ] `[LOW][SSR][S]` Node/Express version assumptions in server.ts are undeclared and partly contradictory — SSR F-11 — `apps/docs/src/server.ts, package.json`
-- [ ] `[LOW][SSR][S]` crypto.randomUUID() used bare in KjToastService, against the repo's own guarded helper — SSR F-12 — `packages/core/src/toast/toast.service.ts, packages/core/src/accordion/accordion.ts`
-- [ ] `[LOW][SSR][S]` KjFileUploadTrigger mutates the DOM in its constructor; non-null-asserted field undefined on the server — SSR F-13 — `packages/core/src/file-upload/file-upload.ts`
-- [ ] `[MED][BUN][M]` Zero @defer in the library and only one in the docs app — BUN F-7 — `packages/core/src, apps/docs/src/app/app.ts`
-- [ ] `[LOW][BUN][S]` Dead heavy dependencies and a missing workspace dependency in the docs app — BUN F-9 — `package.json, apps/docs/package.json`
-- [ ] `[MED][PERF][S]` KjTableRow.isSelectable allocates the full selection key array per row — PERF F-9 — `packages/core/src/table/table-row.ts`
-- [ ] `[MED][PERF][S]` cascade-select sub-panel leaks window listeners and repositions unthrottled — PERF F-10 — `packages/core/src/cascade-select/cascade-select-sub-panel.ts`
-- [ ] `[MED][PERF][S]` Auto-resize textarea forces a style recalc plus two layouts per keystroke — PERF F-11 — `packages/core/src/textarea/textarea.ts, packages/components/src/chat/prompt-input.ts`
-- [ ] `[MED][PERF][S]` A new Intl.DateTimeFormat is constructed per calendar day cell — PERF F-12 — `packages/core/src/calendar/calendar-day.ts, packages/core/src/calendar/date-utils.ts`
-- [ ] `[MED][PERF][M]` Layout-property transitions and zero style containment — PERF F-13 — `packages/components/src/accordion/accordion.css, packages/components/src/table/table.css`
-- [ ] `[MED][PERF][S]` One MutationObserver per kj-tag, with subtree and characterData — PERF F-14 — `packages/core/src/tag/tag.ts`
-- [ ] `[LOW][PERF][S]` Per-instance document listeners on kj-tree-select-content — PERF F-16 — `packages/core/src/tree-select/tree-select-content.ts`
-- [ ] `[LOW][PERF][S]` Chat thread allocates a renderer input object per cycle, re-registers a render hook per token — PERF F-17 — `packages/components/src/chat/chat-thread.ts`
-- [ ] `[LOW][PERF][S]` Carousel observes only the initial slide set and leaves a timer running past destroy — PERF F-18 — `packages/core/src/carousel/carousel.ts`
-- [ ] `[LOW][PERF][M]` Shipped example components are not OnPush — PERF F-19 — `packages/components/src/example-components.ts, packages/core/src/example-components.ts`
-- [ ] `[MED][ARCH][M]` Two naming eras coexist; the CLAUDE.md suffix rule is followed in core, inverted in components — ARCH F-7 — `packages/components/src/card/card.ts, packages/core/src/icon/icon.directive.ts`
-- [ ] `[MED][ARCH][M]` core is not headless: 17 hard-coded class names, 2 inline styles, 5 stylesheets, 12 element components — ARCH F-9 — `packages/core/src/overlay-badge/overlay-badge.ts, packages/core/src/styles.css`
-- [ ] `[MED][ARCH][M]` Five bespoke ControlValueAccessors bypass KjFormControl — ARCH F-11 — `packages/core/src/primitives/forms/form-control.ts, packages/components/src/input/input.ts`
-- [ ] `[MED][ARCH][L]` Concrete duplication: two identical overlay refs, five copy-pasted cell editors, two nav primitives — ARCH F-12, A11Y F-6 — `packages/core/src/drawer/drawer.ref.ts, packages/components/src/table/table-editors/text-editor.ts, packages/core/src/a11y/roving-tabindex.ts`
-- [ ] `[MED][ARCH][M]` Dev-mode diagnostics exist in only 12 of ~74 core features, with four message prefixes — ARCH F-13 — `packages/core/src/progress-bar/progress-bar.ts, packages/core/src/alert/alert.ts`
-- [ ] `[MED][ARCH][M]` TSDoc: 30% of component inputs undocumented; themed-example system used by 2 symbols — ARCH F-14 — `rules/tsdoc.md, packages/components/src/button/button.ts, packages/core/src/radio/radio.context.ts`
-- [ ] `[LOW][ARCH][M]` kj-menubar is published but functionally incomplete per its own TODO, with zero wrapper tests — ARCH F-17 — `packages/components/src/menubar/menubar.ts, packages/core/src/stepper/stepper.ts`
-- [ ] `[LOW][ARCH][S]` Shared table-filter DI contract lives inside one sibling's file instead of a *.context.ts — ARCH F-18 — `packages/components/src/table/table-filters/text-filter.ts`
-
+Dimensions: `overlay` 01 · `styles` 02 · `cust` 03 · `a11y` 04 · `mfe` 05 · `ssr` 06 · `lazy` 07 · `perf` 08 · `arch` 09.
 
 ---
 
-**Totals:** 129 items — Wave 1 13, Wave 2 51, Wave 3 65.
+## Wave 1 — blockers (12)
+
+All critical and high findings, plus the one medium that must land first because the other fixes cannot be verified without it.
+
+- [ ] [CRIT][a11y][L] Select, tree-select and cascade-select cannot be navigated by keyboard once open: the list navigator listens on a panel that never receives focus — a11y F-1 — `packages/core/src/select/select-content.ts:30-38`, `packages/components/src/select/select.ts:80-86`, `packages/core/src/primitives/list/navigator.ts:41-44` (+6)
+- [ ] [HIGH][arch][S] CI runs no tests; 47 of 50 releases shipped under a lint-and-build-only gate — arch F-1 — `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `.husky/pre-push`
+- [ ] [HIGH][styles][S] Two focus rings resolve to nothing — `outline` goes invalid-at-computed-value-time — styles F-1 — `packages/components/src/sheet/sheet.css:71-75`, `packages/components/src/action-sheet/action-sheet.css:45-49`, `packages/components/src/overlay/overlay.css:44-45`
+- [ ] [HIGH][arch][S] `afterOpened$` is public API on three overlay refs and never emits — arch F-17 — `packages/core/src/dialog/dialog.ref.ts:10,12`, `packages/core/src/drawer/drawer.ref.ts:20,23`, `packages/core/src/sheet/sheet.ref.ts:21,24`
+- [ ] [HIGH][a11y][S] `tabCycle` trap leaks: hidden elements count, an empty panel lets Tab escape, outside focus is never recaptured — a11y F-20 — `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:4,30,44`
+- [ ] [HIGH][overlay][M] Overlay controller never invokes `focusTrap.onOpen` / `onClose` — Tab escapes every modal and focus is never returned — overlay F-1 — `packages/core/src/primitives/overlay/controller.ts`, `.../strategies/focus-trap/tab-cycle.ts`, `.../strategies/focus-trap/inert-based.ts` (+1)
+- [ ] [HIGH][overlay][M] No focus restoration for dropdown-menu, tree-select, confirm-popup (and menubar's projected submenu) — overlay F-14 — `packages/core/src/dropdown-menu/dropdown-menu-content.ts`, `packages/core/src/confirm-popup/confirm-popup-content.ts`, `packages/core/src/tree-select/tree-select-content.ts` (+1)
+- [ ] [HIGH][a11y][M] The data grid implements no roving tabindex, so its body has no tab stop — a11y F-3 — `packages/components/src/table/table.ts:332,391,455` (+5)
+- [ ] [HIGH][a11y][M] Tooltips never open on keyboard focus and are never linked with `aria-describedby` — a11y F-4 — `packages/core/src/tooltip/tooltip-trigger.ts:19-25,31`, `packages/core/src/primitives/overlay/strategies/trigger-event/on-hover.ts:116-117` (+4)
+- [ ] [HIGH][a11y][M] `KjRovingTabindex` loses the tab stop on removal and cannot be seeded to the selected item — a11y F-19 — `packages/core/src/a11y/roving-tabindex.ts:94,102-104,117-121`, consumers `tabs.ts` (+4)
+- [ ] [HIGH][a11y][M] Column resizing is drag-only, with no keyboard path — a11y F-21 — `packages/components/src/table/table.ts:277-285`
+- [ ] [MED][a11y][M] Keyboard specs dispatch events on elements a user can never focus, so they pass while the feature is broken — a11y F-14 — `packages/core/src/select/select.spec.ts:126-136`, `packages/core/src/tree-select/tree-select.spec.ts:403-413`, `.../focus-trap/tab-cycle.spec.ts:123-128` — **land before the other Wave 1 items**
+
+---
+
+## Wave 2 — structural (107)
+
+All remaining medium-severity findings.
+
+### Overlay (15)
+
+- [ ] [MED][overlay][S] `data-side` is never written, so every popover / tooltip arrow is unpositioned — overlay F-5 — `packages/core/src/primitives/overlay/panel.ts`, `.../strategies/position/anchored-to.ts`, `packages/components/src/popover/popover.css` (+1)
+- [ ] [MED][overlay][S] The panel is measured while `[hidden]` is still applied on first open — overlay F-8 — `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/panel.ts`
+- [ ] [MED][overlay][S] `anchoredTo` has no RTL awareness — overlay F-9 — `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`
+- [ ] [MED][overlay][S] Two z-index escapes from the stack: a hard-coded sub-panel level and wrapper-clamped toasts — overlay F-10 — `packages/components/src/cascade-select/cascade-select.css`, `packages/components/src/toast/toast.css`, `packages/core/src/primitives/overlay/stack.ts`
+- [ ] [MED][overlay][S] Transition duration is measured from the pre-transition state, and only the first duration in a list — overlay F-16 — `packages/core/src/primitives/overlay/controller.ts:165-184`, `packages/core/src/primitives/overlay/panel.ts:44`
+- [ ] [MED][overlay][S] `kjMount` on `<kj-dropdown-menu-content>` is read in the constructor and is therefore always `'portal'` — overlay F-17 — `packages/core/src/dropdown-menu/dropdown-menu-content.ts:226-240`, `packages/core/src/dropdown-menu/dropdown-menu-trigger.ts:83-85`
+- [ ] [MED][overlay][S] Consumers hand-write ARIA onto the panel, fighting the panel's own host bindings — overlay F-19 — `packages/core/src/confirm-popup/confirm-popup-content.ts:96-98,104-106`, `packages/core/src/menubar/menubar-item.ts:177`
+- [ ] [MED][overlay][M] `closeOnEsc` / `closeOnOutside` are declared on the builder and service APIs but never reach `KjOverlayStack` — overlay F-2 — `packages/core/src/primitives/overlay/controller.ts`, `.../builder.ts`, `.../wrapper.ts` (+4)
+- [ ] [MED][overlay][M] Declarative overlays never dispose their controller on host destroy, leaving an orphan stack entry — overlay F-3 — `packages/core/src/primitives/overlay/controller.ts`, `.../wrapper.ts`, `packages/core/src/menubar/menubar-item.ts` (+3)
+- [ ] [MED][overlay][M] Overlay-based toasts register as ordinary dismissible stack entries; the builder's close flags are never forwarded — overlay F-4 — `packages/core/src/toast/toast.service.ts`, `packages/core/src/primitives/overlay/controller.ts`, `.../stack.ts` (+2)
+- [ ] [MED][overlay][M] Unthrottled, non-passive scroll repositioning with a forced synchronous layout per event — overlay F-7 — `packages/core/src/primitives/overlay/strategies/position/anchored-to.ts`
+- [ ] [MED][overlay][M] Re-opening during the close transition leaks the overlay's stack entry and its document listeners — overlay F-15 — `packages/core/src/primitives/overlay/controller.ts:91-96,123-164,186-200`
+- [ ] [MED][overlay][M] Declarative overlays cannot render a backdrop, so `solidBackdrop` on them is inert configuration — overlay F-18 — `packages/core/src/primitives/overlay/builder.ts:137`, `packages/core/src/command-palette/command-palette-dialog.ts:54-57`
+- [ ] [MED][overlay][M] `tabCycle`'s focusable query is incomplete and unfiltered, and there are no focus sentinels — overlay F-20 — `packages/core/src/primitives/overlay/strategies/focus-trap/tab-cycle.ts:4,49`
+- [ ] [MED][overlay][L] The styled `<kj-command-palette>` bypasses the overlay primitive and is not an accessible modal — overlay F-6 — `packages/components/src/command-palette/command-palette.ts`
+
+### Styles & theming (15)
+
+- [ ] [MED][styles][S] `retro`: focus ring at 2.27:1 and destructive-button text at 3.18:1 — styles F-3 — `packages/themes/src/themes/retro.css:25,44,58,72`
+- [ ] [MED][styles][S] No theme declares `color-scheme` — dark themes get light native UI — styles F-4 — `packages/themes/src/themes/*.css` (15 files), `packages/themes/src/base.css`
+- [ ] [MED][styles][S] `--kj-bg-overlay` is a dead token; every scrim and hover tint is hardcoded — styles F-6 — `packages/components/src/dialog/dialog.css:5`, `drawer/drawer.css:55`, `command-palette/command-palette.css:16` (+3)
+- [ ] [MED][styles][S] `base.css`'s `@layer` statement omits three layers that `prose.css` actually uses — styles F-8 — `packages/themes/src/base.css:7`, `packages/core/src/typography/prose.css:31,257,291`, `packages/themes/src/density.spec.ts:32-38`
+- [ ] [MED][styles][S] `.kj-card[data-shadow="lift"]` is a no-op in all 15 themes — styles F-9 — `packages/components/src/card/card.css:14,21,40-46`, `packages/themes/src/base.css:9-25`
+- [ ] [MED][styles][S] `--kj-space-2xs` doesn't exist — `.kj-menubar` renders with no padding and no gap — styles F-10 — `packages/components/src/menubar/menubar.css:7-8,13,19`
+- [ ] [MED][styles][M] `orrery-light`: `fg-subtle` and the class-C intent tokens miss AA on `bg-body` / `bg-surface` / `bg-field` — styles F-2 — `packages/themes/src/themes/orrery-light.css:30,56-78`, `packages/components/src/link/link.css:12`, `packages/core/src/typography/prose.css:104`
+- [ ] [MED][styles][M] With no `[data-theme]` the library renders unstyled — no `:root` fallback, no `prefers-color-scheme` default — styles F-5 — `packages/themes/src/base.css:29-184`, every `packages/themes/src/themes/*.css`
+- [ ] [MED][styles][M] Ten globally-injected stylesheets sit outside `@layer` and outrank everything — styles F-7 — `packages/components/src/table/table.css`, `table/table-filters/filters.css`, `calendar/calendar.css` (+7)
+- [ ] [MED][styles][M] `prose.css` reads a token namespace no theme defines — typography permanently on hardcoded fallbacks — styles F-12 — `packages/core/src/typography/prose.css:17-28,31-39,268-273`
+- [ ] [MED][styles][M] Unprefixed global attribute selectors (`[data-tone]`, `[data-truncate]`) ship in the published CSS — styles F-13 — `packages/core/src/typography/prose.css:258,264,268,277,292,302-308`, `packages/themes/src/density.css:120,125,130-131`
+- [ ] [MED][styles][M] `core/src/styles.css` is documented as the entry point but is neither shipped nor shippable; `@kouji-ui/components` has no `exports` map — styles F-14 — `packages/core/src/styles.css:1-21`, `packages/core/ng-package.json:7-27`, `packages/core/package.json:55-70` (+2)
+- [ ] [MED][styles][M] `--kj-border-default` fails WCAG 1.4.11 (3:1) in 13 of 15 themes — the sole boundary of every idle input and unchecked checkbox — styles F-20 — 13 of 15 in `packages/themes/src/themes/`, `packages/components/src/input/input.css:11`, `packages/components/src/checkbox/checkbox.css:24`
+- [ ] [MED][styles][M] ~28 KB of overlay CSS is shipped twice — styles F-21 — `packages/components/src/overlay/overlay.css:37-45`, `angular.json` (docs styles array), the nine wrapper `styleUrl` sites
+- [ ] [MED][styles][L] Density scales spacing and type but not control heights — 3 of 69 stylesheets participate — styles F-11 — `packages/themes/src/density.css:98-110`, 66 of 69 stylesheets under `packages/components/src`
+
+### Customization (13)
+
+- [ ] [MED][cust][S] `KjSpinnerConfig.animations` is never read, and the closed `kjAnimation` type blocks the extension its TSDoc recommends — cust F-3 — `packages/core/src/spinner/config.ts`, `packages/core/src/spinner/spinner.ts`, `packages/components/src/spinner/spinner.ts` (+1)
+- [ ] [MED][cust][S] `provideKj*` takes `Partial<Config>` one level deep, and two providers disagree on merge depth — cust F-4 — `packages/core/src/pagination/config.ts`, `packages/core/src/breadcrumb/config.ts`, `packages/core/src/button/config.ts` (+1)
+- [ ] [MED][cust][S] `KjAlert` hand-rolls the preset system, and its config TSDoc claims it uses `bindPresets` when it does not — cust F-6 — `packages/core/src/alert/config.ts`, `packages/core/src/alert/alert.ts`
+- [ ] [MED][cust][S] `--kj-overlay-z-base` on `:root` overrides the DI token, so a host page can silently retarget every remote's overlay stack — cust F-9 — `packages/core/src/primitives/overlay/stack.ts`
+- [ ] [MED][cust][S] Documentation examples on `_examples` barrels leak into the published package API (and drag the 1,600-name Lucide list) — cust F-10 — `packages/components/src/icon/index.ts`, `packages/components/src/input-mask/index.ts`, `packages/components/src/icon/_examples/index.ts`
+- [ ] [MED][cust][S] The preset system's own extension points are marked `@internal` but exported — cust F-11 — `packages/core/src/presets/bind-presets.ts`, `packages/core/src/presets/variant.ts`, `packages/core/src/presets/size.ts` (+3)
+- [ ] [MED][cust][S] `bindPresets` lives in core for 11 directives but in components for tabs; `KjIconDirective` breaks the naming rule — cust F-18 — `packages/components/src/tabs/tabs.ts:15,120`, `packages/core/src/icon/icon.directive.ts:75`
+- [ ] [MED][cust][S] `provideKj*` config functions are not re-exported from `@kouji-ui/components` — cust F-19 — `packages/components/src/public-api.ts`
+- [ ] [MED][cust][M] The documented "layer a single class on the host" escape hatch is inert for ~90 of ~130 styled components — cust F-5 — `rules/code_style.md`, `packages/components/src/button/button.ts`, `packages/components/src/button/button.css` (+1)
+- [ ] [MED][cust][M] `provideIcons()` is silently dead below the root injector while `provideLucideIcons()` writes to a page-global registry — cust F-8 — `packages/core/src/icon/icon.tokens.ts`, `packages/core/src/icon/icon.providers.ts`, `packages/components/src/icon/lucide/provide-lucide-icons.ts`
+- [ ] [MED][cust][M] Per-instance CSS override is silently defeated by every non-default variant on the `display:contents` components — cust F-16 — `packages/components/src/button/button.css:10-31,80-94`, `packages/components/src/button/button.ts:135-136`, `packages/components/src/button/button.css.spec.ts:47-50`
+- [ ] [MED][cust][L] Variant/size extensibility splits across two undocumented mechanisms; ~19 closed unions extensible only via CSS custom properties — cust F-2 — `packages/core/src/badge/badge.ts`, `packages/components/src/card/card.ts`, `packages/components/src/checkbox/checkbox.ts` (+6)
+- [ ] [MED][cust][L] The i18n catalog is not the source of truth it claims; component labels are a second competing surface and many are not overridable — cust F-7 — `packages/core/src/i18n/catalogs/en.ts`, `packages/core/src/pagination/config.ts`, `packages/core/src/breadcrumb/config.ts` (+3)
+
+### Accessibility (11)
+
+- [ ] [MED][a11y][S] `KjInputOtp` completion is dead code (`!val.includes('')` is always false) with a latent `KjLiveRegion` DOM-wipe behind it — a11y F-2 — `packages/core/src/input-otp/input-otp.ts:52-56,259,262` (+4)
+- [ ] [MED][a11y][S] Roving focus-follow steals focus on mount (menubar, and any inline roving list) — a11y F-5 — `packages/core/src/menubar/menubar.ts:299-306,311-320`, `packages/core/src/primitives/list/navigator.ts:98-107`
+- [ ] [MED][a11y][S] The date-picker popup traps Tab while declaring `aria-modal="false"` — a11y F-11 — `packages/core/src/date-picker/date-picker-calendar.ts:39-51`, `.../focus-trap/tab-cycle.ts:173-181`
+- [ ] [MED][a11y][S] `KjRovingTabindex` moves focus onto disabled items — a11y F-12 — `packages/core/src/a11y/roving-tabindex.ts:148-183`; consumers `tabs.ts:250`, `stepper.ts:376` (+2)
+- [ ] [MED][a11y][S] An open accordion panel is clipped at 1000px — a11y F-22 — `packages/components/src/accordion/accordion.css:46,60`
+- [ ] [MED][a11y][M] A calendar with no selected value gives the grid no tab stop when today is out of range — a11y F-6 — `packages/core/src/calendar/calendar.ts:131-132,135-138,166-167` (+4)
+- [ ] [MED][a11y][M] Service-launched dialogs, drawers and sheets have no accessible name, and the documented way to give one does not exist — a11y F-7 — `packages/components/src/dialog/dialog.ts:22-38`, `packages/core/src/dialog/dialog.ts:15-26`, `packages/core/src/primitives/overlay/builder.ts:129-150` (+1)
+- [ ] [MED][a11y][M] `solidBackdrop({ inert: true })` never applies `inert`, yet the panel asserts `aria-modal="true"` — a11y F-8 — `packages/core/src/primitives/overlay/strategies/backdrop/solid.ts:13-23`, `packages/core/src/primitives/overlay/panel.ts:43,78` (+1)
+- [ ] [MED][a11y][M] `kj-field` does not put `aria-invalid`, `aria-required` or `aria-describedby` on the control, although `@doc-aria` says it does — a11y F-9 — `packages/components/src/field/field.ts:55-57,65-70`, `packages/core/src/field/field.ts:39-50` (+2)
+- [ ] [MED][a11y][M] Calendar day buttons declare `role="gridcell"` inside a `<td>` that is already a gridcell, under a `role="application"` root — a11y F-10 — `packages/core/src/calendar/calendar-day.ts:36-38`, `packages/components/src/calendar/calendar.ts:128-134`, `packages/core/src/calendar/calendar.ts:69-75`
+- [ ] [MED][a11y][M] Sortable table headers are focusable `<th>` elements with no control role or name — a11y F-13 — `packages/core/src/table/table-header.ts:21-29`
+
+### Micro-frontends (9)
+
+- [ ] [MED][mfe][S] Thirteen stylesheets ship with no `@layer`, so they beat every layered rule on the page — mfe F-6 — `packages/components/src/table/table.css:1`, `calendar/calendar.css:1`, `command-palette/command-palette.css:1` (+7)
+- [ ] [MED][mfe][S] Unscoped `document` hotkey listeners: two MFEs both answer one `⌘K` — mfe F-8 — `packages/core/src/primitives/overlay/strategies/trigger-event/on-hotkey.ts:40-47`, `packages/components/src/command-palette/command-palette.ts:289-300`
+- [ ] [MED][mfe][S] Command palette focuses by global `document.querySelector` on an unscoped class — mfe F-9 — `packages/components/src/command-palette/command-palette.ts:303-309`
+- [ ] [MED][mfe][M] No app-scoped namespace for generated ids — collides when two Angular roots share a document — mfe F-1 — `packages/core/src/primitives/overlay/id.ts:10-16`, `packages/core/src/primitives/overlay/panel.ts:65`, `packages/core/src/primitives/overlay/trigger.ts:47` (+10)
+- [ ] [MED][mfe][M] Scroll-lock refcount is module-scoped, so duplicated bundles can strand `<html>` overflow — mfe F-2 — `.../scroll-lock/html-overflow.ts:3-5,13-19`, `.../scroll-lock/css-clip.ts:3-4` (+3)
+- [ ] [MED][mfe][M] 100 module-scope `InjectionToken`s: two copies mean every `provideKj*` silently misses — mfe F-7 — `packages/core/src/icon/icon.tokens.ts:12,26,57,71`, `packages/core/src/toast/toast.strategy.ts:70`, `packages/core/src/primitives/overlay/stack.ts:37` (+5)
+- [ ] [MED][mfe][M] `lucide-static` is a required, statically-imported peer — ~300 KB duplicated per copy — mfe F-12 — `packages/components/src/icon/lucide/provide-lucide-icons.ts:8,47-59`, `packages/components/package.json:35`
+- [ ] [MED][mfe][M] Monaco's global AMD loader is memoised per copy — mfe F-13 — `packages/core/src/editor/editor.loader.ts:24-37,59-69`
+- [ ] [MED][mfe][M] Service-launched overlays escape their app's theme, density and direction scope — mfe F-16 — `packages/core/src/primitives/overlay/builder.ts:111-118`, contrast `.../strategies/mount/body-portal.ts:13-21,57-61`
+
+### SSR (10)
+
+- [ ] [MED][ssr][S] `KjLink` injects its screen-reader suffix from an `effect()`, so SSR + hydration emits it twice — ssr F-1 — `packages/core/src/link/link.ts:22-23,201-224`, `packages/core/src/link/link.spec.ts:147-171` (+3)
+- [ ] [MED][ssr][S] Docs site prerenders every page behind a splash that only browser JS removes — ssr F-2 — `apps/docs/src/app/services/loading.service.ts:9`, `apps/docs/src/app/app.ts:28,44-46` (+5)
+- [ ] [MED][ssr][S] `KjChart` calls global `document.createElement` inside an `effect()` — ssr F-3 — `packages/core/src/chart/chart.ts`
+- [ ] [MED][ssr][S] Two of the four copies of the roving focus-follow effect touch `document` unguarded — ssr F-4 — `packages/core/src/primitives/list/navigator.ts`, `packages/core/src/tree-select/tree-select-content.ts`
+- [ ] [MED][ssr][S] `@kouji-ui/components` publishes its stylesheets under a path its own exports map blocks — ssr F-6 — `packages/components/package.json`, `packages/components/ng-package.json`, `packages/core/package.json` (+1)
+- [ ] [MED][ssr][S] `packages/core/src/styles.css` — the documented aggregate entry point — is never published — ssr F-7 — `packages/core/src/styles.css`, `packages/core/ng-package.json`, `packages/core/package.json` (+1)
+- [ ] [MED][ssr][M] `apps/docs/src/server.ts` is dead code — nothing server-renders at runtime, and `/api/*` is served nowhere — ssr F-5 — `angular.json`, `apps/docs/src/server.ts`, `apps/docs/src/serve-static.mjs` (+1)
+- [ ] [MED][ssr][M] There is no Vite / Analog installation path documented or tested — ssr F-8 — `apps/docs/src/app/pages/getting-started/getting-started.ts`, `packages/themes/package.json`, `package.json`
+- [ ] [MED][ssr][M] `inject(DOCUMENT)` vs the global `document` is inconsistent and unenforced — ssr F-15 — `eslint.config.js`, `packages/core/src/link/link.ts:204`, `rules/code_style.md`
+- [ ] [MED][ssr][M] The prerender proves far less about the library than it appears to — ssr F-16 — `apps/docs/src/app/components/code-preview/code-preview.ts:138-165`, `packages/core/src/example-components.ts`, `packages/components/src/example-components.ts` (+1)
+
+### Lazy loading & bundle (8)
+
+- [ ] [MED][lazy][S] `@kouji-ui/components` ships CSS assets with no `exports` entry — the documented stylesheet is not resolvable as a package specifier — lazy F-4 — `packages/components/package.json` (no `exports` key), `packages/components/ng-package.json:10-16`, `packages/core/package.json:52-69` (+1)
+- [ ] [MED][lazy][S] `marked.use()` runs at module scope in a package declaring `sideEffects: false`, mutating the shared global `marked` singleton — lazy F-6 — `packages/components/src/chat/markdown.ts:1,35,47`, `packages/components/src/chat/index.ts:19`, `packages/components/package.json:49`
+- [ ] [MED][lazy][S] `_examples` components leak into the published barrels in two places — lazy F-7 — `packages/components/src/icon/index.ts:2-5`, `packages/components/src/input-mask/index.ts:2-9`
+- [ ] [MED][lazy][M] Docs component-doc route chunk eagerly bundles all 69 playgrounds — lazy F-1 — `apps/docs/src/app/pages/component-doc/component-doc.ts:24`, `.../playground-files/index.ts:2-7,16-23`, `.../playground-files/bucket-f.ts:5,12,13` (+2)
+- [ ] [MED][lazy][M] `provideLucideIcons()` has no subset overload, so the convenient Lucide API is not tree-shakable — lazy F-2 — `packages/components/src/icon/lucide/provide-lucide-icons.ts:8,52-53,98-105`, `packages/components/src/icon/lucide/index.ts`, `packages/core/src/icon/index.ts:15-19` (+2)
+- [ ] [MED][lazy][M] The styled `<kj-chart>` ignores `provideECharts` and always pulls the full ECharts build — lazy F-3 — `packages/components/src/chart/chart.ts:144-145`, `packages/core/src/chart/chart.ts:131-135`, `packages/core/src/chart/echarts.ts:45,73`
+- [ ] [MED][lazy][M] `overlay.css` re-ships nine stylesheets that are already inlined into their components — lazy F-5 — `packages/components/src/overlay/overlay.css:37-45`, and the nine `styleUrl` sites it duplicates
+- [ ] [MED][lazy][M] `marked` and the TanStack packages are hard dependencies every consumer installs — lazy F-11 — `packages/components/package.json` (dependencies), `packages/components/src/chat/markdown.ts:1`, `packages/components/src/table/table-virtual.ts:11-17` (+2)
+
+### Performance (14)
+
+- [ ] [MED][perf][S] `KjChart` re-applies the full ECharts option on every application change-detection cycle — perf F-1 — `packages/core/src/chart/chart.ts:208-210,285,289,191,215-228`, `packages/core/src/chart/chart-tokens.ts:9,18`
+- [ ] [MED][perf][S] `KjFocusRing` installs two document-level capture listeners per instance — perf F-5 — `packages/core/src/primitives/interaction/focus-ring.ts:36-58`
+- [ ] [MED][perf][S] Auto-derived tree shape does a full linear key scan on every topology query — perf F-7 — `packages/core/src/primitives/list/selection.ts:104-146,240-259`
+- [ ] [MED][perf][S] Table persists full state to storage on every state change, including per-row selection — perf F-8 — `packages/components/src/table/table.ts:865-873`, `packages/core/src/table/table.ts:18-32`
+- [ ] [MED][perf][S] Chat re-sanitises every markdown block on every change-detection pass — perf F-10 — `packages/components/src/chat/chat-message.ts:91,155,160-169`
+- [ ] [MED][perf][S] Cascade sub-panel leaks its window listeners when destroyed while open, and repositions unthrottled — perf F-12 — `packages/core/src/cascade-select/cascade-select-sub-panel.ts:104-131`
+- [ ] [MED][perf][S] `<kj-table>` calls per-cell methods from the template on every render — perf F-13 — `packages/components/src/table/table.ts:344-352,396-404,452-460` (+1)
+- [ ] [MED][perf][S] Zoneless is implicit and no test exercises it — perf F-23 — `apps/docs/src/app/app.config.ts`, `package.json:94`, every `*.spec.ts`
+- [ ] [MED][perf][M] Rich-text does four full-document tree walks per update, two of them avoidable — perf F-2 — `packages/core/src/rich-text/engine.ts:237-246,257-260,262-289`, `packages/core/src/rich-text/rich-text-editor.ts:113,257-264,374-385`, `packages/components/src/rich-text/rich-text-editor.ts:137-139`
+- [ ] [MED][perf][M] Selection membership is O(selected) per item, so a multi-select toggle is O(n·m) — perf F-6 — `packages/core/src/primitives/list/selection.ts:222-229,296-304`, `packages/core/src/primitives/list/item.ts:180-186`
+- [ ] [MED][perf][M] Table virtualization uses a fixed row estimate with no measurement, and expansion rows are not accounted for — perf F-9 — `packages/components/src/table/table-virtual.ts:96-108,120-140`, `packages/components/src/table/table.ts:356-437`
+- [ ] [MED][perf][M] Streaming re-lexes the entire message on every token — perf F-11 — `packages/components/src/chat/chat-message.ts:155`, `packages/components/src/chat/markdown.ts:69-100`, `packages/core/src/chat/chat-stream.ts`
+- [ ] [MED][perf][M] `<kj-tree-select>` renders the entire tree and calls `isRowHidden()` per row per render — perf F-14 — `packages/components/src/tree-select/tree-select.ts:245-258,298-315`, `packages/core/src/tree-select/tree-select-root.ts:207-212`
+- [ ] [MED][perf][L] No virtualization for list-style components (combobox / command palette) — perf F-4 — `packages/core/src/primitives/list/filterable-list.ts:50-56,107-124`, `packages/core/src/primitives/list/item.ts:35-46`, `packages/core/src/combobox/combobox-root.ts:77,126` (+2)
+
+### Architecture & code quality (12)
+
+- [ ] [MED][arch][S] `@angular/cdk` is a required peer dependency of both published packages and nothing imports it — arch F-3 — `packages/core/package.json`, `packages/components/package.json`, `rules/stack.md`
+- [ ] [MED][arch][S] `kjOffset` transform swallows `0` at six overlay anchor points — arch F-4 — `packages/core/src/{popover/popover-content,tooltip/tooltip-content,select/select-content,combobox/combobox-listbox,tree-select/tree-select-content,date-picker/date-picker-calendar}.ts`
+- [ ] [MED][arch][S] `ViewEncapsulation.None` is banned by the rules and used 188 times — undocumented deliberate decision, not drift — arch F-5 — `rules/code_style.md:72-77`, 81 files in `packages/components/src`, 11 in `packages/core/src` (+1)
+- [ ] [MED][arch][S] `KjTabList` swallows its own composed primitive's events instead of configuring it — arch F-18 — `packages/core/src/tabs/tabs.ts:~178-228` (comment at `:220`), `packages/core/src/a11y/roving-tabindex.ts`
+- [ ] [MED][arch][M] ~95 boolean inputs omit `booleanAttribute`, so the bare-attribute form the library teaches silently no-ops — arch F-2 — `packages/core/src/tag/tag.ts:41,59,82,95,114,125-131,134-137,140-145,175,200`, `packages/components/src/tag/tag.ts:43`, `packages/core/src/a11y/disabled.ts:24,31` (+2)
+- [ ] [MED][arch][M] `@kouji-ui/core` is not headless: 592 lines of themed CSS and 16 `@Component`s, and its own aggregator never ships — arch F-6 — `rules/architecture.md:4`, `packages/core/src/styles.css`, `packages/core/src/typography/prose.css` (+2)
+- [ ] [MED][arch][M] 102 unprefixed public bindings in `@kouji-ui/components`, 7 classes mixing both conventions — arch F-7 — 25 files under `packages/components/src`, `rules/code_style.md:14-15`
+- [ ] [MED][arch][M] Components package test shape: 15 features with zero specs, 3 of the 69 spec files are pure `it.todo` — arch F-8 — `packages/components/src/**`
+- [ ] [MED][arch][M] Only one of seven rules files is machine-enforced; no stylelint over 93 stylesheets — arch F-9 — `eslint.config.js`, `packages/themes/package.json`, `rules/*`
+- [ ] [MED][arch][M] Five bespoke `ControlValueAccessor`s bypass `KjFormControl` — arch F-19 — `packages/core/src/primitives/forms/form-control.ts`, `packages/core/src/rich-text/rich-text-editor.ts`, `packages/components/src/{color-picker/color-picker,input/input,input-otp/input-otp,textarea/textarea}.ts`
+- [ ] [MED][arch][M] Concrete duplication beyond `KjDisabled`: overlay refs and table cell editors — arch F-20 — `packages/core/src/{drawer,sheet,dialog}/*.ref.ts`, `packages/components/src/table/table-editors/{text,number,date,select,boolean}-editor.ts`
+- [ ] [MED][arch][M] `kj-menubar` is published while functionally incomplete, and the styled wrapper has no spec — arch F-21 — `packages/components/src/menubar/menubar.ts:126`, `packages/components/src/menubar/` (no `*.spec.ts`), `packages/components/src/menubar/menubar.usage.example.ts:9`
+
+---
+
+## Wave 3 — polish (65)
+
+All remaining low-severity findings.
+
+### Overlay (6)
+
+- [ ] [LOW][overlay][S] `KjCloseReason` is public API that carries no information — overlay F-11 — `packages/core/src/primitives/overlay/controller.ts`, `packages/core/src/primitives/overlay/stack.ts`
+- [ ] [LOW][overlay][S] Dead scroll-lock CSS referencing a removed service — overlay F-13 — `packages/components/src/popover/popover.css`
+- [ ] [LOW][overlay][S] A click on the trigger during the close animation is swallowed — overlay F-22 — `packages/core/src/primitives/overlay/controller.ts:106-109`
+- [ ] [LOW][overlay][S] Three more pieces of dead overlay CSS — overlay F-23 — `packages/components/src/dialog/dialog.css:2-10`, `packages/components/src/drawer/drawer.css:51-61`, `packages/core/src/primitives/overlay/strategies/backdrop/blurred.ts:4`
+- [ ] [LOW][overlay][M] Multiple Angular apps on one page share the container but not the id counter or the z-stack — overlay F-12 — `packages/core/src/primitives/overlay/container.ts`, `.../id.ts`, `.../stack.ts`
+- [ ] [LOW][overlay][M] Speed-dial bypasses the overlay system entirely — overlay F-21 — `packages/core/src/speed-dial/speed-dial.ts:65`, `packages/core/src/speed-dial/speed-dial-trigger.ts:36,49`
+
+### Styles & theming (7)
+
+- [ ] [LOW][styles][S] Docs ship a hardcoded theme in the static HTML — guaranteed flash; two themes unreachable — styles F-15 — `apps/docs/src/index.html:2`, `apps/docs/src/app/services/theme.service.ts:7-16,49-67`
+- [ ] [LOW][styles][S] `--kj-color-icon-*` are frozen to the root theme, so `[kjIconColor]` ignores nested themes — styles F-16 — `packages/themes/src/base.css:29,166-177`, `packages/core/src/icon/icon.directive.ts:107`
+- [ ] [LOW][styles][S] `core/src/styles/docs-themes.css` is a rival token namespace living inside the library source — styles F-17 — `packages/core/src/styles/docs-themes.css:6-33`, 20+ `packages/core/src/*/_examples/*.ts`
+- [ ] [LOW][styles][S] `reports/a11y/_summary.json` cannot substantiate the theme contrast claims — styles F-19 — `reports/a11y/_summary.json`, `reports/a11y/<theme>/*.json`
+- [ ] [LOW][styles][S] `color-picker` hard-codes achromatic chrome that breaks in dark themes — styles F-22 — `packages/components/src/color-picker/color-picker.css:73-74,122-123,131-132`
+- [ ] [LOW][styles][M] Roughly fifteen invented token names in component CSS that resolve to nothing — styles F-18 — `packages/components/src/action-sheet/action-sheet.css:33,42,77`, `direction-toggle/`, `date-range-presets/` (+4)
+- [ ] [LOW][styles][M] The theme generator emits two dead tokens and omits six required ones — styles F-23 — `apps/docs/src/app/lib/theme/serialize-theme.ts:44-45,47-104`, `packages/themes/src/themes.spec.ts:15-20`
+
+### Customization (8)
+
+- [ ] [LOW][cust][S] `provideKjLocale`'s docstring promises route-level scoping that the root-scoped `KjLocale` cannot honour — cust F-1 — `packages/core/src/locale/locale.ts`, `packages/core/src/locale/locale.config.ts`, `packages/core/src/i18n/translate.service.ts` (+2)
+- [ ] [LOW][cust][S] Documentation-truth defects in `provide*` / config TSDoc — cust F-13 — `packages/components/src/button/button.ts`, `packages/core/src/tag/config.ts`, `packages/core/src/badge/badge.ts` (+1)
+- [ ] [LOW][cust][S] Wrapper components re-declare host-directive inputs "for the docs extractor", publishing contradicting `.d.ts` defaults — cust F-14 — `packages/components/src/alert/alert.ts`, `packages/components/src/spinner/spinner.ts`, `packages/components/src/tabs/tabs.ts`
+- [ ] [LOW][cust][S] Service-launched overlays bypass the mount strategy when choosing their root container — cust F-17 — `packages/core/src/primitives/overlay/builder.ts:118`, `packages/core/src/primitives/overlay/container.ts`, `packages/core/src/primitives/overlay/tokens.ts:17`
+- [ ] [LOW][cust][S] Motion has no configuration surface at all — cust F-20 — `packages/core/src/motion/motion.ts`, `packages/core/src/motion/index.ts`
+- [ ] [LOW][cust][S] `@angular/cdk` is a peer dependency of both packages despite the no-CDK policy — cust F-21 — `packages/core/package.json:32`, `packages/components/package.json:28`, `rules/stack.md`
+- [ ] [LOW][cust][M] Input naming is inconsistent across (and within) components: `variant` vs `kjVariant` — cust F-12 — `packages/components/src/input/input.ts`, `packages/components/src/badge/badge.ts`, `packages/components/src/card/card.ts` (+4)
+- [ ] [LOW][cust][M] No per-subtree direction: `KjDirectionality` reads only `<html dir>` / `<body dir>` — cust F-15 — `packages/core/src/primitives/directionality/directionality.ts`, `packages/core/src/locale/document-direction.ts`
+
+### Accessibility (5)
+
+- [ ] [LOW][a11y][S] Roving menus still publish `aria-activedescendant`, and a code comment claims a mechanism Angular does not provide — a11y F-15 — `packages/core/src/primitives/list/navigator.ts:41-44`, `packages/core/src/dropdown-menu/dropdown-menu-content.ts:144-153`, `packages/core/src/menubar/menubar.ts:44-47`
+- [ ] [LOW][a11y][S] Tab panels are never focusable — a11y F-16 — `packages/core/src/tabs/tabs.ts:332-338`
+- [ ] [LOW][a11y][S] The toast viewport is a `role="region"` live region wrapping `role="status"` live regions — a11y F-18 — `packages/core/src/toast/toast.ts:174-181,77-79`
+- [ ] [LOW][a11y][S] `KjFocusTrap` — the documented public primitive — is dead code that sets no initial focus and restores none — a11y F-23 — `packages/core/src/a11y/focus-trap.ts:26-45`, `packages/core/src/a11y/index.ts:3`
+- [ ] [LOW][a11y][M] AAA gaps: a sub-7:1 text token, sub-44px default controls, and 24 animated stylesheets with no `prefers-reduced-motion` block — a11y F-17 — `packages/themes/src/themes/light.css:30,59`, `mint.css:29,56`, `nord.css:25,50` (+4)
+
+### Micro-frontends (8)
+
+- [ ] [LOW][mfe][S] `KjOverlayStack` does not coordinate across multiple Angular root injectors — mfe F-3 — `packages/core/src/primitives/overlay/stack.ts:81-107,183-188,202-207` (+1)
+- [ ] [LOW][mfe][S] No supported story for two *different versions* of the library in one document (unversioned class names, not layers) — mfe F-5 — `packages/themes/src/base.css:29`, `packages/themes/src/density.css:41`, the 62 `@layer kj.component` stylesheets
+- [ ] [LOW][mfe][S] `body[data-kj-scroll-lock]` is styled but never written, and its comment names a class that does not exist — mfe F-10 — `packages/components/src/popover/popover.css:57-61`
+- [ ] [LOW][mfe][S] Live-region singletons are per-copy, and are not discovered from the DOM — mfe F-11 — `packages/core/src/primitives/overlay/strategies/live-announcer/_announce.ts:15-28`
+- [ ] [LOW][mfe][S] `@angular/cdk` is a required peer of both packages and is never imported — mfe F-14 — `packages/core/package.json:32`, `packages/components/package.json:28`
+- [ ] [LOW][mfe][S] `<html dir>` and table storage keys have no per-app ownership — mfe F-15 — `packages/core/src/locale/document-direction.ts:41-57`, `packages/core/src/table/table-storage.ts:49-62,69-71`, `packages/components/src/table/table.ts:855-872`
+- [ ] [LOW][mfe][M] Built-in overlay components pin `bodyPortal()`, so a shadow-DOM MFE cannot host them in its own subtree — mfe F-4 — `packages/core/src/primitives/overlay/container.ts:24-33`, `packages/core/src/primitives/overlay/tokens.ts`, `.../strategies/mount/in-container.ts` (+4)
+- [ ] [LOW][mfe][M] Document listeners and observers scale per instance — mfe F-17 — `packages/core/src/primitives/interaction/focus-ring.ts:45-46`, `packages/core/src/chart/chart.ts:190-191`, `packages/components/src/editor/editor.ts:134-135`
+
+### SSR (8)
+
+- [ ] [LOW][ssr][S] `PrerenderFallback.Server` is declared under `outputMode: "static"` — ssr F-11 — `apps/docs/src/app/app.routes.server.ts`, `angular.json`, `vercel.json`
+- [ ] [LOW][ssr][S] `KjFileUploadTrigger` mutates the DOM in its constructor and leaves a non-null-asserted field undefined on the server — ssr F-17 — `packages/core/src/file-upload/file-upload.ts:444,446-466`
+- [ ] [LOW][ssr][S] `crypto.randomUUID()` used bare in `KjToastService`, against the repo's own guarded helper — ssr F-18 — `packages/core/src/toast/toast.service.ts:156,206`, contrast `packages/core/src/accordion/accordion.ts:26-31` (+3)
+- [ ] [LOW][ssr][M] ~20 module-level id counters (and `crypto.randomUUID`) bypass `KjId`, so server and client ids diverge — ssr F-9 — `packages/core/src/primitives/overlay/id.ts` and ~20 feature files
+- [ ] [LOW][ssr][M] Calendar seeds "today" and the focused month from the *server's* clock — ssr F-10 — `packages/core/src/calendar/calendar.ts`, `packages/core/src/calendar/calendar-day.ts`
+- [ ] [LOW][ssr][M] Incremental hydration is explicitly disabled and the library ships zero `@defer` blocks — ssr F-12 — `apps/docs/src/app/app.config.ts`, `packages/core/src`, `packages/components/src`
+- [ ] [LOW][ssr][M] Virtualized tables render zero rows into the prerendered HTML — ssr F-13 — `packages/components/src/table/table-virtual.ts`
+- [ ] [LOW][ssr][M] SSR safety rests on `typeof document === 'undefined'`, not on `isPlatformBrowser` — ssr F-14 — `packages/core/src/primitives/overlay/container.ts`, `.../strategies/scroll-lock/html-overflow.ts`, `.../strategies/live-announcer/_announce.ts`
+
+### Lazy loading & bundle (4)
+
+- [ ] [LOW][lazy][S] No size budget or bundle-size gate anywhere except the docs app's own build — lazy F-9 — `angular.json:124-135`, `.github/workflows/ci.yml`, `.github/workflows/release.yml`
+- [ ] [LOW][lazy][S] Declared-but-unused heavy dependencies, and a script pointing at a package that does not exist — lazy F-10 — `package.json:12,47`, `apps/docs/package.json:12`
+- [ ] [LOW][lazy][S] Examples and playgrounds are compiled into every library build — lazy F-12 — `packages/core/tsconfig.lib.json:11-12`, `packages/components/tsconfig.lib.json:15-16`
+- [ ] [LOW][lazy][L] No secondary entry points: one flat barrel per package, with optional-peer type imports flattened into a single `.d.ts` — lazy F-8 — `packages/core/ng-package.json`, `packages/components/ng-package.json`, `packages/core/src/public-api.ts` (+3)
+
+### Performance (11)
+
+- [ ] [LOW][perf][S] Anchored-overlay repositioning is not rAF-coalesced — perf F-3 — `.../strategies/position/anchored-to.ts:136,145,177-179,202-237`, `packages/core/src/cascade-select/cascade-select-sub-panel.ts:121-125`
+- [ ] [LOW][perf][S] Five directives duplicate the root `KjReducedMotion` matchMedia subscription per instance — perf F-15 — `packages/core/src/spinner/spinner.ts:118-126`, `packages/core/src/progress-bar/progress-bar.ts:169-180`, `packages/core/src/chart/chart.ts:141-151` (+2)
+- [ ] [LOW][perf][S] `KjTag` installs a subtree MutationObserver per tag — perf F-16 — `packages/core/src/tag/tag.ts:153-170`
+- [ ] [LOW][perf][S] Textarea auto-resize forces two synchronous reflows per keystroke, twice — perf F-17 — `packages/core/src/textarea/textarea.ts:180-195,199-204,210-234`
+- [ ] [LOW][perf][S] `KjRovingTabindex` re-sorts with `compareDocumentPosition` and reads computed style on every arrow key — perf F-18 — `packages/core/src/a11y/roving-tabindex.ts:84-93,96-104,118-133`
+- [ ] [LOW][perf][S] Wrapper `<kj-chart>` resizes on every ResizeObserver entry, unlike the core directive — perf F-19 — `packages/components/src/chart/chart.ts:152-153` vs `packages/core/src/chart/chart.ts:170-183`
+- [ ] [LOW][perf][S] `<kj-chat-thread>` allocates a fresh inputs object per render for custom renderers — perf F-20 — `packages/components/src/chat/chat-thread.ts:84-90,130-137`
+- [ ] [LOW][perf][S] A new `Intl.DateTimeFormat` is constructed per formatted date — perf F-21 — `packages/core/src/calendar/date-utils.ts:122,134,144-145,149-156,158-165,214`
+- [ ] [LOW][perf][S] Per-instance document listeners on `kj-tree-select-content` — perf F-24 — `packages/core/src/tree-select/tree-select-content.ts:70-77`
+- [ ] [LOW][perf][S] Carousel observes only the initial slide set, and the viewport settle timer outlives destroy — perf F-25 — `packages/core/src/carousel/carousel.ts:455-471,492,510-511,464-468`
+- [ ] [LOW][perf][M] Zero style containment anywhere in the component stylesheets — perf F-22 — `packages/components/src/**/*.css` (0 occurrences of `contain:`)
+
+### Architecture & code quality (8)
+
+- [ ] [LOW][arch][S] Scattered pre-signal holdovers: 34 lifecycle hooks, 6 `@Output()`, 4 `@ViewChild`, 3 `@HostListener` — arch F-13 — `packages/core/src/file-upload/file-upload.ts`, `packages/components/src/input/input.ts`, `packages/core/src/drawer/drawer.ts` (+3); `rules/code_style.md:20-29`
+- [ ] [LOW][arch][S] `KJ_COMPONENTS_VERSION` reports `0.0.1` for a package at `0.9.3` — arch F-15 — `packages/components/src/public-api.ts`, `packages/components/package.json`
+- [ ] [LOW][arch][S] Shared filter contract lives inside one sibling's file instead of a `*.context.ts` — arch F-22 — `packages/components/src/table/table-filters/text-filter.ts`, imported by `date-filter.ts:11`, `number-filter.ts:13` (+2)
+- [ ] [LOW][arch][M] TSDoc input/output coverage: 7% missing in core, 29% missing in components — arch F-10 — `rules/tsdoc.md:4,68-69`, `packages/components/src/**`
+- [ ] [LOW][arch][M] 34 classes carry an Angular type suffix with no collision; `icon.directive.ts` breaks the file rule too — arch F-11 — `CLAUDE.md` "Class Naming Rule", `rules/code_style.md:8-11`, `packages/core/src/icon/` (+1)
+- [ ] [LOW][arch][M] Misuse diagnostics are inconsistent and mostly untree-shakeable; missing-parent errors come from Angular, not the library — arch F-14 — `packages/core/src/form/form.ts:162`, 25 `isDevMode()` sites, 34 `*.context.ts`
+- [ ] [LOW][arch][M] `KjDisabled` is composed by 26 directives and hand-rolled by 15 — arch F-16 — `packages/core/src/primitives/interaction/disabled.ts` and its 15 hand-rolled consumers
+- [ ] [LOW][arch][L] "One directive per file" is violated by ~30 files, several holding 7–9 directives in 400–900 lines — arch F-12 — `rules/architecture.md:25-26`, `packages/core/src/carousel/carousel.ts`, `packages/core/src/color-picker/color-picker.ts` (+3)
+
+---
+
+## Not scheduled
+
+**Refuted — do not file.** micro-frontends F-5 (original) "The `@layer kj.*` cascade is global and unversioned — the second copy silently restyles the first." Mechanism misattributed to layers; rename sub-claim is false CSS; count was 80 vs an actual 62. The accurate residue is scheduled above as `[LOW][mfe][S] mfe F-5`.
+
+**Fixed by `main` — do not file.** prev overlay F-4a / prev MFE F-8 (z-index stacking, `2948c5b5`); prev styles F-1 / prev SSR F-7 / prev lazy F-5 (overlay CSS publication, `fb1d1956`, core half); prev a11y F-14 (backdrop dismiss on the up-event, `e6aa28a5`, backdrop path). Their named residuals are scheduled above.
+
+**Carried over from the 2026-09-06 review, not re-checked this round — verify before filing.** a11y prior F-11 (focus indicator removed with no accessible replacement), F-12 (RTL outside slider / avatar-group), F-13 (hard-coded English UI/ARIA strings), F-17 (no status announcements for filtering / sorting / pagination), F-18 (`KjTypeAhead` same-letter cycle), F-20 (toast auto-dismiss fixed at 4s), F-21 (`KjListNavigator` hijacks Home/End/PageUp/PageDown in text fields). Their files are unchanged in `fd6dd34e..HEAD`; assume all seven still open.
