@@ -63,9 +63,30 @@ describe('docs server routes', () => {
     expect(vercel.outputDirectory).toBe('dist/docs/browser');
   });
 
-  test('the dead Express app and its duplicate static server are gone', () => {
+  test('the dead Express app is gone', () => {
     expect(existsSync(resolve(REPO_ROOT, 'apps/docs/src/server.ts'))).toBe(false);
-    expect(existsSync(resolve(REPO_ROOT, 'apps/docs/src/serve-static.mjs'))).toBe(false);
+  });
+
+  /**
+   * `serve-static.mjs` used to be asserted absent too. It came back, because
+   * Render's start command invokes that exact path and deleting it took the
+   * docs site down with `nonZeroExit: 1` — a start command in a dashboard is
+   * not something a grep of this repo can find.
+   *
+   * What actually matters is not whether the file exists but whether it is a
+   * SECOND server. The original was a separate Express app with its own MIME
+   * table and SPA fallback, which is how a route could resolve in CI and 404 in
+   * production. So: it may exist, and it must delegate.
+   */
+  test('the deploy entry point delegates instead of being a second server', () => {
+    const entry = resolve(REPO_ROOT, 'apps/docs/src/serve-static.mjs');
+    if (!existsSync(entry)) return; // fine — `pnpm start` is the preferred path
+
+    const src = readFileSync(entry, 'utf8');
+    expect(src).toContain('scripts/serve-docs-dist.mjs');
+    // No second implementation hiding behind the same filename.
+    expect(src).not.toContain('express');
+    expect(src).not.toMatch(/createServer|\.listen\(/);
   });
 
   /**
