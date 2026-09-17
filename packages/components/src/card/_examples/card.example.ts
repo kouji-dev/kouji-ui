@@ -1,14 +1,14 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjCardComponent } from '../card';
+import { KjCard } from '../card';
 
 /**
- * Default usage example for KjCardComponent.
+ * Default usage example for KjCard.
  * Rendered live in the docs and as code in the example panel.
  */
 @Component({
   selector: 'kj-card-example',
   standalone: true,
-  imports: [KjCardComponent],
+  imports: [KjCard],
   styles: [
     `
       :host {

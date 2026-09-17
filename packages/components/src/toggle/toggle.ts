@@ -1,4 +1,11 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, model, input } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  booleanAttribute,
+  model,
+  input,
+} from '@angular/core';
 import { KjToggle } from '@kouji-ui/core';
 
 /**
@@ -30,8 +37,11 @@ import { KjToggle } from '@kouji-ui/core';
  *   Tab         — Moves focus to the next focusable element
  *
  * @doc-aria
- *   role="switch"   — applied by the headless `KjToggle` directive
- *   aria-pressed    — reflects the two-way `[(pressed)]` model
+ *   aria-pressed    — reflects the two-way `[(pressed)]` model. The control
+ *                     keeps its native `button` role: this is the ARIA
+ *                     toggle-button pattern, not `role="switch"` (which
+ *                     would require `aria-checked` instead and is a
+ *                     different, on/off-only semantic).
  *   aria-disabled   — reflected when `[disabled]="true"`
  *   aria-label      — required for icon-only toggles (dev-mode enforces it)
  *   data-size       — Mirrors the resolved size for theme hooks
@@ -99,9 +109,22 @@ import { KjToggle } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjToggleComponent {
+  /**
+   * Two-way bound pressed state. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<kj-toggle pressed>`) binds the empty string and reads as `false`.
+   * Bind it: `[(pressed)]="on"` or `[pressed]="true"`.
+   */
   readonly pressed = model<boolean>(false);
-  readonly disabled = input(false);
+
+  /** Blocks activation and announces `aria-disabled`. Defaults to `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** Control height preset, reflected as `data-size`. Defaults to `'md'`. */
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+
+  /** Accessible name for the rendered `<button>`. Defaults to `undefined`. */
   readonly ariaLabel = input<string | undefined>(undefined);
   /**
    * `'press'` (default) renders the toggle as a press/unpress button — the

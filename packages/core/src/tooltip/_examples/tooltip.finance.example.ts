@@ -16,10 +16,10 @@ import { KjButton } from '../../button/button';
         align-items: center;
         justify-content: center;
         padding: 5rem 3rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 180px;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .row {
         display: flex;
@@ -30,19 +30,19 @@ import { KjButton } from '../../button/button';
       }
       button[kjButton] {
         padding: 4px 15px;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 14px;
         font-weight: 400;
         border: 1px solid transparent;
         border-radius: 6px;
         cursor: pointer;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
         line-height: 1.5;
       }
       button[kjButton][data-variant='default'] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border-color: var(--kj-accent);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border-color: var(--docs-accent);
       }
       button[kjButton][data-variant='default']:hover {
         background: #4096ff;
@@ -50,7 +50,7 @@ import { KjButton } from '../../button/button';
       }
       button[kjButton][data-variant='link'] {
         background: transparent;
-        color: var(--kj-accent);
+        color: var(--docs-accent);
         border-color: transparent;
       }
       button[kjButton][data-variant='link']:hover {
@@ -58,22 +58,22 @@ import { KjButton } from '../../button/button';
       }
       button[kjButton][data-variant='ghost'] {
         background: transparent;
-        color: var(--kj-text);
-        border: 1px solid var(--kj-text);
+        color: var(--docs-text);
+        border: 1px solid var(--docs-text);
       }
       button[kjButton][data-variant='ghost']:hover {
-        color: var(--kj-accent);
-        border-color: var(--kj-accent);
+        color: var(--docs-accent);
+        border-color: var(--docs-accent);
       }
       :global(kj-tooltip-content) {
         background: #1f2937;
         color: #f9fafb;
         padding: 0.3rem 0.625rem;
         font-size: 0.75rem;
-        border-radius: var(--kj-radius-sm);
+        border-radius: var(--docs-radius-sm);
         white-space: nowrap;
         pointer-events: none;
-        box-shadow: var(--kj-shadow-sm);
+        box-shadow: var(--docs-shadow-sm);
       }
     `,
   ],

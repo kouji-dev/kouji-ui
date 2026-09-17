@@ -1,4 +1,6 @@
 import { InjectionToken, type Signal } from '@angular/core';
+import { mintKjId } from '../primitives/overlay/id';
+import type { KjCloseReason } from '../primitives/overlay/types';
 
 /** Direction the action cluster fans out from the trigger. */
 export type KjSpeedDialDirection = 'up' | 'down' | 'left' | 'right';
@@ -18,8 +20,8 @@ export interface KjSpeedDialContext {
   readonly contentId: string;
   /** Open the cluster. */
   open(): void;
-  /** Close the cluster. */
-  close(): void;
+  /** Close the cluster, optionally recording why (see {@link KjCloseReason}). */
+  close(reason?: KjCloseReason): void;
   /** Toggle the cluster. */
   toggle(): void;
 }
@@ -27,10 +29,7 @@ export interface KjSpeedDialContext {
 /** DI token for the shared speed-dial state. */
 export const KJ_SPEED_DIAL = new InjectionToken<KjSpeedDialContext>('KJ_SPEED_DIAL');
 
-let nextSpeedDialId = 0;
-
 /** @internal Generates a unique id for each speed-dial instance. */
 export function nextKjSpeedDialId(): string {
-  nextSpeedDialId += 1;
-  return `kj-speed-dial-${nextSpeedDialId}`;
+  return mintKjId('speed-dial');
 }

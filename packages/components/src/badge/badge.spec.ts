@@ -7,10 +7,11 @@ import { KjBadgeComponent } from './badge';
   standalone: true,
   imports: [KjBadgeComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
-  template: `<kj-badge [variant]="variant" [dot]="dot" [bg]="bg" [fg]="fg" [dotColor]="dotColor">Chip</kj-badge>`,
+  template: `<kj-badge [variant]="variant" [size]="size" [dot]="dot" [bg]="bg" [fg]="fg" [dotColor]="dotColor">Chip</kj-badge>`,
 })
 class HostComponent {
   variant = 'secondary';
+  size = 'md';
   dot = false;
   bg = '';
   fg = '';
@@ -50,5 +51,24 @@ describe('KjBadgeComponent', () => {
     expect(span.style.getPropertyValue('--kj-badge-fg')).toBe('var(--some-token)');
     expect(span.style.getPropertyValue('--kj-badge-dot-color')).toBe('rgb(9, 9, 9)');
     expect(span.hasAttribute('data-dot')).toBe(true);
+  });
+
+  // cust F-2: `data-size` moved from a template `[attr.data-size]` binding to
+  // the `KjSize` that `KjBadge` composes, so the wrapper's `size` input now
+  // travels through `[kjSize]`. One writer, and `provideKjBadge` can change
+  // the default.
+  test('forwards size to data-size through the composed KjSize', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.size = 'lg';
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('kj-badge .kj-badge');
+    expect(span.getAttribute('data-size')).toBe('lg');
+  });
+
+  test('defaults data-size to md', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const span = fixture.nativeElement.querySelector('kj-badge .kj-badge');
+    expect(span.getAttribute('data-size')).toBe('md');
   });
 });

@@ -122,8 +122,10 @@ describe('overlay stacking — nested overlays paint above their opener', () => 
     fixture.componentInstance.open.set(true);
     fixture.detectChanges();
     settle(appRef);
-    const shell = container()?.querySelector<HTMLElement>('.kj-command-palette__shell') ?? null;
-    expect(shell, 'open palette shell is portalled into the overlay container').not.toBeNull();
+    // The palette's panel IS the dialog now — it is portalled and carries the
+    // stack level, where the old hand-rolled shell wrapper used to.
+    const shell = container()?.querySelector<HTMLElement>('.kj-command-palette__dialog') ?? null;
+    expect(shell, 'the open palette panel is portalled into the overlay container').not.toBeNull();
     return { fixture, appRef, shell: shell! };
   }
 
@@ -137,10 +139,10 @@ describe('overlay stacking — nested overlays paint above their opener', () => 
     fixture.componentInstance.open.set(false);
     fixture.detectChanges();
     settle(appRef);
-    const home = fixture.nativeElement.querySelector('.kj-command-palette__shell') as HTMLElement | null;
+    const home = fixture.nativeElement.querySelector('.kj-command-palette__dialog') as HTMLElement | null;
     expect(home).not.toBeNull();
     expect(home!.style.getPropertyValue('--kj-overlay-z')).toBe('');
-    expect(container()?.querySelector('.kj-command-palette__shell') ?? null).toBeNull();
+    expect(container()?.querySelector('.kj-command-palette__dialog') ?? null).toBeNull();
     expect(stack.stackSize).toBe(0);
   });
 
@@ -172,7 +174,7 @@ describe('overlay stacking — nested overlays paint above their opener', () => 
     trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     settle(appRef);
     expect(container()!.querySelector('kj-select-content[data-state="open"]')).toBeNull();
-    expect(container()!.querySelector('.kj-command-palette__shell.is-open')).not.toBeNull();
+    expect(container()!.querySelector('.kj-command-palette__dialog[data-state="open"]')).not.toBeNull();
     expect(stack.stackSize).toBe(1);
     expect(levelOf(shell)).toBe(paletteLevel);
     expect(stack.nextZIndex).toBe(paletteLevel + 1);
@@ -185,12 +187,12 @@ describe('overlay stacking — nested overlays paint above their opener', () => 
 
   it('Escape with only the palette open closes the palette', () => {
     const { fixture, appRef, shell } = openPalette();
-    shell.querySelector<HTMLElement>('.kj-command-palette__dialog')!
-      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    // `shell` IS the dialog panel now, so Escape is dispatched on it directly.
+    shell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     fixture.detectChanges();
     settle(appRef);
     expect(fixture.componentInstance.open()).toBe(false);
-    expect(container()?.querySelector('.kj-command-palette__shell') ?? null).toBeNull();
+    expect(container()?.querySelector('.kj-command-palette__dialog') ?? null).toBeNull();
   });
 
   it('a popover opened inside a service dialog stacks above the dialog', () => {
@@ -257,20 +259,21 @@ describe('overlay stacking — stylesheets read the stack level with the histori
     let out: string | undefined;
     postcss.parse(css).walkRules(rule => {
       if (rule.selector.trim() !== selector) return;
-      rule.walkDecls(prop, d => (out = d.value));
+      rule.walkDecls(prop, d => { out = d.value; });
     });
     return out;
   }
 
-  it('the command palette keeps backdrop 1000 / dialog 1001 as fallbacks', () => {
-    expect(decl('../command-palette/command-palette.css', '.kj-command-palette__backdrop', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
-    expect(decl('../command-palette/command-palette.css', '.kj-command-palette__dialog', 'z-index')).toBe('calc(var(--kj-overlay-z, 1000) + 1)');
+  it('the command palette dialog reads the stack level; its scrim is the shared kj-backdrop', () => {
+    expect(decl('../command-palette/command-palette.css', '.kj-command-palette__dialog', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
+    // The palette no longer hand-rolls a scrim: `blurredBackdrop()` renders a
+    // `<kj-backdrop>` inside the same wrapper, painted by the core stylesheet.
+    expect(decl('../command-palette/command-palette.css', '.kj-command-palette__backdrop', 'z-index')).toBeUndefined();
   });
 
   it('panel stylesheets read --kj-overlay-z with their previous literal as the fallback', () => {
     expect(decl('../select/select.css', '.kj-select-content', 'z-index')).toBe('var(--kj-overlay-z, 100)');
     expect(decl('../popover/popover.css', '.kj-popover-content', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
-    expect(decl('../dialog/dialog.css', '.kj-dialog-overlay', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
     expect(decl('../dropdown-menu/dropdown-menu.css', '.kj-dropdown-menu', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
     expect(decl('../tooltip/tooltip.css', '.kj-tooltip-content', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
     expect(decl('../confirm-popup/confirm-popup.css', '.kj-confirm-popup-content', 'z-index')).toBe('var(--kj-overlay-z, 1000)');
@@ -279,10 +282,10 @@ describe('overlay stacking — stylesheets read the stack level with the histori
     expect(decl('../combobox/combobox.css', '.kj-combobox-listbox', 'z-index')).toBe('var(--kj-overlay-z, 100)');
   });
 
-  it('the overlay container sits at --kj-overlay-z-base (1000) and toasts default above the stack (2000)', () => {
+  it('the overlay container sits at --kj-overlay-z-base (1000); the toast viewport follows the stack level and defaults above it (2000)', () => {
     expect(decl('../../../core/src/primitives/overlay/overlay.css', '.kj-overlay-container', 'z-index'))
       .toBe('var(--kj-overlay-z-index, var(--kj-overlay-z-base, 1000))');
-    expect(decl('../toast/toast.css', '.kj-toast-viewport', 'z-index')).toBe('var(--kj-toast-z-index, 2000)');
+    expect(decl('../toast/toast.css', '.kj-toast-viewport', 'z-index')).toBe('var(--kj-overlay-z, var(--kj-toast-z-index, 2000))');
   });
 
   it('no overlay stylesheet hardcodes the 1000/1001 levels any more', () => {

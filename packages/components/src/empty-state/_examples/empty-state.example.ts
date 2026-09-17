@@ -1,26 +1,26 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
-  KjEmptyStateComponent,
-  KjEmptyStateIconComponent,
-  KjEmptyStateTitleComponent,
-  KjEmptyStateDescriptionComponent,
-  KjEmptyStateActionsComponent,
+  KjEmptyState,
+  KjEmptyStateIcon,
+  KjEmptyStateTitle,
+  KjEmptyStateDescription,
+  KjEmptyStateActions,
 } from '../empty-state';
 import { KjButtonComponent } from '../../button/button';
 
 /**
- * Default usage example for KjEmptyStateComponent — the never-populated case.
+ * Default usage example for KjEmptyState — the never-populated case.
  * No `kjLive`: the page has just loaded and AT will read the content in flow.
  */
 @Component({
   selector: 'kj-empty-state-example',
   standalone: true,
   imports: [
-    KjEmptyStateComponent,
-    KjEmptyStateIconComponent,
-    KjEmptyStateTitleComponent,
-    KjEmptyStateDescriptionComponent,
-    KjEmptyStateActionsComponent,
+    KjEmptyState,
+    KjEmptyStateIcon,
+    KjEmptyStateTitle,
+    KjEmptyStateDescription,
+    KjEmptyStateActions,
     KjButtonComponent,
   ],
   styles: [

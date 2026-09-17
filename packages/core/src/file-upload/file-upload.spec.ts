@@ -1,4 +1,5 @@
 import { Component, ViewChild, signal, ChangeDetectionStrategy } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { render, fireEvent } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import {
@@ -125,11 +126,15 @@ describe('KjFileUpload', () => {
       const { fixture } = await render(Host);
       fixture.componentInstance.maxSize.set(50);
       fixture.detectChanges();
-      let rejected: KjFileRejection[] | null = null;
-      fixture.componentInstance.upload.kjReject.subscribe((r) => (rejected = r));
+      // Collected into an array rather than a nullable local: TypeScript cannot
+      // narrow a variable that is only ever assigned from inside a callback.
+      const rejected: KjFileRejection[][] = [];
+      fixture.componentInstance.upload.kjReject.subscribe((r) => {
+        rejected.push(r);
+      });
       fixture.componentInstance.upload.addFiles([makeFile('big', 200)]);
-      expect(rejected).toBeTruthy();
-      expect(rejected[0].reason).toBe('size');
+      expect(rejected).toHaveLength(1);
+      expect(rejected[0][0].reason).toBe('size');
     });
   });
 
@@ -181,6 +186,32 @@ describe('KjFileUpload', () => {
       fireEvent.keyDown(dz, { key: 'Enter' });
       fireEvent.keyDown(dz, { key: ' ' });
       expect(clicked).toBe(2);
+    });
+
+    it('builds the hidden picker after the first render, not in the constructor (ssr F-17)', () => {
+      @Component({
+        standalone: true,
+        imports,
+        changeDetection: ChangeDetectionStrategy.Eager,
+        template: `<div kjFileUpload><button kjFileUploadTrigger>Choose</button></div>`,
+      })
+      class TriggerHost {}
+
+      const fixture = TestBed.createComponent(TriggerHost);
+      const trigger = fixture.nativeElement.querySelector('[kjFileUploadTrigger]');
+      // Directives are constructed by `createComponent`; `afterNextRender`
+      // has not run. Nothing may have been appended to the host yet, or the
+      // constructor would be inserting a node mid-hydration-claim.
+      expect(trigger.querySelector('input[type=file]')).toBeNull();
+      // And the picker click is a safe no-op while the input does not exist —
+      // the server path, where it never will.
+      expect(() => trigger.click()).not.toThrow();
+
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelectorAll('input[type=file]').length,
+      ).toBe(1);
+      fixture.destroy();
     });
 
     it('drop-zone has role=button, tabindex=0, and aria-label', async () => {
@@ -287,4 +318,100 @@ describe('kjFileMatchesAccept', () => {
     expect(kjFileMatchesAccept(f('a.pdf', 'application/pdf'), 'image/*,.pdf')).toBe(true);
     expect(kjFileMatchesAccept(f('a.png', 'image/png'), 'image/*,.pdf')).toBe(true);
   });
+});
+
+// arch F-13 — the three `@Output() … new EventEmitter()` pairs are now
+// `output<T>()`. `subscribe`/`emit` are unchanged for consumers, and the
+// directive no longer pulls `EventEmitter` (an RxJS Subject) per instance.
+describe('signal outputs (arch F-13)', () => {
+  it('kjSelect / kjReject / kjRemove are OutputRefs, not EventEmitters', async () => {
+    const { fixture } = await render(Host);
+    const u = fixture.componentInstance.upload;
+    for (const ref of [u.kjSelect, u.kjReject, u.kjRemove]) {
+      expect(typeof ref.subscribe).toBe('function');
+      expect(typeof ref.emit).toBe('function');
+      // EventEmitter extends rxjs Subject, which carries `next`/`pipe`.
+      expect((ref as unknown as { pipe?: unknown }).pipe).toBeUndefined();
+    }
+  });
+
+  it('kjSelect still emits the survivors and the subscription unsubscribes', async () => {
+    const { fixture } = await render(Host);
+    const seen: File[][] = [];
+    const sub = fixture.componentInstance.upload.kjSelect.subscribe((f) => seen.push(f));
+    fixture.componentInstance.upload.addFiles([makeFile('a.txt')]);
+    expect(seen).toHaveLength(1);
+    expect(seen[0][0].name).toBe('a.txt');
+    sub.unsubscribe();
+    fixture.componentInstance.upload.addFiles([makeFile('b.txt')]);
+    expect(seen).toHaveLength(1);
+  });
+
+  it('kjRemove emits the removed row', async () => {
+    const { fixture } = await render(Host);
+    const removed: string[] = [];
+    fixture.componentInstance.upload.kjRemove.subscribe((f) => removed.push(f.file.name));
+    fixture.componentInstance.upload.addFiles([makeFile('a.txt')]);
+    const id = fixture.componentInstance.upload.files()[0].id;
+    fixture.componentInstance.upload.remove(id);
+    expect(removed).toEqual(['a.txt']);
+  });
+
+// arch F-2 — `kjDisabled` and `kjMultiple` carry `transform: booleanAttribute`.
+// `kjMultiple` defaults to `true`, so the meaningful static form is
+// `kjMultiple="false"` — Angular's `booleanAttribute` is the only transform
+// that maps the string `"false"` back to `false`.
+describe('KjFileUpload — bare boolean attributes (arch F-2)', () => {
+  it('bare kjDisabled reaches the root and both interactive children', async () => {
+    const { container } = await render(
+      `<div kjFileUpload kjDisabled data-test="root">
+         <button kjFileUploadTrigger>Browse</button>
+         <div kjFileUploadDropzone kjLabel="Drop files"></div>
+       </div>`,
+      { imports },
+    );
+    const root = container.querySelector('[data-test="root"]') as HTMLElement;
+    const trigger = container.querySelector('[kjFileUploadTrigger]') as HTMLElement;
+    const zone = container.querySelector('[kjFileUploadDropzone]') as HTMLElement;
+    expect(root.hasAttribute('data-disabled')).toBe(true);
+    expect(trigger.getAttribute('aria-disabled')).toBe('true');
+    expect(zone.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('kjMultiple="false" keeps only the last file of a multi-file drop', async () => {
+    const { container, fixture } = await render(
+      `<div kjFileUpload #u="kjFileUpload" kjMultiple="false">
+         <div kjFileUploadDropzone kjLabel="Drop files"></div>
+       </div>`,
+      { imports },
+    );
+    const zone = container.querySelector('[kjFileUploadDropzone]') as HTMLElement;
+    const root = fixture.debugElement
+      .query((n: { nativeElement?: HTMLElement }) => n.nativeElement?.hasAttribute?.('kjFileUpload') === true)
+      .injector.get(KjFileUpload);
+    fireEvent.drop(zone, {
+      dataTransfer: { files: [makeFile('a.txt'), makeFile('b.txt')], types: ['Files'] },
+    });
+    fixture.detectChanges();
+    expect(root.files().length).toBe(1);
+  });
+
+  it('the default (no attribute) still accepts several files', async () => {
+    const { container, fixture } = await render(
+      `<div kjFileUpload #u="kjFileUpload">
+         <div kjFileUploadDropzone kjLabel="Drop files"></div>
+       </div>`,
+      { imports },
+    );
+    const zone = container.querySelector('[kjFileUploadDropzone]') as HTMLElement;
+    const root = fixture.debugElement
+      .query((n: { nativeElement?: HTMLElement }) => n.nativeElement?.hasAttribute?.('kjFileUpload') === true)
+      .injector.get(KjFileUpload);
+    fireEvent.drop(zone, {
+      dataTransfer: { files: [makeFile('a.txt'), makeFile('b.txt')], types: ['Files'] },
+    });
+    fixture.detectChanges();
+    expect(root.files().length).toBe(2);
+  });
+});
 });

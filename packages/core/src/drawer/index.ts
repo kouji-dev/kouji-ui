@@ -1,4 +1,5 @@
 export { KjDrawer } from './drawer';
+export { KjDrawerTitle } from './drawer-title';
 export {
   KjDrawerService,
   DRAWER_DATA,

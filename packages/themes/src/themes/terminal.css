@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="terminal"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: dark;
+
     /* ── shape — sharp, hard-edged ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -68,6 +72,7 @@
     --kj-border-default:   #1a3325;
     --kj-border-muted:     #0a1f10;
     --kj-border-strong:    #2a5535;
+    --kj-border-control:  #3e6948;
     --kj-border-focus:     #00ff66;
     --kj-border-disabled:  #1a1a1a;
     --kj-border-primary:   #00ff66;

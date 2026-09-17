@@ -114,8 +114,10 @@ describe('the palette backdrop dismisses only a press it owns', () => {
     fixture.componentInstance.open.set(true);
     fixture.detectChanges();
     settle(appRef);
-    const shell = container()!.querySelector<HTMLElement>('.kj-command-palette__shell')!;
-    const backdrop = shell.querySelector<HTMLElement>('.kj-command-palette__backdrop')!;
+    // The palette is an overlay: its panel is the portalled dialog and its
+    // scrim is the shared `<kj-backdrop>` the backdrop strategy renders.
+    const shell = container()!.querySelector<HTMLElement>('.kj-command-palette__dialog')!;
+    const backdrop = container()!.querySelector<HTMLElement>('kj-backdrop')!;
     return { fixture, appRef, shell, backdrop };
   }
 
@@ -234,7 +236,7 @@ describe('the palette backdrop dismisses only a press it owns', () => {
     fixture.componentInstance.open.set(true);
     fixture.detectChanges();
     settle(appRef);
-    const again = container()!.querySelector<HTMLElement>('.kj-command-palette__backdrop')!;
+    const again = container()!.querySelector<HTMLElement>('kj-backdrop')!;
     pointerClick(again);
     fixture.detectChanges();
     settle(appRef);

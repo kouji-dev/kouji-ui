@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="nord"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: dark;
+
     /* ── shape ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -43,11 +47,12 @@
     --kj-bg-danger:          #d8a0a5;
     --kj-bg-danger-subtle:   #4a3838;
 
-    /* Snow Storm scaled: default = nord6, muted = nord4, subtle = nord4
-       darkened. */
+    /* Snow Storm scaled: default = nord6, muted = nord4. Subtle sits just
+       under muted — the Polar Night surfaces are light enough that anything
+       darker drops below 7:1 (AAA) on bg-surface. */
     --kj-fg-default:    #eceff4;
     --kj-fg-muted:      #d8dee9;
-    --kj-fg-subtle:     #b8c0cd;
+    --kj-fg-subtle:     #d0d8e5;
     --kj-fg-disabled:   #4c566a;
 
     --kj-fg-on-primary:   #1a1a1a;
@@ -58,16 +63,17 @@
     --kj-fg-on-danger:    #1a1a1a;
     --kj-fg-on-inverse:   #2e3440;
 
-    --kj-fg-primary:    #88c0d0;
-    --kj-fg-accent:     #81a1c1;
-    --kj-fg-info:       #88c0d0;
-    --kj-fg-success:    #a3be8c;
+    --kj-fg-primary:    #9bd3e4;
+    --kj-fg-accent:     #aecff1;
+    --kj-fg-info:       #9bd3e4;
+    --kj-fg-success:    #b7d3a0;
     --kj-fg-warning:    #ebcb8b;
-    --kj-fg-danger:     #d8a0a5;
+    --kj-fg-danger:     #f6bcc1;
 
     --kj-border-default:   #434c5e;
     --kj-border-muted:     #3b4252;
     --kj-border-strong:    #4c566a;
+    --kj-border-control:  #909bb1;
     --kj-border-focus:     #88c0d0;
     --kj-border-disabled:  #3b4252;
     --kj-border-primary:   #88c0d0;

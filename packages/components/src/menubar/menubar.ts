@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  booleanAttribute,
-  input,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import {
   KjMenubar,
   KjMenubarItem,
@@ -30,7 +23,7 @@ import {
  *   Trailing `<kj-kbd>` hints render aligned to the right of each item label.
  *   @doc-file menubar.with-shortcuts.example.ts
  * @doc-example With submenu
- *   Nested submenu trigger pattern (pending overlay-migration follow-up).
+ *   Each bar item discloses a dropdown-menu panel.
  *   @doc-file menubar.with-submenu.example.ts
  * @doc-example Disabled item
  *   `[kjDisabled]="true"` drops the item from the keyboard cycle and dims it.
@@ -40,15 +33,21 @@ import {
  *   ArrowLeft|ArrowRight — Moves focus between menubar items (wraps when [kjLoop]="true")
  *   Home                 — Moves focus to the first menubar item
  *   End                  — Moves focus to the last menubar item
- *   Enter|Space          — Activates the focused item
+ *   Enter|Space          — Activates the focused item — opens its submenu when it has one
+ *   ArrowDown            — Opens the focused item's submenu
+ *   Escape               — Closes the open submenu and keeps focus on its bar item
  *   Tab                  — Moves focus out of the bar to the next focusable element
  *
  * @doc-aria
- *   role="menubar"     — On the host `<nav>` (provided by the directive)
+ *   role="menubar"     — On the component host (provided by the composed directive)
+ *   role="menuitem"    — On each bar item's `<button>`
  *   aria-label         — Wired from `kjAriaLabel` so AT announces the bar's purpose
  *   aria-orientation   — Reflects horizontal orientation
+ *   aria-haspopup      — `"menu"` on every bar item (WAI-ARIA menubar pattern)
+ *   aria-expanded      — `"true"` while the item's submenu is open
+ *   aria-controls      — Points at the open submenu panel
  *   aria-disabled      — Reflected on items when `kjDisabled` is true
- *   data-active        — Mirrors the active/open state for theme hooks
+ *   data-state         — `"active"` while the item's submenu is open, for theme hooks
  *
  * @doc-touch
  *   Items use a 2.75rem (44px) min-height by default — meets WCAG 2.5.5 for
@@ -56,10 +55,12 @@ import {
  *   keyboard-only desktop chrome.
  *
  * @doc-a11y
- *   Follows the WAI-ARIA menubar pattern. Focus cycles left/right within the
- *   bar; submenu disclosure is opt-in via `kjAutoDisclose`. The bar always
- *   exposes a programmatic name — supply `kjAriaLabel` even when a visible
- *   heading is nearby.
+ *   Follows the WAI-ARIA menubar pattern: one roving Tab stop for the whole
+ *   bar, arrow keys between items, and a submenu that returns focus to its
+ *   bar item when it closes. The bar always exposes a programmatic name —
+ *   supply `kjAriaLabel` even when a visible heading is nearby. Because every
+ *   bar item advertises `aria-haspopup="menu"`, give each one a submenu; a
+ *   bar of plain actions belongs in a toolbar, not a menubar.
  *
  * @doc-related dropdown-menu,command-palette,tabs
  *
@@ -94,12 +95,7 @@ import {
   hostDirectives: [
     {
       directive: KjMenubar,
-      inputs: [
-        'kjLoop',
-        'kjAutoDisclose',
-        'kjAutoDiscloseDelayMs',
-        'kjAriaLabel',
-      ],
+      inputs: ['kjLoop', 'kjAriaLabel'],
     },
   ],
   template: `<ng-content />`,
@@ -111,7 +107,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarComponent {
-  // Inputs (kjLoop, kjAutoDisclose, kjAutoDiscloseDelayMs, kjAriaLabel)
+  // Inputs (kjLoop, kjAriaLabel)
   // are exposed via the composed `KjMenubar` host directive above.
   // Re-declaring them on this class would register them twice in the
   // component's input metadata, which the docs extractor renders as
@@ -120,13 +116,29 @@ export class KjMenubarComponent {
 }
 
 /**
- * Styled wrapper around `KjMenubarItem`. Renders a real `<button>` with
- * the `[kjMenubarItem]` directive applied.
+ * Styled wrapper around `KjMenubarItem`.
  *
- * TODO: menubar+dropdown-menu wiring pending overlay-migration follow-up.
- * In this version, menubar items are plain action buttons without submenu
- * support. Submenu wiring will be reintroduced via the new dropdown-menu
- * API (`<kj-dropdown-menu-content [kjFor]="t">` on the panel side).
+ * Pass `[kjDropdownMenuTriggerFor]` a `TemplateRef` holding a
+ * `[kjDropdownMenu]` panel to give the item a submenu. Activating the item
+ * (click, Enter, Space or ArrowDown from the bar) renders that template into
+ * a body portal anchored under the item; opening a second item closes the
+ * first, Escape closes the open one, and either way focus returns to the bar
+ * item. The panel owns its own `role="menu"`.
+ *
+ * ```html
+ * <kj-menubar kjAriaLabel="Application">
+ *   <kj-menubar-item [kjDropdownMenuTriggerFor]="fileMenu">File</kj-menubar-item>
+ * </kj-menubar>
+ * <ng-template #fileMenu>
+ *   <div kjDropdownMenu>
+ *     <button kjDropdownMenuItem>New</button>
+ *   </div>
+ * </ng-template>
+ * ```
+ *
+ * An item without a submenu still carries `aria-haspopup="menu"` — that is
+ * the WAI-ARIA menubar contract for a top-level item — so use a toolbar
+ * instead when the bar is a row of plain actions.
  *
  * @doc-category Library/Navigation
  * @doc
@@ -135,26 +147,31 @@ export class KjMenubarComponent {
 @Component({
   selector: 'kj-menubar-item',
   standalone: true,
-  imports: [KjMenubarItem],
-  template: `
-    <button
-      type="button"
-      kjMenubarItem
-      class="kj-menubar-item"
-      [kjDisabled]="kjDisabled()"
-      (kjActivate)="kjActivate.emit()"
-    >
-      <ng-content />
-    </button>
-  `,
+  // `KjMenubarItem` must live on this component's host element, for the same
+  // reason `KjMenubar` does one level up: the bar's `KjListNavigator` finds
+  // its items with a `contentChildren(KjListItem)` query, and a content query
+  // never crosses into a child component's own view. With the directive on an
+  // inner `<button>` the bar registered the item through DI (so clicking
+  // opened its submenu) while the navigator saw nothing — no roving tab stop,
+  // no arrow keys, no skip-disabled. Composing it here puts the `KjListItem`
+  // on an element the bar actually projects.
+  hostDirectives: [
+    {
+      directive: KjMenubarItem,
+      inputs: ['kjDisabled', 'kjDropdownMenuTriggerFor'],
+      outputs: ['kjActivate'],
+    },
+  ],
+  template: `<ng-content />`,
   styleUrl: './menubar.css',
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: { 'class': 'kj-menubar-item' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjMenubarItemComponent {
-  /** Disable the item. Reflects `aria-disabled`; popup never opens. */
-  readonly kjDisabled = input(false, { transform: booleanAttribute });
-  /** Fires when the item is activated (click / Enter / Space). */
-  readonly kjActivate = output<void>();
+  // `kjDisabled`, `kjDropdownMenuTriggerFor` and `kjActivate` are exposed
+  // through the composed `KjMenubarItem` host directive above. Re-declaring
+  // them here would register them twice in the component's binding metadata
+  // — duplicated rows in the docs extractor and NG0955 in the `@for` that
+  // keys on the input name (same rule as `KjMenubarComponent`).
 }

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render, fireEvent } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { KjTag } from './tag';
 import { KjTagRemove } from './tag-remove';
 import { KjTagList } from './tag-list';
@@ -135,6 +135,76 @@ describe('KjTagRemove', () => {
       { imports },
     );
     expect(container.querySelector('button')).toHaveAttribute('aria-label', 'Remove Acme Corp');
+  });
+
+  it('observes nothing by default — tags are rendered in bulk', async () => {
+    const real = globalThis.MutationObserver;
+    let constructed = 0;
+    vi.stubGlobal(
+      'MutationObserver',
+      class extends real {
+        constructor(callback: MutationCallback) {
+          super(callback);
+          constructed++;
+        }
+      },
+    );
+    try {
+      await render(
+        `<span kjTag>A</span><span kjTag>B</span><span kjTag>C</span>`,
+        { imports },
+      );
+      expect(constructed, 'one subtree observer per tag was the defect').toBe(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('kjTagObserveLabel re-derives the name when the projected text is replaced', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: `<span kjTag kjTagObserveLabel>{{ label() }}<button kjTagRemove>×</button></span>`,
+    })
+    class Host {
+      readonly label = signal('Acme');
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(btn.getAttribute('aria-label')).toMatch(/^Remove\s+Acme/);
+
+    fixture.componentInstance.label.set('Globex');
+    fixture.detectChanges();
+    // MutationObserver records are delivered as a microtask.
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    fixture.detectChanges();
+    expect(btn.getAttribute('aria-label')).toMatch(/^Remove\s+Globex/);
+  });
+
+  it('without the opt-in, the name stays at what first render captured', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: `<span kjTag>{{ label() }}<button kjTagRemove>×</button></span>`,
+    })
+    class Host {
+      readonly label = signal('Acme');
+    }
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+
+    fixture.componentInstance.label.set('Globex');
+    fixture.detectChanges();
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    fixture.detectChanges();
+    // Documented: bind kjTagLabel (or kjTagObserveLabel) for a label that moves.
+    expect(btn.getAttribute('aria-label')).toMatch(/^Remove\s+Acme/);
   });
 
   it('emits (kjTagRemoved) on click', () => {
@@ -281,5 +351,50 @@ describe('KjTagList kjMax', () => {
     const list = fixture.debugElement.query((d) => d.name === 'div').injector.get(KjTagList);
     expect(list.overflowCount()).toBe(0);
     expect(list.visibleCount()).toBe(2);
+  });
+});
+
+
+describe('KjTag — bare boolean attributes (arch F-2)', () => {
+  it('kjTagSelectable written bare makes the chip a real toggle button', async () => {
+    // Before the transform the bare attribute bound '' (falsy), so
+    // `computedRole()` stayed null and the chip in the shipped @example was
+    // not interactive at all.
+    const { container } = await render(`<span kjTag kjTagSelectable>Filter</span>`, {
+      imports,
+    });
+    const chip = container.querySelector('[kjTag]')!;
+    expect(chip).toHaveAttribute('role', 'button');
+    expect(chip).toHaveAttribute('tabindex', '0');
+    expect(chip).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(chip);
+    expect(chip).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('kjTagDisabled has one owner: bare attribute reflects and blocks activation', async () => {
+    const { container } = await render(
+      `<span kjTag kjTagSelectable kjTagDisabled>Filter</span>`,
+      { imports },
+    );
+    const chip = container.querySelector('[kjTag]')!;
+    expect(chip).toHaveAttribute('aria-disabled', 'true');
+    expect(chip).toHaveAttribute('data-disabled', '');
+    expect(chip).toHaveAttribute('tabindex', '-1');
+
+    fireEvent.click(chip);
+    expect(chip).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('a list cascade still wins over the tag own enabled flag', async () => {
+    const { container } = await render(
+      `<div kjTagList kjTagListDisabled><span kjTag kjTagSelectable>A</span></div>`,
+      { imports },
+    );
+    const chip = container.querySelector('[kjTag]')!;
+    // The composed KjDisabled sees `false` here; the tag's own binding, which
+    // runs afterwards, reflects the effective (cascaded) state.
+    expect(chip).toHaveAttribute('aria-disabled', 'true');
+    expect(chip).toHaveAttribute('data-disabled', '');
   });
 });

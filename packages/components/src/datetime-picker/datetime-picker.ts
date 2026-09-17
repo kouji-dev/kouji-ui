@@ -111,11 +111,17 @@ function toTimeString(d: Date | null): string {
   host: { class: 'kj-datetime-picker-host', style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjDatetimePickerComponent {
+export class KjDatetimePicker {
   /** Selected date + time. Two-way bindable — `[(kjValue)]`. `null` clears. */
   readonly kjValue = model<Date | null>(null);
 
-  /** Two-way bindable open state for the popover. */
+  /**
+   * Two-way bindable open state for the popover. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<kj-datetime-picker kjOpen>`) binds the empty string and reads as
+   * `false`. Bind it: `[(kjOpen)]="open"` or `[kjOpen]="true"`.
+   */
   readonly kjOpen = model<boolean>(false);
 
   /** Earliest selectable date (inclusive). */
@@ -139,7 +145,9 @@ export class KjDatetimePickerComponent {
   /** Hour used when a day is picked on a previously-empty value. */
   readonly kjDefaultHour = input<number>(9);
 
+  /** Makes the trigger input read-only; the panel can still open. Default `false`. */
   readonly kjReadonly = input<boolean, boolean | string>(false, { transform: booleanAttribute });
+  /** Disables the control entirely. Default `false`. */
   readonly kjDisabled = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   /** Size preset for the trigger input. */

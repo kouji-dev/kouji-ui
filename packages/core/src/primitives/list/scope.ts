@@ -27,8 +27,20 @@ import type { KjListItem } from './item';
  * outside any root) are kept, so a bare `[kjListItem]` used with a
  * hand-rolled container still registers.
  *
+ * ## Rows a styled wrapper stamps itself
+ *
+ * A content query reaches only what is projected INTO the container's host
+ * element and never crosses into a component's view. A styled wrapper that
+ * renders its own rows — `<kj-combobox [options]>`, `<kj-tree-select
+ * [kjNodes]>` — therefore contributes nothing to the query, and the rows it
+ * paints would be filtered by nothing, numbered by nothing and navigable by
+ * nothing. Such a wrapper hands its rows over through `viewRows`, and they
+ * are listed FIRST: a wrapper stamps its own rows before the projected slot,
+ * so that is DOM order.
+ *
  * @param owner The container running the query — pass `this`.
  * @param query The raw `contentChildren(KjListItem, { descendants: true })` signal.
+ * @param viewRows Optional rows the container's own wrapper rendered.
  *
  * @doc-category Core/Primitives
  */
@@ -38,6 +50,16 @@ export function ownListItems(
   // and the stricter type would make that a circular type reference.
   owner: object,
   query: Signal<readonly KjListItem<unknown>[]>,
+  viewRows?: Signal<readonly KjListItem<unknown>[] | null>,
 ): Signal<readonly KjListItem<unknown>[]> {
-  return computed(() => query().filter(i => i.container === null || i.container === owner));
+  const owned = (i: KjListItem<unknown>): boolean =>
+    i.container === null || i.container === owner;
+  return computed(() => {
+    const content = query().filter(owned);
+    const view = viewRows?.() ?? null;
+    if (!view || view.length === 0) return content;
+    const own = view.filter(owned);
+    if (content.length === 0) return own;
+    return [...own, ...content.filter(c => !own.includes(c))];
+  });
 }

@@ -214,3 +214,27 @@ describe('KjButton', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+/**
+ * arch F-2 — every boolean input carries Angular's `booleanAttribute`, so the
+ * bare-attribute form the library teaches elsewhere is not a silent no-op.
+ */
+describe('KjButton bare boolean attributes', () => {
+  it('honours kjDisabled / kjLoading / kjFullWidth written as bare attributes', async () => {
+    const { getByRole } = await render(
+      `<button kjButton kjDisabled kjLoading kjFullWidth>x</button>`,
+      { imports: [KjButton] },
+    );
+    const btn = getByRole('button');
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAttribute('aria-busy', 'true');
+    expect(btn).toHaveAttribute('data-full', 'true');
+  });
+
+  it('keeps [kjDisabled]="false" falsy (the bound escape hatch)', async () => {
+    const { getByRole } = await render(`<button kjButton [kjDisabled]="false">x</button>`, {
+      imports: [KjButton],
+    });
+    expect(getByRole('button')).not.toHaveAttribute('aria-disabled');
+  });
+});

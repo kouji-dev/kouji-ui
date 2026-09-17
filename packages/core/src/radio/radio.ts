@@ -1,6 +1,7 @@
 import { Directive, computed, inject, input, model } from '@angular/core';
 import { KJ_RADIO_GROUP, KjRadioContext } from './radio.context';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Container for a group of radio buttons. Manages the selected value.
@@ -20,8 +21,13 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
   host: { role: 'radiogroup' },
 })
 export class KjRadioGroup implements KjRadioContext {
+  /** The group's selected value. Two-way bindable. Defaults to `undefined` (nothing selected). */
   kjValue = model<unknown>(undefined);
+
+  /** Read-only view of the selected value, for children reading through `KJ_RADIO_GROUP`. */
   readonly value = this.kjValue.asReadonly();
+
+  /** Makes `val` the group's selection. @param val The radio value to select. */
   select(val: unknown): void { this.kjValue.set(val); }
 }
 
@@ -57,10 +63,35 @@ export class KjRadioGroup implements KjRadioContext {
   },
 })
 export class KjRadio {
-  private readonly group = inject(KJ_RADIO_GROUP);
+  private readonly group = injectParent(KJ_RADIO_GROUP, { child: 'KjRadio', parent: '[kjRadioGroup]' });
+  private readonly disabledState = inject(KjDisabled);
+  /** The composed forms bridge — the host binds `(blur)` to its `notifyTouched()`. */
   readonly formCtrl = inject(KjFormControl);
+
+  /** The value this radio contributes to the group when selected. Required. */
   kjRadioValue = input.required<unknown>();
+
+  /** `true` while this radio is the group's selection. Drives `aria-checked`. */
   readonly checked = computed(() => this.group.value() === this.kjRadioValue());
-  select(): void { this.group.select(this.kjRadioValue()); this.formCtrl.notifyChange(this.kjRadioValue()); }
+
+  /**
+   * Whether interaction is blocked — either by `[kjDisabled]` or by an Angular
+   * form control that was disabled through `FormControl.disable()`.
+   */
+  readonly isDisabled = computed(
+    () => this.disabledState.disabled() || this.formCtrl.disabled(),
+  );
+
+  /** Makes this radio the group's selection, unless it is disabled. */
+  select(): void {
+    // A radio announcing aria-disabled must not become the group's selection
+    // on click (WCAG 4.1.2), and selecting it would move the group's value
+    // out from under the user (3.2.2 On Input).
+    if (this.isDisabled()) return;
+    this.group.select(this.kjRadioValue());
+    this.formCtrl.notifyChange(this.kjRadioValue());
+  }
+
+  /** Space activates without scrolling the page. @param e The keydown event. */
   onSpace(e: Event): void { e.preventDefault(); this.select(); }
 }

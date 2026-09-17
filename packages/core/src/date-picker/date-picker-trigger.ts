@@ -1,6 +1,7 @@
-import { Directive, ElementRef, computed, effect, inject, input } from '@angular/core';
+import { Directive, ElementRef, computed, effect, inject, input, untracked } from '@angular/core';
 import { KjFormControl } from '../primitives/forms/form-control';
 import { KjFocusRing } from '../primitives/interaction/focus-ring';
+import { focusInitialIn } from '../a11y/focus-trap';
 import { formatDateShort, parseDate } from '../calendar/date-utils';
 import { KJ_DATE_PICKER } from './date-picker.context';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
@@ -14,6 +15,7 @@ import {
 import type { KjOverlayContext } from '../primitives/overlay/context';
 import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click';
 import { onFocus } from '../primitives/overlay/strategies/trigger-event/on-focus';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Composite trigger-event strategy: opens the calendar on input focus AND on
@@ -101,7 +103,7 @@ function clickOrFocus(): KjTriggerEventStrategy {
 })
 export class KjDatePickerTrigger {
   /** @internal */
-  readonly ctx = inject(KJ_DATE_PICKER);
+  readonly ctx = injectParent(KJ_DATE_PICKER, { child: 'KjDatePickerTrigger', parent: '[kjDatePicker]' });
   /** @internal */
   readonly controller = inject(KjOverlayController);
   private readonly formCtrl = inject(KjFormControl);
@@ -143,19 +145,46 @@ export class KjDatePickerTrigger {
 
     // Bridge the root context's `open` (kjOpen model) with the overlay
     // controller so consumers reading or writing `picker.kjOpen` see the
-    // same source of truth as the primitive.
+    // same source of truth as the primitive. Each direction tracks only its
+    // own source: a controller-side effect that also tracked `ctx.open()`
+    // would re-run when the consumer sets `kjOpen` and write the stale
+    // controller state straight back over it.
     effect(() => {
       const isOpen = this.controller.isOpen();
-      if (this.ctx.open() !== isOpen) this.ctx.open.set(isOpen);
+      untracked(() => {
+        if (this.ctx.open() !== isOpen) this.ctx.open.set(isOpen);
+      });
     });
     effect(() => {
       const want = this.ctx.open();
-      if (want && !this.controller.isOpen()) {
-        if (!this.ctx.disabled() && !this.ctx.readonly()) this.controller.open();
-      } else if (!want && this.controller.isOpen()) {
-        this.controller.close('programmatic');
-      }
+      untracked(() => {
+        const isOpen = this.controller.isOpen();
+        if (want && !isOpen) {
+          if (!this.ctx.disabled() && !this.ctx.readonly()) this.controller.open();
+        } else if (!want && isOpen) {
+          this.controller.close('programmatic');
+        }
+      });
     });
+
+    // An explicit keyboard open (ArrowDown) moves focus onto the calendar's
+    // active day once the panel is open — WAI-ARIA APG date picker. A
+    // focus- or click-driven open leaves focus in the input so typing
+    // keeps working.
+    effect(() => {
+      if (this.controller.state() !== 'open' || !this.focusCalendarOnOpen) return;
+      this.focusCalendarOnOpen = false;
+      untracked(() => this.focusCalendar());
+    });
+  }
+
+  /** Set by ArrowDown; consumed once the overlay reports `'open'`. */
+  private focusCalendarOnOpen = false;
+
+  /** Moves focus onto the calendar's roving tab stop (the active day), else the panel itself. */
+  private focusCalendar(): void {
+    const panel = this.controller.panelEl();
+    if (panel) focusInitialIn(panel, () => panel.querySelector<HTMLElement>('[tabindex="0"]'));
   }
 
   /** @internal */
@@ -173,14 +202,23 @@ export class KjDatePickerTrigger {
 
   /** @internal */
   onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'ArrowDown' && (event.altKey || !this.controller.isOpen())) {
+    if (event.key === 'ArrowDown') {
+      // APG date picker: ArrowDown opens the calendar and moves focus onto
+      // its active day. The calendar may already be open from the focus
+      // that preceded the keystroke; then the key only moves focus.
       event.preventDefault();
-      if (!this.ctx.disabled() && !this.ctx.readonly()) this.controller.open();
+      if (this.ctx.disabled() || this.ctx.readonly()) return;
+      if (this.controller.state() === 'open') {
+        this.focusCalendar();
+        return;
+      }
+      this.focusCalendarOnOpen = true;
+      this.controller.open();
       return;
     }
     if (event.key === 'Escape' && this.controller.isOpen()) {
       event.preventDefault();
-      this.controller.close('esc');
+      this.controller.close('escape');
       return;
     }
     if (event.key === 'Enter') {

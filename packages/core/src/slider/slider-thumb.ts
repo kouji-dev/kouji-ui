@@ -10,14 +10,15 @@ import {
   input,
   model,
   signal,
+  untracked,
 } from '@angular/core';
 import { KjDisabled } from '../primitives/interaction/disabled';
 import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import { KjFormControl } from '../primitives/forms/form-control';
 import { KJ_SLIDER, KjSliderSource, KjSliderThumbHandle } from './slider.context';
 import { fractionForValue } from './slider.geometry';
-
-let nextId = 0;
+import { KjId } from '../primitives/overlay/id';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Per-thumb directive. Owns `role="slider"`, `aria-valuemin/max/now/text`,
@@ -72,7 +73,7 @@ let nextId = 0;
 })
 export class KjSliderThumb implements KjSliderThumbHandle {
   /** @internal */
-  readonly ctx = inject(KJ_SLIDER);
+  readonly ctx = injectParent(KJ_SLIDER, { child: 'KjSliderThumb', parent: '[kjSlider]' });
   /** @internal */
   readonly formCtrl = inject(KjFormControl);
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -101,7 +102,7 @@ export class KjSliderThumb implements KjSliderThumbHandle {
   index = 0;
 
   private readonly _dragging = signal(false);
-  private readonly _id = `kj-slider-thumb-${++nextId}`;
+  private readonly _id = inject(KjId).mint('slider-thumb');
   private dragStartValue: number | null = null;
 
   // ── KjSliderThumbHandle interface ────────────────────────────────────────
@@ -199,12 +200,18 @@ export class KjSliderThumb implements KjSliderThumbHandle {
       }
     });
 
-    // Bridge KjFormControl ↔ kjValue.
+    // Bridge KjFormControl → kjValue. The comparison reads `kjValue` through
+    // `untracked`: this effect *writes* that signal, so a tracked read would
+    // make it depend on its own output — a consumer's `[(kjValue)]` write then
+    // re-ran the effect, which found the (unchanged) form-control value
+    // different and silently reverted the write. The reverse direction is the
+    // imperative `notifyChange` in `setValue`, so the two never race.
     effect(() => {
       const cvaValue = this.formCtrl.value();
-      if (cvaValue == null || cvaValue === undefined) return;
+      if (cvaValue == null) return;
       const num = typeof cvaValue === 'number' ? cvaValue : Number(cvaValue);
-      if (Number.isFinite(num) && num !== this.kjValue()) {
+      if (!Number.isFinite(num)) return;
+      if (untracked(() => this.kjValue()) !== num) {
         this.kjValue.set(num);
       }
     });

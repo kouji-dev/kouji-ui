@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { KjSheet, KjSheetRef, KjSheetService, type KjSheetDetent } from '@kouji-ui/core';
+import { KjSheet, KjSheetRef, KjSheetService, KjSheetTitle, type KjSheetDetent } from '@kouji-ui/core';
 import { KjButtonComponent } from '../button/button';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
 
@@ -14,9 +14,9 @@ const dismissible = signal(true);
 @Component({
   selector: 'kj-sheet-playground-body',
   standalone: true,
-  imports: [KjSheet, KjButtonComponent],
+  imports: [KjSheet, KjSheetTitle, KjButtonComponent],
   template: `<kj-sheet>
-    <h2 class="kj-sheet__title">Bottom sheet</h2>
+    <h2 kjSheetTitle>Bottom sheet</h2>
     <p class="kj-sheet__description">Opened at the configured detent.</p>
     <div class="kj-sheet__footer" data-align="end">
       <kj-button kjSize="lg" (click)="ref.close()">Done</kj-button>

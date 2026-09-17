@@ -7,7 +7,8 @@ import {
   signal,
 } from '@angular/core';
 import { KJ_PAGINATION } from './pagination.context';
-import { KJ_PAGINATION_CONFIG } from './config';
+import { injectKjPaginationLabels } from './labels';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Renders the localised "Page N of M" status string. Apply to a
@@ -38,9 +39,13 @@ import { KJ_PAGINATION_CONFIG } from './config';
 })
 export class KjPaginationInfo {
   /** @internal */
-  readonly pagination = inject(KJ_PAGINATION);
-  /** @internal */
-  readonly config = inject(KJ_PAGINATION_CONFIG);
+  readonly pagination = injectParent(KJ_PAGINATION, { child: 'KjPaginationInfo', parent: '[kjPagination]' });
+  /**
+   * Resolved label set: a `provideKjPagination(…)` override when one is set,
+   * otherwise the active i18n catalog (`pagination.pageOf`).
+   * @internal
+   */
+  readonly labels = injectKjPaginationLabels();
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** Latched true on first render; gates the `textContent` mutation. */
@@ -61,7 +66,7 @@ export class KjPaginationInfo {
     effect(() => {
       if (!this.attached()) return;
       if (this.consumerOwnsContent) return;
-      this.el.nativeElement.textContent = this.config.infoTemplate(
+      this.el.nativeElement.textContent = this.labels.info(
         this.pagination.page(),
         this.pagination.totalPages(),
       );

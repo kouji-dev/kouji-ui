@@ -11,12 +11,6 @@ import { KjLocale } from '../locale/index';
 import { startOfDay } from '../calendar/date-utils';
 import { KJ_DATE_PICKER, type KjDatePickerContext } from './date-picker.context';
 
-let _panelIdCounter = 0;
-function nextPanelId(): string {
-  _panelIdCounter += 1;
-  return `kj-date-picker-panel-${_panelIdCounter}`;
-}
-
 /**
  * Headless Date Picker root. Owns the value, the bounds / locale config, and
  * a two-way bindable `kjOpen` model. The actual show/hide wiring (and the
@@ -81,6 +75,10 @@ export class KjDatePicker implements KjDatePickerContext {
   /**
    * Two-way bindable open state for the popover. Bridged to the trigger's
    * overlay controller — flipping this opens/closes the calendar.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<div kjDatePicker kjOpen>`) binds the empty string and reads as `false`.
+   * Bind it: `[(kjOpen)]="open"` or `[kjOpen]="true"`.
    */
   readonly kjOpen = model<boolean>(false);
 
@@ -88,13 +86,6 @@ export class KjDatePicker implements KjDatePickerContext {
 
   readonly value = this.kjValue.asReadonly();
   readonly open = this.kjOpen;
-  /**
-   * @deprecated The real panel id is minted by the composed
-   * `KjOverlayPanel` host directive on `KjDatePickerCalendar`. Retained as a
-   * stable string so existing template references compile; consumers should
-   * migrate to `[kjFor]="trigger"` for `aria-controls` wiring.
-   */
-  readonly panelId = nextPanelId();
   readonly minDate = computed(() => this.kjMin());
   readonly maxDate = computed(() => this.kjMax());
   readonly disabledDates = computed(() => this.kjDisabledDates());

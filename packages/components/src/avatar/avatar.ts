@@ -85,7 +85,9 @@ export class KjAvatarComponent {
    */
   private readonly group = inject(KJ_AVATAR_GROUP, { optional: true });
 
+  /** Image URL. When unset (or once the image fails) the fallback renders. Default `undefined`. */
   readonly src = input<string | undefined>(undefined);
+  /** Alternative text for the image. Leave unset for a decorative avatar. Default `undefined`. */
   readonly alt = input<string | undefined>(undefined);
   /** Content shown when there is no `src`, or as a fallback if the image fails. */
   readonly content = input<string | TemplateRef<unknown>>('');

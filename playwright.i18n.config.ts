@@ -17,8 +17,8 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command:
-      'node apps/docs/e2e-static/static-server.mjs dist/docs/browser 4321',
+    // One static server for every config — see scripts/serve-docs-dist.mjs.
+    command: 'node scripts/serve-docs-dist.mjs 4321',
     url: 'http://localhost:4321/docs/headless/i18n',
     reuseExistingServer: !process.env['CI'],
     timeout: 60000,

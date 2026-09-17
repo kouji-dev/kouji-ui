@@ -9,7 +9,7 @@ import {
   KjCarouselNextComponent,
   KjCarouselIndicatorsComponent,
   KjCarouselAutoplayComponent,
-  KjCarouselPauseComponent,
+  KjCarouselPause,
 } from './carousel';
 
 const imports = [
@@ -20,7 +20,7 @@ const imports = [
   KjCarouselNextComponent,
   KjCarouselIndicatorsComponent,
   KjCarouselAutoplayComponent,
-  KjCarouselPauseComponent,
+  KjCarouselPause,
 ];
 
 @Component({
@@ -117,7 +117,7 @@ describe('KjCarouselComponent (wrapper)', () => {
     fixture.componentInstance.active.set('two');
     fixture.detectChanges();
 
-    const slides = fixture.nativeElement.querySelectorAll<HTMLElement>('kj-carousel-slide');
+    const slides = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('kj-carousel-slide');
     expect(slides[1].getAttribute('data-active')).toBe('');
     expect(slides[0].getAttribute('data-active')).toBeNull();
   });
@@ -128,7 +128,7 @@ describe('KjCarouselComponent (wrapper)', () => {
     await flush();
     fixture.detectChanges();
 
-    const dots = fixture.nativeElement.querySelectorAll<HTMLButtonElement>(
+    const dots = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
       'button.kj-carousel-indicator',
     );
     expect(dots.length).toBe(3);
@@ -149,12 +149,12 @@ describe('KjCarouselComponent (wrapper)', () => {
     await flush();
     fixture.detectChanges();
 
-    const indicators = fixture.nativeElement.querySelector('kj-carousel-indicators')!;
+    const indicators = (fixture.nativeElement as HTMLElement).querySelector('kj-carousel-indicators')!;
     expect(indicators.getAttribute('role')).toBe('tablist');
-    const dots = fixture.nativeElement.querySelectorAll<HTMLButtonElement>(
+    const dots = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
       'button.kj-carousel-indicator',
     );
-    dots.forEach((d) => expect(d.getAttribute('role')).toBe('tab'));
+    dots.forEach((d: HTMLButtonElement) => expect(d.getAttribute('role')).toBe('tab'));
     expect(dots[0].getAttribute('aria-selected')).toBe('true');
     expect(dots[1].getAttribute('aria-selected')).toBe('false');
   });
@@ -207,5 +207,34 @@ describe('KjCarouselComponent (wrapper)', () => {
     expect(region.getAttribute('aria-atomic')).toBe('true');
     // Visually hidden styles are inline (browsers / jsdom may add spaces; match liberally).
     expect(region.getAttribute('style')).toMatch(/width:\s*1px/);
+  });
+});
+
+/**
+ * arch F-13 — the wrapper's live region is resolved with a signal
+ * `viewChild()` and registered from `afterNextRender` instead of
+ * `@ViewChild` + `ngAfterViewInit`. The observable contract is that a
+ * user-initiated slide change is still announced (WCAG 4.1.3 Status Messages).
+ */
+describe('KjCarouselComponent live-region registration', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [HostComponent] });
+  });
+
+  test('announces the new slide after the next button is pressed', async () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    await flush();
+
+    const region = fixture.nativeElement.querySelector('[aria-live]') as HTMLElement;
+    expect(region.textContent?.trim()).toBe('');
+
+    (fixture.nativeElement.querySelector('kj-carousel-next button') as HTMLElement).click();
+    fixture.detectChanges();
+    // KjLiveRegion clears, then writes the message 50ms later so AT detects
+    // the content change.
+    await new Promise((r) => setTimeout(r, 80));
+
+    expect(region.textContent?.trim()).not.toBe('');
   });
 });

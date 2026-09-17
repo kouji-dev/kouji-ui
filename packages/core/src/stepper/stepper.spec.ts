@@ -289,14 +289,14 @@ describe('KjStepper', () => {
       @Component({
         standalone: true,
         imports,
-        template: ` <ol kjStepper [kjLoop]="loop">
+        template: ` <ol kjStepper [kjLoop]="loop()">
           <li kjStep><button kjStepLabel>A</button></li>
           <li kjStep><button kjStepLabel>B</button></li>
           <button kjStepperNext>Next</button>
         </ol>`,
       })
       class LoopHost {
-        loop = false;
+        readonly loop = signal(false);
       }
       const fixture = await render(LoopHost);
       const next = fixture.container.querySelector('[kjStepperNext]') as HTMLButtonElement;
@@ -304,7 +304,7 @@ describe('KjStepper', () => {
       // At last step, no loop → disabled.
       expect(next).toHaveAttribute('disabled', '');
 
-      fixture.fixture.componentInstance.loop = true;
+      fixture.fixture.componentInstance.loop.set(true);
       fixture.detectChanges();
       expect(next).not.toHaveAttribute('disabled');
       fireEvent.click(next);
@@ -338,6 +338,73 @@ describe('KjStepper', () => {
       // Roving moved tabindex=0 to the next label.
       expect(labels[1]).toHaveAttribute('tabindex', '0');
       expect(labels[0]).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('an UNBOUND kjOrientation still pins the axis (off-axis keys ignored)', async () => {
+      // A `hostDirectives` input alias carries a binding, never a default, so
+      // `<ol kjStepper>` used to leave the roving primitive at `'both'` while
+      // the host reported `data-orientation="horizontal"` — ArrowDown walked a
+      // horizontal strip. `KJ_ROVING_ORIENTATION_DEFAULT` carries the
+      // effective value whether or not the input is bound.
+      const { container } = await render(BasicHostComponent);
+      const root = container.querySelector('[kjStepper]')!;
+      expect(root).toHaveAttribute('data-orientation', 'horizontal');
+      const labels = container.querySelectorAll<HTMLButtonElement>('[kjStepLabel]');
+      labels[0].focus();
+
+      fireEvent.keyDown(root, { key: 'ArrowDown' });
+      expect(labels[0]).toHaveAttribute('tabindex', '0');
+      expect(labels[1]).toHaveAttribute('tabindex', '-1');
+
+      fireEvent.keyDown(root, { key: 'ArrowRight' });
+      expect(labels[1]).toHaveAttribute('tabindex', '0');
+    });
+
+    it('the active step header is the tab stop (a11y F-19)', async () => {
+      @Component({
+        standalone: true,
+        imports,
+        template: ` <ol kjStepper [kjActiveStep]="1">
+          <li kjStep><button kjStepLabel>One</button></li>
+          <li kjStep><button kjStepLabel>Two</button></li>
+          <li kjStep><button kjStepLabel>Three</button></li>
+        </ol>`,
+      })
+      class SeededHost {}
+      const { container } = await render(SeededHost);
+      const labels = container.querySelectorAll<HTMLButtonElement>('[kjStepLabel]');
+      expect(labels[0]).toHaveAttribute('tabindex', '-1');
+      expect(labels[1]).toHaveAttribute('tabindex', '0');
+      expect(labels[2]).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('linear mode: arrow keys skip unreachable (disabled) headers (a11y F-12)', async () => {
+      @Component({
+        standalone: true,
+        imports,
+        template: ` <ol kjStepper [kjLinear]="true">
+          <li kjStep [kjStepCompleted]="true"><button kjStepLabel>One</button></li>
+          <li kjStep><button kjStepLabel>Two</button></li>
+          <li kjStep><button kjStepLabel>Three</button></li>
+        </ol>`,
+      })
+      class LinearKeysHost {}
+      const { container, detectChanges } = await render(LinearKeysHost);
+      const labels = container.querySelectorAll<HTMLButtonElement>('[kjStepLabel]');
+      expect(labels[2]).toHaveAttribute('disabled', '');
+      labels[0].focus();
+      const press = (key: string) =>
+        (document.activeElement ?? document.body).dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+      press('ArrowRight');
+      detectChanges();
+      expect(document.activeElement).toBe(labels[1]);
+      press('ArrowRight');
+      detectChanges();
+      // Three is unreachable: wrap back to One instead of stopping on a disabled button.
+      expect(document.activeElement).toBe(labels[0]);
+      expect(labels[2]).toHaveAttribute('tabindex', '-1');
     });
 
     it('vertical orientation: ArrowDown moves focus, ArrowRight is ignored', async () => {
@@ -399,5 +466,41 @@ describe('KjStepper', () => {
       const steps = container.querySelectorAll('[kjStep]');
       expect(steps[0]).toHaveAttribute('aria-current', 'step');
     });
+  });
+});
+
+
+describe('KjStepper — bare boolean attributes (arch F-2)', () => {
+  it('kjLinear written as a bare attribute gates the jump and reflects data-linear', async () => {
+    // Before the transform the bare attribute bound '' (falsy), so the stepper
+    // silently stayed non-linear and every step was reachable.
+    const { container } = await render(
+      `<ol kjStepper kjLinear>
+         <li kjStep><button kjStepLabel>A</button></li>
+         <li kjStep><button kjStepLabel>B</button></li>
+       </ol>`,
+      { imports },
+    );
+    const root = container.querySelector('[kjStepper]')!;
+    expect(root).toHaveAttribute('data-linear', 'true');
+
+    const labels = container.querySelectorAll('[kjStepLabel]');
+    fireEvent.click(labels[1]);
+    const steps = container.querySelectorAll('[kjStep]');
+    expect(steps[0]).toHaveAttribute('aria-current', 'step');
+    expect(steps[1]).not.toHaveAttribute('aria-current');
+  });
+
+  it('kjStepCompleted / kjStepDisabled written as bare attributes reflect on the step', async () => {
+    const { container } = await render(
+      `<ol kjStepper>
+         <li kjStep kjStepCompleted><button kjStepLabel>A</button></li>
+         <li kjStep kjStepDisabled><button kjStepLabel>B</button></li>
+       </ol>`,
+      { imports },
+    );
+    const steps = container.querySelectorAll('[kjStep]');
+    expect(steps[0]).toHaveAttribute('data-completed', 'true');
+    expect(steps[1]).toHaveAttribute('data-disabled', 'true');
   });
 });

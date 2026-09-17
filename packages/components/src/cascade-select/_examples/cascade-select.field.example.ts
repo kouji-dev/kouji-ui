@@ -1,8 +1,8 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
-  KjCascadeOptionComponent,
-  KjCascadeSubPanelComponent,
+  KjCascadeOption,
+  KjCascadeSubPanel,
 } from '../cascade-select';
 
 /**
@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'kj-cascade-select-field-example',
   standalone: true,
-  imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
+  imports: [KjCascadeSelectComponent, KjCascadeOption, KjCascadeSubPanel],
   styles: [
     `
       :host {

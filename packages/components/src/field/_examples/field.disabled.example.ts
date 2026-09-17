@@ -1,15 +1,15 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjAriaDescribedBy } from '@kouji-ui/core';
+import { KjFieldControl } from '@kouji-ui/core';
 import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '../field';
 
 /**
- * Disabled field. The wrapper dims the whole row and forwards the disabled
- * state to the inner control.
+ * Disabled field. The wrapper dims the whole row; the control reads
+ * `f.disabled()` to disable itself.
  */
 @Component({
   selector: 'kj-field-disabled-example',
   standalone: true,
-  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjAriaDescribedBy],
+  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjFieldControl],
   styles: [
     `
       :host {
@@ -33,15 +33,7 @@ import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '.
   template: `
     <kj-field #f="kjField" [kjDisabled]="true">
       <kj-field-label>Username</kj-field-label>
-      <input
-        kjAriaDescribedBy
-        class="kj-input"
-        type="text"
-        value="ada.lovelace"
-        [id]="f.controlId()"
-        [disabled]="f.disabled()"
-        [kjDescribedBy]="$any(f.describedByIds())"
-      />
+      <input kjFieldControl class="kj-input" type="text" value="ada.lovelace" [disabled]="f.disabled()" />
       <kj-field-help>Contact support to change your username.</kj-field-help>
     </kj-field>
   `,

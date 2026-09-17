@@ -4,19 +4,26 @@
    Components MUST NOT read base tokens directly.
    ──────────────────────────────────────────────────────────── */
 
-@layer kj.reset, kj.base, kj.shared, kj.component;
+/* The cascade-layer order lives in layers.css so consumers who bundle the
+   CSS themselves can re-declare exactly the statement the library uses. */
+@import './layers.css';
 
 @layer kj.reset {
   /**
    * Theme-scoped resets. Every `[data-theme]` block starts from these so
    * nesting one theme inside another (e.g. the theme-generator preview
    * stage rendered inside the docs `data-theme="kouji"` root) doesn't
-   * inherit brutalist defaults. Themes opt back in by declaring the var
-   * in `kj.shared` — kj.shared wins over kj.reset via layer ordering,
-   * regardless of selector specificity.
+   * inherit chrome from the page around it. Themes opt back in by
+   * declaring the var in `kj.shared` — kj.shared wins over kj.reset via
+   * layer ordering, regardless of selector specificity.
    *
-   * Button shadow: defaults to `none`; kouji + bauhaus set their offset
-   * blocks in their own `[data-theme="X"]` declarations.
+   * Button shadow: no built-in theme declares an offset block. Pages opt
+   * in at their own scope (the docs landing hero and playground stage set
+   * `--kj-button-shadow: 6px 6px 0 …`); this reset keeps such a page-level
+   * opt-in from leaking into a nested theme preview. Components must
+   * therefore never fall back THROUGH this token (`var(--kj-button-shadow,
+   * …)` resolves to `none` on every themed page) — read `--kj-shadow-*`
+   * directly instead.
    */
   [data-theme] {
     --kj-button-shadow:        none;
@@ -63,6 +70,7 @@
 
     /* ── spacing — semantic scale (canonical names) ── */
     --kj-base-space-0:   0;
+    --kj-base-space-2xs: 0.125rem;  /*  2px */
     --kj-base-space-xs:  0.25rem;   /*  4px */
     --kj-base-space-sm:  0.5rem;    /*  8px */
     --kj-base-space-md:  0.75rem;   /* 12px */
@@ -111,6 +119,19 @@
     --kj-text-xl:   var(--kj-base-text-xl);
     --kj-text-2xl:  var(--kj-base-text-2xl);
 
+    /* ── line heights ──
+       Read by core/typography/prose.css. Unitless so they scale with the
+       element's own font-size (headings tight, body relaxed). */
+    --kj-line-height-tight:   1.2;
+    --kj-line-height-snug:    1.45;
+    --kj-line-height-normal:  1.6;
+    --kj-line-height-relaxed: 1.7;
+    --kj-line-height-loose:   1.8;
+    /* Measure cap for `.kj-prose`; CJK typography typically wants a wider
+       one (`--kj-prose-max-width: 40em`) or none (`none`). */
+    --kj-prose-max-width: 65ch;
+
+    --kj-space-2xs: var(--kj-base-space-2xs);
     --kj-space-xs:  var(--kj-base-space-xs);
     --kj-space-sm:  var(--kj-base-space-sm);
     --kj-space-md:  var(--kj-base-space-md);
@@ -164,22 +185,48 @@
     --kj-radius-box-lg:   var(--kj-base-radius-3);
 
     /* ── Icon tokens ────────────────────────────────────────────
-       Map [kjIconColor] semantic tokens to the existing --kj-fg-*
-       palette so colored icons inherit theme tone. [kjIconSize]
-       resolves to em-relative steps so icons scale with surrounding
-       text by default. Themes can override any of these to pin a
-       brand-specific icon palette. */
+       [kjIconSize] resolves to em-relative steps so icons scale with
+       surrounding text by default. The [kjIconColor] palette is declared
+       on every theme root below (not only here) — see that rule. */
+    --kj-icon-size-xs: 0.75em;
+    --kj-icon-size-sm: 0.875em;
+    --kj-icon-size-md: 1em;
+    --kj-icon-size-lg: 1.25em;
+    --kj-icon-size-xl: 1.5em;
+  }
+
+  /* [kjIconColor] semantic tokens map onto the --kj-fg-* palette. A var()
+     is substituted on the element that DECLARES it, so declaring these
+     only on :root would freeze them to the outermost theme's colours and
+     a nested [data-theme] (theme-generator preview, portalled overlay
+     wrapper) would paint icons in the wrong palette. Re-declaring on
+     every theme root makes each subtree re-resolve against its own
+     --kj-fg-*. Themes can still override any of these in kj.shared. */
+  :root,
+  [data-theme] {
     --kj-color-icon-muted:   var(--kj-fg-muted);
     --kj-color-icon-primary: var(--kj-fg-primary);
     --kj-color-icon-success: var(--kj-fg-success);
     --kj-color-icon-warning: var(--kj-fg-warning);
     --kj-color-icon-danger:  var(--kj-fg-danger);
     --kj-color-icon-info:    var(--kj-fg-info);
+  }
 
-    --kj-icon-size-xs: 0.75em;
-    --kj-icon-size-sm: 0.875em;
-    --kj-icon-size-md: 1em;
-    --kj-icon-size-lg: 1.25em;
-    --kj-icon-size-xl: 1.5em;
+  /* ── Reduced motion ──
+     Every theme aliases --kj-transition to one of the base transition
+     primitives and motion.css reads the --kj-motion-duration-* ladder, so
+     zeroing the primitives here switches off every token-driven
+     transition/animation in the library at once (WCAG 2.3.3 Animation
+     from Interactions). Component sheets with a literal duration carry
+     their own @media block; stylesheets.spec.ts checks that each does. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --kj-base-transition-fast: 0s;
+      --kj-base-transition-base: 0s;
+      --kj-base-duration-fast: 0.01ms;
+      --kj-base-duration-base: 0.01ms;
+      --kj-base-duration-slow: 0.01ms;
+      --kj-motion-distance: 0px;
+    }
   }
 }

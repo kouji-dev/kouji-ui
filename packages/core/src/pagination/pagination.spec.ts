@@ -385,4 +385,47 @@ describe('KjPagination — directive integration', () => {
       expect(info.textContent).toContain('Page 1 of 10');
     });
   });
+
+  // arch F-16 — the item hand-rolled the exact two host bindings `KjDisabled`
+  // owns. It now composes the primitive, so the reflection has one owner and
+  // the bare `kjDisabled` attribute (arch F-2) works.
+  describe('kjDisabled composes KjDisabled (arch F-16 / F-2)', () => {
+    it('reflects aria-disabled / data-disabled from a bound value', async () => {
+      const { container } = await render(
+        `<nav kjPagination [kjPage]="1" [kjTotalPages]="3">
+           <button kjPaginationItem [kjPage]="2" [kjDisabled]="true">2</button>
+         </nav>`,
+        { imports },
+      );
+      const item = container.querySelector('[kjPaginationItem]')!;
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      expect(item).toHaveAttribute('data-disabled', '');
+    });
+
+    it('reflects from the bare attribute form and still blocks the click', async () => {
+      const { container } = await render(
+        `<nav kjPagination [kjPage]="1" [kjTotalPages]="3" #p="kjPagination">
+           <button kjPaginationItem [kjPage]="2" kjDisabled>2</button>
+           <span id="cur">{{ p.page() }}</span>
+         </nav>`,
+        { imports },
+      );
+      const item = container.querySelector<HTMLElement>('[kjPaginationItem]')!;
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(item);
+      expect(container.querySelector('#cur')!.textContent).toBe('1');
+    });
+
+    it('omits both attributes when enabled', async () => {
+      const { container } = await render(
+        `<nav kjPagination [kjPage]="1" [kjTotalPages]="3">
+           <button kjPaginationItem [kjPage]="2">2</button>
+         </nav>`,
+        { imports },
+      );
+      const item = container.querySelector('[kjPaginationItem]')!;
+      expect(item).not.toHaveAttribute('aria-disabled');
+      expect(item).not.toHaveAttribute('data-disabled');
+    });
+  });
 });

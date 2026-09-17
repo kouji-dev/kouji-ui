@@ -1,12 +1,14 @@
 import {
   Directive,
   LOCALE_ID,
+  Signal,
   computed,
   effect,
   inject,
   input,
   model,
   signal,
+  untracked,
 } from '@angular/core';
 import { KjDisabled } from '../primitives/interaction/disabled';
 import {
@@ -21,13 +23,11 @@ import {
   startOfDay,
   startOfMonth,
 } from './date-utils';
-import { KJ_CALENDAR, type KjCalendarContext } from './calendar.context';
+import { KJ_CALENDAR, KJ_TODAY, type KjCalendarContext } from './calendar.context';
+import { KjId } from '../primitives/overlay/id';
 
-let _captionIdCounter = 0;
-function nextCaptionId(): string {
-  _captionIdCounter += 1;
-  return `kj-calendar-caption-${_captionIdCounter}`;
-}
+/** Widest scan for a selectable day before giving up: one year either side. */
+const MAX_SCAN_DAYS = 366;
 
 /**
  * Headless calendar root. Owns date selection state, the focused-date roving
@@ -36,7 +36,8 @@ function nextCaptionId(): string {
  * `KjCalendarDay`.
  *
  * Composes `KjDisabled` for the global-disabled stance. Native `Date` only —
- * locale-aware via `Intl.DateTimeFormat`.
+ * locale-aware via `Intl.DateTimeFormat`. "Today" comes from `KJ_TODAY`, so a
+ * server render bakes no today marker.
  *
  * **Keyboard contract** (when focus is on a day cell, per APG):
  * - `ArrowLeft` / `ArrowRight` — ±1 day
@@ -47,8 +48,12 @@ function nextCaptionId(): string {
  * - `Enter` / `Space` — select the focused date
  *
  * Disabled dates are skipped by keyboard navigation — pressing `ArrowRight`
- * lands on the next *selectable* day. Cells outside `kjMin` / `kjMax` carry
- * `aria-disabled="true"` and can't receive focus.
+ * lands on the next *selectable* day, and a jump past `kjMin` / `kjMax`
+ * lands on the bound itself. The roving cell is always a selectable day: the
+ * seed (selected value, else `kjStartAt`, else today) and any later change
+ * of the bounds are clamped to the nearest selectable date, so the grid
+ * always has one reachable tab stop. Cells outside `kjMin` / `kjMax` carry
+ * `aria-disabled="true"`.
  *
  * @doc-category Core/Data input
  * @doc
@@ -67,8 +72,7 @@ function nextCaptionId(): string {
     { provide: KJ_CALENDAR, useExisting: KjCalendar },
   ],
   host: {
-    'role': 'application',
-    'aria-roledescription': 'calendar',
+    'role': 'group',
     '[attr.aria-label]': 'computedAriaLabel()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.data-disabled]': 'disabled() ? "" : null',
@@ -77,6 +81,7 @@ function nextCaptionId(): string {
 export class KjCalendar implements KjCalendarContext {
   private readonly disabledHost = inject(KjDisabled);
   private readonly defaultLocale = inject(LOCALE_ID);
+  private readonly todayProvider = inject(KJ_TODAY);
 
   /** Current value. Two-way bindable — `[(kjValue)]`. `null` clears. */
   readonly kjValue = model<Date | null>(null);
@@ -106,6 +111,7 @@ export class KjCalendar implements KjCalendarContext {
 
   readonly locale = computed(() => this.kjLocale() || this.defaultLocale);
   readonly value = this.kjValue.asReadonly();
+  readonly today: Signal<Date | null> = computed(() => this.todayProvider());
   readonly minDate = computed(() => this.kjMin());
   readonly maxDate = computed(() => this.kjMax());
   readonly disabledDates = computed(() => this.kjDisabledDates());
@@ -116,25 +122,42 @@ export class KjCalendar implements KjCalendarContext {
   });
   readonly disabled = this.disabledHost.disabled;
 
-  /** Internal focused-date signal. Two-way exposed via `kjFocusedDate` model. */
-  readonly kjFocusedDate = model<Date>(startOfDay(new Date()));
+  /**
+   * Internal focused-date signal. Two-way exposed via `kjFocusedDate` model.
+   * Starts on today (the server clock only picks the month to render when
+   * the visitor's clock is unknown) until the inputs are bound.
+   */
+  readonly kjFocusedDate = model<Date>(startOfDay(this.todayProvider() ?? new Date()));
   readonly focusedDate = this.kjFocusedDate;
 
   /** Auto-minted caption id — used by the grid's `aria-labelledby`. */
-  readonly captionId = signal<string>(nextCaptionId());
+  readonly captionId = signal<string>(inject(KjId).mint('calendar-caption'));
 
   /** Computed accessible name combining label + active selection (for SR clarity). */
   readonly computedAriaLabel = computed(() => this.kjAriaLabel());
 
   constructor() {
-    // Seed focusedDate from kjStartAt or kjValue or today.
-    const seed = this.kjStartAt() ?? this.kjValue() ?? new Date();
-    this.kjFocusedDate.set(startOfDay(seed));
-
     // Whenever the value changes externally, follow with focus.
     effect(() => {
       const v = this.kjValue();
       if (v) this.kjFocusedDate.set(startOfDay(v));
+    });
+
+    // A value-less calendar opens on `kjStartAt`. Read here, not in the
+    // constructor body: inputs are only bound by the time effects first run.
+    effect(() => {
+      const start = this.kjStartAt();
+      if (start && !untracked(this.kjValue)) this.kjFocusedDate.set(startOfDay(start));
+    });
+
+    // The roving cell must be reachable: whenever the focused date is not
+    // selectable (seeded out of bounds, bounds tightened, predicate changed)
+    // move it to the nearest date that is.
+    effect(() => {
+      const focused = this.kjFocusedDate();
+      if (this.disabled() || !this.isDisabled(focused)) return;
+      const next = untracked(() => this.nearestSelectable(focused));
+      if (next) this.kjFocusedDate.set(next);
     });
   }
 
@@ -157,33 +180,25 @@ export class KjCalendar implements KjCalendarContext {
 
   moveFocus(unit: 'day' | 'week' | 'month' | 'year', delta: number): void {
     const start = this.focusedDate();
-    let candidate = this.advance(start, unit, delta);
-    // Skip disabled by stepping in the same direction one day at a time, max 366.
-    if (this.isDisabled(candidate)) {
-      const step = delta >= 0 ? 1 : -1;
-      for (let i = 0; i < 366; i += 1) {
-        candidate = addDays(candidate, step);
-        if (this.minDate() && compareDay(candidate, this.minDate() as Date) < 0) break;
-        if (this.maxDate() && compareDay(candidate, this.maxDate() as Date) > 0) break;
-        if (!this.isDisabled(candidate)) {
-          this.kjFocusedDate.set(startOfDay(candidate));
-          return;
-        }
-      }
-      // Couldn't find one — leave focus alone.
-      return;
-    }
-    this.kjFocusedDate.set(startOfDay(candidate));
+    const forward: 1 | -1 = delta >= 0 ? 1 : -1;
+    const back: 1 | -1 = forward === 1 ? -1 : 1;
+    const candidate = this.clampToBounds(this.advance(start, unit, delta));
+    if (isSameDay(candidate, start)) return;
+    // Continue in the direction of travel first; failing that, walk back
+    // toward `start` so a jump past a bound still lands on the nearest
+    // selectable day instead of doing nothing.
+    const target =
+      this.findSelectable(candidate, forward) ?? this.findSelectable(candidate, back, start);
+    if (target) this.kjFocusedDate.set(target);
   }
 
   moveFocusToWeekBoundary(boundary: 'start' | 'end'): void {
     const f = this.focusedDate();
     const ws = this.firstDayOfWeek();
     const offset = (f.getDay() - ws + 7) % 7;
-    const target = boundary === 'start' ? addDays(f, -offset) : addDays(f, 6 - offset);
-    if (!this.isDisabled(target)) {
-      this.kjFocusedDate.set(startOfDay(target));
-    }
+    const edge = boundary === 'start' ? addDays(f, -offset) : addDays(f, 6 - offset);
+    const target = this.findSelectable(this.clampToBounds(edge), boundary === 'start' ? 1 : -1, f);
+    if (target) this.kjFocusedDate.set(target);
   }
 
   /** Snap focus to a specific date (used by the day-cell click handler). */
@@ -220,14 +235,49 @@ export class KjCalendar implements KjCalendarContext {
     }
   }
 
+  private clampToBounds(date: Date): Date {
+    const min = this.minDate();
+    const max = this.maxDate();
+    let out = startOfDay(date);
+    if (min && compareDay(out, min) < 0) out = startOfDay(min);
+    if (max && compareDay(out, max) > 0) out = startOfDay(max);
+    return out;
+  }
+
+  /**
+   * First selectable day at `from` or beyond it in direction `step`, staying
+   * inside the bounds and, when `limit` is given, strictly before it.
+   */
+  private findSelectable(from: Date, step: 1 | -1, limit?: Date): Date | null {
+    const min = this.minDate();
+    const max = this.maxDate();
+    let candidate = from;
+    for (let i = 0; i <= MAX_SCAN_DAYS; i += 1) {
+      if (!isInRange(candidate, min, max)) return null;
+      if (limit && (step > 0 ? compareDay(candidate, limit) >= 0 : compareDay(candidate, limit) <= 0)) {
+        return null;
+      }
+      if (!this.isDisabled(candidate)) return candidate;
+      candidate = addDays(candidate, step);
+    }
+    return null;
+  }
+
+  /** The selectable day closest to `date` — at it, else after it, else before it. */
+  private nearestSelectable(date: Date): Date | null {
+    const anchor = this.clampToBounds(date);
+    return this.findSelectable(anchor, 1) ?? this.findSelectable(anchor, -1);
+  }
+
   /** True when `date` is the currently-selected value. */
   isSelected(date: Date): boolean {
     const v = this.value();
     return !!v && isSameDay(v, date);
   }
 
-  /** True when `date` matches today's local day. */
+  /** True when `date` is today's local day; always false where today is unknown (server). */
   isToday(date: Date): boolean {
-    return isSameDay(date, new Date());
+    const today = this.today();
+    return !!today && isSameDay(date, today);
   }
 }

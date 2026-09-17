@@ -25,8 +25,7 @@ import {
   type KjTreeShape,
 } from '../primitives/list';
 import { KJ_TREE_SELECT, type KjTreeNode, type KjTreeSelectContext } from './tree-select.context';
-
-let _treeSelectIdCounter = 0;
+import { KjId } from '../primitives/overlay/id';
 
 function setsEqual(a: ReadonlySet<unknown>, b: ReadonlySet<unknown>): boolean {
   if (a.size !== b.size) return false;
@@ -120,7 +119,7 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
   readonly kjNodeCollapse = output<unknown>();
 
   /** Stable panel id used for `aria-controls`. */
-  readonly panelId = `kj-tree-select-panel-${++_treeSelectIdCounter}`;
+  readonly panelId = inject(KjId).mint('tree-select-panel');
 
   private readonly _expandedIds = signal<Set<string>>(new Set());
   private readonly _expandedValues = signal<Set<unknown>>(new Set());
@@ -133,7 +132,57 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
    * here now so the config contract is satisfied today.
    */
   private readonly allItems = contentChildren(KjListItem, { descendants: true });
-  readonly items = ownListItems(this, this.allItems);
+
+  private readonly _viewItems = signal<Signal<readonly KjListItem<unknown>[]> | null>(null);
+  private readonly viewItems = computed(() => this._viewItems()?.() ?? null);
+
+  /**
+   * @internal Register rows a wrapper stamps in its OWN view.
+   *
+   * A content query never crosses into a component's view, so the styled
+   * `<kj-tree-select>` — which paints one `<kj-tree-select-node>` per
+   * visible row from its own template — has to hand its rows over. Without
+   * this the tree registered no items at all: every node rendered
+   * `tabindex="-1"`, so the panel had no roving tab stop and neither arrow
+   * keys nor type-ahead could reach a node (WCAG 2.1.1).
+   */
+  _setViewItems(items: Signal<readonly KjListItem<unknown>[]> | null): void {
+    this._viewItems.set(items);
+  }
+
+  readonly items = ownListItems(this, this.allItems, this.viewItems);
+
+  /**
+   * Implements `KjListNavigatorConfig.visibleItems`: the nodes whose
+   * ancestors are all expanded — what ArrowUp/Down, Home/End and
+   * type-ahead walk (WAI-ARIA APG tree: navigation covers visible nodes
+   * only). Ancestry comes from the effective tree shape (consumer-supplied
+   * or derived from `kjNodes`) keyed by value, falling back to the
+   * DOM-nested `KjListItem.parent` chain keyed by node id when no shape
+   * resolves.
+   */
+  readonly visibleItems = computed<readonly KjListItem<unknown>[]>(() => {
+    const items = this.items();
+    const shape = this._selection.shape();
+    const expandedValues = this._expandedValues();
+    const expandedIds = this._expandedIds();
+    const visibleByValue = (value: unknown): boolean => {
+      for (let p = shape!.getParent(value); p !== null; p = shape!.getParent(p)) {
+        if (!expandedValues.has(p)) return false;
+      }
+      return true;
+    };
+    const visibleByParent = (item: KjListItem<unknown>): boolean => {
+      for (let p = item.parent; p; p = p.parent) {
+        if (!expandedIds.has(p.id)) return false;
+      }
+      return true;
+    };
+    return items.filter(item => {
+      const v = item.value();
+      return shape && v !== undefined ? visibleByValue(v) : visibleByParent(item);
+    });
+  });
 
   /**
    * Single canonical value signal. Shared with the legacy `kjValue`
@@ -213,12 +262,13 @@ export class KjTreeSelect implements KjListNavigatorConfig, KjTreeSelectContext 
   // ── KjTreeSelectContext implementation ──────────────────────────────
 
   readonly selectionMode = computed(() => this.kjSelectionMode());
-  readonly expandedIds = computed(() =>
-    new Set(this._expandedIds()) as ReadonlySet<string>,
-  );
-  readonly expandedValues = computed(() =>
-    new Set(this._expandedValues()) as ReadonlySet<unknown>,
-  );
+  // No defensive copy: every mutation below replaces the backing signal
+  // with a freshly built Set, so the instance handed out is already
+  // immutable in practice and the `ReadonlySet` type states the contract.
+  // Copying allocated a new Set — and invalidated every consumer that reads
+  // it — on each expansion change, which a 5 000-node tree pays per row.
+  readonly expandedIds = this._expandedIds.asReadonly() as Signal<ReadonlySet<string>>;
+  readonly expandedValues = this._expandedValues.asReadonly() as Signal<ReadonlySet<unknown>>;
   readonly nodes = computed(() => this.kjNodes());
 
   /** Directly-injected selection model; wired via `bind()` below. */

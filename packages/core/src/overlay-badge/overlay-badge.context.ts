@@ -1,4 +1,5 @@
 import { InjectionToken, type Signal } from '@angular/core';
+import { mintKjId } from '../primitives/overlay/id';
 
 /**
  * Logical corner placement for an overlay badge. The `start`/`end` keywords
@@ -30,8 +31,7 @@ export interface KjOverlayBadgeContext {
 /** Injection token for the {@link KjOverlayBadge} context. */
 export const KJ_OVERLAY_BADGE = new InjectionToken<KjOverlayBadgeContext>('KjOverlayBadge');
 
-let _overlayBadgeIdCounter = 0;
 /** Allocates a stable id used for the badge content node + `aria-describedby` wiring. */
 export function nextOverlayBadgeId(): string {
-  return `kj-overlay-badge-${++_overlayBadgeIdCounter}`;
+  return mintKjId('overlay-badge');
 }

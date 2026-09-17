@@ -75,3 +75,7 @@ playwright-report/
 test-results/
 **/test-results/
 test-output.txt
+
+# Agent scratch tooling (fleet run)
+.tmp-scratch/
+.tmp-sweep/

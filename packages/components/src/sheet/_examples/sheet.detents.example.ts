@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjSheet,
+  KjSheetTitle,
   KjSheetService,
   KjSheetRef,
   type KjSheetDetent,
@@ -10,10 +11,10 @@ import { KjButtonComponent } from '../../button/button';
 @Component({
   selector: 'kj-sheet-detents-body',
   standalone: true,
-  imports: [KjSheet, KjButtonComponent],
+  imports: [KjSheet, KjSheetTitle, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-sheet>
-    <h2 class="kj-sheet__title">Detent</h2>
+    <h2 kjSheetTitle>Detent</h2>
     <p class="kj-sheet__description">This sheet opened at its configured resting height.</p>
     <div class="kj-sheet__footer" data-align="end">
       <kj-button kjSize="lg" (click)="ref.close()">Close</kj-button>

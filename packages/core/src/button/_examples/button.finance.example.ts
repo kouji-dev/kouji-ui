@@ -11,9 +11,9 @@ import { KjButton } from '../button';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
-        color: var(--kj-text);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
+        color: var(--docs-text);
       }
       .row {
         display: flex;
@@ -22,32 +22,32 @@ import { KjButton } from '../button';
       }
       button[kjButton] {
         padding: 4px 15px;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 14px;
         font-weight: 400;
         border: 1px solid transparent;
         border-radius: 6px;
         cursor: pointer;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
         line-height: 1.5;
       }
       button[kjButton][data-variant='default'] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border-color: var(--kj-accent);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border-color: var(--docs-accent);
       }
       button[kjButton][data-variant='default']:hover {
         background: #4096ff;
         border-color: #4096ff;
       }
       button[kjButton][data-variant='destructive'] {
-        background: var(--kj-destructive);
+        background: var(--docs-destructive);
         color: #fff;
-        border-color: var(--kj-destructive);
+        border-color: var(--docs-destructive);
       }
       button[kjButton][data-variant='link'] {
         background: transparent;
-        color: var(--kj-accent);
+        color: var(--docs-accent);
         border-color: transparent;
       }
       button[kjButton][data-variant='link']:hover {
@@ -55,12 +55,12 @@ import { KjButton } from '../button';
       }
       button[kjButton][data-variant='ghost'] {
         background: transparent;
-        color: var(--kj-text);
-        border: 1px solid var(--kj-text);
+        color: var(--docs-text);
+        border: 1px solid var(--docs-text);
       }
       button[kjButton][data-variant='ghost']:hover {
-        color: var(--kj-accent);
-        border-color: var(--kj-accent);
+        color: var(--docs-accent);
+        border-color: var(--docs-accent);
       }
       [aria-disabled='true'] {
         opacity: 0.45;

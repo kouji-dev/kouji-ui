@@ -1,10 +1,18 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, effect, inject, input, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { By, DomSanitizer } from '@angular/platform-browser';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { describe, expect, it } from 'vitest';
-import { KjChatStore, provideKjChat, type KjChatItemInput } from '@kouji-ui/core';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  KjChatStore,
+  provideKjChat,
+  type KjChatItemInput,
+  type KjChatMessageData,
+} from '@kouji-ui/core';
 import { KjChatThread } from './chat-thread';
+import { KjChatMessage } from './chat-message';
 import { KjPromptInput } from './prompt-input';
 import { renderMarkdown } from './markdown';
 
@@ -239,5 +247,151 @@ describe('KjPromptInput', () => {
     fixture.detectChanges();
     await user.click(screen.getByLabelText('Stop generating'));
     expect(fixture.componentInstance.stopped).toBe(true);
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [KjChatMessage],
+  template: `<kj-chat-message [message]="message()" />`,
+})
+class MessageHost {
+  readonly message = signal<KjChatMessageData>({
+    id: 'm1',
+    role: 'assistant',
+    content: 'Hello **world**\n\nSecond',
+  });
+}
+
+describe('KjChatMessage — markdown cost', () => {
+  it('parses the body once per content change, not once per check', async () => {
+    // perf F-10 / F-11: `safe(block.html)` was a method call in a binding, so a
+    // streaming message re-sanitised its whole body on every change-detection
+    // pass, on top of re-lexing it on every token.
+    const { fixture } = await render(MessageHost);
+    const message = fixture.debugElement.query(By.directive(KjChatMessage))
+      .componentInstance as KjChatMessage;
+
+    const first = message.blocks();
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(message.blocks()).toBe(first);
+
+    // The body used to be bound as `[innerHTML]="safe(block.html)"` — a method
+    // call in a binding, so `DomSanitizer.sanitize` (a parse into a detached DOM
+    // tree plus a re-serialisation) ran per block on every check of a component
+    // that is dirty on every streamed token. It is now bound directly, and
+    // Angular's binding-time sanitiser runs only when the string changes.
+    const sanitize = vi.spyOn(TestBed.inject(DomSanitizer), 'sanitize');
+
+    fixture.componentInstance.message.update((m) => ({
+      ...m,
+      content: m.content + '\n\nNext.',
+    }));
+    fixture.detectChanges();
+    const second = message.blocks();
+    expect(second).not.toBe(first);
+    // The block that was already parsed is handed back by reference…
+    expect(second[0]).toBe(first[0]);
+    // …and the component never sanitises by hand, at any point.
+    expect(sanitize).not.toHaveBeenCalled();
+    sanitize.mockRestore();
+  });
+
+  it('never lets raw HTML from a message body reach the DOM', async () => {
+    const { fixture, container } = await render(MessageHost);
+    fixture.componentInstance.message.set({
+      id: 'm1',
+      role: 'assistant',
+      content: 'Careful: <img src=x onerror=alert(1)> and <script>alert(2)</script>.',
+    });
+    fixture.detectChanges();
+
+    const body = container.querySelector('.kj-chat-md') as HTMLElement;
+    expect(body.querySelector('img')).toBeNull();
+    expect(body.querySelector('script')).toBeNull();
+    expect(body.textContent).toContain('onerror=alert(1)');
+  });
+});
+
+@Component({
+  standalone: true,
+  template: `<p data-testid="counted">{{ item().id }}</p>`,
+})
+class CountingRenderer {
+  static writes = 0;
+  readonly item = input.required<KjChatItemInput>();
+  constructor() {
+    effect(() => {
+      this.item();
+      CountingRenderer.writes++;
+    });
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [KjChatThread],
+  providers: [KjChatStore, provideKjChat({ renderers: { counted: CountingRenderer } })],
+  template: `<kj-chat-thread [store]="store" kjLabel="Counting conversation" />`,
+})
+class CountingHost {
+  readonly store = inject(KjChatStore);
+}
+
+describe('KjChatThread — custom renderer inputs', () => {
+  it('does not re-set a custom renderer input when nothing about it changed', async () => {
+    // perf F-20: `itemFor(m)` built a fresh object literal per render inside the
+    // `NgComponentOutlet` inputs record, so every streamed token woke every
+    // custom renderer with data that had not moved.
+    CountingRenderer.writes = 0;
+    const { fixture } = await render(CountingHost);
+    const store = fixture.componentInstance.store;
+    store.addItem({ type: 'counted', data: 'x', content: 'a chart' });
+    fixture.detectChanges();
+    expect(CountingRenderer.writes).toBe(1);
+
+    fixture.detectChanges();
+    fixture.detectChanges();
+    expect(CountingRenderer.writes).toBe(1);
+
+    // A *different* message streaming in leaves this row's inputs alone.
+    store.beginAssistant();
+    store.pushChunk('tok');
+    fixture.detectChanges();
+    store.pushChunk('en');
+    fixture.detectChanges();
+    expect(CountingRenderer.writes).toBe(1);
+  });
+});
+
+/** arch F-2 — `<kj-prompt-input>`'s boolean inputs accept the bare-attribute form. */
+describe('KjPromptInput bare boolean attributes', () => {
+  it('disables the composer from a bare kjDisabled attribute', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjPromptInput],
+      template: `<kj-prompt-input kjDisabled />`,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea.disabled).toBe(true);
+  });
+
+  it('shows the Stop control from a bare kjStreaming attribute', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjPromptInput],
+      template: `<kj-prompt-input kjStreaming />`,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    const buttons = Array.from(container.querySelectorAll('button')).map((b) =>
+      (b.getAttribute('aria-label') ?? b.textContent ?? '').toLowerCase(),
+    );
+    expect(buttons.some((label) => label.includes('stop'))).toBe(true);
   });
 });

@@ -5,7 +5,10 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    z-index: var(--kj-toast-z-index, 2000);
+    /* In the app tree the queue sits in its own layer above the overlay
+       stack; rendered inside an open overlay it takes that overlay's
+       stack level (`--kj-overlay-z`) like every other kit surface. */
+    z-index: var(--kj-overlay-z, var(--kj-toast-z-index, 2000));
     /* Default position: bottom-right (mirrors KJ_TOAST_SONNER_STRATEGY) */
     bottom: 1rem;
     right: 1rem;
@@ -61,6 +64,7 @@
 
   /* ── Toast ── */
   .kj-toast {
+    contain: layout;
     display: flex;
     align-items: center;
     gap: var(--kj-space-md, 0.75rem);
@@ -78,6 +82,10 @@
   @keyframes kj-toast-enter {
     from { opacity: 0; transform: translateY(100%) scale(0.95); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kj-toast-viewport li { transition: none; }
+    .kj-toast { animation: none; }
   }
 
   .kj-toast[data-variant="success"] {
@@ -110,6 +118,6 @@
     margin-inline-start: auto;
     flex-shrink: 0;
   }
-  .kj-toast-close:hover { opacity: 1; background: rgb(0 0 0 / 0.08); }
+  .kj-toast-close:hover { opacity: 1; background: color-mix(in oklch, var(--kj-fg-default) 8%, transparent); }
   .kj-toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 }

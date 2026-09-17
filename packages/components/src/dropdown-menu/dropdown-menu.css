@@ -5,6 +5,7 @@
      clipping ancestor. */
 
   .kj-dropdown-menu {
+    contain: layout;
     --kj-dropdown-menu-bg:           var(--kj-bg-elevated);
     --kj-dropdown-menu-fg:           var(--kj-fg-default);
     --kj-dropdown-menu-border-color: var(--kj-border-default);

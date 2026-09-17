@@ -9,8 +9,7 @@ import {
 } from '@angular/core';
 import { KjLiveRegion, KjLivePoliteness } from '../a11y/index';
 import { KjForm } from './form';
-
-let nextId = 0;
+import { KjId } from '../primitives/overlay/id';
 
 /**
  * Optional companion to `KjForm` that renders a polite/assertive live-region
@@ -52,7 +51,7 @@ export class KjFormErrorSummary {
   readonly kjFocusOnPopulate = input(false, { transform: booleanAttribute });
 
   /** Generated id, advertised to the parent KjForm so it can set `aria-describedby`. */
-  readonly id = input<string>(`kj-form-error-summary-${++nextId}`);
+  readonly id = input<string>(inject(KjId).mint('form-error-summary'));
 
   /** Visible whenever there is at least one invalid control to summarise. */
   readonly visible = computed(() => (this.form?.invalidControls().length ?? 0) > 0);

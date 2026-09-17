@@ -1,4 +1,5 @@
 import { InjectionToken, type Signal } from '@angular/core';
+import { mintKjId } from '../primitives/overlay/id';
 
 /** Logical side of a chat row. CSS handles the physical RTL flip via cascade. */
 export type KjChatSide = 'start' | 'end';
@@ -51,14 +52,12 @@ export const KJ_CHAT_LOG = new InjectionToken<KjChatLogContext>('KjChatLog');
 /** Injection token for the `KjChat` row. */
 export const KJ_CHAT = new InjectionToken<KjChatContext>('KjChat');
 
-let _chatHeaderIdCounter = 0;
 /** Allocate a stable id used for `aria-labelledby` wiring. */
 export function nextChatHeaderId(): string {
-  return `kj-chat-header-${++_chatHeaderIdCounter}`;
+  return mintKjId('chat-header');
 }
 
-let _chatFooterIdCounter = 0;
 /** Allocate a stable id used for `aria-describedby` wiring. */
 export function nextChatFooterId(): string {
-  return `kj-chat-footer-${++_chatFooterIdCounter}`;
+  return mintKjId('chat-footer');
 }

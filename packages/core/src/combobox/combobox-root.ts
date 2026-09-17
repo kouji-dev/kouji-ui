@@ -27,10 +27,9 @@ import {
   type KjFilterFn,
   type KjListNavigatorConfig,
   type KjListSelectionMode,
+  type KjListVirtualSource,
 } from '../primitives/list';
-
-let _idCounter = 0;
-const nextId = (): string => `kj-combobox-${++_idCounter}`;
+import { KjId } from '../primitives/overlay/id';
 
 /** Default substring filter — case-insensitive contains match. */
 export const kjContainsFilter = (query: string, label: string): boolean => {
@@ -96,9 +95,11 @@ export class KjCombobox implements KjListNavigatorConfig {
   /** Implements `KjListNavigatorConfig.mode`. Combobox is always single. */
   readonly mode: Signal<KjListSelectionMode> = signal('single');
 
-  /** The current query string typed into the input. Two-way bindable. */
+  /** Input half of the two-way `kjQuery`; seeds {@link kjQuery}. Default `''`. */
   // eslint-disable-next-line @angular-eslint/no-input-rename -- alias keeps the public `kjQuery` name distinct from this internal linkedSignal-backed property
   readonly kjQueryInput = input<string>('', { alias: 'kjQuery' });
+
+  /** The current query string typed into the input. Two-way bindable via `kjQuery`. */
   readonly kjQuery: WritableSignal<string> = linkedSignal(this.kjQueryInput);
 
   /** Whether the directive should run its built-in synchronous filter. Default `true`. */
@@ -130,7 +131,7 @@ export class KjCombobox implements KjListNavigatorConfig {
   readonly compareBy = signal((a: unknown, b: unknown) => Object.is(a, b));
 
   /** Stable listbox id for `aria-controls` wiring. */
-  readonly listboxId = nextId();
+  readonly listboxId = inject(KjId).mint('combobox');
 
   /**
    * Raw content query. `descendants: true` reaches straight through a
@@ -138,14 +139,29 @@ export class KjCombobox implements KjListNavigatorConfig {
    * directly — `items` narrows it to this container's own scope.
    */
   private readonly allItems = contentChildren(KjListItem, { descendants: true });
+  private readonly _viewItems = signal<Signal<readonly KjListItem<unknown>[]> | null>(null);
+  private readonly viewItems = computed(() => this._viewItems()?.() ?? null);
+
   /**
-   * All `KjListItem`s under this combobox — source for nav + filter.
+   * @internal Register rows a wrapper stamps in its OWN view.
    *
-   * Items owned by a list composite nested inside this one (a select
-   * inside a palette, a menu inside a select) answer to that composite,
-   * not to this one.
+   * A content query only reaches what is projected into the host element
+   * and never crosses into a component's view, so `<kj-combobox [options]>`
+   * — which renders its rows from its own template — has to hand them over
+   * explicitly or they would never join `items()`, and nothing would filter,
+   * number or navigate them.
    */
-  readonly items = ownListItems(this, this.allItems);
+  _setViewItems(items: Signal<readonly KjListItem<unknown>[]> | null): void {
+    this._viewItems.set(items);
+  }
+
+  /**
+   * Every row this combobox owns — the ones its wrapper stamped plus the
+   * ones projected in. Rows owned by a list composite nested inside this one
+   * (a select inside a palette, a menu inside a select) answer to that
+   * composite, not to this one.
+   */
+  readonly items = ownListItems(this, this.allItems, this.viewItems);
 
   /** Filter-aware visible items, exposed for KjListNavigatorConfig. */
   readonly visibleItems = computed(
@@ -178,12 +194,42 @@ export class KjCombobox implements KjListNavigatorConfig {
     return (q, hs) => (hs.some(h => userFn(q, h)) ? 1 : 0);
   });
 
+  private readonly _virtual = signal<KjListVirtualSource | null>(null);
+
+  /**
+   * Implements `KjListNavigatorConfig.virtual`. Non-null only while a
+   * windowed wrapper (`<kj-combobox [virtual]>`) renders a slice of its
+   * `[options]` — `KjListNavigator` then walks the option data by index, so
+   * ArrowDown reaches option 4 000 although only a window of rows exists.
+   */
+  readonly virtual = this._virtual.asReadonly();
+
+  /**
+   * @internal Register (or clear) the windowed cursor.
+   *
+   * While one is registered the combobox stands down from the two jobs the
+   * wrapper has taken over: filtering (only matching rows are ever
+   * rendered, so a second per-row filter would re-decide the same question
+   * against DOM text) and seeding the active option (the cursor is a data
+   * index, not a rendered id).
+   */
+  _setVirtualSource(source: KjListVirtualSource | null): void {
+    this._virtual.set(source);
+  }
+
+  /** @internal Point `aria-activedescendant` at a rendered row, for a wrapper that owns the cursor. */
+  _setActiveId(id: string | null): void {
+    this._nav()?.setActive(id);
+  }
+
   constructor() {
     this.filter.bind({
       items:             this.items,
       query:             this.kjQuery,
       filterFn:          this.adaptedFilter,
-      shouldFilter:      this.kjShouldFilter,
+      // A windowed wrapper has already filtered the DATA; every rendered
+      // row is a match by construction.
+      shouldFilter:      computed(() => this.kjShouldFilter() && this._virtual() === null),
       autoActivateFirst: this.kjAutoActivateFirst,
     });
     this._selection.bind({
@@ -201,7 +247,7 @@ export class KjCombobox implements KjListNavigatorConfig {
       this.kjQuery();
       const autoFirst = this.kjAutoActivateFirst();
       const nav = this._nav();
-      if (!autoFirst || !nav) return;
+      if (!autoFirst || !nav || this._virtual() !== null) return;
       untracked(() => {
         const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
         nav.setActive(visible.length ? visible[0].id : null);
@@ -211,7 +257,7 @@ export class KjCombobox implements KjListNavigatorConfig {
     // Seed the active item once the navigator attaches (input mounts).
     effect(() => {
       const nav = this._nav();
-      if (!nav || !this.kjAutoActivateFirst()) return;
+      if (!nav || !this.kjAutoActivateFirst() || this._virtual() !== null) return;
       if (nav.activeId() !== null) return;
       untracked(() => {
         const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
@@ -222,10 +268,12 @@ export class KjCombobox implements KjListNavigatorConfig {
     // Seed `kjQuery` from the selected item's label whenever the input
     // would otherwise render blank. Covers the case where `kjValue` is
     // bound up-front (preset) but no query text has been typed yet.
+    // A windowed wrapper owns this too: `items()` is a window, so a preset
+    // value whose row is scrolled out would never be found here.
     effect(() => {
       const items = this.items();
       const v = this.kjValue();
-      if (v === null || v === undefined) return;
+      if (v === null || v === undefined || this._virtual() !== null) return;
       if (this.kjQuery() !== '') return;
       untracked(() => {
         const match = items.find(i => i.value() === v);

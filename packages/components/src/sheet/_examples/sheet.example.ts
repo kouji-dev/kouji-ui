@@ -1,14 +1,14 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjSheet, KjSheetService, KjSheetRef } from '@kouji-ui/core';
+import { KjSheet, KjSheetService, KjSheetRef, KjSheetTitle } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
 @Component({
   selector: 'kj-sheet-default-body',
   standalone: true,
-  imports: [KjSheet, KjButtonComponent],
+  imports: [KjSheet, KjSheetTitle, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-sheet>
-    <h2 class="kj-sheet__title">Share sheet</h2>
+    <h2 kjSheetTitle>Share sheet</h2>
     <p class="kj-sheet__description">Drag the handle down or press Escape to dismiss.</p>
     <div class="kj-sheet__footer" data-align="end">
       <kj-button kjSize="lg" (click)="ref.close()">Done</kj-button>

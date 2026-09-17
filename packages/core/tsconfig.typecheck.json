@@ -1,0 +1,23 @@
+/* Type-check-only program over the whole source tree — library code, examples,
+   playgrounds and specs in one pass (strict templates included). Extends the
+   root config so `@kouji-ui/*` resolves to source (no dist prerequisite).
+   Run via `pnpm typecheck`.
+   No quarantine: every spec, example and playground in the package is in the
+   program. Never exclude a file to make this pass — fix the file. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/typecheck",
+    "noEmit": true,
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src/**/*.ts"],
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "checks": {
+        "nullishCoalescingNotNullable": "suppress",
+        "optionalChainNotNullable": "suppress"
+      }
+    }
+  }
+}

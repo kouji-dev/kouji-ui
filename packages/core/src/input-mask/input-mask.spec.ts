@@ -302,3 +302,60 @@ describe('KjInputMask directive', () => {
     expect(ctrl.errors?.['required']).toBeDefined();
   });
 });
+
+
+// arch F-2 / F-16 — `kjDisabled` had two owners on this element: the
+// `KjDisabled` that the composed `KjInput` brings in (which transforms) and a
+// local `input()` copy nothing read. Angular exposes a host directive's inputs
+// transitively, so the surviving owner is the composed one.
+describe('KjInputMask — bare boolean attributes (arch F-2)', () => {
+  it('bare kjDisabled reflects aria-disabled / data-disabled', async () => {
+    const { container } = await render(
+      `<input kjInputMask kjMask="999" kjDisabled data-test="i" />`,
+      { imports: [KjInputMask] },
+    );
+    const el = container.querySelector('[data-test="i"]') as HTMLElement;
+    expect(el.getAttribute('aria-disabled')).toBe('true');
+    expect(el.hasAttribute('data-disabled')).toBe(true);
+  });
+
+  it('the directive reads the one composed owner, not a local copy', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjInputMask],
+      template: `<input kjInputMask #m="kjInputMask" kjMask="999" kjDisabled data-test="i" />`,
+    })
+    class Host {}
+    const { fixture } = await render(Host);
+    const el = fixture.nativeElement.querySelector('[data-test="i"]') as HTMLElement;
+    const mask = fixture.debugElement
+      .query((n) => n.nativeElement === el)
+      .injector.get(KjInputMask);
+    expect(mask.kjDisabled()).toBe(true);
+  });
+
+  it('bare kjAutoClear clears an incomplete value on blur', async () => {
+    const { container } = await render(
+      `<input kjInputMask kjMask="(999) 999-9999" kjAutoClear data-test="i" />`,
+      { imports: [KjInputMask] },
+    );
+    const el = container.querySelector('[data-test="i"]') as HTMLInputElement;
+    el.value = '(415) 5';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('blur', { bubbles: true }));
+    // Auto-clear resets to the empty mask template, not to a bare ''.
+    expect(el.value).toBe('(___) ___-____');
+  });
+
+  it('without kjAutoClear an incomplete value survives blur', async () => {
+    const { container } = await render(
+      `<input kjInputMask kjMask="(999) 999-9999" data-test="i" />`,
+      { imports: [KjInputMask] },
+    );
+    const el = container.querySelector('[data-test="i"]') as HTMLInputElement;
+    el.value = '(415) 5';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('blur', { bubbles: true }));
+    expect(el.value).toContain('415');
+  });
+});

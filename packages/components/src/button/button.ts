@@ -1,5 +1,17 @@
-import { Component, ChangeDetectionStrategy, ModelSignal, ViewEncapsulation, input, model } from '@angular/core';
-import { KjButton } from '@kouji-ui/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ElementRef,
+  ModelSignal,
+  ViewEncapsulation,
+  booleanAttribute,
+  computed,
+  forwardRef,
+  input,
+  model,
+  viewChild,
+} from '@angular/core';
+import { KjButton, KJ_TRIGGER_CONTROL, type KjTriggerControl } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless KjButton directive.
@@ -48,8 +60,10 @@ import { KjButton } from '@kouji-ui/core';
  *   needs to look like an action.
  *   @doc-file button.anchor.example.ts
  * @doc-example Configured presets
- *   `provideKjButton({ variant: 'primary' })` sets the default for every
- *   button in the injection scope.
+ *   `provideKjButton({ defaults: { variant: 'outline' } })` sets the default
+ *   for every button in the injection scope. The config is deep-merged, so
+ *   naming one default keeps the others; register a *new* variant with
+ *   `{ variants: [...KJ_BUTTON_DEFAULTS.variants, 'brand'] }`.
  *   @doc-file button.configured.example.ts
  *
  * @doc-keyboard
@@ -113,9 +127,11 @@ import { KjButton } from '@kouji-ui/core';
   imports: [KjButton],
   template: `
     <button
+      #control
       [type]="kjType()"
       kjButton
       class="kj-button"
+      [class]="kjClass()"
       [kjVariant]="kjVariant()"
       [kjSize]="kjSize()"
       [kjDisabled]="kjDisabled()"
@@ -134,9 +150,37 @@ import { KjButton } from '@kouji-ui/core';
   styleUrl: './button.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
+  // Nominate the inner <button> as the real control, so a trigger directive a
+  // consumer puts on THIS host (`<kj-button kjDropdownMenuTrigger>`) writes its
+  // aria-expanded / aria-haspopup / aria-controls onto the element that also
+  // carries role and the accessible name, instead of onto a `display: contents`
+  // box that paints nothing and cannot take focus (WCAG 4.1.2).
+  providers: [{ provide: KJ_TRIGGER_CONTROL, useExisting: forwardRef(() => KjButtonComponent) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjButtonComponent {
+export class KjButtonComponent implements KjTriggerControl {
+  /** The real control — see the KJ_TRIGGER_CONTROL provider above. */
+  private readonly control = viewChild<ElementRef<HTMLElement>>('control');
+  readonly controlElement = computed(() => this.control()?.nativeElement ?? null);
+
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-button`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target.
+   *
+   * This is the supported per-instance override. Author the rule *unlayered*
+   * so it beats `@layer kj.component` regardless of specificity, and set the
+   * component's documented `--kj-*` knobs from it rather than re-declaring its
+   * internals:
+   *
+   * ```html
+   * <kj-button kjClass="danger-zone">…</kj-button>
+   * ```
+   * ```css
+   * .danger-zone { --kj-button-bg: hotpink; }
+   * ```
+   */
+  readonly kjClass = input<string>('');
   /**
    * Visual variant. Left unset, the inner `[kjButton]` resolves it:
    * enclosing button-group cascade, else the `provideKjButton(…)` default,
@@ -146,12 +190,21 @@ export class KjButtonComponent {
   readonly kjVariant = input<string | undefined>(undefined);
   /** Size preset. Resolution mirrors {@link kjVariant} (default `'md'`). */
   readonly kjSize = input<string | undefined>(undefined);
-  readonly kjDisabled = input(false);
-  readonly kjLoading = input(false);
-  readonly kjFullWidth = input(false);
+  /** Disables the button (ARIA-disabled, stays focusable). Default `false`. */
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /** Marks the button in-flight: `aria-busy="true"` and forced disabled. Default `false`. */
+  readonly kjLoading = input(false, { transform: booleanAttribute });
+  /** Stretches the button across the parent's inline axis. Default `false`. */
+  readonly kjFullWidth = input(false, { transform: booleanAttribute });
+  /**
+   * Toggle state. Unset (the default) omits `aria-pressed`; once bound, the
+   * button auto-flips on click and emits `kjPressedChange`.
+   */
   // Field annotation matches the directive's — ng-packagr otherwise narrows
   // both sides to ModelSignal<boolean>, breaking the [(kjPressed)] binding.
   readonly kjPressed: ModelSignal<boolean | undefined> = model<boolean | undefined>(undefined);
+  /** Native `type` attribute of the inner `<button>`. Default `'button'`. */
   readonly kjType = input<'button' | 'submit' | 'reset'>('button');
+  /** Accessible name, for icon-only buttons with no text content. Default `undefined`. */
   readonly kjAriaLabel = input<string | undefined>(undefined);
 }

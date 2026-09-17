@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
-import { KjDialog, KjDialogService } from './dialog';
+import { KjDialog, KjDialogService, KjDialogTitle } from './dialog';
 import { KjButtonComponent } from '../button/button';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
 
@@ -20,10 +20,10 @@ const open = signal(false);
 @Component({
   selector: 'kj-dialog-playground-body',
   standalone: true,
-  imports: [KjDialog, KjButtonComponent],
+  imports: [KjDialog, KjDialogTitle, KjButtonComponent],
   template: `
     <kj-dialog>
-      <h2 style="margin:0 0 var(--kj-space-md)">{{ title() }}</h2>
+      <h2 kjDialogTitle style="margin:0 0 var(--kj-space-md)">{{ title() }}</h2>
       <p>{{ message() }}</p>
       <div style="display:flex; gap: var(--kj-space-sm); justify-content: flex-end; margin-top: var(--kj-space-lg)">
         @if (showCancel()) {
@@ -126,7 +126,7 @@ export const PLAYGROUND: PlaygroundFile = {
     lines.push('');
     lines.push('// dialog body component');
     lines.push('<kj-dialog>');
-    lines.push(`  <h2>${s.title}</h2>`);
+    lines.push(`  <h2 kjDialogTitle>${s.title}</h2>`);
     lines.push(`  <p>${s.message}</p>`);
     if (s.showCancel) lines.push('  <kj-button kjVariant="ghost">Cancel</kj-button>');
     lines.push('  <kj-button kjVariant="default">Save</kj-button>');

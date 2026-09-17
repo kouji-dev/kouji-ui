@@ -22,3 +22,22 @@ describe('KjToggle', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+describe('KjToggle — disabled is behaviour, not just an attribute', () => {
+  it('does not press on click when kjDisabled is set', async () => {
+    const { getByRole } = await render(`<button kjToggle kjDisabled>Bold</button>`, {
+      imports: [KjToggle],
+    });
+    fireEvent.click(getByRole('button'));
+    expect(getByRole('button')).toHaveAttribute('aria-pressed', 'false');
+    expect(getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('still presses when kjDisabled is bound to false', async () => {
+    const { getByRole } = await render(`<button kjToggle [kjDisabled]="false">Bold</button>`, {
+      imports: [KjToggle],
+    });
+    fireEvent.click(getByRole('button'));
+    expect(getByRole('button')).toHaveAttribute('aria-pressed', 'true');
+  });
+});

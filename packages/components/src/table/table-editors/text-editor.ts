@@ -1,15 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   ViewEncapsulation,
-  afterNextRender,
-  inject,
-  signal,
   viewChild,
 } from '@angular/core';
 import { KjInputComponent } from '../../input/input';
-import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
+import { injectKjCellEditor } from './cell-editor';
 
 /**
  * Inline text cell editor for `<kj-table>`. Renders the styled
@@ -26,11 +22,11 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
   template: `
     <kj-input
       class="kj-editor kj-editor--text"
-      [value]="draft()"
+      [value]="editor.draft()"
       (input)="onInput($event)"
-      (keydown.enter)="commit()"
-      (keydown.escape)="cancel(); $event.stopPropagation()"
-      (focusout)="onFocusOut($event)"
+      (keydown.enter)="editor.commit()"
+      (keydown.escape)="editor.cancel(); $event.stopPropagation()"
+      (focusout)="editor.onFocusOut($event)"
     />
   `,
   encapsulation: ViewEncapsulation.None,
@@ -38,45 +34,16 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTextEditor {
-  private readonly ctx = inject(KJ_EDITOR_CONTRACT) as KjEditorContract<string>;
-  private readonly hostEl: ElementRef<HTMLElement> = inject(ElementRef);
-  private settled = false;
-  private mounted = false;
-
   /** Template-bound `<kj-input>` instance — exposes a public `focus()`. */
   private readonly inputCmp = viewChild(KjInputComponent);
 
-  protected readonly draft = signal<string>('');
-
-  constructor() {
-    this.draft.set(this.ctx.value ?? '');
-    afterNextRender(() => {
-      this.inputCmp()?.focus();
-      this.mounted = true;
-    });
-  }
+  protected readonly editor = injectKjCellEditor<string>({
+    seed: (v) => (v as string | null | undefined) ?? '',
+    focus: () => this.inputCmp()?.focus(),
+  });
 
   protected onInput(event: Event): void {
     const target = event.target as HTMLInputElement | null;
-    if (target) this.draft.set(target.value);
-  }
-
-  protected commit(): void {
-    if (this.settled) return;
-    this.settled = true;
-    this.ctx.commit(this.draft());
-  }
-
-  protected cancel(): void {
-    if (this.settled) return;
-    this.settled = true;
-    this.ctx.cancel();
-  }
-
-  protected onFocusOut(event: FocusEvent): void {
-    if (!this.mounted || this.settled) return;
-    const next = event.relatedTarget as Node | null;
-    if (next && this.hostEl.nativeElement.contains(next)) return;
-    this.commit();
+    if (target) this.editor.draft.set(target.value);
   }
 }

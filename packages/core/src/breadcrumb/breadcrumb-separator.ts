@@ -1,5 +1,6 @@
-import { Directive, OnDestroy, inject } from '@angular/core';
+import { DestroyRef, Directive, inject } from '@angular/core';
 import { KJ_BREADCRUMB } from './breadcrumb.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Optional explicit separator cell. Used when a CSS pseudo-element will not
@@ -32,14 +33,11 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
     '[attr.data-breadcrumb-separator]': '""',
   },
 })
-export class KjBreadcrumbSeparator implements OnDestroy {
-  private readonly root = inject(KJ_BREADCRUMB);
+export class KjBreadcrumbSeparator {
+  private readonly root = injectParent(KJ_BREADCRUMB, { child: 'KjBreadcrumbSeparator', parent: '[kjBreadcrumb]' });
 
   constructor() {
     this.root.registerSeparator();
-  }
-
-  ngOnDestroy(): void {
-    this.root.unregisterSeparator();
+    inject(DestroyRef).onDestroy(() => this.root.unregisterSeparator());
   }
 }

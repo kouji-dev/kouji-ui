@@ -6,11 +6,7 @@
       (click)="toggleSidebar()"
       aria-label="Toggle navigation"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
+      <span [kjIcon]="'menu'" kjIconSize="md"></span>
     </button>
   }
   <a routerLink="/" class="kj-navbar-logo" aria-label="kouji home">
@@ -48,15 +44,12 @@
   <div class="kj-navbar-theme">
     <kj-button
       kjVariant="ghost"
-      class="kj-navbar-theme-trigger"
+      kjClass="kj-navbar-theme-trigger"
       kjDropdownMenuTrigger
       #themeMenu="kjDropdownMenuTrigger"
       [kjAriaLabel]="'Current theme: ' + currentTheme() + '. Choose theme.'"
     >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-      </svg>
+      <span [kjIcon]="'sun'" kjIconSize="sm"></span>
       <span>{{ currentTheme() }}</span>
     </kj-button>
     <kj-dropdown-menu-content [kjFor]="themeMenu" [kjSide]="'bottom'" [kjAlign]="'end'">

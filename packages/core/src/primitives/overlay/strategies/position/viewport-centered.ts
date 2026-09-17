@@ -1,6 +1,7 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjPositionStrategy } from '../../tokens';
 
+/** Centres the panel in the viewport — the modal dialog placement. */
 export function viewportCentered(): KjPositionStrategy {
   let ctx: KjOverlayContext | null = null;
 

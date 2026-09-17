@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { render, fireEvent } from '@testing-library/angular';
 import { describe, expect, test } from 'vitest';
 import { KjSlider } from './slider';
@@ -212,5 +214,85 @@ describe('KjSliderRange (filled span)', () => {
     // Single mode: start=0, end=fraction.
     expect(range.style.getPropertyValue('--kj-slider-start')).toBe('0');
     expect(range.style.getPropertyValue('--kj-slider-end')).toBe('0.4');
+  });
+});
+
+/**
+ * The CVA bridge used to depend on the signal it writes.
+ *
+ * `effect(() => { … if (num !== this.kjValue()) this.kjValue.set(num); })` read
+ * `kjValue` **tracked**, so a consumer's own `[(kjValue)]` write re-ran the
+ * effect, which compared the new value against the (unchanged) form-control
+ * value and reverted it. With one effect it terminates, so there is no hang —
+ * the symptom is a two-way binding that silently snaps back.
+ */
+describe('KjSliderThumb + Angular forms (CVA bridge)', () => {
+  const formImports = [...imports, ReactiveFormsModule];
+
+  test('a consumer write to [(kjValue)] is not reverted by the form control', async () => {
+    const value = signal(20);
+    const { container, fixture } = await render(
+      `<div kjSlider [kjMin]="0" [kjMax]="100">
+         <div kjSliderTrack>
+           <button
+             kjSliderThumb
+             [formControl]="ctrl"
+             [(kjValue)]="value"
+             kjAriaLabel="V"
+             type="button"
+           ></button>
+         </div>
+       </div>`,
+      { imports: formImports, componentProperties: { ctrl: new FormControl(20), value } },
+    );
+    const thumb = container.querySelector('button')!;
+    expect(thumb).toHaveAttribute('aria-valuenow', '20');
+
+    value.set(70);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(thumb).toHaveAttribute('aria-valuenow', '70');
+    expect(value()).toBe(70);
+  });
+
+  test('the form control still drives the thumb', async () => {
+    const ctrl = new FormControl(20);
+    const { container, fixture } = await render(
+      `<div kjSlider [kjMin]="0" [kjMax]="100">
+         <div kjSliderTrack>
+           <button kjSliderThumb [formControl]="ctrl" kjAriaLabel="V" type="button"></button>
+         </div>
+       </div>`,
+      { imports: formImports, componentProperties: { ctrl } },
+    );
+    const thumb = container.querySelector('button')!;
+    expect(thumb).toHaveAttribute('aria-valuenow', '20');
+
+    ctrl.setValue(80);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(thumb).toHaveAttribute('aria-valuenow', '80');
+  });
+
+  test('a keyboard step reaches the form control', async () => {
+    const ctrl = new FormControl(20);
+    const { container, fixture } = await render(
+      `<div kjSlider [kjMin]="0" [kjMax]="100" [kjStep]="5">
+         <div kjSliderTrack>
+           <button kjSliderThumb [formControl]="ctrl" kjAriaLabel="V" type="button"></button>
+         </div>
+       </div>`,
+      { imports: formImports, componentProperties: { ctrl } },
+    );
+    const thumb = container.querySelector('button')!;
+    thumb.focus();
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(ctrl.value).toBe(25);
+    expect(thumb).toHaveAttribute('aria-valuenow', '25');
   });
 });

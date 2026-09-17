@@ -1,14 +1,8 @@
-import {
-  Directive,
-  LOCALE_ID,
-  booleanAttribute,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
-import { KjFocusRing } from '../primitives';
-import { KJ_TIME_PICKER, KjTimePickerContext } from './time-picker.context';
+import { Directive, LOCALE_ID, computed, inject, input } from '@angular/core';
+import { KjDisabled, KjFocusRing } from '../primitives';
+import { KJ_TIME_PICKER } from './time-picker.context';
 import { is12Hour } from './time-picker.format';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * AM/PM toggle directive. Only meaningful when the resolved hour cycle is
@@ -30,13 +24,22 @@ import { is12Hour } from './time-picker.format';
 @Directive({
   selector: '[kjTimePickerMeridiem]',
   standalone: true,
-  hostDirectives: [KjFocusRing],
+  hostDirectives: [
+    KjFocusRing,
+    // arch F-16: `kjDisabled` is owned by the primitive, so the transform
+    // lives in exactly one place. The `aria-disabled` / `data-disabled` the
+    // primitive writes describe this button's OWN flag; the bindings below
+    // re-declare them with the *effective* state (own flag OR the picker's
+    // disabled / readonly) and, running after the host directives', win.
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
+  ],
   host: {
     '[attr.type]': '"button"',
     '[attr.role]': '"button"',
     '[attr.aria-pressed]': 'isPm() ? "true" : "false"',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.data-disabled]': 'disabled() ? "" : null',
     '[attr.data-meridiem]': 'isPm() ? "pm" : "am"',
     '[attr.disabled]': 'disabled() ? "" : null',
     '[attr.hidden]': 'is12() ? null : ""',
@@ -46,17 +49,22 @@ import { is12Hour } from './time-picker.format';
   },
 })
 export class KjTimePickerMeridiem {
-  private readonly ctx = inject<KjTimePickerContext>(KJ_TIME_PICKER);
+  private readonly ctx = injectParent(KJ_TIME_PICKER, { child: 'KjTimePickerMeridiem', parent: '[kjTimePicker]' });
   private readonly localeId = inject(LOCALE_ID);
 
   /** Override the AM label. Defaults to a locale-derived string. */
   readonly kjAmLabel = input<string | null>(null);
   /** Override the PM label. Defaults to a locale-derived string. */
   readonly kjPmLabel = input<string | null>(null);
-  /** Override the accessible label. */
+  /** Override the accessible label. Defaults to `null` (a locale-derived string). */
   readonly kjAriaLabel = input<string | null>(null);
-  /** Disable the toggle independently of the wrapper. */
-  readonly kjDisabled = input<boolean, unknown>(false, { transform: booleanAttribute });
+
+  /**
+   * Disable the toggle independently of the wrapper. Defaults to `false`.
+   * Bound as `kjDisabled`, owned by the composed {@link KjDisabled}. Read
+   * {@link disabled} for the effective state.
+   */
+  readonly kjDisabled = inject(KjDisabled).disabled;
 
   /** @internal */
   readonly isPm = computed(() => (this.ctx.value()?.hour ?? 0) >= 12);

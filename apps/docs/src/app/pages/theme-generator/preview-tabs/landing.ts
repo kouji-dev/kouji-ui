@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   KjBadgeComponent,
   KjButtonComponent,
-  KjCardComponent,
-  KjCardContentComponent,
-  KjCardSubtitleComponent,
-  KjCardTitleComponent,
+  KjCard,
+  KjCardContent,
+  KjCardSubtitle,
+  KjCardTitle,
 } from '@kouji-ui/components';
 
 interface FeatureCard {
@@ -31,10 +31,10 @@ const FEATURES: readonly FeatureCard[] = [
   imports: [
     KjBadgeComponent,
     KjButtonComponent,
-    KjCardComponent,
-    KjCardContentComponent,
-    KjCardSubtitleComponent,
-    KjCardTitleComponent,
+    KjCard,
+    KjCardContent,
+    KjCardSubtitle,
+    KjCardTitle,
   ],
   templateUrl: './landing.html',
   styleUrl: './landing.css',

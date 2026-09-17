@@ -222,7 +222,8 @@ bootstrapApplication(AppComponent).catch(console.error);`;
         files,
         dependencies: {
           '@kouji-ui/core': 'latest',
-          '@angular/cdk': '^21.0.0',
+          '@kouji-ui/components': 'latest',
+          '@kouji-ui/themes': 'latest',
         },
       },
       { openFile: mainFile, newWindow: true },

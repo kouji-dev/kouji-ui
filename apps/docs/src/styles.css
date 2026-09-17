@@ -60,3 +60,18 @@ body {
   .page-with-toc .toc-col { display: none; }
 }
 
+/* ── Docs search palette ────────────────────────────────────────────────
+   The palette's dialog is portalled into `.kj-overlay-container` on <body>,
+   so custom properties set on the `<kj-command-palette>` host in
+   search.component.css never reached the rows and the multi-line result
+   layout never applied. `inheritOverlayScope` copies only data-theme /
+   data-density / dir, so the knobs have to be declared where the panel
+   actually lives. Global scope, like the TOC helper above, because an
+   emulated-encapsulation rule carries a `_ngcontent` attribute the
+   portalled panel does not have.
+   ─────────────────────────────────────────────────────────────────── */
+.kj-command-palette__dialog {
+  --kj-command-item-direction: column;
+  --kj-command-item-align: stretch;
+  --kj-command-item-gap: 0.25rem;
+}

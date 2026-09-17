@@ -1,0 +1,30 @@
+/* ─────────────────────────────────────────────────────────────
+   @kouji-ui/themes — cascade layer order
+   The single statement every kouji-ui stylesheet relies on. Import it
+   FIRST (index.css and base.css both do), or re-declare it verbatim in
+   your own entry stylesheet when you bundle the library's CSS yourself:
+
+     @import "@kouji-ui/themes/layers.css";
+
+   Layers, lowest to highest priority:
+     kj.reset      theme-scoped resets — the neutral starting point a
+                   nested `[data-theme]` gets before its own tokens apply
+     kj.base       primitives (`--kj-base-*`), spacing / type ladders,
+                   density scalars, the `:root` defaults every theme inherits
+     kj.shared     the per-theme `[data-theme="X"]` token blocks
+     kj.prose      `.kj-prose` long-form typography (core/typography) —
+                   below components so a component can restyle prose it
+                   contains
+     kj.component  every component and primitive stylesheet
+     kj.tone       `[data-kj-tone]` reflections (kjLead / kjMuted / kjCode /
+                   kjBlockquote) — explicit utilities that win over the
+                   component defaults they are applied to
+     kj.truncate   `[data-kj-truncate]` line clamps — same reasoning
+
+   Any layer NAME used by a kouji-ui stylesheet must appear here; a name
+   that is not pinned registers on first encounter, which makes its
+   priority depend on stylesheet load order. `stylesheets.spec.ts` in
+   this package asserts the invariant.
+   ──────────────────────────────────────────────────────────── */
+
+@layer kj.reset, kj.base, kj.shared, kj.prose, kj.component, kj.tone, kj.truncate;

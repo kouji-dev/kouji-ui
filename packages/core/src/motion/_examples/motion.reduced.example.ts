@@ -19,16 +19,16 @@ import { KjReducedMotion } from '../reduced-motion';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        color: var(--kj-text);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        color: var(--docs-text);
+        font-family: var(--docs-font);
       }
       .status {
         margin-bottom: 1.5rem;
         font-size: 0.875rem;
       }
       .status strong {
-        color: var(--kj-accent);
+        color: var(--docs-accent);
       }
       .row {
         display: flex;
@@ -37,11 +37,11 @@ import { KjReducedMotion } from '../reduced-motion';
       }
       button {
         padding: 0.5rem 1.25rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border: var(--kj-btn-border);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border: var(--docs-btn-border);
         cursor: pointer;
       }
       .box {
@@ -50,9 +50,9 @@ import { KjReducedMotion } from '../reduced-motion';
         width: 12rem;
         min-height: 4.5rem;
         font-size: 0.8125rem;
-        background: var(--kj-surface);
-        border: 1px solid var(--kj-border);
-        color: var(--kj-text);
+        background: var(--docs-surface);
+        border: 1px solid var(--docs-border);
+        color: var(--docs-text);
       }
     `,
   ],

@@ -1,7 +1,7 @@
-import { Component, PLATFORM_ID, inject } from '@angular/core';
+import { Component, ElementRef, PLATFORM_ID, inject, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
-import { KjDirectionality } from './directionality';
+import { KjDirectionality, provideKjDirectionality } from './directionality';
 
 /**
  * Helpers — flush microtasks + the rAF that backs afterNextRender so the
@@ -108,5 +108,109 @@ describe('KjDirectionality', () => {
     expect(getAttrSpy).not.toHaveBeenCalled();
 
     getAttrSpy.mockRestore();
+  });
+});
+
+describe('KjDirectionality — sub-tree scope (cust F-15)', () => {
+  afterEach(() => {
+    setHtmlDir(null);
+    document.body.removeAttribute('dir');
+  });
+
+  it('a component-provided instance reads its nearest [dir] ancestor, not <html>', async () => {
+    setHtmlDir('ltr');
+
+    @Component({
+      selector: 'kj-scoped-widget',
+      standalone: true,
+      template: '',
+      providers: [...provideKjDirectionality()],
+    })
+    class ScopedWidget {
+      readonly dir = inject(KjDirectionality);
+    }
+
+    @Component({
+      standalone: true,
+      imports: [ScopedWidget],
+      template: `<section dir="rtl"><kj-scoped-widget /></section>`,
+    })
+    class Host {
+      readonly widget = viewChild.required(ScopedWidget);
+    }
+
+    const { fixture } = await render(Host);
+    await flushAfterNextRender();
+
+    expect(fixture.componentInstance.widget().dir.isScoped).toBe(true);
+    expect(fixture.componentInstance.widget().dir.current()).toBe('rtl');
+    // The document-level singleton still answers for the page as a whole.
+    expect(TestBed.inject(KjDirectionality).current()).toBe('ltr');
+  });
+
+  it('falls back to the document read when no ancestor carries [dir]', async () => {
+    setHtmlDir('rtl');
+
+    @Component({
+      selector: 'kj-scoped-widget-2',
+      standalone: true,
+      template: '',
+      providers: [...provideKjDirectionality()],
+    })
+    class ScopedWidget {
+      readonly dir = inject(KjDirectionality);
+    }
+
+    @Component({
+      standalone: true,
+      imports: [ScopedWidget],
+      template: `<section><kj-scoped-widget-2 /></section>`,
+    })
+    class Host {
+      readonly widget = viewChild.required(ScopedWidget);
+    }
+
+    const { fixture } = await render(Host);
+    await flushAfterNextRender();
+
+    expect(fixture.componentInstance.widget().dir.current()).toBe('rtl');
+  });
+
+  it('follows a runtime change on the scoping ancestor', async () => {
+    setHtmlDir('ltr');
+
+    @Component({
+      selector: 'kj-scoped-widget-3',
+      standalone: true,
+      template: '',
+      providers: [...provideKjDirectionality()],
+    })
+    class ScopedWidget {
+      readonly dir = inject(KjDirectionality);
+    }
+
+    @Component({
+      standalone: true,
+      imports: [ScopedWidget],
+      template: `<section #scope dir="ltr"><kj-scoped-widget-3 /></section>`,
+    })
+    class Host {
+      readonly scope = viewChild.required<ElementRef<HTMLElement>>('scope');
+      readonly widget = viewChild.required(ScopedWidget);
+    }
+
+    const { fixture } = await render(Host);
+    await flushAfterNextRender();
+    expect(fixture.componentInstance.widget().dir.current()).toBe('ltr');
+
+    fixture.componentInstance.scope().nativeElement.setAttribute('dir', 'rtl');
+    await flushAfterNextRender();
+
+    expect(fixture.componentInstance.widget().dir.current()).toBe('rtl');
+  });
+
+  it('the root singleton stays document-scoped (isScoped === false)', () => {
+    TestBed.resetTestingModule();
+    expect(TestBed.inject(KjDirectionality).isScoped).toBe(false);
   });
 });

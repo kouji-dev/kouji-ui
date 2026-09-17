@@ -6,8 +6,10 @@ import { InjectionToken, Signal } from '@angular/core';
  * root element and injected by every cell.
  */
 export interface KjInputOtpContext {
-  /** The full concatenated OTP value. */
+  /** The full concatenated OTP value (empty cells contribute nothing). */
   value: Signal<string>;
+  /** One entry per cell: its character, or `''` while empty. Index by `kjIndex`. */
+  chars: Signal<readonly string[]>;
   /** Total number of cells. */
   length: Signal<number>;
   /** Whether the widget is disabled (union of kjDisabled + form-level disable). */
@@ -31,9 +33,9 @@ export interface KjInputOtpContext {
   handlePaste(event: ClipboardEvent, fromIndex: number): void;
   /** Called by a cell when a copy event occurs; writes the full code to clipboard. */
   handleCopy(event: ClipboardEvent): void;
-  /** Called by a cell in ngOnInit to register its native input element. */
+  /** Called by a cell when `kjIndex` binds, to register its native input element. */
   registerCell(index: number, el: HTMLInputElement): void;
-  /** Called by a cell in ngOnDestroy to deregister its element. */
+  /** Called by a cell on effect cleanup (move or destroy), to release its slot. */
   unregisterCell(index: number): void;
 }
 

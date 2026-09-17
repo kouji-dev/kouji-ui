@@ -150,10 +150,28 @@ export class KjTable<TData extends RowData = unknown> {
     });
   }
 
+  /**
+   * `kjTable` once bound, `[]` before. TanStack initialises its lazy proxy in
+   * a microtask queued at construction; in a zoneless app a component created
+   * through `createComponent` (a route, a dialog, a test fixture) has run its
+   * constructors before the first change detection binds inputs, so that
+   * microtask would otherwise read the required input too early (NG0950).
+   * The read still registers the dependency, so the options recompute as
+   * soon as the columns arrive.
+   */
+  private readonly boundColumns = computed<ColumnDef<TData>[]>(() => {
+    try {
+      return this.kjTable();
+    } catch (error) {
+      if (isUnsetRequiredInput(error)) return [];
+      throw error;
+    }
+  });
+
   /** The TanStack table instance. Access rows, headers, and state here. */
   readonly table: () => Table<TData> = createAngularTable<TData>(() => ({
     data: this.kjTableData(),
-    columns: this.kjTable(),
+    columns: this.boundColumns(),
     getRowId: this.kjGetRowId()
       ? (row, index) => this.kjGetRowId()!(row, index)
       : undefined,
@@ -232,6 +250,11 @@ export class KjTable<TData extends RowData = unknown> {
    * filter/editor components.
    */
   get columnApi(): KjColumnApi<TData> { return this.buildApi().columnApi; }
+}
+
+/** Angular's NG0950 — a required input read before its first binding. */
+function isUnsetRequiredInput(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === -950;
 }
 
 /**

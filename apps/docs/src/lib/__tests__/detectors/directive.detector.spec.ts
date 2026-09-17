@@ -28,12 +28,12 @@ describe('detectDirectives', () => {
        * @doc-category Core/Layout/Icon
        */
       @Directive({ selector: '[kjIcon]', standalone: true })
-      export class KjIconDirective {}
+      export class KjIcon {}
     `);
     const items = detectDirectives(sf, 'core');
     expect(items).toHaveLength(1);
     expect(items[0].kind).toBe('directive');
-    expect(items[0].symbol).toBe('KjIconDirective');
+    expect(items[0].symbol).toBe('KjIcon');
     expect(items[0].pageName).toBe('icon');
     expect(items[0].isMain).toBe(true);
     expect(items[0].directive?.selector).toBe('[kjIcon]');

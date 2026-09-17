@@ -1,35 +1,42 @@
 import { expect, test } from '@playwright/test';
+import { gotoExamples } from './_helpers';
 
 /**
- * Smoke test — passes against the **prerendered** markup, so it is independent
- * of client hydration (the docs examples are client-lazy-loaded and do not
- * hydrate in every sandbox). Verifies the route, the extracted doc page, and
- * the wired example section all exist.
+ * Smoke test — verifies the route, the extracted doc page, and the wired
+ * example section all exist. Examples live behind the doc page's `examples`
+ * tab (the default tab is `overview`), so the helper switches to it first.
  */
 test('ai-chat: page renders with heading and example section', async ({ page }) => {
-  await page.goto('/docs/components/ai-chat');
+  await gotoExamples(page, 'ai-chat');
   await expect(page.locator('h1.doc-title')).toHaveText(/Ai chat/i);
   await expect(page.getByText('Provider-agnostic AI chat').first()).toBeVisible();
-  await expect(page.getByText('Streaming (simulated)').first()).toBeVisible();
+  // The example section renders the extracted `@doc-example` cards. The
+  // "Streaming (simulated)" card this used to assert is no longer emitted:
+  // its slug (`ai-chat`) buckets it as the page's canonical example, and the
+  // doc page suppresses canonical examples on pages that ship an interactive
+  // Playground. Assert the card that the examples grid does render.
+  await expect(page.getByText('Custom thread items').first()).toBeVisible();
 });
 
 /**
- * Interactive tests — require client hydration of the lazy example. They run in
- * CI (where the docs app hydrates). In sandboxes where the docs examples do not
- * hydrate (the pre-existing command-palette E2E fails identically there), they
- * are skipped; the streaming behaviour itself is covered by the component unit
- * tests in `packages/components/src/chat/chat-ai.spec.ts`.
+ * Interactive tests — drive the full send → stream → reply loop of
+ * `kj-ai-chat-example`. They are guarded because that example may not be
+ * mounted: it is the page's canonical (`playground`-bucket) example, so the
+ * doc page hides it whenever an interactive Playground exists — and the
+ * ai-chat Playground mounts a *static* seeded thread with no prompt input.
+ * While that holds these two tests skip rather than fail; the streaming
+ * behaviour itself is covered by the component unit tests in
+ * `packages/components/src/chat/chat-ai.spec.ts`.
  */
-test.describe('ai-chat interactive (needs hydration)', () => {
+test.describe('ai-chat interactive (needs the streaming example on the page)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/components/ai-chat');
     const example = page.locator('kj-ai-chat-example');
-    // If the example never hydrates in this environment, skip rather than fail.
-    const hydrated = await example
+    const mounted = await example
       .waitFor({ state: 'visible', timeout: 15_000 })
       .then(() => true)
       .catch(() => false);
-    test.skip(!hydrated, 'docs example did not hydrate in this environment');
+    test.skip(!mounted, 'kj-ai-chat-example is not rendered on the doc page');
   });
 
   test('sending a message renders a simulated streamed reply', async ({ page }) => {

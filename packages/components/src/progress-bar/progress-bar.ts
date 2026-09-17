@@ -117,7 +117,7 @@ export class KjProgressBarComponent {
    * clamp to `[kjMin, kjMax]` with a dev-mode warning.
    * @default null
    */
-  readonly kjValue = input<number>(0);
+  readonly kjValue = input<number | null>(0);
 
   /** Lower bound, bound to `aria-valuemin`. @default 0 */
   readonly kjMin = input<number>(0);

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { KjAriaDescribedBy } from '@kouji-ui/core';
 import { KjInputComponent } from '../input/input';
 import {
   KjFieldComponent,
@@ -26,21 +25,15 @@ import {
     KjFieldErrorComponent,
     KjFieldGroupComponent,
     KjInputComponent,
-    KjAriaDescribedBy,
     FormsModule,
   ],
   styles: [`
     :host { display: flex; flex-direction: column; gap: var(--kj-space-lg); max-width: 420px; }
   `],
   template: `
-    <kj-field [kjRequired]="true" #email="kjField">
+    <kj-field [kjRequired]="true">
       <kj-field-label>Email</kj-field-label>
-      <kj-input
-        type="email"
-        kjAriaDescribedBy
-        [id]="email.controlId()"
-        [kjDescribedBy]="$any(email.describedByIds())"
-      />
+      <kj-input type="email" />
       <kj-field-help>We'll never share your email.</kj-field-help>
     </kj-field>
 

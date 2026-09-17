@@ -352,3 +352,61 @@ describe('KjBreadcrumb separator wiring', () => {
     expect(cssValue).toContain('›');
   });
 });
+
+/**
+ * arch F-16 — the ellipsis no longer hand-rolls its own `kjDisabled` input:
+ * it composes `KjDisabled`, so one owner holds the public name, the
+ * `booleanAttribute` transform and the `aria-disabled` / `data-disabled`
+ * reflection.
+ */
+describe('KjBreadcrumbEllipsis disabled posture', () => {
+  // Templates stay static string literals: the AOT compiler rejects an
+  // interpolated `template` (NG1010) even though the JIT TestBed accepts one.
+  @Component({
+    standalone: true,
+    imports,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `
+      <nav kjBreadcrumb kjOverflow="menu">
+        <ol kjBreadcrumbList>
+          <li kjBreadcrumbItem><button kjBreadcrumbEllipsis kjDisabled>…</button></li>
+        </ol>
+      </nav>
+    `,
+  })
+  class DisabledHost {}
+
+  @Component({
+    standalone: true,
+    imports,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `
+      <nav kjBreadcrumb kjOverflow="menu">
+        <ol kjBreadcrumbList>
+          <li kjBreadcrumbItem><button kjBreadcrumbEllipsis>…</button></li>
+        </ol>
+      </nav>
+    `,
+  })
+  class EnabledHost {}
+
+  function renderEllipsis(host: typeof DisabledHost | typeof EnabledHost): HTMLElement {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [host] });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('[kjBreadcrumbEllipsis]') as HTMLElement;
+  }
+
+  test('reflects aria-disabled / data-disabled from a bare kjDisabled attribute', () => {
+    const ell = renderEllipsis(DisabledHost);
+    expect(ell.getAttribute('aria-disabled')).toBe('true');
+    expect(ell.hasAttribute('data-disabled')).toBe(true);
+  });
+
+  test('reflects neither attribute when not disabled', () => {
+    const ell = renderEllipsis(EnabledHost);
+    expect(ell.hasAttribute('aria-disabled')).toBe(false);
+    expect(ell.hasAttribute('data-disabled')).toBe(false);
+  });
+});

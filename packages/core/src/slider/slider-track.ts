@@ -7,6 +7,7 @@ import {
   output,
 } from '@angular/core';
 import { KJ_SLIDER } from './slider.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Pointer-event owner for the slider. Captures `pointerdown` on the track,
@@ -36,7 +37,7 @@ import { KJ_SLIDER } from './slider.context';
 })
 export class KjSliderTrack {
   /** @internal */
-  readonly ctx = inject(KJ_SLIDER);
+  readonly ctx = injectParent(KJ_SLIDER, { child: 'KjSliderTrack', parent: '[kjSlider]' });
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 

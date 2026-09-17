@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import { mintKjId, resolveKjId } from '../primitives/overlay/id';
 
 /**
  * Role of an AI-thread message. Distinct from {@link KjChatRole} in
@@ -70,10 +71,14 @@ export interface KjChatMessageData {
   readonly createdAt?: number;
 }
 
-let _msgId = 0;
-/** Allocate a stable message id. */
+/**
+ * Allocate a stable message id.
+ *
+ * Routes through the injector's {@link KjId} when called inside an injection
+ * context; {@link KjChatStore} resolves the minter once for itself.
+ */
 export function nextChatMessageId(): string {
-  return `kj-msg-${++_msgId}`;
+  return mintKjId('msg');
 }
 
 /**
@@ -103,6 +108,12 @@ export function nextChatMessageId(): string {
  */
 @Injectable()
 export class KjChatStore {
+  /**
+   * Resolved rather than injected: the store is `@Injectable()` but is also
+   * documented as constructable by hand, so a field initialiser that required
+   * an injection context would break `new KjChatStore()`.
+   */
+  private readonly _ids = resolveKjId();
   private readonly _messages = signal<readonly KjChatMessageData[]>([]);
   private readonly _status = signal<KjChatStatus>('idle');
   private readonly _streamingId = signal<string | null>(null);
@@ -122,7 +133,7 @@ export class KjChatStore {
 
   /** Append a user message; returns its id. */
   sendUser(content: string): string {
-    const id = nextChatMessageId();
+    const id = this._ids.mint('msg');
     this.append({ id, role: 'user', content, createdAt: Date.now() });
     return id;
   }
@@ -142,7 +153,7 @@ export class KjChatStore {
     role?: KjChatMessageRole;
     content?: string;
   }): string {
-    const id = nextChatMessageId();
+    const id = this._ids.mint('msg');
     this.append({
       id,
       role: options.role ?? 'assistant',
@@ -156,7 +167,7 @@ export class KjChatStore {
 
   /** Append a system message; returns its id. */
   addSystem(content: string): string {
-    const id = nextChatMessageId();
+    const id = this._ids.mint('msg');
     this.append({ id, role: 'system', content, createdAt: Date.now() });
     return id;
   }
@@ -166,7 +177,7 @@ export class KjChatStore {
    * `streamingId`. Returns the new message id.
    */
   beginAssistant(seed = ''): string {
-    const id = nextChatMessageId();
+    const id = this._ids.mint('msg');
     this.append({
       id,
       role: 'assistant',

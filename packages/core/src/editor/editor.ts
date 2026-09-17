@@ -2,14 +2,15 @@ import {
   Directive,
   DestroyRef,
   ElementRef,
+  booleanAttribute,
   afterNextRender,
   effect,
   inject,
   input,
   model,
   output,
-  signal,
 } from '@angular/core';
+import { KjReducedMotion } from '../motion/reduced-motion';
 import { KjEditorLoader } from './editor.loader';
 import { normalizeLanguage } from './editor.languages';
 import type {
@@ -59,9 +60,9 @@ export class KjEditor {
   /** Code language — friendly name or Monaco id; short aliases (`ts`, `md`) normalised. */
   readonly kjLanguage = input<KjEditorLanguage>('plaintext');
   /** Read-only mode. */
-  readonly kjReadonly = input<boolean>(false);
+  readonly kjReadonly = input(false, { transform: booleanAttribute });
   /** Show the minimap. */
-  readonly kjMinimap = input<boolean>(false);
+  readonly kjMinimap = input(false, { transform: booleanAttribute });
   /** Gutter line-number mode. */
   readonly kjLineNumbers = input<KjEditorLineNumbers>('on');
   /** Soft wrap. */
@@ -69,7 +70,7 @@ export class KjEditor {
   /** Font size in px. */
   readonly kjFontSize = input<number>(13);
   /** Grow the host to fit content instead of filling its container. */
-  readonly kjAutoHeight = input<boolean>(false);
+  readonly kjAutoHeight = input(false, { transform: booleanAttribute });
   /** Cap for `kjAutoHeight` in px (content scrolls past it). Uncapped when unset. */
   readonly kjMaxHeight = input<number | undefined>(undefined);
   /** Explicit Monaco theme id; overrides the wrapper's auto light/dark. */
@@ -81,7 +82,7 @@ export class KjEditor {
    * embed the editor in a form flow may prefer this so keyboard users are never
    * trapped; the `Ctrl+M` toggle remains available either way.
    */
-  readonly kjTabFocusMode = input<boolean>(false);
+  readonly kjTabFocusMode = input(false, { transform: booleanAttribute });
   /** Escape hatch — merged last into Monaco's construction options. */
   readonly kjOptions = input<KjEditorOptions>({});
 
@@ -95,17 +96,15 @@ export class KjEditor {
   private tabFocusOn = false;
   /** Recompute-height callback, wired once auto-height is set up. */
   private autoHeightUpdate: (() => void) | null = null;
-  private readonly reducedMotion = signal(false);
+  /**
+   * Whether the user asked the OS to reduce motion. Read from the root
+   * `KjReducedMotion` service — the setting is application-wide, so one
+   * `matchMedia` subscription serves every editor instance.
+   */
+  private readonly reducedMotion = inject(KjReducedMotion).prefersReducedMotion;
 
   constructor() {
     afterNextRender(() => {
-      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-        const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-        this.reducedMotion.set(mql.matches);
-        const onChange = (e: MediaQueryListEvent) => this.reducedMotion.set(e.matches);
-        mql.addEventListener('change', onChange);
-        this.destroyRef.onDestroy(() => mql.removeEventListener('change', onChange));
-      }
       void this.init();
     });
 
@@ -244,6 +243,17 @@ export class KjEditor {
       cursorSmoothCaretAnimation: reduced ? 'off' : 'on',
       smoothScrolling: !reduced,
     };
+    // A read-only editor is a code *sample*, not an editing surface. Monaco
+    // still paints its current-line highlight and caret on line 1 of an
+    // unfocused read-only instance, so a page of snippets reads as a page of
+    // editors all sitting focused on their first line. Suppress both until the
+    // instance is actually focused; `kjOptions` still overrides either.
+    if (this.kjReadonly()) {
+      base.renderLineHighlight = 'none';
+      base.hideCursorInOverviewRuler = true;
+      base.occurrencesHighlight = 'off';
+      base.selectionHighlight = false;
+    }
     const theme = this.kjTheme();
     if (theme) base.theme = theme;
     return { ...base, ...this.kjOptions() };

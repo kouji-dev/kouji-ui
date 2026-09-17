@@ -28,4 +28,5 @@ export interface KjNumberInputContext {
   setValue(value: number | null): void;
 }
 
+/** Provided by `KjNumberInput`; injected by the steppers and the group wrapper. */
 export const KJ_NUMBER_INPUT = new InjectionToken<KjNumberInputContext>('KjNumberInput');

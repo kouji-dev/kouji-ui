@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
-  booleanAttribute,
   input,
 } from '@angular/core';
 import {
@@ -12,9 +11,10 @@ import {
   KjAlertDismiss,
   KjAlertIcon,
   KjAlertTitle,
-  KjIconDirective,
+  KjIcon,
+  KjSize,
+  KjVariant,
 } from '@kouji-ui/core';
-import type { KjAlertMode } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the `KjAlert` directive family. Provides the
@@ -104,15 +104,16 @@ import type { KjAlertMode } from '@kouji-ui/core';
   hostDirectives: [
     {
       directive: KjAlert,
-      inputs: [
-        'kjVariant',
-        'kjSize',
-        'kjAlertMode',
-        'kjAlertStatic',
-        'kjAlertRole',
-      ],
+      inputs: ['kjAlertMode', 'kjAlertStatic', 'kjAlertRole'],
       outputs: ['kjAlertDismissed'],
     },
+    // Host-directive input forwarding is not transitive: KjAlert composes
+    // KjVariant / KjSize itself, but the wrapper must compose them directly to
+    // expose kjVariant / kjSize as its own inputs. Angular applies each
+    // directive once per host, so these bind the same preset instances KjAlert
+    // already composes — unset falls back to the `provideKjAlert(…)` default.
+    { directive: KjVariant, inputs: ['kjVariant'] },
+    { directive: KjSize, inputs: ['kjSize'] },
   ],
   template: `
     <ng-content select="[kjAlertIcon],kj-alert-icon" />
@@ -130,14 +131,17 @@ import type { KjAlertMode } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAlertComponent {
-  // Inputs are forwarded via `hostDirectives.inputs` above. Re-declared here
-  // only to surface them in the docs extractor (which inspects the wrapper
-  // class). The actual signal lives on the composed directive.
-  readonly kjVariant = input<string>('info');
-  readonly kjSize = input<string>('md');
-  readonly kjAlertMode = input<KjAlertMode | undefined>(undefined);
-  readonly kjAlertStatic = input(false, { transform: booleanAttribute });
-  readonly kjAlertRole = input<string | undefined>(undefined);
+  // No shadow inputs. Every input above is forwarded through
+  // `hostDirectives.inputs` and owned by the composed directive; re-declaring
+  // it here would publish a second signal with a hard-coded default that
+  // contradicts the `provideKjAlert(…)`-configurable one (and would show that
+  // wrong default in the generated docs and the emitted `.d.ts`).
+  //
+  // Public inputs, all resolved by the composed directives:
+  // - `kjVariant` / `kjSize` — `KjVariant` / `KjSize`; unset resolves through
+  //   the `provideKjAlert(…)` preset chain, NOT a literal `'info'` / `'md'`.
+  // - `kjAlertMode` / `kjAlertStatic` / `kjAlertRole` — `KjAlert`.
+  // - `kjAlertDismissed` output — `KjAlert`.
 }
 
 /**
@@ -215,7 +219,9 @@ export class KjAlertDescriptionComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAlertActionsComponent {
-  readonly kjAlertActionsLabel = input<string>('Alert actions');
+  // No shadow input: `kjAlertActionsLabel` is forwarded to `KjAlertActions`
+  // through `hostDirectives.inputs` above and defaults to the i18n catalog
+  // key `alert.actions` there.
 }
 
 /**
@@ -230,11 +236,12 @@ export class KjAlertActionsComponent {
 @Component({
   selector: 'kj-alert-dismiss',
   standalone: true,
-  imports: [KjAlertDismiss, KjIconDirective],
+  imports: [KjAlertDismiss, KjIcon],
   template: `<button
     type="button"
     kjAlertDismiss
     class="kj-alert__dismiss"
+    [class]="kjClass()"
     [kjAlertDismissLabel]="kjAlertDismissLabel()"
     [kjAlertDismissVariant]="kjAlertDismissVariant()"
     [kjAlertDismissSize]="kjAlertDismissSize()"
@@ -244,7 +251,19 @@ export class KjAlertActionsComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAlertDismissComponent {
-  readonly kjAlertDismissLabel = input<string>('Dismiss');
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-alert__dismiss`,
+   * not this `display: contents` host. See "Customizing a component" in
+   * `rules/code_style.md`.
+   */
+  readonly kjClass = input<string>('');
+  /**
+   * AT label for the close control. Bound through to `KjAlertDismiss`; unset,
+   * that directive resolves the i18n catalog key `alert.dismiss`.
+   */
+  readonly kjAlertDismissLabel = input<string | undefined>(undefined);
+  /** Button variant mirrored as `data-variant` on the inner control. */
   readonly kjAlertDismissVariant = input<string>('ghost');
+  /** Button size mirrored as `data-size`; `'icon'` keeps the 44x44 target. */
   readonly kjAlertDismissSize = input<string>('icon');
 }

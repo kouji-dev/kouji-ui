@@ -37,11 +37,19 @@
     pointer-events: auto;
   }
 
+  /* Scrim colour: the theme's `--kj-bg-overlay` (every theme declares one);
+     `--kj-backdrop-bg` remains a per-overlay override knob. */
   .kj-backdrop,
   .kj-overlay-backdrop {
     position: absolute;
     inset: 0;
-    background: var(--kj-backdrop-bg, rgb(0 0 0 / 0.5));
+    background: var(--kj-backdrop-bg, var(--kj-bg-overlay, rgb(0 0 0 / 0.5)));
     pointer-events: auto;
+  }
+
+  /* `blurredBackdrop()` adds this modifier on top of the solid scrim. */
+  .kj-backdrop--blur {
+    -webkit-backdrop-filter: blur(var(--kj-backdrop-blur, 4px));
+    backdrop-filter: blur(var(--kj-backdrop-blur, 4px));
   }
 }

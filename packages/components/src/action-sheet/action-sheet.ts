@@ -1,10 +1,25 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `action-sheet.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   inject,
 } from '@angular/core';
-import { KjSheet, KjSheetRef, SHEET_DATA, KjIconDirective } from '@kouji-ui/core';
+import { KjSheet, KjSheetRef, SHEET_DATA, KjIcon } from '@kouji-ui/core';
 import type { KjActionSheetAction, KjActionSheetOptions } from './action-sheet.service';
 
 /**
@@ -21,7 +36,7 @@ import type { KjActionSheetAction, KjActionSheetOptions } from './action-sheet.s
 @Component({
   selector: 'kj-action-sheet',
   standalone: true,
-  imports: [KjSheet, KjIconDirective],
+  imports: [KjSheet, KjIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -125,7 +140,6 @@ export class KjActionSheet<V = unknown> {
   selector: 'kj-action-sheet-shell',
   standalone: true,
   template: `<ng-content />`,
-  styleUrl: './action-sheet.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,

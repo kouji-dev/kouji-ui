@@ -22,12 +22,13 @@
        that is the component's own logic and must win. */
     /* --kj-button-shadow / --kj-button-shadow-hover / --kj-button-shadow-active
        are intentionally NOT declared here. Declaring them with element-level
-       specificity would win over the theme's `[data-theme="X"]` ancestor
-       declaration (e.g. kouji's `6px 6px 0 #2a2a2a` offset block), since
-       both selectors are (0,1,0) and same-layer source-order favours the
-       element. The hover/active rules below pull the value via
-       `var(name, fallback)` so the theme's inherited value reaches the
-       component AND the fallback (`none`) applies when no theme sets one. */
+       specificity would win over an ANCESTOR declaration — no built-in theme
+       sets one, but pages opt in at their own scope (the docs landing hero
+       and playground stage set `6px 6px 0 #2a2a2a`), and base.css resets
+       the three to `none` on every [data-theme] root so that opt-in never
+       leaks into a nested theme. The hover/active rules below pull the
+       value via `var(name, fallback)` so the inherited value reaches the
+       component AND the fallback (`none`) applies when nobody sets one. */
     /* Typographic tone — themes override these for brand voice (e.g.
        bauhaus bumps weight to 900; cyberpunk tightens tracking). */
     /* Hover lift — pulls from the shared per-theme --kj-hover-translate
@@ -120,19 +121,23 @@
     --kj-button-border-width: 0;
     --kj-button-radius: 0;
     --kj-button-hover-translate: none;
+    /* Pressed-segment chrome — consumer knobs, declared here so they are
+       real (a var() with no declaration anywhere is not an override hook). */
+    --kj-segmented-bg-on: var(--kj-bg-surface);
+    --kj-segmented-fg-on: var(--kj-fg-default);
   }
   .kj-button[data-variant="segmented"]:hover {
     --kj-button-bg: transparent;
     --kj-button-fg: var(--kj-fg-default);
   }
   .kj-button[data-variant="segmented"][aria-pressed="true"] {
-    --kj-button-bg: var(--kj-segmented-bg-on, var(--kj-bg-surface));
-    --kj-button-fg: var(--kj-segmented-fg-on, var(--kj-fg-default));
+    --kj-button-bg: var(--kj-segmented-bg-on);
+    --kj-button-fg: var(--kj-segmented-fg-on);
     cursor: default;
   }
   .kj-button[data-variant="segmented"][aria-pressed="true"]:hover {
-    --kj-button-bg: var(--kj-segmented-bg-on, var(--kj-bg-surface));
-    --kj-button-fg: var(--kj-segmented-fg-on, var(--kj-fg-default));
+    --kj-button-bg: var(--kj-segmented-bg-on);
+    --kj-button-fg: var(--kj-segmented-fg-on);
   }
 
   .kj-button[data-variant="link"] {
@@ -288,6 +293,17 @@
     border-radius: 50%;
     animation: kj-button-spinner-rotate 0.6s linear infinite;
   }
+  @media (prefers-reduced-motion: reduce) {
+    /* Same swap as spinner.css: rotation becomes a slow opacity pulse. */
+    .kj-button-spinner {
+      animation: kj-button-spinner-reduced 1.6s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes kj-button-spinner-reduced {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
 }
 
 @keyframes kj-button-spinner-rotate {

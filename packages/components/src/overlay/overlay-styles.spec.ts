@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import postcss from 'postcss';
@@ -13,7 +13,7 @@ import { KjPopoverTrigger, KjPopoverContent, KjPopoverTitle } from '@kouji-ui/co
  *
  * They used to paint nothing. `.kj-popover-content`'s background, border
  * and shadow lived in `popover.css`, which reached the document only as
- * `KjPopoverComponent`'s `styleUrl` — and Angular injects a component's
+ * `KjPopover`'s `styleUrl` — and Angular injects a component's
  * styles only when that component is instantiated. `<kj-popover>` is
  * optional (the library's own usage example never renders one), so the
  * panel came up transparent, borderless and shadowless, with not one rule
@@ -52,6 +52,38 @@ function flatten(file: string, seen = new Set<string>()): string {
   return css.replace(/@import\s+"([^"]+)";/g, (_, spec: string) =>
     flatten(resolve(dirname(file), spec), seen),
   );
+}
+
+/**
+ * Library `.ts` sources under `src/` (or one folder of it) — specs, examples
+ * and playgrounds excluded, since a playground may legitimately name a sheet.
+ */
+function componentSources(dir: string = COMPONENTS_SRC): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const p = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '_examples' || entry.name === 'node_modules') continue;
+      out.push(...componentSources(p));
+    } else if (
+      entry.name.endsWith('.ts') &&
+      !entry.name.endsWith('.spec.ts') &&
+      !entry.name.includes('.example.') &&
+      !entry.name.includes('.playground.')
+    ) {
+      out.push(p);
+    }
+  }
+  return out;
+}
+
+/** Every specifier a file names in `styleUrl` / `styleUrls`. */
+function styleUrlsIn(src: string): string[] {
+  const out: string[] = [];
+  for (const m of src.matchAll(/styleUrls?\s*:\s*(\[[^\]]*\]|'[^']*'|"[^"]*"|`[^`]*`)/g)) {
+    for (const q of m[1].matchAll(/['"`]([^'"`]+)['"`]/g)) out.push(q[1]);
+  }
+  return out;
 }
 
 /** Every stylesheet the aggregator pulls in, as absolute paths. */
@@ -137,8 +169,8 @@ describe('overlay surfaces paint for the headless-directive composition', () => 
       let painted = false;
       postcss.parse(css).walkRules(rule => {
         if (!rule.selector.split(',').some(s => s.trim() === sel)) return;
-        rule.walkDecls('background', () => (painted = true));
-        rule.walkDecls('background-color', () => (painted = true));
+        rule.walkDecls('background', () => { painted = true; });
+        rule.walkDecls('background-color', () => { painted = true; });
       });
       expect(painted, `${sel} must get its fill from the registered stylesheet`).toBe(true);
     }
@@ -161,6 +193,46 @@ describe('overlay surfaces paint for the headless-directive composition', () => 
     for (const file of imported) {
       expect(existsSync(file), `${file} is imported but does not exist`).toBe(true);
     }
+  });
+
+  it('the aggregator is the SINGLE delivery path — no component re-ships an aggregated sheet', () => {
+    // styles F-21 / lazy F-5. Every one of these nine files used to be BOTH an
+    // `@import` here and a `styleUrl` on its wrapper component(s). Under
+    // `ViewEncapsulation.None` the second copy contributes nothing to the
+    // cascade — same selectors, same `@layer kj.component` — it only inlines
+    // the bytes again into the component chunk, once per component: seven
+    // copies of `confirm-popup.css`, two each of dialog/drawer/toast/sheet.
+    //
+    // The scan covers the WHOLE package, not just the nine folders: a
+    // `styleUrl` from anywhere that resolves onto an aggregated sheet is the
+    // same duplication.
+    const aggregated = new Set(importedFiles(AGGREGATOR));
+    const offenders: string[] = [];
+    for (const file of componentSources()) {
+      for (const spec of styleUrlsIn(readFileSync(file, 'utf-8'))) {
+        const resolved = resolve(dirname(file), spec);
+        if (aggregated.has(resolved)) {
+          offenders.push(`${relative(COMPONENTS_SRC, file)} styleUrls ${spec}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('nothing inlines overlay CSS through a `styles` array either', () => {
+    // The other way the same bytes could come back, and the one a CSS linter
+    // cannot see — which is why `kouji/component-styles-layered` bans inline
+    // `styles` outright. This is the overlay-family half, pinned next to the
+    // sheet it protects.
+    const offenders: string[] = [];
+    for (const file of importedFiles(AGGREGATOR)) {
+      for (const sibling of componentSources(dirname(file))) {
+        if (/^\s*styles\s*:\s*\[/m.test(readFileSync(sibling, 'utf-8'))) {
+          offenders.push(relative(COMPONENTS_SRC, sibling));
+        }
+      }
+    }
+    expect([...new Set(offenders)]).toEqual([]);
   });
 
   it('the published package ships the stylesheet tree the aggregator points at', () => {

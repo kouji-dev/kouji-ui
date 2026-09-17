@@ -13,7 +13,9 @@ import { KjAvatarGroupComponent } from './avatar-group';
   imports: [KjAvatarGroupComponent, KjAvatarComponent],
   styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); }`],
   template: `
-    <kj-avatar-group kjMax="3" kjTotal="7">
+    <!-- Bound, not attribute-valued: kjMax / kjTotal are number inputs with no
+     numberAttribute transform, so the string form would not type-check. -->
+    <kj-avatar-group [kjMax]="3" [kjTotal]="7">
       <kj-avatar content="AL" alt="Alice" />
       <kj-avatar content="BO" alt="Bo" />
       <kj-avatar content="CJ" alt="CJ" />

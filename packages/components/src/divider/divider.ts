@@ -4,6 +4,7 @@ import {
   ElementRef,
   ViewEncapsulation,
   afterNextRender,
+  booleanAttribute,
   contentChildren,
   input,
   signal,
@@ -146,7 +147,7 @@ export class KjDividerComponent {
    * already demarcated by surrounding heading or landmark structure).
    * Defaults to `false` (decorative; `aria-hidden="true"`).
    */
-  readonly kjStructural = input<boolean>(false);
+  readonly kjStructural = input(false, { transform: booleanAttribute });
 
   /** Alignment of the projected content within a with-content divider. */
   readonly kjAlign = input<KjDividerAlign>('center');

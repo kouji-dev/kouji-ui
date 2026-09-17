@@ -159,9 +159,13 @@ export interface KjFilterApi {
   setModel(model: KjGridFilterModel | null): void;
 }
 
+/** Grid-wide quick-filter text: read, replace, clear. */
 export interface KjGlobalFilterApi {
+  /** Current quick-filter text; `''` when unset. */
   get(): string;
+  /** Replace the quick-filter text. */
   set(value: string): void;
+  /** Clear the quick filter. */
   clear(): void;
 }
 
@@ -251,35 +255,58 @@ export interface KjColumnApi<TData extends RowData = unknown> {
   reset(): void;
 }
 
+/** Show / hide columns. */
 export interface KjColumnVisibilityApi {
+  /** Current visibility map, keyed by column id. */
   get(): VisibilityState;
+  /** Replace the whole visibility map. */
   set(model: VisibilityState): void;
+  /** Whether one column is currently rendered. */
   isVisible(columnId: string): boolean;
+  /** Show or hide one column. */
   setVisible(columnId: string, visible: boolean): void;
+  /** Show or hide several columns in one state write. */
   setManyVisible(columnIds: readonly string[], visible: boolean): void;
 }
 
+/** Column widths, in px. */
 export interface KjColumnSizingApi {
+  /** Current width map, keyed by column id. */
   get(): ColumnSizingState;
+  /** Replace the whole width map. */
   set(model: ColumnSizingState): void;
+  /** Current width of one column, in px. */
   width(columnId: string): number;
+  /** Resize one column; clamped by the column def's min/max size. */
   setWidth(columnId: string, width: number): void;
 }
 
+/** Freeze columns to either edge. */
 export interface KjColumnPinningApi {
+  /** Current pinning state (`left` / `right` column id lists). */
   get(): ColumnPinningState;
+  /** Replace the whole pinning state. */
   set(model: ColumnPinningState): void;
+  /** Which edge one column is pinned to, or `null` when it scrolls. */
   of(columnId: string): 'left' | 'right' | null;
+  /** Pin one column to an edge; `null` unpins it. */
   pin(columnId: string, side: 'left' | 'right' | null): void;
 }
 
+/** Left-to-right column order. */
 export interface KjColumnOrderApi {
+  /** Current order as a list of column ids. */
   get(): ColumnOrderState;
+  /** Replace the whole order. */
   set(order: ColumnOrderState): void;
+  /** Move one column to a zero-based position. */
   move(columnId: string, toIndex: number): void;
 }
 
+/** Row grouping, one column at a time. */
 export interface KjColumnGroupingApi {
+  /** Whether rows are currently grouped by this column. */
   is(columnId: string): boolean;
+  /** Add or remove this column from the grouping set. */
   set(columnId: string, grouped: boolean): void;
 }

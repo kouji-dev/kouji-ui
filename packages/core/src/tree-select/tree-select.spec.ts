@@ -1,7 +1,7 @@
-import { render, fireEvent } from '@testing-library/angular';
+import { render, fireEvent, type RenderResult } from '@testing-library/angular';
 import { By } from '@angular/platform-browser';
 import { toHaveNoViolations } from 'jest-axe';
-import { afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   KjTreeSelect,
   KjTreeSelectNode,
@@ -39,6 +39,27 @@ const imports = [
 const q = (sel: string): Element | null =>
   document.querySelector(sel) ?? null;
 const qa = (sel: string): NodeListOf<Element> => document.querySelectorAll(sel);
+
+/**
+ * Dispatch `key` from the element that actually holds focus. Throws when
+ * `el` is not `document.activeElement`, so a spec can never "press" a key
+ * on an element the user could not have reached.
+ */
+function pressKey(el: Element | null, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
+  if (!el || document.activeElement !== el) {
+    throw new Error(`pressKey(${key}): target does not hold focus (active: ${document.activeElement?.tagName})`);
+  }
+  const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+  el.dispatchEvent(e);
+  return e;
+}
+
+/** Flush change detection plus the `afterNextRender` queue the panel focuses from. */
+async function settle(fixture: RenderResult<unknown>['fixture']): Promise<void> {
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
+}
 
 // ── Base single-select template ──────────────────────────────────────────────
 
@@ -126,6 +147,21 @@ describe('KjTreeSelect – panel visibility', () => {
     // intent-preserving.
     await new Promise<void>(r => requestAnimationFrame(() => r()));
     expect(q('kj-tree-select-content')).toHaveAttribute('hidden', '');
+  });
+});
+
+describe('KjTreeSelect – document listeners', () => {
+  it('mounting a panel installs no document click listener — Escape / outside press are routed by the overlay stack', async () => {
+    const add = vi.spyOn(document, 'addEventListener');
+    try {
+      await render(singleTemplate, {
+        imports,
+        componentProperties: { selected: undefined },
+      });
+      expect(add.mock.calls.filter(c => c[0] === 'click')).toHaveLength(0);
+    } finally {
+      add.mockRestore();
+    }
   });
 });
 
@@ -316,9 +352,9 @@ describe('KjTreeSelect – multi selection', () => {
     fireEvent.click(nodes[0]);
     fireEvent.click(nodes[2]);
     fixture.detectChanges();
-    expect(nodes[0]).toHaveAttribute('aria-selected', 'true');
-    expect(nodes[1]).toHaveAttribute('aria-selected', 'false');
-    expect(nodes[2]).toHaveAttribute('aria-selected', 'true');
+    expect(nodes[0]).toHaveAttribute('aria-checked', 'true');
+    expect(nodes[1]).toHaveAttribute('aria-checked', 'false');
+    expect(nodes[2]).toHaveAttribute('aria-checked', 'true');
   });
 
   it('clicking a selected node deselects it', async () => {
@@ -331,7 +367,7 @@ describe('KjTreeSelect – multi selection', () => {
     fireEvent.click(nodes[0]);
     fireEvent.click(nodes[0]);
     fixture.detectChanges();
-    expect(nodes[0]).toHaveAttribute('aria-selected', 'false');
+    expect(nodes[0]).toHaveAttribute('aria-checked', 'false');
   });
 
   it('single mode panel does not have aria-multiselectable', async () => {
@@ -392,42 +428,159 @@ describe('KjTreeSelect – KjListNavigatorConfig integration', () => {
 });
 
 describe('KjTreeSelect – keyboard navigation', () => {
-  // Post-Task-4: Up/Down/Home/End/Enter/Space/type-ahead are owned by
-  // the composed `KjListNavigator`; tree-specific ArrowLeft/Right stay
-  // on `KjTreeSelectContent`. Roving DOM focus is wired by the content
-  // component via a local effect on `KjListNavigator.activeId` plus a
-  // `KJ_LIST_FOCUS_MODE` provider override (Angular's
-  // `hostDirectives.inputs` cannot statically push `'roving'` into the
-  // navigator's input signal). Net effect for these tests: keyboard
-  // moves `activeId` → DOM focus follows → `activeElement` matches.
-  it('ArrowDown on the panel moves focus to the first node', async () => {
-    const { container } = await render(singleTemplate, {
-      imports,
-      componentProperties: { selected: undefined },
-    });
-    fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const panel = q('kj-tree-select-content')!;
-    fireEvent.keyDown(panel, { key: 'ArrowDown' });
-    const nodes = qa('[kjTreeSelectNode]');
-    expect(document.activeElement).toBe(nodes[0]);
-  });
+  // Every spec here starts from the trigger (the only thing a user can Tab
+  // to) and dispatches each key from `document.activeElement`. Up/Down/
+  // Home/End/Enter/type-ahead are owned by the composed `KjListNavigator`
+  // in roving mode; ArrowLeft/Right by `KjTreeSelectContent`.
+  const nodes = () => Array.from(qa('[kjTreeSelectNode]')) as HTMLElement[];
 
-  it('Enter on focused node selects it', async () => {
+  async function openWithKeyboard(fixture: RenderResult<unknown>['fixture'], trigger: HTMLElement) {
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+    pressKey(trigger, 'ArrowDown');
+    await settle(fixture);
+  }
+
+  it('ArrowDown from the focused trigger opens the tree and moves focus onto the first node', async () => {
     const { container, fixture } = await render(singleTemplate, {
       imports,
       componentProperties: { selected: undefined },
     });
-    fireEvent.click(container.querySelector('[kjTreeSelectTrigger]')!);
-    const leafNode = q('[kjTreeSelectNode][aria-level="2"]')!;
-    const leafId = leafNode.id;
-    fireEvent.keyDown(leafNode, { key: 'Enter' });
-    fixture.detectChanges();
-    // Enter routes through the content keydown handler, which calls
-    // `node.click()` — `KjListItem`'s `(click)` runs `_activate` →
-    // `KjSelectionModel.toggle` → root `afterSelect` closes the panel
-    // (single mode). Look up by id via `document` so we don't depend
-    // on whether the panel has been re-parented yet.
-    const refoundLeaf = q(`#${leafId}`)!;
-    expect(refoundLeaf).toHaveAttribute('aria-selected', 'true');
+    const trigger = container.querySelector('[kjTreeSelectTrigger]') as HTMLElement;
+    await openWithKeyboard(fixture, trigger);
+    expect(q('kj-tree-select-content')).not.toHaveAttribute('hidden');
+    expect(document.activeElement).toBe(nodes()[0]);
+    expect(nodes()[0]).toHaveAttribute('tabindex', '0');
+  });
+
+  it('ArrowDown skips the children of a collapsed branch', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    await openWithKeyboard(fixture, container.querySelector('[kjTreeSelectTrigger]') as HTMLElement);
+    pressKey(document.activeElement, 'ArrowDown');
+    await settle(fixture);
+    // Fruits (collapsed) → Vegetables, not Apple.
+    expect(document.activeElement).toBe(nodes()[3]);
+    pressKey(document.activeElement, 'ArrowUp');
+    await settle(fixture);
+    expect(document.activeElement).toBe(nodes()[0]);
+  });
+
+  it('ArrowRight expands a collapsed branch, then moves into its first child; ArrowLeft walks back and collapses', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    await openWithKeyboard(fixture, container.querySelector('[kjTreeSelectTrigger]') as HTMLElement);
+    const branch = nodes()[0];
+    pressKey(branch, 'ArrowRight');
+    await settle(fixture);
+    expect(branch).toHaveAttribute('aria-expanded', 'true');
+    expect(document.activeElement).toBe(branch);
+    pressKey(branch, 'ArrowRight');
+    await settle(fixture);
+    expect(document.activeElement).toBe(nodes()[1]);
+    pressKey(document.activeElement, 'ArrowLeft');
+    await settle(fixture);
+    expect(document.activeElement).toBe(branch);
+    pressKey(branch, 'ArrowLeft');
+    await settle(fixture);
+    expect(branch).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('Enter on the focused leaf selects it, closes the panel and returns focus to the trigger', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    const trigger = container.querySelector('[kjTreeSelectTrigger]') as HTMLElement;
+    await openWithKeyboard(fixture, trigger);
+    pressKey(document.activeElement, 'ArrowRight');
+    await settle(fixture);
+    pressKey(document.activeElement, 'ArrowRight');
+    await settle(fixture);
+    const leaf = document.activeElement as HTMLElement;
+    expect(leaf).toHaveAttribute('aria-level', '2');
+    const leafId = leaf.id;
+    pressKey(leaf, 'Enter');
+    await settle(fixture);
+    await new Promise<void>(r => requestAnimationFrame(() => r()));
+    expect((fixture.componentInstance as { selected: unknown }).selected).toBe('apple');
+    expect(q(`#${leafId}`)).toHaveAttribute('aria-selected', 'true');
+    expect(q('kj-tree-select-content')).toHaveAttribute('hidden', '');
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('Escape closes the panel and returns focus to the trigger', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    const trigger = container.querySelector('[kjTreeSelectTrigger]') as HTMLElement;
+    await openWithKeyboard(fixture, trigger);
+    pressKey(document.activeElement, 'ArrowDown');
+    await settle(fixture);
+    pressKey(document.activeElement, 'Escape');
+    await settle(fixture);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('opens onto the selected node when one is visible', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: 'veggies' },
+    });
+    await openWithKeyboard(fixture, container.querySelector('[kjTreeSelectTrigger]') as HTMLElement);
+    expect(document.activeElement).toBe(nodes()[3]);
+  });
+
+  it('the panel does not publish aria-activedescendant — focus itself marks the active node', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    await openWithKeyboard(fixture, container.querySelector('[kjTreeSelectTrigger]') as HTMLElement);
+    expect(q('kj-tree-select-content')).not.toHaveAttribute('aria-activedescendant');
+  });
+});
+
+
+describe('KjTreeSelectTrigger — composed KjDisabled (arch F-2 / F-16)', () => {
+  const disabledTemplate = `
+    <div kjTreeSelect>
+      <button kjTreeSelectTrigger kjDisabled #t="kjTreeSelectTrigger">Choose</button>
+      <kj-tree-select-content [kjFor]="t">
+        <div kjTreeSelectNode [kjValue]="'a'" kjLabel="A" [kjNodeLevel]="1" [kjNodeSize]="1" [kjNodePos]="1">A</div>
+      </kj-tree-select-content>
+    </div>
+  `;
+
+  it('honours the bare kjDisabled attribute and reflects it', async () => {
+    const { container, fixture } = await render(disabledTemplate, { imports });
+    await settle(fixture);
+    const trigger = container.querySelector('[kjTreeSelectTrigger]') as HTMLElement;
+    // Before arch F-2 the bare attribute bound '' (falsy) and the flag stayed
+    // false; before arch F-16 nothing reflected the state (WCAG 4.1.2).
+    expect(trigger).toHaveAttribute('aria-disabled', 'true');
+    expect(trigger).toHaveAttribute('data-disabled', '');
+
+    trigger.focus();
+    pressKey(trigger, 'ArrowDown');
+    await settle(fixture);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('reflects nothing when the trigger is enabled', async () => {
+    const { container, fixture } = await render(singleTemplate, {
+      imports,
+      componentProperties: { selected: undefined },
+    });
+    await settle(fixture);
+    const trigger = container.querySelector('[kjTreeSelectTrigger]') as HTMLElement;
+    expect(trigger).not.toHaveAttribute('aria-disabled');
+    expect(trigger).not.toHaveAttribute('data-disabled');
   });
 });

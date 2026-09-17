@@ -1,4 +1,5 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
 /**
  * Configuration shape for the Breadcrumb directive family. Exposes preset
@@ -11,8 +12,11 @@ export interface KjBreadcrumbConfig {
   defaults: {
     variant: string;
     size: string;
-    /** `aria-label` on the root `<nav>` host element. */
-    ariaLabel: string;
+    /**
+     * `aria-label` on the root `<nav>` host element. Optional override —
+     * unset, it resolves from the i18n catalog key `breadcrumb.nav`.
+     */
+    ariaLabel?: string;
     /** Default separator glyph. */
     separator: string;
     /** Default `kjMaxItems`. `0` disables truncation. */
@@ -26,10 +30,18 @@ export interface KjBreadcrumbConfig {
     /** Default underline mode for `KjBreadcrumbLink`. */
     linkUnderline: 'always' | 'hover' | 'none';
   };
-  /** Computes the `aria-label` for the `<nav>` when items are truncated. */
-  truncatedAriaLabel: (visible: number, hidden: number) => string;
-  /** Computes the `aria-label` for the ellipsis trigger button (menu mode). */
-  ellipsisLabel: (hidden: number) => string;
+  /**
+   * Computes the `aria-label` for the `<nav>` when items are truncated.
+   * Optional override — unset, it resolves from the i18n catalog keys
+   * `breadcrumb.truncatedOne` / `breadcrumb.truncated`.
+   */
+  truncatedAriaLabel?: (visible: number, hidden: number) => string;
+  /**
+   * Computes the `aria-label` for the ellipsis trigger button (menu mode).
+   * Optional override — unset, it resolves from the i18n catalog keys
+   * `breadcrumb.showHiddenOne` / `breadcrumb.showHidden`.
+   */
+  ellipsisLabel?: (hidden: number) => string;
 }
 
 /**
@@ -42,7 +54,6 @@ export const KJ_BREADCRUMB_DEFAULTS: KjBreadcrumbConfig = {
   defaults: {
     variant: 'default',
     size: 'md',
-    ariaLabel: 'Breadcrumb',
     separator: '/',
     maxItems: 4,
     overflow: 'truncate',
@@ -50,10 +61,9 @@ export const KJ_BREADCRUMB_DEFAULTS: KjBreadcrumbConfig = {
     linkSize: 'sm',
     linkUnderline: 'hover',
   },
-  truncatedAriaLabel: (_visible, hidden) =>
-    hidden === 1 ? 'Breadcrumb (1 item hidden)' : `Breadcrumb (${hidden} items hidden)`,
-  ellipsisLabel: (hidden) =>
-    hidden === 1 ? 'Show 1 hidden breadcrumb' : `Show ${hidden} hidden breadcrumbs`,
+  // No label literals: every string resolves through the i18n catalog
+  // (`injectKjBreadcrumbLabels`). Leaving them `undefined` is what makes the
+  // catalog the source of truth rather than a second, competing surface.
 };
 
 /**
@@ -68,17 +78,16 @@ export const KJ_BREADCRUMB_CONFIG = new InjectionToken<KjBreadcrumbConfig>(
 
 /**
  * Configures the Breadcrumb presets / labels for the enclosing injector.
- * Shallow-merges over the defaults — pass only the fields you want to override.
+ *
+ * Deep-merges over {@link KJ_BREADCRUMB_DEFAULTS} through
+ * {@link mergeKjConfig} — pass only the fields you want to change, at any
+ * depth. Arrays and label functions **replace**.
+ *
+ * Labels default to the {@link KjTranslateService} catalog, so translating a
+ * breadcrumb is `provideKjTranslations({ fr: FR_CATALOG })` — reach for the
+ * label fields here only to override a *single* string independently of
+ * locale.
  */
-export function provideKjBreadcrumb(config: Partial<KjBreadcrumbConfig>): Provider[] {
-  return [
-    {
-      provide: KJ_BREADCRUMB_CONFIG,
-      useValue: {
-        ...KJ_BREADCRUMB_DEFAULTS,
-        ...config,
-        defaults: { ...KJ_BREADCRUMB_DEFAULTS.defaults, ...(config.defaults ?? {}) },
-      },
-    },
-  ];
+export function provideKjBreadcrumb(config: KjDeepPartial<KjBreadcrumbConfig>): Provider[] {
+  return [{ provide: KJ_BREADCRUMB_CONFIG, useValue: mergeKjConfig(KJ_BREADCRUMB_DEFAULTS, config) }];
 }

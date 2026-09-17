@@ -1,5 +1,15 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, contentChildren, forwardRef, input, inject, computed } from '@angular/core';
-import { KjIconDirective, KjSelect, KjSelectTrigger, KjSelectContent, KjOption } from '@kouji-ui/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  booleanAttribute,
+  contentChildren,
+  forwardRef,
+  input,
+  inject,
+  computed,
+} from '@angular/core';
+import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectListItem } from '@kouji-ui/core';
 
 /**
  * Select root. Two-way bind via `[(value)]`.
@@ -10,19 +20,20 @@ import { KjIconDirective, KjSelect, KjSelectTrigger, KjSelectContent, KjOption }
  *
  * @doc-keyboard
  *   Enter|Space    — Opens the listbox from the trigger; activates the focused option when open
- *   ArrowDown      — Moves focus to the next option (clamps at the end)
- *   ArrowUp        — Moves focus to the previous option (clamps at the start)
+ *   ArrowDown|ArrowUp|Alt+ArrowDown — Opens the listbox from the trigger; focus lands on the selected (else first) option
+ *   ArrowDown      — Moves focus to the next option (wraps at the end)
+ *   ArrowUp        — Moves focus to the previous option (wraps at the start)
  *   Home           — Moves focus to the first option
  *   End            — Moves focus to the last option
  *   A-Z (type-ahead) — Focuses the first option whose visible text starts with the typed character
  *   Escape         — Closes the listbox and returns focus to the trigger
- *   Tab            — Closes the listbox and moves focus to the next focusable element
+ *   Tab            — Closes the listbox, returns focus to the trigger and moves on to the next focusable element
  *
  * @doc-aria
  *   aria-haspopup        — set to "listbox" on the trigger button
  *   aria-expanded        — set on the trigger; reflects the open/closed state of the listbox
  *   aria-controls        — links the trigger to the panel id
- *   aria-activedescendant — set on the panel; points to the id of the currently focused option
+ *   tabindex             — roving: the focused option is the active one ("0"), every other option is "-1"
  *   aria-multiselectable  — set on the panel to "true" when [multiple] is true
  *   role="listbox"       — on the content panel (provided via KJ_OVERLAY_PANEL_ROLE)
  *   role="option"        — on each kj-option child
@@ -75,7 +86,7 @@ import { KjIconDirective, KjSelect, KjSelectTrigger, KjSelectContent, KjOption }
   hostDirectives: [
     { directive: KjSelect, inputs: ['kjSelectValue: value'], outputs: ['kjSelectValueChange: valueChange'] },
   ],
-  imports: [KjIconDirective, KjSelectTrigger, KjSelectContent],
+  imports: [KjIcon, KjSelectTrigger, KjSelectContent],
   template: `
     <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null" [kjMultiple]="multiple()">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
@@ -96,9 +107,16 @@ import { KjIconDirective, KjSelect, KjSelectTrigger, KjSelectContent, KjOption }
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSelectComponent {
+  /** Text shown on the trigger while nothing is selected. Defaults to `'Select…'`. */
   readonly placeholder = input<string>('Select…');
-  readonly disabled = input(false);
-  readonly multiple = input(false);
+
+  /** Disables the trigger and removes it from the tab order. Defaults to `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** Lets the listbox hold more than one value. Defaults to `false`. */
+  readonly multiple = input(false, { transform: booleanAttribute });
+
+  /** Control height preset, reflected as `data-size`. Defaults to `'md'`. */
   readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 
   private readonly select = inject(KjSelect);
@@ -118,11 +136,9 @@ export class KjSelectComponent {
 
   /** Direct projection-child query — every `<kj-option>` placed inside this
    *  `<kj-select>` registers here. `forwardRef` is required because
-   *  `KjOptionComponent` is declared later in the same file. We resolve the
-   *  trigger label by matching the active value against each option's
-   *  `value` input, not by reading `KjListItem.label()` from the select's
-   *  deeper content (which doesn't reliably descend into a projected
-   *  component's view). */
+   *  `KjOptionComponent` is declared later in the same file. The trigger
+   *  label is resolved by matching the active value against each option's
+   *  composed `KjListItem`, which is now the `<kj-option>` host itself. */
   private readonly options = contentChildren<KjOptionComponent>(
     forwardRef(() => KjOptionComponent) as unknown as typeof KjOptionComponent,
   );
@@ -131,14 +147,16 @@ export class KjSelectComponent {
    *  `String(v)` only when no option has registered for that value yet. */
   private labelFor(v: unknown): string {
     for (const opt of this.options()) {
-      if (Object.is(opt.value(), v)) {
-        const explicit = opt.kjLabel();
+      const row = opt._row;
+      if (Object.is(row.value(), v)) {
+        const explicit = row.kjItemLabel();
         return explicit || String(v);
       }
     }
     return String(v);
   }
 
+  /** The trigger's rendered text: the selected option label(s), else the placeholder. */
   readonly displayLabel = computed(() => {
     const v = this.select.value();
     if (v === undefined || v === null || v === '') return this.placeholder();
@@ -159,18 +177,39 @@ export class KjSelectComponent {
 @Component({
   selector: 'kj-option',
   standalone: true,
-  imports: [KjOption],
-  template: `<div kjOption [kjOptionValue]="value()" [kjOptionLabel]="kjLabel()" class="kj-option"><ng-content /></div>`,
+  // `KjListItem` is composed on THIS host, not on an inner `<div kjOption>`
+  // in this component's view: `KjSelect.items` is a content query, and a
+  // content query never crosses into a child component's view. With the
+  // directive one level down every projected `<kj-option>` registered with
+  // nothing — the listbox had no roving tab stop (every row rendered
+  // `tabindex="-1"`), no ArrowUp/ArrowDown/Home/End, no type-ahead and no
+  // `aria-posinset` / `aria-setsize` (WCAG 2.1.1, 2.4.3, 1.3.1). Same fix,
+  // and the same shape, as `<kj-combobox-option>` and `<kj-command-item>`.
+  //
+  // The `role` / `class` semantics the core `KjOption` directive would have
+  // contributed are inlined here, because `hostDirectives` input forwarding
+  // does not chain transitively (composing `KjOption` and re-forwarding its
+  // own forwarded inputs fails the NG2017 check).
+  hostDirectives: [
+    {
+      directive: KjListItem,
+      inputs: [
+        'kjItemValue: value',
+        'kjItemLabel: kjLabel',
+        'kjDisabled: disabled',
+      ],
+    },
+  ],
+  template: `<ng-content />`,
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  host: {
+    'class': 'kj-option',
+    'role': 'option',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjOptionComponent {
-  readonly value = input.required<unknown>();
-
-  /** Explicit label for the trigger's displayed text. The select wrapper
-   *  reads this via its own `contentChildren(KjOptionComponent)` query for
-   *  reliable label resolution that doesn't depend on KjListItem's
-   *  textContent-after-content-init lifecycle. */
-  readonly kjLabel = input<string>('');
+  /** @internal — the composed row. `KjSelectComponent` reads its value and
+   *  its explicit label to render the trigger's displayed text. */
+  readonly _row = injectListItem<unknown>();
 }

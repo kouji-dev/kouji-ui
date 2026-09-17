@@ -192,4 +192,17 @@ describe('KjDateRangePresets — listbox + selection', () => {
     expect(options[0].getAttribute('tabindex')).toBe('0');
     expect(options[1].getAttribute('tabindex')).toBe('-1');
   });
+
+  test('roving tabindex — the selected preset is the tab stop (a11y F-19)', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.value.set({
+      start: new Date(2026, 6, 1),
+      end: new Date(2026, 6, 15),
+    });
+    fixture.detectChanges();
+    const options = fixture.nativeElement.querySelectorAll('button');
+    // this-month is index 5
+    expect(options[5].getAttribute('tabindex')).toBe('0');
+    expect(options[0].getAttribute('tabindex')).toBe('-1');
+  });
 });

@@ -1,14 +1,14 @@
+import { DOCUMENT } from '@angular/common';
 import {
   Directive,
   ElementRef,
-  EventEmitter,
-  Output,
   Signal,
   afterNextRender,
   booleanAttribute,
   computed,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import {
@@ -25,13 +25,8 @@ import {
   KjFileUploadValidationMessages,
   KjUploadableFile,
 } from './file-upload.types';
-
-let kjFileUploadIdCounter = 0;
-function nextFileId(): string {
-  const cryptoLike = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
-  if (cryptoLike?.randomUUID) return `kjf-${cryptoLike.randomUUID().slice(0, 8)}`;
-  return `kjf-${(++kjFileUploadIdCounter).toString(36)}`;
-}
+import { KjId } from '../primitives/overlay/id';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Validates a single `File` against the configured `accept` / `maxSize`
@@ -115,6 +110,7 @@ export function kjFileMatchesAccept(file: File, accept: string | undefined): boo
 })
 export class KjFileUpload implements KjFileUploadContext {
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly document = inject(DOCUMENT);
   private liveRegionEl: HTMLElement | null = null;
 
   /** MIME / extension list for the file picker and drop validation. */
@@ -129,24 +125,39 @@ export class KjFileUpload implements KjFileUploadContext {
   /** Maximum total file count across the list. Excess files are rejected. */
   readonly kjMaxFiles = input<number | undefined>(undefined);
 
-  /** Disables the upload — drop-zone is `aria-disabled`, the trigger is inert. */
+  /**
+   * Disables the upload. Default `false` — the drop-zone is `aria-disabled`
+   * and the trigger is inert.
+   *
+   * arch F-16: the root does not compose `KjDisabled`. It is a container and
+   * reflects `data-disabled` only; the interactive children
+   * (`KjFileUploadTrigger`, `KjFileUploadDropzone`) carry `aria-disabled`
+   * themselves, read from this context.
+   */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
   /** Per-rejection-reason override messages. */
   readonly kjValidationMessages = input<Partial<KjFileUploadValidationMessages>>({});
 
   /** Emits the survivors after validation each time the user adds files. */
-  @Output() readonly kjSelect = new EventEmitter<File[]>();
+  readonly kjSelect = output<File[]>();
 
   /** Emits the rejection list whenever validation filters files out. */
-  @Output() readonly kjReject = new EventEmitter<KjFileRejection[]>();
+  readonly kjReject = output<KjFileRejection[]>();
 
   /** Emits the `KjUploadableFile` for each row the user removes. */
-  @Output() readonly kjRemove = new EventEmitter<KjUploadableFile>();
+  readonly kjRemove = output<KjUploadableFile>();
 
   private readonly _files = signal<readonly KjUploadableFile[]>([]);
   /** Current file list (in selection order). */
   readonly files: Signal<readonly KjUploadableFile[]> = this._files.asReadonly();
+
+  /**
+   * Mints every queued file's id. Deterministic per injector, so a server
+   * render and its hydrating client agree — `crypto.randomUUID()` produced a
+   * different value on each side every time.
+   */
+  private readonly ids = inject(KjId);
 
   private readonly _dragActive = signal(false);
   /** True while at least one drag operation is currently over the drop-zone host. */
@@ -248,7 +259,7 @@ export class KjFileUpload implements KjFileUploadContext {
 
     if (survivors.length) {
       const next: KjUploadableFile[] = survivors.map((f) => ({
-        id: nextFileId(),
+        id: this.ids.mint('file'),
         file: f,
         status: 'pending' as const,
         progress: null,
@@ -397,8 +408,7 @@ export class KjFileUpload implements KjFileUploadContext {
 
   constructor() {
     afterNextRender(() => {
-      if (typeof document === 'undefined') return;
-      const span = document.createElement('span');
+      const span = this.document.createElement('span');
       span.setAttribute('aria-live', 'polite');
       span.setAttribute('aria-atomic', 'true');
       span.style.cssText =
@@ -439,30 +449,42 @@ export class KjFileUpload implements KjFileUploadContext {
 })
 export class KjFileUploadTrigger {
   /** @internal */
-  readonly ctx = inject(KJ_FILE_UPLOAD);
+  readonly ctx = injectParent(KJ_FILE_UPLOAD, { child: 'KjFileUploadTrigger', parent: '[kjFileUpload]' });
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-  private hidden!: HTMLInputElement;
+  private readonly document = inject(DOCUMENT);
+  /**
+   * Nullable, not `!`-asserted: the input exists only after the first browser
+   * render. On the server it stays `null` and every use site checks, instead
+   * of the type system being told to trust a field the constructor never set.
+   */
+  private hidden: HTMLInputElement | null = null;
 
   constructor() {
     // Mint and own a hidden `<input type="file">` parked in the trigger's
     // host element. Visually hidden (not [hidden] attribute) so it stays in
     // the a11y tree and programmatic .click() opens the picker reliably
     // across browsers (analysis open-question #2).
-    if (typeof document !== 'undefined') {
-      this.hidden = document.createElement('input');
-      this.hidden.type = 'file';
-      this.hidden.tabIndex = -1;
-      this.hidden.setAttribute('aria-hidden', 'true');
-      this.hidden.style.cssText =
+    //
+    // Built in `afterNextRender`, like every sibling that appends to its host
+    // (`KjPagination`, `KjPaginationEllipsis`, the live region above): a
+    // constructor runs before Angular claims the host's child nodes during
+    // hydration, so appending there inserts an element mid-claim.
+    afterNextRender(() => {
+      const hidden = this.document.createElement('input');
+      hidden.type = 'file';
+      hidden.tabIndex = -1;
+      hidden.setAttribute('aria-hidden', 'true');
+      hidden.style.cssText =
         'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
-      this.hidden.addEventListener('change', (event) => this.ctx.onPickerChange(event));
-      this.syncAttrs();
+      hidden.addEventListener('change', (event) => this.ctx.onPickerChange(event));
+      this.hidden = hidden;
       // Mirror dynamic accept / multiple onto the hidden input.
       // computed-via-effect would also work; for a deliberately small surface
       // we re-sync on every click (cheap).
-      this.el.nativeElement.appendChild(this.hidden);
-      this.ctx.registerPickerInput(this.hidden);
-    }
+      this.syncAttrs();
+      this.el.nativeElement.appendChild(hidden);
+      this.ctx.registerPickerInput(hidden);
+    });
   }
 
   /** @internal */
@@ -528,7 +550,7 @@ export class KjFileUploadTrigger {
 })
 export class KjFileUploadDropzone {
   /** @internal */
-  readonly ctx = inject(KJ_FILE_UPLOAD);
+  readonly ctx = injectParent(KJ_FILE_UPLOAD, { child: 'KjFileUploadDropzone', parent: '[kjFileUpload]' });
 
   /** Accessible name for the drop-zone. */
   readonly kjLabel = input<string>('Drag files here, or click to browse');
@@ -580,7 +602,7 @@ export class KjFileUploadDropzone {
 })
 export class KjFileUploadList {
   /** @internal */
-  readonly ctx = inject(KJ_FILE_UPLOAD);
+  readonly ctx = injectParent(KJ_FILE_UPLOAD, { child: 'KjFileUploadList', parent: '[kjFileUpload]' });
 }
 
 /**
@@ -614,7 +636,7 @@ export class KjFileUploadList {
 })
 export class KjFileUploadItem implements KjFileUploadItemContext {
   /** @internal */
-  readonly ctx = inject(KJ_FILE_UPLOAD);
+  readonly ctx = injectParent(KJ_FILE_UPLOAD, { child: 'KjFileUploadItem', parent: '[kjFileUpload]' });
 
   /** The `KjUploadableFile` for this row. Required. */
   readonly kjFile = input.required<KjUploadableFile>();

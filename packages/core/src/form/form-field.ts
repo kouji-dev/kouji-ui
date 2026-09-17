@@ -1,5 +1,6 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, booleanAttribute, computed, input } from '@angular/core';
 import { KJ_FORM_FIELD, KjFormFieldContext } from './form-field.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Container for a form field. Groups label, input, and error message.
@@ -22,7 +23,7 @@ import { KJ_FORM_FIELD, KjFormFieldContext } from './form-field.context';
 })
 export class KjFormField implements KjFormFieldContext {
   /** Whether the field is in an invalid state. */
-  kjFieldInvalid = input<boolean>(false);
+  kjFieldInvalid = input(false, { transform: booleanAttribute });
   readonly invalid = computed(() => this.kjFieldInvalid());
 }
 
@@ -36,7 +37,7 @@ export class KjFormField implements KjFormFieldContext {
   selector: '[kjFormLabel]', standalone: true,
   host: { '[attr.data-invalid]': 'ctx.invalid() ? "" : null' },
 })
-export class KjFormLabel { readonly ctx = inject(KJ_FORM_FIELD); }
+export class KjFormLabel { readonly ctx = injectParent(KJ_FORM_FIELD, { child: 'KjFormLabel', parent: '[kjFormField]' }); }
 
 /**
  * Error message element. Visible only when field is invalid.
@@ -49,4 +50,4 @@ export class KjFormLabel { readonly ctx = inject(KJ_FORM_FIELD); }
   selector: '[kjFormError]', standalone: true,
   host: { role: 'alert', 'aria-live': 'polite', '[attr.hidden]': '!ctx.invalid() ? "" : null' },
 })
-export class KjFormError { readonly ctx = inject(KJ_FORM_FIELD); }
+export class KjFormError { readonly ctx = injectParent(KJ_FORM_FIELD, { child: 'KjFormError', parent: '[kjFormField]' }); }

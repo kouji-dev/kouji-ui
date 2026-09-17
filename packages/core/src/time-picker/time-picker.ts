@@ -10,6 +10,7 @@ import {
   model,
   numberAttribute,
   signal,
+  untracked,
 } from '@angular/core';
 import { KjDisabled, KjFormControl } from '../primitives';
 import { KJ_TIME_PICKER, KjTimePickerContext } from './time-picker.context';
@@ -92,15 +93,21 @@ export class KjTimePicker implements KjTimePickerContext {
   /** Minute step (canonical); ArrowUp / ArrowDown on the minutes segment use it. */
   readonly kjStep = input<number, unknown>(1, { transform: numberAttribute });
 
-  /** Per-segment step overrides. */
+  /** Per-segment step override for hours. Defaults to `1`. */
   readonly kjHourStep = input<number, unknown>(1, { transform: numberAttribute });
+
+  /** Per-segment step override for minutes. Defaults to `undefined` (falls back to `kjStep`). */
   readonly kjMinuteStep = input<number | undefined, unknown>(undefined, {
     transform: (v: unknown) => (v === undefined || v === null || v === '' ? undefined : numberAttribute(v)),
   });
+
+  /** Per-segment step override for seconds. Defaults to `1`. */
   readonly kjSecondStep = input<number, unknown>(1, { transform: numberAttribute });
 
-  /** Lower / upper time-of-day bounds. Accept `Date`, `'HH:mm[:ss]'`, or `null`. */
+  /** Lower time-of-day bound — `Date`, `'HH:mm[:ss]'` or `TimeParts`. Defaults to `null`. */
   readonly kjMin = input<Date | string | TimeParts | null>(null);
+
+  /** Upper time-of-day bound — `Date`, `'HH:mm[:ss]'` or `TimeParts`. Defaults to `null`. */
   readonly kjMax = input<Date | string | TimeParts | null>(null);
 
   /** Read-only state. */
@@ -156,11 +163,21 @@ export class KjTimePicker implements KjTimePickerContext {
   });
 
   constructor() {
+    // Two bridges write `_parts`, so each must track ONLY its own source.
+    // Reading `_parts()` inside the guard made a write by one bridge wake the
+    // other, so the moment `kjValue` and the form control disagreed — a
+    // consumer writing `[(kjValue)]` after a keyboard commit had already
+    // pushed a value through the control — they overwrote each other forever
+    // and the effect queue never settled. `untracked` keeps the guard and
+    // drops the dependency: each bridge runs once per change of the value it
+    // bridges, and the source that changed last wins.
+
     // Bridge model ↔ internal parts.
     effect(() => {
       const next = toParts(this.kjValue());
-      const cur = this._parts();
-      if (!partsEqual(cur, next)) this._parts.set(next);
+      untracked(() => {
+        if (!partsEqual(this._parts(), next)) this._parts.set(next);
+      });
     });
 
     // Bridge KjFormControl ↔ model. Reactive forms write through `writeValue`.
@@ -168,9 +185,9 @@ export class KjTimePicker implements KjTimePickerContext {
       const cvaValue = this.formCtrl.value();
       if (cvaValue === undefined) return;
       const next = toParts(cvaValue as Date | string | null);
-      if (!partsEqual(next, this._parts())) {
-        this._parts.set(next);
-      }
+      untracked(() => {
+        if (!partsEqual(next, this._parts())) this._parts.set(next);
+      });
     });
   }
 

@@ -1,15 +1,15 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDialog, KjDialogService } from '@kouji-ui/core';
+import { KjDialog, KjDialogService, KjDialogTitle } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
 // TODO(wrapper-overlay): re-skin once styled wrapper layer lands.
 @Component({
   selector: 'kj-dialog-confirmation-body',
   standalone: true,
-  imports: [KjDialog],
+  imports: [KjDialog, KjDialogTitle],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-dialog [kjAlert]="true"
-    ><h2>Confirm</h2>
+    ><h2 kjDialogTitle>Confirm</h2>
     <p>Are you sure?</p></kj-dialog
   >`,
 })

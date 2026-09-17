@@ -16,4 +16,4 @@ export {
 export { KjChatThread } from './chat-thread';
 export { KjChatMessage } from './chat-message';
 export { KjPromptInput } from './prompt-input';
-export { renderMarkdown, type KjMdBlock } from './markdown';
+export { renderMarkdown, createMarkdownRenderer, type KjMdBlock } from './markdown';

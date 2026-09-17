@@ -8,6 +8,10 @@
 
 @layer kj.shared {
   [data-theme="corporate"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — sharp, institutional ── */
     --kj-radius-box:      var(--kj-base-radius-1);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -73,6 +77,7 @@
     --kj-border-default:   #d8dee5;
     --kj-border-muted:     #e6ebf0;
     --kj-border-strong:    #b0bac5;
+    --kj-border-control:  #808a94;
     --kj-border-focus:     #0a2540;
     --kj-border-disabled:  #dde2ea;
     --kj-border-primary:   #0a2540;

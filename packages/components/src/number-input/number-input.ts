@@ -171,30 +171,52 @@ export class KjNumberInputComponent {
     this.nativeInput()?.nativeElement.focus();
   }
 
+  /** Lower bound, also bound to `aria-valuemin`. Default `-Infinity` (unbounded). */
   readonly kjMin = input<number>(Number.NEGATIVE_INFINITY);
+  /** Upper bound, also bound to `aria-valuemax`. Default `Infinity` (unbounded). */
   readonly kjMax = input<number>(Number.POSITIVE_INFINITY);
+  /** Increment applied by the steppers and Arrow Up / Down. Default `1`. */
   readonly kjStep = input<number>(1);
+  /** Increment applied by PageUp / PageDown. Default `0` — falls back to `kjStep * 10`. */
   readonly kjPageStep = input<number>(0);
 
+  /** Allow clearing the field to an empty value (`null`). Default `true`. */
   readonly kjAllowEmpty = input(true, { transform: booleanAttribute });
+  /** Allow a decimal separator in typed input. Default `true`. */
   readonly kjAllowDecimals = input(true, { transform: booleanAttribute });
+  /** Allow a leading minus sign in typed input. Default `true`. */
   readonly kjAllowNegative = input(true, { transform: booleanAttribute });
+  /** Render read-only — the value shows but cannot be edited or stepped. Default `false`. */
   readonly kjReadonly = input(false, { transform: booleanAttribute });
+  /** Disable the field and both steppers. Default `false`. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /** Invalid state — reflected as `aria-invalid`. Default `false`. */
   readonly kjInvalid = input(false, { transform: booleanAttribute });
+  /** Use a native `<input type="number">` instead of the formatted text input. Default `false`. */
   readonly kjUseNativeNumber = input(false, { transform: booleanAttribute });
 
+  /** `Intl.NumberFormat` style for the displayed value. Default `'decimal'`. */
   readonly kjFormat = input<'decimal' | 'currency' | 'percent' | 'unit'>('decimal');
+  /** BCP-47 locale for formatting and parsing. Default `''` — the ambient `KjLocale`. */
   readonly kjLocale = input<string>('');
+  /** ISO-4217 code, required when `kjFormat="currency"`. Default `''`. */
   readonly kjCurrency = input<string>('');
+  /** How the currency is rendered. Default `'symbol'`. */
   readonly kjCurrencyDisplay = input<'symbol' | 'narrowSymbol' | 'code' | 'name'>('symbol');
+  /** Unit identifier, required when `kjFormat="unit"` (e.g. `'kilometer'`). Default `''`. */
   readonly kjUnit = input<string>('');
+  /** How the unit is rendered. Default `'short'`. */
   readonly kjUnitDisplay = input<'short' | 'long' | 'narrow'>('short');
+  /** Group thousands with the locale's separator. Default `true`. */
   readonly kjUseGrouping = input(true, { transform: booleanAttribute });
+  /** Minimum fraction digits shown. Default `0`. */
   readonly kjMinimumFractionDigits = input<number>(0);
+  /** Maximum fraction digits shown. Default `0` — the format's own default applies. */
   readonly kjMaximumFractionDigits = input<number>(0);
 
+  /** Native `placeholder` on the inner input. Default `''`. */
   readonly kjPlaceholder = input<string>('');
+  /** Accessible name for the inner input. Default `''` — rely on a `<kj-field-label>`. */
   readonly kjAriaLabel = input<string>('');
 
   /** Layout for the stepper buttons. */

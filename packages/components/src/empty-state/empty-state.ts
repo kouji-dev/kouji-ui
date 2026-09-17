@@ -133,7 +133,7 @@ export type KjEmptyStateLevel = 1 | 2 | 3 | 4 | 5 | 6;
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjEmptyStateComponent {
+export class KjEmptyState {
   /** Tonal variant — `'neutral'` (default) or `'error'`. Reflects to `data-variant`. */
   readonly kjVariant = input<KjEmptyStateVariant>('neutral');
 
@@ -144,7 +144,13 @@ export class KjEmptyStateComponent {
    * truthy `kjLive` becomes `role="alert"`; a neutral variant with truthy
    * `kjLive` becomes `role="status"`.
    */
-  readonly kjLive = input<KjEmptyStateLive>(false);
+  readonly kjLive = input<KjEmptyStateLive, unknown>(false, {
+    // `'polite'` / `'assertive'` pass through; everything else is read as a
+    // boolean attribute, so the bare `kjLive` form means `'polite'` instead of
+    // binding the empty string (which is falsy, i.e. a silent no-op).
+    transform: (v: unknown): KjEmptyStateLive =>
+      v === 'polite' || v === 'assertive' ? v : booleanAttribute(v) ? 'polite' : false,
+  });
 
   /** Optional `aria-label` override. Defaults to `undefined` (no override). */
   readonly kjEmptyStateLabel = input<string | undefined>(undefined);
@@ -182,7 +188,7 @@ export class KjEmptyStateComponent {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjEmptyStateIconComponent {}
+export class KjEmptyStateIcon {}
 
 /**
  * Title slot. Renders an `<hN>` element where `N` is `kjLevel` (default `3`).
@@ -209,7 +215,7 @@ export class KjEmptyStateIconComponent {}
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjEmptyStateTitleComponent {
+export class KjEmptyStateTitle {
   /** Heading level rendered for the title. Defaults to `3`. */
   readonly kjLevel = input<KjEmptyStateLevel>(3);
 }
@@ -229,7 +235,7 @@ export class KjEmptyStateTitleComponent {
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjEmptyStateDescriptionComponent {}
+export class KjEmptyStateDescription {}
 
 /**
  * Actions slot. Renders a flex row of projected buttons / links, with an
@@ -265,7 +271,7 @@ export class KjEmptyStateDescriptionComponent {}
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjEmptyStateActionsComponent {
+export class KjEmptyStateActions {
   /**
    * When `true`, lays out the secondary slot beneath the primary row in
    * smaller type. Defaults to `false`. Set declaratively when projecting

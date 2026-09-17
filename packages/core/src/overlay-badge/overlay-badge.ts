@@ -1,6 +1,7 @@
 import {
   Directive,
   ElementRef,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -64,14 +65,14 @@ export class KjOverlayBadge implements KjOverlayBadgeContext {
   readonly kjPosition = input<KjOverlayBadgePosition>('top-end');
 
   /** Renders a fixed-size presence dot in place of numeric / text content. */
-  readonly kjDot = input<boolean>(false);
+  readonly kjDot = input(false, { transform: booleanAttribute });
 
   /**
    * Decorative opt-out. When `true`, the badge content is `aria-hidden` and
    * the host's `aria-describedby` merge is skipped. Use for cases where the
    * surrounding context already announces the badge's meaning.
    */
-  readonly kjDecorative = input<boolean>(false);
+  readonly kjDecorative = input(false, { transform: booleanAttribute });
 
   /**
    * Optional accessible description for assistive tech. When set, drives a

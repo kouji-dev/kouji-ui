@@ -21,7 +21,7 @@ import type { CalloutKind, PageExample } from '../../../lib/docs-extractor.types
 import { CodePreviewComponent } from '../../components/code-preview/code-preview';
 import { KjEditorComponent } from '@kouji-ui/components';
 import { PlaygroundComponent } from './playground';
-import { PLAYGROUND_FILES } from './playground-files';
+import { hasPlayground } from './playground-files';
 
 /** Maps Callout.kind to a kj-alert variant. */
 const CALLOUT_VARIANT: Record<CalloutKind, 'info' | 'success' | 'warning' | 'error'> = {
@@ -132,13 +132,16 @@ export class ComponentDocComponent {
 
   /**
    * Whether this page has an interactive Playground (a co-located
-   * `<comp>.playground.ts` registered in `PLAYGROUND_FILES`). When true, the
+   * `<comp>.playground.ts` registered in `PLAYGROUND_LOADERS`). When true, the
    * page's canonical/"Default" example is represented by that interactive
    * stage, so it is hidden from the recipes grid to avoid duplication.
+   *
+   * `hasPlayground()` is a key probe, not a load — asking the question must
+   * not pull the playground's chunk.
    */
   protected readonly hasInteractivePlayground = computed<boolean>(() => {
     const symbol = this.main()?.symbol;
-    return !!(symbol && PLAYGROUND_FILES[symbol]);
+    return !!symbol && hasPlayground(symbol);
   });
 
   /**

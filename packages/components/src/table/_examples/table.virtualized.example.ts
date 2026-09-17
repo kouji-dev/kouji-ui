@@ -34,8 +34,14 @@ function makeRows(n: number): Row[] {
 /**
  * 10,000 rows force-virtualized via `[kjVirtual]="true"` with a 32px row
  * estimate. Only the visible window is rendered; scroll position drives the
- * virtualizer. The "scroll to row 5000" button demonstrates programmatic jump
- * by computing offset = rowIndex × estimatedSize.
+ * virtualizer. Rendered rows are measured (ResizeObserver), so the estimate
+ * only seeds unmeasured rows and wrapped text or expansion rows do not drift
+ * the scrollbar. Before the virtualizer mounts — on the server and for the
+ * first client paint — the first `kjVirtualInitialRows` rows render at the
+ * estimate, so prerendered HTML is not an empty body. The "scroll to row
+ * 5000" button demonstrates a programmatic jump by computing
+ * offset = rowIndex × estimatedSize (exact only while rows are unmeasured or
+ * uniform).
  */
 @Component({
   selector: 'kj-table-virtualized-example',

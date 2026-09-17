@@ -22,4 +22,14 @@ describe('KjFormField', () => {
     const { container } = await render(`<div kjFormField [kjFieldInvalid]="false"><label kjFormLabel for="e">Email</label><input id="e" type="email" /></div>`, { imports });
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  // arch F-2 — the bare attribute form used to bind '' and stay false.
+  it('kjFieldInvalid reflects from the bare attribute form', async () => {
+    const { container } = await render(
+      `<div kjFormField kjFieldInvalid><label kjFormLabel for="e">Email</label><input id="e" /><span kjFormError>Bad</span></div>`,
+      { imports },
+    );
+    expect(container.querySelector('[kjFormField]')).toHaveAttribute('data-invalid', '');
+    expect(container.querySelector('[kjFormError]')).not.toHaveAttribute('hidden');
+  });
 });

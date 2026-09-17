@@ -170,32 +170,66 @@ export class KjTimePickerComponent {
   /** Two-way bindable time value. `null` clears. */
   readonly kjValue = model<Date | string | null>(null);
 
+  /** Shape `kjValue` is emitted in — a `Date` or an `'HH:mm[:ss]'` string. Defaults to `'date'`. */
   readonly kjValueShape = input<'date' | 'string'>('date');
+
+  /** Forces a 12-hour clock with an AM/PM toggle. Defaults to `false` (locale decides). */
   readonly kj12Hour = input(false, { transform: booleanAttribute });
+
+  /** Explicit hour cycle; `'auto'` (the default) resolves from the locale or `kj12Hour`. */
   readonly kjHourCycle = input<KjHourCycle | 'auto'>('auto');
+
+  /** Renders the seconds segment. Defaults to `false`. */
   readonly kjShowSeconds = input(false, { transform: booleanAttribute });
 
+  /** Minute step used by ArrowUp / ArrowDown on the minutes segment. Defaults to `1`. */
   readonly kjStep = input<number, unknown>(1, { transform: numberAttribute });
+
+  /** Per-segment step override for hours. Defaults to `1`. */
   readonly kjHourStep = input<number, unknown>(1, { transform: numberAttribute });
+
+  /** Per-segment step override for minutes. Defaults to `undefined` (falls back to `kjStep`). */
   readonly kjMinuteStep = input<number | undefined, unknown>(undefined, {
     transform: (v: unknown) => (v === undefined || v === null || v === '' ? undefined : numberAttribute(v)),
   });
+
+  /** Per-segment step override for seconds. Defaults to `1`. */
   readonly kjSecondStep = input<number, unknown>(1, { transform: numberAttribute });
 
+  /** Lower time-of-day bound — `Date`, `'HH:mm[:ss]'` or `TimeParts`. Defaults to `null`. */
   readonly kjMin = input<Date | string | TimeParts | null>(null);
+
+  /** Upper time-of-day bound — `Date`, `'HH:mm[:ss]'` or `TimeParts`. Defaults to `null`. */
   readonly kjMax = input<Date | string | TimeParts | null>(null);
 
+  /** Segments stay focusable but refuse edits. Defaults to `false`. */
   readonly kjReadonly = input(false, { transform: booleanAttribute });
+
+  /** Disables the whole control and its meridiem toggle. Defaults to `false`. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
+
+  /** External invalid flag, OR'd with the bounds check for `aria-invalid`. Defaults to `false`. */
   readonly kjInvalid = input(false, { transform: booleanAttribute });
 
+  /** BCP-47 locale tag. Defaults to `''` (falls back to the injected `LOCALE_ID`). */
   readonly kjLocale = input<string>('');
+
+  /** Date supplying the date part when emitting `Date` values. Defaults to `undefined` (today). */
   readonly kjReferenceDate = input<Date | undefined>(undefined);
 
+  /** Accessible name for the time-picker group. Defaults to `''`. */
   readonly kjAriaLabel = input<string>('');
+
+  /** Accessible name for the hours segment. Defaults to `'Hours'`. */
   readonly kjHoursLabel = input<string>('Hours');
+
+  /** Accessible name for the minutes segment. Defaults to `'Minutes'`. */
   readonly kjMinutesLabel = input<string>('Minutes');
+
+  /** Accessible name for the seconds segment. Defaults to `'Seconds'`. */
   readonly kjSecondsLabel = input<string>('Seconds');
+
+  /** Accessible name for the AM/PM toggle. Defaults to `'Toggle AM/PM'`. */
   readonly kjMeridiemLabel = input<string>('Toggle AM/PM');
 
   /** Whether the meridiem toggle should be rendered. */

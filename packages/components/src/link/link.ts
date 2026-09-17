@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  booleanAttribute,
+  input,
+} from '@angular/core';
 import { KjLink } from '@kouji-ui/core';
 
 /**
@@ -125,9 +131,16 @@ export class KjLinkComponent {
   /** Forwarded to the directive's underline-mode reflection. */
   readonly kjUnderline = input<'always' | 'hover' | 'none'>('hover');
 
-  /** Forwarded to the directive's external-link tri-state. */
-  readonly kjExternal = input(false);
+  /**
+   * Forwarded to the directive's external-link tri-state. Left `undefined` by
+   * default so `kjTarget="_blank"` still auto-detects — forwarding a hard
+   * `false` used to force internal treatment and disable the auto-detect this
+   * component's own docs promise.
+   */
+  readonly kjExternal = input<boolean | undefined, unknown>(undefined, {
+    transform: (v: unknown) => (v == null ? undefined : booleanAttribute(v)),
+  });
 
   /** Forwarded to the directive's disabled bundle (composed `KjDisabled` + plumbing). */
-  readonly kjDisabled = input(false);
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
 }

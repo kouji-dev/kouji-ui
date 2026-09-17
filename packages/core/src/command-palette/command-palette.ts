@@ -21,12 +21,13 @@ import {
   KjTypeAhead,
   type KjFilterFn,
   type KjListNavigatorConfig,
+  type KjListVirtualSource,
 } from '../primitives/list';
+import { mintKjId } from '../primitives/overlay/id';
 
-let _listIdCounter = 0;
 /** Allocate a stable command list id. */
 export function nextCommandListId(): string {
-  return `kj-command-list-${++_listIdCounter}`;
+  return mintKjId('command-list');
 }
 
 /** Payload for the `kjActivate` output. */
@@ -132,12 +133,42 @@ export class KjCommandPalette implements KjListNavigatorConfig {
   /** Currently active descendant id (or null). Wired to input's `aria-activedescendant`. */
   readonly activeId = computed(() => this._nav()?.activeId() ?? null);
 
+  private readonly _virtual = signal<KjListVirtualSource | null>(null);
+
+  /**
+   * Implements `KjListNavigatorConfig.virtual`. Non-null only while a
+   * windowed wrapper (`<kj-command-palette [kjVirtual]>`) is rendering a
+   * slice of its `[kjItems]` — `KjListNavigator` then walks the dataset by
+   * index instead of the handful of rows in the DOM.
+   */
+  readonly virtual = this._virtual.asReadonly();
+
+  /**
+   * @internal Register (or clear) the windowed cursor.
+   *
+   * While one is registered the palette stands down from two jobs the
+   * wrapper has taken over: filtering (only matching rows are ever
+   * rendered, so a second per-row filter would re-decide the same question
+   * against DOM text and could disagree) and auto-activating the first
+   * result (the cursor is a dataset index, not a rendered id).
+   */
+  _setVirtualSource(source: KjListVirtualSource | null): void {
+    this._virtual.set(source);
+  }
+
+  /** @internal Point `aria-activedescendant` at a rendered row, for a wrapper that owns the cursor. */
+  _setActiveId(id: string | null): void {
+    this._nav()?.setActive(id);
+  }
+
   constructor() {
     this.filterSvc.bind({
       items:             this.items,
       query:             this.kjQuery,
       filterFn:          this.resolvedFilter,
-      shouldFilter:      this.kjShouldFilter,
+      // A windowed wrapper has already filtered the DATA; every rendered
+      // row is a match by construction.
+      shouldFilter:      computed(() => this.kjShouldFilter() && this._virtual() === null),
       autoActivateFirst: this.kjAutoActivateFirst,
     });
 
@@ -145,7 +176,7 @@ export class KjCommandPalette implements KjListNavigatorConfig {
     effect(() => {
       this.kjQuery();
       const autoFirst = this.kjAutoActivateFirst();
-      if (!autoFirst) return;
+      if (!autoFirst || this._virtual() !== null) return;
       untracked(() => {
         const visible = this.visibleItems();
         const nav = this._nav();
@@ -170,7 +201,7 @@ export class KjCommandPalette implements KjListNavigatorConfig {
       const visible = this.visibleItems();
       const active = this.kjValue();
       const autoFirst = this.kjAutoActivateFirst();
-      if (!autoFirst || visible.length === 0) return;
+      if (!autoFirst || visible.length === 0 || this._virtual() !== null) return;
       if (active !== null && visible.some(i => i.value() === active)) return;
       untracked(() => {
         const nav = this._nav();
@@ -185,7 +216,7 @@ export class KjCommandPalette implements KjListNavigatorConfig {
       const nav = this._nav();
       if (!nav) return;
       const autoFirst = this.kjAutoActivateFirst();
-      if (!autoFirst) return;
+      if (!autoFirst || this._virtual() !== null) return;
       untracked(() => {
         if (nav.activeId() !== null) return;
         const visible = this.visibleItems();

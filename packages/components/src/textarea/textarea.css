@@ -10,7 +10,7 @@
     /* component knobs — themes/users can override any of these */
     --kj-textarea-bg:               var(--kj-bg-field);
     --kj-textarea-fg:               var(--kj-fg-default);
-    --kj-textarea-border-color:     var(--kj-border-default);
+    --kj-textarea-border-color:     var(--kj-border-control);
     --kj-textarea-border-style:     solid;
     --kj-textarea-border-width:     var(--kj-border);
     --kj-textarea-radius:           var(--kj-radius-field);

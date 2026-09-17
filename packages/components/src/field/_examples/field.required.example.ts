@@ -1,15 +1,15 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjAriaDescribedBy } from '@kouji-ui/core';
+import { KjFieldControl } from '@kouji-ui/core';
 import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '../field';
 
 /**
  * Required field. Adds the visual `*` next to the label via `data-required`
- * and reflects `aria-required` on the inner input.
+ * and `kjFieldControl` reflects `aria-required` on the inner input.
  */
 @Component({
   selector: 'kj-field-required-example',
   standalone: true,
-  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjAriaDescribedBy],
+  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjFieldControl],
   styles: [
     `
       :host {
@@ -28,17 +28,9 @@ import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '.
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-field #f="kjField" [kjRequired]="true">
+    <kj-field [kjRequired]="true">
       <kj-field-label>Full name</kj-field-label>
-      <input
-        kjAriaDescribedBy
-        class="kj-input"
-        type="text"
-        placeholder="Ada Lovelace"
-        [id]="f.controlId()"
-        [attr.aria-required]="f.required() ? 'true' : null"
-        [kjDescribedBy]="$any(f.describedByIds())"
-      />
+      <input kjFieldControl class="kj-input" type="text" placeholder="Ada Lovelace" />
       <kj-field-help>As it appears on your ID.</kj-field-help>
     </kj-field>
   `,

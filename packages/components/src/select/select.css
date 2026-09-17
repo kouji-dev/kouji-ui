@@ -4,7 +4,7 @@
   .kj-select-trigger {
     /* Explicit height contract (matches input.css / button.css) so the
        select trigger lines up with sibling inputs in a form row. */
-    --kj-select-trigger-height: 2.25rem;
+    --kj-select-trigger-height: var(--kj-ctl-h-md);
     width: 100%;
     display: inline-flex;
     align-items: center;
@@ -12,7 +12,7 @@
     gap: var(--kj-space-sm);
     background: var(--kj-bg-field);
     color: var(--kj-fg-default);
-    border: var(--kj-border) solid var(--kj-border-default);
+    border: var(--kj-border) solid var(--kj-border-control);
     border-radius: var(--kj-radius-field);
     padding: 0 var(--kj-space-md);
     height: var(--kj-select-trigger-height);
@@ -33,9 +33,9 @@
     white-space: nowrap;
     text-align: left;
   }
-  .kj-select[data-size="xs"] .kj-select-trigger { --kj-select-trigger-height: 1.75rem; font-size: 0.75rem;   padding-inline: var(--kj-space-sm); gap: var(--kj-space-xs); }
-  .kj-select[data-size="sm"] .kj-select-trigger { --kj-select-trigger-height: 2rem;    font-size: 0.8125rem; }
-  .kj-select[data-size="lg"] .kj-select-trigger { --kj-select-trigger-height: 2.75rem; font-size: 1rem; }
+  .kj-select[data-size="xs"] .kj-select-trigger { --kj-select-trigger-height: var(--kj-ctl-h-xs); font-size: 0.75rem;   padding-inline: var(--kj-space-sm); gap: var(--kj-space-xs); }
+  .kj-select[data-size="sm"] .kj-select-trigger { --kj-select-trigger-height: var(--kj-ctl-h-sm);    font-size: 0.8125rem; }
+  .kj-select[data-size="lg"] .kj-select-trigger { --kj-select-trigger-height: var(--kj-ctl-h-lg); font-size: 1rem; }
   .kj-select[data-size="xs"] { min-width: 0; }
   .kj-select-trigger-caret {
     font-size: 0.875em;
@@ -64,7 +64,12 @@
   }
   .kj-select-content[hidden] { display: none; }
 
+  /* `<kj-option>` IS the row — the component composes `KjListItem` on its
+     own host so the select's content query can reach it — and a custom
+     element defaults to `display: inline`, where padding, overflow and
+     text-overflow would not lay out. */
   .kj-option {
+    display: block;
     padding: var(--kj-space-sm) var(--kj-space-md);
     border-radius: var(--kj-radius-selector);
     cursor: pointer;
@@ -78,6 +83,13 @@
      elevated == surface (light/corporate, both white) a bg-surface hover would
      be invisible on the bg-elevated panel. */
   .kj-option:hover { background: var(--kj-bg-field); }
+  /* Options hold real focus (roving tabindex) — the ring is the keyboard
+     user's only cue for which row the arrow keys are on (WCAG 2.4.7). */
+  .kj-option:focus-visible {
+    outline: 2px solid var(--kj-fg-primary);
+    outline-offset: -2px;
+    background: var(--kj-bg-field);
+  }
   /* Selected option — tinted primary mirrors tree-select / cascade-select so
      the listbox family looks consistent across themes. */
   .kj-option[aria-selected="true"] {

@@ -3,6 +3,7 @@ import {
   Component,
   ViewEncapsulation,
   booleanAttribute,
+  inject,
   input,
   model,
 } from '@angular/core';
@@ -11,7 +12,8 @@ import {
   KjCalendarDay,
   KjCalendarGrid,
   KjCalendarHeader,
-  KjIconDirective,
+  KjIcon,
+  KjTranslateService,
 } from '@kouji-ui/core';
 
 /**
@@ -48,12 +50,12 @@ import {
  *   Tab                    — Moves focus out of the grid (single grid tab stop)
  *
  * @doc-aria
- *   role                — `grid` on the day matrix; `gridcell` on each day button
+ *   role                — `group` on the host; `grid` on the day matrix; `gridcell` on each `<td>`; day buttons keep their native `button` role
  *   aria-label          — `"Calendar"` on the host; override via `kjAriaLabel`
  *   aria-labelledby     — Grid references the caption heading id
- *   aria-selected       — Reflected on the currently-selected day cell
- *   aria-disabled       — Reflected on out-of-range and disabled day cells
- *   aria-current        — `"date"` on today's cell
+ *   aria-pressed        — `"true"` on the currently-selected day button
+ *   aria-disabled       — Reflected on out-of-range and disabled day buttons (they stay focusable; clicks are ignored)
+ *   aria-current        — `"date"` on today's button; never prerendered on the server (see `KJ_TODAY`)
  *
  * @doc-touch
  *   Day cells render real `<button>` elements; ensure the surrounding
@@ -62,9 +64,11 @@ import {
  *
  * @doc-a11y
  *   Implements the WAI-ARIA APG Date Picker (grid) pattern. A single tab
- *   stop into the grid, then arrow keys roam without leaving — Tab takes
- *   focus to the next region. Native `Date` only, locale-aware via
- *   `Intl.DateTimeFormat` — no third-party date library.
+ *   stop into the grid — always a selectable day, clamped into `kjMin` /
+ *   `kjMax` — then arrow keys roam without leaving; Tab takes focus to the
+ *   next region. Mounting the calendar or using the month buttons never
+ *   moves focus. Native `Date` only, locale-aware via `Intl.DateTimeFormat`
+ *   — no third-party date library.
  *
  * @doc-related date-picker,time-picker,input
  *
@@ -77,7 +81,7 @@ import {
 @Component({
   selector: 'kj-calendar',
   standalone: true,
-  imports: [KjCalendar, KjCalendarHeader, KjCalendarGrid, KjCalendarDay, KjIconDirective],
+  imports: [KjCalendar, KjCalendarHeader, KjCalendarGrid, KjCalendarDay, KjIcon],
   template: `
     <div
       kjCalendar
@@ -90,13 +94,14 @@ import {
       [kjLocale]="kjLocale()"
       [kjFirstDayOfWeek]="kjFirstDayOfWeek()"
       [kjAriaLabel]="kjAriaLabel()"
+      [kjStartAt]="kjStartAt() ?? null!"
       [kjDisabled]="kjDisabled()"
     >
       <div class="kj-calendar__header" kjCalendarHeader #hdr="kjCalendarHeader">
         <button
           type="button"
           class="kj-calendar__nav"
-          aria-label="Previous month"
+          [attr.aria-label]="previousMonthLabel()"
           [disabled]="hdr.prevDisabled()"
           (click)="hdr.prev()"
         >‹</button>
@@ -104,7 +109,7 @@ import {
         <button
           type="button"
           class="kj-calendar__nav"
-          aria-label="Next month"
+          [attr.aria-label]="nextMonthLabel()"
           [disabled]="hdr.nextDisabled()"
           (click)="hdr.next()"
         ><i kjIcon="chevron-right"></i></button>
@@ -125,7 +130,7 @@ import {
           @for (week of g.weeks(); track $index) {
             <tr>
               @for (d of week; track d.getTime()) {
-                <td class="kj-calendar__cell">
+                <td class="kj-calendar__cell" role="gridcell">
                   <button
                     class="kj-calendar__day"
                     kjCalendarDay
@@ -145,6 +150,18 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCalendarComponent {
+  private readonly i18n = inject(KjTranslateService);
+
+  /**
+   * Accessible name of the previous-month arrow, from the i18n catalog
+   * (`calendar.previousMonth`) — cust F-7: no assistive string is baked into
+   * this template.
+   */
+  protected readonly previousMonthLabel = this.i18n.translation('calendar.previousMonth');
+
+  /** Accessible name of the next-month arrow (`calendar.nextMonth`). */
+  protected readonly nextMonthLabel = this.i18n.translation('calendar.nextMonth');
+
   /** Currently selected date. Two-way bindable — `[(kjValue)]`. `null` clears. */
   readonly kjValue = model<Date | null>(null);
 
@@ -165,6 +182,9 @@ export class KjCalendarComponent {
 
   /** Accessible label override. Defaults to `"Calendar"`. */
   readonly kjAriaLabel = input<string>('Calendar');
+
+  /** Month to open on when no value is selected. Defaults to today, clamped into the bounds. */
+  readonly kjStartAt = input<Date | null>(null);
 
   /** Disable the entire calendar. */
   readonly kjDisabled = input<boolean, boolean | string>(false, { transform: booleanAttribute });

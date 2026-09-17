@@ -2,16 +2,23 @@ import {
   Directive,
   ElementRef,
   InjectionToken,
+  Injector,
   Signal,
+  booleanAttribute,
   computed,
   effect,
   inject,
   input,
-  isDevMode,
 } from '@angular/core';
-import { KjRovingTabindex } from '../a11y/roving-tabindex';
+import {
+  KJ_ROVING_ORIENTATION_DEFAULT,
+  KJ_ROVING_TABINDEX,
+  KjRovingOrientation,
+  KjRovingTabindex,
+} from '../a11y/roving-tabindex';
 import { KjSize, KjVariant } from '../presets';
 import type { KjListOrientation } from '../primitives/list/tokens';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 export type { KjListOrientation };
 
@@ -92,24 +99,40 @@ export interface KjListRowContext {
   hostDirectives: [
     { directive: KjVariant, inputs: ['kjVariant'] },
     { directive: KjSize, inputs: ['kjSize'] },
-    // Forward the composed roving primitive's orientation under the same
-    // external name as `kjOrientation` so consumers writing
-    // `<ul kjList kjOrientation="horizontal">` get both axes wired.
+    KjRovingTabindex,
+  ],
+  providers: [
+    { provide: KJ_LIST, useExisting: KjList },
+    // Pin the roving primitive's axis to this list's own orientation.
+    //
+    // A `hostDirectives` input alias (`kjRovingOrientation: kjOrientation`)
+    // only carries a *binding*, never a default — so `<ul kjList>` with no
+    // `kjOrientation` left the primitive at `'both'` while the host reported
+    // `data-orientation="vertical"`, and ArrowLeft/ArrowRight moved focus
+    // down a vertical nav list. The token carries the effective value, bound
+    // or not, and a `kjRovingOrientation` binding still wins over it.
+    //
+    // Resolved lazily: `KjRovingTabindex` is a host directive, so it is
+    // constructed *before* `KjList`. The primitive only calls this getter
+    // from its `orientation` computed, by which time the instance exists.
     {
-      directive: KjRovingTabindex,
-      inputs: ['kjRovingOrientation: kjOrientation'],
+      provide: KJ_ROVING_ORIENTATION_DEFAULT,
+      useFactory: (): (() => KjRovingOrientation) => {
+        const injector = inject(Injector);
+        let ctx: KjListContext | null = null;
+        return () => (ctx ??= injector.get(KJ_LIST)).kjOrientation();
+      },
     },
   ],
-  providers: [{ provide: KJ_LIST, useExisting: KjList }],
   exportAs: 'kjList',
   host: {
     '[attr.role]': 'roleAttr()',
     // `aria-orientation` is rejected by axe's `aria-allowed-attr` on
     // `role="list"` (the implicit/explicit list role does not list
     // `aria-orientation` as a supported attribute in ARIA 1.2). The keyboard
-    // axis is enforced via the composed `KjRovingTabindex.kjRovingOrientation`
-    // and themes read `data-orientation` for visual layout. Same precedent
-    // as `KjStepper`.
+    // axis is enforced via `KJ_ROVING_ORIENTATION_DEFAULT` above and themes
+    // read `data-orientation` for visual layout. Same precedent as
+    // `KjStepper`.
     '[attr.data-orientation]': 'kjOrientation()',
     '[attr.data-divided]': 'kjDivided() ? "" : null',
     '[attr.data-hoverable]': 'kjHoverable() ? "" : null',
@@ -128,9 +151,10 @@ export class KjList implements KjListContext {
   readonly kjAs = input<KjListAs>('ul');
 
   /**
-   * List orientation. Drives `aria-orientation` and `data-orientation`.
-   * Forwarded to the composed `KjRovingTabindex` (when `kjArrowNavigation` is
-   * `true`) so arrow-key navigation moves on the right axis.
+   * List orientation. Drives `data-orientation`, and the arrow-key axis of the
+   * composed {@link KjRovingTabindex} (through `KJ_ROVING_ORIENTATION_DEFAULT`)
+   * so arrow-key navigation moves on the right axis — including when the input
+   * is left unbound.
    */
   readonly kjOrientation = input<KjListOrientation>('vertical');
 
@@ -139,14 +163,14 @@ export class KjList implements KjListContext {
    * `data-divided` on the root and applies a `:not(:last-child)` border on
    * `KjListRow`. Pure CSS effect — no JS.
    */
-  readonly kjDivided = input<boolean>(false);
+  readonly kjDivided = input(false, { transform: booleanAttribute });
 
   /**
    * Whether rows highlight on hover. Theme CSS reads `data-hoverable` on the
    * root. Off by default because purely informational lists (stat blocks)
    * should not hint at interactivity.
    */
-  readonly kjHoverable = input<boolean>(false);
+  readonly kjHoverable = input(false, { transform: booleanAttribute });
 
   /**
    * Opt-in flag that turns the list into a roving-tabindex group. When
@@ -157,14 +181,14 @@ export class KjList implements KjListContext {
    * actual focus-stop wiring is done by the consumer applying
    * `kjRovingTabindexItem` on their projected `<a>` / `<button>`.
    */
-  readonly kjArrowNavigation = input<boolean>(false);
+  readonly kjArrowNavigation = input(false, { transform: booleanAttribute });
 
   /**
    * Whether arrow-key navigation wraps at the ends. Forwarded conceptually to
    * theme/keyboard logic; only meaningful when `kjArrowNavigation` is `true`.
    * Defaults to `true` to match the typical sidebar-nav UX.
    */
-  readonly kjListWrap = input<boolean>(true);
+  readonly kjListWrap = input(true, { transform: booleanAttribute });
 
   /** @internal Computes the role the directive should host-bind. */
   protected readonly roleAttr = computed<string | null>(() => {
@@ -179,7 +203,7 @@ export class KjList implements KjListContext {
   });
 
   constructor() {
-    if (isDevMode()) {
+    if (kjDevMode()) {
       // Landmark naming discipline: a `<nav>` MUST have an accessible name.
       // We warn (not throw) so downstream tooling that adds the attribute via
       // a wrapper or a parent `aria-labelledby` on the surrounding heading
@@ -193,8 +217,9 @@ export class KjList implements KjListContext {
         const hasLabel =
           host.hasAttribute('aria-label') || host.hasAttribute('aria-labelledby');
         if (!hasLabel) {
-          console.warn(
-            '[kj] kjList with kjAs="nav" requires aria-label or aria-labelledby on the host. ' +
+          kjDevWarn(
+            'kjList',
+            'kjAs="nav" requires aria-label or aria-labelledby on the host. ' +
               'A <nav> is a landmark and must be named.',
           );
         }
@@ -221,6 +246,10 @@ export class KjList implements KjListContext {
  * does **not** wire `aria-disabled` on the projected child — that is the
  * projected child's responsibility (via `KjDisabled`).
  *
+ * In an arrow-navigable list, the active row seeds the roving tab stop: the
+ * `kjRovingTabindexItem` projected inside the row with `kjActive` is the one
+ * Tab lands on.
+ *
  * @example
  * ```html
  * <li kjListRow [kjActive]="route === '/home'">
@@ -245,15 +274,23 @@ export class KjList implements KjListContext {
 })
 export class KjListRow implements KjListRowContext {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly roving = inject(KJ_ROVING_TABINDEX, { optional: true });
 
   /**
    * Whether the row is the current/active selection (e.g. the current page in
-   * a sidebar nav). Reflects to `data-active=""`. The directive does **not**
+   * a sidebar nav). Reflects to `data-active=""` and makes the roving item
+   * projected inside the row the list's tab stop. The directive does **not**
    * infer `aria-current` from this — the consumer sets `aria-current="page"`
    * (or `step`, `date`, `true`) on the projected link/button because the
    * right token depends on the consumer's domain.
    */
-  readonly kjActive = input<boolean>(false);
+  readonly kjActive = input(false, { transform: booleanAttribute });
+
+  constructor() {
+    effect(() => {
+      if (this.kjActive()) this.roving?.setActive(this.el.nativeElement);
+    });
+  }
 
   /**
    * Whether the row is disabled. Reflects to `data-disabled=""` so theme CSS
@@ -261,7 +298,7 @@ export class KjListRow implements KjListRowContext {
    * reachability — that responsibility is the projected child's (via
    * `KjDisabled`).
    */
-  readonly kjDisabled = input<boolean>(false);
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
 
   /** @internal Mirrors `kjActive` for descendant-side reads via `KJ_LIST_ROW`. */
   readonly active = this.kjActive;

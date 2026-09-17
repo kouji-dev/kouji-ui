@@ -5,7 +5,7 @@
 
 @layer kj.component {
   .kj-input-group {
-    --kj-input-group-border-color: var(--kj-border-default);
+    --kj-input-group-border-color: var(--kj-border-control);
     --kj-input-group-border-width: var(--kj-border, 1px);
     --kj-input-group-radius:       var(--kj-radius-field);
     --kj-input-group-addon-bg:     var(--kj-bg-surface);

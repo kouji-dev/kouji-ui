@@ -13,15 +13,17 @@ import {
   KjFieldLabel,
 } from '@kouji-ui/core';
 
+export { KjFieldControl } from '@kouji-ui/core';
+
 /**
  * Styled wrapper around the headless `KjField` directive family.
  *
  * Renders a vertical stack of label, control slot, and helper / error
- * messages. The inner control should be projected as a child element with
- * the `kjField`-aware id binding (the wrapper exposes `controlId` via the
- * `KjField` host directive) — `kj-field-label` resolves `for=`
- * automatically and the wrapper composes `aria-describedby` from any
- * `kj-field-help` and `kj-field-error` siblings.
+ * messages. Project a `<kj-input>` (or any element carrying `kjFieldControl`)
+ * as the control: it adopts the field's control id, `kj-field-label` resolves
+ * `for=` to it, and it receives `aria-describedby` from any `kj-field-help` /
+ * `kj-field-error` siblings plus `aria-invalid` / `aria-required` from the
+ * field's state — no manual id plumbing.
  *
  * @doc-example Default
  *   Label + input + help text — anchors the default chrome with auto-wired
@@ -32,16 +34,16 @@ import {
  *   group — assembled into one screen as a copy-paste starting point.
  *   @doc-file field.usage.example.ts
  * @doc-example With error
- *   `[kjInvalid]="true"` flips the label tone and links the `kj-field-error`
- *   id into the input's `aria-describedby`.
+ *   `[kjInvalid]="true"` flips the label tone, sets `aria-invalid` on the
+ *   input and links the `kj-field-error` id into its `aria-describedby`.
  *   @doc-file field.with-error.example.ts
  * @doc-example Required
  *   `[kjRequired]="true"` paints the asterisk and sets `aria-required` on the
  *   underlying input.
  *   @doc-file field.required.example.ts
  * @doc-example Disabled
- *   `[kjDisabled]="true"` dims the row and propagates `disabled` to the
- *   projected control.
+ *   `[kjDisabled]="true"` dims the row; the control reads `f.disabled()` to
+ *   disable itself.
  *   @doc-file field.disabled.example.ts
  * @doc-example Prefix and suffix
  *   Wraps the input in `<kj-field-group>` with `[prefix]` / `[suffix]` slots
@@ -52,9 +54,10 @@ import {
  *   Tab — Moves focus to the projected control inside the field
  *
  * @doc-aria
- *   aria-describedby — Auto-composed from any kj-field-help / kj-field-error siblings via controlId / describedByIds
- *   aria-invalid     — Reflected on the projected control when [kjInvalid] is true
- *   aria-required    — Reflected on the projected control when [kjRequired] is true
+ *   id / for         — The control adopts the field's control id (override with [kjFieldId]); kj-field-label points its `for` at it
+ *   aria-describedby — Set on the control from the visible kj-field-help / kj-field-error ids (errors only while invalid)
+ *   aria-invalid     — Set on the control when [kjInvalid] is true (or the control's own touched-gated invalid state)
+ *   aria-required    — Set on the control when [kjRequired] is true
  *   data-disabled    — Mirrors [kjDisabled] for theme CSS
  *   data-invalid     — Mirrors [kjInvalid] for theme CSS
  *
@@ -63,11 +66,13 @@ import {
  *   hit area. Pair with `kj-input` / `kj-input-otp` / etc. sized for ≥ 44×44 px.
  *
  * @doc-a11y
- *   `KjField` owns the id wiring: `controlId()` provides a stable id for the
- *   projected control, and `describedByIds()` aggregates the ids of any
- *   `kj-field-help` and `kj-field-error` siblings so consumers can pipe them
- *   straight into `aria-describedby`. Label association is automatic when
- *   the projected control consumes `controlId()`.
+ *   `KjField` owns the id wiring and state; `KjFieldControl` (composed by
+ *   `kjInput`, hence by `<kj-input>`, and available as `kjFieldControl` for
+ *   any other native control) binds `id`, `aria-describedby`, `aria-invalid`
+ *   and `aria-required` on the control from that context. `kj-field-error`
+ *   carries `role="alert"` so a newly shown message is announced. The field
+ *   does not disable the control for you: bind its disabled state from
+ *   `f.disabled()` or the form control.
  *
  * @doc-related input,form,input-group
  *

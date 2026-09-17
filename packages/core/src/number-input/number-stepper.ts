@@ -76,7 +76,16 @@ export class KjNumberStepper {
   /** Required for icon-only stepper buttons. */
   readonly kjAriaLabel = input<string | null>(null);
 
-  /** Forwarded to the host's effective-disabled. ORed with bounds-disabled. */
+  /**
+   * Forwarded to the host's effective-disabled. Default `false`, ORed with
+   * bounds-disabled.
+   *
+   * arch F-16: deliberately not swapped for a composed `KjDisabled`. The host
+   * binds `aria-disabled` / `data-disabled` from `effectiveDisabled()`, which
+   * also covers "already at `kjMax`" and the parent's readonly state.
+   * `KjDisabled` would reflect the input alone and fight that binding — the
+   * same reason `KjButton` keeps its own bundle.
+   */
   readonly kjDisabled = input<boolean, unknown>(false, { transform: booleanAttribute });
 
   /** Emits the new value after each step. */

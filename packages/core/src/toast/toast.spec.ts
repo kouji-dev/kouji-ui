@@ -1,11 +1,13 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjToast, KjToastViewport } from './toast';
-import { KjToastService, type KjToastTemplateContext } from './toast.service';
+import { KjToastService } from './toast.service';
 import { KjToastRef } from './toast.ref';
+import { KjDialogService } from '../dialog/dialog.service';
+import { vi } from 'vitest';
 
 expect.extend(toHaveNoViolations);
 
@@ -38,9 +40,12 @@ describe('KjToast directive', () => {
 });
 
 describe('KjToastViewport', () => {
-  it('has aria-live=polite', async () => {
+  it('is a landmark, not a live region — each toast announces itself exactly once', async () => {
     const { container } = await render(`<div kjToastViewport></div>`, { imports: [KjToastViewport] });
-    expect(container.querySelector('[kjToastViewport]')).toHaveAttribute('aria-live', 'polite');
+    const vp = container.querySelector('[kjToastViewport]')!;
+    expect(vp.hasAttribute('aria-live')).toBe(false);
+    expect(vp.hasAttribute('aria-atomic')).toBe(false);
+    expect(vp.hasAttribute('aria-relevant')).toBe(false);
   });
 
   it('has role=region', async () => {
@@ -84,6 +89,58 @@ describe('KjToastService overlay API', () => {
     expect(svc.toasts().some((t) => t.id === ref.id)).toBe(true);
     ref.close();
     expect(svc.toasts().some((t) => t.id === ref.id)).toBe(false);
+  });
+});
+
+describe('KjToastService overlay API — stack posture (overlay F-4)', () => {
+  @Component({ standalone: true, template: '<button>ok</button>' })
+  class DialogBody {}
+
+  const settle = (): Promise<void> => new Promise((r) => setTimeout(r, 40));
+  let svc: KjToastService;
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    svc = TestBed.inject(KjToastService);
+  });
+
+  afterEach(async () => {
+    svc.dismissAll();
+    await settle();
+    document.querySelectorAll('.kj-overlay-container > *').forEach((el) => el.remove());
+  });
+
+  it('an overlay toast is a passive entry: never topmost, never closed by Escape or an outside press', () => {
+    const ref = svc.success({ message: 'Saved', duration: 0 });
+    expect(ref.controller.isOpen()).toBe(true);
+    expect(ref.controller.isTopmost()).toBe(false);
+    expect(ref.controller.closeOnEsc).toBe(false);
+    expect(ref.controller.closeOnOutside).toBe(false);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(ref.controller.isOpen()).toBe(true);
+    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+    expect(ref.controller.isOpen()).toBe(true);
+    expect(ref.controller.closeReason()).toBeNull();
+  });
+
+  it('a toast shown over a dialog leaves the dialog the owner of Escape', async () => {
+    const dialog = TestBed.inject(KjDialogService).open(DialogBody);
+    await settle();
+    expect(dialog.state()).toBe('open');
+
+    const toast = svc.success({ message: 'Saved', duration: 0 });
+    expect(toast.controller.isOpen()).toBe(true);
+    // A passive toast never takes the top.
+    expect(dialog.controller.isTopmost()).toBe(true);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(dialog.state()).toBe('closing');
+    expect(dialog.closeReason()).toBe('escape');
+    expect(toast.controller.isOpen()).toBe(true);
+    await settle();
   });
 });
 
@@ -212,9 +269,10 @@ describe('KjToastViewport interactions', () => {
       </ng-template>
     `,
   })
-  class _Host {
-    @ViewChild('tpl') tpl!: TemplateRef<KjToastTemplateContext>;
-  }
+  // arch F-13: the `@ViewChild('tpl')` field this class used to carry was
+  // dead — `[kjToastDefaultTemplate]="tpl"` resolves the `#tpl` template
+  // reference variable in the same template, never the class member.
+  class _Host {}
 
   beforeEach(() => {
     TestBed.resetTestingModule();
@@ -243,5 +301,102 @@ describe('KjToastViewport interactions', () => {
     vp.dispatchEvent(new MouseEvent('mouseleave'));
     expect(svc.isPaused()).toBe(false);
     svc.dismissAll();
+  });
+
+  it('pauses + resumes the service while focus is inside it (WCAG 2.2.1)', () => {
+    const svc = TestBed.inject(KjToastService);
+    svc.show('Hi', { duration: 0 });
+    @Component({
+      standalone: true,
+      imports: [KjToastViewport],
+      template: `<ol kjToastViewport><li><button id="undo">Undo</button></li></ol>`,
+    })
+    class WithAction {}
+    const fixture = TestBed.createComponent(WithAction);
+    fixture.detectChanges();
+    const vp = fixture.nativeElement.querySelector('[kjToastViewport]') as HTMLElement;
+    const undo = fixture.nativeElement.querySelector('#undo') as HTMLButtonElement;
+    document.body.appendChild(fixture.nativeElement);
+
+    undo.focus();
+    vp.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    // A toast must not vanish while you are tabbing to its action.
+    expect(svc.isPaused()).toBe(true);
+
+    undo.blur();
+    vp.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    expect(svc.isPaused()).toBe(false);
+    svc.dismissAll();
+  });
+
+  it('every toast rides ONE shared ResizeObserver', async () => {
+    let observers = 0;
+    let observed = () => 0;
+    class FakeRO {
+      private targets: Element[] = [];
+      constructor(_cb: ResizeObserverCallback) {
+        observers++;
+        observed = () => this.targets.length;
+      }
+      observe(el: Element) { this.targets.push(el); }
+      unobserve(el: Element) { this.targets = this.targets.filter((t) => t !== el); }
+      disconnect() { this.targets = []; }
+    }
+    vi.stubGlobal('ResizeObserver', FakeRO);
+    try {
+      await render(
+        `<div kjToast kjToastId="a">A</div>
+         <div kjToast kjToastId="b">B</div>
+         <div kjToast kjToastId="c">C</div>`,
+        { imports: [KjToast] },
+      );
+      // A queue of toasts used to mean one ResizeObserver each.
+      expect(observers).toBe(1);
+      expect(observed()).toBe(3);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('KjToastService ids', () => {
+  it('mints ids through KjId (SSR-safe, deterministic) without touching crypto', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    const svc = TestBed.inject(KjToastService);
+    const uuid = vi.spyOn(globalThis.crypto, 'randomUUID');
+    const a = svc.show('one');
+    const b = svc.show('two');
+    expect(a).toMatch(/^kj-toast-\d+$/);
+    expect(b).toMatch(/^kj-toast-\d+$/);
+    expect(a).not.toBe(b);
+    expect(uuid).not.toHaveBeenCalled();
+    uuid.mockRestore();
+    svc.dismissAll();
+  });
+});
+
+
+describe('KjToastViewport — bare boolean attributes (arch F-2)', () => {
+  it('kjToastExpand written bare forces the expanded state', async () => {
+    // Tri-state input: `undefined` follows the strategy. Without the guarded
+    // transform the bare attribute bound '' and read as "collapsed".
+    const { container } = await render(`<ol kjToastViewport kjToastExpand></ol>`, {
+      imports: [KjToastViewport],
+    });
+    expect(container.querySelector('[kjToastViewport]')).toHaveAttribute(
+      'data-expanded',
+      'true',
+    );
+  });
+
+  it('leaves the strategy in charge when the attribute is absent', async () => {
+    const { container } = await render(`<ol kjToastViewport></ol>`, {
+      imports: [KjToastViewport],
+    });
+    expect(container.querySelector('[kjToastViewport]')).toHaveAttribute(
+      'data-expanded',
+      'false',
+    );
   });
 });

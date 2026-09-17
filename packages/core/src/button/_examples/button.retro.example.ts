@@ -11,9 +11,9 @@ import { KjButton } from '../button';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
-        color: var(--kj-text);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
+        color: var(--docs-text);
       }
       .row {
         display: flex;
@@ -22,32 +22,32 @@ import { KjButton } from '../button';
       }
       button[kjButton] {
         padding: 0.35rem 0.875rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        border: var(--kj-btn-border);
-        border-radius: var(--kj-radius-md);
+        border: var(--docs-btn-border);
+        border-radius: var(--docs-radius-md);
         cursor: pointer;
-        box-shadow: var(--kj-shadow-sm);
-        transition: var(--kj-transition);
+        box-shadow: var(--docs-shadow-sm);
+        transition: var(--docs-transition);
       }
       button[kjButton]:not([data-variant='link']):not([data-variant='ghost']):hover {
         transform: translate(-1px, -1px);
-        box-shadow: var(--kj-shadow-md);
+        box-shadow: var(--docs-shadow-md);
       }
       button[kjButton][data-variant='default'] {
-        background: var(--kj-text);
-        color: var(--kj-bg);
+        background: var(--docs-text);
+        color: var(--docs-bg);
       }
       button[kjButton][data-variant='destructive'] {
-        background: var(--kj-destructive);
+        background: var(--docs-destructive);
         color: #fff;
       }
       button[kjButton][data-variant='link'] {
         background: transparent;
-        color: var(--kj-text);
+        color: var(--docs-text);
         border: none;
         box-shadow: none;
         border-radius: 0;
@@ -61,7 +61,7 @@ import { KjButton } from '../button';
       }
       button[kjButton][data-variant='ghost'] {
         background: transparent;
-        color: var(--kj-text);
+        color: var(--docs-text);
         border: 2px solid transparent;
         box-shadow: none;
         opacity: 0.7;

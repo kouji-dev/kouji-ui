@@ -4,7 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { KjButtonComponent } from '../../button/button';
 import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
 import { KjInputComponent } from '../../input/input';
-import { KjFormActionsComponent, KjFormComponent } from '../form';
+import { KjFormActions, KjFormComponent } from '../form';
 
 /**
  * Default `<form kj-form>` usage — a small login form with email + password.
@@ -16,7 +16,7 @@ import { KjFormActionsComponent, KjFormComponent } from '../form';
   standalone: true,
   imports: [
     KjFormComponent,
-    KjFormActionsComponent,
+    KjFormActions,
     KjFieldComponent,
     KjFieldLabelComponent,
     KjInputComponent,

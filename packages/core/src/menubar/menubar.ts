@@ -1,28 +1,26 @@
 import {
+  DestroyRef,
   Directive,
+  ElementRef,
   Injector,
   booleanAttribute,
   contentChildren,
-  effect,
   forwardRef,
   inject,
   input,
-  numberAttribute,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import {
-  KJ_LIST_FOCUS_MODE,
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
   ownListItems,
   KjListNavigator,
   KjTypeAhead,
   type KjCompareFn,
-  type KjListFocusMode,
   type KjListNavigatorConfig,
 } from '../primitives/list';
+import { KJ_LIST_FOCUS_MODE_DEFAULT } from '../primitives/list/navigator';
 import {
   KJ_MENUBAR,
   type KjMenubarContext,
@@ -41,10 +39,11 @@ import {
  * - Composes `KjListNavigator` via `hostDirectives` so the navigator's
  *   element-injector lives on the bar's host, giving `KjListItem`s under
  *   the bar a navigator to register with.
- * - Forces `KJ_LIST_FOCUS_MODE = 'roving'` (host-directive inputs cannot
- *   be defaulted from a composing directive — same workaround as
- *   `KjDropdownMenuContent`). This makes `KjListItem.tabIndex` track the
- *   navigator's active id.
+ * - Pins the composed navigator to the roving focus model via
+ *   `KJ_LIST_FOCUS_MODE_DEFAULT`. The navigator then seeds the first
+ *   enabled item as the bar's single Tab stop on first render — without
+ *   moving focus — moves focus with every arrow-key navigation, and keeps
+ *   its active id on whichever item the user focuses by pointer or Tab.
  * - Provides `KjTypeAhead` so the navigator routes printable characters
  *   to the matching bar item.
  * - The navigator's built-in keyboard handler defaults to vertical
@@ -68,10 +67,7 @@ import {
   providers: [
     { provide: KJ_MENUBAR, useExisting: KjMenubar },
     { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjMenubar) },
-    {
-      provide: KJ_LIST_FOCUS_MODE,
-      useFactory: () => signal<KjListFocusMode>('roving'),
-    },
+    { provide: KJ_LIST_FOCUS_MODE_DEFAULT, useValue: 'roving' as const },
     KjTypeAhead,
   ],
   host: {
@@ -79,30 +75,12 @@ import {
     'aria-orientation': 'horizontal',
     '[attr.aria-label]': 'kjAriaLabel() || null',
     '(keydown)': '_onKeydown($event)',
-    '(focusin)': '_onFocusin($event)',
   },
 })
 export class KjMenubar implements KjMenubarContext, KjListNavigatorConfig {
   /** When `true`, ArrowRight at the last item wraps to the first (and vice versa). */
   readonly kjLoop = input(false, { transform: booleanAttribute });
   readonly loop = this.kjLoop;
-
-  /**
-   * Deprecated. The pre-primitives bar shipped a "roll-over" hover auto-disclose
-   * mode here; with the new composition, hover is opt-in per consumer (e.g. by
-   * listening to `pointerenter` on `[kjMenubarItem]`). Kept as a no-op input
-   * so existing template bindings don't break — remove in a major bump.
-   * @deprecated
-   */
-  readonly kjAutoDisclose = input(true, { transform: booleanAttribute });
-
-  /**
-   * Deprecated. Roll-over dwell delay used by the old auto-disclose path —
-   * unused in the primitives-based menubar. Kept as a no-op input to avoid
-   * breaking existing template bindings.
-   * @deprecated
-   */
-  readonly kjAutoDiscloseDelayMs = input(0, { transform: numberAttribute });
 
   /** Optional accessible name forwarded to the host as `aria-label`. */
   readonly kjAriaLabel = input<string | null>(null);
@@ -219,16 +197,10 @@ export class KjMenubar implements KjMenubarContext, KjListNavigatorConfig {
         nav.moveToLast();
         nav.activeItem()?._host()?.focus();
         return;
-      case 'ArrowDown': {
-        // APG menubar: ArrowDown on a top-level item opens its submenu.
-        const id = nav.activeId();
-        if (!id) return;
-        const ctx = this._items().find((c) => c.el.id === id);
-        if (!ctx || ctx.disabled()) return;
-        event.preventDefault();
-        ctx.openPopup();
-        return;
-      }
+      // ArrowDown / ArrowUp are not handled here: the composed navigator's
+      // bubble-phase listener on this same element runs first and would have
+      // moved the bar's roving focus already. They are owned by the capture
+      // listener installed in the constructor.
       case 'Escape': {
         const open = this._openItem();
         if (!open) return;
@@ -256,31 +228,22 @@ export class KjMenubar implements KjMenubarContext, KjListNavigatorConfig {
     }
     nav.moveBy(delta);
     // Synchronously mirror the navigator's new active id into DOM focus.
-    // The roving focus-follow effect (mounted in the constructor) also
-    // does this, but with `vi.useFakeTimers({ toFake: ['queueMicrotask'] })`
-    // active in the spec the effect can be deferred past the test's
-    // assertion — drive focus here so keyboard navigation never depends
-    // on microtask scheduling.
+    // The navigator's roving focus-follow effect also does this, but with
+    // `vi.useFakeTimers({ toFake: ['queueMicrotask'] })` active in the
+    // spec the effect can be deferred past the test's assertion — drive
+    // focus here so keyboard navigation never depends on microtask
+    // scheduling.
     nav.activeItem()?._host()?.focus();
   }
 
+  // ── Navigator resolution ─────────────────────────────────────────────
+
   /**
-   * Keep the navigator's active id aligned with the actually-focused bar
-   * item (e.g. user clicked on a different item, or Tabbed in). `focusin`
-   * bubbles up to the menubar host, so we resolve which item caught
-   * focus by walking up from the event target.
+   * Resolved lazily: the navigator injects `KJ_LIST_NAVIGATOR_CONFIG`
+   * (this directive) while it constructs, so injecting it back here at
+   * construction would be an NG0200 cycle. The seed, focus-follow and
+   * focusin sync all live in the navigator itself (roving mode).
    */
-  protected _onFocusin(event: FocusEvent): void {
-    const target = event.target as HTMLElement | null;
-    if (!target) return;
-    const nav = this._nav();
-    if (!nav) return;
-    const item = this.items().find((i) => i._host() === target);
-    if (item) nav.setActive(item.id);
-  }
-
-  // ── Navigator resolution + roving effects ────────────────────────────
-
   private readonly _injector = inject(Injector);
   private _navCache: KjListNavigator | null | undefined = undefined;
   private _nav(): KjListNavigator | null {
@@ -289,34 +252,36 @@ export class KjMenubar implements KjMenubarContext, KjListNavigatorConfig {
     return this._navCache;
   }
 
-  constructor() {
-    // Roving seed: set the navigator's active id to the first non-disabled
-    // item so its `tabindex=0` makes the bar reachable by Tab on first
-    // render (WAI-ARIA APG). Same pattern as `KjDropdownMenuContent`,
-    // needed because `KjListNavigator`'s built-in seed gates on its
-    // `kjFocusMode()` input (which defaults to `'activedescendant'` and
-    // can't be defaulted from a composing directive).
-    effect(() => {
-      const nav = this._nav();
-      if (!nav) return;
-      const list = this.items();
-      if (nav.activeId() !== null) return;
-      const first = list.find((i) => !i.disabled());
-      if (first) untracked(() => nav.setActive(first.id));
-    });
+  // ── Submenu disclosure keys ──────────────────────────────────────────
 
-    // Roving focus follow: mirror the navigator's `activeItem()` into DOM
-    // focus. Same rationale as the seed — `KjListNavigator`'s built-in
-    // focus-follow gates on its own `kjFocusMode()`.
-    effect(() => {
-      const nav = this._nav();
-      if (!nav) return;
-      const item = nav.activeItem();
-      if (!item) return;
-      const host = item._host();
-      if (host && typeof document !== 'undefined' && document.activeElement !== host) {
-        untracked(() => host.focus());
-      }
+  constructor() {
+    // ArrowDown / ArrowUp must never reach the composed `KjListNavigator`.
+    // Its `kjOrientation` is `'vertical'` — a host-directive input a
+    // composing directive cannot default — so its own handler treats them as
+    // bar movement and (with `kjWrap` on by default) jumps focus to another
+    // item. The bar then opened *that* item's submenu, which is a context
+    // change the user never asked for.
+    //
+    // A capture listener on the bar element runs before every bubble-phase
+    // host listener on this same element, including the navigator's, and
+    // `stopPropagation()` from the capture phase ends the dispatch for the
+    // whole tree. The submenu panel is portalled out of the bar, so its own
+    // arrow keys are unaffected.
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const onDiscloseKey = (event: KeyboardEvent): void => {
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+      if (event.defaultPrevented) return;
+      const target = event.target as Node | null;
+      if (!target) return;
+      const ctx = this._items().find((c) => c.el === target || c.el.contains(target));
+      if (!ctx || ctx.disabled()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      ctx.openPopup();
+    };
+    host.addEventListener('keydown', onDiscloseKey, true);
+    inject(DestroyRef).onDestroy(() => {
+      host.removeEventListener('keydown', onDiscloseKey, true);
     });
   }
 }

@@ -24,7 +24,7 @@
   /* The interactive dot (carries the kjRadio directive). */
   .kj-radio-dot {
     --kj-radio-size:        1rem;
-    --kj-radio-border:      var(--kj-border-default);
+    --kj-radio-border:      var(--kj-border-control);
     --kj-radio-bg-checked:  var(--kj-bg-primary);
 
     display: inline-block;

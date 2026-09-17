@@ -2,12 +2,14 @@ import {
   Directive,
   computed,
   contentChildren,
+  effect,
   forwardRef,
   inject,
   input,
   model,
   output,
   signal,
+  untracked,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
@@ -144,6 +146,20 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
   }
 
   /**
+   * The `KjListItem`s of one level: the options projected directly into
+   * the sub-panel whose host element is `panelEl`, or the level-0 options
+   * for `null`. Each panel provides this to its own `KjListNavigator`
+   * (`KJ_LIST_NAVIGATOR_ITEMS`) so arrow keys stay within the level.
+   */
+  itemsAtLevel(panelEl: HTMLElement | null): Signal<readonly KjListItem<unknown>[]> {
+    return computed(() =>
+      this._options()
+        .filter(o => (o.parentSubPanel?.hostEl ?? null) === panelEl)
+        .map(o => o.item),
+    );
+  }
+
+  /**
    * Implements `KjListNavigatorConfig.value`. Shared with `kjValue` so
    * `KjSelectionModel` reads / writes through the same signal — one
    * source of truth.
@@ -182,6 +198,12 @@ export class KjCascadeSelect implements KjListNavigatorConfig, KjCascadeSelectCo
       mode:      this.mode,
       compareBy: this.compareBy,
       treeShape: this.treeShape,
+    });
+
+    // Whatever closed the overlay (Escape, outside press, Tab, commit),
+    // every sub-panel closes with it so the next open starts at level 0.
+    effect(() => {
+      if (!this.open()) untracked(() => this.closeAll());
     });
   }
 

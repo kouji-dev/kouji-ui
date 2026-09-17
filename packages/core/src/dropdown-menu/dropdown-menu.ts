@@ -30,6 +30,10 @@ import {
  * so `value` / `mode` are omitted from the config. The `afterSelect` hook
  * closes the surrounding overlay (universal menu UX).
  *
+ * Owns `role="menu"` on its element (a template's own `role` attribute
+ * still wins), so a projected panel is a menu from the first paint without
+ * the host stamping it.
+ *
  * @doc-category Core/Overlay
  */
 @Directive({
@@ -39,6 +43,9 @@ import {
   providers: [
     { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjDropdownMenu) },
   ],
+  host: {
+    'role': 'menu',
+  },
 })
 export class KjDropdownMenu implements KjListNavigatorConfig {
   /**

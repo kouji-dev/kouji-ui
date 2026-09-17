@@ -1,16 +1,35 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { gotoExamples } from './_helpers';
 
 /**
- * E2E coverage for the KjRichTextEditor docs page. Exercises the live example:
- * the accessible toolbar, the contenteditable textbox, and a formatting round-trip.
+ * E2E coverage for the KjRichTextEditor docs page: the accessible toolbar, the
+ * contenteditable textbox, and a formatting round-trip.
+ *
+ * The doc page is a four-tab layout and the live demos are split across two of
+ * them, so the specs are too:
+ *
+ *   • the full-featured interactive **playground** sits in the default
+ *     `overview` panel — `page.locator('kj-rich-text-editor').first()` used to
+ *     resolve to it by accident; it is now addressed by name;
+ *   • the per-feature examples (minimal / custom node) live in the `examples`
+ *     panel, which is not rendered until its tab is clicked — see
+ *     {@link gotoExamples}.
  */
-test.describe('rich-text-editor', () => {
+
+/** The full-toolbar editor driven by the overview tab's playground. */
+function playground(page: Page) {
+  return page.locator('kj-rich-text-editor-playground kj-rich-text-editor');
+}
+
+test.describe('rich-text-editor playground', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/components/rich-text-editor');
+    await expect(page.locator('h1.doc-title')).toBeVisible({ timeout: 60_000 });
+    await expect(playground(page)).toBeVisible({ timeout: 30_000 });
   });
 
   test('renders an accessible toolbar and textbox', async ({ page }) => {
-    const editor = page.locator('kj-rich-text-editor').first();
+    const editor = playground(page);
     await expect(editor).toBeVisible();
 
     const toolbar = editor.locator('[role="toolbar"]');
@@ -26,9 +45,14 @@ test.describe('rich-text-editor', () => {
   });
 
   test('applies bold formatting to a selection', async ({ page }) => {
-    const editor = page.locator('kj-rich-text-editor').first();
+    const editor = playground(page);
     const textbox = editor.locator('[role="textbox"]');
     await textbox.click();
+    // The playground starts empty (the seeded-content example this test used to
+    // land on is no longer rendered on the page), so type the content that then
+    // gets selected — "bold applies to a selection" is vacuous on an empty
+    // document, where the command produces no element at all.
+    await textbox.pressSequentially('formatted');
 
     // Select all existing content and toggle bold via the toolbar.
     await page.keyboard.press('ControlOrMeta+A');
@@ -37,17 +61,39 @@ test.describe('rich-text-editor', () => {
 
     await expect(bold).toHaveAttribute('aria-pressed', 'true');
     await expect(textbox.locator('b, strong')).toHaveCount(1);
+    await expect(textbox.locator('b, strong')).toHaveText('formatted');
   });
 
   test('keyboard shortcut toggles italic', async ({ page }) => {
-    const editor = page.locator('kj-rich-text-editor').first();
+    const editor = playground(page);
     const textbox = editor.locator('[role="textbox"]');
     await textbox.click();
+    await textbox.pressSequentially('formatted');
     await page.keyboard.press('ControlOrMeta+A');
     await page.keyboard.press('ControlOrMeta+I');
 
     const italic = editor.locator('button[aria-label="Italic"]');
     await expect(italic).toHaveAttribute('aria-pressed', 'true');
+    await expect(textbox.locator('i, em')).toHaveCount(1);
+  });
+
+  test('opens the link overlay dialog from the toolbar', async ({ page }) => {
+    const editor = playground(page);
+    const textbox = editor.locator('[role="textbox"]');
+    await textbox.click();
+    await textbox.pressSequentially('linked');
+    await page.keyboard.press('ControlOrMeta+A');
+    await editor.locator('button[aria-label="Link"]').click();
+
+    const dialog = editor.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute('aria-label', /link/i);
+  });
+});
+
+test.describe('rich-text-editor examples', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoExamples(page, 'rich-text-editor');
   });
 
   test('a minimal feature subset renders only its toolbar controls', async ({ page }) => {
@@ -76,17 +122,5 @@ test.describe('rich-text-editor', () => {
     // The badge chip component mounts inside the editable surface.
     await expect(example.locator('kj-badge-chip')).toHaveCount(1);
     await expect(example.locator('.kj-badge-chip')).toHaveText('New');
-  });
-
-  test('opens the link overlay dialog from the toolbar', async ({ page }) => {
-    const editor = page.locator('kj-rich-text-editor').first();
-    const textbox = editor.locator('[role="textbox"]');
-    await textbox.click();
-    await page.keyboard.press('ControlOrMeta+A');
-    await editor.locator('button[aria-label="Link"]').click();
-
-    const dialog = editor.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    await expect(dialog).toHaveAttribute('aria-label', /link/i);
   });
 });

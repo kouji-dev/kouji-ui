@@ -1,3 +1,18 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `popover.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import {
   KjPopoverTrigger,
@@ -26,6 +41,7 @@ export type { KjOverlayTriggerLike } from '@kouji-ui/core';
  *
  * @doc
  * @doc-name popover
+ * @doc-description Themed anchored panel that opens from a trigger, with optional title, close button, and focus trap.
  * @doc-is-main
  * @doc-example Default
  *   A trigger button + content panel — the bare-minimum recipe.
@@ -58,7 +74,7 @@ export type { KjOverlayTriggerLike } from '@kouji-ui/core';
  *   aria-expanded   — Reflects the open/closed state on the trigger
  *   aria-controls   — Links the trigger to the panel id
  *   role="dialog"   — On the panel (provided via the overlay primitive)
- *   aria-labelledby — Wire to `[kjPopoverTitle]` heading id for an accessible name
+ *   aria-labelledby — Bound automatically to a projected `[kjPopoverTitle]` heading id
  *
  * @doc-touch
  *   Trigger buttons inherit `kj-button` sizing — use `kjSize="md"` or larger
@@ -82,6 +98,7 @@ export type { KjOverlayTriggerLike } from '@kouji-ui/core';
  *   --kj-popover-padding-y     — Vertical padding inside the panel.
  *   --kj-popover-shadow        — Drop shadow under the panel. Inherits --kj-shadow-md.
  *   --kj-popover-arrow-size    — Edge length of the optional arrow indicator.
+ *   --kj-popover-arrow-inset   — Distance from the aligned edge to the arrow when [kjAlign] is start/end.
  *
  * @doc-category Library/Overlay
  */
@@ -90,9 +107,8 @@ export type { KjOverlayTriggerLike } from '@kouji-ui/core';
   standalone: true,
   imports: [KjPopoverTrigger, KjPopoverContent, KjPopoverArrow, KjPopoverClose, KjPopoverTitle],
   template: `<ng-content />`,
-  styleUrl: './popover.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjPopoverComponent {}
+export class KjPopover {}

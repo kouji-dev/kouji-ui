@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { kjColumn, type KjColumnDef } from '@kouji-ui/core';
 import { KjTableComponent } from './table';
-import { KjCellTemplateDirective } from './table-cell-template';
+import { KjCellTemplate } from './table-cell-template';
 
 interface Row {
   id: string;
@@ -18,7 +18,7 @@ const ROWS: Row[] = [
 
 @Component({
   standalone: true,
-  imports: [KjTableComponent, KjCellTemplateDirective],
+  imports: [KjTableComponent, KjCellTemplate],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-table [kjData]="rows" [kjColumns]="cols" [kjGetRowId]="getRowId">
@@ -37,7 +37,7 @@ class HostComponent {
   getRowId = (r: Row) => r.id;
 }
 
-describe('KjCellTemplateDirective', () => {
+describe('KjCellTemplate', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });

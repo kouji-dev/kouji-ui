@@ -11,15 +11,21 @@ test('getting-started renders live Monaco editors via the library <kj-editor>', 
 }) => {
   await page.goto('/docs/getting-started', { waitUntil: 'domcontentloaded' });
 
-  // The page has 6 read-only code viewers, all now <kj-editor>.
+  // The page is built out of read-only code viewers, all now <kj-editor>.
+  // The exact number grows whenever a code sample is added, so assert a floor
+  // rather than pinning a count that turns every doc edit into a test failure.
   const editors = page.locator('kj-editor');
   await expect(editors.first()).toBeAttached({ timeout: 15_000 });
-  await expect(editors).toHaveCount(6);
+  const editorCount = await editors.count();
+  expect(editorCount).toBeGreaterThanOrEqual(6);
 
-  // Monaco actually mounts and highlights (loaded lazily from the CDN).
+  // Monaco actually mounts and highlights (loaded lazily from the CDN) — in
+  // EVERY viewer on the page, not just the first one. Comparing against the
+  // host count keeps the original "all of them are live" assertion intact
+  // while staying independent of how many samples the page carries.
   const monaco = page.locator('kj-editor .monaco-editor');
   await expect(monaco.first()).toBeVisible({ timeout: 30_000 });
-  await expect(monaco).toHaveCount(6);
+  await expect(monaco).toHaveCount(editorCount);
 
   // The editor host carries the accessible name from kjAriaLabel (AAA 4.1.2).
   const host = page.locator('kj-editor .kj-editor-host').first();

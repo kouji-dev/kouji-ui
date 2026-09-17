@@ -1,7 +1,7 @@
 {
   "name": "@kouji-ui/core",
   "version": "0.8.5",
-  "description": "Headless Angular 21 UI primitives — directives over CDK with WCAG 2.1 AAA semantics and zero CSS.",
+  "description": "Headless Angular UI primitives — signal-driven directives with WCAG 2.1 AAA semantics, no CDK, and a handful of opt-in global stylesheets.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,9 +17,9 @@
     "ui",
     "headless",
     "directives",
-    "cdk",
     "a11y",
-    "wcag"
+    "wcag",
+    "signals"
   ],
   "publishConfig": {
     "access": "public",
@@ -29,7 +29,6 @@
   "peerDependencies": {
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
-    "@angular/cdk": "^22.0.0",
     "@angular/forms": "^22.0.0",
     "rxjs": "^7.8.0",
     "echarts": "^6.0.0",
@@ -47,9 +46,12 @@
   },
   "sideEffects": false,
   "type": "module",
-  "module": "../../dist/kj-core/fesm2022/kouji-ui-core.mjs",
-  "typings": "../../dist/kj-core/types/kouji-ui-core.d.ts",
   "exports": {
+    "./package.json": "./package.json",
+    "./styles.css": {
+      "style": "./styles.css",
+      "default": "./styles.css"
+    },
     "./overlay/overlay.css": {
       "style": "./overlay/overlay.css",
       "default": "./overlay/overlay.css"
@@ -68,8 +70,9 @@
     }
   },
   "scripts": {
-    "build": "ng-packagr -p ng-package.json -c tsconfig.lib.prod.json",
+    "build": "node ../../scripts/check-public-api-graph.mjs core && ng-packagr -p ng-package.json -c tsconfig.lib.prod.json && node ../../scripts/write-core-styles.mjs && node ../../scripts/check-package-exports.mjs core",
     "test": "vitest run",
+    "typecheck": "ngc -p tsconfig.typecheck.json",
     "lint": "ng lint kj-core"
   },
   "peerDependenciesMeta": {

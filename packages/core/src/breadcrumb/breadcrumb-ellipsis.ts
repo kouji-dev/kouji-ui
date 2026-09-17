@@ -1,13 +1,15 @@
 import {
   Directive,
-  booleanAttribute,
+  Signal,
   computed,
   inject,
-  input,
 } from '@angular/core';
 import { KjFocusRing } from '../primitives';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import { KJ_BREADCRUMB } from './breadcrumb.context';
 import { KJ_BREADCRUMB_CONFIG } from './config';
+import { injectKjBreadcrumbLabels } from './labels';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Overflow indicator rendered in place of truncated middle crumbs.
@@ -34,7 +36,7 @@ import { KJ_BREADCRUMB_CONFIG } from './config';
 @Directive({
   selector: '[kjBreadcrumbEllipsis]',
   standalone: true,
-  hostDirectives: [KjFocusRing],
+  hostDirectives: [KjFocusRing, { directive: KjDisabled, inputs: ['kjDisabled'] }],
   host: {
     '[attr.aria-hidden]': 'isAriaHidden() ? "true" : null',
     '[attr.aria-label]': 'computedAriaLabel()',
@@ -45,15 +47,23 @@ import { KJ_BREADCRUMB_CONFIG } from './config';
 })
 export class KjBreadcrumbEllipsis {
   /** @internal */
-  readonly ctx = inject(KJ_BREADCRUMB);
+  readonly ctx = injectParent(KJ_BREADCRUMB, { child: 'KjBreadcrumbEllipsis', parent: '[kjBreadcrumb]' });
   private readonly config = inject(KJ_BREADCRUMB_CONFIG);
 
   /**
-   * Mirrors a disabled bundle (currently advisory — the ellipsis menu
-   * trigger composes `KjDropdownMenu` separately when wired by the
-   * consumer).
+   * Resolved label set: a `provideKjBreadcrumb(…)` override when one is set,
+   * otherwise the active i18n catalog. Locale-reactive.
    */
-  readonly kjDisabled = input<boolean, unknown>(false, { transform: booleanAttribute });
+  private readonly labels = injectKjBreadcrumbLabels();
+
+  /**
+   * Disabled posture, owned by the composed {@link KjDisabled} primitive —
+   * one owner for the `kjDisabled` public name, one `booleanAttribute`
+   * transform, and one writer of `aria-disabled` / `data-disabled`. Read it
+   * here (`ellipsis.kjDisabled()`) or bind it as `kjDisabled` on the host.
+   * Default `false`.
+   */
+  readonly kjDisabled: Signal<boolean> = inject(KjDisabled).disabled;
 
   /** Number of hidden crumbs the ellipsis represents. */
   readonly hiddenCount = computed(() => this.ctx.hiddenIndices().length);
@@ -66,6 +76,6 @@ export class KjBreadcrumbEllipsis {
 
   /** `aria-label` value — null in truncate mode (the cell is decorative). */
   readonly computedAriaLabel = computed(() =>
-    this.isMenu() ? this.config.ellipsisLabel(this.hiddenCount()) : null,
+    this.isMenu() ? this.labels.ellipsis(this.hiddenCount()) : null,
   );
 }

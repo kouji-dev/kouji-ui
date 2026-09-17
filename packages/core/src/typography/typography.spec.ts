@@ -21,19 +21,19 @@ describe('Typography directives', () => {
   afterEach(() => vi.restoreAllMocks());
 
   describe('KjLead', () => {
-    it('reflects data-tone="lead" on the host', async () => {
+    it('reflects data-kj-tone="lead" on the host', async () => {
       const { container } = await render(`<p kjLead>Lead paragraph.</p>`, {
         imports: [KjLead],
       });
       await flushAfterNextRender();
-      expect(container.querySelector('p')).toHaveAttribute('data-tone', 'lead');
+      expect(container.querySelector('p')).toHaveAttribute('data-kj-tone', 'lead');
     });
 
     it('does not warn on a <p> host', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await render(`<p kjLead>Lead.</p>`, { imports: [KjLead] });
       await flushAfterNextRender();
-      const matched = warn.mock.calls.some((c) => /kjLead applied to/i.test(String(c[0])));
+      const matched = warn.mock.calls.some((c) => /\[kjLead\] applied to/i.test(String(c[0])));
       expect(matched).toBe(false);
     });
 
@@ -43,42 +43,42 @@ describe('Typography directives', () => {
       await flushAfterNextRender();
       const matched = warn.mock.calls.some((c) => {
         const msg = String(c[0]);
-        return /kjLead applied to <span>/i.test(msg) && /<p>/.test(msg);
+        return /\[kjLead\] applied to <span>/i.test(msg) && /<p>/.test(msg);
       });
       expect(matched).toBe(true);
     });
   });
 
   describe('KjMuted', () => {
-    it('reflects data-tone="muted" on the host', async () => {
+    it('reflects data-kj-tone="muted" on the host', async () => {
       const { container } = await render(`<small kjMuted>Meta line.</small>`, {
         imports: [KjMuted],
       });
-      expect(container.querySelector('small')).toHaveAttribute('data-tone', 'muted');
+      expect(container.querySelector('small')).toHaveAttribute('data-kj-tone', 'muted');
     });
 
     it('works on any phrasing element (<span>)', async () => {
       const { container } = await render(`<span kjMuted>Note</span>`, {
         imports: [KjMuted],
       });
-      expect(container.querySelector('span')).toHaveAttribute('data-tone', 'muted');
+      expect(container.querySelector('span')).toHaveAttribute('data-kj-tone', 'muted');
     });
   });
 
   describe('KjCode', () => {
-    it('reflects data-tone="code" on the host', async () => {
+    it('reflects data-kj-tone="code" on the host', async () => {
       const { container } = await render(`<code kjCode>npm install</code>`, {
         imports: [KjCode],
       });
       await flushAfterNextRender();
-      expect(container.querySelector('code')).toHaveAttribute('data-tone', 'code');
+      expect(container.querySelector('code')).toHaveAttribute('data-kj-tone', 'code');
     });
 
     it('does not warn on a <code> host', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await render(`<code kjCode>x</code>`, { imports: [KjCode] });
       await flushAfterNextRender();
-      const matched = warn.mock.calls.some((c) => /kjCode applied to/i.test(String(c[0])));
+      const matched = warn.mock.calls.some((c) => /\[kjCode\] applied to/i.test(String(c[0])));
       expect(matched).toBe(false);
     });
 
@@ -88,20 +88,20 @@ describe('Typography directives', () => {
       await flushAfterNextRender();
       const matched = warn.mock.calls.some((c) => {
         const msg = String(c[0]);
-        return /kjCode applied to <span>/i.test(msg) && /<code>/.test(msg);
+        return /\[kjCode\] applied to <span>/i.test(msg) && /<code>/.test(msg);
       });
       expect(matched).toBe(true);
     });
   });
 
   describe('KjBlockquote', () => {
-    it('reflects data-tone="blockquote" on the host', async () => {
+    it('reflects data-kj-tone="blockquote" on the host', async () => {
       const { container } = await render(`<blockquote kjBlockquote>Quote</blockquote>`, {
         imports: [KjBlockquote],
       });
       await flushAfterNextRender();
       expect(container.querySelector('blockquote')).toHaveAttribute(
-        'data-tone',
+        'data-kj-tone',
         'blockquote',
       );
     });
@@ -113,7 +113,7 @@ describe('Typography directives', () => {
       });
       await flushAfterNextRender();
       const matched = warn.mock.calls.some((c) =>
-        /kjBlockquote applied to/i.test(String(c[0])),
+        /\[kjBlockquote\] applied to/i.test(String(c[0])),
       );
       expect(matched).toBe(false);
     });
@@ -124,28 +124,28 @@ describe('Typography directives', () => {
       await flushAfterNextRender();
       const matched = warn.mock.calls.some((c) => {
         const msg = String(c[0]);
-        return /kjBlockquote applied to <div>/i.test(msg) && /<blockquote>/.test(msg);
+        return /\[kjBlockquote\] applied to <div>/i.test(msg) && /<blockquote>/.test(msg);
       });
       expect(matched).toBe(true);
     });
   });
 
   describe('KjTruncate', () => {
-    it('defaults to data-truncate="1"', async () => {
+    it('defaults to data-kj-truncate="1"', async () => {
       const { container } = await render(`<p kjTruncate>Some long text.</p>`, {
         imports: [KjTruncate],
       });
       await flushAfterNextRender();
-      expect(container.querySelector('p')).toHaveAttribute('data-truncate', '1');
+      expect(container.querySelector('p')).toHaveAttribute('data-kj-truncate', '1');
     });
 
-    it('reflects [kjTruncate]="3" as data-truncate="3"', async () => {
+    it('reflects [kjTruncate]="3" as data-kj-truncate="3"', async () => {
       const { container } = await render(
         `<p [kjTruncate]="3">Some long text spanning multiple lines.</p>`,
         { imports: [KjTruncate] },
       );
       await flushAfterNextRender();
-      expect(container.querySelector('p')).toHaveAttribute('data-truncate', '3');
+      expect(container.querySelector('p')).toHaveAttribute('data-kj-truncate', '3');
     });
 
     it('injects [title] from textContent when consumer has not supplied title/aria-label', async () => {

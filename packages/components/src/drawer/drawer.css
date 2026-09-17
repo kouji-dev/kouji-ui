@@ -6,6 +6,7 @@
     --kj-drawer-shadow: var(--kj-shadow-lg);
     --kj-drawer-size: 22rem;
 
+    contain: layout;
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -45,19 +46,6 @@
     right: 0;
     height: min(var(--kj-drawer-size), 100vh);
     border-top: var(--kj-border) solid var(--kj-drawer-border-color);
-  }
-
-  /* Modal scrim — pseudo-element on the portaled wrapper. */
-  [data-kj-drawer-container]::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgb(0 0 0 / 0.5);
-    z-index: calc(var(--kj-overlay-z, 1000) - 1);
-    pointer-events: auto;
-  }
-  [data-kj-drawer-container]:has(.kj-drawer[role="region"])::before {
-    display: none;
   }
 
   @media (prefers-reduced-motion: no-preference) {

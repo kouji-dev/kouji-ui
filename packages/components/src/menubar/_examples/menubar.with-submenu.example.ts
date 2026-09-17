@@ -1,75 +1,63 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { KjMenubarComponent } from '../menubar';
-import { KjDropdownMenuContent } from '../../dropdown-menu/dropdown-menu';
-import {
-  KjDropdownMenuItem,
-  KjDropdownMenuSeparator,
-  KjDropdownMenuTrigger,
-  KjMenubarItem,
-} from '@kouji-ui/core';
+import { KjDropdownMenu, KjDropdownMenuItem, KjDropdownMenuSeparator } from '@kouji-ui/core';
+import { KjMenubarComponent, KjMenubarItemComponent } from '../menubar';
 
 /**
- * Menubar with nested submenus. Each item is a raw
- * `<button kjMenubarItem kjDropdownMenuTrigger>` that composes the menubar
- * item with the dropdown-menu trigger — activating the item opens the
- * paired `<kj-dropdown-menu-content [kjFor]="…">` panel, which is portalled
- * to `<body>` and anchored to the trigger.
+ * Menubar with nested submenus — the shape a desktop-style application menu
+ * actually takes.
+ *
+ * Each item points `[kjDropdownMenuTriggerFor]` at an `<ng-template>` holding a
+ * `[kjDropdownMenu]` panel. Activating the item (click, Enter, Space, or
+ * ArrowDown / ArrowUp while it has focus) portals that panel to `<body>` and
+ * anchors it under the item. Opening another item closes the first, Escape
+ * closes the open one, and focus returns to the bar item either way.
  */
 @Component({
   selector: 'kj-menubar-with-submenu-example',
   standalone: true,
   imports: [
     KjMenubarComponent,
-    KjMenubarItem,
-    KjDropdownMenuTrigger,
-    KjDropdownMenuContent,
+    KjMenubarItemComponent,
+    KjDropdownMenu,
     KjDropdownMenuItem,
     KjDropdownMenuSeparator,
   ],
   styles: [`:host { display: block; }`],
   template: `
     <kj-menubar kjAriaLabel="Application">
-      <button
-        kjMenubarItem
-        kjDropdownMenuTrigger
-        #fileT="kjDropdownMenuTrigger"
-        class="kj-menubar-item"
-      >File</button>
-      <kj-dropdown-menu-content [kjFor]="fileT" kjSide="bottom" kjAlign="start">
+      <kj-menubar-item [kjDropdownMenuTriggerFor]="fileMenu">File</kj-menubar-item>
+      <kj-menubar-item [kjDropdownMenuTriggerFor]="editMenu">Edit</kj-menubar-item>
+      <kj-menubar-item [kjDropdownMenuTriggerFor]="viewMenu">View</kj-menubar-item>
+    </kj-menubar>
+
+    <ng-template #fileMenu>
+      <div kjDropdownMenu>
         <button kjDropdownMenuItem>New</button>
         <button kjDropdownMenuItem>Open…</button>
         <hr kjDropdownMenuSeparator />
         <button kjDropdownMenuItem>Save</button>
         <button kjDropdownMenuItem>Save As…</button>
-      </kj-dropdown-menu-content>
+      </div>
+    </ng-template>
 
-      <button
-        kjMenubarItem
-        kjDropdownMenuTrigger
-        #editT="kjDropdownMenuTrigger"
-        class="kj-menubar-item"
-      >Edit</button>
-      <kj-dropdown-menu-content [kjFor]="editT" kjSide="bottom" kjAlign="start">
+    <ng-template #editMenu>
+      <div kjDropdownMenu>
         <button kjDropdownMenuItem>Undo</button>
         <button kjDropdownMenuItem>Redo</button>
         <hr kjDropdownMenuSeparator />
         <button kjDropdownMenuItem>Cut</button>
         <button kjDropdownMenuItem>Copy</button>
         <button kjDropdownMenuItem>Paste</button>
-      </kj-dropdown-menu-content>
+      </div>
+    </ng-template>
 
-      <button
-        kjMenubarItem
-        kjDropdownMenuTrigger
-        #viewT="kjDropdownMenuTrigger"
-        class="kj-menubar-item"
-      >View</button>
-      <kj-dropdown-menu-content [kjFor]="viewT" kjSide="bottom" kjAlign="start">
+    <ng-template #viewMenu>
+      <div kjDropdownMenu>
         <button kjDropdownMenuItem>Zoom in</button>
         <button kjDropdownMenuItem>Zoom out</button>
         <button kjDropdownMenuItem>Reset zoom</button>
-      </kj-dropdown-menu-content>
-    </kj-menubar>
+      </div>
+    </ng-template>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

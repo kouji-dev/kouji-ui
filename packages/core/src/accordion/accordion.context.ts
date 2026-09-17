@@ -1,4 +1,4 @@
-import { InjectionToken, Signal } from '@angular/core';
+import { ElementRef, InjectionToken, Signal } from '@angular/core';
 
 /** Accordion mode: `'single'` (one item open at a time) or `'multiple'` (any number open). */
 export type KjAccordionType = 'single' | 'multiple';
@@ -15,6 +15,28 @@ export interface KjAccordionContext {
   toggle(id: string): void;
   /** Whether the given item value is currently open. */
   isOpen(id: string): boolean;
+
+  /** @internal Registered triggers, in DOM order. */
+  readonly triggers: Signal<readonly KjAccordionTriggerRef[]>;
+  /** @internal */ registerTrigger(trigger: KjAccordionTriggerRef): void;
+  /** @internal */ unregisterTrigger(trigger: KjAccordionTriggerRef): void;
+  /** @internal Move focus by `delta` among non-disabled triggers, wrapping. */
+  focusTrigger(delta: number, fromIndex: number): void;
+  /** @internal Focus the first / last non-disabled trigger. */
+  focusEdge(edge: 'first' | 'last'): void;
+}
+
+/**
+ * What the root needs from a registered trigger for the opt-in arrow-key
+ * roving. Structural rather than `KjAccordionTrigger` so this file stays free
+ * of directive imports and a child never has to cast the injected context
+ * back to the concrete class (arch F-14).
+ */
+export interface KjAccordionTriggerRef {
+  /** The trigger's host element — the focus target. */
+  readonly el: ElementRef<HTMLElement>;
+  /** The item the trigger belongs to; its `disabled` gates focus. */
+  readonly item: KjAccordionItemContext;
 }
 
 /** Context interface for an individual accordion item directive. */

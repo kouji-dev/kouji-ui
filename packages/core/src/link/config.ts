@@ -1,5 +1,7 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
+/** Variant / size presets and defaults for `KjLink`, set with `provideKjLink(…)`. */
 export interface KjLinkConfig {
   variants: string[];
   sizes: string[];
@@ -27,18 +29,22 @@ export const KJ_LINK_CONFIG = new InjectionToken<KjLinkConfig>('kj.link.config',
 });
 
 /**
- * Configures the Link presets for the enclosing injector. Replaces (does not
- * merge) `variants` and `sizes`; spread `KJ_LINK_DEFAULTS.variants` to extend.
+ * Configures the Link presets for the enclosing injector.
+ *
+ * Deep-merges over {@link KJ_LINK_DEFAULTS} through {@link mergeKjConfig}: pass only the
+ * fields you want to change, at any depth — `provideKjLink({ defaults: { variant: '…' } })`
+ * keeps every other shipped default. Arrays still **replace**, so spread
+ * `KJ_LINK_DEFAULTS.variants` to extend rather than swap the list.
  *
  * Returns a `Provider[]` so it can be spread into either an environment
  * `providers` (`bootstrapApplication`, route config) or a component-level
  * `providers` array.
  */
-export function provideKjLink(config: Partial<KjLinkConfig>): Provider[] {
+export function provideKjLink(config: KjDeepPartial<KjLinkConfig>): Provider[] {
   return [
     {
       provide: KJ_LINK_CONFIG,
-      useValue: { ...KJ_LINK_DEFAULTS, ...config },
+      useValue: mergeKjConfig(KJ_LINK_DEFAULTS, config),
     },
   ];
 }

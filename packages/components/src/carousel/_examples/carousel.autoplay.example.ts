@@ -7,7 +7,7 @@ import {
   KjCarouselNextComponent,
   KjCarouselIndicatorsComponent,
   KjCarouselAutoplayComponent,
-  KjCarouselPauseComponent,
+  KjCarouselPause,
 } from '../carousel';
 
 /**
@@ -28,7 +28,7 @@ import {
     KjCarouselNextComponent,
     KjCarouselIndicatorsComponent,
     KjCarouselAutoplayComponent,
-    KjCarouselPauseComponent,
+    KjCarouselPause,
   ],
   styles: [
     `

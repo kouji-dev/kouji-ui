@@ -11,7 +11,9 @@ import {
 } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 import { KjSize, KjVariant, bindPresets } from '../presets';
+import { KjFieldControl } from '../field/field-control';
 import { KJ_TEXTAREA_CONFIG } from './config';
+import { DOCUMENT } from '@angular/common';
 
 /**
  * Number-attribute transform that preserves `undefined` instead of mapping it
@@ -46,9 +48,11 @@ export type KjTextareaAutoresize = 'off' | 'auto';
  * - `KjDisabled` — `aria-disabled` / `data-disabled` reflection.
  *
  * Auto-resize: when `kjAutoresize="auto"`, the directive measures
- * `scrollHeight` on every input, clamps to `[kjMinRows, kjMaxRows]` rows, and
- * pins `style.height` accordingly. The user drag-handle is forced off
- * (`resize: none`) while auto-resize is on — mixing the two produces drift.
+ * `scrollHeight` as the value changes — coalesced to one measurement per
+ * animation frame, against cached line-height / padding / border metrics —
+ * clamps to `[kjMinRows, kjMaxRows]` rows, and pins `style.height`
+ * accordingly. The user drag-handle is forced off (`resize: none`) while
+ * auto-resize is on — mixing the two produces drift.
  *
  * Character counter: when `kjMaxLength` is set, the native `maxlength`
  * attribute is bound. The directive exposes a `remaining()` signal and emits
@@ -79,10 +83,16 @@ export type KjTextareaAutoresize = 'off' | 'auto';
     { directive: KjDisabled, inputs: ['kjDisabled'] },
     KjFocusRing,
     KjFormControl,
+    // Inside a `[kjField]` this adopts the field's control id (so the
+    // `[kjFieldLabel]` `for=` resolves), composes `aria-describedby` from the
+    // help / error children and mirrors `aria-required`. It also OWNS
+    // `aria-invalid` for this element — see `bindInvalid` in the constructor;
+    // a second `[attr.aria-invalid]` binding here would race it, because two
+    // host bindings on one attribute are last-writer-wins.
+    { directive: KjFieldControl, inputs: ['kjDescribedBy'] },
   ],
   providers: [...bindPresets(KJ_TEXTAREA_CONFIG)],
   host: {
-    '[attr.aria-invalid]': 'formCtrl.touched() && kjInvalid() ? "true" : null',
     '[attr.data-invalid]': 'formCtrl.touched() && kjInvalid() ? "" : null',
     '[attr.disabled]': 'formCtrl.disabled() ? "" : null',
     '[attr.maxlength]': 'kjMaxLength() ?? null',
@@ -94,7 +104,9 @@ export type KjTextareaAutoresize = 'off' | 'auto';
 })
 export class KjTextarea {
   readonly formCtrl = inject(KjFormControl);
+  private readonly fieldControl = inject(KjFieldControl, { self: true });
   private readonly el = inject<ElementRef<HTMLTextAreaElement>>(ElementRef);
+  private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
 
   /** Whether the textarea is in an invalid state. Combined with `touched` for ARIA. */
@@ -163,6 +175,11 @@ export class KjTextarea {
   });
 
   constructor() {
+    // One owner for `aria-invalid`: the composed `KjFieldControl` ORs this
+    // touched-gated state with the enclosing `[kjField]`'s, so a textarea that
+    // is valid itself still announces as invalid while its field is.
+    this.fieldControl.bindInvalid(computed(() => this.formCtrl.touched() && this.kjInvalid()));
+
     // Reflect the CVA value signal back to the native textarea element. Same
     // posture as KjInput: skip null/undefined so an external [value] attribute
     // is preserved when no ngModel/formControl is wired.
@@ -175,49 +192,93 @@ export class KjTextarea {
       }
     });
 
-    // Auto-resize: re-measure on every value change and on first paint. The
-    // `(input)` host binding also calls `measure()` so users see live growth
-    // even without a form binding.
+    // Auto-resize: the value signal is the SINGLE trigger. `onInput` calls
+    // `formCtrl.notifyChange`, which writes that signal, so the old
+    // belt-and-braces `measure()` in the host handler only bought a second
+    // style recalc + forced layout on every keystroke.
+    //
+    // Mode / bounds: a binding change is also the moment the element's own CSS
+    // may have moved (a size preset, a density switch), so drop the cached
+    // metrics here — once per binding change, never per keystroke.
     effect(() => {
-      // Tracking dependencies — autoresize toggles, value, and rows bounds.
       this.kjAutoresize();
       this.kjMinRows();
       this.kjMaxRows();
+      this.metrics = null;
+      this.scheduleMeasure();
+    });
+
+    // Value: re-measure against the cached metrics.
+    effect(() => {
       this.formCtrl.value();
-      this.measure();
+      this.scheduleMeasure();
     });
 
     afterNextRender(() => {
       this.measure();
-      const onResize = () => this.measure();
-      window.addEventListener('resize', onResize);
-      this.destroyRef.onDestroy(() => window.removeEventListener('resize', onResize));
+      const view = this.document.defaultView;
+      const onResize = () => this.measure(true);
+      view?.addEventListener('resize', onResize);
+      this.destroyRef.onDestroy(() => {
+        view?.removeEventListener('resize', onResize);
+        if (this.measureFrame) view?.cancelAnimationFrame(this.measureFrame);
+        this.measureFrame = 0;
+      });
+      // A late-loading webfont changes the line height under us. `fonts.ready`
+      // is a one-shot promise, so this costs no listener. (Absent in jsdom.)
+      const fonts = (this.document as Document & { fonts?: FontFaceSet }).fonts;
+      void fonts?.ready.then(() => this.measure(true));
     });
   }
 
   /** @internal — host (input) handler. */
   onInput(value: string): void {
     this.formCtrl.notifyChange(value);
-    if (this.kjAutoresize() === 'auto') {
+  }
+
+  /** Cached CSS metrics — only the element's own typography changes them. */
+  private metrics: { lineHeight: number; paddingY: number; borderY: number } | null = null;
+  /** Pending coalesced measure, if any. */
+  private measureFrame = 0;
+
+  /**
+   * Coalesces a measure into the next animation frame, so a burst of value
+   * changes in one turn forces layout once. Falls back to measuring
+   * synchronously where `requestAnimationFrame` is unavailable (SSR guards
+   * upstream, jsdom without a visual loop).
+   */
+  private scheduleMeasure(): void {
+    if (this.kjAutoresize() !== 'auto') return;
+    const view = this.document.defaultView;
+    if (!view?.requestAnimationFrame) {
       this.measure();
+      return;
     }
+    if (this.measureFrame) return;
+    this.measureFrame = view.requestAnimationFrame(() => {
+      this.measureFrame = 0;
+      this.measure();
+    });
   }
 
   /**
    * Re-measures and pins the textarea height when `kjAutoresize === 'auto'`.
    * Safe to call any time; no-op when auto-resize is off.
+   *
+   * @param remeasureMetrics - re-read the cached line-height / padding /
+   *   border metrics. They only change when the textarea's own typography
+   *   does (a density or size switch, a webfont landing), which is why
+   *   typing never pays for the `getComputedStyle` that reads them.
    */
-  measure(): void {
+  measure(remeasureMetrics = false): void {
     if (this.kjAutoresize() !== 'auto') return;
     const el = this.el.nativeElement;
     if (!el || typeof el.scrollHeight !== 'number') return;
 
-    const cs = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null;
-    if (!cs) return;
-
-    const lineHeight = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.4 || 20;
-    const paddingY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
-    const borderY = (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+    if (remeasureMetrics) this.metrics = null;
+    const metrics = (this.metrics ??= this.readMetrics(el));
+    if (!metrics) return;
+    const { lineHeight, paddingY, borderY } = metrics;
 
     const minRows = this.kjMinRows() ?? el.rows ?? 1;
     const maxRows = this.kjMaxRows();
@@ -231,5 +292,19 @@ export class KjTextarea {
     const clamped = Math.max(minHeight, Math.min(measured, maxHeight));
     el.style.height = `${clamped}px`;
     el.style.overflowY = measured > maxHeight ? 'auto' : 'hidden';
+  }
+
+  /** One `getComputedStyle` — the style recalculation the cache exists to avoid. */
+  private readMetrics(
+    el: HTMLTextAreaElement,
+  ): { lineHeight: number; paddingY: number; borderY: number } | null {
+    const view = this.document.defaultView;
+    const cs = view?.getComputedStyle?.(el) ?? null;
+    if (!cs) return null;
+    return {
+      lineHeight: parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.4 || 20,
+      paddingY: (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0),
+      borderY: (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0),
+    };
   }
 }

@@ -2,7 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { ContrastScoreService } from './contrast-score.service';
 import { ThemeDraftService } from './theme-draft.service';
+import { REPORT_VERSION } from '../lib/theme/theme-a11y-report';
 
+/**
+ * Rewritten against the 17-slot bg/fg model. The old assertions named
+ * `colors.primary` / `base-100` and the `AAA-normal` requirement, all of which
+ * the report replaced with `AA-normal` edges over `fg-*` / `bg-*` pairs
+ * (matching axe-core's default `color-contrast` rule).
+ */
 describe('ContrastScoreService', () => {
   let svc: ContrastScoreService;
   beforeEach(() => {
@@ -26,18 +33,29 @@ describe('ContrastScoreService', () => {
     const draft = TestBed.inject(ThemeDraftService);
     draft.loadFork('kouji');
     const report = svc.buildReport(draft.resolvedTokens(), draft.draft());
-    expect(report.reportVersion).toBe(1);
-    expect(report.contrastEdges.length).toBeGreaterThanOrEqual(13);
-    expect(report.nonTextEdges.length).toBe(2);
-    expect(report.summary.aaaNormalTotal).toBe(report.contrastEdges.length);
+    expect(report.reportVersion).toBe(REPORT_VERSION);
+    expect(report.contrastEdges.length).toBe(10);
+    expect(report.nonTextEdges.length).toBe(6);
+    expect(report.summary.aaNormalTotal).toBe(report.contrastEdges.length);
+    expect(report.summary.nonTextTotal).toBe(report.nonTextEdges.length);
   });
 
-  test('flags primary-on-base failure when primary equals base-100', () => {
+  test('every edge id is "<fg slot>/<bg slot>"', () => {
     const draft = TestBed.inject(ThemeDraftService);
     draft.loadFork('kouji');
-    draft.setColor('primary', draft.draft().colors['base-100']);
     const report = svc.buildReport(draft.resolvedTokens(), draft.draft());
-    const edge = report.contrastEdges.find(e => e.id === 'primary/base-100');
+    expect(report.contrastEdges.map(e => e.id)).toContain('fg-on-primary/bg-primary');
+    expect(report.contrastEdges.map(e => e.id)).toContain('fg-default/bg-body');
+  });
+
+  test('flags the primary text pair when its ink matches its fill', () => {
+    const draft = TestBed.inject(ThemeDraftService);
+    draft.loadFork('kouji');
+    draft.setFg('fg-on-primary', draft.draft().bg['bg-primary']);
+    const report = svc.buildReport(draft.resolvedTokens(), draft.draft());
+    const edge = report.contrastEdges.find(e => e.id === 'fg-on-primary/bg-primary');
     expect(edge?.pass).toBe(false);
+    expect(edge?.verdict).toBe('FAIL');
+    expect(report.summary.worstEdgeId).toBe('fg-on-primary/bg-primary');
   });
 });

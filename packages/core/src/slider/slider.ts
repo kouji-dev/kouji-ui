@@ -24,6 +24,25 @@ import {
 } from './slider.context';
 import { valueFromClientPosition } from './slider.geometry';
 
+/** Accepted spellings for {@link KjSlider.kjTicks} before coercion. */
+export type KjSliderTicksInput =
+  | readonly number[]
+  | 'auto'
+  | boolean
+  | string
+  | null
+  | undefined;
+
+/**
+ * Keeps the three real modes and folds everything else through
+ * `booleanAttribute`, so `kjTicks` means `'auto'` and `kjTicks="false"` means
+ * off. See the `kjTicks` TSDoc.
+ */
+export function coerceTicks(value: KjSliderTicksInput): readonly number[] | 'auto' | false {
+  if (Array.isArray(value)) return value as readonly number[];
+  return booleanAttribute(value) ? 'auto' : false;
+}
+
 /**
  * Headless root of the `KjSlider` directive family. Owns bounds (`kjMin` /
  * `kjMax` / `kjStep` / `kjPageStep` / `kjStepBase`), orientation, RTL,
@@ -129,8 +148,23 @@ export class KjSlider implements KjSliderContext {
 
   // ── Tick + display ───────────────────────────────────────────────────────
 
-  /** Tick definition. `false` (default) renders no ticks; `'auto'` per-step; explicit array for irregular ticks. */
-  readonly kjTicks = input<readonly number[] | 'auto' | false>(false);
+  /**
+   * Tick definition, in three modes: `false` (the default) renders no ticks,
+   * `'auto'` renders one per step, and an explicit array renders irregular
+   * ticks.
+   *
+   * Not a plain boolean, so `booleanAttribute` would destroy two of the three
+   * modes — but the static-attribute forms still have to mean something, so
+   * the transform keeps the array, keeps `'auto'`, and folds every remaining
+   * value through `booleanAttribute`: a bare `kjTicks` reads as `'auto'` (the
+   * only "on" there is) and `kjTicks="false"` really switches ticks off.
+   * Without it the string `"false"` was truthy and fell into the `'auto'`
+   * branch, so an author who wrote ticks off got ticks.
+   * @default false
+   */
+  readonly kjTicks = input<readonly number[] | 'auto' | false, KjSliderTicksInput>(false, {
+    transform: coerceTicks,
+  });
 
   /** Formatter for `aria-valuetext` / value bubble. Receives the thumb index. */
   readonly kjDisplayWith = input<((value: number, thumbIndex: number) => string) | undefined>(undefined);
@@ -212,8 +246,8 @@ export class KjSlider implements KjSliderContext {
 
   readonly ticks = computed<readonly number[]>(() => {
     const t = this.kjTicks();
-    if (t === false) return [];
     if (Array.isArray(t)) return t;
+    if (t !== 'auto') return [];
     // 'auto' — generate per-step ticks, capped at 100.
     const step = this.step();
     const min = this.min();

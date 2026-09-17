@@ -1,23 +1,26 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  type OnInit,
   ViewEncapsulation,
   booleanAttribute,
   computed,
+  effect,
   inject,
   input,
   model,
+  viewChild,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   KJ_PASSWORD_INPUT,
   KjButton,
+  KjLiveRegion,
   KjPasswordCapsLockWarning,
   KjPasswordInput,
   KjPasswordInputScope,
   KjPasswordStrength,
   KjPasswordToggle,
+  KjVisuallyHidden,
   type KjPasswordAutocomplete,
   type KjPasswordScore,
 } from '@kouji-ui/core';
@@ -119,6 +122,8 @@ import {
     KjPasswordToggle,
     KjPasswordStrength,
     KjPasswordCapsLockWarning,
+    KjLiveRegion,
+    KjVisuallyHidden,
   ],
   template: `
     <div kjPasswordInputScope class="kj-password-input">
@@ -156,12 +161,20 @@ import {
         </button>
       }
       @if (kjShowStrength()) {
-        <div class="kj-password-strength" kjPasswordStrength [attr.data-score]="score()">
+        <div
+          class="kj-password-strength"
+          kjPasswordStrength
+          [kjAnnounce]="kjAnnounceStrength()"
+          [attr.data-score]="score()"
+        >
           <span class="kj-password-strength__seg"></span>
           <span class="kj-password-strength__seg"></span>
           <span class="kj-password-strength__seg"></span>
           <span class="kj-password-strength__seg"></span>
         </div>
+        <!-- Sibling, not a child: the meter is a role="progressbar", whose
+             descendants are not exposed to assistive technology. -->
+        <span kjVisuallyHidden kjLiveRegion></span>
       }
       @if (kjShowCapsLockWarning()) {
         <p kjPasswordCapsLockWarning class="kj-password-caps-lock-warning">
@@ -175,7 +188,7 @@ import {
   host: { 'style': 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjPasswordInputComponent implements OnInit {
+export class KjPasswordInputComponent {
   /**
    * Native `autocomplete` attribute. Restricted to `'current-password'` |
    * `'new-password'` | `'off'`.
@@ -192,7 +205,11 @@ export class KjPasswordInputComponent implements OnInit {
   /** Invalid state — wires to ARIA-invalid via the host `KjInput`. */
   readonly kjInvalid = input(false, { transform: booleanAttribute });
 
-  /** Two-way bindable plain-text reveal state. @default false */
+  /**
+   * Two-way bindable plain-text reveal state. `model()` takes no `transform`,
+   * so bind it (`[kjRevealed]="true"`) rather than using a bare attribute.
+   * @default false
+   */
   readonly kjRevealed = model<boolean>(false);
 
   /** Placeholder text on the inner `<input>`. */
@@ -209,6 +226,16 @@ export class KjPasswordInputComponent implements OnInit {
 
   /** Show the Caps Lock warning element. @default false */
   readonly kjShowCapsLockWarning = input(false, { transform: booleanAttribute });
+
+  /**
+   * Announce each strength tier through a visually hidden live region as the
+   * password is typed. Needs `[kjShowStrength]` — the region is rendered
+   * beside the meter. Off by default: `aria-valuetext` on the meter already
+   * carries the score for anyone who moves focus to it, and an announcement
+   * per tier is a deliberate interruption.
+   * @default false
+   */
+  readonly kjAnnounceStrength = input(false, { transform: booleanAttribute });
 
   /** `aria-label` for the toggle when password is hidden. @default 'Show password' */
   readonly kjShowLabel = input<string>('Show password');
@@ -240,15 +267,35 @@ export class KjPasswordInputComponent implements OnInit {
    */
   private readonly _ctx = inject(KJ_PASSWORD_INPUT, { optional: true });
 
+  /** @internal — present only while `[kjShowStrength]` is on. */
+  private readonly _strength = viewChild(KjPasswordStrength);
+
+  /** @internal — rendered next to the meter, in the same `@if`. */
+  private readonly _liveRegion = viewChild(KjLiveRegion);
+
   constructor() {
+    // An effect rather than `afterNextRender`: both queries resolve and drop
+    // again every time `[kjShowStrength]` flips, and the meter is a different
+    // instance each time it comes back.
+    effect((onCleanup) => {
+      const meter = this._strength();
+      const region = this._liveRegion();
+      if (!meter || !region) return;
+      onCleanup(meter.registerLiveRegion(region));
+    });
     // Two-way bind value <-> control.
     this.control.valueChanges.subscribe(v => this.kjValue.set(v ?? ''));
-  }
 
-  ngOnInit(): void {
-    if (this.kjValue() !== this.control.value) {
-      this.control.setValue(this.kjValue(), { emitEvent: false });
-    }
+    // Seed the control from the `kjValue` model, and keep following it. This
+    // ran once in `ngOnInit`; an effect reaches the same point without a
+    // lifecycle hook and also picks up later programmatic model writes. The
+    // `emitEvent: false` write cannot loop back through the subscription.
+    effect(() => {
+      const next = this.kjValue();
+      if (next !== this.control.value) {
+        this.control.setValue(next, { emitEvent: false });
+      }
+    });
   }
 }
 

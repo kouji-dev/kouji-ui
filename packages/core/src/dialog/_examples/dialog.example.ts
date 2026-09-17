@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDialog as KjDialogService } from '../dialog.service';
+import { KjDialogService } from '../dialog.service';
 import { KjDialogRef } from '../dialog.ref';
 import { KjButton } from '../../button/button';
 
@@ -11,24 +11,24 @@ import { KjButton } from '../../button/button';
     `
       :host {
         display: block;
-        background: var(--kj-surface);
-        border: 1px solid var(--kj-border);
-        border-radius: var(--kj-radius-lg);
+        background: var(--docs-surface);
+        border: 1px solid var(--docs-border);
+        border-radius: var(--docs-radius-lg);
         padding: 1.5rem;
         min-width: 20rem;
-        color: var(--kj-text);
-        font-family: var(--kj-font);
-        box-shadow: var(--kj-shadow-hard);
+        color: var(--docs-text);
+        font-family: var(--docs-font);
+        box-shadow: var(--docs-shadow-hard);
       }
       h2 {
         margin: 0 0 0.5rem;
         font-size: 1.125rem;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .dialog-body {
         margin: 0 0 1.5rem;
         font-size: 0.875rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
         line-height: 1.6;
       }
       .dialog-actions {
@@ -41,13 +41,13 @@ import { KjButton } from '../../button/button';
         font-size: 0.8125rem;
       }
       [data-variant='default'] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
       }
       [data-variant='outline'] {
         background: transparent;
-        color: var(--kj-text);
-        border: 1px solid var(--kj-border);
+        color: var(--docs-text);
+        border: 1px solid var(--docs-border);
       }
     `,
   ],
@@ -77,21 +77,21 @@ export class DialogBasicContent {
         align-items: center;
         justify-content: center;
         padding: 3rem 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 160px;
       }
       button[kjButton] {
         padding: 0.5rem 1.5rem;
-        border: var(--kj-btn-border);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
       }
       [data-variant='default'] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
       }
     `,
   ],

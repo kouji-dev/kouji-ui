@@ -28,6 +28,42 @@ export function composeTriggerEvents(...parts: KjTriggerEventStrategy[]): KjTrig
   };
 }
 
+/**
+ * Gates a trigger strategy behind a predicate: while `enabled()` is `false`
+ * the wrapped strategy can still close the overlay but never opens it, so a
+ * `kjDisabled` trigger stays inert without detaching its listeners.
+ */
+export function whenEnabled(
+  strategy: KjTriggerEventStrategy,
+  enabled: () => boolean,
+): KjTriggerEventStrategy {
+  let ctx: KjOverlayContext | null = null;
+  return {
+    ariaHasPopup: strategy.ariaHasPopup,
+    attach(c) {
+      ctx = c;
+      strategy.attach(c);
+    },
+    bindToggle(toggle) {
+      strategy.bindToggle(() => {
+        if (!enabled() && !ctx?.isOpen()) return;
+        toggle();
+      });
+    },
+    onOpen() {
+      strategy.onOpen?.();
+    },
+    onClose() {
+      strategy.onClose?.();
+    },
+    detach() {
+      strategy.detach();
+      ctx = null;
+    },
+  };
+}
+
+/** {@link switchableTriggerEvent}'s return type: a trigger slot whose strategy can be swapped. */
 export type KjSwitchableTriggerStrategy = KjTriggerEventStrategy & {
   /** Swaps the active strategy: the previous one is detached, the new one attached and bound. */
   use(strategy: KjTriggerEventStrategy): void;

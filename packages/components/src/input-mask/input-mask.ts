@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  model,
   booleanAttribute,
   input,
   output,
@@ -17,9 +18,14 @@ import { KjInputMask } from '@kouji-ui/core';
  * The component proxies all `KjInputMask` inputs and the `kjComplete` output.
  * Use `[(ngModel)]` or `[formControl]` on the inner `<input>` for form wiring.
  *
+ * Bind the value with the wrapper's own `[(value)]`. `[(ngModel)]` /
+ * `[formControl]` belong on the headless `<input kjInputMask>` — the CVA
+ * lives on that inner element, so a form directive placed on
+ * `<kj-input-mask>` binds to nothing.
+ *
  * @example
  * ```html
- * <kj-input-mask kjMask="(999) 999-9999" [(ngModel)]="phone" />
+ * <kj-input-mask kjMask="(999) 999-9999" [(value)]="phone" />
  * ```
  *
  * @doc-example Default
@@ -88,6 +94,9 @@ import { KjInputMask } from '@kouji-ui/core';
       [kjInvalid]="kjInvalid()"
       [kjAutoClear]="kjAutoClear()"
       [kjFormatHint]="kjFormatHint()"
+      [ngModel]="value()"
+      [ngModelOptions]="{ standalone: true }"
+      (ngModelChange)="value.set($event ?? '')"
       (kjComplete)="kjComplete.emit()"
     />
   `,
@@ -97,6 +106,18 @@ import { KjInputMask } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjInputMaskComponent {
+  /**
+   * Two-way bound value. Shaped by `kjMaskMode`: the raw alphanumerics by
+   * default, the full display string under `kjMaskMode="masked"`.
+   *
+   * This is the only way to read or seed `<kj-input-mask>`'s value — the
+   * ControlValueAccessor sits on the inner `<input kjInputMask>`, which is
+   * inside this component's view and therefore unreachable from a consumer
+   * template. Reach for the headless directive directly when the field has
+   * to participate in a reactive form.
+   */
+  readonly value = model<string>('');
+
   /** Mask template. Required. e.g. `'(999) 999-9999'`. */
   readonly kjMask = input.required<string>();
 

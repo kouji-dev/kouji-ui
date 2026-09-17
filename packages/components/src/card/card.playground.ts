@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
-  KjCardComponent,
-  KjCardContentComponent,
-  KjCardFooterComponent,
-  KjCardHeaderComponent,
-  KjCardSubtitleComponent,
-  KjCardTitleComponent,
+  KjCard,
+  KjCardContent,
+  KjCardFooter,
+  KjCardHeader,
+  KjCardSubtitle,
+  KjCardTitle,
 } from './card';
 import { KjButtonComponent } from '../button/button';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
@@ -26,12 +26,12 @@ const body = signal('Body content goes here. Cards group related information.');
   selector: 'kj-card-playground',
   standalone: true,
   imports: [
-    KjCardComponent,
-    KjCardHeaderComponent,
-    KjCardTitleComponent,
-    KjCardSubtitleComponent,
-    KjCardContentComponent,
-    KjCardFooterComponent,
+    KjCard,
+    KjCardHeader,
+    KjCardTitle,
+    KjCardSubtitle,
+    KjCardContent,
+    KjCardFooter,
     KjButtonComponent,
   ],
   template: `

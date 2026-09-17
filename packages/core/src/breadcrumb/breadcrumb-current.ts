@@ -1,5 +1,6 @@
-import { Directive, OnDestroy, inject } from '@angular/core';
+import { DestroyRef, Directive, inject } from '@angular/core';
 import { KJ_BREADCRUMB } from './breadcrumb.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * The terminal "current page" cell. Emits `aria-current="page"` and
@@ -25,14 +26,11 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
     '[attr.data-breadcrumb-current]': '""',
   },
 })
-export class KjBreadcrumbCurrent implements OnDestroy {
-  private readonly root = inject(KJ_BREADCRUMB);
+export class KjBreadcrumbCurrent {
+  private readonly root = injectParent(KJ_BREADCRUMB, { child: 'KjBreadcrumbCurrent', parent: '[kjBreadcrumb]' });
 
   constructor() {
     this.root.registerCurrent();
-  }
-
-  ngOnDestroy(): void {
-    this.root.unregisterCurrent();
+    inject(DestroyRef).onDestroy(() => this.root.unregisterCurrent());
   }
 }

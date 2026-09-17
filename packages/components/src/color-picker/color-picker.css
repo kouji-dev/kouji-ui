@@ -70,8 +70,10 @@
     /* Saturation drives x; (1 - value) drives y so visually high y = low value. */
     left: calc(var(--kj-color-picker-x, 0) * 100%);
     top: calc((1 - var(--kj-color-picker-y, 0)) * 100%);
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 1px #000, 0 0 4px rgb(0 0 0 / 0.4);
+    /* Double ring (surface + ink) stays visible over any swatch colour and
+       follows the theme instead of hard-coding white/black. */
+    border: 2px solid var(--kj-bg-elevated);
+    box-shadow: 0 0 0 1px var(--kj-fg-default), var(--kj-shadow-sm);
     border-radius: 50%;
     pointer-events: none;
   }
@@ -119,8 +121,8 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #fff;
-    border: 2px solid #000;
+    background: var(--kj-bg-elevated);
+    border: 2px solid var(--kj-fg-default);
     margin-top: -1px;
   }
   .kj-color-picker-hue-slider::-moz-range-thumb,
@@ -128,8 +130,8 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #fff;
-    border: 2px solid #000;
+    background: var(--kj-bg-elevated);
+    border: 2px solid var(--kj-fg-default);
   }
   .kj-color-picker-hue-slider:focus-visible,
   .kj-color-picker-alpha-slider:focus-visible {

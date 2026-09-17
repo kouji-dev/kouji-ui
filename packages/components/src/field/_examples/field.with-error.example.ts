@@ -1,5 +1,5 @@
 import { Component, computed, signal, ChangeDetectionStrategy } from '@angular/core';
-import { KjAriaDescribedBy } from '@kouji-ui/core';
+import { KjFieldControl } from '@kouji-ui/core';
 import {
   KjFieldComponent,
   KjFieldErrorComponent,
@@ -10,8 +10,8 @@ import {
 /**
  * `kj-field` showing an error message. The error registers its id with the
  * field; when `kjInvalid` is true the field swaps the help-id for the
- * error-id in the inner input's `aria-describedby` and toggles the help /
- * error visibility.
+ * error-id in the inner input's `aria-describedby`, sets `aria-invalid` on
+ * it, and toggles the help / error visibility.
  */
 @Component({
   selector: 'kj-field-with-error-example',
@@ -21,7 +21,7 @@ import {
     KjFieldLabelComponent,
     KjFieldHelpComponent,
     KjFieldErrorComponent,
-    KjAriaDescribedBy,
+    KjFieldControl,
   ],
   styles: [
     `
@@ -44,18 +44,9 @@ import {
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-field #f="kjField" [kjInvalid]="invalid()">
+    <kj-field [kjInvalid]="invalid()">
       <kj-field-label>Email</kj-field-label>
-      <input
-        kjAriaDescribedBy
-        class="kj-input"
-        type="email"
-        [id]="f.controlId()"
-        [value]="value()"
-        [attr.aria-invalid]="invalid() ? 'true' : null"
-        [kjDescribedBy]="$any(f.describedByIds())"
-        (input)="onInput($event)"
-      />
+      <input kjFieldControl class="kj-input" type="email" [value]="value()" (input)="onInput($event)" />
       <kj-field-help>Format: name@example.com</kj-field-help>
       <kj-field-error>Please enter a valid email address.</kj-field-error>
     </kj-field>

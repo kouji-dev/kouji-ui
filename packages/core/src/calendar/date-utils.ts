@@ -117,9 +117,41 @@ export function buildMonthMatrix(monthAnchor: Date, weekStart: number): Date[][]
   return weeks;
 }
 
+const WEEKDAY_SHORT: Intl.DateTimeFormatOptions = { weekday: 'short' };
+const WEEKDAY_LONG: Intl.DateTimeFormatOptions = { weekday: 'long' };
+const MONTH_YEAR: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
+const DATE_LONG: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
+const DATE_SHORT: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+const DATE_DEFAULT: Intl.DateTimeFormatOptions = {};
+
+// Constructing an `Intl.DateTimeFormat` is the expensive half of the API;
+// `format()` on a cached instance is cheap. A rendered month needs 42 long
+// labels, so formatters are memoised per (locale, preset).
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * Memoised `Intl.DateTimeFormat` for `locale` and one of the option presets
+ * above. `key` names the preset; presets are module constants, so the pair
+ * identifies the formatter.
+ */
+function dateTimeFormat(locale: string, key: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const cacheKey = `${locale}|${key}`;
+  let fmt = formatters.get(cacheKey);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, options);
+    formatters.set(cacheKey, fmt);
+  }
+  return fmt;
+}
+
 /** Locale-aware short weekday names starting from `weekStart`. */
 export function weekdayShortNames(locale: string, weekStart: number): string[] {
-  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+  const fmt = dateTimeFormat(locale, 'weekday-short', WEEKDAY_SHORT);
   // 1970-01-04 was a Sunday in UTC — anchor for stable iteration.
   const base = new Date(1970, 0, 4);
   const out: string[] = [];
@@ -131,7 +163,7 @@ export function weekdayShortNames(locale: string, weekStart: number): string[] {
 
 /** Locale-aware long weekday names starting from `weekStart`. Used for `<th abbr>`. */
 export function weekdayLongNames(locale: string, weekStart: number): string[] {
-  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'long' });
+  const fmt = dateTimeFormat(locale, 'weekday-long', WEEKDAY_LONG);
   const base = new Date(1970, 0, 4);
   const out: string[] = [];
   for (let i = 0; i < 7; i += 1) {
@@ -142,26 +174,17 @@ export function weekdayLongNames(locale: string, weekStart: number): string[] {
 
 /** Locale-aware "April 2025" for the calendar caption. */
 export function formatMonthYear(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'long' }).format(date);
+  return dateTimeFormat(locale, 'month-year', MONTH_YEAR).format(date);
 }
 
 /** Locale-aware long form for cell `aria-label` — "Tuesday, April 15, 2025". */
 export function formatDateLong(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+  return dateTimeFormat(locale, 'date-long', DATE_LONG).format(date);
 }
 
 /** Locale-aware short form for the Date Picker input — "4/15/2025" / "15/04/2025". */
 export function formatDateShort(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-  }).format(date);
+  return dateTimeFormat(locale, 'date-short', DATE_SHORT).format(date);
 }
 
 /**
@@ -211,7 +234,7 @@ export function parseDate(value: string, locale: string): Date | null {
 
 function inferDateOrder(locale: string): 'mdy' | 'dmy' | 'ymd' {
   try {
-    const parts = new Intl.DateTimeFormat(locale).formatToParts(new Date(2000, 0, 2));
+    const parts = dateTimeFormat(locale, 'default', DATE_DEFAULT).formatToParts(new Date(2000, 0, 2));
     const order: string[] = [];
     for (const p of parts) {
       if (p.type === 'day' || p.type === 'month' || p.type === 'year') order.push(p.type);

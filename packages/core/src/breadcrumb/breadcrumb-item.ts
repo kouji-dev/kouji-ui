@@ -1,5 +1,6 @@
-import { Directive, OnDestroy, inject } from '@angular/core';
+import { DestroyRef, Directive, inject } from '@angular/core';
 import { KJ_BREADCRUMB, KjBreadcrumbItemContext } from './breadcrumb.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * A single crumb cell. Registers itself with the parent breadcrumb on
@@ -25,17 +26,14 @@ import { KJ_BREADCRUMB, KjBreadcrumbItemContext } from './breadcrumb.context';
     '[attr.aria-current]': 'context.current() ? "page" : null',
   },
 })
-export class KjBreadcrumbItem implements OnDestroy {
-  private readonly root = inject(KJ_BREADCRUMB);
+export class KjBreadcrumbItem {
+  private readonly root = injectParent(KJ_BREADCRUMB, { child: 'KjBreadcrumbItem', parent: '[kjBreadcrumb]' });
 
   /** Public context (index, current, hidden) for this item. */
   readonly context: KjBreadcrumbItemContext;
 
   constructor() {
     this.context = this.root.registerItem();
-  }
-
-  ngOnDestroy(): void {
-    this.root.unregisterItem(this.context);
+    inject(DestroyRef).onDestroy(() => this.root.unregisterItem(this.context));
   }
 }

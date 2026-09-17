@@ -1,4 +1,14 @@
-import { Directive, ElementRef, ModelSignal, afterNextRender, computed, inject, input, model } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  ModelSignal,
+  afterNextRender,
+  booleanAttribute,
+  computed,
+  inject,
+  input,
+  model,
+} from '@angular/core';
 import { KjFocusRing } from '../primitives';
 import {
   KJ_SIZE_FALLBACK,
@@ -121,14 +131,24 @@ export class KjButton {
    */
   private readonly group = inject(KJ_BUTTON_GROUP, { optional: true, skipSelf: true });
 
-  /** Disables the button. Reflects `aria-disabled` and `data-disabled`. */
-  readonly kjDisabled = input(false);
+  /**
+   * Disables the button. Reflects `aria-disabled` and `data-disabled`.
+   * Default `false`.
+   *
+   * Deliberately **not** the composed `KjDisabled` primitive (arch F-16): what
+   * this host reflects is {@link effectiveDisabled}, a superset that also ORs
+   * in `kjLoading` and the enclosing group's cascade. `KjDisabled` reflects
+   * only its own input, so composing it here would put a second writer on
+   * `aria-disabled` whose value disagrees whenever a button is disabled by
+   * loading or by its group.
+   */
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
 
-  /** Marks the button as in-flight (e.g. async action). Sets `aria-busy="true"` and forces disabled. */
-  readonly kjLoading = input(false);
+  /** Marks the button as in-flight (e.g. async action). Sets `aria-busy="true"` and forces disabled. Default `false`. */
+  readonly kjLoading = input(false, { transform: booleanAttribute });
 
-  /** Stretches the button to fill the parent's inline axis. Reflects `data-full="true"`. */
-  readonly kjFullWidth = input(false);
+  /** Stretches the button to fill the parent's inline axis. Reflects `data-full="true"`. Default `false`. */
+  readonly kjFullWidth = input(false, { transform: booleanAttribute });
 
   /**
    * Toggle state. Unset (default) marks this as a non-toggle button and omits

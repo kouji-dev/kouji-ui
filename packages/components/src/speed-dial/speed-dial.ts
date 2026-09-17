@@ -63,16 +63,17 @@ export type KjSpeedDialPosition =
  *   @doc-file speed-dial.disabled.example.ts
  *
  * @doc-keyboard
- *   Enter|Space — Opens the dial when on the trigger; activates the focused action
- *   ArrowKeys   — Move focus along the fan-out axis between trigger and actions
- *   Escape      — Closes the dial and returns focus to the trigger
- *   Tab         — Single tab stop on the trigger (roving tabindex inside)
+ *   Enter|Space — Activates the trigger (opens the dial) or the focused action
+ *   Escape      — Closes the dial from anywhere inside it and returns focus to the trigger
+ *   Tab         — Moves through the trigger and the open action buttons in DOM order
  *
  * @doc-aria
- *   role="menu"     — applied to `<kj-speed-dial-actions>` while open
+ *   role="menu"     — applied to `<kj-speed-dial-actions>`; `aria-hidden` while collapsed
  *   role="menuitem" — applied to each `<kj-speed-dial-action>`
  *   aria-haspopup   — set on the trigger to "menu"
  *   aria-expanded   — reflects the open/closed state on the trigger
+ *   aria-controls   — names the action cluster's id
+ *   data-state      — "open" / "closed" on the trigger, the overlay state on the cluster
  *   aria-label      — required on icon-only trigger and actions (dev-mode warns)
  *   data-position   — mirrors `kjPosition` on the host for CSS hooks
  *
@@ -81,10 +82,16 @@ export type KjSpeedDialPosition =
  *   Actions default to `kjSize="md"` (40px) — bump to `lg` for touch-first layouts.
  *
  * @doc-a11y
- *   Implements the WAI-ARIA Menu Button APG pattern. Roving tabindex keeps the
- *   trigger as a single Tab stop; arrow keys move focus through the open
- *   action cluster. Focus returns to the trigger on close. Activating an
- *   action closes the dial by default (`kjCloseOnActivate`).
+ *   Menu-button ARIA over a real overlay: the dial registers with
+ *   `KjOverlayStack` while open, so Escape closes it from anywhere inside the
+ *   cluster (not only from the trigger), a press outside dismisses it, and
+ *   focus returns to the trigger on close. Activating an action closes the
+ *   dial by default (`kjCloseOnActivate`). The collapsed cluster is
+ *   `aria-hidden` and its buttons are out of the Tab order.
+ *
+ *   Known gap (WAI-ARIA Menu Button APG): the open cluster is not yet a
+ *   roving-tabindex group — each action is its own Tab stop and arrow keys do
+ *   not move between them.
  *
  * @doc-related dropdown-menu,tooltip,button-group
  *

@@ -12,14 +12,22 @@
 >
   <ng-template kjCommandPaletteItemTemplate let-result>
     <kj-command-item
-      [kjValue]="result.slug + ':' + result.matchLabel"
+      [kjValue]="result.slug + ':' + result.symbol"
       (click)="onResultClick(result)"
     >
       <div class="result-main">
-        <span class="result-label">{{ result.matchLabel }}</span>
-        <span class="result-type result-type-{{ result.matchType }}">{{ result.matchType }}</span>
+        <span class="result-label">{{ result.symbol }}</span>
+        <span class="result-type result-type-{{ result.kind }}">{{ result.kind }}</span>
+        <span class="result-track result-track-{{ result.track }}">{{
+          result.track === 'headless' ? 'Headless' : 'Components'
+        }}</span>
       </div>
-      <span class="result-path">{{ result.categoryPath.join(' / ') }}</span>
+      <span class="result-path">
+        {{ result.categoryPath.join(' / ') }}
+        @if (result.via) {
+          <span class="result-via">· matched {{ result.via }}</span>
+        }
+      </span>
     </kj-command-item>
   </ng-template>
 </kj-command-palette>

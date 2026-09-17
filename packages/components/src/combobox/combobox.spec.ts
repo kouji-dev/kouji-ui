@@ -1,19 +1,34 @@
 import { render, fireEvent } from '@testing-library/angular';
+import { afterEach, describe, expect, it } from 'vitest';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   KjComboboxComponent,
   KjComboboxOptionComponent,
-  KjComboboxEmptyComponent,
-  KjComboboxLoadingComponent,
+  KjComboboxEmpty,
+  KjComboboxLoading,
 } from './combobox';
 
 expect.extend(toHaveNoViolations);
 
+/**
+ * The listbox is portalled into `.kj-overlay-container` on <body> once the
+ * combobox opens, so rows are looked up through the document, not through
+ * the fixture's own container.
+ */
+const rowsIn = (): HTMLElement[] =>
+  [...document.querySelectorAll<HTMLElement>('.kj-combobox-option')];
+
+afterEach(() => {
+  document
+    .querySelectorAll('.kj-overlay-wrapper, .kj-overlay-container')
+    .forEach(n => n.remove());
+});
+
 const imports = [
   KjComboboxComponent,
   KjComboboxOptionComponent,
-  KjComboboxEmptyComponent,
-  KjComboboxLoadingComponent,
+  KjComboboxEmpty,
+  KjComboboxLoading,
 ];
 
 describe('KjComboboxComponent (wrapper)', () => {
@@ -43,8 +58,7 @@ describe('KjComboboxComponent (wrapper)', () => {
     fireEvent.focus(input);
     fireEvent.input(input, { target: { value: 'ban' } });
 
-    const visible = Array.from(container.querySelectorAll('.kj-combobox-option'))
-      .filter(o => !o.hasAttribute('hidden'));
+    const visible = rowsIn().filter(o => !o.hasAttribute('hidden'));
     expect(visible).toHaveLength(1);
     expect(visible[0].textContent?.trim()).toBe('Banana');
 
@@ -63,7 +77,7 @@ describe('KjComboboxComponent (wrapper)', () => {
     const input = container.querySelector('input.kj-combobox-input') as HTMLInputElement;
     fireEvent.focus(input);
     fireEvent.input(input, { target: { value: 'zzz' } });
-    const empty = container.querySelector('.kj-combobox-empty') as HTMLElement;
+    const empty = document.querySelector('.kj-combobox-empty') as HTMLElement;
     expect(empty).not.toHaveAttribute('hidden');
     expect(empty.textContent).toContain('No fruit found.');
   });
@@ -75,7 +89,7 @@ describe('KjComboboxComponent (wrapper)', () => {
       </kj-combobox>`,
       { imports },
     );
-    const loading = container.querySelector('.kj-combobox-loading');
+    const loading = document.querySelector('.kj-combobox-loading');
     expect(loading).not.toHaveAttribute('hidden');
     expect(container.querySelector('input.kj-combobox-input'))
       .toHaveAttribute('aria-busy', 'true');

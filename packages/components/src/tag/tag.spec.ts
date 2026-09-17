@@ -232,3 +232,25 @@ describe('KjTagListComponent overflow', () => {
     expect(custom?.textContent?.trim()).toBe('2 more from 2: Alan, Katherine');
   });
 });
+
+
+describe('<kj-tag> bare boolean attributes (arch F-2 / F-16)', () => {
+  @Component({
+    standalone: true,
+    imports: [KjTagComponent],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `<kj-tag kjTagSelectable kjTagDisabled>Filter</kj-tag>`,
+  })
+  class BareHost {}
+
+  test('kjTagSelectable + kjTagDisabled work without a binding, with one owner each', () => {
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const chip = fixture.nativeElement.querySelector('kj-tag') as HTMLElement;
+    expect(chip.getAttribute('role')).toBe('button');
+    expect(chip.getAttribute('aria-disabled')).toBe('true');
+    expect(chip.getAttribute('data-disabled')).toBe('');
+    expect(chip.getAttribute('tabindex')).toBe('-1');
+  });
+});

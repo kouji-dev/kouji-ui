@@ -1,3 +1,18 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `confirm-popup.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import {
   ChangeDetectionStrategy,
   Component,
@@ -104,7 +119,6 @@ import {
     },
   ],
   template: `<ng-content />`,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-confirm-popup',
@@ -133,7 +147,6 @@ export class KjConfirmPopupComponent {}
   standalone: true,
   hostDirectives: [KjConfirmPopupTrigger],
   template: `<ng-content />`,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-confirm-popup-trigger',
@@ -164,7 +177,6 @@ export class KjConfirmPopupTriggerComponent {}
       <ng-content />
     </kj-popover-content>
   `,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-confirm-popup-content-host',
@@ -208,7 +220,6 @@ export class KjConfirmPopupContentComponent {
   standalone: true,
   hostDirectives: [KjConfirmPopupMessage],
   template: `<ng-content />`,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: { class: 'kj-confirm-popup-message' },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -228,7 +239,6 @@ export class KjConfirmPopupMessageComponent {}
   standalone: true,
   hostDirectives: [KjConfirmPopupAction],
   template: `<ng-content />`,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-confirm-popup-action',
@@ -250,7 +260,6 @@ export class KjConfirmPopupActionComponent {}
   standalone: true,
   hostDirectives: [KjConfirmPopupCancel],
   template: `<ng-content />`,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'kj-confirm-popup-cancel',
@@ -271,9 +280,8 @@ export class KjConfirmPopupCancelComponent {}
   selector: 'kj-confirm-popup-actions',
   standalone: true,
   template: `<ng-content />`,
-  styleUrl: './confirm-popup.css',
   encapsulation: ViewEncapsulation.None,
   host: { class: 'kj-confirm-popup-actions' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjConfirmPopupActionsComponent {}
+export class KjConfirmPopupActions {}

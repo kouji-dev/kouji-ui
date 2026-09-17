@@ -1,4 +1,4 @@
-export { KjSlider } from './slider';
+export { KjSlider, coerceTicks, type KjSliderTicksInput } from './slider';
 export { KjSliderTrack } from './slider-track';
 export { KjSliderRange } from './slider-range';
 export { KjSliderThumb } from './slider-thumb';

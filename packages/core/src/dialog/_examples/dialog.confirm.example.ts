@@ -1,5 +1,5 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { KjDialog as KjDialogService } from '../dialog.service';
+import { KjDialogService } from '../dialog.service';
 import { KjDialogRef } from '../dialog.ref';
 import { KjButton } from '../../button/button';
 
@@ -11,24 +11,24 @@ import { KjButton } from '../../button/button';
     `
       :host {
         display: block;
-        background: var(--kj-surface);
-        border: 1px solid var(--kj-border);
-        border-radius: var(--kj-radius-lg);
+        background: var(--docs-surface);
+        border: 1px solid var(--docs-border);
+        border-radius: var(--docs-radius-lg);
         padding: 1.5rem;
         min-width: 22rem;
-        color: var(--kj-text);
-        font-family: var(--kj-font);
-        box-shadow: var(--kj-shadow-hard);
+        color: var(--docs-text);
+        font-family: var(--docs-font);
+        box-shadow: var(--docs-shadow-hard);
       }
       h2 {
         margin: 0 0 0.5rem;
         font-size: 1.125rem;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .dialog-body {
         margin: 0 0 1.5rem;
         font-size: 0.875rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
         line-height: 1.6;
       }
       .dialog-actions {
@@ -41,13 +41,13 @@ import { KjButton } from '../../button/button';
         font-size: 0.8125rem;
       }
       [data-variant='destructive'] {
-        background: var(--kj-destructive);
+        background: var(--docs-destructive);
         color: #fff;
       }
       [data-variant='outline'] {
         background: transparent;
-        color: var(--kj-text);
-        border: 1px solid var(--kj-border);
+        color: var(--docs-text);
+        border: 1px solid var(--docs-border);
       }
     `,
   ],
@@ -82,32 +82,32 @@ export class DialogConfirmContent {
         justify-content: center;
         gap: 1rem;
         padding: 3rem 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 160px;
         flex-direction: column;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .status {
         font-size: 0.8125rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
         min-height: 1.25rem;
       }
       .status.confirmed {
-        color: var(--kj-accent);
+        color: var(--docs-accent);
       }
       .status.cancelled {
-        color: var(--kj-destructive);
+        color: var(--docs-destructive);
       }
       button[kjButton] {
         padding: 0.5rem 1.5rem;
-        border: var(--kj-btn-border);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
       }
       [data-variant='destructive'] {
-        background: var(--kj-destructive);
+        background: var(--docs-destructive);
         color: #fff;
       }
     `,

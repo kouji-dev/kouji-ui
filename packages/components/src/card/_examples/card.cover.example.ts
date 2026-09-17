@@ -1,12 +1,12 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
-  KjCardComponent,
-  KjCardCoverComponent,
-  KjCardHeaderComponent,
-  KjCardTitleComponent,
-  KjCardSubtitleComponent,
-  KjCardContentComponent,
-  KjCardFooterComponent,
+  KjCard,
+  KjCardCover,
+  KjCardHeader,
+  KjCardTitle,
+  KjCardSubtitle,
+  KjCardContent,
+  KjCardFooter,
 } from '../card';
 import { KjButtonComponent } from '../../button/button';
 
@@ -14,13 +14,13 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-card-cover-example',
   standalone: true,
   imports: [
-    KjCardComponent,
-    KjCardCoverComponent,
-    KjCardHeaderComponent,
-    KjCardTitleComponent,
-    KjCardSubtitleComponent,
-    KjCardContentComponent,
-    KjCardFooterComponent,
+    KjCard,
+    KjCardCover,
+    KjCardHeader,
+    KjCardTitle,
+    KjCardSubtitle,
+    KjCardContent,
+    KjCardFooter,
     KjButtonComponent,
   ],
   styles: [

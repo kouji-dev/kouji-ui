@@ -8,6 +8,7 @@ import {
   PLATFORM_ID,
   type Type,
   afterNextRender,
+  booleanAttribute,
   computed,
   createComponent,
   effect,
@@ -18,9 +19,9 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import type { LexicalEditor, SerializedEditorState } from 'lexical';
-import type { RichTextEngine } from './engine';
+import { KjFormControl } from '../primitives/forms/form-control';
+import type { KjRichTextValueSnapshot, RichTextEngine } from './engine';
 import type { KjRichTextFeature, KjRteOverlay, KjRteToolbarItem } from './feature';
 import {
   KJ_RICH_TEXT,
@@ -61,14 +62,14 @@ export interface KjRteToolbarGroup {
  * Apply to a block element to turn it into an editable, accessible surface
  * (`role="textbox"`, `aria-multiline`). The editor is composed from **features**
  * (see {@link KjRichTextFeature}) supplied via {@link provideKjRichText}, the
- * `kjFeatures` input, or `[kjRichTextExtension]` child directives. Each feature
+ * `kjFeatures` input, or `[kjRichTextFeature]` child directives. Each feature
  * lazily loads its own `@lexical/*` package(s) in the browser, so disabling a
  * feature keeps its code out of the bundle. SSR-safe: the engine loads via
  * dynamic `import()` inside `afterNextRender`.
  *
  * Exposes the aggregated {@link toolbarItems}, reactive `state`, and imperative
  * helpers (`runItem`, `undo`, …) for a dynamic toolbar to bind to, and
- * implements {@link ControlValueAccessor} (HTML string model) for Angular forms.
+ * composes {@link KjFormControl} (HTML string model) for Angular forms.
  *
  * @doc-category Core/Forms
  * @doc
@@ -91,14 +92,14 @@ export interface KjRteToolbarGroup {
     '[attr.aria-readonly]': 'kjReadonly() ? "true" : null',
     '[attr.aria-disabled]': 'disabledState() ? "true" : null',
     '[attr.data-empty]': 'empty() ? "true" : null',
-    '(blur)': 'onTouched()',
+    '(blur)': 'formCtrl.notifyTouched()',
   },
+  hostDirectives: [KjFormControl],
   providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => KjRichTextEditor), multi: true },
     { provide: KJ_RICH_TEXT, useExisting: forwardRef(() => KjRichTextEditor) },
   ],
 })
-export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
+export class KjRichTextEditor implements KjRichTextHost {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
@@ -113,22 +114,30 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   readonly kjValue = input<string>('');
   /** Per-instance features, merged with provided + child-registered features. */
   readonly kjFeatures = input<readonly KjRichTextFeature[]>([]);
-  /** @deprecated Renamed to {@link kjFeatures}. Still honored (merged). */
-  readonly kjExtensions = input<readonly KjRichTextFeature[]>([]);
-  /** @deprecated Renamed to {@link kjFeatures}. Still honored (merged). */
-  readonly kjPlugins = input<readonly KjRichTextFeature[]>([]);
-  /** Makes the editor non-editable while still selectable. */
-  readonly kjReadonly = input<boolean>(false);
-  /** Native spellcheck toggle. */
-  readonly kjSpellcheck = input<boolean>(true);
+  /** Makes the editor non-editable while still selectable. Defaults to `false`. */
+  readonly kjReadonly = input(false, { transform: booleanAttribute });
+  /** Native spellcheck toggle. Defaults to `true`. */
+  readonly kjSpellcheck = input(true, { transform: booleanAttribute });
   /** Lexical namespace (diagnostics only). */
   readonly kjNamespace = input<string>('kj-rich-text');
 
-  /** Emits the serialized HTML whenever the document changes. */
+  /** Emits the serialized HTML whenever the document changes. Synchronous — it is the form value. */
   readonly valueChange = output<string>();
-  /** Emits the plain-text content whenever the document changes. */
+  /**
+   * Emits the plain-text content whenever the document changes.
+   *
+   * Coalesced to one animation frame: the plain text is a second full walk of
+   * the document and only its latest value is meaningful, so a burst of
+   * keystrokes emits once rather than once per keystroke. `valueChange` and the
+   * form value stay synchronous.
+   */
   readonly textChange = output<string>();
-  /** Emits the Lexical `SerializedEditorState` whenever the document changes. */
+  /**
+   * Emits the Lexical `SerializedEditorState` whenever the document changes.
+   *
+   * Coalesced to one animation frame, and serialized only when it is actually
+   * emitted — see {@link textChange}.
+   */
   readonly jsonChange = output<SerializedEditorState>();
   /** Emits messages a feature asked to announce to assistive technology. */
   readonly announce = output<string>();
@@ -154,8 +163,6 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   private readonly features = computed<readonly KjRichTextFeature[]>(() => [
     ...this.providedFeatures,
     ...this.kjFeatures(),
-    ...this.kjExtensions(),
-    ...this.kjPlugins(),
     ...this.childFeatures(),
   ]);
 
@@ -194,22 +201,40 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   /** The overlay currently open (opened by a feature), or `null`. */
   readonly activeOverlay = signal<KjActiveOverlay | null>(null);
 
-  /** @internal CVA disabled flag. */
-  readonly disabledState = signal(false);
+  /**
+   * The composed `KjFormControl` — this directive's `ControlValueAccessor`.
+   *
+   * The engine loads asynchronously, so a value written before it exists has
+   * to be buffered and applied the moment it arrives; that is what
+   * {@link KjFormControl.onWriteValue} is for, and it keeps the write
+   * synchronous with Angular's forms layer rather than deferring it to the
+   * next change-detection pass.
+   */
+  readonly formCtrl = inject(KjFormControl);
+
+  /** @internal CVA disabled flag, owned by the composed {@link KjFormControl}. */
+  readonly disabledState = this.formCtrl.disabled;
 
   private engine: RichTextEngine | null = null;
   private pendingValue: string | null = null;
   private lastHtml = '';
   private applyingExternal = false;
   private destroyed = false;
-
-  private onChange: (value: string) => void = () => {};
-  /** @internal blur handler wired via host bindings. */
-  onTouched: () => void = () => {};
+  /** Latest document awaiting the coalesced `textChange` / `jsonChange` emission. */
+  private pendingSnapshot: KjRichTextValueSnapshot | null = null;
+  /** rAF handle for that emission; `0` when none is scheduled. */
+  private pendingFrame = 0;
 
   constructor() {
+    // Angular forms writes land synchronously, before the next change
+    // detection pass — an `effect()` on `formCtrl.value` could not promise that.
+    this.formCtrl.onWriteValue((value) => this.applyHtml(value == null ? '' : String(value)));
+
     this.destroyRef.onDestroy(() => {
       this.destroyed = true;
+      if (this.pendingFrame) cancelAnimationFrame(this.pendingFrame);
+      this.pendingFrame = 0;
+      this.pendingSnapshot = null;
       this.engine?.destroy();
       this.engine = null;
     });
@@ -238,7 +263,7 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
         },
         {
           onState: (s) => this.state.set(s),
-          onValue: (v) => this.emitValue(v.html, v.text, v.json),
+          onValue: (v) => this.emitValue(v),
         },
       );
       this.applyingExternal = false;
@@ -254,13 +279,35 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
     });
   }
 
-  private emitValue(html: string, text: string, json: SerializedEditorState): void {
-    this.lastHtml = html;
+  /**
+   * Push one committed document to the outputs.
+   *
+   * The HTML is the `ControlValueAccessor` model, so `notifyChange` / `valueChange`
+   * stay synchronous. `textChange` and `jsonChange` are derived views that each
+   * cost another full-document walk and are only ever read at their latest
+   * value, so they are computed lazily and coalesced to one animation frame —
+   * a fast typist (or a paste-then-format burst) serialises once per frame
+   * instead of once per committed update.
+   */
+  private emitValue(value: KjRichTextValueSnapshot): void {
+    this.lastHtml = value.html;
     if (this.applyingExternal) return;
-    this.onChange(html);
-    this.valueChange.emit(html);
-    this.textChange.emit(text);
-    this.jsonChange.emit(json);
+    this.formCtrl.notifyChange(value.html);
+    this.valueChange.emit(value.html);
+
+    this.pendingSnapshot = value;
+    if (this.pendingFrame) return;
+    this.pendingFrame = requestAnimationFrame(() => this.flushDerivedOutputs());
+  }
+
+  /** Emit the coalesced `textChange` / `jsonChange` for the latest document. */
+  private flushDerivedOutputs(): void {
+    this.pendingFrame = 0;
+    const snapshot = this.pendingSnapshot;
+    this.pendingSnapshot = null;
+    if (!snapshot || this.destroyed) return;
+    this.textChange.emit(snapshot.text());
+    this.jsonChange.emit(snapshot.json());
   }
 
   private openOverlayById(id: string, data: unknown): void {
@@ -273,11 +320,6 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
   /** {@inheritDoc KjRichTextHost.registerFeature} */
   registerFeature(feature: KjRichTextFeature): void {
     this.childFeatures.update((list) => [...list, feature]);
-  }
-
-  /** @deprecated Renamed to {@link registerFeature}. */
-  registerExtension(feature: KjRichTextFeature): void {
-    this.registerFeature(feature);
   }
 
   /** Run a toolbar item's action against the live editor (no-op until ready). */
@@ -329,7 +371,7 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
 
   /** Replace the content from an HTML string. */
   setHtml(html: string): void {
-    this.writeValue(html);
+    this.applyHtml(html);
   }
 
   /** Serialize the current content to a Lexical `SerializedEditorState`. */
@@ -369,10 +411,12 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
     };
   }
 
-  // -- ControlValueAccessor ------------------------------------------------
-
-  writeValue(value: string | null): void {
-    const html = value ?? '';
+  /**
+   * Replace the document from an HTML string without notifying the forms
+   * layer — the inbound half of the `ControlValueAccessor` contract. Buffered
+   * until the Lexical engine finishes loading.
+   */
+  private applyHtml(html: string): void {
     if (html === this.lastHtml) return;
     if (this.engine) {
       this.applyingExternal = true;
@@ -382,17 +426,5 @@ export class KjRichTextEditor implements ControlValueAccessor, KjRichTextHost {
     } else {
       this.pendingValue = html;
     }
-  }
-
-  registerOnChange(fn: (value: string) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.disabledState.set(isDisabled);
   }
 }

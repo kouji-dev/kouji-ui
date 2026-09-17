@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="dune"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — soft, hand-made ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -60,13 +64,14 @@
     --kj-fg-primary:    #3a2862;
     --kj-fg-accent:     #8a3415;
     --kj-fg-info:       #1e3a8a;
-    --kj-fg-success:    #4a6b2b;
+    --kj-fg-success:    #466727;
     --kj-fg-warning:    #6b4a0e;
     --kj-fg-danger:     #8b1818;
 
     --kj-border-default:   #d4c2a0;
     --kj-border-muted:     #e0d2b8;
     --kj-border-strong:    #ad9468;
+    --kj-border-control:  #8c744a;
     --kj-border-focus:     #3a2862;
     --kj-border-disabled:  #ddc5a3;
     --kj-border-primary:   #3a2862;

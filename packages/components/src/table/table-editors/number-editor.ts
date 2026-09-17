@@ -1,15 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   ViewEncapsulation,
-  afterNextRender,
-  inject,
-  signal,
   viewChild,
 } from '@angular/core';
 import { KjNumberInputComponent } from '../../number-input/number-input';
-import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
+import { injectKjCellEditor } from './cell-editor';
 
 /**
  * Inline numeric cell editor for `<kj-table>`. Renders the styled
@@ -19,6 +15,8 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
  *
  * Commits on Enter or blur. Cancels on Escape. Non-finite drafts (e.g. an
  * empty field) round-trip through `cancel()` rather than committing `NaN`.
+ * Blur commits only when focus leaves the whole editor, so moving between
+ * the field and a stepper button never commits early.
  */
 @Component({
   selector: 'kj-number-editor',
@@ -28,9 +26,9 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
     <kj-number-input
       class="kj-editor kj-editor--number"
       [(kjValue)]="draft"
-      (keydown.enter)="commit()"
-      (keydown.escape)="cancel(); $event.stopPropagation()"
-      (focusout)="onFocusOut($event)"
+      (keydown.enter)="editor.commit()"
+      (keydown.escape)="editor.cancel(); $event.stopPropagation()"
+      (focusout)="editor.onFocusOut($event)"
     />
   `,
   encapsulation: ViewEncapsulation.None,
@@ -38,52 +36,14 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjNumberEditor {
-  private readonly ctx = inject(KJ_EDITOR_CONTRACT) as KjEditorContract<number>;
-  private readonly hostEl: ElementRef<HTMLElement> = inject(ElementRef);
-  private settled = false;
-  private mounted = false;
-
   /** Template-bound `<kj-number-input>` — exposes a public `focus()`. */
   private readonly numberInput = viewChild(KjNumberInputComponent);
 
-  protected readonly draft = signal<number>(0);
+  protected readonly editor = injectKjCellEditor<number>({
+    seed: (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0),
+    focus: () => this.numberInput()?.focus(),
+    validate: (v) => Number.isFinite(v),
+  });
 
-  constructor() {
-    const v = this.ctx.value;
-    this.draft.set(typeof v === 'number' && Number.isFinite(v) ? v : 0);
-    afterNextRender(() => {
-      this.numberInput()?.focus();
-      this.mounted = true;
-    });
-  }
-
-  protected commit(): void {
-    if (this.settled) return;
-    const value = this.draft();
-    this.settled = true;
-    if (Number.isFinite(value)) {
-      this.ctx.commit(value);
-    } else {
-      this.ctx.cancel();
-    }
-  }
-
-  protected cancel(): void {
-    if (this.settled) return;
-    this.settled = true;
-    this.ctx.cancel();
-  }
-
-  /**
-   * Commit on blur — but only when focus leaves the entire editor host
-   * (i.e. not when focus moves between the inner input and a stepper
-   * button). Without this guard, clicking a +/- stepper would fire blur
-   * and prematurely commit before the value updates.
-   */
-  protected onFocusOut(event: FocusEvent): void {
-    if (!this.mounted || this.settled) return;
-    const next = event.relatedTarget as Node | null;
-    if (next && this.hostEl.nativeElement.contains(next)) return;
-    this.commit();
-  }
+  protected readonly draft = this.editor.draft;
 }

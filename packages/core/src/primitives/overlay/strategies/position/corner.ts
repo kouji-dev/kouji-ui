@@ -1,8 +1,10 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjPositionStrategy } from '../../tokens';
 
+/** Viewport corner an overlay is pinned to. */
 export type KjCornerPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
+/** Pins the panel to a viewport corner with an optional px offset. Used by the toast viewport. */
 export function corner(opts: { position: KjCornerPosition; offset?: { x?: number; y?: number } }): KjPositionStrategy {
   let ctx: KjOverlayContext | null = null;
   const ox = opts.offset?.x ?? 0;

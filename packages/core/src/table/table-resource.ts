@@ -1,6 +1,7 @@
 import { resource, Signal, type ResourceRef } from '@angular/core';
 import type { KjTableState, KjResourceResult } from './table.types';
 
+/** Options for {@link kjTableResource}. */
 export interface KjTableResourceOptions<TData, TRequest = unknown> {
   /** Signal carrying the table's current state. Wired into the resource request. */
   stateSignal: Signal<KjTableState>;

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { kjColumn, type KjColumnDef } from '@kouji-ui/core';
 import { KjTableComponent } from '../table';
-import { KjTableToolbarComponent, KjBulkAction } from '../table-toolbar';
-import { KjTableStatusBarComponent } from '../table-status-bar';
+import { KjTableToolbar, KjBulkAction } from '../table-toolbar';
+import { KjTableStatusBar } from '../table-status-bar';
 import { KjButtonComponent } from '../../button/button';
 
 interface User {
@@ -24,8 +24,8 @@ interface User {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     KjTableComponent,
-    KjTableToolbarComponent,
-    KjTableStatusBarComponent,
+    KjTableToolbar,
+    KjTableStatusBar,
     KjBulkAction,
     KjButtonComponent,
   ],

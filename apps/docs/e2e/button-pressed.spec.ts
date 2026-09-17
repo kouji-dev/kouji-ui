@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { gotoExamples } from './_helpers';
 
 test('pressed (toggle) button reports aria-pressed correctly', async ({ page }) => {
-  await page.goto('/docs/components/button');
+  await gotoExamples(page, 'button');
 
   const example = page.locator('[data-toc-entry="Pressed (toggle)"]');
   await expect(example).toBeVisible();

@@ -1,13 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ViewChild,
   ViewEncapsulation,
   booleanAttribute,
+  effect,
+  inject,
   input,
   output,
+  viewChild,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
 import {
   KjColorPicker,
   KjColorPickerAlphaSlider,
@@ -16,6 +17,8 @@ import {
   KjColorPickerInput,
   KjColorPickerPanel,
   KjColorPickerTrigger,
+  KjFormControl,
+  KjTranslateService,
   type KjColorFormat,
   type KjColorPreset,
   type KjColorValue,
@@ -102,13 +105,7 @@ import {
     KjColorPickerAlphaSlider,
     KjColorPickerInput,
   ],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: KjColorPickerComponent,
-      multi: true,
-    },
-  ],
+  hostDirectives: [KjFormControl],
   template: `
     <div
       kjColorPicker
@@ -123,11 +120,16 @@ import {
       (kjOpenChange)="kjOpenChange.emit($event)"
       (kjCommit)="kjCommit.emit($event)"
     >
+      <!-- The accessible name comes from KjColorPickerTrigger's own host
+           binding (catalog key colorPicker.trigger, or kjAriaLabel); an
+           aria-label attribute here would be silently overwritten by it, which
+           is exactly what used to happen. The linter cannot see a name that a
+           composed directive supplies at runtime. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/elements-content -->
       <button
         type="button"
         kjColorPickerTrigger
         class="kj-color-picker-trigger"
-        aria-label="Open color picker"
       ></button>
       <div kjColorPickerPanel class="kj-color-picker-panel">
         <div kjColorPickerArea class="kj-color-picker-area"></div>
@@ -143,7 +145,11 @@ import {
           <input kjColorPickerInput class="kj-color-picker-input" />
         }
         @if (kjPresets().length > 0) {
-          <div role="listbox" aria-label="Preset colors" class="kj-color-picker-presets">
+          <div
+            role="listbox"
+            [attr.aria-label]="presetsLabel()"
+            class="kj-color-picker-presets"
+          >
             @for (preset of kjPresets(); track preset.value) {
               <button
                 type="button"
@@ -168,31 +174,51 @@ import {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjColorPickerComponent implements ControlValueAccessor {
+export class KjColorPickerComponent {
+  private readonly i18n = inject(KjTranslateService);
+
+  /** Accessible name of the preset listbox (`colorPicker.presets`). */
+  protected readonly presetsLabel = this.i18n.translation('colorPicker.presets');
+
   /** Output format. Default `'hex'`. */
   readonly kjFormat = input<KjColorFormat>('hex');
   /** Mount the alpha slider and switch to 8-char hex output when α<1. */
   readonly kjShowAlpha = input(false, { transform: booleanAttribute });
-  /** Force 8-char hex output even when α=1. */
-  readonly kjAlwaysEmitAlpha = input(false);
+  /** Force 8-char hex output even when α=1. Default `false`. */
+  readonly kjAlwaysEmitAlpha = input(false, { transform: booleanAttribute });
   /** Brand-palette preset swatches. Empty array hides the preset row. */
   readonly kjPresets = input<readonly KjColorPreset[]>([]);
-  /** Touched-gated invalid posture; mirrors `KjInput`. */
-  readonly kjInvalid = input(false);
+  /** Touched-gated invalid posture; mirrors `KjInput`. Default `false`. */
+  readonly kjInvalid = input(false, { transform: booleanAttribute });
   /** Override the default "Color picker" name on the trigger. */
   readonly kjAriaLabel = input<string>('');
-  /** Mirror the headless `KjDisabled` posture. */
-  readonly kjDisabled = input(false);
-  /** Show or hide the hex text input within the default panel layout. */
-  readonly kjShowHexInput = input<boolean>(true);
+  /** Mirror the headless `KjDisabled` posture. Default `false`. */
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /** Show or hide the hex text input within the default panel layout. Default `true`. */
+  readonly kjShowHexInput = input(true, { transform: booleanAttribute });
 
   /** Fires when the panel transitions between open and closed. */
   readonly kjOpenChange = output<boolean>();
   /** Fires when the user commits a color (panel close, hex Enter, preset click). */
   readonly kjCommit = output<KjColorValue>();
 
-  @ViewChild(KjColorPicker, { static: true })
-  protected innerPicker?: KjColorPicker;
+  /** The headless picker rendered in this component's view — the real accessor. */
+  protected readonly innerPicker = viewChild(KjColorPicker);
+
+  /**
+   * The composed `KjFormControl` — this component's `ControlValueAccessor`.
+   *
+   * `delegateTo` hands every forms interaction to the inner `kjColorPicker`'s
+   * own control once the view query resolves, and replays whatever Angular
+   * wrote before then. The four forwarding methods this replaced were guarded
+   * with `?.`, so a `[formControl]` seeded before first render was dropped on
+   * the floor with no error.
+   */
+  protected readonly formCtrl = inject(KjFormControl);
+
+  constructor() {
+    effect(() => this.formCtrl.delegateTo(this.innerPicker()?.formCtrl));
+  }
 
   /**
    * Opaque-only current hex (no alpha digits). Used as the alpha-slider
@@ -209,24 +235,6 @@ export class KjColorPickerComponent implements ControlValueAccessor {
   /** @internal */
   protected selectPreset(root: KjColorPicker, preset: KjColorPreset): void {
     root.setHex(preset.value);
-  }
-
-  // ── ControlValueAccessor ──────────────────────────────────────────
-  // Re-expose the inner directive's CVA so consumers can bind `[formControl]`
-  // / `[(ngModel)]` directly on `<kj-color-picker>`. The inner KjFormControl
-  // is the canonical accessor — we just delegate.
-
-  writeValue(val: unknown): void {
-    this.innerPicker?.formCtrl.writeValue(val);
-  }
-  registerOnChange(fn: (value: unknown) => void): void {
-    this.innerPicker?.formCtrl.registerOnChange(fn);
-  }
-  registerOnTouched(fn: () => void): void {
-    this.innerPicker?.formCtrl.registerOnTouched(fn);
-  }
-  setDisabledState(isDisabled: boolean): void {
-    this.innerPicker?.formCtrl.setDisabledState(isDisabled);
   }
 }
 

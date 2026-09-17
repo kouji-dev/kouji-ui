@@ -14,8 +14,8 @@ import { KjButton } from '../../button/button';
         align-items: center;
         justify-content: center;
         padding: 5rem 4rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 220px;
       }
       .grid {
@@ -27,27 +27,27 @@ import { KjButton } from '../../button/button';
       }
       button[kjButton] {
         padding: 0.5rem 1.25rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
-        border: var(--kj-btn-border);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
       }
       [data-variant='default'] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
       }
       .empty {
         width: 80px;
       }
       :global(kj-tooltip-content) {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
         padding: 0.25rem 0.625rem;
         font-size: 0.75rem;
         white-space: nowrap;
         pointer-events: none;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
       }
     `,
   ],

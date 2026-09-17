@@ -7,14 +7,15 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
 } from '@angular/core';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
- * Shape of the preset configuration consumed by `KjVariant`. One per consumer
- * directive, provided via `bindPresets` from a per-component config token.
+ * Shape of the preset configuration consumed by {@link KjVariant}. One per
+ * consumer directive, provided via {@link bindPresets} from a per-component
+ * config token.
  *
- * @internal
+ * Public, semver-bound API.
  */
 export interface KjVariantPreset {
   values: string[];
@@ -27,7 +28,8 @@ export interface KjVariantPreset {
  *
  * Default factory: `{ values: ['default'], default: 'default' }`.
  *
- * @internal
+ * Public, semver-bound API — provide it directly, or (preferably) derive it
+ * from a per-component config token with {@link bindPresets}.
  */
 export const KJ_VARIANT_PRESET = new InjectionToken<KjVariantPreset>('kj.variant.preset', {
   factory: () => ({ values: ['default'], default: 'default' }),
@@ -43,22 +45,29 @@ export const KJ_VARIANT_PRESET = new InjectionToken<KjVariantPreset>('kj.variant
  *
  * A `null` provider value (or no provider) means "no fallback".
  *
- * @internal
+ * Public, semver-bound API — a compound parent provides it to cascade its own
+ * resolved value onto its children.
  */
 export const KJ_VARIANT_FALLBACK = new InjectionToken<Signal<string | undefined> | null>(
   'kj.variant.fallback',
 );
 
 /**
- * Internal preset directive composed via `hostDirectives` by every stylistic
- * component to expose a configurable `variant` input that reflects to a
- * `data-variant` host attribute. App code does not import this directly.
+ * Preset directive composed via `hostDirectives` by every stylistic component
+ * to expose a configurable `kjVariant` input that reflects to a `data-variant` host
+ * attribute.
  *
  * The reflected value resolves as: explicit `kjVariant` input, else the
- * `KJ_VARIANT_FALLBACK` context (when a compound parent provides one), else
- * `KJ_VARIANT_PRESET.default` (the `provideKj*`-configurable default).
+ * {@link KJ_VARIANT_FALLBACK} context (when a compound parent provides one), else
+ * {@link KJ_VARIANT_PRESET}`.default` (the `provideKj*`-configurable default). An
+ * unknown value is reflected as-is and warned about once in dev mode — the
+ * directive never silently falls back, because the value may well have CSS.
  *
- * @internal
+ * Application code composes this the same way the library does — via
+ * `hostDirectives` plus {@link bindPresets}, not by importing it into a
+ * template. See {@link bindPresets} for the full recipe.
+ *
+ * Public, semver-bound API.
  */
 @Directive({
   selector: '[kjVariant]',
@@ -76,6 +85,10 @@ export class KjVariant {
   // The input intentionally stays `undefined` when unset (empty string
   // included) so `resolvedVariant` can tell "not set" apart from an explicit
   // choice and consult the fallback chain.
+  /**
+   * Requested variant token. Default `undefined` (unset) so `resolvedVariant`
+   * can fall back to the variant context and then the preset default.
+   */
   readonly kjVariant: InputSignalWithTransform<string | undefined, string | undefined> = input(
     undefined as string | undefined,
     { transform: (v?: string) => v || undefined },
@@ -90,12 +103,13 @@ export class KjVariant {
   );
 
   constructor() {
-    if (isDevMode()) {
+    if (kjDevMode()) {
       effect(() => {
         const v = this.resolvedVariant();
         if (!this.preset.values.includes(v)) {
-          console.warn(
-            `[kj] unknown variant "${v}". Allowed values: ${this.preset.values.join(', ')}.`,
+          kjDevWarn(
+            'kjVariant',
+            `unknown variant "${v}". Allowed values: ${this.preset.values.join(', ')}.`,
           );
         }
       });

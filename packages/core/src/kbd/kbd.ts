@@ -3,9 +3,9 @@ import {
   ElementRef,
   afterNextRender,
   inject,
-  isDevMode,
 } from '@angular/core';
 import { KjSize, type KjSizePreset } from '../presets';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Default size preset used by Kbd consumers (`xs / sm / md / lg`, default `md`).
@@ -80,13 +80,14 @@ export class KjKbd {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    if (isDevMode()) {
+    if (kjDevMode()) {
       afterNextRender(() => {
         const host = this.el.nativeElement;
 
         if (host.tagName?.toLowerCase() !== 'kbd') {
-          console.warn(
-            `[kj] kjKbd applied to <${host.tagName?.toLowerCase()}>. ` +
+          kjDevWarn(
+            'kjKbd',
+            `applied to <${host.tagName?.toLowerCase()}>. ` +
               `Recommended host element is <kbd> for native semantics ` +
               `(WCAG 1.3.1 / 4.1.2). Apply only to non-kbd elements when ` +
               `you have a specific styling reason.`,
@@ -94,12 +95,13 @@ export class KjKbd {
         }
 
         if (hasFocusableDescendant(host)) {
-          console.warn(
-            `[kj] kjKbd contains a focusable descendant. Kbd is a ` +
-              `non-interactive visual primitive; most AT will re-parent or ` +
-              `strip interactive children out of the kbd's accessible name. ` +
-              `Wrap the <kbd kjKbd> inside a <button kjButton> instead of ` +
-              `nesting an interactive element inside it.`,
+          kjDevWarn(
+            'kjKbd',
+            `contains a focusable descendant. Kbd is a non-interactive visual ` +
+              `primitive; most AT will re-parent or strip interactive children ` +
+              `out of the kbd's accessible name. Wrap the <kbd kjKbd> inside a ` +
+              `<button kjButton> instead of nesting an interactive element ` +
+              `inside it.`,
           );
         }
       });

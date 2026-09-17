@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
-  KjEmptyStateComponent,
-  KjEmptyStateIconComponent,
-  KjEmptyStateTitleComponent,
-  KjEmptyStateDescriptionComponent,
-  KjEmptyStateActionsComponent,
+  KjEmptyState,
+  KjEmptyStateIcon,
+  KjEmptyStateTitle,
+  KjEmptyStateDescription,
+  KjEmptyStateActions,
 } from '../empty-state';
 import { KjButtonComponent } from '../../button/button';
 
@@ -16,11 +16,11 @@ import { KjButtonComponent } from '../../button/button';
   selector: 'kj-empty-state-sizes-example',
   standalone: true,
   imports: [
-    KjEmptyStateComponent,
-    KjEmptyStateIconComponent,
-    KjEmptyStateTitleComponent,
-    KjEmptyStateDescriptionComponent,
-    KjEmptyStateActionsComponent,
+    KjEmptyState,
+    KjEmptyStateIcon,
+    KjEmptyStateTitle,
+    KjEmptyStateDescription,
+    KjEmptyStateActions,
     KjButtonComponent,
   ],
   styles: [

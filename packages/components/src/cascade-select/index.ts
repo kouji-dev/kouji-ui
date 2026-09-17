@@ -1,5 +1,5 @@
 export {
   KjCascadeSelectComponent,
-  KjCascadeOptionComponent,
-  KjCascadeSubPanelComponent,
+  KjCascadeOption,
+  KjCascadeSubPanel,
 } from './cascade-select';

@@ -1,8 +1,8 @@
-import { Directive, inject } from '@angular/core';
+import { Directive } from '@angular/core';
 import {
   KJ_CONFIRM_POPUP,
-  type KjConfirmPopupContext,
 } from './confirm-popup.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * The cancel action button slot. Click resolves the popup with `false`,
@@ -29,7 +29,7 @@ import {
   },
 })
 export class KjConfirmPopupCancel {
-  protected readonly ctx = inject<KjConfirmPopupContext>(KJ_CONFIRM_POPUP);
+  protected readonly ctx = injectParent(KJ_CONFIRM_POPUP, { child: 'KjConfirmPopupCancel', parent: '[kjConfirmPopup]' });
 
   protected onClick(event: MouseEvent): void {
     event.stopPropagation();

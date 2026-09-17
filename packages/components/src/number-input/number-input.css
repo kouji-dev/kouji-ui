@@ -10,7 +10,7 @@
   .kj-number-input {
     --kj-number-input-bg:               var(--kj-bg-field);
     --kj-number-input-fg:               var(--kj-fg-default);
-    --kj-number-input-border-color:     var(--kj-border-default);
+    --kj-number-input-border-color:     var(--kj-border-control);
     --kj-number-input-border-width:     var(--kj-border);
     --kj-number-input-radius:           var(--kj-radius-field);
     --kj-number-input-padding-x:        var(--kj-space-md);
@@ -18,9 +18,9 @@
     --kj-number-input-font-size:        var(--kj-text-sm);
     --kj-number-input-stepper-bg:       var(--kj-bg-surface);
     --kj-number-input-stepper-fg:       var(--kj-fg-default);
-    --kj-number-input-stepper-size:     2.25rem;
+    --kj-number-input-stepper-size:     var(--kj-ctl-h-md);
     /* Same height contract as .kj-input — keep form rows aligned. */
-    --kj-number-input-height:           2.25rem;
+    --kj-number-input-height:           var(--kj-ctl-h-md);
 
     display: inline-flex;
     align-items: stretch;
@@ -33,9 +33,9 @@
     font: var(--kj-number-input-font-size) / 1.4 var(--kj-number-input-font);
     transition: var(--kj-transition);
   }
-  .kj-number-input[data-size="xs"] { --kj-number-input-height: 1.75rem; --kj-number-input-stepper-size: 1.75rem; --kj-number-input-font-size: 0.75rem;   --kj-number-input-padding-x: var(--kj-space-sm); }
-  .kj-number-input[data-size="sm"] { --kj-number-input-height: 2rem;    --kj-number-input-stepper-size: 2rem;    --kj-number-input-font-size: 0.8125rem; }
-  .kj-number-input[data-size="lg"] { --kj-number-input-height: 2.75rem; --kj-number-input-stepper-size: 2.75rem; --kj-number-input-font-size: 1rem; }
+  .kj-number-input[data-size="xs"] { --kj-number-input-height: var(--kj-ctl-h-xs); --kj-number-input-stepper-size: var(--kj-ctl-h-xs); --kj-number-input-font-size: 0.75rem;   --kj-number-input-padding-x: var(--kj-space-sm); }
+  .kj-number-input[data-size="sm"] { --kj-number-input-height: var(--kj-ctl-h-sm);    --kj-number-input-stepper-size: var(--kj-ctl-h-sm);    --kj-number-input-font-size: 0.8125rem; }
+  .kj-number-input[data-size="lg"] { --kj-number-input-height: var(--kj-ctl-h-lg); --kj-number-input-stepper-size: var(--kj-ctl-h-lg); --kj-number-input-font-size: 1rem; }
 
   /* At `xs` we hide the stepper buttons — at 28px the +/- glyphs become
      too cramped to hit accurately, and the typical xs context (filter rows,

@@ -14,10 +14,10 @@ import { KjButton } from '../../button/button';
         align-items: center;
         justify-content: center;
         padding: 5rem 3rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 180px;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .row {
         display: flex;
@@ -28,28 +28,28 @@ import { KjButton } from '../../button/button';
       }
       button[kjButton] {
         padding: 0.35rem 0.875rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        border: var(--kj-btn-border);
-        border-radius: var(--kj-radius-md);
+        border: var(--docs-btn-border);
+        border-radius: var(--docs-radius-md);
         cursor: pointer;
-        box-shadow: var(--kj-shadow-sm);
-        transition: var(--kj-transition);
+        box-shadow: var(--docs-shadow-sm);
+        transition: var(--docs-transition);
       }
       button[kjButton]:not([data-variant='link']):not([data-variant='ghost']):hover {
         transform: translate(-1px, -1px);
-        box-shadow: var(--kj-shadow-md);
+        box-shadow: var(--docs-shadow-md);
       }
       button[kjButton][data-variant='default'] {
-        background: var(--kj-text);
-        color: var(--kj-bg);
+        background: var(--docs-text);
+        color: var(--docs-bg);
       }
       button[kjButton][data-variant='link'] {
         background: transparent;
-        color: var(--kj-text);
+        color: var(--docs-text);
         border: none;
         box-shadow: none;
         border-radius: 0;
@@ -63,7 +63,7 @@ import { KjButton } from '../../button/button';
       }
       button[kjButton][data-variant='ghost'] {
         background: transparent;
-        color: var(--kj-text);
+        color: var(--docs-text);
         border: 2px solid transparent;
         box-shadow: none;
         opacity: 0.7;
@@ -73,8 +73,8 @@ import { KjButton } from '../../button/button';
         background: rgba(0, 0, 0, 0.06);
       }
       :global(kj-tooltip-content) {
-        background: var(--kj-text);
-        color: var(--kj-bg);
+        background: var(--docs-text);
+        color: var(--docs-bg);
         padding: 0.2rem 0.5rem;
         font-size: 0.6875rem;
         font-weight: 700;
@@ -82,8 +82,8 @@ import { KjButton } from '../../button/button';
         letter-spacing: 0.04em;
         white-space: nowrap;
         pointer-events: none;
-        border: 1px solid var(--kj-border);
-        box-shadow: var(--kj-shadow-sm);
+        border: 1px solid var(--docs-border);
+        box-shadow: var(--docs-shadow-sm);
       }
     `,
   ],

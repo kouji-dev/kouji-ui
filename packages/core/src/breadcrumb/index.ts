@@ -11,6 +11,10 @@ export {
   type KjBreadcrumbItemContext,
 } from './breadcrumb.context';
 export {
+  injectKjBreadcrumbLabels,
+  type KjBreadcrumbLabels,
+} from './labels';
+export {
   KJ_BREADCRUMB_CONFIG,
   KJ_BREADCRUMB_DEFAULTS,
   provideKjBreadcrumb,

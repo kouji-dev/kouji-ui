@@ -93,7 +93,7 @@ describe('KjKbd', () => {
       await flushAfterNextRender();
       const matched = warn.mock.calls.some((c) => {
         const msg = String(c[0]);
-        return /kjKbd applied to <span>/i.test(msg) && /<kbd>/i.test(msg);
+        return /\[kjKbd\] applied to <span>/i.test(msg) && /<kbd>/i.test(msg);
       });
       expect(matched).toBe(true);
     });

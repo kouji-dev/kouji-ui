@@ -18,7 +18,7 @@ import {
   provideKjFilterParams,
   type KjFilterParams,
 } from '@kouji-ui/core';
-import { KJ_FILTER_CONTEXT, type KjFilterContext } from './table-filters/text-filter';
+import { KJ_FILTER_CONTEXT, type KjFilterContext } from './table-filters/filters.context';
 
 /**
  * Cell-row outlet that mounts a built-in or user-supplied filter UI for one

@@ -5,7 +5,7 @@ import { KjTruncate } from '@kouji-ui/core';
  * Multi-line truncate example using the `kjTruncate` directive.
  *
  * Clamps the host's text content to a fixed number of lines via
- * `data-truncate="N"`. After first render the directive injects a
+ * `data-kj-truncate="N"`. After first render the directive injects a
  * normalised `[title]` attribute (when the consumer has not supplied
  * `title` or `aria-label`) so sighted-but-zoomed users can still read the
  * full text on hover.

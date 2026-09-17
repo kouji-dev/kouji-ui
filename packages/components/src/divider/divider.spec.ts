@@ -205,3 +205,29 @@ describe('KjDividerComponent', () => {
     });
   });
 });
+
+/** arch F-2 — `kjStructural` accepts the bare-attribute form. */
+describe('kj-divider bare boolean attributes', () => {
+  @Component({
+    standalone: true,
+    imports: [KjDividerComponent],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `<kj-divider kjStructural />`,
+  })
+  class BareHost {}
+
+  test('a bare kjStructural makes the rule semantic, not decorative', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    await flushAfterNextRender();
+    fixture.detectChanges();
+    const rule = fixture.nativeElement.querySelector('[kjDivider]') as HTMLElement;
+    // A content-less divider renders an <hr>, which already has the implicit
+    // separator role — the directive deliberately adds no explicit `role`.
+    // What `kjStructural` controls there is the aria-hidden suppression.
+    expect(rule.tagName).toBe('HR');
+    expect(rule.hasAttribute('aria-hidden')).toBe(false);
+  });
+});

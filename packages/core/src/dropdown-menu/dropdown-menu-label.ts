@@ -12,9 +12,16 @@ import { KjListGroupLabel } from '../primitives/list';
  * Sets `role="presentation"` — the label is heading text, not a
  * focusable item, and the surrounding navigator skips it.
  *
+ * Must sit inside a `[kjDropdownMenuGroup]` — that is the element whose
+ * `aria-labelledby` the label registers with. A bare label throws a
+ * library error naming the missing parent.
+ *
  * @example
  * ```html
- * <span kjDropdownMenuLabel>Account</span>
+ * <div kjDropdownMenuGroup>
+ *   <span kjDropdownMenuLabel>Account</span>
+ *   <button kjDropdownMenuItem>Profile</button>
+ * </div>
  * ```
  * @doc-category Core/Overlay
  */

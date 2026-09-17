@@ -3,7 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { KjButtonComponent } from '../../button/button';
 import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
 import { KjInputComponent } from '../../input/input';
-import { KjFormActionsComponent, KjFormComponent, KjFormSummaryComponent } from '../form';
+import { KjFormActions, KjFormComponent, KjFormSummary } from '../form';
 
 /**
  * Validation example — submitting an empty form populates the
@@ -15,8 +15,8 @@ import { KjFormActionsComponent, KjFormComponent, KjFormSummaryComponent } from 
   standalone: true,
   imports: [
     KjFormComponent,
-    KjFormActionsComponent,
-    KjFormSummaryComponent,
+    KjFormActions,
+    KjFormSummary,
     KjFieldComponent,
     KjFieldLabelComponent,
     KjInputComponent,

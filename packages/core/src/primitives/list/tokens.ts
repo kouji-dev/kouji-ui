@@ -40,6 +40,17 @@ export interface KjListNavigatorConfig {
    */
   readonly treeShape?: Signal<KjTreeShape<unknown> | null>;
   /**
+   * Index-addressed cursor, present only while this container renders a
+   * WINDOW of its rows (see `KjListVirtual`). `KjListNavigator` reads it in
+   * place of the rendered item list, so ArrowDown walks past the end of the
+   * window instead of stopping at it.
+   *
+   * It rides on the config — rather than on a token of its own — because a
+   * nested list composite already shadows `KJ_LIST_NAVIGATOR_CONFIG` with
+   * its own instance, which is exactly the scoping a windowed dataset needs.
+   */
+  readonly virtual?: Signal<KjListVirtualSource | null>;
+  /**
    * Consumer-side hook invoked by `KjListItem` immediately after it
    * toggles the shared `KjSelectionModel`. Lets the consumer do its
    * post-selection work (close an overlay, set an input query, emit a
@@ -52,6 +63,7 @@ export interface KjListNavigatorConfig {
   afterSelect?(value: unknown, closeRequested: boolean): void;
 }
 
+/** Per-cluster `KjListNavigator` wiring (items, selection hooks, windowing). No default. */
 export const KJ_LIST_NAVIGATOR_CONFIG =
   new InjectionToken<KjListNavigatorConfig>('KJ_LIST_NAVIGATOR_CONFIG');
 
@@ -76,6 +88,37 @@ export type KjListFocusMode = 'activedescendant' | 'roving';
 export const KJ_LIST_FOCUS_MODE =
   new InjectionToken<Signal<KjListFocusMode>>('KJ_LIST_FOCUS_MODE');
 
+/**
+ * Index-addressed navigation for a list that renders only a window of its
+ * rows (see `KjListVirtual`).
+ *
+ * `KjListNavigator` normally walks the `KjListItem` directives that are
+ * actually in the DOM. A windowed list has no directive for row 3 000, so
+ * its container exposes one of these as `KjListNavigatorConfig.virtual`:
+ * the navigator then moves a cursor over the whole dataset by index and
+ * hands the move back here, and the source is responsible for scrolling the
+ * row into the window and pointing `activeId` at it once it renders.
+ *
+ * Everything else — `aria-activedescendant`, roving focus, focus-in sync,
+ * type-ahead — keeps working off the rendered items, because by the time
+ * the navigator reads them the active row is one of them.
+ *
+ * @doc-category Core/Primitives
+ */
+export interface KjListVirtualSource {
+  /** Rows in the dataset the cursor may address. */
+  readonly count: Signal<number>;
+  /** Current cursor position, or `-1` when nothing is active. */
+  readonly activeIndex: Signal<number>;
+  /** Whether the row at `index` can take the cursor (i.e. is not disabled). */
+  isNavigable(index: number): boolean;
+  /** Move the cursor. The source scrolls the row into the window. */
+  setActiveIndex(index: number): void;
+  /** Activate the row at `index` (Enter / Space on the navigator host). */
+  activateIndex(index: number): void;
+}
+
+/** Axis a navigator responds to. `'both'` handles all four arrows. */
 export type KjListOrientation = 'vertical' | 'horizontal' | 'both';
 
 /**
@@ -88,7 +131,9 @@ export type KjListOrientation = 'vertical' | 'horizontal' | 'both';
  */
 export type KjListSelectionMode = 'single' | 'multi' | 'leaf' | 'cascade';
 
+/** Scores an item against the query: `0` filters it out, higher sorts earlier. */
 export type KjFilterFn = (query: string, haystacks: readonly string[]) => number;
+/** Value equality for a selection model. Defaults to `Object.is`. */
 export type KjCompareFn<T> = (a: T, b: T) => boolean;
 
 /**

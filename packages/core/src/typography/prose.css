@@ -8,31 +8,36 @@
    kouji type system.
 
    The five attribute directives (`kjLead`, `kjMuted`, `kjCode`,
-   `kjBlockquote`, `kjTruncate`) reflect `data-tone` /
-   `data-truncate` host attributes; the rules below key off those
+   `kjBlockquote`, `kjTruncate`) reflect `data-kj-tone` /
+   `data-kj-truncate` host attributes; the rules below key off those
    attributes so the same styling applies whether the consumer
-   used the directive, hand-typed `data-tone="muted"` on a span,
-   or wrapped a subtree in `.kj-prose`.
+   used the directive, hand-typed `data-kj-tone="muted"` on a span,
+   or wrapped a subtree in `.kj-prose`. The bare `data-tone` /
+   `data-truncate` spellings are supported alongside the prefixed ones,
+   not a deprecation window: an attribute hand-typed in consumer markup
+   has no compiler to migrate it, so both selectors stay.
 
-   Tokens read from the kouji theme layer:
-     --kj-bg-body / surface / elevated ......... background scale
-     --kj-fg-default ........................... primary text
-     --kj-fg-muted ............................. secondary text (≥ 7:1)
-     --kj-border-default / muted ............... separators / rules
-     --kj-color-link ........................... anchor colour
-     --kj-color-link-visited ................... visited anchor
+   Tokens read from @kouji-ui/themes (base.css / density.css / themes):
+     --kj-bg-surface ........................... code + pre background
+     --kj-fg-default / --kj-fg-muted ........... primary / secondary text
+     --kj-fg-primary / --kj-fg-accent .......... anchor / visited anchor
+     --kj-border-default / --kj-border-muted ... rules, table borders
      --kj-font-sans / --kj-font-mono / --kj-font-display
-     --kj-font-size-xs / sm / md / lg / xl / 2xl / 3xl / 4xl
-     --kj-line-height-tight / snug / normal / relaxed / loose
-     --kj-radius-sm / md
-     --kj-prose-max-width ...................... opt-out for CJK
+     --kj-text-sm / base / lg / xl / 2xl / 3xl / 4xl   (density.css ramp,
+                                                so [data-kj-density] applies)
+     --kj-line-height-tight / snug / normal / relaxed / loose   (base.css)
+     --kj-radius-field / --kj-radius-box ....... inline code / pre corners
+     --kj-prose-max-width ...................... measure cap (base.css; set
+                                                `none` or a wider value for CJK)
+   Literal fallbacks mirror the density-1 values so the sheet still renders
+   when the themes package is not registered.
    ───────────────────────────────────────────────────────────── */
 
 @layer kj.prose {
   .kj-prose {
     color: var(--kj-fg-default);
     font-family: var(--kj-font-sans);
-    font-size: var(--kj-font-size-md, 1rem);
+    font-size: var(--kj-text-base, 1rem);
     line-height: var(--kj-line-height-relaxed, 1.7);
     max-width: var(--kj-prose-max-width, 65ch);
     text-align: start;
@@ -67,29 +72,29 @@
   }
 
   .kj-prose h1 {
-    font-size: var(--kj-font-size-4xl, 2.25rem);
+    font-size: var(--kj-text-4xl, 2.5rem);
     font-weight: 700;
-    line-height: var(--kj-line-height-tight, 1.1);
+    line-height: var(--kj-line-height-tight, 1.2);
   }
 
   .kj-prose h2 {
-    font-size: var(--kj-font-size-3xl, 1.875rem);
+    font-size: var(--kj-text-3xl, 2rem);
   }
 
   .kj-prose h3 {
-    font-size: var(--kj-font-size-2xl, 1.5rem);
+    font-size: var(--kj-text-2xl, 1.5rem);
   }
 
   .kj-prose h4 {
-    font-size: var(--kj-font-size-xl, 1.25rem);
+    font-size: var(--kj-text-xl, 1.25rem);
   }
 
   .kj-prose h5 {
-    font-size: var(--kj-font-size-lg, 1.125rem);
+    font-size: var(--kj-text-lg, 1.125rem);
   }
 
   .kj-prose h6 {
-    font-size: var(--kj-font-size-md, 1rem);
+    font-size: var(--kj-text-base, 1rem);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -160,7 +165,7 @@
   /* ── Code (inline + block) ───────────────────────────────── */
   .kj-prose code {
     background-color: var(--kj-bg-surface, transparent);
-    border-radius: var(--kj-radius-sm, 4px);
+    border-radius: var(--kj-radius-field, 4px);
     font-family: var(--kj-font-mono);
     font-size: 0.9em;
     padding-block: 0.1em;
@@ -169,7 +174,7 @@
 
   .kj-prose pre {
     background-color: var(--kj-bg-surface, transparent);
-    border-radius: var(--kj-radius-md, 6px);
+    border-radius: var(--kj-radius-box, 6px);
     color: var(--kj-fg-default);
     font-family: var(--kj-font-mono);
     line-height: var(--kj-line-height-snug, 1.45);
@@ -199,7 +204,7 @@
 
   .kj-prose figcaption {
     color: var(--kj-fg-muted, var(--kj-fg-default));
-    font-size: var(--kj-font-size-sm, 0.875rem);
+    font-size: var(--kj-text-sm, 0.875rem);
     margin-block-start: 0.5em;
     text-align: center;
   }
@@ -207,7 +212,7 @@
   /* ── Tables ──────────────────────────────────────────────── */
   .kj-prose table {
     border-collapse: collapse;
-    font-size: var(--kj-font-size-sm, 0.9em);
+    font-size: var(--kj-text-sm, 0.875rem);
     width: 100%;
   }
 
@@ -239,41 +244,46 @@
 
   /* ── Size modifiers ──────────────────────────────────────── */
   .kj-prose-sm {
-    font-size: var(--kj-font-size-sm, 0.875rem);
+    font-size: var(--kj-text-sm, 0.875rem);
     line-height: var(--kj-line-height-normal, 1.6);
   }
 
   .kj-prose-lg {
-    font-size: var(--kj-font-size-lg, 1.125rem);
+    font-size: var(--kj-text-lg, 1.125rem);
     line-height: var(--kj-line-height-loose, 1.8);
   }
 }
 
 /* ──────────────────────────────────────────────────────────────
-   Tone reflections — applied by directives via `[data-tone]`,
-   readable in or out of a `.kj-prose` container.
+   Tone reflections — applied by directives via `[data-kj-tone]`
+   (`[data-tone]` is the supported bare spelling), readable in or out of
+   a `.kj-prose` container.
    ────────────────────────────────────────────────────────────── */
 
 @layer kj.tone {
+  [data-kj-tone='lead'],
   [data-tone='lead'] {
     color: var(--kj-fg-muted, var(--kj-fg-default));
-    font-size: var(--kj-font-size-lg, 1.125rem);
+    font-size: var(--kj-text-lg, 1.125rem);
     line-height: var(--kj-line-height-relaxed, 1.7);
   }
 
+  [data-kj-tone='muted'],
   [data-tone='muted'] {
     color: var(--kj-fg-muted, var(--kj-fg-default));
   }
 
+  [data-kj-tone='code'],
   [data-tone='code'] {
     background-color: var(--kj-bg-surface, transparent);
-    border-radius: var(--kj-radius-sm, 4px);
+    border-radius: var(--kj-radius-field, 4px);
     font-family: var(--kj-font-mono);
     font-size: 0.9em;
     padding-block: 0.1em;
     padding-inline: 0.35em;
   }
 
+  [data-kj-tone='blockquote'],
   [data-tone='blockquote'] {
     border-inline-start: 4px solid var(--kj-border-muted, currentColor);
     color: var(--kj-fg-muted, var(--kj-fg-default));
@@ -284,11 +294,13 @@
 }
 
 /* ──────────────────────────────────────────────────────────────
-   Truncate — single-line ellipsis (data-truncate="1") and
-   multi-line clamp (data-truncate="2"+).
+   Truncate — single-line ellipsis (data-kj-truncate="1") and
+   multi-line clamp (data-kj-truncate="2"+). `data-truncate` is the
+   supported bare spelling.
    ────────────────────────────────────────────────────────────── */
 
 @layer kj.truncate {
+  [data-kj-truncate='1'],
   [data-truncate='1'] {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -299,14 +311,15 @@
      Chromium 133+ but doesn't ship in every WebKit-based engine yet, so
      enumerate the common counts (2..6) explicitly — covers card / list
      description copy without needing engine fallback gymnastics. */
+  [data-kj-truncate]:not([data-kj-truncate='1']),
   [data-truncate]:not([data-truncate='1']) {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  [data-truncate='2'] { -webkit-line-clamp: 2; line-clamp: 2; }
-  [data-truncate='3'] { -webkit-line-clamp: 3; line-clamp: 3; }
-  [data-truncate='4'] { -webkit-line-clamp: 4; line-clamp: 4; }
-  [data-truncate='5'] { -webkit-line-clamp: 5; line-clamp: 5; }
-  [data-truncate='6'] { -webkit-line-clamp: 6; line-clamp: 6; }
+  [data-kj-truncate='2'], [data-truncate='2'] { -webkit-line-clamp: 2; line-clamp: 2; }
+  [data-kj-truncate='3'], [data-truncate='3'] { -webkit-line-clamp: 3; line-clamp: 3; }
+  [data-kj-truncate='4'], [data-truncate='4'] { -webkit-line-clamp: 4; line-clamp: 4; }
+  [data-kj-truncate='5'], [data-truncate='5'] { -webkit-line-clamp: 5; line-clamp: 5; }
+  [data-kj-truncate='6'], [data-truncate='6'] { -webkit-line-clamp: 6; line-clamp: 6; }
 }

@@ -10,10 +10,13 @@ interface User {
 }
 
 /**
- * Column resizing — drag the handle on the right edge of any `<th>` to resize
- * that column. `[kjEnableResize]="true"` opts the table into resize mode and
- * renders the handles via the underlying TanStack column-sizing model.
- *
+ * Column resizing — drag the handle on the right edge of any `<th>`, or Tab
+ * to it: the handle is a focusable separator that reports the column width
+ * (`aria-valuenow`) and resizes with ArrowLeft / ArrowRight (10px, Shift for
+ * 50px), Home / End for the column's `minSize` / `maxSize`, and Escape to
+ * revert to the width it had when focused. `[kjEnableResize]="true"` opts the
+ * table into resize mode and renders the handles via the underlying TanStack
+ * column-sizing model.
  */
 @Component({
   selector: 'kj-table-column-resize-example',

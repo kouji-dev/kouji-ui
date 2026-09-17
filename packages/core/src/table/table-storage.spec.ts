@@ -1,13 +1,64 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import {
+  KJ_TABLE_DEFAULT_PERSISTED_SLICES,
   KJ_TABLE_STORAGE,
+  KJ_TABLE_STORAGE_KEY_PREFIX,
   inMemoryAdapter,
   localStorageAdapter,
-  sessionStorageAdapter,
+  pickTableState,
   provideKjTableStorage,
+  provideKjTableStorageKeyPrefix,
+  sessionStorageAdapter,
   type KjStorageAdapter,
 } from './table-storage';
+import type { KjTableState } from './table.types';
+
+describe('KJ_TABLE_DEFAULT_PERSISTED_SLICES', () => {
+  it('keeps view configuration and leaves session state out', () => {
+    expect(KJ_TABLE_DEFAULT_PERSISTED_SLICES).toEqual(
+      expect.arrayContaining(['sorting', 'columnFilters', 'pagination', 'columnSizing', 'columnVisibility', 'columnOrder', 'columnPinning', 'grouping', 'density']),
+    );
+    expect(KJ_TABLE_DEFAULT_PERSISTED_SLICES).not.toContain('rowSelection');
+    expect(KJ_TABLE_DEFAULT_PERSISTED_SLICES).not.toContain('expanded');
+    expect(KJ_TABLE_DEFAULT_PERSISTED_SLICES).not.toContain('globalFilter');
+  });
+});
+
+describe('pickTableState', () => {
+  const state: Partial<KjTableState> = {
+    sorting: [{ id: 'name', desc: false }],
+    rowSelection: { r1: true },
+    density: 'compact',
+  };
+
+  it('returns only the requested slices', () => {
+    expect(pickTableState(state, ['sorting', 'density'])).toEqual({
+      sorting: [{ id: 'name', desc: false }],
+      density: 'compact',
+    });
+  });
+
+  it('skips requested slices the source does not carry, and never invents keys', () => {
+    expect(pickTableState(state, ['columnOrder', 'rowSelection'])).toEqual({ rowSelection: { r1: true } });
+  });
+
+  it('returns a fresh object', () => {
+    expect(pickTableState(state, ['sorting'])).not.toBe(state);
+  });
+});
+
+describe('KJ_TABLE_STORAGE_KEY_PREFIX', () => {
+  it('defaults to an empty namespace', () => {
+    TestBed.configureTestingModule({ providers: [] });
+    expect(TestBed.inject(KJ_TABLE_STORAGE_KEY_PREFIX)).toBe('');
+  });
+
+  it('provideKjTableStorageKeyPrefix binds the app-wide namespace', () => {
+    TestBed.configureTestingModule({ providers: [provideKjTableStorageKeyPrefix('billing:')] });
+    expect(TestBed.inject(KJ_TABLE_STORAGE_KEY_PREFIX)).toBe('billing:');
+  });
+});
 
 describe('inMemoryAdapter', () => {
   it('round-trips values', () => {

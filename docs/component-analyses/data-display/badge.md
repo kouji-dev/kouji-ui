@@ -72,9 +72,11 @@ This file covers Badge only. Cross-references at the bottom.
 ## Decision (core directive)
 
 **Yes — keep `KjBadge` as a one-directive primitive, but expand its
-contract slightly.** Today it does exactly one thing: reflect a
-`kjBadgeVariant` input to `data-variant`. That is fine for the
-variant-only case but two more concerns belong on the directive layer:
+contract slightly.** The variant / size half of this has since shipped
+(cust F-2): `KjBadge` composes `KjVariant` + `KjSize` and spreads
+`bindPresets(KJ_BADGE_CONFIG)`, so `[kjVariant]` / `[kjSize]` reflect
+`data-variant` / `data-size` and `provideKjBadge(…)` configures the
+vocabulary. Two more concerns belong on the directive layer:
 
 1. **Content mode** — text vs. dot. A "dot" badge is a 6×6
    presence indicator with no text; it should signal that mode to CSS
@@ -125,24 +127,28 @@ it via composed `KjSize`.
 
 `packages/core/src/badge/`:
 
-- `badge.ts` — `KjBadge` directive. Single input
-  `kjBadgeVariant: input<'default' | 'secondary' | 'destructive' | 'outline'>('default')`,
-  reflects to `[attr.data-variant]`. No size, no role, no live
-  region, no count-cap. ~14 lines including types.
-- `badge.spec.ts` — three cases: `data-variant` is reflected, default
-  variant is `'default'`, axe audit passes on a default badge.
-- `index.ts` — re-exports `KjBadge`. **No re-export of
-  `KjBadgeVariant`** — gap, the wrapper has to import the type from
-  `'@kouji-ui/core'` and that path resolves only because the
-  top-level barrel re-exports it.
+- `badge.ts` — `KjBadge` directive. Composes `KjVariant` + `KjSize` via
+  `hostDirectives` and spreads `bindPresets(KJ_BADGE_CONFIG)`, so
+  `[kjVariant]` / `[kjSize]` reflect `data-variant` / `data-size` with
+  the cascade + dev-mode validation every other preset-driven core
+  directive gets. Own input: `kjBadgeDot` (→ `data-dot`). No role, no
+  live region, no count-cap.
+- `config.ts` — `KjBadgeConfig`, `KJ_BADGE_DEFAULTS`,
+  `KJ_BADGE_CONFIG`, `provideKjBadge(…)` (deep-merging through
+  `mergeKjConfig`, arrays replace).
+- `badge.spec.ts` — the reflection cases plus the preset contract:
+  configured defaults, a registered extra variant, the dev-mode warning
+  on an unregistered one, and the `KJ_VARIANT_FALLBACK` cascade.
+- `index.ts` — re-exports `KjBadge`, `KjBadgeVariant` and the whole
+  config surface.
 
 `packages/components/src/badge/`:
 
 - `badge.ts` — `KjBadgeComponent` (selector `kj-badge`). Standalone,
   `imports: [KjBadge]`, template is a single `<span kjBadge
-  class="kj-badge" [kjBadgeVariant]="variant()" [attr.data-size]="size()"><ng-content /></span>`.
-  Inputs: `variant: KjBadgeVariant ('default')`, `size: 'sm' | 'md' |
-  'lg' ('md')`. `host: { style: 'display: contents;' }`,
+  class="kj-badge" [kjVariant]="variant()" [kjSize]="size()"><ng-content /></span>`.
+  Inputs: `variant: KjBadgeVariant ('default')`, `size: 'xs' | 'sm' |
+  'md' | 'lg' ('md')`. `host: { style: 'display: contents;' }`,
   `ViewEncapsulation.None`, `OnPush`.
 - `badge.css` — `@layer kj.component`, sets background / foreground
   via `--kj-color-primary` / `--kj-color-primary-content`, radius via
@@ -154,17 +160,17 @@ it via composed `KjSize`.
   groups for the docs site.
 - `index.ts` — re-exports `badge`.
 
-The wrapper applies `[kjBadgeVariant]` via the imported directive in
-the template **rather than via `hostDirectives`** because it renders
-its own `<span>` (not the host element). The component host carries
+The wrapper applies `[kjVariant]` / `[kjSize]` via the imported
+directive in the template **rather than via `hostDirectives`** because
+it renders its own `<span>` (not the host element). The component host carries
 `display: contents;` so it is layout-transparent.
 
 ## Base features
 
 | Feature | Where it lives | Notes |
 |---|---|---|
-| Variant | `KjBadge.kjBadgeVariant` input today; should migrate to composed `KjVariant` | Currently a hard-coded union (`default \| secondary \| destructive \| outline`). Migrate to preset-driven via `KJ_VARIANT_PRESET` so the values are configurable per app theme. |
-| Size | **Wrapper only** today — `KjBadgeComponent.size: 'sm' \| 'md' \| 'lg'`, sets `data-size` on the inner `<span>`. | Lift to core via composed `KjSize` so the directive owns the attribute. Wrapper keeps `size` input as a re-mapped alias. |
+| Variant | **Done** — composed `KjVariant` on `KjBadge`, `[kjVariant]`. | Preset-driven through `bindPresets(KJ_BADGE_CONFIG)`: `provideKjBadge({ variants: […] })` configures the vocabulary per app, the `KJ_VARIANT_FALLBACK` cascade applies, and an unregistered value warns once in dev mode (and is still reflected, because it may well have CSS). `KjBadgeVariant` survives as a documentation alias for IDE autocomplete. |
+| Size | **Done** — composed `KjSize` on `KjBadge`, `[kjSize]`. | Lifted from wrapper-only to directive-level, so `[kjBadge]` on a consumer's own `<span>` sizes without re-implementing the data attribute. The wrapper's `size` input forwards to it. |
 | Content mode (text vs. dot) | **Missing** | New `kjBadgeMode: input<'text' \| 'dot'>('text')`. Reflects to `data-mode`. CSS for `[data-mode="dot"]` collapses padding, hides text content, sets a 6×6 fixed circle (or larger per size). |
 | Numeric content + cap | **Missing** | New `kjBadgeCount: input<number \| null>(null)` and `kjBadgeMax: input<number>(99)`. When `count != null`, the directive sets `[textContent]` to `count > max ? '${max}+' : String(count)` and `[attr.aria-label]="..."` if `kjBadgeLive` is true. **Question**: do we set textContent at all from the directive (which then conflicts with `<ng-content />`), or do we project a `KjBadgeCount` sibling directive that owns the text node? See Open questions. |
 | Live region semantics | **Missing** | New `kjBadgeLive: input<boolean \| 'polite' \| 'assertive'>(false)`. When truthy, sets `role="status"` and `aria-live="polite"` (or `"assertive"`). Default off — most badges are decorative. |
@@ -255,8 +261,8 @@ active. Decision in **Open questions**.
 
 | Primitive | Where | Why |
 |---|---|---|
-| `KjVariant` | Composed via `hostDirectives` on `KjBadge` (with a `KJ_VARIANT_PRESET` provider declared by the wrapper component) | Replaces today's hand-rolled `kjBadgeVariant: input<KjBadgeVariant>` + `[attr.data-variant]`. Gains preset-driven values and dev-mode unknown-variant warnings. |
-| `KjSize` | Composed via `hostDirectives` on `KjBadge` (with a `KJ_SIZE_PRESET` provider on the wrapper) | Lifts the size attribute from wrapper-only to directive-level. Consumers that use `[kjBadge]` directly on their own `<span>` get sizing without re-implementing the data attribute. |
+| `KjVariant` | Composed via `hostDirectives` on `KjBadge`; the preset token comes from `bindPresets(KJ_BADGE_CONFIG)` in the directive's own `providers`, not from the wrapper. | Replaced the hand-rolled `kjBadgeVariant: input<KjBadgeVariant>` + `[attr.data-variant]`. Gains preset-driven values and dev-mode unknown-variant warnings. |
+| `KjSize` | Same composition, same `bindPresets` call (it provides `KJ_SIZE_PRESET` too). | Lifts the size attribute from wrapper-only to directive-level. Consumers that use `[kjBadge]` directly on their own `<span>` get sizing without re-implementing the data attribute. |
 | `KjLiveRegion` | **Not used.** | `KjLiveRegion` is the right idea but a heavier API — it owns an `announce()` method and clears/re-sets text on a timer. For Badge we just need `role="status"` + `aria-live="polite"` reflected from a single input; the announcement is whatever the consumer puts inside. Reaching for `KjLiveRegion` would force a content-management API the consumer doesn't want. |
 | `KjFocusRing`, `KjDisabled`, `KjFocusTrap`, `KjRovingTabindex` | **Not used** | Badge has no focus, no disabled state, no keyboard contract. Reaching for any of these is a category error. |
 
@@ -291,11 +297,9 @@ add these via the preset rather than the directive's literal type:
   Open question 4.
 - `info`     → `--kj-color-info` / `--kj-color-info-content`
 
-The directive's `kjBadgeVariant` literal type widens to `string` once
-it composes `KjVariant` (which already takes `string`). The wrapper's
-typed `variant` input keeps the narrower union for IDE
-autocomplete — Angular's signal-input typing flows through
-`hostDirectives` `inputs` aliasing.
+The directive's input widened to `string | undefined` when it moved to
+the composed `KjVariant`. The wrapper's typed `variant` input keeps the
+open union (`KjBadgeVariant = KjExtensible<…>`) for IDE autocomplete.
 
 ### Cross-component pointers
 
@@ -335,8 +339,8 @@ aliasing.
 
 | Name | Kind | Type | Default | Notes |
 |---|---|---|---|---|
-| `kjVariant` | `input` | `string` (preset-driven) | `'default'` (preset default) | **Migrated.** Provided by composed `KjVariant`; the directive only re-aliases. Today's hand-rolled `kjBadgeVariant` is removed in favour of this. **Breaking change** within the (unreleased) directive surface. |
-| `kjSize` | `input` | `string` (preset-driven) | `'md'` (preset default) | **New on directive.** Provided by composed `KjSize`. Lifts the size attribute from wrapper-only to directive-level. |
+| `kjVariant` | `input` | `string \| undefined` (preset-driven) | `KJ_BADGE_DEFAULTS.defaults.variant` (`'default'`) | **Shipped.** Provided by the composed `KjVariant`. The hand-rolled `kjBadgeVariant` was removed outright — a clean break, no alias. |
+| `kjSize` | `input` | `string \| undefined` (preset-driven) | `KJ_BADGE_DEFAULTS.defaults.size` (`'md'`) | **Shipped.** Provided by the composed `KjSize`. Lifts the size attribute from wrapper-only to directive-level. |
 | `kjBadgeMode` | `input` | `'text' \| 'dot'` | `'text'` | **New.** Reflects to `[attr.data-mode]`. CSS for `[data-mode="dot"]` collapses padding, removes text content slot, fixes shape to a circle. When `'dot'`, the directive sets `[attr.aria-hidden]="true"` *unless* `kjBadgeLive` is truthy *or* `[attr.aria-label]` is consumer-provided. (A pure dot with no accessible name is by definition decorative.) |
 | `kjBadgeCount` | `input` | `number \| null` | `null` | **New.** When non-null, the directive owns the host's text content via `[textContent]="format(count(), max())"`, where `format(c, m) = c > m ? '${m}+' : String(c)`. **Conflicts with `<ng-content />`** — see Open question 2. |
 | `kjBadgeMax` | `input` | `number` | `99` | **New.** Cap for the count-formatter. Has no effect when `kjBadgeCount` is null. |
@@ -475,14 +479,13 @@ Already on disk under `packages/components/src/badge/`:
    `kjBadgeDecorative`** — explicit beats implicit and avoids the
    observer.
 
-6. **`KjBadgeVariant` re-export.** Today
-   `packages/core/src/badge/index.ts` re-exports `KjBadge` only; the
-   wrapper imports `KjBadgeVariant` from `'@kouji-ui/core'` (resolves
-   via the top-level barrel). Once we migrate to `KjVariant`, the
-   `KjBadgeVariant` literal type goes away — variants are
-   string-typed and validated against the preset. The wrapper's
-   `variant: 'default' | 'secondary' | ...` literal stays narrow at
-   the component layer for IDE help; no shared type to re-export.
+6. **`KjBadgeVariant` re-export. — Settled.** `badge/index.ts` now
+   re-exports `KjBadge`, `KjBadgeVariant` and the config surface. The
+   type did *not* go away: it became the open
+   `KjExtensible<'default' | 'secondary' | 'destructive' | 'outline'>`
+   documentation alias that annotates the wrapper's `variant` input, so
+   the shipped values autocomplete while any registered extra one still
+   type-checks. The runtime vocabulary is `KJ_BADGE_CONFIG`.
 
 7. **`display: contents` and the host attribute split.** The wrapper
    component currently sets `[attr.data-size]` on the inner `<span>`

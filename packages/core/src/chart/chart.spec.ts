@@ -1,3 +1,5 @@
+import { ApplicationRef, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { describe, it, expect, vi } from 'vitest';
@@ -61,8 +63,19 @@ describe('KjChart', () => {
     let roCb: (() => void) | undefined;
     const OriginalRO = globalThis.ResizeObserver;
     globalThis.ResizeObserver = class {
-      constructor(cb: ResizeObserverCallback) { roCb = () => cb([], this as unknown as ResizeObserver); }
-      observe() {} unobserve() {} disconnect() {}
+      private targets: Element[] = [];
+      constructor(cb: ResizeObserverCallback) {
+        // The shared observer dispatches per ENTRY, so the double has to
+        // deliver one per observed element, the way a browser does.
+        roCb = () =>
+          cb(
+            this.targets.map((target) => ({ target })) as unknown as ResizeObserverEntry[],
+            this as unknown as ResizeObserver,
+          );
+      }
+      observe(el: Element) { this.targets.push(el); }
+      unobserve(el: Element) { this.targets = this.targets.filter((t) => t !== el); }
+      disconnect() { this.targets = []; }
     } as unknown as typeof ResizeObserver;
 
     const resizeSpy = vi.fn();
@@ -78,6 +91,59 @@ describe('KjChart', () => {
     expect(resizeSpy).toHaveBeenCalledTimes(1);
 
     globalThis.ResizeObserver = OriginalRO;
+    vi.doUnmock('echarts');
+  });
+
+  it('shares ONE ResizeObserver and ONE theme MutationObserver across charts', async () => {
+    let observers = 0;
+    let observed = () => 0;
+    const OriginalRO = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      private targets: Element[] = [];
+      constructor(_cb: ResizeObserverCallback) {
+        observers++;
+        observed = () => this.targets.length;
+      }
+      observe(el: Element) { this.targets.push(el); }
+      unobserve(el: Element) { this.targets = this.targets.filter((t) => t !== el); }
+      disconnect() { this.targets = []; }
+    } as unknown as typeof ResizeObserver;
+
+    const RealMO = globalThis.MutationObserver;
+    let themeObservations = 0;
+    globalThis.MutationObserver = class extends RealMO {
+      // Count only theme observations on <html>: other services legitimately
+      // observe other things.
+      override observe(target: Node, init?: MutationObserverInit) {
+        if (target === document.documentElement && init?.attributeFilter?.includes('data-theme')) {
+          themeObservations++;
+        }
+        super.observe(target, init);
+      }
+    };
+
+    vi.doMock('echarts', () => ({ init: () => makeChartDouble() }));
+
+    const { KjChart: Fresh } = await import('./chart');
+    await render(
+      `<div kjChart [kjChartOption]="{}" kjChartLabel="a"></div>
+       <div kjChart [kjChartOption]="{}" kjChartLabel="b"></div>
+       <div kjChart [kjChartOption]="{}" kjChartLabel="c"></div>`,
+      { imports: [Fresh] },
+    );
+    await flush();
+
+    // Three charts used to mean three ResizeObservers and three
+    // MutationObservers on <html>; now they ride the shared root services.
+    // (The per-element fan-out itself is pinned in
+    // primitives/interaction/resize-observer.spec.ts.)
+    expect(observers).toBe(1);
+    expect(themeObservations).toBe(1);
+    // Every chart host still rides the one observer.
+    expect(observed()).toBe(3);
+
+    globalThis.ResizeObserver = OriginalRO;
+    globalThis.MutationObserver = RealMO;
     vi.doUnmock('echarts');
   });
 
@@ -139,6 +205,57 @@ describe('KjChart', () => {
     expect(setOptionSpy.mock.calls.length).toBeGreaterThan(callsBefore);
 
     globalThis.MutationObserver = OriginalMO;
+    vi.doUnmock('echarts');
+  });
+
+  it('does not re-apply the option on an unrelated change-detection cycle', async () => {
+    // perf F-1: the option used to be pushed from `afterEveryRender`, which runs
+    // after EVERY application tick — a keystroke in an unrelated input re-ran
+    // `getComputedStyle` plus ECharts' full option merge for every chart.
+    const setOptionSpy = vi.fn();
+    vi.doMock('echarts', () => ({ init: () => makeChartDouble({ setOption: setOptionSpy }) }));
+
+    // A sibling binding that has nothing to do with the chart: changing it is
+    // what makes the tick a real change-detection cycle.
+    const unrelated = signal(0);
+    const { KjChart: Fresh } = await import('./chart');
+    await render(
+      `<span>{{ unrelated() }}</span><div kjChart [kjChartOption]="{}" kjChartLabel="x"></div>`,
+      { imports: [Fresh], componentProperties: { unrelated } },
+    );
+    await flush();
+
+    const appRef = TestBed.inject(ApplicationRef);
+    appRef.tick();
+    const applied = setOptionSpy.mock.calls.length;
+    expect(applied).toBeGreaterThan(0);
+
+    unrelated.set(1);
+    appRef.tick();
+    unrelated.set(2);
+    appRef.tick();
+    expect(setOptionSpy.mock.calls.length).toBe(applied);
+
+    vi.doUnmock('echarts');
+  });
+
+  it('re-applies the option when [kjChartOption] changes', async () => {
+    const setOptionSpy = vi.fn();
+    vi.doMock('echarts', () => ({ init: () => makeChartDouble({ setOption: setOptionSpy }) }));
+
+    const { KjChart: Fresh } = await import('./chart');
+    const { rerender } = await render(
+      `<div kjChart [kjChartOption]="option" kjChartLabel="x"></div>`,
+      { imports: [Fresh], componentProperties: { option: { animationDuration: 10 } } },
+    );
+    await flush();
+    setOptionSpy.mockClear();
+
+    await rerender({ componentProperties: { option: { animationDuration: 20 } } });
+    await flush();
+    expect(setOptionSpy).toHaveBeenCalled();
+    expect(setOptionSpy.mock.calls.at(-1)?.[0].animationDuration).toBe(20);
+
     vi.doUnmock('echarts');
   });
 

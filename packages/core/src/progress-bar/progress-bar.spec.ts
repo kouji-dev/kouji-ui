@@ -420,4 +420,46 @@ describe('KjProgressBar', () => {
       expect(await axe(container)).toHaveNoViolations();
     });
   });
+
+  // perf F-15 — each bar used to build its own MediaQueryList and its own
+  // 'change' listener. The value is an application-wide OS setting, so it now
+  // comes from the root KjReducedMotion service: one query for the whole app.
+  describe('reduced motion comes from the root service (perf F-15)', () => {
+    it('five progress bars create exactly one MediaQueryList and one listener', async () => {
+      const original = window.matchMedia;
+      const listeners = new Set<(e: MediaQueryListEvent) => void>();
+      const mql: Partial<MediaQueryList> = {
+        matches: true,
+        media: '(prefers-reduced-motion: reduce)',
+        addEventListener: ((_t: string, cb: EventListener) => {
+          listeners.add(cb as (e: MediaQueryListEvent) => void);
+        }) as MediaQueryList['addEventListener'],
+        removeEventListener: ((_t: string, cb: EventListener) => {
+          listeners.delete(cb as (e: MediaQueryListEvent) => void);
+        }) as MediaQueryList['removeEventListener'],
+      };
+      const matchMedia = vi.fn(() => mql as MediaQueryList);
+      window.matchMedia = matchMedia as unknown as typeof window.matchMedia;
+
+      try {
+        const { container } = await render(
+          `<div kjProgressBar [kjValue]="10" aria-label="a"></div>
+           <div kjProgressBar [kjValue]="20" aria-label="b"></div>
+           <div kjProgressBar [kjValue]="30" aria-label="c"></div>
+           <div kjProgressBar [kjValue]="40" aria-label="d"></div>
+           <div kjProgressBar [kjValue]="50" aria-label="e"></div>`,
+          { imports },
+        );
+        await flush();
+        expect(container.querySelectorAll('[kjProgressBar]')).toHaveLength(5);
+        expect(matchMedia).toHaveBeenCalledTimes(1);
+        expect(listeners.size).toBe(1);
+        for (const bar of container.querySelectorAll('[kjProgressBar]')) {
+          expect(bar).toHaveAttribute('data-reduced-motion', 'reduce');
+        }
+      } finally {
+        window.matchMedia = original;
+      }
+    });
+  });
 });

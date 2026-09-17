@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { KjIconDirective } from '@kouji-ui/core';
+import { KjIcon } from '@kouji-ui/core';
 
 /**
  * Common icon usages — decorative inline, meaningful with a label, size
@@ -9,7 +9,7 @@ import { KjIconDirective } from '@kouji-ui/core';
   selector: 'kj-icon-usage-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KjIconDirective],
+  imports: [KjIcon],
   styles: [`
     :host { display: flex; flex-direction: column; gap: var(--kj-space-md); }
     .row { display: flex; gap: var(--kj-space-md); align-items: center; flex-wrap: wrap; }

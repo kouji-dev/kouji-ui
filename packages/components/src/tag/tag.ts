@@ -9,7 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 import {
-  KjIconDirective,
+  KjDisabled,
+  KjIcon,
   KjOverflowContent,
   KjPopoverTrigger,
   KjTag,
@@ -17,7 +18,7 @@ import {
   KjTagRemove,
   KjTranslateService,
 } from '@kouji-ui/core';
-import { KjOverflowPanelComponent } from '../overflow/overflow-panel';
+import { KjOverflowPanel } from '../overflow/overflow-panel';
 
 /**
  * Styled wrapper around the headless `KjTag` directive. Renders the visual
@@ -127,9 +128,14 @@ import { KjOverflowPanelComponent } from '../overflow/overflow-panel';
   hostDirectives: [
     {
       directive: KjTag,
-      inputs: ['kjTagSelectable', 'kjTagSelected', 'kjTagLabel', 'kjTagDisabled'],
+      inputs: ['kjTagSelectable', 'kjTagSelected', 'kjTagLabel'],
       outputs: ['kjTagSelectedChange', 'kjTagRemoved'],
     },
+    // `kjTagDisabled` is exposed by the `KjDisabled` that `KjTag` composes,
+    // and host-directive input forwarding does not chain — so the wrapper
+    // composes the same primitive directly. Angular applies a directive once
+    // per host, so this binds the very instance `KjTag` reads (arch F-16).
+    { directive: KjDisabled, inputs: ['kjDisabled: kjTagDisabled'] },
   ],
   template: `<ng-content />`,
   styleUrl: './tag.css',
@@ -155,7 +161,7 @@ export class KjTagComponent {}
 @Component({
   selector: 'kj-tag-remove',
   standalone: true,
-  imports: [KjIconDirective],
+  imports: [KjIcon],
   hostDirectives: [
     {
       directive: KjTagRemove,
@@ -204,7 +210,7 @@ export class KjTagRemoveComponent {}
       ],
     },
   ],
-  imports: [KjPopoverTrigger, KjOverflowPanelComponent],
+  imports: [KjPopoverTrigger, KjOverflowPanel],
   template: `
     <ng-content />
     @if (overflowCount() > 0) {
@@ -249,7 +255,7 @@ export class KjTagListComponent {
   readonly kjOverflowVariant = input('secondary');
 
   protected readonly overflowTemplate = contentChild(KjOverflowContent);
-  private readonly panel = viewChild(KjOverflowPanelComponent);
+  private readonly panel = viewChild(KjOverflowPanel);
 
   protected readonly overflowCount = this.list.overflowCount;
 

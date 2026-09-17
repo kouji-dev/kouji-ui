@@ -12,6 +12,8 @@ import {
   KjSliderRange,
   KjSliderThumb,
   KjSliderTrack,
+  coerceTicks,
+  type KjSliderTicksInput,
 } from '@kouji-ui/core';
 
 /**
@@ -179,26 +181,59 @@ export class KjSliderComponent {
   /** Range-mode value tuple. Setting this switches to two-thumb mode. */
   readonly kjRange = model<readonly [number, number] | undefined>(undefined);
 
+  /** Lower bound of the value range. Defaults to `0`. */
   readonly kjMin = input<number>(0);
+
+  /** Upper bound of the value range. Defaults to `100`. */
   readonly kjMax = input<number>(100);
+
+  /** Arrow-key / drag increment in value units. Defaults to `1`. */
   readonly kjStep = input<number>(1);
+
+  /** PageUp / PageDown increment. `0` (the default) falls back to ten steps. */
   readonly kjPageStep = input<number>(0);
+
+  /** Value the step ladder is anchored to. Defaults to `0`. */
   readonly kjStepBase = input<number>(0);
 
+  /** Visual axis, reflected as `aria-orientation` on each thumb. Defaults to `'horizontal'`. */
   readonly kjOrientation = input<'horizontal' | 'vertical'>('horizontal');
+
+  /** Reading direction. `'auto'` (the default) follows the ambient `KjDirectionality`. */
   readonly kjDirection = input<'ltr' | 'rtl' | 'auto'>('auto');
+
+  /** Flips the axis visually without changing the keyboard contract. Defaults to `false`. */
   readonly kjInverted = input(false, { transform: booleanAttribute });
 
+  /** Minimum gap, in value units, between the two thumbs in range mode. Defaults to `0`. */
   readonly kjMinDistance = input<number>(0);
+
+  /** Lets the range thumbs swap places when dragged past each other. Defaults to `false`. */
   readonly kjAllowThumbCross = input(false, { transform: booleanAttribute });
 
-  readonly kjTicks = input<readonly number[] | 'auto' | false>(false);
+  /**
+   * Tick marks: `false` (the default) renders none, `'auto'` renders one per
+   * step, or pass explicit values for irregular ticks.
+   *
+   * Not a plain boolean, so it cannot take `booleanAttribute` outright — but
+   * the shared `coerceTicks` keeps the array and `'auto'` and folds the rest
+   * through it, so a bare `kjTicks` means `'auto'` and `kjTicks="false"`
+   * really means off.
+   * @default false
+   */
+  readonly kjTicks = input<readonly number[] | 'auto' | false, KjSliderTicksInput>(false, {
+    transform: coerceTicks,
+  });
 
+  /** Formats `aria-valuetext` and the value bubble. Defaults to `String(value)`. */
   readonly kjDisplayWith = input<(value: number, thumbIndex: number) => string>(
     (value: number) => String(value),
   );
 
+  /** Ignores drag and keys while keeping the thumbs focusable. Defaults to `false`. */
   readonly kjReadonly = input(false, { transform: booleanAttribute });
+
+  /** Disables the slider entirely and removes the thumbs from the tab order. Defaults to `false`. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
   /** Single-mode accessible label. */
@@ -228,8 +263,7 @@ export class KjSliderComponent {
     if (range <= 0) return [];
 
     let values: number[] = [];
-    if (t === false) values = [];
-    else if (Array.isArray(t)) values = [...t];
+    if (Array.isArray(t)) values = [...t];
     else if (t === 'auto' && step > 0) {
       const count = Math.floor(range / step) + 1;
       if (count > 100) return [];

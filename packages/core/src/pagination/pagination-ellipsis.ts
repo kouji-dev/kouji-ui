@@ -2,9 +2,12 @@ import {
   Directive,
   ElementRef,
   afterNextRender,
+  effect,
   inject,
+  signal,
 } from '@angular/core';
-import { KJ_PAGINATION_CONFIG } from './config';
+import { injectKjPaginationLabels } from './labels';
+import { DOCUMENT } from '@angular/common';
 
 /** Inline style equivalent to `KjVisuallyHidden` — used for the AT label child span. */
 const KJ_VISUALLY_HIDDEN_STYLE =
@@ -13,8 +16,8 @@ const KJ_VISUALLY_HIDDEN_STYLE =
 /**
  * Gap indicator within a `KjPagination`. Apply to a `<span>`. The visible
  * `…` glyph is decorative and marked `aria-hidden="true"`; the directive
- * appends a visually-hidden child span carrying the configured ellipsis
- * label (default `"More pages"`) so AT users hear a meaningful readout
+ * appends a visually-hidden child span carrying the ellipsis label
+ * (`pagination.more` in the i18n catalog, default `"More pages"`) so AT users hear a meaningful readout
  * (WCAG 1.3.1 — the ellipsis carries information, so it must have a
  * text equivalent).
  *
@@ -39,19 +42,32 @@ const KJ_VISUALLY_HIDDEN_STYLE =
   },
 })
 export class KjPaginationEllipsis {
-  /** @internal */
-  readonly config = inject(KJ_PAGINATION_CONFIG);
+  /**
+   * Resolved label set: a `provideKjPagination(…)` override when one is set,
+   * otherwise the active i18n catalog (`pagination.more`).
+   * @internal
+   */
+  readonly labels = injectKjPaginationLabels();
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly document = inject(DOCUMENT);
+
+  /** The visually-hidden label node, once rendered. */
+  private readonly labelNode = signal<HTMLElement | null>(null);
 
   constructor() {
-    afterNextRender(() => {
-      if (typeof document === 'undefined') return;
+    // Written from an effect rather than once at render time so switching
+    // locale at runtime re-reads the catalog.
+    effect(() => {
+      const node = this.labelNode();
+      if (node) node.textContent = this.labels.ellipsis();
+    });
 
+    afterNextRender(() => {
       const host = this.el.nativeElement;
 
       // Wrap any existing visible glyph children in a `aria-hidden="true"`
       // span so the glyph is hidden from AT but visible to sighted users.
-      const glyphWrapper = document.createElement('span');
+      const glyphWrapper = this.document.createElement('span');
       glyphWrapper.setAttribute('aria-hidden', 'true');
       // Move existing children into the glyph wrapper.
       while (host.firstChild) {
@@ -60,10 +76,10 @@ export class KjPaginationEllipsis {
       host.appendChild(glyphWrapper);
 
       // Append the visually-hidden AT label.
-      const label = document.createElement('span');
+      const label = this.document.createElement('span');
       label.setAttribute('style', KJ_VISUALLY_HIDDEN_STYLE);
-      label.textContent = this.config.ellipsisLabel;
       host.appendChild(label);
+      this.labelNode.set(label);
     });
   }
 }

@@ -18,12 +18,17 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { KjListItem, injectListItem } from '../primitives/list';
 import { KjOverlayController } from '../primitives/overlay/controller';
+import { KjId } from '../primitives/overlay/id';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
 import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
+import {
+  KJ_DROPDOWN_MENU,
+  type KjDropdownMenuCloseReason,
+  type KjDropdownMenuContext,
+} from '../dropdown-menu/dropdown-menu-trigger';
 import { KJ_MENUBAR } from './menubar.context';
 import type { KjMenubarItemContext } from './menubar.context';
-
-let _menubarPanelId = 0;
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * A top-level item in a `[kjMenubar]` — `role="menuitem"` with
@@ -32,8 +37,16 @@ let _menubarPanelId = 0;
  * roving mode) `tabindex` are owned by the primitive layer.
  *
  * Optionally opens a submenu via `[kjDropdownMenuTriggerFor]` — a
- * `TemplateRef` pointing at a `[kjDropdownMenu]` panel. The bar's
- * `afterSelect` opens this item's submenu on activation.
+ * `TemplateRef` pointing at a `[kjDropdownMenu]` panel. Activation toggles
+ * this item's submenu; the item provides the `KJ_DROPDOWN_MENU` context to
+ * the projected panel, so activating a submenu item closes it, and the
+ * overlay controller returns focus to the bar item on close. The projected
+ * `[kjDropdownMenu]` owns its `role="menu"`; the item only gives the panel
+ * an id when it has none, for `aria-controls`.
+ *
+ * The item's overlay controller lives on its element injector, so the
+ * controller disposes itself — closing the submenu and releasing its stack
+ * entry — when the item leaves the DOM.
  *
  * @doc-category Core/Navigation
  * @doc
@@ -55,16 +68,27 @@ let _menubarPanelId = 0;
     '[attr.data-state]': 'open() ? "active" : "inactive"',
   },
 })
-export class KjMenubarItem implements KjMenubarItemContext {
-  private readonly bar = inject(KJ_MENUBAR);
+export class KjMenubarItem implements KjMenubarItemContext, KjDropdownMenuContext {
+  private readonly bar = injectParent(KJ_MENUBAR, { child: 'KjMenubarItem', parent: '[kjMenubar]' });
   private readonly destroyRef = inject(DestroyRef);
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly vcr = inject(ViewContainerRef);
   private readonly injector = inject(Injector);
+  private readonly idSvc = inject(KjId);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly controller = inject(KjOverlayController, { self: true });
 
-  /** Disable the item. Reflects `aria-disabled`; popup never opens. */
+  /**
+   * Disable the item. Default `false`. Reflects `aria-disabled` (through the
+   * composed `KjListItem` -> `KjDisabled`); the popup never opens.
+   *
+   * arch F-16: this input is NOT replaced by reading the composed
+   * `KjDisabled` directly. `<kj-menubar-item>` re-exposes `kjDisabled`
+   * through its own `hostDirectives`, and Angular only forwards an input a
+   * host directive declares itself — deleting it would break the styled
+   * wrapper. Both owners carry `booleanAttribute`, so they cannot disagree
+   * (that divergence was arch F-2's real defect).
+   */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 
   /**
@@ -94,16 +118,23 @@ export class KjMenubarItem implements KjMenubarItemContext {
 
   openPopup(): void {
     if (this.kjDisabled() || this.controller.isOpen()) return;
-    if (!isPlatformBrowser(this.platformId)) return;
-    const tpl = this.kjDropdownMenuTriggerFor();
-    if (!tpl) return;
-    this._ensurePanelMounted(tpl);
-    this._ensureStrategiesAttached();
+    if (!this._prepare()) return;
     this.controller.open();
   }
 
   closePopup(): void {
     if (this.controller.isOpen()) this.controller.close('programmatic');
+  }
+
+  // ── KjDropdownMenuContext (for the projected `[kjDropdownMenu]`) ──
+
+  /** Activating a submenu item always closes the submenu. */
+  readonly closeOnSelect = computed(() => true);
+
+  /** Submenu-driven close (`KJ_DROPDOWN_MENU.hide`). */
+  hide(reason: KjDropdownMenuCloseReason): void {
+    if (!this.controller.isOpen()) return;
+    this.controller.close(reason === 'item' ? 'select' : reason === 'escape' ? 'escape' : 'programmatic');
   }
 
   constructor() {
@@ -114,6 +145,12 @@ export class KjMenubarItem implements KjMenubarItemContext {
     // `afterSelect` only knows the currently-focused item, which doesn't
     // identify the item that was actually clicked (focus may not have
     // moved yet, e.g. mouse click before focusin handling).
+    //
+    // Toggled through the controller so the semantics match every other
+    // trigger: the item is the submenu's registered trigger, so a click on
+    // it is never an "outside" press for `KjOverlayStack`; `toggle()`
+    // closes an open submenu (`'trigger'` reason), opens a closed one, and
+    // ignores the click that follows an outside press mid-close.
     //
     // When `kjDropdownMenuTriggerFor` is unset the item owns no popup of
     // its own; skip the toggle entirely so that a sibling
@@ -126,8 +163,9 @@ export class KjMenubarItem implements KjMenubarItemContext {
     listItem.activate.subscribe(() => {
       this.kjActivate.emit();
       if (!this.kjDropdownMenuTriggerFor()) return;
-      if (this.controller.isOpen()) this.closePopup();
-      else this.openPopup();
+      if (this.kjDisabled()) return;
+      if (!this._prepare()) return;
+      this.controller.toggle();
     });
 
     // Mirror the controller's open/close state into the bar's tracker —
@@ -153,9 +191,10 @@ export class KjMenubarItem implements KjMenubarItemContext {
       }
     });
 
+    // The controller disposes itself with this element injector (closing
+    // the submenu synchronously); the projected view goes after it.
     this.destroyRef.onDestroy(() => {
       this.bar.unregisterItem(this);
-      try { this.controller.dispose(); } catch { /* already disposed */ }
       this._view?.destroy();
       this._view = null;
     });
@@ -163,19 +202,33 @@ export class KjMenubarItem implements KjMenubarItemContext {
 
   // ── Internal — panel mount + strategy wiring ─────────────────────
 
+  /** Mounts the projected panel and attaches the strategies; `false` when there is nothing to open. */
+  private _prepare(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    const tpl = this.kjDropdownMenuTriggerFor();
+    if (!tpl) return false;
+    this._ensurePanelMounted(tpl);
+    this._ensureStrategiesAttached();
+    return true;
+  }
+
   private _ensurePanelMounted(tpl: TemplateRef<unknown>): void {
     if (this._view) return;
-    this._view = this.vcr.createEmbeddedView(tpl);
+    // The template is declared on the consumer, so its directives cannot
+    // see this item's element injector. Hand the projected panel a menu
+    // context explicitly, so `[kjDropdownMenu]` closes the submenu on
+    // item activation.
+    const injector = Injector.create({
+      providers: [{ provide: KJ_DROPDOWN_MENU, useValue: this }],
+      parent: this.injector,
+    });
+    this._view = this.vcr.createEmbeddedView(tpl, undefined, { injector });
     this._view.detectChanges();
     const panel = this._panelRoot();
     if (!panel) return;
-    // The projected `<div kjDropdownMenu>` is just a config provider — it
-    // does not set `role="menu"` (only the service-launched
-    // `<kj-dropdown-menu-content>` does, via `KJ_OVERLAY_PANEL_ROLE`).
-    // The menubar projects raw templates, so stamp the role + an id
-    // here so consumers and `aria-controls` work out of the box.
-    if (!panel.hasAttribute('role')) panel.setAttribute('role', 'menu');
-    if (!panel.id) panel.id = `kj-menubar-panel-${++_menubarPanelId}`;
+    // `[kjDropdownMenu]` owns the role; an id is only minted when the
+    // consumer gave the panel none, so `aria-controls` resolves.
+    if (!panel.id) panel.id = this.idSvc.mint('menubar-panel');
     this.controller.bindPanel(panel);
   }
 

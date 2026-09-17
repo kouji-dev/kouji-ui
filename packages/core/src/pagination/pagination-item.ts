@@ -1,8 +1,9 @@
-import { Directive, computed, inject, input } from '@angular/core';
-import { KjFocusRing } from '../primitives';
+import { Directive, Signal, computed, inject, input } from '@angular/core';
+import { KjDisabled, KjFocusRing } from '../primitives';
 import { KJ_SIZE_FALLBACK, KJ_VARIANT_FALLBACK, KjVariant, KjSize } from '../presets';
 import { KJ_PAGINATION } from './pagination.context';
-import { KJ_PAGINATION_CONFIG } from './config';
+import { injectKjPaginationLabels } from './labels';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Per-page button within a `KjPagination`. Apply to `<button>` (in-page
@@ -30,28 +31,31 @@ import { KJ_PAGINATION_CONFIG } from './config';
   hostDirectives: [
     { directive: KjVariant, inputs: ['kjVariant'] },
     { directive: KjSize, inputs: ['kjSize'] },
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
     KjFocusRing,
   ],
   providers: [
     // Bridge the pagination root's cascaded variant/size into the preset
     // fallback chain: explicit input > root cascade > provideKjPagination
     // default. See KJ_VARIANT_FALLBACK / KJ_SIZE_FALLBACK.
-    { provide: KJ_VARIANT_FALLBACK, useFactory: () => inject(KJ_PAGINATION).variant },
-    { provide: KJ_SIZE_FALLBACK, useFactory: () => inject(KJ_PAGINATION).size },
+    { provide: KJ_VARIANT_FALLBACK, useFactory: () => injectParent(KJ_PAGINATION, { child: 'KjPaginationItem', parent: '[kjPagination]' }).variant },
+    { provide: KJ_SIZE_FALLBACK, useFactory: () => injectParent(KJ_PAGINATION, { child: 'KjPaginationItem', parent: '[kjPagination]' }).size },
   ],
   host: {
     '[attr.aria-current]': 'isCurrent() ? "page" : null',
     '[attr.data-current]': 'isCurrent() ? "true" : "false"',
-    '[attr.aria-disabled]': 'kjDisabled() ? "true" : null',
-    '[attr.data-disabled]': 'kjDisabled() ? "" : null',
     '[attr.aria-label]': 'ariaLabel()',
     '(click)': 'onClick($event)',
   },
 })
 export class KjPaginationItem {
   /** @internal */
-  readonly pagination = inject(KJ_PAGINATION);
-  private readonly config = inject(KJ_PAGINATION_CONFIG);
+  readonly pagination = injectParent(KJ_PAGINATION, { child: 'KjPaginationItem', parent: '[kjPagination]' });
+  /**
+   * Resolved label set: a `provideKjPagination(…)` override when one is set,
+   * otherwise the active i18n catalog (`pagination.page`).
+   */
+  private readonly labels = injectKjPaginationLabels();
 
   /**
    * Page number this item navigates to (1-indexed). Required — the
@@ -61,19 +65,23 @@ export class KjPaginationItem {
   readonly kjPage = input.required<number>();
 
   /**
-   * Per-item disabled state. Composes the boundary-style disabled bundle
-   * (capture-phase click suppression) so consumer-driven "this page is
-   * loading and cannot be re-clicked" affordances work consistently with
-   * Previous / Next / First / Last.
+   * Per-item disabled state, owned by the composed `KjDisabled` host
+   * directive — it reflects `aria-disabled` / `data-disabled` and applies
+   * `booleanAttribute`, so the bare `kjDisabled` attribute works. This
+   * directive adds the click suppression on top, so consumer-driven "this
+   * page is loading and cannot be re-clicked" affordances behave like
+   * Previous / Next / First / Last. Default `false`.
+   *
+   * Read-only mirror of the composed state — bind `[kjDisabled]` on the host.
    */
-  readonly kjDisabled = input<boolean>(false);
+  readonly kjDisabled: Signal<boolean> = inject(KjDisabled).disabled;
 
   /** Whether this item represents the currently active page. */
   readonly isCurrent = computed(() => this.pagination.page() === this.kjPage());
 
   /** Computed `aria-label` string. */
   readonly ariaLabel = computed(() =>
-    this.config.pageItemLabel(this.kjPage(), this.pagination.totalPages()),
+    this.labels.pageItem(this.kjPage(), this.pagination.totalPages()),
   );
 
   /** @internal */

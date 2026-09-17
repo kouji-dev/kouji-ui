@@ -6,7 +6,18 @@
    ──────────────────────────────────────────────────────────── */
 
 @layer kj.shared {
-  [data-theme="light"] {
+  /* `:root:not([data-theme])` makes this theme the fallback for a document
+     that never sets `data-theme` — without it every semantic token is
+     undefined and the library renders transparent, borderless controls.
+     An explicit `[data-theme]` anywhere still wins (same layer, later or
+     more specific match on the themed element). dark.css supplies the
+     `prefers-color-scheme: dark` counterpart. */
+  [data-theme="light"],
+  :root:not([data-theme]) {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — soft, editorial ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -56,7 +67,7 @@
 
     --kj-fg-default:    #1a1a1a;
     --kj-fg-muted:      #4a4a4a;
-    --kj-fg-subtle:     #6a6a6a;
+    --kj-fg-subtle:     #525252;
     --kj-fg-disabled:   #b8b8b6;
 
     --kj-fg-on-primary:   #ffffff;
@@ -79,6 +90,7 @@
     --kj-border-default:   #e8e6e0;
     --kj-border-muted:     #f0eee8;
     --kj-border-strong:    #c8c4b8;
+    --kj-border-control:  #8f8c80;
     --kj-border-focus:     #1a1a1a;
     --kj-border-disabled:  #ececea;
     --kj-border-primary:   #1a1a1a;

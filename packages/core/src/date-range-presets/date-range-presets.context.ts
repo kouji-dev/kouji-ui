@@ -71,6 +71,7 @@ export interface KjDateRangePresetsContext {
   isSelected(id: string): boolean;
 }
 
+/** Element-injector token exposing {@link KjDateRangePresetsContext} to each preset option. */
 export const KJ_DATE_RANGE_PRESETS = new InjectionToken<KjDateRangePresetsContext>(
   'KjDateRangePresets',
 );

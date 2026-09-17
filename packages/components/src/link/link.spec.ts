@@ -28,7 +28,7 @@ class HostComponent {
   variant = 'primary';
   size = 'inherit';
   underline: 'always' | 'hover' | 'none' = 'hover';
-  external: boolean | undefined = undefined;
+  external = false;
   disabled = false;
   label = 'Click';
 }
@@ -142,5 +142,56 @@ describe('KjLinkComponent', () => {
     fixture.detectChanges();
     const a = fixture.nativeElement.querySelector('kj-link a.kj-link');
     expect(a.textContent.trim()).toBe('Click');
+  });
+});
+
+// arch F-2 — the wrapper forwarded a hard `false` into KjLink's external
+// tri-state, so `kjTarget="_blank"` could never auto-detect, and both boolean
+// inputs lacked `booleanAttribute` so the bare-attribute form no-opped.
+@Component({
+  standalone: true,
+  imports: [KjLinkComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <kj-link id="auto" kjHref="https://example.com" kjTarget="_blank">Auto</kj-link>
+    <kj-link id="bare-ext" kjHref="/docs" kjExternal>Bare external</kj-link>
+    <kj-link id="bare-dis" kjHref="/x" kjDisabled>Bare disabled</kj-link>
+    <kj-link id="forced" kjHref="/x" kjTarget="_blank" [kjExternal]="false">Forced internal</kj-link>
+  `,
+})
+class BareAttributeHost {}
+
+describe('KjLinkComponent — boolean attribute forwarding (arch F-2)', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [BareAttributeHost] });
+  });
+
+  const anchor = (root: HTMLElement, id: string): HTMLAnchorElement =>
+    root.querySelector(`#${id} a.kj-link`)!;
+
+  test('kjTarget="_blank" auto-detects external when kjExternal is left unset', () => {
+    const fixture = TestBed.createComponent(BareAttributeHost);
+    fixture.detectChanges();
+    expect(anchor(fixture.nativeElement, 'auto').getAttribute('data-external')).toBe('true');
+  });
+
+  test('a bare kjExternal attribute forces external treatment', () => {
+    const fixture = TestBed.createComponent(BareAttributeHost);
+    fixture.detectChanges();
+    expect(anchor(fixture.nativeElement, 'bare-ext').getAttribute('data-external')).toBe('true');
+  });
+
+  test('an explicit false still suppresses external treatment (the tri-state survives)', () => {
+    const fixture = TestBed.createComponent(BareAttributeHost);
+    fixture.detectChanges();
+    expect(anchor(fixture.nativeElement, 'forced').hasAttribute('data-external')).toBe(false);
+  });
+
+  test('a bare kjDisabled attribute disables the inner anchor', () => {
+    const fixture = TestBed.createComponent(BareAttributeHost);
+    fixture.detectChanges();
+    const a = anchor(fixture.nativeElement, 'bare-dis');
+    expect(a.getAttribute('aria-disabled')).toBe('true');
+    expect(a.getAttribute('tabindex')).toBe('-1');
   });
 });

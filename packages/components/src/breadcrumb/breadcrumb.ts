@@ -181,6 +181,7 @@ export class KjBreadcrumbItemComponent {}
     <a
       kjLink
       class="kj-breadcrumb-link kj-link"
+      [class]="kjClass()"
       data-breadcrumb-link=""
       [attr.href]="kjHref() ?? null"
       [attr.target]="kjTarget() ?? null"
@@ -199,6 +200,14 @@ export class KjBreadcrumbItemComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjBreadcrumbLinkComponent {
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-breadcrumb-link`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target. See "Customizing a component" in
+   * `rules/code_style.md`: author the rule unlayered so it beats
+   * `@layer kj.component`, and set the documented `--kj-*` knobs from it.
+   */
+  readonly kjClass = input<string>('');
   /** Bound to the inner `<a [href]>`. */
   readonly kjHref = input<string | undefined>(undefined);
 
@@ -219,8 +228,19 @@ export class KjBreadcrumbLinkComponent {
   /** Underline mode. Defaults to `provideKjBreadcrumb(…)`'s `linkUnderline` (`'hover'`). */
   readonly kjUnderline = input<'always' | 'hover' | 'none'>(this.config.defaults.linkUnderline);
 
-  /** External-link tri-state. Forwarded to `KjLink`. */
-  readonly kjExternal = input(false);
+  /**
+   * External-link tri-state, forwarded verbatim to `KjLink`. `undefined`
+   * (the default) lets the directive auto-detect from `target="_blank"`;
+   * `true` forces the `rel="noopener noreferrer"` plumbing on, `false`
+   * forces it off. A bare `kjExternal` attribute reads as `true`.
+   *
+   * The default has to stay `undefined`, not `false`: `false` is the
+   * *explicit off* value and would defeat `KjLink`'s target-based
+   * auto-detection for every crumb that did not name the input.
+   */
+  readonly kjExternal = input<boolean | undefined, unknown>(undefined, {
+    transform: (value: unknown) => (value === undefined ? undefined : booleanAttribute(value)),
+  });
 
   /** Disabled-link bundle. Forwarded to `KjLink`. */
   readonly kjDisabled = input<boolean, unknown>(false, { transform: booleanAttribute });

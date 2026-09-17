@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { kjColumn, type KjColumnDef } from '@kouji-ui/core';
 import { KjTableComponent } from '../table';
-import { KjTableToolbarComponent } from '../table-toolbar';
+import { KjTableToolbar } from '../table-toolbar';
 
 interface User {
   id: string;
@@ -22,7 +22,7 @@ interface User {
   selector: 'kj-table-column-visibility-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KjTableComponent, KjTableToolbarComponent],
+  imports: [KjTableComponent, KjTableToolbar],
   styles: [`:host { display: block; }`],
   template: `
     <kj-table [kjData]="rows()" [kjColumns]="cols" [kjGetRowId]="getRowId">

@@ -1,14 +1,14 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDrawer, KjDrawerService } from '@kouji-ui/core';
+import { KjDrawer, KjDrawerService, KjDrawerTitle } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
 // TODO(wrapper-overlay): modal toggling needs revisit on overlay primitives.
 @Component({
   selector: 'kj-drawer-modal-body',
   standalone: true,
-  imports: [KjDrawer],
+  imports: [KjDrawer, KjDrawerTitle],
   changeDetection: ChangeDetectionStrategy.Eager,
-  template: `<kj-drawer><h2>Drawer</h2></kj-drawer>`,
+  template: `<kj-drawer><h2 kjDrawerTitle>Drawer</h2></kj-drawer>`,
 })
 class Body {}
 

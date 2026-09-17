@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { ApplicationRef, Component, effect, signal, viewChild } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 
 import { KjButton } from '../button/button';
+import { KjLiveRegion } from '../a11y/live-region';
+import { KjVisuallyHidden } from '../a11y/visually-hidden';
 import {
   KjPasswordCapsLockWarning,
   KjPasswordInput,
@@ -270,5 +273,171 @@ describe('defaultPasswordScorer', () => {
 
   it('returns 4 for long, four-class passwords', () => {
     expect(defaultPasswordScorer('Abcdefghij1!')).toBe(4);
+  });
+
+  // arch F-2 — `kjDisabled` carries `transform: booleanAttribute`, and so
+  // does the `KjDisabled` the composed `KjInput` brings to the same element,
+  // so the two owners agree under the bare-attribute form.
+  describe('bare boolean attributes (arch F-2)', () => {
+    it('bare kjDisabled reflects aria-disabled / data-disabled', async () => {
+      const { container } = await render(`<input kjPasswordInput kjDisabled aria-label="Password" />`, {
+        imports: ALL_DIRECTIVES,
+      });
+      const el = container.querySelector('input') as HTMLInputElement;
+      expect(el.getAttribute('aria-disabled')).toBe('true');
+      expect(el.hasAttribute('data-disabled')).toBe(true);
+    });
+
+    it('bare kjDisabled also suppresses the reveal toggle', async () => {
+      const { container } = await render(
+        `<div kjPasswordInputScope>
+           <input kjPasswordInput kjDisabled aria-label="Password" />
+           <button kjButton kjPasswordToggle>Show</button>
+         </div>`,
+        { imports: ALL_DIRECTIVES },
+      );
+      const input = container.querySelector('input') as HTMLInputElement;
+      const toggle = container.querySelector('button') as HTMLButtonElement;
+      toggle.click();
+      expect(input.getAttribute('type')).toBe('password');
+    });
+
+    it('bare kjAnnounce is read as true', async () => {
+      const { container } = await render(
+        `<div kjPasswordInputScope>
+           <input kjPasswordInput aria-label="Password" />
+           <div kjPasswordStrength kjAnnounce></div>
+         </div>`,
+        { imports: ALL_DIRECTIVES },
+      );
+      const meter = container.querySelector('[kjPasswordStrength]') as HTMLElement;
+      // The meter is never itself the live region: it is a `role="progressbar"`,
+      // whose descendants are not exposed, and a live region announces a text
+      // change rather than an `aria-valuetext` change. The announcement goes to
+      // a region registered from outside — see the block below.
+      expect(meter.hasAttribute('aria-live')).toBe(false);
+      expect(meter.getAttribute('role')).toBe('progressbar');
+    });
+  });
+});
+
+/**
+ * arch F-10: `kjAnnounce` used to be a published no-op whose TSDoc promised a
+ * live region. These pin the real contract.
+ *
+ * `KjLiveRegion.announce` clears the node and writes the message 50 ms later
+ * (the gap is what makes a screen reader notice a change), so every assertion
+ * here waits past that.
+ */
+describe('KjPasswordStrength — announcing the tier (arch F-10)', () => {
+  @Component({
+    standalone: true,
+    imports: [
+      KjPasswordInputScope,
+      KjPasswordInput,
+      KjPasswordStrength,
+      KjLiveRegion,
+      KjVisuallyHidden,
+      ReactiveFormsModule,
+    ],
+    template: `
+      <div kjPasswordInputScope>
+        <input kjPasswordInput aria-label="Password" [formControl]="ctrl" />
+        <div kjPasswordStrength [kjAnnounce]="announce()"></div>
+        <span kjVisuallyHidden kjLiveRegion></span>
+      </div>
+    `,
+  })
+  class Host {
+    readonly ctrl = new FormControl('', { nonNullable: true });
+    readonly announce = signal(true);
+    readonly meter = viewChild.required(KjPasswordStrength);
+    private readonly region = viewChild.required(KjLiveRegion);
+    constructor() {
+      effect((onCleanup) => {
+        onCleanup(this.meter().registerLiveRegion(this.region()));
+      });
+    }
+  }
+
+  /** Lets the effect queue drain and the 50 ms announce timer fire. */
+  async function settle(fixture: { detectChanges(): void }): Promise<void> {
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r, 90));
+    TestBed.inject(ApplicationRef).tick();
+  }
+
+  function regionText(root: HTMLElement): string {
+    return (root.querySelector('[kjLiveRegion]') as HTMLElement).textContent ?? '';
+  }
+
+  it('says nothing for the tier the meter mounted with', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await settle(fixture);
+    // Score 0 ("too weak") is the empty-value tier, and it is what the meter
+    // came up with — announcing it would talk over a form the user has not
+    // touched.
+    expect(regionText(fixture.nativeElement)).toBe('');
+  });
+
+  it('announces the label, prefixed by the meter name, when the tier changes', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await settle(fixture);
+    // 12 chars, all four character classes -> score 4.
+    fixture.componentInstance.ctrl.setValue('Aa1!aaaaaaaa');
+    await settle(fixture);
+    expect(regionText(fixture.nativeElement)).toBe('Password strength: strong');
+  });
+
+  it('stays silent while the tier holds, even as the value keeps changing', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await settle(fixture);
+    fixture.componentInstance.ctrl.setValue('Aa1!aaaaaaaa');
+    await settle(fixture);
+    // Still 12+ chars / 4 classes: same tier, so nothing new is said. This is
+    // the "one announcement per tier, not per keystroke" half of the contract.
+    fixture.componentInstance.ctrl.setValue('Aa1!aaaaaaaaaaaa');
+    await settle(fixture);
+    expect(regionText(fixture.nativeElement)).toBe('Password strength: strong');
+  });
+
+  it('says nothing at all with kjAnnounce off', async () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.announce.set(false);
+    await settle(fixture);
+    fixture.componentInstance.ctrl.setValue('Aa1!aaaaaaaa');
+    await settle(fixture);
+    expect(regionText(fixture.nativeElement)).toBe('');
+  });
+
+  it('turning kjAnnounce on does not replay the tier the user already reached', async () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.announce.set(false);
+    await settle(fixture);
+    fixture.componentInstance.ctrl.setValue('Aa1!aaaaaaaa');
+    await settle(fixture);
+    fixture.componentInstance.announce.set(true);
+    await settle(fixture);
+    expect(regionText(fixture.nativeElement)).toBe('');
+    // ...and the next real change still speaks.
+    fixture.componentInstance.ctrl.setValue('abc');
+    await settle(fixture);
+    expect(regionText(fixture.nativeElement)).toBe('Password strength: too weak');
+  });
+
+  it('a deregistered region stops receiving announcements', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await settle(fixture);
+    const calls: string[] = [];
+    const deregister = fixture.componentInstance
+      .meter()
+      .registerLiveRegion({ announce: (m: string) => calls.push(m) });
+    fixture.componentInstance.ctrl.setValue('Aa1!aaaaaaaa');
+    await settle(fixture);
+    expect(calls).toEqual(['Password strength: strong']);
+    deregister();
+    fixture.componentInstance.ctrl.setValue('abc');
+    await settle(fixture);
+    expect(calls).toEqual(['Password strength: strong']);
   });
 });

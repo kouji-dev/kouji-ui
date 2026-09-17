@@ -16,7 +16,7 @@
     gap: var(--kj-space-sm);
     background: var(--kj-bg-body);
     color: var(--kj-fg-default);
-    border: var(--kj-border) solid var(--kj-border-default);
+    border: var(--kj-border) solid var(--kj-border-control);
     border-radius: var(--kj-radius-field);
     padding: var(--kj-space-sm) var(--kj-space-md);
     font: 0.875rem var(--kj-font-sans);
@@ -115,7 +115,17 @@
     pointer-events: none;
   }
 
-  /* Collapsed children are hidden via [hidden] attribute */
+  /* The node component's host is a transparent wrapper around the row so
+     `<kj-tree-select-content>`'s children stay the `[kjTreeSelectNode]`
+     rows the tree navigates. A collapsed branch's children are no longer
+     rendered at all, but `[hidden]` still reaches these elements from the
+     composed `KjListItem` (filterable clusters) and from consumer markup —
+     the rule below outranks the UA sheet's `[hidden]` (author origin wins),
+     which `display: contents` would otherwise cancel. */
+  .kj-tree-select-row {
+    display: contents;
+  }
+  .kj-tree-select-row[hidden],
   .kj-tree-select-node[hidden] {
     display: none;
   }

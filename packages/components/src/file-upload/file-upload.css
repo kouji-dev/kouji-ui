@@ -8,7 +8,7 @@
 @layer kj.component {
   .kj-file-upload {
     --kj-file-upload-gap:           var(--kj-space-md, 0.75rem);
-    --kj-file-upload-radius:        var(--kj-radius-md, 0.5rem);
+    --kj-file-upload-radius:        var(--kj-radius-box, 0.5rem);
     --kj-file-upload-border:        1px dashed var(--kj-border-default, #d4d4d8);
     --kj-file-upload-border-active: 2px dashed var(--kj-bg-primary, #2563eb);
     --kj-file-upload-bg:            var(--kj-bg-field, transparent);
@@ -110,7 +110,7 @@
   .kj-file-upload__thumb {
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: var(--kj-radius-sm, 0.25rem);
+    border-radius: var(--kj-radius-field, 0.25rem);
     object-fit: cover;
     background: var(--kj-bg-surface, #e4e4e7);
     flex: none;
@@ -185,7 +185,7 @@
     cursor: pointer;
     color: inherit;
     padding: 0.25rem 0.5rem;
-    border-radius: var(--kj-radius-sm, 0.25rem);
+    border-radius: var(--kj-radius-field, 0.25rem);
     font-size: 0.875rem;
     min-width: 44px;
     min-height: 44px; /* WCAG 2.5.5 touch target floor */

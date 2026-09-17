@@ -5,6 +5,7 @@ export * from './table-side-panel';
 export * from './table-status-bar';
 export * from './table-export';
 export * from './table-virtual';
+export * from './table-virtual-item';
 export * from './table-editors';
 export * from './table-filters';
 export * from './table-cell-editor-outlet';

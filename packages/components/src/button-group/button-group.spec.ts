@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import { KJ_BUTTON_GROUP } from '@kouji-ui/core';
+import { KJ_BUTTON_GROUP, type KjButtonGroupContext } from '@kouji-ui/core';
 import { KjButtonGroupComponent } from './button-group';
 import { KjButtonComponent } from '../button/button';
 
@@ -136,7 +136,7 @@ describe('KjButtonGroupComponent', () => {
   });
 
   test('exposes KJ_BUTTON_GROUP context with forwarded variant/size', () => {
-    let captured: ReturnType<typeof inject<typeof KJ_BUTTON_GROUP>> | undefined;
+    let captured: KjButtonGroupContext | undefined;
 
     @Component({
       selector: 'kj-bg-probe',

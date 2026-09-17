@@ -10,7 +10,7 @@ import {
   input,
 } from '@angular/core';
 import { KjFocusRing } from '../primitives';
-import { KJ_TIME_PICKER, KjTimePickerContext } from './time-picker.context';
+import { KJ_TIME_PICKER } from './time-picker.context';
 import {
   KjHourCycle,
   fromDisplayHour,
@@ -19,6 +19,7 @@ import {
   pad2,
   toDisplayHour,
 } from './time-picker.format';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 type SegmentKind = 'hour' | 'minute' | 'second';
 
@@ -41,7 +42,7 @@ export abstract class KjTimePickerSegmentBase {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly doc = inject(DOCUMENT);
   /** @internal */
-  readonly ctx = inject<KjTimePickerContext>(KJ_TIME_PICKER);
+  readonly ctx = injectParent(KJ_TIME_PICKER, { child: 'KjTimePickerSegment', parent: '[kjTimePicker]' });
 
   /** Forwarded to `[attr.aria-label]`. Defaults to a sensible English label. */
   readonly kjAriaLabel = input<string | null>(null);

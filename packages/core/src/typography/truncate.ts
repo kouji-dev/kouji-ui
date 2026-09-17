@@ -3,9 +3,9 @@ import {
   ElementRef,
   afterNextRender,
   inject,
-  isDevMode,
   input,
 } from '@angular/core';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Clamps the host element's text content to a fixed number of lines.
@@ -15,7 +15,7 @@ import {
  * - `kjTruncate="2"` and above — multi-line clamp using
  *   `-webkit-line-clamp: N`.
  *
- * The directive reflects `[attr.data-truncate]` so the kouji CSS layer can
+ * The directive reflects `[attr.data-kj-truncate]` so the kouji CSS layer can
  * apply the right rules. After the first render it reads the host's
  * `textContent` and writes a normalised `[attr.title]` **only** when the
  * consumer has not supplied a `title` or `aria-label`. This is the
@@ -42,7 +42,7 @@ import {
   standalone: true,
   exportAs: 'kjTruncate',
   host: {
-    '[attr.data-truncate]': 'kjTruncate()',
+    '[attr.data-kj-truncate]': 'kjTruncate()',
   },
 })
 export class KjTruncate {
@@ -65,7 +65,7 @@ export class KjTruncate {
     afterNextRender(() => {
       const host = this.el.nativeElement;
 
-      if (isDevMode()) {
+      if (kjDevMode()) {
         // Re-validate the raw input shape: the transform clamps invalid values
         // to `1`, but we still want to flag intent so the consumer fixes the
         // template rather than silently getting a single-line clamp. A bare
@@ -75,8 +75,9 @@ export class KjTruncate {
         if (raw !== null && raw !== '') {
           const parsed = Number(raw);
           if (!Number.isFinite(parsed) || parsed < 1) {
-            console.warn(
-              `[kj] kjTruncate received "${raw}". Use a positive integer ` +
+            kjDevWarn(
+              'kjTruncate',
+              `received "${raw}". Use a positive integer ` +
                 `(1 = single-line ellipsis, 2+ = multi-line clamp), or omit ` +
                 `the directive entirely.`,
             );

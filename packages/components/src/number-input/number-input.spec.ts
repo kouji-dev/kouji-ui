@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, type Type, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import { KjNumberInputComponent } from './number-input';
@@ -20,9 +20,9 @@ import { KjNumberInputComponent } from './number-input';
   `,
 })
 class HostComponent {
-  value = signal<number | null>(3);
-  min: number | undefined = 0;
-  max: number | undefined = 10;
+  value = signal(3);
+  min = 0;
+  max = 10;
   step = 1;
   disabled = false;
   readonly = false;
@@ -98,5 +98,64 @@ describe('KjNumberInputComponent', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement.querySelector('.kj-number-input');
     expect(root.getAttribute('data-disabled')).toBe('');
+  });
+
+  // arch F-2 — every boolean input on the wrapper carries
+  // `transform: booleanAttribute`. Four default to `true`, so the meaningful
+  // static form there is `kjUseGrouping="false"`.
+  describe('bare boolean attributes (arch F-2)', () => {
+    function mountBare(cmp: Type<unknown>): HTMLElement {
+      const fixture = TestBed.createComponent(cmp);
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    @Component({
+      standalone: true,
+      imports: [KjNumberInputComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `<kj-number-input kjDisabled kjAriaLabel="Qty" />`,
+    })
+    class DisabledHost {}
+
+    @Component({
+      standalone: true,
+      imports: [KjNumberInputComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `<kj-number-input kjReadonly kjAriaLabel="Qty" />`,
+    })
+    class ReadonlyHost {}
+
+    @Component({
+      standalone: true,
+      imports: [KjNumberInputComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `<kj-number-input kjUseNativeNumber kjAriaLabel="Qty" />`,
+    })
+    class NativeHost {}
+
+    test('bare kjDisabled reaches the group and both steppers', () => {
+      const root = mountBare(DisabledHost);
+      const group = root.querySelector('.kj-number-input') as HTMLElement;
+      const steppers = root.querySelectorAll('.kj-number-input__stepper');
+      expect(group.hasAttribute('data-disabled')).toBe(true);
+      expect(steppers.length).toBe(2);
+      for (const s of Array.from(steppers)) {
+        expect(s.getAttribute('aria-disabled')).toBe('true');
+      }
+    });
+
+    test('bare kjReadonly reaches the inner field', () => {
+      const root = mountBare(ReadonlyHost);
+      const field = root.querySelector('.kj-number-input__field') as HTMLElement;
+      expect(field.hasAttribute('readonly')).toBe(true);
+      expect(field.getAttribute('aria-readonly')).toBe('true');
+    });
+
+    test('bare kjUseNativeNumber flips the field to type="number"', () => {
+      const root = mountBare(NativeHost);
+      const field = root.querySelector('.kj-number-input__field') as HTMLElement;
+      expect(field.getAttribute('type')).toBe('number');
+    });
   });
 });

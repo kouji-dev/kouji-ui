@@ -1,5 +1,6 @@
-import { Directive, inject } from '@angular/core';
+import { Directive } from '@angular/core';
 
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 import { KJ_PROGRESS_BAR } from './progress-bar.context';
 
 /**
@@ -33,5 +34,8 @@ import { KJ_PROGRESS_BAR } from './progress-bar.context';
   },
 })
 export class KjProgressBarFill {
-  protected readonly ctx = inject(KJ_PROGRESS_BAR);
+  protected readonly ctx = injectParent(KJ_PROGRESS_BAR, {
+    child: 'KjProgressBarFill',
+    parent: '[kjProgressBar]',
+  });
 }

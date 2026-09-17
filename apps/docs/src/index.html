@@ -2,6 +2,26 @@
 <html lang="en" data-theme="kouji">
   <head>
     <meta charset="utf-8" />
+    <!--
+      Pre-paint theme restore. The page is prerendered with the brand theme
+      (data-theme="kouji" above, also the no-JS default); a returning visitor
+      who picked another theme would otherwise see the dark brand paint first
+      and flip after hydration. This runs before any stylesheet applies.
+      Precedence mirrors ThemeService: ?theme= (transient) > localStorage.
+      Theme names are validated against the same list the service uses;
+      keep the two in sync when @kouji-ui/themes ships a new theme.
+    -->
+    <script>
+      (function () {
+        try {
+          var themes = ['kouji','dark','light','retro','cyberpunk','corporate','sakura','bauhaus','dune','mint','forest','nord','terminal'];
+          var fromUrl = new URLSearchParams(location.search).get('theme');
+          var fromStorage = localStorage.getItem('kj-theme');
+          var pick = themes.indexOf(fromUrl) >= 0 ? fromUrl : themes.indexOf(fromStorage) >= 0 ? fromStorage : null;
+          if (pick) document.documentElement.setAttribute('data-theme', pick);
+        } catch (e) { /* storage blocked: keep the prerendered theme */ }
+      })();
+    </script>
     <title>kouji-ui — Headless Angular UI</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

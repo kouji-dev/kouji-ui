@@ -5,6 +5,7 @@ import {
   PLATFORM_ID,
   Signal,
   afterNextRender,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -64,6 +65,10 @@ import { KJ_TAG_CONFIG } from './config';
     '[attr.tabindex]': 'computedTabindex()',
     '[attr.aria-pressed]': 'computedPressed()',
     '[attr.aria-selected]': 'computedSelected()',
+    // Deliberately re-bound after the composed `KjDisabled`: the primitive
+    // reflects this tag's OWN flag, while `disabled()` is the effective state
+    // (own flag OR the parent `KjTagList`'s cascade). A directive's own host
+    // bindings run after its host directives', so this value wins.
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.data-selected]': 'kjTagSelected() ? "" : null',
     '[attr.data-disabled]': 'disabled() ? "" : null',
@@ -78,21 +83,55 @@ export class KjTag implements KjTagContext {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly list = inject(KJ_TAG_LIST, { optional: true });
 
-  /** Enables toggle-button behaviour. Standalone selectable chips become `role="button"` + `aria-pressed`. */
-  readonly kjTagSelectable = input(false);
+  /**
+   * Enables toggle-button behaviour. Standalone selectable chips become
+   * `role="button"` + `aria-pressed`. Defaults to `false`.
+   */
+  readonly kjTagSelectable = input(false, { transform: booleanAttribute });
 
-  /** Two-way bound selection state; only meaningful when `kjTagSelectable` is true or inside a listbox container. */
+  /**
+   * Two-way bound selection state; only meaningful when `kjTagSelectable` is
+   * true or inside a listbox container. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<span kjTag kjTagSelected>`) binds the empty string and reads as `false`.
+   * Bind it: `[(kjTagSelected)]="on"` or `[kjTagSelected]="true"`.
+   */
   readonly kjTagSelected = model(false);
 
   /**
    * Optional explicit text label. When set, `KjTagRemove` reads this for its
-   * auto-generated `aria-label` instead of the `MutationObserver`-derived
-   * projected text content.
+   * auto-generated `aria-label` instead of the projected text content, and no
+   * DOM observation is needed at all — the preferred route for a label that
+   * changes.
    */
   readonly kjTagLabel = input<string | undefined>(undefined);
 
-  /** Disabled state, aliased through `KjDisabled` from `kjTagDisabled`. */
-  readonly kjTagDisabled = input(false);
+  /**
+   * Keep {@link textContent} in sync with projected text that changes *after*
+   * first render. Off by default: the label is seeded once on first render,
+   * which covers every static chip, and tags are rendered in bulk (a chip per
+   * filter, a status tag per table row), so a subtree `MutationObserver` each
+   * is registration and retention cost for a case almost nothing hits.
+   *
+   * Turn it on only when the projected text really does mutate in place and
+   * {@link kjTagLabel} cannot be bound instead.
+   *
+   * Read once, at first render: flipping it later neither starts nor stops the
+   * observer. Bind it to a value that is settled before the tag renders (or,
+   * better, bind {@link kjTagLabel}) — attaching an observer per tag lazily
+   * would reintroduce the per-instance effect this input exists to avoid.
+   */
+  readonly kjTagObserveLabel = input(false, { transform: booleanAttribute });
+
+  /**
+   * This tag's own disabled flag. Defaults to `false`. Bound as
+   * `kjTagDisabled`, owned by the composed {@link KjDisabled} — there used to
+   * be a second, untransformed `input(false)` under the same public name, so
+   * a bare `kjTagDisabled` attribute made the two owners disagree (arch F-2).
+   * Read {@link disabled} for the effective state including the list cascade.
+   */
+  readonly kjTagDisabled = inject(KjDisabled).disabled;
 
   /** Fires when this tag's projected `KjTagRemove` is activated. */
   readonly kjTagRemoved = output<void>();
@@ -152,9 +191,10 @@ export class KjTag implements KjTagContext {
   constructor() {
     afterNextRender(() => {
       // Always seed once on first render so SSR-rendered text is captured
-      // immediately. The MutationObserver attaches in browsers only.
+      // immediately. The MutationObserver is opt-in and browser-only.
       this._textContent.set(this.el.nativeElement.textContent?.trim() ?? '');
 
+      if (!this.kjTagObserveLabel()) return;
       if (!isPlatformBrowser(this.platformId)) return;
       if (typeof MutationObserver === 'undefined') return;
 

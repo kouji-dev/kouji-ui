@@ -14,8 +14,8 @@ import { KjToastService } from '../toast.service';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 260px;
         position: relative;
       }
@@ -29,10 +29,10 @@ import { KjToastService } from '../toast.service';
         font-family: inherit;
         font-size: 0.8125rem;
         font-weight: 500;
-        border-radius: var(--kj-radius-md);
-        border: var(--kj-btn-border);
+        border-radius: var(--docs-radius-md);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
         line-height: 1.5;
       }
       .btn-success {
@@ -60,9 +60,9 @@ import { KjToastService } from '../toast.service';
         background: #d97706;
       }
       .btn-info {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border-color: var(--kj-accent);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border-color: var(--docs-accent);
       }
       .btn-info:hover {
         background: #2563eb;
@@ -85,8 +85,8 @@ import { KjToastService } from '../toast.service';
         justify-content: space-between;
         padding: 0.75rem 1rem;
         font-size: 0.8125rem;
-        border-radius: var(--kj-radius-lg);
-        box-shadow: var(--kj-shadow-sm);
+        border-radius: var(--docs-radius-lg);
+        box-shadow: var(--docs-shadow-sm);
         animation: slideIn 0.2s ease;
       }
       @keyframes slideIn {

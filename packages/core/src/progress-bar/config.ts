@@ -1,4 +1,5 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
 /**
  * Configurable preset shape for `KjProgressBar`. Mirrors `KjButtonConfig` /
@@ -32,17 +33,20 @@ export const KJ_PROGRESS_BAR_CONFIG = new InjectionToken<KjProgressBarConfig>(
 );
 
 /**
- * Configures the Progress Bar presets for the enclosing injector. Replaces
- * (does not merge) `variants` and `sizes`; spread
- * `KJ_PROGRESS_BAR_DEFAULTS.variants` to extend.
+ * Configures the Progress Bar presets for the enclosing injector.
+ *
+ * Deep-merges over {@link KJ_PROGRESS_BAR_DEFAULTS} through {@link mergeKjConfig}: pass only the
+ * fields you want to change, at any depth — `provideKjProgressBar({ defaults: { variant: '…' } })`
+ * keeps every other shipped default. Arrays still **replace**, so spread
+ * `KJ_PROGRESS_BAR_DEFAULTS.variants` to extend rather than swap the list.
  */
 export function provideKjProgressBar(
-  config: Partial<KjProgressBarConfig>,
+  config: KjDeepPartial<KjProgressBarConfig>,
 ): Provider[] {
   return [
     {
       provide: KJ_PROGRESS_BAR_CONFIG,
-      useValue: { ...KJ_PROGRESS_BAR_DEFAULTS, ...config },
+      useValue: mergeKjConfig(KJ_PROGRESS_BAR_DEFAULTS, config),
     },
   ];
 }

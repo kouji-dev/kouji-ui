@@ -6,10 +6,7 @@ import { KjSelect } from '@kouji-ui/core';
 import { KjSelectComponent } from '../../select/select';
 import { KjDatePickerComponent } from '../../date-picker/date-picker';
 import { KjNumberInputComponent } from '../../number-input/number-input';
-import {
-  KJ_FILTER_CONTEXT,
-  type KjFilterContext,
-} from './text-filter';
+import { KJ_FILTER_CONTEXT, type KjFilterContext } from './filters.context';
 import { KjTextFilter } from './text-filter';
 import { KjNumberFilter } from './number-filter';
 import { KjDateFilter } from './date-filter';
@@ -72,9 +69,9 @@ describe('KjTextFilter', () => {
     expect(column.getFilterValue).toHaveBeenCalled();
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
     expect(input.value).toBe('alice');
-    // Accessible name comes from the wrapping <label>'s visually-hidden caption.
-    const labelText = (fixture.nativeElement.querySelector('label')?.textContent ?? '').trim();
-    expect(labelText).toBe('Filter by Name');
+    // The column caption is the input's own accessible name, not a
+    // visually-hidden span sitting next to it.
+    expect(input.getAttribute('aria-label')).toBe('Filter by Name');
   });
 
   it('typing calls column.setFilterValue after the 300ms debounce', () => {
@@ -250,7 +247,7 @@ describe('KjSelectFilter', () => {
       .injector.get(KjSelect);
     // "archived" is at OPTIONS[1] → key "1".
     expect(select.kjSelectValue()).toBe('1');
-    const labelText = (fixture.nativeElement.querySelector('label')?.textContent ?? '').trim();
+    const labelText = (fixture.nativeElement.querySelector('[kjVisuallyHidden]')?.textContent ?? '').trim();
     expect(labelText).toContain('Filter by Status');
   });
 

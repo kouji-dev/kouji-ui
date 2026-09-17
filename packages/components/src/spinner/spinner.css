@@ -132,6 +132,15 @@
   .kj-spinner[data-reduced-motion="true"] .kj-spinner__glyph::after {
     animation: kj-spinner-reduced-motion 1.6s ease-in-out infinite !important;
   }
+  /* Same swap from the OS preference alone, for a spinner rendered without
+     the KjReducedMotion directive (or before it has measured). */
+  @media (prefers-reduced-motion: reduce) {
+    .kj-spinner .kj-spinner__glyph,
+    .kj-spinner .kj-spinner__glyph::before,
+    .kj-spinner .kj-spinner__glyph::after {
+      animation: kj-spinner-reduced-motion 1.6s ease-in-out infinite !important;
+    }
+  }
 }
 
 /* Keyframes live outside the cascade layer so consumers can't accidentally

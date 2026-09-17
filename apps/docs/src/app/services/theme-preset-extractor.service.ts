@@ -25,6 +25,15 @@ const DEFAULT_TYPOGRAPHY = { bodyRem: 1, smallRem: 0.875 } as const;
  * fall back to a hardcoded snapshot. The theme-generator route opts out
  * of SSR via `RenderMode.Client`, so the live path is the only one that
  * actually fires in practice.
+ *
+ * It also returns `null` when the probe resolves to *nothing* — every colour
+ * slot empty. `getComputedStyle()` answers `''` for a custom property that no
+ * loaded stylesheet declares, so without that guard a document where the theme
+ * CSS has not arrived (jsdom, a blocked stylesheet, a consumer embedding the
+ * generator before its styles load) produced a fully-populated `DraftTheme`
+ * made of empty strings, which then fed `deriveFromSeed('')` and crashed in
+ * culori. A partial answer is worse than no answer: the fallback snapshot is
+ * always a valid theme.
  */
 @Injectable({ providedIn: 'root' })
 export class ThemePresetExtractor {
@@ -70,10 +79,14 @@ export class ThemePresetExtractor {
     body.appendChild(probe);
     try {
       const cs = getComputedStyle(probe);
+      const bg = readSlotMap(cs, BG_SLOTS) as Record<BgSlot, string>;
+      const fg = readSlotMap(cs, FG_SLOTS) as Record<FgSlot, string>;
+      // Nothing resolved → the theme stylesheets are not in this document.
+      if (!isComplete(bg) || !isComplete(fg)) return null;
       return {
         name: '',
-        bg: readSlotMap(cs, BG_SLOTS) as Record<BgSlot, string>,
-        fg: readSlotMap(cs, FG_SLOTS) as Record<FgSlot, string>,
+        bg,
+        fg,
         shape: {
           radiusBox: pxToNumber(cs.width),
           radiusField: pxToNumber(cs.height),
@@ -110,6 +123,11 @@ function readSlotMap(
     out[slot] = readVar(cs, `--kj-${slot}`);
   }
   return out;
+}
+
+/** Whether every slot in a map resolved to a non-empty value. */
+function isComplete(map: Record<string, string>): boolean {
+  return Object.values(map).every(v => v !== '');
 }
 
 function pxToNumber(value: string): number {

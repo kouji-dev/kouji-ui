@@ -31,39 +31,39 @@ describe('Typography examples', () => {
     expect(fixture.nativeElement.querySelector('blockquote')).not.toBeNull();
   });
 
-  test('lead example reflects data-tone="lead" on the <p> host', () => {
+  test('lead example reflects data-kj-tone="lead" on the <p> host', () => {
     const fixture = TestBed.createComponent(KjTypographyLeadExample);
     fixture.detectChanges();
-    const lead = fixture.nativeElement.querySelector('p[data-tone="lead"]');
+    const lead = fixture.nativeElement.querySelector('p[data-kj-tone="lead"]');
     expect(lead).not.toBeNull();
   });
 
-  test('muted example reflects data-tone="muted" on each <span> host', () => {
+  test('muted example reflects data-kj-tone="muted" on each <span> host', () => {
     const fixture = TestBed.createComponent(KjTypographyMutedExample);
     fixture.detectChanges();
-    const mutedNodes = fixture.nativeElement.querySelectorAll('span[data-tone="muted"]');
+    const mutedNodes = fixture.nativeElement.querySelectorAll('span[data-kj-tone="muted"]');
     expect(mutedNodes.length).toBe(2);
   });
 
-  test('code example reflects data-tone="code" on each <code> host', () => {
+  test('code example reflects data-kj-tone="code" on each <code> host', () => {
     const fixture = TestBed.createComponent(KjTypographyCodeExample);
     fixture.detectChanges();
-    const codeNodes = fixture.nativeElement.querySelectorAll('code[data-tone="code"]');
+    const codeNodes = fixture.nativeElement.querySelectorAll('code[data-kj-tone="code"]');
     expect(codeNodes.length).toBe(2);
   });
 
-  test('blockquote example reflects data-tone="blockquote" on the host', () => {
+  test('blockquote example reflects data-kj-tone="blockquote" on the host', () => {
     const fixture = TestBed.createComponent(KjTypographyBlockquoteExample);
     fixture.detectChanges();
-    const bq = fixture.nativeElement.querySelector('blockquote[data-tone="blockquote"]');
+    const bq = fixture.nativeElement.querySelector('blockquote[data-kj-tone="blockquote"]');
     expect(bq).not.toBeNull();
   });
 
-  test('truncate example reflects data-truncate="2" and injects [title]', async () => {
+  test('truncate example reflects data-kj-truncate="2" and injects [title]', async () => {
     const fixture = TestBed.createComponent(KjTypographyTruncateExample);
     fixture.detectChanges();
     await flushAfterNextRender();
-    const clamped = fixture.nativeElement.querySelector('p[data-truncate="2"]');
+    const clamped = fixture.nativeElement.querySelector('p[data-kj-truncate="2"]');
     expect(clamped).not.toBeNull();
     expect(clamped?.getAttribute('title')).toMatch(/Atlas/);
   });

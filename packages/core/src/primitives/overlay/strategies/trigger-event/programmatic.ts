@@ -1,5 +1,6 @@
 import type { KjTriggerEventStrategy } from '../../tokens';
 
+/** Binds no DOM events: the overlay opens and closes only through its controller/service. */
 export function programmatic(): KjTriggerEventStrategy {
   let _toggle: (() => void) | null = null;
   return {

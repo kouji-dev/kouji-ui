@@ -37,11 +37,34 @@ describe('NavbarComponent', () => {
     expect(screen.queryByRole('button', { name: /search docs/i })).toBeNull();
   });
 
+  /**
+   * WCAG 4.1.2 Name, Role, Value. The disclosure state has to live on the
+   * element that carries the role and the accessible name — i.e. the focusable
+   * <button>. It used to sit on a `display: contents` <kj-button> wrapper,
+   * which announced a plain button with no popup at all.
+   */
   test('theme picker button toggles aria-expanded', async () => {
     await render(NavbarComponent, { providers: baseProviders });
     const trigger = screen.getByRole('button', { name: /current theme:/i });
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('the theme menu opens from the keyboard', async () => {
+    const { detectChanges } = await render(NavbarComponent, { providers: baseProviders });
+    const trigger = screen.getByRole('button', { name: /current theme:/i });
+
+    // Reach focus the way a keyboard user would, then type from wherever
+    // focus actually landed.
+    await userEvent.tab();
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    await userEvent.keyboard('{Enter}');
+    detectChanges();
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 });

@@ -1,14 +1,14 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjSheet, KjSheetService, KjSheetRef } from '@kouji-ui/core';
+import { KjSheet, KjSheetService, KjSheetRef, KjSheetTitle } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
 @Component({
   selector: 'kj-sheet-scrollable-body',
   standalone: true,
-  imports: [KjSheet, KjButtonComponent],
+  imports: [KjSheet, KjSheetTitle, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-sheet>
-    <h2 class="kj-sheet__title">Terms</h2>
+    <h2 kjSheetTitle>Terms</h2>
     @for (n of lines; track n) {
       <p>Paragraph {{ n }} — the body scrolls inside the sheet while the grab handle stays pinned.</p>
     }

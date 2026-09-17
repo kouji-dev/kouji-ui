@@ -1,4 +1,5 @@
 import { render, fireEvent } from '@testing-library/angular';
+import { vi } from 'vitest';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjFocusRing } from './focus-ring';
 
@@ -58,5 +59,51 @@ describe('KjFocusRing', () => {
       { imports: [KjFocusRing] },
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('installs ONE document listener pair for the whole page, not one per ring', async () => {
+    const added = vi.spyOn(document, 'addEventListener');
+    await render(
+      `<button kjFocusRing>a</button>
+       <button kjFocusRing>b</button>
+       <button kjFocusRing>c</button>
+       <button kjFocusRing>d</button>`,
+      { imports: [KjFocusRing] },
+    );
+    const global = added.mock.calls.filter(
+      ([type, , opts]) => (type === 'keydown' || type === 'pointerdown') && opts === true,
+    );
+    // Four rings used to mean eight capture listeners.
+    expect(global).toHaveLength(2);
+    added.mockRestore();
+  });
+
+  it('drops the shared listeners when the last ring is destroyed', async () => {
+    const removed = vi.spyOn(document, 'removeEventListener');
+    const { fixture } = await render(
+      `<button kjFocusRing>a</button><button kjFocusRing>b</button>`,
+      { imports: [KjFocusRing] },
+    );
+    fixture.destroy();
+    const global = removed.mock.calls.filter(
+      ([type, , opts]) => (type === 'keydown' || type === 'pointerdown') && opts === true,
+    );
+    expect(global).toHaveLength(2);
+    removed.mockRestore();
+  });
+
+  it('keeps the ring while focused even though a pointer press lands elsewhere', async () => {
+    const { container } = await render(
+      `<button kjFocusRing>Click me</button>`,
+      { imports: [KjFocusRing] },
+    );
+    const btn = container.querySelector('button')!;
+    fireEvent.keyDown(document);
+    fireEvent.focus(btn);
+    expect(btn).toHaveAttribute('data-focus-visible', '');
+    // The shared modality is page-global; reading it reactively would have
+    // stripped the ring off an element that is still focused.
+    fireEvent.pointerDown(document);
+    expect(btn).toHaveAttribute('data-focus-visible', '');
   });
 });

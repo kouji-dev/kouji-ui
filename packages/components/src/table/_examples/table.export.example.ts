@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { kjColumn, type KjColumnDef } from '@kouji-ui/core';
 import { KjTableComponent } from '../table';
 import {
-  KjTableToolbarComponent,
+  KjTableToolbar,
   type KjTableExportFormat,
 } from '../table-toolbar';
 import { copyToClipboard, downloadString, exportCsv, exportJson } from '../table-export';
@@ -25,7 +25,7 @@ const COLUMN_IDS = ['name', 'email', 'role'] as const;
   selector: 'kj-table-export-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KjTableComponent, KjTableToolbarComponent],
+  imports: [KjTableComponent, KjTableToolbar],
   styles: [`
     :host { display: block; }
     .kj-export-status { display: block; margin-block-start: 0.5rem; font-size: 0.875rem; }

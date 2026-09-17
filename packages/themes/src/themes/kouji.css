@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="kouji"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: dark;
+
     /* ── shape — brutalist (no radius) ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -64,7 +68,7 @@
     /* FG Class A — independent */
     --kj-fg-default:    #f0ede6;
     --kj-fg-muted:      #b8b3a3;
-    --kj-fg-subtle:     #8a8578;
+    --kj-fg-subtle:     #8c8679;
     --kj-fg-disabled:   #5a5648;
 
     /* FG Class B — paired */
@@ -88,6 +92,7 @@
     --kj-border-default:   #1a1a1a;
     --kj-border-muted:     #141414;
     --kj-border-strong:    #2a2a2a;
+    --kj-border-control:  #6c6c6c;
     --kj-border-focus:     #c4ff3d;
     --kj-border-disabled:  #1a1a1a;
     --kj-border-primary:   #c4ff3d;

@@ -1,15 +1,4 @@
-import type { PlaygroundFile } from '../playground-types';
-import { PLAYGROUND as SpinnerPlayground } from '@kouji-ui/components/spinner/spinner.playground';
-import { PLAYGROUND as StepperPlayground } from '@kouji-ui/components/stepper/stepper.playground';
-import { PLAYGROUND as TabsPlayground } from '@kouji-ui/components/tabs/tabs.playground';
-import { PLAYGROUND as TagPlayground } from '@kouji-ui/components/tag/tag.playground';
-import { PLAYGROUND as TextareaPlayground } from '@kouji-ui/components/textarea/textarea.playground';
-import { PLAYGROUND as TimePickerPlayground } from '@kouji-ui/components/time-picker/time-picker.playground';
-import { PLAYGROUND as ToastPlayground } from '@kouji-ui/components/toast/toast.playground';
-import { PLAYGROUND as TogglePlayground } from '@kouji-ui/components/toggle/toggle.playground';
-import { PLAYGROUND as TooltipPlayground } from '@kouji-ui/components/tooltip/tooltip.playground';
-import { PLAYGROUND as TreeSelectPlayground } from '@kouji-ui/components/tree-select/tree-select.playground';
-import { PLAYGROUND as TypographyPlayground } from '@kouji-ui/components/typography/typography.playground';
+import type { PlaygroundLoader } from '../playground-types';
 
 /**
  * Bucket E migrations. Keys are `DocItem.symbol` (the directive / component
@@ -18,20 +7,19 @@ import { PLAYGROUND as TypographyPlayground } from '@kouji-ui/components/typogra
  * file co-located in `packages/components/src/<comp>/`.
  *
  * Service-launched components (`toast`) use the wrapper symbol
- * `KjToastWrapperComponent`; `typography` uses the docs marker
+ * `KjToastWrapper`; `typography` uses the docs marker
  * `KjTypographyDocs` since it ships no wrapper component.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const BUCKET_E_FILES: Record<string, PlaygroundFile> = {
-  KjSpinnerComponent: SpinnerPlayground,
-  KjStepperComponent: StepperPlayground,
-  KjTabsComponent: TabsPlayground,
-  KjTagComponent: TagPlayground,
-  KjTextareaComponent: TextareaPlayground,
-  KjTimePickerComponent: TimePickerPlayground,
-  KjToastWrapperComponent: ToastPlayground,
-  KjToggleComponent: TogglePlayground,
-  KjTooltipComponent: TooltipPlayground,
-  KjTreeSelectComponent: TreeSelectPlayground,
-  KjTypographyDocs: TypographyPlayground,
+export const BUCKET_E_LOADERS: Record<string, PlaygroundLoader> = {
+  KjSpinnerComponent: () => import('@kouji-ui/components/spinner/spinner.playground').then((m) => m.PLAYGROUND),
+  KjStepperComponent: () => import('@kouji-ui/components/stepper/stepper.playground').then((m) => m.PLAYGROUND),
+  KjTabsComponent: () => import('@kouji-ui/components/tabs/tabs.playground').then((m) => m.PLAYGROUND),
+  KjTagComponent: () => import('@kouji-ui/components/tag/tag.playground').then((m) => m.PLAYGROUND),
+  KjTextareaComponent: () => import('@kouji-ui/components/textarea/textarea.playground').then((m) => m.PLAYGROUND),
+  KjTimePickerComponent: () => import('@kouji-ui/components/time-picker/time-picker.playground').then((m) => m.PLAYGROUND),
+  KjToastWrapper: () => import('@kouji-ui/components/toast/toast.playground').then((m) => m.PLAYGROUND),
+  KjToggleComponent: () => import('@kouji-ui/components/toggle/toggle.playground').then((m) => m.PLAYGROUND),
+  KjTooltip: () => import('@kouji-ui/components/tooltip/tooltip.playground').then((m) => m.PLAYGROUND),
+  KjTreeSelectComponent: () => import('@kouji-ui/components/tree-select/tree-select.playground').then((m) => m.PLAYGROUND),
+  KjTypographyDocs: () => import('@kouji-ui/components/typography/typography.playground').then((m) => m.PLAYGROUND),
 };

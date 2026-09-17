@@ -1,5 +1,23 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, ElementRef, input, viewChild } from '@angular/core';
-import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  ElementRef,
+  booleanAttribute,
+  computed,
+  input,
+  viewChild,
+  inject,
+} from '@angular/core';
+import {
+  KjRadioGroup,
+  KjRadio,
+  KjId,
+  KJ_RADIO_GROUP,
+  KjRovingTabindex,
+  KjRovingTabindexItem,
+  injectParent,
+} from '@kouji-ui/core';
 
 /**
  * Radio group root. Two-way bind via `[(value)]`.
@@ -26,10 +44,12 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  *   @doc-file radio.inline.example.ts
  *
  * @doc-keyboard
- *   ArrowUp|ArrowDown    — Moves selection between radios in a vertical group
- *   ArrowLeft|ArrowRight — Moves selection between radios in a horizontal group
- *   Tab                  — Enters the group (focuses the checked or first radio)
- *   Space                — Selects the focused radio
+ *   ArrowUp|ArrowDown    — Moves focus between radios; skips disabled options
+ *   ArrowLeft|ArrowRight — Moves focus between radios; skips disabled options
+ *   Home|End             — Moves focus to the first / last enabled radio
+ *   Tab                  — Enters the group once, landing on the checked radio
+ *                          (or the first when nothing is selected)
+ *   Space|Enter          — Selects the focused radio
  *
  * @doc-aria
  *   role="radiogroup"  — On the host `<kj-radio-group>` (provided by the directive)
@@ -44,10 +64,13 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
  *   is clickable. Pair with adequate line-height so the row meets WCAG 2.5.5.
  *
  * @doc-a11y
- *   Selection follows the roving-tabindex pattern — only the checked (or
- *   first) radio is tab-focusable; arrow keys cycle within. Group always
- *   exposes a programmatic name — set `ariaLabel` or wire `aria-labelledby`
- *   to a sibling heading.
+ *   The group is a single Tab stop (roving tabindex): Tab lands on the
+ *   checked radio, or on the first one when nothing is selected, and arrow
+ *   keys cycle within while skipping disabled options. Selection is committed
+ *   with Space or Enter rather than following focus, so an arrow key never
+ *   changes the form value on its way past. Group always exposes a
+ *   programmatic name — set `ariaLabel` or wire `aria-labelledby` to a
+ *   sibling heading.
  *
  * @doc-related checkbox,select,toggle
  *
@@ -65,7 +88,13 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
 @Component({
   selector: 'kj-radio-group',
   standalone: true,
-  hostDirectives: [{ directive: KjRadioGroup, inputs: ['kjValue: value'], outputs: ['kjValueChange: valueChange'] }],
+  hostDirectives: [
+    { directive: KjRadioGroup, inputs: ['kjValue: value'], outputs: ['kjValueChange: valueChange'] },
+    // One Tab stop for the whole group, arrow keys inside (APG radiogroup,
+    // WCAG 2.4.3). Without it an n-option group was n Tab stops, and a
+    // disabled option was still one of them.
+    KjRovingTabindex,
+  ],
   template: `<ng-content />`,
   styleUrl: './radio.css',
   encapsulation: ViewEncapsulation.None,
@@ -77,11 +106,12 @@ import { KjRadioGroup, KjRadio } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjRadioGroupComponent {
+  /** Layout axis of the options. Reflects `data-orientation`. Defaults to `'vertical'`. */
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
+
+  /** Accessible name for the `role="radiogroup"` host. Defaults to `undefined` (wire `aria-labelledby` instead). */
   readonly ariaLabel = input<string | undefined>(undefined);
 }
-
-let radioIdCounter = 0;
 
 /**
  * Single radio button. Must live inside `<kj-radio-group>`.
@@ -97,20 +127,24 @@ let radioIdCounter = 0;
 @Component({
   selector: 'kj-radio',
   standalone: true,
-  imports: [KjRadio],
+  imports: [KjRadio, KjRovingTabindexItem],
   template: `
     <!-- Click-region wrapper. The focusable element is the inner kjRadio span
          (role="radio", tabindex, Space/Enter handlers); this div only proxies
          pointer events from the label area, so the lint rules below don't apply. -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div class="kj-radio-inner" (click)="onLabelClick($event)">
+      <!-- tabindex is owned by kjRovingTabindexItem: 0 on the checked option,
+           -1 on the rest, so the group is a single Tab stop. -->
       <span
         #dot
         kjRadio
-        tabindex="0"
+        kjRovingTabindexItem
         class="kj-radio-dot"
         [kjRadioValue]="value()"
         [kjDisabled]="disabled()"
+        [kjRovingItemDisabled]="disabled()"
+        [kjRovingActive]="checked()"
         [attr.aria-labelledby]="labelId"
       ></span>
       <span class="kj-radio-label" [id]="labelId"><ng-content /></span>
@@ -124,10 +158,22 @@ let radioIdCounter = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjRadioComponent {
+  /** The value this option contributes to the group when selected. Required. */
   readonly value = input.required<unknown>();
-  readonly disabled = input(false);
 
-  protected readonly labelId = `kj-radio-${++radioIdCounter}`;
+  /** Removes the option from the tab order and blocks selection. Defaults to `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  private readonly group = injectParent(KJ_RADIO_GROUP, { child: 'KjRadioComponent', parent: '[kjRadioGroup]' });
+
+  /**
+   * Whether this option is the group's selection. Read from the group rather
+   * than from the inner `KjRadio` because the roving tab stop has to follow
+   * the selection (APG: Tab lands on the checked radio).
+   */
+  protected readonly checked = computed(() => this.group.value() === this.value());
+
+  protected readonly labelId = inject(KjId).mint('radio');
 
   private readonly dot = viewChild.required<ElementRef<HTMLElement>>('dot');
 

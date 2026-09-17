@@ -1,24 +1,20 @@
 import {
-  DestroyRef,
   Directive,
-  PLATFORM_ID,
   Signal,
-  afterNextRender,
   computed,
   effect,
   inject,
   input,
-  isDevMode,
-  signal,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 
+import { KjReducedMotion } from '../motion/reduced-motion';
 import { KjSize, KjVariant, bindPresets } from '../presets';
 import { KJ_PROGRESS_BAR_CONFIG } from './config';
 import {
   KJ_PROGRESS_BAR,
   KjProgressBarContext,
 } from './progress-bar.context';
+import { kjDevMode, kjDevWarn, kjError } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Marks an element as a kouji progress bar. Owns `role="progressbar"` and the
@@ -79,8 +75,6 @@ import {
   },
 })
 export class KjProgressBar implements KjProgressBarContext {
-  private readonly platformId = inject(PLATFORM_ID);
-
   /**
    * Current progress value. `null` is the explicit indeterminate sentinel —
    * the directive omits `aria-valuenow` and reflects `data-indeterminate`.
@@ -112,8 +106,12 @@ export class KjProgressBar implements KjProgressBarContext {
    */
   readonly kjAriaValuetext = input<string | undefined>(undefined);
 
-  /** True when the user prefers reduced motion. Reflects `data-reduced-motion`. */
-  protected readonly reducedMotion = signal<boolean>(false);
+  /**
+   * True when the user prefers reduced motion. Reflects `data-reduced-motion`.
+   * Read from the root `KjReducedMotion` service: the OS setting is
+   * application-wide, so one `matchMedia` subscription serves every bar.
+   */
+  protected readonly reducedMotion = inject(KjReducedMotion).prefersReducedMotion;
 
   /** Raw value (passes through `null` for indeterminate). */
   readonly value: Signal<number | null> = computed(() => this.kjValue());
@@ -163,29 +161,14 @@ export class KjProgressBar implements KjProgressBarContext {
   });
 
   constructor() {
-    const destroyRef = inject(DestroyRef);
-
-    afterNextRender(() => {
-      if (!isPlatformBrowser(this.platformId)) return;
-      if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-
-      const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-      this.reducedMotion.set(mql.matches);
-
-      const onChange = (event: MediaQueryListEvent) => {
-        this.reducedMotion.set(event.matches);
-      };
-      mql.addEventListener('change', onChange);
-      destroyRef.onDestroy(() => mql.removeEventListener('change', onChange));
-    });
-
-    if (isDevMode()) {
+    if (kjDevMode()) {
       effect(() => {
         const lo = this.kjMin();
         const hi = this.kjMax();
         if (lo >= hi) {
-          throw new Error(
-            `[kj] KjProgressBar: kjMin (${lo}) must be less than kjMax (${hi}).`,
+          throw kjError(
+            'KjProgressBar',
+            `kjMin (${lo}) must be less than kjMax (${hi}).`,
           );
         }
       });
@@ -198,16 +181,18 @@ export class KjProgressBar implements KjProgressBarContext {
         const hi = this.kjMax();
         if ((v < lo || v > hi) && !outOfRangeWarned) {
           outOfRangeWarned = true;
-          console.warn(
-            `[kj] KjProgressBar: kjValue ${v} is outside [${lo}, ${hi}]; clamping.`,
+          kjDevWarn(
+            'KjProgressBar',
+            `kjValue ${v} is outside [${lo}, ${hi}]; clamping.`,
           );
         }
       });
 
       effect(() => {
         if (this.kjValue() === null && this.kjAriaValuetext() !== undefined) {
-          console.warn(
-            '[kj] KjProgressBar: kjAriaValuetext is set while kjValue is null (indeterminate). ' +
+          kjDevWarn(
+            'KjProgressBar',
+            'kjAriaValuetext is set while kjValue is null (indeterminate). ' +
               'aria-valuetext describes a value; consider moving the phrasing to a sibling text element.',
           );
         }

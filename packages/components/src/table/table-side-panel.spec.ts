@@ -2,7 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { afterEach, describe, expect, it } from 'vitest';
 import { KjTable, kjColumn } from '@kouji-ui/core';
-import { KjTableSidePanelComponent } from './table-side-panel';
+import { KjTableSidePanel } from './table-side-panel';
 
 interface User {
   id: string;
@@ -19,7 +19,7 @@ const COLS = [
 
 @Component({
   standalone: true,
-  imports: [KjTable, KjTableSidePanelComponent],
+  imports: [KjTable, KjTableSidePanel],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()">
@@ -57,7 +57,7 @@ function cleanupOverlays(): void {
   document.documentElement.style.paddingRight = '';
 }
 
-describe('KjTableSidePanelComponent', () => {
+describe('KjTableSidePanel', () => {
   afterEach(() => {
     cleanupOverlays();
   });

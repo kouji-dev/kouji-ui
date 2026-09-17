@@ -1,7 +1,15 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, model, input, viewChild, ElementRef } from '@angular/core';
-import { KjCheckbox } from '@kouji-ui/core';
-
-let checkboxIdCounter = 0;
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  booleanAttribute,
+  model,
+  input,
+  viewChild,
+  ElementRef,
+  inject,
+} from '@angular/core';
+import { KjCheckbox, type KjExtensible, KjId } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjCheckbox` directive.
@@ -81,12 +89,12 @@ let checkboxIdCounter = 0;
       <span
         #box
         kjCheckbox
-        tabindex="0"
+        [attr.tabindex]="tabindex()"
         class="kj-checkbox-box"
         [(kjChecked)]="checked"
         [kjDisabled]="disabled()"
+        [kjIndeterminate]="indeterminate()"
         [attr.data-size]="size()"
-        [attr.data-indeterminate]="indeterminate() ? '' : null"
         [attr.aria-labelledby]="labelId"
       ></span>
       <span class="kj-checkbox-label" [id]="labelId"><ng-content /></span>
@@ -101,12 +109,47 @@ let checkboxIdCounter = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjCheckboxComponent {
+  /**
+   * Checked state. Two-way bindable. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<kj-checkbox checked>`) binds the empty string and reads as `false`.
+   * Bind it: `[(checked)]="on"` or `[checked]="true"`. The sibling `disabled`
+   * and `indeterminate` inputs are plain inputs and do coerce, so the bare
+   * form works on those.
+   */
   readonly checked = model<boolean>(false);
-  readonly disabled = input(false);
-  readonly indeterminate = input(false);
-  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  /** Disables interaction; reflects `aria-disabled` on the inner box. Default `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+  /**
+   * Mixed state. Forwarded to the headless `KjCheckbox`, which reflects both
+   * `aria-checked="mixed"` and `data-indeterminate` on the inner box — the
+   * dash glyph and the announced state come from the same signal, so they
+   * cannot disagree. Default `false`.
+   */
+  readonly indeterminate = input(false, { transform: booleanAttribute });
+  /**
+   * Size preset reflected as `data-size` on the inner box. Open by design
+   * ({@link KjExtensible}): `'sm' | 'md' | 'lg'` autocomplete and any other
+   * string is reflected verbatim for consumer CSS keyed on
+   * `.kj-checkbox-box[data-size="…"]`.
+   */
+  readonly size = input<KjExtensible<'sm' | 'md' | 'lg'>>('md');
+  /**
+   * Tab-stop position of the focusable box. Defaults to `0` — the checkbox is
+   * its own Tab stop.
+   *
+   * Set `-1` when the checkbox sits inside a widget that owns keyboard
+   * navigation and must present a single Tab stop: a `role="grid"` table's
+   * per-row selection column, a roving-tabindex toolbar, a listbox option. The
+   * box stays focusable by script and by pointer, so the parent can move focus
+   * onto it with arrow keys; it simply stops being reached by Tab. Without
+   * this, a 50-row selectable table adds 50 Tab stops (WCAG 2.4.3 Focus
+   * Order).
+   */
+  readonly tabindex = input<number>(0);
 
-  protected readonly labelId = `kj-checkbox-${++checkboxIdCounter}`;
+  protected readonly labelId = inject(KjId).mint('checkbox');
 
   private readonly box = viewChild.required<ElementRef<HTMLElement>>('box');
 

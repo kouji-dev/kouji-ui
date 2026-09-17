@@ -1,5 +1,5 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
-import { KjPaginationDefaultComponent } from './pagination';
+import { KjPaginationDefault } from './pagination';
 
 /**
  * A walkthrough of the most common pagination usages — the
@@ -10,7 +10,7 @@ import { KjPaginationDefaultComponent } from './pagination';
 @Component({
   selector: 'kj-pagination-usage-example',
   standalone: true,
-  imports: [KjPaginationDefaultComponent],
+  imports: [KjPaginationDefault],
   styles: [
     `
       :host {

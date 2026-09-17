@@ -1,0 +1,7 @@
+/* Type-check-only program over the themes specs. Run via `pnpm typecheck`. */
+{
+  "extends": "./tsconfig.spec.json",
+  "compilerOptions": {
+    "noEmit": true
+  }
+}

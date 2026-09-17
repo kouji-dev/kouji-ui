@@ -1,4 +1,5 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
 /** Preset configuration consumed by `KjTextarea` via `bindPresets`. */
 export interface KjTextareaConfig {
@@ -28,15 +29,18 @@ export const KJ_TEXTAREA_CONFIG = new InjectionToken<KjTextareaConfig>('kj.texta
 });
 
 /**
- * Configures the Textarea presets for the enclosing injector. Replaces (does
- * not merge) `variants` and `sizes`; spread `KJ_TEXTAREA_DEFAULTS.variants` to
- * extend.
+ * Configures the Textarea presets for the enclosing injector.
+ *
+ * Deep-merges over {@link KJ_TEXTAREA_DEFAULTS} through {@link mergeKjConfig}: pass only the
+ * fields you want to change, at any depth — `provideKjTextarea({ defaults: { variant: '…' } })`
+ * keeps every other shipped default. Arrays still **replace**, so spread
+ * `KJ_TEXTAREA_DEFAULTS.variants` to extend rather than swap the list.
  */
-export function provideKjTextarea(config: Partial<KjTextareaConfig>): Provider[] {
+export function provideKjTextarea(config: KjDeepPartial<KjTextareaConfig>): Provider[] {
   return [
     {
       provide: KJ_TEXTAREA_CONFIG,
-      useValue: { ...KJ_TEXTAREA_DEFAULTS, ...config },
+      useValue: mergeKjConfig(KJ_TEXTAREA_DEFAULTS, config),
     },
   ];
 }

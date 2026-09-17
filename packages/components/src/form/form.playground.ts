@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   KjFormComponent,
-  KjFormActionsComponent,
-  KjFormSummaryComponent,
+  KjFormActions,
+  KjFormSummary,
 } from './form';
 import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 import { KjInputComponent } from '../input/input';
@@ -32,8 +32,8 @@ const FIELDS: ReadonlyArray<{ name: string; label: string; type: 'email' | 'pass
   standalone: true,
   imports: [
     KjFormComponent,
-    KjFormActionsComponent,
-    KjFormSummaryComponent,
+    KjFormActions,
+    KjFormSummary,
     KjFieldComponent,
     KjFieldLabelComponent,
     KjInputComponent,

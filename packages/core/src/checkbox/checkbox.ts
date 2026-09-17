@@ -1,4 +1,4 @@
-import { Directive, inject, model } from '@angular/core';
+import { Directive, booleanAttribute, computed, inject, input, model } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 
 /**
@@ -63,8 +63,9 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
   ],
   host: {
     role: 'checkbox',
-    '[attr.aria-checked]': 'kjChecked().toString()',
+    '[attr.aria-checked]': 'ariaChecked()',
     '[attr.data-checked]': 'kjChecked() ? "" : null',
+    '[attr.data-indeterminate]': 'kjIndeterminate() ? "" : null',
     '[attr.disabled]': 'formCtrl.disabled() ? "" : null',
     '(click)': 'toggle()',
     '(keydown.space)': 'onSpace($event)',
@@ -73,12 +74,48 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 })
 export class KjCheckbox {
   readonly formCtrl = inject(KjFormControl);
+  private readonly disabledState = inject(KjDisabled);
 
-  /** Whether the checkbox is checked. Supports two-way binding. */
+  /**
+   * Whether the checkbox is checked. Supports two-way binding. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<div kjCheckbox kjChecked>`) binds the empty string and reads as `false`.
+   * Bind it: `[(kjChecked)]="on"` or `[kjChecked]="true"`.
+   */
   kjChecked = model<boolean>(false);
+
+  /**
+   * Mixed ("some of many") state, for a select-all row whose children are
+   * partly checked. Reflects `aria-checked="mixed"` and `data-indeterminate`,
+   * per the WAI-ARIA tri-state checkbox pattern.
+   *
+   * Presentation only: it does not change what {@link toggle} does, so
+   * activating a mixed checkbox commits to checked/unchecked and the consumer
+   * clears the flag from its own select-all logic.
+   */
+  readonly kjIndeterminate = input<boolean, unknown>(false, {
+    transform: booleanAttribute,
+  });
+
+  /** @internal Tri-state ARIA value: "mixed" wins over the boolean. */
+  protected readonly ariaChecked = computed(() =>
+    this.kjIndeterminate() ? 'mixed' : this.kjChecked().toString(),
+  );
+
+  /**
+   * Whether interaction is blocked — either by `[kjDisabled]` or by an Angular
+   * form control that was disabled through `FormControl.disable()`.
+   */
+  readonly isDisabled = computed(
+    () => this.disabledState.disabled() || this.formCtrl.disabled(),
+  );
 
   /** @internal */
   toggle(): void {
+    // A control announcing aria-disabled must not change state when clicked
+    // (WCAG 4.1.2 — the announced state has to match the behaviour).
+    if (this.isDisabled()) return;
     const next = !this.kjChecked();
     this.kjChecked.set(next);
     this.formCtrl.notifyChange(next);

@@ -11,10 +11,10 @@ earn a directive in `@kouji-ui/core`.
 
 > Already partially shipped in components at
 > `packages/components/src/card/card.ts` — seven presentation-only
-> components (`KjCardComponent`, `KjCardCoverComponent`,
-> `KjCardHeaderComponent`, `KjCardTitleComponent`,
-> `KjCardSubtitleComponent`, `KjCardContentComponent`,
-> `KjCardFooterComponent`) plus `card.css`. **Nothing in
+> components (`KjCard`, `KjCardCover`,
+> `KjCardHeader`, `KjCardTitle`,
+> `KjCardSubtitle`, `KjCardContent`,
+> `KjCardFooter`) plus `card.css`. **Nothing in
 > `packages/core/src/card/`** — there is no headless directive today,
 > by deliberate omission ("Presentation-only: no headless directive in
 > core, no behavior" reads the file's TSDoc). This analysis re-opens
@@ -99,7 +99,7 @@ Build" rule in [`rules/code_style.md`](../../../rules/code_style.md):
 > behaviour.
 
 The current **components-package-only** layout is correct for this
-case. `KjCardComponent` is a thin styled `<div>`; the seven sub-part
+case. `KjCard` is a thin styled `<div>`; the seven sub-part
 components are thin styled wrappers. None of them deserves a core
 directive **for the static case** because none of them has any
 behaviour to deduplicate.
@@ -204,20 +204,20 @@ case earns a core directive.**
 `packages/components/src/card/`:
 
 - `card.ts` — seven components in one file:
-  - `KjCardComponent` (host `class="kj-card"`, `[data-variant]`,
+  - `KjCard` (host `class="kj-card"`, `[data-variant]`,
     inputs: `variant: 'default' | 'outline' | 'subtle'` — the file
     calls these "Variants" but the names are inconsistent with
     `KjVariant`'s preset list. See Open questions.).
-  - `KjCardCoverComponent` (host `class="kj-card-cover"`,
+  - `KjCardCover` (host `class="kj-card-cover"`,
     `[data-size]`, `[data-fit]`, inputs: `size: 'sm' | 'md' | 'lg'`,
     `fit: 'cover' | 'contain'`).
-  - `KjCardHeaderComponent` (host `class="kj-card-header"`).
-  - `KjCardTitleComponent` (renders `<h3 class="kj-card-title">` —
+  - `KjCardHeader` (host `class="kj-card-header"`).
+  - `KjCardTitle` (renders `<h3 class="kj-card-title">` —
     correct heading semantics; `style="display: contents"` on host).
-  - `KjCardSubtitleComponent` (renders `<p class="kj-card-subtitle">`).
-  - `KjCardContentComponent` (host `class="kj-card-content"`,
+  - `KjCardSubtitle` (renders `<p class="kj-card-subtitle">`).
+  - `KjCardContent` (host `class="kj-card-content"`,
     `[data-padded]`, input `padded: boolean = true`).
-  - `KjCardFooterComponent` (host `class="kj-card-footer"`,
+  - `KjCardFooter` (host `class="kj-card-footer"`,
     `[data-align]`, input `align: 'start' | 'center' | 'end' |
     'between' = 'end'`).
 - `card.css` — component-layer CSS in `@layer kj.component`. CSS

@@ -123,7 +123,17 @@
                   <h2>Playground</h2>
                     <a class="anchor" href="#playground">#playground</a>
                 </header>
-                <app-playground [symbol]="m.symbol" />
+                <!--
+                  ngSkipHydration: the stage mounts its demo with
+                  `ViewContainerRef.createComponent()` after an async chunk
+                  load, so the server renders it and the client cannot have it
+                  in place when hydration runs. Skipping hydration for this one
+                  subtree is the supported escape hatch: the prerendered file
+                  still carries the real component's markup (which is the whole
+                  point — SSR review F-16), and the browser re-creates the
+                  stage instead of trying to claim DOM that does not match.
+                -->
+                <app-playground ngSkipHydration [symbol]="m.symbol" />
               </section>
             }
           </div>

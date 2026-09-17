@@ -118,6 +118,59 @@ class DisabledHost {
 })
 class DefaultValueHost {}
 
+@Component({
+  standalone: true,
+  imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <div kjTabs [(kjValue)]="active">
+      <div kjTabList aria-label="Closable tabs">
+        @for (tab of tabs(); track tab) {
+          <button kjTab [kjTabValue]="tab" [kjClosable]="true" (kjClose)="close($event)">{{ tab }}</button>
+        }
+      </div>
+      @for (tab of tabs(); track tab) {
+        <div kjTabPanel [kjPanelValue]="tab">{{ tab }} body</div>
+      }
+    </div>
+  `,
+})
+class ClosableHost {
+  readonly tabs = signal(['one', 'two', 'three']);
+  readonly active = signal('three');
+
+  close(value: string): void {
+    this.tabs.update((all) => all.filter((t) => t !== value));
+    if (this.active() === value) this.active.set(this.tabs()[this.tabs().length - 1]);
+  }
+}
+
+@Component({
+  standalone: true,
+  imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <div kjTabs [(kjValue)]="active">
+      <div kjTabList aria-label="Panels">
+        <button kjTab kjTabValue="text">Text</button>
+        <button kjTab kjTabValue="form">Form</button>
+      </div>
+      <div kjTabPanel kjPanelValue="text">Plain prose only.</div>
+      <div kjTabPanel kjPanelValue="form"><button type="button">Save</button></div>
+    </div>
+  `,
+})
+class PanelContentHost {
+  readonly active = signal('text');
+}
+
+/** Dispatches `key` from the element that really has focus, as a user would. */
+function press(key: string): void {
+  (document.activeElement ?? document.body).dispatchEvent(
+    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+  );
+}
+
 describe('KjTabs', () => {
   describe('roles + ARIA wiring', () => {
     it('hosts role="tablist" with aria-orientation', async () => {
@@ -348,5 +401,110 @@ describe('KjTabs', () => {
       // Should land on 'gamma', not on 'beta' (disabled).
       expect((fixture.componentInstance as DisabledHost).active()).toBe('gamma');
     });
+
+    it('arrow keys skip a disabled tab (a11y F-12)', async () => {
+      const { detectChanges } = await render(DisabledHost);
+      const tabs = screen.getAllByRole('tab');
+      tabs[0].focus();
+      press('ArrowRight');
+      detectChanges();
+      expect(document.activeElement).toBe(tabs[2]);
+      expect(tabs[2]).toHaveAttribute('tabindex', '0');
+      expect(tabs[1]).toHaveAttribute('tabindex', '-1');
+      press('ArrowLeft');
+      detectChanges();
+      expect(document.activeElement).toBe(tabs[0]);
+    });
+  });
+
+  describe('tab stop follows the selection (a11y F-19)', () => {
+    it('the selected tab is the tab stop, not the first one', async () => {
+      const { fixture, detectChanges } = await render(HorizontalHost);
+      (fixture.componentInstance as HorizontalHost).active.set('usage');
+      detectChanges();
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs[0]).toHaveAttribute('tabindex', '-1');
+      expect(tabs[2]).toHaveAttribute('tabindex', '0');
+      expect(tabs.filter((t) => t.getAttribute('tabindex') === '0')).toHaveLength(1);
+    });
+
+    it('closing the focused last tab with Delete keeps one tab stop and moves focus to its neighbour', async () => {
+      const { fixture, detectChanges } = await render(ClosableHost);
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs[2]).toHaveAttribute('tabindex', '0');
+      tabs[2].focus();
+      press('Delete');
+      detectChanges();
+
+      const remaining = screen.getAllByRole('tab');
+      expect(remaining).toHaveLength(2);
+      expect((fixture.componentInstance as ClosableHost).active()).toBe('two');
+      expect(remaining.filter((t) => t.getAttribute('tabindex') === '0')).toHaveLength(1);
+      expect(remaining[1]).toHaveAttribute('tabindex', '0');
+      expect(document.activeElement).toBe(remaining[1]);
+    });
+  });
+
+  describe('tab panel focusability (a11y F-16)', () => {
+    it('an active panel without tabbable content gets tabindex="0"; inactive panels get none', async () => {
+      const { container, fixture, detectChanges } = await render(PanelContentHost);
+      const panels = container.querySelectorAll<HTMLElement>('[kjTabPanel]');
+      expect(panels[0]).toHaveAttribute('tabindex', '0');
+      expect(panels[1]).not.toHaveAttribute('tabindex');
+
+      (fixture.componentInstance as PanelContentHost).active.set('form');
+      detectChanges();
+      await fixture.whenStable();
+      expect(panels[0]).not.toHaveAttribute('tabindex');
+    });
+
+    it('an active panel that contains a tabbable control stays out of the tab sequence', async () => {
+      const { container, fixture, detectChanges } = await render(PanelContentHost);
+      (fixture.componentInstance as PanelContentHost).active.set('form');
+      detectChanges();
+      await fixture.whenStable();
+      const panels = container.querySelectorAll<HTMLElement>('[kjTabPanel]');
+      expect(panels[1]).not.toHaveAttribute('hidden');
+      expect(panels[1]).not.toHaveAttribute('tabindex');
+    });
+  });
+});
+
+
+describe('KjTab — composed KjDisabled (arch F-2 / F-16)', () => {
+  it('honours bare kjTabDisabled / kjClosable and reflects the disabled state once', async () => {
+    const { container } = await render(
+      `<div kjTabs kjValue="alpha">
+         <div kjTabList>
+           <button kjTab kjTabValue="alpha">Alpha</button>
+           <button kjTab kjTabValue="beta" kjTabDisabled kjClosable>Beta</button>
+         </div>
+         <div kjTabPanel kjPanelValue="alpha">A</div>
+         <div kjTabPanel kjPanelValue="beta">B</div>
+       </div>`,
+      { imports },
+    );
+    const tabs = container.querySelectorAll<HTMLElement>('[kjTab]');
+    // Before arch F-2 the bare attribute bound '' (falsy) and the tab stayed
+    // enabled; the composed KjDisabled now owns both reflections.
+    expect(tabs[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(tabs[1]).toHaveAttribute('data-disabled', '');
+
+    fireEvent.click(tabs[1]);
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('leaves an enabled tab with neither reflection', async () => {
+    const { container } = await render(
+      `<div kjTabs kjValue="alpha">
+         <div kjTabList><button kjTab kjTabValue="alpha">Alpha</button></div>
+         <div kjTabPanel kjPanelValue="alpha">A</div>
+       </div>`,
+      { imports },
+    );
+    const tab = container.querySelector('[kjTab]')!;
+    expect(tab).not.toHaveAttribute('aria-disabled');
+    expect(tab).not.toHaveAttribute('data-disabled');
   });
 });

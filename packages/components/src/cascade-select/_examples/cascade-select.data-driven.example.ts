@@ -1,8 +1,8 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjCascadeSelectComponent,
-  KjCascadeOptionComponent,
-  KjCascadeSubPanelComponent,
+  KjCascadeOption,
+  KjCascadeSubPanel,
 } from '../cascade-select';
 import type { KjCascadeNode } from '@kouji-ui/core';
 
@@ -78,7 +78,7 @@ const REGIONS: readonly GeoNode[] = [
 @Component({
   selector: 'kj-cascade-select-data-driven-example',
   standalone: true,
-  imports: [KjCascadeSelectComponent, KjCascadeOptionComponent, KjCascadeSubPanelComponent],
+  imports: [KjCascadeSelectComponent, KjCascadeOption, KjCascadeSubPanel],
   styles: [
     `
       :host {

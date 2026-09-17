@@ -1,6 +1,7 @@
 export {
   KjComboboxComponent,
   KjComboboxOptionComponent,
-  KjComboboxEmptyComponent,
-  KjComboboxLoadingComponent,
+  KjComboboxOptionTemplate,
+  KjComboboxEmpty,
+  KjComboboxLoading,
 } from './combobox';

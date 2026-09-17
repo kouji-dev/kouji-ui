@@ -34,3 +34,26 @@ describe('KjRadioGroup', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+describe('KjRadio — disabled is behaviour, not just an attribute', () => {
+  const disabledTemplate = `<div kjRadioGroup [(kjValue)]="selected" aria-label="Opts"><div kjRadio [kjRadioValue]="'a'" tabindex="0">A</div><div kjRadio kjDisabled [kjRadioValue]="'b'" tabindex="-1">B</div></div>`;
+
+  it('does not become the selection on click', async () => {
+    const { getAllByRole } = await render(disabledTemplate, {
+      imports,
+      componentProperties: { selected: 'a' },
+    });
+    fireEvent.click(getAllByRole('radio')[1]);
+    expect(getAllByRole('radio')[1]).toHaveAttribute('aria-checked', 'false');
+    expect(getAllByRole('radio')[0]).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('does not become the selection on Space', async () => {
+    const { getAllByRole } = await render(disabledTemplate, {
+      imports,
+      componentProperties: { selected: 'a' },
+    });
+    fireEvent.keyDown(getAllByRole('radio')[1], { key: ' ' });
+    expect(getAllByRole('radio')[1]).toHaveAttribute('aria-checked', 'false');
+  });
+});

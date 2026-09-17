@@ -1,7 +1,24 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `drawer.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { KjDrawerTitle } from '@kouji-ui/core';
 
 export {
   KjDrawer,
+  KjDrawerTitle,
   KjDrawerService,
   KjDrawerRef,
   type KjDrawerOpenOptions,
@@ -44,7 +61,8 @@ export {
  *
  * @doc-aria
  *   role           — "dialog" by default; an `aria-modal="true"` while backdrop is active
- *   aria-labelledby — Wire to the heading id when you project one
+ *   aria-labelledby — Set automatically to the id of the projected `<kj-drawer-title>` / `[kjDrawerTitle]`; or pass `ariaLabelledBy` to `open()`
+ *   aria-label     — Pass `ariaLabel` to `open()` (or bind `kjAriaLabel` on `<kj-drawer>`) for a body without a title
  *   aria-describedby — Wire to a description node if the heading is not sufficient
  *   data-state     — "open" / "closed" — drives the slide-in transform
  *   data-kj-side   — Mirrors the resolved side for theme/scope hooks
@@ -65,9 +83,10 @@ export {
  *   Focus is trapped inside the drawer while open and returned to the
  *   triggering element on close (`returnFocus: true`). Siblings outside the
  *   drawer are marked `inert` while a modal drawer is open. Stacking is safe —
- *   only the topmost overlay receives Escape and outside-click. The wrapper
- *   does not generate an accessible name; provide one via `aria-labelledby`
- *   (pointing to a visible heading) or `aria-label`.
+ *   only the topmost overlay receives Escape and outside-click. The drawer is
+ *   named by its `<kj-drawer-title>` (`aria-labelledby`); a body without a
+ *   heading must pass `ariaLabel` to `open()`. In dev mode a drawer that opens
+ *   with neither logs a warning.
  *
  * @doc-related dialog,popover,confirm-popup
  *
@@ -77,9 +96,33 @@ export {
   selector: 'kj-drawer-shell',
   standalone: true,
   template: `<ng-content />`,
-  styleUrl: './drawer.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjDrawerComponent {}
+
+/**
+ * Styled drawer heading. Renders an `<h2 kjDrawerTitle>` so the enclosing
+ * `<kj-drawer>` is named by it (`aria-labelledby`).
+ *
+ * @example
+ * ```html
+ * <kj-drawer>
+ *   <kj-drawer-title>Settings</kj-drawer-title>
+ * </kj-drawer>
+ * ```
+ * @doc-category Library/Overlay
+ * @doc
+ * @doc-name drawer
+ */
+@Component({
+  selector: 'kj-drawer-title',
+  standalone: true,
+  imports: [KjDrawerTitle],
+  template: `<h2 kjDrawerTitle><ng-content /></h2>`,
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjDrawerTitleComponent {}

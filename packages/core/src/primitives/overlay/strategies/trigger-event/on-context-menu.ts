@@ -10,14 +10,17 @@ const read = <T>(v: Reactive<T> | undefined, fallback: T): T => {
   return v;
 };
 
+/** Options for {@link onContextMenu}. `longPressMs` defaults to 500. */
 export interface KjOnContextMenuOpts {
   longPressMs?: Reactive<number>;
 }
 
+/** {@link onContextMenu}'s return type — reconfigurable after DI has built it. */
 export type KjOnContextMenuStrategy = KjTriggerEventStrategy & {
   configure(opts: Partial<KjOnContextMenuOpts>): void;
 };
 
+/** Opens on right-click, the Menu/Shift+F10 key, or a touch long-press. */
 export function onContextMenu(initialOpts: Partial<KjOnContextMenuOpts> = {}): KjOnContextMenuStrategy {
   let opts: Partial<KjOnContextMenuOpts> = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;

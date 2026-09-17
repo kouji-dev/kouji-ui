@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { kjColumn, kjTableResource, type KjColumnDef, type KjTableState } from '@kouji-ui/core';
 import { KjTableComponent } from '../table';
-import { KjTableToolbarComponent } from '../table-toolbar';
-import { KjTablePaginationComponent } from '../table-pagination';
-import { KjTableStatusBarComponent } from '../table-status-bar';
+import { KjTableToolbar } from '../table-toolbar';
+import { KjTablePagination } from '../table-pagination';
+import { KjTableStatusBar } from '../table-status-bar';
 
 interface User {
   id: string;
@@ -48,9 +48,9 @@ const INITIAL_STATE: KjTableState = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     KjTableComponent,
-    KjTableToolbarComponent,
-    KjTablePaginationComponent,
-    KjTableStatusBarComponent,
+    KjTableToolbar,
+    KjTablePagination,
+    KjTableStatusBar,
   ],
   styles: [`
     :host { display: block; }

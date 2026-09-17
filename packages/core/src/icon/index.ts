@@ -18,4 +18,4 @@ export {
   provideIconLoader,
 } from './icon.providers';
 export { injectKjIconResolver } from './icon.resolver';
-export { KjIconDirective } from './icon.directive';
+export { KjIcon } from './icon';

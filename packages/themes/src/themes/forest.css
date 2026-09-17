@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="forest"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: dark;
+
     /* ── shape — soft, organic ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-2);
@@ -47,7 +51,7 @@
 
     --kj-fg-default:    #e8e0c8;
     --kj-fg-muted:      #c0b89a;
-    --kj-fg-subtle:     #9a9376;
+    --kj-fg-subtle:     #b0a88b;
     --kj-fg-disabled:   #4a5548;
 
     /* On a dark theme, intent fills are mid-bright; dark text passes
@@ -65,11 +69,12 @@
     --kj-fg-info:       #8ab8d4;
     --kj-fg-success:    #8fbc4a;
     --kj-fg-warning:    #e0a830;
-    --kj-fg-danger:     #d96550;
+    --kj-fg-danger:     #fc846e;
 
     --kj-border-default:   #3a4a40;
     --kj-border-muted:     #2d3d33;
     --kj-border-strong:    #5a6a60;
+    --kj-border-control:  #718277;
     --kj-border-focus:     #d4a017;
     --kj-border-disabled:  #2d3a32;
     --kj-border-primary:   #d4a017;

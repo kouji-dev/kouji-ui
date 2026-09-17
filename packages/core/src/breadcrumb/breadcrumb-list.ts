@@ -1,5 +1,6 @@
-import { Directive, inject, input } from '@angular/core';
+import { Directive, input } from '@angular/core';
 import { KJ_BREADCRUMB } from './breadcrumb.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * The breadcrumb's ordered list. Selector restricted to `<ol>` to enforce
@@ -31,7 +32,7 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
 })
 export class KjBreadcrumbList {
   /** @internal */
-  readonly ctx = inject(KJ_BREADCRUMB);
+  readonly ctx = injectParent(KJ_BREADCRUMB, { child: 'KjBreadcrumbList', parent: '[kjBreadcrumb]' });
 
   /**
    * Wrapping policy. `'no-wrap'` keeps the row single-line (the truncation

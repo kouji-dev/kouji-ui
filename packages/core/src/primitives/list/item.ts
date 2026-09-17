@@ -1,7 +1,7 @@
 import {
-  AfterContentInit,
   Directive,
   ElementRef,
+  afterNextRender,
   booleanAttribute,
   computed,
   forwardRef,
@@ -13,8 +13,7 @@ import {
 import { KjListNavigator } from './navigator';
 import { KjSelectionModel } from './selection';
 import { KJ_LIST_FOCUS_MODE, KJ_LIST_NAVIGATOR_CONFIG } from './tokens';
-
-let _id = 0;
+import { KjId } from '../../primitives/overlay/id';
 
 /**
  * Behavior primitive for any item rendered inside a listbox / menu / tree.
@@ -46,7 +45,7 @@ let _id = 0;
     '(keydown.space)': '$event.preventDefault(); _activate($event)',
   },
 })
-export class KjListItem<T = unknown> implements AfterContentInit {
+export class KjListItem<T = unknown> {
   /** Typed value emitted on activation. `undefined` when unset. */
   readonly kjItemValue    = input<T | undefined>(undefined);
   /** Display label. Falls back to element text content when empty. */
@@ -105,8 +104,16 @@ export class KjListItem<T = unknown> implements AfterContentInit {
 
   constructor() {
     const host = this.el.nativeElement;
-    this.id = host.id || `kj-list-item-${++_id}`;
+    this.id = host.id || inject(KjId).mint('list-item');
     host.id = this.id;
+
+    // Text fallback for `label`. Read after the first render rather than in
+    // `ngAfterContentInit`: same once-per-item cost, no lifecycle hook, and
+    // the projected text is guaranteed painted. It never runs on the server,
+    // where the fallback stays `''` — `label()` feeds type-ahead, filter
+    // haystacks and the combobox's post-selection display text, all of which
+    // are user-interaction paths. No ARIA name is derived from it.
+    afterNextRender(() => this._elText.set(host.textContent ?? ''));
   }
 
   /** @internal Native host element. Used by `KjListNavigator` to call `.focus()` in roving mode. */
@@ -197,10 +204,6 @@ export class KjListItem<T = unknown> implements AfterContentInit {
     if (v === undefined) return null;
     return this.selection.cascadeState(v);
   });
-
-  ngAfterContentInit(): void {
-    this._elText.set(this.el.nativeElement.textContent ?? '');
-  }
 
   _activate(event?: Event): void {
     if (this.disabled()) return;

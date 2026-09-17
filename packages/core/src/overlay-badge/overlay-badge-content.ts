@@ -1,6 +1,7 @@
-import { Directive, computed, inject } from '@angular/core';
+import { Directive, computed } from '@angular/core';
 import { KjBadge } from '../badge/badge';
 import { KJ_OVERLAY_BADGE } from './overlay-badge.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * The badge content node of the Overlay Badge family. Applied to the element
@@ -39,9 +40,11 @@ import { KJ_OVERLAY_BADGE } from './overlay-badge.context';
 @Directive({
   selector: '[kjOverlayBadgeContent]',
   standalone: true,
-  hostDirectives: [
-    { directive: KjBadge, inputs: ['kjBadgeVariant'] },
-  ],
+  // `kjVariant` / `kjSize` are NOT listed here and must not be: `KjBadge`
+  // composes `KjVariant` / `KjSize` and exposes them itself, and that
+  // exposure is transitive, so both already bind on this element. Listing a
+  // nested host directive's input on the outer composer is an NG0311.
+  hostDirectives: [KjBadge],
   host: {
     'style': 'position: absolute; pointer-events: none;',
     '[attr.id]': 'ctx.contentId()',
@@ -52,7 +55,7 @@ import { KJ_OVERLAY_BADGE } from './overlay-badge.context';
 })
 export class KjOverlayBadgeContent {
   /** The parent {@link KJ_OVERLAY_BADGE} context. */
-  protected readonly ctx = inject(KJ_OVERLAY_BADGE);
+  protected readonly ctx = injectParent(KJ_OVERLAY_BADGE, { child: 'KjOverlayBadgeContent', parent: '[kjOverlayBadge]' });
 
   /**
    * `aria-hidden` resolution:

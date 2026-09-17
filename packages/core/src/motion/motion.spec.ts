@@ -1,5 +1,7 @@
+import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { KjMotion } from './motion';
+import { KJ_MOTION_CONFIG, KJ_MOTION_DEFAULTS, provideKjMotion } from './config';
 
 /** Flush the afterNextRender that backs KjReducedMotion. */
 async function flush(): Promise<void> {
@@ -100,5 +102,80 @@ describe('KjMotion', () => {
     } finally {
       restore();
     }
+  });
+});
+
+describe('KjMotion — configuration surface (cust F-20)', () => {
+  it('writes the configured timing scale onto the host as --kj-motion-* properties', async () => {
+    const restore = stubMatchMedia(false);
+    try {
+      TestBed.configureTestingModule({
+        providers: [
+          ...provideKjMotion({
+            durations: { md: '180ms' },
+            easings: { default: 'ease-out' },
+            defaults: { distance: '1rem' },
+          }),
+        ],
+      });
+      const { container } = await render(`<div kjMotion="fade"></div>`, { imports: [KjMotion] });
+      await flush();
+      const el = container.querySelector('[kjMotion]') as HTMLElement;
+      expect(el.style.getPropertyValue('--kj-motion-duration-md')).toBe('180ms');
+      expect(el.style.getPropertyValue('--kj-motion-ease')).toBe('ease-out');
+      expect(el.style.getPropertyValue('--kj-motion-distance')).toBe('1rem');
+    } finally {
+      restore();
+    }
+  });
+
+  it('deep-merges: naming one duration keeps the rest of the scale', async () => {
+    TestBed.configureTestingModule({
+      providers: [...provideKjMotion({ durations: { md: '180ms' } })],
+    });
+    const config = TestBed.inject(KJ_MOTION_CONFIG);
+    expect(config.durations).toEqual({ ...KJ_MOTION_DEFAULTS.durations, md: '180ms' });
+    expect(config.easings).toEqual(KJ_MOTION_DEFAULTS.easings);
+  });
+
+  it('warns once in dev mode for a preset that is not registered', async () => {
+    const restore = stubMatchMedia(false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      await render(`<div kjMotion="flip"></div>`, { imports: [KjMotion] });
+      await flush();
+      const hits = warn.mock.calls.filter((c) => String(c[0]).includes('unknown preset "flip"'));
+      expect(hits).toHaveLength(1);
+    } finally {
+      warn.mockRestore();
+      restore();
+    }
+  });
+
+  it('does not warn for a preset registered through provideKjMotion', async () => {
+    const restore = stubMatchMedia(false);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      TestBed.configureTestingModule({
+        providers: [
+          ...provideKjMotion({ animations: [...KJ_MOTION_DEFAULTS.animations, 'flip'] }),
+        ],
+      });
+      const { container } = await render(`<div kjMotion="flip"></div>`, { imports: [KjMotion] });
+      await flush();
+      expect(container.querySelector('[kjMotion]')).toHaveAttribute('data-kj-motion', 'flip');
+      expect(
+        warn.mock.calls.filter((c) => String(c[0]).includes('unknown preset')),
+      ).toHaveLength(0);
+    } finally {
+      warn.mockRestore();
+      restore();
+    }
+  });
+
+  it('every shipped preset name is registered by default', () => {
+    expect(KJ_MOTION_DEFAULTS.animations).toContain('fade');
+    expect(KJ_MOTION_DEFAULTS.animations).toContain('scale-spring');
+    expect(KJ_MOTION_DEFAULTS.animations).toContain('slide-up-fade');
   });
 });

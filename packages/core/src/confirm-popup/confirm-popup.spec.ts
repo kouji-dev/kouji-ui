@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KjPopoverContent } from '../popover/popover-content';
-import { KjDialog as KjDialogService } from '../dialog/dialog.service';
+import { KjDialogService } from '../dialog/dialog.service';
 import { KjDialogRef } from '../dialog/dialog.ref';
 
 import { KjConfirmPopup } from './confirm-popup';
@@ -62,7 +62,7 @@ describe('KjConfirmPopup', () => {
     vi.useRealTimers();
   });
 
-  it('opens on trigger click and promotes the panel role to alertdialog with aria-modal="false"', () => {
+  it('opens on trigger click; the panel is an alertdialog with aria-modal="false" from its first paint', () => {
     @Component({
       standalone: true,
       imports: [
@@ -85,6 +85,11 @@ describe('KjConfirmPopup', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     expect(findPanel()).toBeNull();
+    // The role is a host binding of the composed panel, resolved from the
+    // provided token — present while closed, not stamped after a microtask.
+    const closedPanel = (fixture.nativeElement as HTMLElement).querySelector('kj-popover-content')!;
+    expect(closedPanel.getAttribute('role')).toBe('alertdialog');
+    expect(closedPanel.getAttribute('aria-modal')).toBe('false');
 
     const btn = fixture.nativeElement.querySelector('button')!;
     btn.click();
@@ -305,6 +310,84 @@ describe('KjConfirmPopup', () => {
     const focused = document.activeElement as HTMLElement | null;
     expect(focused).not.toBeNull();
     expect(focused!.getAttribute('data-test')).toBe('cancel');
+    fixture.nativeElement.remove();
+  });
+
+  it('Escape returns focus to the trigger', () => {
+    @Component({
+      standalone: true,
+      imports: [
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
+        KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
+      ],
+      template: `
+        <div kjConfirmPopup>
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger" data-test="trigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
+            <p kjConfirmPopupMessage>Sure?</p>
+            <button kjConfirmPopupCancel data-test="cancel">Cancel</button>
+            <button kjConfirmPopupAction data-test="action">OK</button>
+          </kj-popover-content>
+        </div>
+      `,
+    })
+    class Host {}
+
+    const fixture = TestBed.createComponent(Host);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('[data-test="trigger"]') as HTMLButtonElement;
+    trigger.focus();
+    trigger.click();
+    settle(fixture);
+    expect((document.activeElement as HTMLElement).getAttribute('data-test')).toBe('cancel');
+
+    document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    settle(fixture);
+
+    expect(findPanel()).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    fixture.nativeElement.remove();
+  });
+
+  it('confirming returns focus to the trigger', () => {
+    @Component({
+      standalone: true,
+      imports: [
+        KjConfirmPopup, KjConfirmPopupTrigger, KjConfirmPopupContent, KjPopoverContent,
+        KjConfirmPopupMessage, KjConfirmPopupAction, KjConfirmPopupCancel,
+      ],
+      template: `
+        <div kjConfirmPopup (kjResult)="result.set($event)">
+          <button kjConfirmPopupTrigger #t="kjConfirmPopupTrigger" data-test="trigger">Delete</button>
+          <kj-popover-content [kjFor]="t" kjConfirmPopupContent>
+            <p kjConfirmPopupMessage>Sure?</p>
+            <button kjConfirmPopupCancel data-test="cancel">Cancel</button>
+            <button kjConfirmPopupAction data-test="action">OK</button>
+          </kj-popover-content>
+        </div>
+      `,
+    })
+    class Host {
+      readonly result = signal<boolean | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(Host);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('[data-test="trigger"]') as HTMLButtonElement;
+    trigger.focus();
+    trigger.click();
+    settle(fixture);
+
+    const action = findPanel()!.querySelector<HTMLElement>('[data-test="action"]')!;
+    action.focus();
+    action.click();
+    settle(fixture);
+
+    expect(fixture.componentInstance.result()).toBe(true);
+    expect(findPanel()).toBeNull();
+    expect(document.activeElement).toBe(trigger);
     fixture.nativeElement.remove();
   });
 

@@ -69,11 +69,11 @@ describe('KjBackdrop dismisses only a press it owns', () => {
     return { el: container.querySelector('kj-backdrop') as HTMLElement, closeSpy };
   }
 
-  it('a press on the scrim followed by its click closes', async () => {
+  it('a press on the scrim followed by its click closes, with the "backdrop" reason', async () => {
     const { el, closeSpy } = await mount();
     press(el);
     pointerClick(el);
-    expect(closeSpy).toHaveBeenCalledWith('outside');
+    expect(closeSpy).toHaveBeenCalledWith('backdrop');
   });
 
   it('a click retargeted onto the scrim, with no press of its own, does not close', async () => {
@@ -133,7 +133,7 @@ describe('KjOverlayStack outside-detection', () => {
     content.remove();
   });
 
-  it('a pointerdown on a node that never was inside still dismisses', () => {
+  it('a press that begins and ends on a node that never was inside dismisses on its click', () => {
     const stack = TestBed.inject(KjOverlayStack);
     const content = document.createElement('div');
     document.body.appendChild(content);
@@ -144,8 +144,10 @@ describe('KjOverlayStack outside-detection', () => {
     const handle = stack.register('probe2', { onClose });
     stack.markContentEl('probe2', content);
 
-    outside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    expect(onClose).toHaveBeenCalled();
+    press(outside);
+    expect(onClose, 'the down event only arms the press — one owner, one rule, like the scrim').not.toHaveBeenCalled();
+    pointerClick(outside);
+    expect(onClose).toHaveBeenCalledWith('outside');
 
     handle.unregister();
     content.remove();

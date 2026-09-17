@@ -3,10 +3,12 @@ import {
   Directive,
   ElementRef,
   afterNextRender,
+  booleanAttribute,
   computed,
   effect,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import { KjFocusRing, KjDisabled } from '../primitives';
 import { KjVariant, KjSize, bindPresets } from '../presets';
@@ -91,12 +93,20 @@ export class KjLink {
   private readonly document = inject(DOCUMENT);
 
   /**
-   * Disables the link. Forwarded to `KjDisabled` (which reflects
-   * `aria-disabled` and `data-disabled`); the directive additionally sets
-   * `tabindex="-1"` and intercepts `click` + `keydown.enter` in the capture
-   * phase.
+   * Disables the link. Default `false`. Also forwarded to the composed
+   * `KjDisabled` (which reflects `aria-disabled` / `data-disabled`); this
+   * directive additionally sets `tabindex="-1"` and intercepts `click` +
+   * `keydown.enter` in the capture phase.
+   *
+   * The `booleanAttribute` transform matters here specifically: `KjDisabled`
+   * transforms and this input did not, so a bare `kjDisabled` attribute used
+   * to disable the composed reflection while leaving the tabindex and the
+   * capture-phase guards switched off — two owners of one public name that
+   * disagreed. `KjBreadcrumbLink` re-exposes this input through its own
+   * `hostDirectives`, so the declaration has to stay on this class; see
+   * `rules/architecture.md` on host-directive input forwarding.
    */
-  readonly kjDisabled = input(false);
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
 
   /**
    * Underline policy. `'always'` for in-content links (WCAG 1.4.1 — colour
@@ -115,8 +125,14 @@ export class KjLink {
    * served through the app's router that still warrant the indicator).
    * `false` forces internal treatment even when `target="_blank"` is
    * present (suppresses the icon and AT suffix).
+   *
+   * The transform keeps the tri-state while making the bare attribute work:
+   * `kjExternal` (no value) is `true`, `[kjExternal]="undefined"` is
+   * auto-detect, everything else goes through `booleanAttribute`.
    */
-  readonly kjExternal = input<boolean | undefined>(undefined);
+  readonly kjExternal = input<boolean | undefined, unknown>(undefined, {
+    transform: (v: unknown) => (v == null ? undefined : booleanAttribute(v)),
+  });
 
   /** Whether the host element currently carries `target="_blank"`. */
   protected readonly hasBlankTarget = computed(() => this.targetSignal() === '_blank');
@@ -156,15 +172,38 @@ export class KjLink {
    * (the common case).
    */
   private readonly targetSignal = (() => {
-    const initial = this.el.nativeElement.getAttribute('target');
-    return computed(() => initial);
+    const attr = signal(this.el.nativeElement.getAttribute('target'));
+    // The constructor snapshot only sees a *static* `target`. `<kj-link>`
+    // sets it with `[attr.target]`, which lands after this directive is
+    // constructed, so without this re-read the wrapper could never
+    // auto-detect an external link — exactly what its docs promise. On the
+    // server `afterNextRender` never runs, so the prerendered HTML keeps the
+    // snapshot (correct for the declarative case).
+    afterNextRender(() => attr.set(this.el.nativeElement.getAttribute('target')));
+    return attr.asReadonly();
   })();
 
   /** Snapshot of the host's `rel` attribute at construction time. */
   private readonly initialRel: string | null = this.el.nativeElement.getAttribute('rel');
 
-  /** Reference to the injected AT suffix span, if any. Cleaned up on toggle. */
-  private suffixSpan: HTMLSpanElement | null = null;
+  /**
+   * The AT suffix span currently in the host, found **in the DOM** rather
+   * than remembered on the instance.
+   *
+   * Effects flush during server change detection and `platform-server`'s
+   * `DOCUMENT` has a working `createElement`, so the span is serialized into
+   * the prerendered HTML. A hydrating client gets a fresh directive instance
+   * whose remembered reference is `null`, which used to append a *second*
+   * span — "Documentation (opens in new tab) (opens in new tab)" — and left
+   * the server's span unremovable when `kjExternal` flipped to `false`. A DOM
+   * probe adopts whatever is already there, so the effect is idempotent
+   * across hydration and across repeated toggles.
+   */
+  private get suffixSpan(): HTMLSpanElement | null {
+    return this.el.nativeElement.querySelector<HTMLSpanElement>(
+      `:scope > .${KJ_LINK_EXTERNAL_SUFFIX_CLASS}`,
+    );
+  }
 
   constructor() {
     // Capture-phase native listeners: fire BEFORE Angular's template-bound
@@ -197,7 +236,9 @@ export class KjLink {
     // The effect itself is created in injection context (constructor); its
     // first run happens after the first change-detection pass, by which
     // point the host element has been attached to the DOM in browser
-    // contexts. Use injected DOCUMENT — prerender VMs may have no global `document`.
+    // contexts. Use injected DOCUMENT — prerender VMs may have no global
+    // `document`. The effect is idempotent: it adopts a span the server already
+    // rendered instead of appending a second one (ssr F-1).
     effect(() => {
       const external = this.isExternal();
       const doc = this.document;
@@ -205,21 +246,19 @@ export class KjLink {
 
       const node = this.el.nativeElement;
       const consumerOwnsName = node.hasAttribute('aria-label');
+      const existing = this.suffixSpan;
 
       if (external && !consumerOwnsName) {
-        if (!this.suffixSpan) {
-          const span = doc.createElement('span');
-          span.className = KJ_LINK_EXTERNAL_SUFFIX_CLASS;
-          span.setAttribute('style', KJ_LINK_VISUALLY_HIDDEN_STYLE);
-          // Leading space so AT reads "Documentation (opens in new tab)"
-          // not "Documentation(opens in new tab)".
-          span.textContent = ` ${KJ_LINK_EXTERNAL_SUFFIX_TEXT}`;
-          node.appendChild(span);
-          this.suffixSpan = span;
-        }
-      } else if (this.suffixSpan) {
-        this.suffixSpan.remove();
-        this.suffixSpan = null;
+        if (existing) return;
+        const span = doc.createElement('span');
+        span.className = KJ_LINK_EXTERNAL_SUFFIX_CLASS;
+        span.setAttribute('style', KJ_LINK_VISUALLY_HIDDEN_STYLE);
+        // Leading space so AT reads "Documentation (opens in new tab)"
+        // not "Documentation(opens in new tab)".
+        span.textContent = ` ${KJ_LINK_EXTERNAL_SUFFIX_TEXT}`;
+        node.appendChild(span);
+      } else {
+        existing?.remove();
       }
     });
   }

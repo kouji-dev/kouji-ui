@@ -111,4 +111,24 @@ describe('KjFilterableList', () => {
     TestBed.flushEffects();
     expect(svc.announcement()).toBe('No results');
   });
+  it('numbers the registered items against the DATASET when a window is declared (perf F-4)', () => {
+    // A windowed wrapper registers only the rows it renders; without the
+    // offset a screen reader would hear "1 of 3" on row 3 001 of 5 000.
+    svc.setWindow(3000, 5000);
+    TestBed.flushEffects();
+    const all = items();
+    expect(all.map(i => i.posInSet())).toEqual([3001, 3002, 3003]);
+    expect(all.map(i => i.setSize())).toEqual([5000, 5000, 5000]);
+
+    // The status message reports the results the user can reach, not the
+    // rows that happen to be mounted.
+    expect(svc.resultCount()).toBe(5000);
+    expect(svc.announcement()).toBe('5000 results');
+
+    svc.setWindow(0, null);
+    TestBed.flushEffects();
+    expect(all.map(i => i.posInSet())).toEqual([1, 2, 3]);
+    expect(all[0].setSize()).toBe(3);
+    expect(svc.resultCount()).toBe(3);
+  });
 });

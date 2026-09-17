@@ -2,7 +2,8 @@ import { Component, signal } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
-import { KjOverlayBadgeComponent } from './overlay-badge';
+import { KjOverlayBadge } from '@kouji-ui/core';
+import { KjOverlayBadgeComponent, KjOverlayBadgeContentComponent } from './overlay-badge';
 
 const imports = [KjOverlayBadgeComponent];
 
@@ -50,7 +51,7 @@ describe('KjOverlayBadgeComponent (wrapper)', () => {
   });
 
   describe('content child composes badge', () => {
-    it('forwards kjVariant onto the slot via KjBadge.kjBadgeVariant (data-variant)', async () => {
+    it('forwards kjVariant onto the slot via the composed KjVariant (data-variant)', async () => {
       const { container } = await render(
         `<kj-overlay-badge [kjValue]="2" kjVariant="destructive" kjDescription="2 unread">
            <span>Bell</span>
@@ -58,6 +59,28 @@ describe('KjOverlayBadgeComponent (wrapper)', () => {
         { imports },
       );
       expect(slot(container).getAttribute('data-variant')).toBe('destructive');
+    });
+
+    it('forwards kjSize onto the slot via the composed KjSize (data-size)', async () => {
+      // cust F-2: `data-size` used to be a template `[attr.data-size]` on the
+      // slot. It is now owned by the `KjSize` that `KjBadge` composes, so the
+      // dot-size rules (`.kj-overlay-badge[data-dot][data-size="sm"]`) keep
+      // matching — and there is exactly one writer for the attribute.
+      const { container } = await render(
+        `<kj-overlay-badge [kjValue]="2" kjSize="sm" kjDescription="2 unread">
+           <span>Bell</span>
+         </kj-overlay-badge>`,
+        { imports },
+      );
+      expect(slot(container).getAttribute('data-size')).toBe('sm');
+    });
+
+    it('defaults data-size to the configured badge default', async () => {
+      const { container } = await render(
+        `<kj-overlay-badge [kjValue]="2" kjDescription="2 unread"><span>Bell</span></kj-overlay-badge>`,
+        { imports },
+      );
+      expect(slot(container).getAttribute('data-size')).toBe('md');
     });
 
     it('renders the truncated displayValue (99+) for values above kjMaxValue', async () => {
@@ -170,5 +193,39 @@ describe('KjOverlayBadgeComponent (wrapper)', () => {
 
       expect(wrapper.hasAttribute('aria-describedby')).toBe(false);
     });
+  });
+});
+
+// arch F-2 — `kjHidden` was `input<boolean>(false)`.
+describe('KjOverlayBadgeContentComponent (manual slot)', () => {
+  // The standalone slot declares no inputs of its own: `kjVariant` / `kjSize`
+  // reach it transitively through `KjOverlayBadgeContent` → `KjBadge` →
+  // `KjVariant` / `KjSize`, which is what keeps one public name to one owner.
+  it('binds kjVariant and kjSize transitively through KjBadge', async () => {
+    const { container } = await render(
+      `<span kjOverlayBadge>
+         <kj-overlay-badge-content kjVariant="destructive" kjSize="lg">4</kj-overlay-badge-content>
+       </span>`,
+      { imports: [KjOverlayBadgeComponent, KjOverlayBadgeContentComponent, KjOverlayBadge] },
+    );
+    const el = container.querySelector('kj-overlay-badge-content')!;
+    expect(el).toHaveAttribute('data-variant', 'destructive');
+    expect(el).toHaveAttribute('data-size', 'lg');
+  });
+});
+
+describe('KjOverlayBadgeComponent — bare kjHidden (arch F-2)', () => {
+  it('a bare kjHidden attribute hides the badge slot', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjOverlayBadgeComponent],
+      template: `<kj-overlay-badge kjHidden kjValue="4" kjDescription="4 unread">
+        <button>Inbox</button>
+      </kj-overlay-badge>`,
+    })
+    class Host {}
+    const { container } = await render(Host);
+    const badge = container.querySelector('.kj-overlay-badge__slot');
+    expect(badge === null || badge.hasAttribute('hidden')).toBe(true);
   });
 });

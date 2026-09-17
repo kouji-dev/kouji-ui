@@ -32,6 +32,7 @@ export type KjTextFilterType =
   | 'blank'
   | 'notBlank';
 
+/** Serialized state of a text column filter. */
 export interface KjTextFilterModel {
   readonly filterType: 'text';
   readonly type: KjTextFilterType;
@@ -53,6 +54,7 @@ export type KjNumberFilterType =
   | 'blank'
   | 'notBlank';
 
+/** Serialized state of a numeric column filter. */
 export interface KjNumberFilterModel {
   readonly filterType: 'number';
   readonly type: KjNumberFilterType;
@@ -72,6 +74,7 @@ export type KjDateFilterType =
   | 'blank'
   | 'notBlank';
 
+/** Serialized state of a date column filter. */
 export interface KjDateFilterModel {
   readonly filterType: 'date';
   readonly type: KjDateFilterType;

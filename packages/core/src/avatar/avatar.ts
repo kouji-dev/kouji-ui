@@ -1,6 +1,9 @@
 import { Directive, InjectionToken, inject, signal } from '@angular/core';
 
+/** State the avatar root shares with its image / fallback children. */
 export interface KjAvatarContext { imageLoaded: ReturnType<typeof signal<boolean>>; }
+
+/** Element-injector token exposing {@link KjAvatarContext} to avatar children. */
 export const KJ_AVATAR = new InjectionToken<KjAvatarContext>('KjAvatar');
 
 /**

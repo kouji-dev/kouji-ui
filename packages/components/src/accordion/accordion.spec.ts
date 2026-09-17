@@ -101,6 +101,27 @@ describe('KjAccordionComponent', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('projects the body into the inner grid item so an open panel grows to its content height', async () => {
+    // 200 paragraphs is far past the 1000px ceiling the old max-height tween
+    // clipped at. jsdom does no layout, so the DOM shape is what pins the fix:
+    // every projected node sits inside the single grid item whose row tweens
+    // 0fr → 1fr (see accordion.css.spec.ts for the stylesheet half).
+    const tall = Array.from({ length: 200 }, (_, i) => `<p>Line ${i}</p>`).join('');
+    const { container } = await render(
+      `<kj-accordion value="a">
+        <kj-accordion-item value="a" label="A"><kj-accordion-content>${tall}</kj-accordion-content></kj-accordion-item>
+      </kj-accordion>`,
+      { imports },
+    );
+    await flush();
+    const panel = container.querySelector<HTMLElement>('.kj-accordion-content')!;
+    expect(panel.getAttribute('data-state')).toBe('open');
+    const inner = panel.querySelector<HTMLElement>(':scope > .kj-accordion-content__inner');
+    expect(inner).not.toBeNull();
+    expect(inner!.querySelectorAll('p')).toHaveLength(200);
+    expect(panel.childElementCount).toBe(1);
+  });
+
   it('arrow-key navigation moves focus when `arrowNavigation` is set', async () => {
     const { container } = await render(
       `<kj-accordion arrowNavigation>
@@ -113,5 +134,26 @@ describe('KjAccordionComponent', () => {
     triggers[0].focus();
     fireEvent.keyDown(triggers[0], { key: 'ArrowDown' });
     expect(document.activeElement).toBe(triggers[1]);
+  });
+});
+
+/** arch F-2 — the wrapper's `disabled` inputs accept the bare-attribute form. */
+describe('kj-accordion bare boolean attributes', () => {
+  it('marks the trigger disabled from a bare `disabled` attribute', async () => {
+    @Component({
+      standalone: true,
+      imports,
+      template: `
+        <kj-accordion>
+          <kj-accordion-item value="a" label="A" disabled />
+        </kj-accordion>
+      `,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    const trigger = container.querySelector('.kj-accordion-trigger') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-disabled')).toBe('true');
+    expect(trigger.disabled).toBe(true);
   });
 });

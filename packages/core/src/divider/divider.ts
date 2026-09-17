@@ -2,6 +2,7 @@ import {
   Directive,
   ElementRef,
   afterNextRender,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -84,7 +85,7 @@ export class KjDivider {
    *   which has implicit role); when `kjOrientation='vertical'`, also gets
    *   `aria-orientation="vertical"`.
    */
-  readonly kjStructural = input<boolean>(false);
+  readonly kjStructural = input(false, { transform: booleanAttribute });
 
   /**
    * Alignment of the projected content within a with-content divider.

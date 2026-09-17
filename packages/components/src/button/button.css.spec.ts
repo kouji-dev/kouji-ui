@@ -10,7 +10,7 @@ function baseBlockDecls(): { prop: string; value: string }[] {
   const out: { prop: string; value: string }[] = [];
   postcss.parse(css).walkRules(rule => {
     if (rule.selector.trim() !== '.kj-button') return;
-    rule.walkDecls(d => out.push({ prop: d.prop, value: d.value }));
+    rule.walkDecls(d => { out.push({ prop: d.prop, value: d.value }); });
   });
   return out;
 }

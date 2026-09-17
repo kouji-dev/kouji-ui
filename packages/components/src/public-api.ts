@@ -1,5 +1,5 @@
 // Public API for @kouji-ui/components
-export const KJ_COMPONENTS_VERSION = '0.0.1';
+export { KJ_COMPONENTS_VERSION } from './version';
 
 export * from './accordion/index';
 export * from './action-sheet/index';
@@ -127,4 +127,108 @@ export type {
   KjToastVariant,
   KjTreeNode,
   KjUploadableFile,
+} from '@kouji-ui/core';
+
+// Configuration surface re-exported from @kouji-ui/core so that a consumer who
+// installed only @kouji-ui/components can configure the components they just
+// imported — without adding a second package to their import list. Every
+// `provideKj*` plus its `KJ_*_CONFIG` token and `KJ_*_DEFAULTS` value is
+// listed; `provideKjX(…)` deep-merges over `KJ_X_DEFAULTS` (see
+// `mergeKjConfig`), and arrays replace, so spread the defaults to extend one.
+export {
+  // Preset-driven components
+  provideKjAlert,
+  provideKjBadge,
+  provideKjBreadcrumb,
+  provideKjButton,
+  provideKjChatBubble,
+  provideKjLink,
+  provideKjPagination,
+  provideKjProgressBar,
+  provideKjSpinner,
+  provideKjTabs,
+  provideKjTag,
+  provideKjTextarea,
+  // Feature-level configuration
+  provideKjChat,
+  provideKjDirectionality,
+  provideKjDocumentDirection,
+  provideKjMotion,
+  provideKjFilterParams,
+  provideKjInputMaskTokens,
+  provideKjLocale,
+  provideKjRichText,
+  provideKjTableStorage,
+  provideKjTableStorageKeyPrefix,
+  provideKjToastListStrategy,
+  provideKjToastSonnerStrategy,
+  provideKjToastStrategy,
+  provideKjTranslations,
+  // Config tokens
+  KJ_ALERT_CONFIG,
+  KJ_BADGE_CONFIG,
+  KJ_BREADCRUMB_CONFIG,
+  KJ_BUTTON_CONFIG,
+  KJ_CHAT_BUBBLE_CONFIG,
+  KJ_CHAT_CONFIG,
+  KJ_LINK_CONFIG,
+  KJ_LOCALE_CONFIG,
+  KJ_MOTION_CONFIG,
+  KJ_PAGINATION_CONFIG,
+  KJ_PROGRESS_BAR_CONFIG,
+  KJ_SPINNER_CONFIG,
+  KJ_TABS_CONFIG,
+  KJ_TAG_CONFIG,
+  KJ_TEXTAREA_CONFIG,
+  // Shipped defaults — spread to extend an array preset
+  KJ_ALERT_DEFAULTS,
+  KJ_BADGE_DEFAULTS,
+  KJ_BREADCRUMB_DEFAULTS,
+  KJ_BUTTON_DEFAULTS,
+  KJ_CHAT_BUBBLE_DEFAULTS,
+  KJ_LINK_DEFAULTS,
+  KJ_MOTION_DEFAULTS,
+  KJ_PAGINATION_DEFAULTS,
+  KJ_PROGRESS_BAR_DEFAULTS,
+  KJ_SPINNER_DEFAULTS,
+  KJ_TABS_DEFAULTS,
+  KJ_TAG_DEFAULTS,
+  KJ_TEXTAREA_DEFAULTS,
+  // Build-your-own: the preset mechanism the shipped components use
+  KjVariant,
+  KjSize,
+  KJ_VARIANT_PRESET,
+  KJ_SIZE_PRESET,
+  KJ_VARIANT_FALLBACK,
+  KJ_SIZE_FALLBACK,
+  bindPresets,
+  mergeKjConfig,
+  // i18n: the single source of truth for every visible / assistive string
+  EN_CATALOG,
+  FR_CATALOG,
+  KjTranslateService,
+} from '@kouji-ui/core';
+export type {
+  KjAlertConfig,
+  KjBadgeConfig,
+  KjBindablePresetConfig,
+  KjBreadcrumbConfig,
+  KjButtonConfig,
+  KjDeepPartial,
+  KjExtensible,
+  KjLinkConfig,
+  KjLocaleConfig,
+  KjMotionConfig,
+  KjPaginationConfig,
+  KjProgressBarConfig,
+  KjSizePreset,
+  KjSpinnerConfig,
+  KjTabsConfig,
+  KjTagConfig,
+  KjTextareaConfig,
+  KjTranslationCatalog,
+  KjTranslationCatalogs,
+  KjTranslationKey,
+  KjTranslationParams,
+  KjVariantPreset,
 } from '@kouji-ui/core';

@@ -45,8 +45,12 @@ describe('config', () => {
     });
 
     it('returns single page when valid path matches', () => {
-      expect(validatePageFilter('/docs/button')).toHaveLength(1);
-      expect(validatePageFilter('/docs/button')[0].path).toBe('/docs/button');
+      // Take the path from PAGES rather than hard-coding one: the docs routes
+      // moved to /docs/components/:slug, and this spec kept asserting the old
+      // /docs/button long after it stopped being valid.
+      const [first] = PAGES;
+      expect(validatePageFilter(first.path)).toHaveLength(1);
+      expect(validatePageFilter(first.path)[0].path).toBe(first.path);
     });
 
     it('throws with valid list when invalid', () => {

@@ -25,6 +25,7 @@ export * from './live-announcer/polite';
 export * from './live-announcer/assertive';
 export * from './live-announcer/silent';
 
+export * from './trigger-event/compose';
 export * from './trigger-event/on-click';
 export * from './trigger-event/on-hover';
 export * from './trigger-event/on-focus';

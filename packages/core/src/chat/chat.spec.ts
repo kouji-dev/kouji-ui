@@ -339,3 +339,34 @@ describe('a11y', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+/**
+ * arch F-2 — the chat row's tri-state `kjChatGrouped` and the bubble's
+ * `kjChatBubbleNoTail` both accept the bare-attribute form.
+ */
+describe('chat bare boolean attributes', () => {
+  it('reads a bare kjChatGrouped as true', async () => {
+    const { container } = await render(`<div kjChat kjChatGrouped></div>`, { imports: [KjChat] });
+    expect(container.querySelector('[kjChat]')).toHaveAttribute('data-grouped', '');
+  });
+
+  it('leaves the tri-state undefined when the input is absent', async () => {
+    const { container } = await render(`<div kjChat></div>`, { imports: [KjChat] });
+    expect(container.querySelector('[kjChat]')).not.toHaveAttribute('data-grouped');
+  });
+
+  it('suppresses the bubble tail from a bare kjChatBubbleNoTail', async () => {
+    const { container } = await render(
+      `<div kjChat><div kjChatBubble kjChatBubbleNoTail>hi</div></div>`,
+      { imports: [KjChat, KjChatBubble] },
+    );
+    expect(container.querySelector('[kjChatBubble]')).not.toHaveAttribute('data-tail');
+  });
+
+  it('keeps the tail when the attribute is absent', async () => {
+    const { container } = await render(`<div kjChat><div kjChatBubble>hi</div></div>`, {
+      imports: [KjChat, KjChatBubble],
+    });
+    expect(container.querySelector('[kjChatBubble]')).toHaveAttribute('data-tail', '');
+  });
+});

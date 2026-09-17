@@ -140,4 +140,18 @@ describe('KjEditor', () => {
     expect(fake.editor.dispose).toHaveBeenCalled();
     expect(fake.model.dispose).toHaveBeenCalled();
   });
+
+  // arch F-2 — these were plain `input<boolean>(false)`, so `kjReadonly` as a
+  // bare attribute bound '' and the editor stayed editable.
+  it('bare kjReadonly / kjMinimap reach Monaco', async () => {
+    const fake = makeFakeMonaco();
+    await render(
+      `<div kjEditor kjReadonly kjMinimap></div>`,
+      { imports: [KjEditor], providers: [provideMonaco({ loader: () => Promise.resolve(fake.monaco) })] },
+    );
+    await waitFor(() => expect(fake.create).toHaveBeenCalled());
+    const opts = fake.create.mock.calls[0][1] as { readOnly?: boolean; minimap?: { enabled: boolean } };
+    expect(opts.readOnly).toBe(true);
+    expect(opts.minimap).toEqual({ enabled: true });
+  });
 });

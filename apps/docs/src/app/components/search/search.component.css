@@ -1,9 +1,7 @@
-/* Multi-line item layout for the docs search palette. */
-.docs-search {
-  --kj-command-item-direction: column;
-  --kj-command-item-align: stretch;
-  --kj-command-item-gap: 0.25rem;
-}
+/* Multi-line item layout for the docs search palette lives in
+   apps/docs/src/styles.css, on `.kj-command-palette__dialog`: the panel is
+   portalled out of this component's host, so custom properties declared
+   here would never reach the rows. */
 
 .result-main {
   display: flex;
@@ -27,10 +25,32 @@
   opacity: 0.6;
 }
 
-.result-type-component { color: var(--kj-fg-primary); }
-.result-type-directive { color: #82aaff; }
-.result-type-selector  { color: #c792ea; }
-.result-type-input     { color: #f78c6c; }
+/* One badge per DocKind the extractor can emit. A row is always a symbol, so
+   there is no `selector` or `input` badge — those are reported as "matched …"
+   on the path line instead of becoming rows of their own. */
+.result-type-page        { color: var(--kj-fg-primary); }
+.result-type-directive   { color: var(--kj-fg-info); }
+.result-type-service     { color: var(--kj-fg-success); }
+.result-type-provider-fn,
+.result-type-inject-fn,
+.result-type-function    { color: var(--kj-fg-warning); }
+.result-type-token,
+.result-type-const,
+.result-type-type-alias  { color: var(--kj-fg-muted); }
+
+/* Which docs track the symbol lives in — the two routes under /docs. */
+.result-track {
+  margin-inline-start: auto;
+  font-family: var(--kj-font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid currentColor;
+}
+.result-track-headless   { color: var(--kj-fg-subtle); }
+.result-track-components { color: var(--kj-fg-primary); }
+
+.result-via { opacity: 0.75; }
 
 .result-path {
   font-family: var(--kj-font-mono);

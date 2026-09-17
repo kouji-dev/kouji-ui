@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="retro"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — soft rounded, vintage cards ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-2);
@@ -41,7 +45,7 @@
     --kj-bg-success-subtle:  #dfecc8;
     --kj-bg-warning:         #e9b872;
     --kj-bg-warning-subtle:  #faedd5;
-    --kj-bg-danger:          #c4625d;
+    --kj-bg-danger:          #a74945;
     --kj-bg-danger-subtle:   #f3d4d2;
 
     --kj-fg-default:    #282425;
@@ -62,22 +66,23 @@
     --kj-fg-primary:    #8a3a36;
     --kj-fg-accent:     #3d5a6b;
     --kj-fg-info:       #3d5a6b;
-    --kj-fg-success:    #4a6b2b;
-    --kj-fg-warning:    #8a5a1f;
+    --kj-fg-success:    #466727;
+    --kj-fg-warning:    #845418;
     --kj-fg-danger:     #8a2f2a;
 
     --kj-border-default:   #d6c89a;
     --kj-border-muted:     #e4d8b4;
     --kj-border-strong:    #b8a578;
-    --kj-border-focus:     #7a9eb1;
+    --kj-border-control:  #887648;
+    --kj-border-focus:     #406374;
     --kj-border-disabled:  #d6c89a;
     --kj-border-primary:   #ef9995;
-    --kj-border-danger:    #c4625d;
+    --kj-border-danger:    #a74945;
 
     --kj-shadow-sm:     0 1px 3px rgba(93, 64, 55, 0.1);
     --kj-shadow-md:     0 4px 12px rgba(93, 64, 55, 0.18);
     --kj-shadow-lg:     0 16px 40px rgba(93, 64, 55, 0.25);
-    --kj-shadow-focus:  0 0 0 3px rgba(122, 158, 177, 0.45);
+    --kj-shadow-focus:  0 0 0 3px rgba(64, 99, 116, 0.45);
 
     /* Retro's `bg-primary` is pale salmon (#ef9995). The 8% darken in
        button.css is nearly imperceptible against it; lift to a deeper

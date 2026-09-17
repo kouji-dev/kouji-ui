@@ -1,9 +1,8 @@
 import {
   afterNextRender,
+  DestroyRef,
   Directive,
   ElementRef,
-  OnDestroy,
-  OnInit,
   inject,
 } from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
@@ -71,7 +70,7 @@ import { KjCombobox } from './combobox-root';
     '(keydown.tab)': 'ctx.open() && ctx.hide()',
   },
 })
-export class KjComboboxInput implements OnInit, OnDestroy {
+export class KjComboboxInput {
   /** @internal */
   readonly ctx = inject(KjCombobox);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
@@ -81,18 +80,18 @@ export class KjComboboxInput implements OnInit, OnDestroy {
   readonly controller = inject(KjOverlayController);
 
   constructor() {
+    // The navigator is composed on this same element, so it exists as soon as
+    // this constructor runs — no lifecycle hook is needed to hand it over.
+    this.ctx._setNavigator(this.nav);
+
     afterNextRender(() => {
       this.ctx.setInputElement(this.el.nativeElement);
     });
-  }
 
-  ngOnInit(): void {
-    this.ctx._setNavigator(this.nav);
-  }
-
-  ngOnDestroy(): void {
-    this.ctx.setInputElement(null);
-    this.ctx._setNavigator(null);
+    inject(DestroyRef).onDestroy(() => {
+      this.ctx.setInputElement(null);
+      this.ctx._setNavigator(null);
+    });
   }
 
   /** @internal */

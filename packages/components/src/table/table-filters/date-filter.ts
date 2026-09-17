@@ -8,10 +8,10 @@ import {
 import type { Column } from '@tanstack/angular-table';
 import { KjVisuallyHidden, type KjDateFilterModel } from '@kouji-ui/core';
 import { KjDatePickerComponent } from '../../date-picker/date-picker';
-import { KJ_FILTER_CONTEXT, type KjFilterContext } from './text-filter';
+import { KJ_FILTER_CONTEXT, type KjFilterContext } from './filters.context';
 
 /** Filter value shape — ISO date strings (`YYYY-MM-DD`) or `undefined` per bound. */
-export type KjDateRange = [from: string | undefined, to: string | undefined];
+export type KjDateFilterRange = [from: string | undefined, to: string | undefined];
 
 /**
  * Date-range filter UI. Renders two styled `<kj-date-picker>` controls
@@ -59,9 +59,9 @@ export type KjDateRange = [from: string | undefined, to: string | undefined];
 export class KjDateFilter<TData = unknown> {
   private readonly ctx = inject<KjFilterContext<TData>>(KJ_FILTER_CONTEXT);
 
-  private current: KjDateRange = (() => {
+  private current: KjDateFilterRange = (() => {
     const v = this.ctx.column.getFilterValue();
-    if (Array.isArray(v)) return v as KjDateRange;
+    if (Array.isArray(v)) return v as KjDateFilterRange;
     if (v && typeof v === 'object' && (v as { filterType?: string }).filterType === 'date') {
       const m = v as KjDateFilterModel;
       return [m.dateFrom, m.dateTo];

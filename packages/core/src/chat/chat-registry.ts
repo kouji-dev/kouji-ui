@@ -26,8 +26,11 @@ export type KjChatRenderer = Type<unknown>;
 /** Registry of `type` → component, plus what to draw for an unknown type. */
 export interface KjChatConfig {
   /**
-   * Renderers by item `type`. Merged OVER the built-in defaults, so naming a
-   * built-in type replaces it and any other name adds one.
+   * Renderers by item `type`. There are no built-in defaults to merge
+   * with — {@link KJ_CHAT_CONFIG} starts as an empty registry and
+   * {@link provideKjChat} *replaces* it wholesale — so this map is the whole
+   * set of item kinds the thread can draw. An item whose `type` is absent
+   * from it falls through to `fallback`, then to the plain message renderer.
    */
   readonly renderers: Readonly<Record<string, KjChatRenderer>>;
   /**

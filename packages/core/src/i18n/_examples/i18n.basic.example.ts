@@ -27,9 +27,9 @@ import { FR_CATALOG, KjTranslate, KjTranslateService } from '../index';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        color: var(--kj-text);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        color: var(--docs-text);
+        font-family: var(--docs-font);
         min-height: 260px;
       }
       .switch {
@@ -39,22 +39,22 @@ import { FR_CATALOG, KjTranslate, KjTranslateService } from '../index';
       }
       button[kjButton] {
         padding: 0.4rem 1rem;
-        border: 1px solid var(--kj-border);
-        background: var(--kj-surface);
-        color: var(--kj-text);
+        border: 1px solid var(--docs-border);
+        background: var(--docs-surface);
+        color: var(--docs-text);
         cursor: pointer;
         font-family: inherit;
         font-size: 0.8125rem;
-        border-radius: var(--kj-radius);
+        border-radius: var(--docs-radius-md);
       }
       button[kjButton][data-active='true'] {
-        background: var(--kj-primary);
-        color: var(--kj-primary-contrast, #0c0c0c);
-        border-color: var(--kj-primary);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border-color: var(--docs-accent);
       }
       .panel {
-        border: 1px solid var(--kj-border);
-        border-radius: var(--kj-radius-lg);
+        border: 1px solid var(--docs-border);
+        border-radius: var(--docs-radius-lg);
         padding: 1.25rem;
         display: grid;
         gap: 0.85rem;
@@ -75,10 +75,10 @@ import { FR_CATALOG, KjTranslate, KjTranslateService } from '../index';
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid var(--kj-border);
-        background: var(--kj-surface);
-        color: var(--kj-text);
-        border-radius: var(--kj-radius);
+        border: 1px solid var(--docs-border);
+        background: var(--docs-surface);
+        color: var(--docs-text);
+        border-radius: var(--docs-radius-md);
         cursor: pointer;
         font-size: 1rem;
       }

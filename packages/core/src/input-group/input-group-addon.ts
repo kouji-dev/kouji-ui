@@ -8,9 +8,7 @@ import {
   input,
 } from '@angular/core';
 import { KJ_INPUT_GROUP } from './input-group.context';
-
-/** Auto-incrementing counter for stable addon ids. */
-let _nextId = 0;
+import { KjId } from '../primitives/overlay/id';
 
 /**
  * Marks an element as a prefix or suffix addon inside a `[kjInputGroup]`.
@@ -52,7 +50,7 @@ export class KjInputGroupAddon {
   private readonly _destroyRef = inject(DestroyRef);
 
   /** Stable id for this addon — set once at construction time. */
-  readonly addonId = `kj-addon-${_nextId++}`;
+  readonly addonId = inject(KjId).mint('addon');
 
   /**
    * Explicit position override. When `'auto'` (default), position is inferred
@@ -64,12 +62,16 @@ export class KjInputGroupAddon {
    * When `true`, marks this addon as decorative (`aria-hidden="true"`).
    * When `false`, ensures the element is not hidden.
    * When `undefined` (default), no `aria-hidden` attribute is written.
+   *
+   * arch F-2: the transform keeps the tri-state while making the bare
+   * attribute work. `kjAriaHidden` with no value binds `''`, which used to
+   * map back to `undefined` and silently wrote no attribute at all; it now
+   * reads as `true`, the same rule `KjLink.kjExternal` applies. Only
+   * `[kjAriaHidden]="undefined"` (or omitting the input) means auto.
    */
   readonly kjAriaHidden = input<boolean | undefined, boolean | string | undefined>(undefined, {
-    transform: (v: boolean | string | undefined): boolean | undefined => {
-      if (v === undefined || v === '') return undefined;
-      return booleanAttribute(v);
-    },
+    transform: (v: boolean | string | undefined): boolean | undefined =>
+      v == null ? undefined : booleanAttribute(v),
   });
 
   /** `true` when this addon should be excluded from `aria-labelledby` composition. */

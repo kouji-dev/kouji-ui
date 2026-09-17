@@ -13,16 +13,21 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import type { EChartsOption } from 'echarts';
 import type { ECharts } from 'echarts';
+import { KjId, KjResizeObserver, KJ_ECHARTS, type KjEChartsCore } from '@kouji-ui/core';
 
 /** Monotonic id source for wiring `aria-describedby` to the caption span. */
-let kjChartUid = 0;
-
 /**
  * Reusable charting surface wrapping Apache ECharts.
  *
  * SSR-safe: the ECharts instance is created lazily in the browser only, after
  * the host element has rendered. `option` changes are pushed through
- * `setOption`, and a `ResizeObserver` keeps the chart sized to its container.
+ * `setOption`, and the app-wide `KjResizeObserver` keeps the chart sized to its
+ * container — a dashboard of twenty charts shares one observer, not twenty
+ * (perf F-5).
+ *
+ * Honours `provideECharts`: register a tree-shaken `echarts/core` build and
+ * this component boots from it instead of dynamically importing the full
+ * ~1 MB module. With no provider it falls back to `import('echarts')`.
  *
  * ECharts paints into an opaque `<canvas>` that assistive technology cannot
  * read. The host therefore carries `role="img"` plus a required-in-practice
@@ -93,7 +98,11 @@ export class KjChartComponent {
   readonly option = input<EChartsOption>();
   /** Container height — number is treated as pixels. Default `'280px'`. */
   readonly height = input<string | number>('280px');
-  /** Optional registered ECharts theme name. */
+  /**
+   * Optional registered ECharts theme name. ECharts takes the theme at `init`,
+   * so changing this replaces the instance (chart state that is not in
+   * `option` — a zoom, a brush — is lost with it).
+   */
   readonly theme = input<string>();
   /**
    * Accessible name for the chart — required in practice. Surfaced via
@@ -109,14 +118,29 @@ export class KjChartComponent {
   readonly caption = input<string>('');
 
   /** Stable id linking the sr-only caption span to `aria-describedby`. */
-  protected readonly captionId = `kj-chart-caption-${kjChartUid++}`;
+  protected readonly captionId = inject(KjId).mint('chart-caption');
 
   private readonly host = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly resizes = inject(KjResizeObserver);
+  /**
+   * Consumer-supplied (tree-shaken) ECharts build registered with
+   * `provideECharts`; `null` falls back to a dynamic import of the full module.
+   * Honouring the token here matters: a consumer who registers a minimal
+   * `echarts/core` build and then reaches for the styled `<kj-chart>` used to
+   * silently ship both it and the ~1 MB full build.
+   */
+  private readonly echartsLoader = inject(KJ_ECHARTS, { optional: true });
 
   private chart: ECharts | null = null;
-  private observer: ResizeObserver | null = null;
+  /** Disposer returned by `KjResizeObserver.observe`; `null` while unobserved. */
+  private releaseResize: (() => void) | null = null;
+  /** The theme the live instance was created with — ECharts bakes it in at `init`. */
+  private activeTheme: string | undefined;
+  /** Bumped per `init()` so a superseded (or destroyed) async init bails out. */
+  private initSeq = 0;
+  private destroyed = false;
 
   protected readonly resolvedHeight = () => {
     const h = this.height();
@@ -130,7 +154,9 @@ export class KjChartComponent {
       void this.init();
     });
 
-    // Push option changes to the live instance.
+    // Push option changes to the live instance. `notMerge: true` is deliberate:
+    // the input is the whole option, so a series dropped from it must disappear
+    // rather than survive a merge.
     effect(() => {
       const option = this.option();
       if (this.chart && option) {
@@ -138,25 +164,46 @@ export class KjChartComponent {
       }
     });
 
-    this.destroyRef.onDestroy(() => this.dispose());
+    // `theme` is an init-time argument in ECharts, so a change can only be
+    // applied by replacing the instance. Without this the input was silently
+    // non-reactive: the first value stuck for the lifetime of the component.
+    effect(() => {
+      const theme = this.theme();
+      if (!this.chart || theme === this.activeTheme) return;
+      this.dispose();
+      void this.init();
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
+      this.dispose();
+    });
   }
 
   private async init(): Promise<void> {
-    const echarts = await import('echarts');
-    if (this.chart) return; // guard against double-init / destroyed race
-    this.chart = echarts.init(this.host, this.theme());
+    const seq = ++this.initSeq;
+    const echarts: KjEChartsCore = this.echartsLoader
+      ? await this.echartsLoader()
+      : await import('echarts');
+    // Guard against double-init, a superseded theme swap, and destroy-during-await.
+    if (this.chart || this.destroyed || seq !== this.initSeq) return;
+    this.activeTheme = this.theme();
+    this.chart = echarts.init(this.host, this.activeTheme) as ECharts;
 
     const option = this.option();
     if (option) this.chart.setOption(option, { notMerge: true });
 
-    this.observer = new ResizeObserver(() => this.chart?.resize());
-    this.observer.observe(this.host);
+    // `ECharts.resize()` is a full relayout + redraw, and dragging a window
+    // edge delivers entries every frame. The shared service coalesces a burst
+    // into one rAF and is SSR-safe, so there is no guard to repeat here.
+    this.releaseResize = this.resizes.observe(this.host, () => this.chart?.resize());
   }
 
   private dispose(): void {
-    this.observer?.disconnect();
-    this.observer = null;
+    this.releaseResize?.();
+    this.releaseResize = null;
     this.chart?.dispose();
     this.chart = null;
+    this.activeTheme = undefined;
   }
 }

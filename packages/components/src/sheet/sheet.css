@@ -1,5 +1,6 @@
 @layer kj.component {
   .kj-sheet {
+    contain: layout;
     --kj-sheet-bg: var(--kj-bg-elevated);
     --kj-sheet-fg: var(--kj-fg-default);
     --kj-sheet-shadow: var(--kj-shadow-lg);
@@ -69,9 +70,9 @@
   }
 
   .kj-sheet__handle:focus-visible {
-    outline: var(--kj-focus-ring-width, 2px) solid var(--kj-focus-ring-color, var(--kj-primary));
+    outline: 2px solid var(--kj-border-focus);
     outline-offset: -4px;
-    border-radius: var(--kj-radius-sm);
+    border-radius: var(--kj-radius-field);
   }
 
   .kj-sheet__content {

@@ -1,4 +1,4 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, booleanAttribute, computed, inject, input } from '@angular/core';
 import { KjSize, KjVariant, bindPresets } from '../presets';
 import { KJ_CHAT } from './chat.context';
 import { KJ_CHAT_BUBBLE_CONFIG } from './config';
@@ -39,8 +39,8 @@ import { KJ_CHAT_BUBBLE_CONFIG } from './config';
 export class KjChatBubble {
   private readonly row = inject(KJ_CHAT, { optional: true });
 
-  /** Suppresses the tail unconditionally. Auto-suppression on grouped rows is independent. */
-  readonly kjChatBubbleNoTail = input(false);
+  /** Suppresses the tail unconditionally. Auto-suppression on grouped rows is independent. Default `false`. */
+  readonly kjChatBubbleNoTail = input(false, { transform: booleanAttribute });
 
   /** True when the tail should render. */
   readonly showTail = computed(
