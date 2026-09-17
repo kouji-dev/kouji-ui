@@ -1,6 +1,6 @@
 {
   "name": "@kouji-ui/core",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "Headless Angular UI primitives — signal-driven directives with WCAG 2.1 AAA semantics, no CDK, and a handful of opt-in global stylesheets.",
   "license": "MIT",
   "repository": {

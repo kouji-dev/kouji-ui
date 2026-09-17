@@ -1,5 +1,1168 @@
 # @kouji-ui/components
 
+## 0.10.0
+
+### Minor Changes
+
+- 6e43ded: review retry: badge joins the preset system, roving axes survive an unbound orientation, and a slider's two-way value stops snapping back
+
+  **Badge is preset-driven (breaking, clean break).** `KjBadge` composed nothing
+  and hand-rolled `kjBadgeVariant` → `data-variant`, a closed union living in the
+  zero-CSS core package and typed against CSS that ships in
+  `@kouji-ui/components`. It now composes `KjVariant` + `KjSize` via
+  `hostDirectives` and spreads `bindPresets(KJ_BADGE_CONFIG)`, exactly like
+  `[kjTag]` and `[kjButton]`.
+  - `kjBadgeVariant` is **removed**. Use `kjVariant`: `<span kjBadge
+kjVariant="destructive">` (no alias — per the rename rule, the new name is
+    the only name). `kjBadgeDot` is unchanged.
+  - `kjSize` is **new on the directive**, reflecting `data-size`. It was
+    wrapper-only before, so `[kjBadge]` on your own `<span>` now sizes without
+    re-implementing the attribute.
+  - New: `provideKjBadge(…)`, `KJ_BADGE_CONFIG`, `KJ_BADGE_DEFAULTS`,
+    `KjBadgeConfig` — re-exported from `@kouji-ui/components` like every other
+    config surface. Register a brand variant instead of living with the dev-mode
+    warning:
+    `provideKjBadge({ variants: [...KJ_BADGE_DEFAULTS.variants, 'brand'] })`.
+  - A badge now participates in the `KJ_VARIANT_FALLBACK` / `KJ_SIZE_FALLBACK`
+    cascade, so an unset `kjVariant` inside a compound parent that publishes one
+    follows it rather than always painting `default`.
+  - `KjBadgeVariant` survives as the open documentation alias
+    (`KjExtensible<…>`) annotating `<kj-badge>`'s `variant` input. The styled
+    `<kj-badge variant size>` and `<kj-overlay-badge kjVariant kjSize>` inputs
+    are unchanged — only the headless attribute name moved.
+  - `<kj-overlay-badge-content>` no longer declares its own `kjSize`; the same
+    public name is now owned once, by the composed `KjSize` reached through
+    `KjBadge`.
+
+  **Roving axis on an unbound orientation.** `<ol kjStepper>` and `<ul kjList>`
+  forwarded their `kjOrientation` to the composed `KjRovingTabindex` through a
+  `hostDirectives` input alias — and an alias carries a _binding_, never a
+  default. Left unbound, the host reported `data-orientation="horizontal"` /
+  `"vertical"` while the primitive stayed at `'both'`, so ArrowDown walked a
+  horizontal stepper and ArrowRight walked a vertical nav list. Both now pin the
+  axis with `KJ_ROVING_ORIENTATION_DEFAULT` (the mechanism `[kjTabList]` already
+  used), which carries the effective value whether or not the input is bound. An
+  explicit `kjRovingOrientation` binding still wins.
+
+  **Slider: a `[(kjValue)]` write is no longer reverted.** `KjSliderThumb`'s
+  `KjFormControl` bridge read `kjValue` _tracked_ inside the effect that writes
+  it, so a consumer's own two-way write re-ran the effect, which compared the new
+  value against the unchanged form-control value and put the old one back. The
+  comparison now reads through `untracked`; the form control still drives the
+  thumb, and a keyboard step still reaches the form control.
+
+- 6e43ded: review batch 5 (lists): selection membership is indexed, the tree renders only what is visible, and the combobox / command palette can window 5 000 rows
+
+  **Selection membership is O(1) (perf F-6).** `KjSelectionModel` keeps `value`
+  as the array it always was, but multi-style membership now answers from a `Set`
+  index rebuilt once per value change instead of a linear `some()` scan run once
+  per rendered item. A click in a 5 000-option multi-select cost O(n × m)
+  comparisons — every item's `aria-selected` computed rescanned the whole
+  selection — and now costs one O(m) rebuild plus O(1) per item. `_multiToggle`
+  and the cascade branch toggle use the same index. A custom `compareBy` keeps the
+  scan, because no hash structure can honour it; `-0` falls back too, so the
+  indexed answer is bit-for-bit what `Object.is` would have said.
+
+  **Auto-derived tree topology is O(1) per query (perf F-7).** The shape derived
+  from DOM-nested `KjListItem` parents resolved every `getParent` / `getChildren`
+  / `isLeaf` by scanning all map keys. It now probes the map first — which is the
+  default `Object.is` comparator, natively — and keeps the scan only as the
+  custom-comparator fallback. `cascadeState()` is memoised per (value, shape,
+  mode) version, so the siblings rendering one branch walk it once between them
+  instead of once each.
+
+  **`<kj-tree-select>` renders only the visible rows (perf F-14).** A collapsed
+  branch's descendants leave the DOM instead of staying behind `[hidden]`: a
+  5 100-node tree with one branch open now mounts 150 rows, not 5 100. Visibility
+  is one pass over the flattened tree per expansion change (depth-based, so a
+  collapsed subtree is skipped whole) rather than a method binding re-evaluated
+  per row per render, and `selectionMode() === 'multiple'` is hoisted out of the
+  row loop. `KjTreeSelect.expandedIds` / `expandedValues` no longer hand out a
+  defensive `new Set` copy on every read.
+
+  _Behaviour note:_ the documented "all nodes stay in the DOM" posture is gone.
+  `aria-level` / `aria-posinset` / `aria-setsize` are unchanged and still correct
+  — they describe a node's position among its siblings, and siblings are always
+  shown or hidden together — but code that queried collapsed rows through
+  `document.querySelector` will no longer find them.
+
+  **Windowed lists for combobox and command palette (perf F-4).** New core
+  primitive `KjListVirtual` (`[kjListVirtual]`, no new dependency) windows a
+  uniform-row popup list: it exposes the rendered range plus the spacer sizes,
+  measures a rendered row for its height, seeds the first rows on the server, and
+  scrolls a row into the window on demand.
+  - `<kj-command-palette [kjVirtual]>` windows its `[kjItems]` rows.
+  - `<kj-combobox [options]>` is a new data-driven option list, and `[virtual]`
+    windows it. `<ng-template kjComboboxOptionTemplate>` supplies a custom row.
+
+  Keyboard navigation still walks the whole dataset: `KjListNavigatorConfig`
+  gained an optional `virtual` cursor (`KjListVirtualSource`), and when a
+  container exposes one, `KjListNavigator` moves by dataset index — wrap, clamp
+  and skip-disabled included — and the container scrolls the row into the window
+  before it becomes `aria-activedescendant`. `aria-posinset` / `aria-setsize`
+  report the dataset, not the window, via `KjFilterableList.setWindow()`.
+
+  **Fixed while wiring the above: `<kj-combobox-option>` never registered.** It
+  composed `KjComboboxOption` on an inner `<button>` inside its own view, and
+  `KjCombobox.items` is a content query — which never crosses into a child
+  component's view. Projected options were therefore never filtered, never
+  numbered, never navigable and never announced their selected state. The
+  directive now sits on the `<kj-combobox-option>` host, the same fix (and the
+  same reasoning) the menubar item got in batch 4.
+
+  _Behaviour note:_ the rendered option is now `<kj-combobox-option role="option"
+class="kj-combobox-option">` with no inner `<button>`. `[value]`, `[disabled]`
+  and projected content are unchanged; `[disabled]` now reaches the listbox as
+  `aria-disabled` rather than the native attribute. `KjCombobox` also gained an
+  `@internal` `_setViewItems()` so a wrapper that stamps rows in its own view can
+  register them.
+
+  `[kjDisabled]` is now forwarded by `[kjComboboxOption]`.
+
+  **Fixed for the same reason: `<kj-tree-select>` had no keyboard access.** Its
+  rows are painted by the wrapper's own template, which the root's content query
+  cannot see, so the tree registered zero items: every node rendered
+  `tabindex="-1"`, the panel had no roving tab stop, and neither arrow keys,
+  Home / End nor type-ahead could reach a node (WCAG 2.1.1 Keyboard, 2.4.3 Focus
+  Order). Each `<kj-tree-select-node>` now registers its row with the wrapper,
+  which hands them to `KjTreeSelect` in tree order. `ownListItems()` gained an
+  optional third argument for this, and `KjTreeSelect` an `@internal`
+  `_setViewItems()`.
+
+  _Behaviour note:_ opening the styled tree now moves focus onto the selected —
+  else first — node, which is what `KjListPanelFocus` always intended and what
+  the APG tree pattern asks for; it simply had no items to focus before.
+
+  **And, for the third time, `<kj-select>`.** `<kj-option>` composed the core
+  `KjOption` directive on a `<div>` inside its own view, so `KjSelect.items` —
+  also a content query — was empty: the listbox had no roving tab stop (every row
+  rendered `tabindex="-1"`), no ArrowUp / ArrowDown / Home / End, no type-ahead
+  and no `aria-posinset` / `aria-setsize` (WCAG 2.1.1, 2.4.3, 1.3.1). `KjListItem`
+  now sits on the `<kj-option>` host.
+
+  _Behaviour note:_ the rendered option is `<kj-option role="option"
+class="kj-option">` with no inner `<div>`, and the host is a block rather than
+  `display: contents`. `[value]`, `[kjLabel]` and projected content are
+  unchanged, and `<kj-option>` gained a `[disabled]` input that reaches the
+  listbox as `aria-disabled`.
+
+- 6e43ded: overlay: anchored positioning is correct, cheap and RTL-aware; the speed dial and the styled command palette become real overlays
+
+  **Anchored positioning** (`anchoredTo`)
+  - The resolved placement is finally reachable. `KjOverlayPanel` reflects it as
+    `data-side` / `data-align` on the panel, which is what every popover and
+    tooltip arrow rule has always been keyed on — `.kj-popover-arrow` and
+    `.kj-tooltip-arrow` were rendering at the panel's static position because
+    no `data-side` was ever written. Both attributes are physical (post-flip,
+    post-RTL-mirror) and are removed when the panel closes. New
+    `--kj-popover-arrow-inset` / `--kj-tooltip-arrow-inset` let a start/end
+    aligned arrow track the edge that meets the trigger.
+  - Scroll and resize repositioning is `{ passive: true }` and coalesced into
+    one measure+write per frame. It used to run a forced synchronous layout per
+    event, in capture on `window`, for every scroll container in the document
+    and every open anchored overlay. Style writes are now skipped when the
+    value has not changed, so a frame in which nothing moved leaves layout
+    clean.
+  - `side` and `align` are read as _logical_ names: under `dir="rtl"`,
+    `align: 'start'` pins the panel to the trigger's inline start (its right
+    edge) and `side: 'left' | 'right'` mirror. The direction comes from the
+    anchor's nearest `[dir]` ancestor, the same rule `KjDirectionality` and
+    `KjRovingTabindex` already apply. Opt out per overlay with
+    `anchoredTo({ mirrorInRtl: false })`.
+  - New `pxOffset(fallback)` input transform. `[kjOffset]="0"` — a panel flush
+    against its trigger — was silently coerced back to the default gap at all
+    six anchor points (popover, tooltip, select, combobox, tree-select,
+    date-picker); every finite number now gets through.
+
+  **Transitions and first paint** (`KjOverlayController`)
+  - `data-state` is written on the panel before its styles are measured, so a
+    stylesheet that declares its duration under `[data-state="closing"]` — the
+    normal pattern — is honoured instead of measuring `0s` and having its
+    animation cut off on the next frame. The deadline takes the longest
+    `duration + delay` pair across a comma-separated list rather than
+    `parseFloat`'s first entry.
+  - The panel is re-anchored once it is fully open, so a panel whose open state
+    changes its box lands where it belongs.
+
+  **Speed dial** is an overlay
+
+  `[kjSpeedDial]` now owns a `KjOverlayController` (in-place mount, CSS
+  position) and registers with `KjOverlayStack` while open. Escape closes it
+  from anywhere inside the cluster rather than only from the trigger, a press
+  outside dismisses it, focus returns to the trigger on close, and a dial open
+  over a dialog no longer answers the same Escape as the dialog. The action
+  cluster is the overlay panel, so it gains `data-state` and `hidden` while
+  closed; the shipped stylesheet keeps it in layout so the fan-out still
+  animates. `KjSpeedDialContext.close()` takes an optional close reason.
+  `KjSpeedDial.kjOpen` is now a read-only signal over the controller — write
+  through `[(kjOpen)]`, `open()`, `close()` or `toggle()`.
+
+  **`<kj-command-palette>`** is an accessible modal
+
+  The styled palette rendered its own shell and scrim and talked to
+  `KjOverlayStack` directly: `aria-modal="true"` over a page that was neither
+  inert nor scroll-locked, uncontained Tab, and no focus restoration. It is
+  rebuilt on `KjOverlayController` — portalled mount, `blurredBackdrop({ inert:
+true })`, `tabCycle`, `htmlOverflow` scroll lock, focus returned to the opener
+  — and its `mod+k` chord goes through the shared `onHotkey`. Escape still gives
+  the first press to the search box when the query is non-empty. The
+  `.kj-command-palette__shell` and `.kj-command-palette__backdrop` elements are
+  gone; the panel is `.kj-command-palette__dialog` and the scrim is the shared
+  `<kj-backdrop>`. Public inputs, outputs and methods are unchanged.
+
+- 6e43ded: review batch 5 (rendering): charts, the rich-text editor and the chat thread stop re-doing work on every change-detection tick
+
+  **`[kjChart]` re-reads its option only when the option changes (perf F-1).**
+  The directive drove ECharts from `afterEveryRender`, so every change-detection
+  pass anywhere in the app re-ran `setOption` and re-resolved the themed palette
+  (one `getComputedStyle` plus up to eleven custom-property reads). Both now run
+  from an `effect()`. The palette is memoised and refreshed by the theme
+  `MutationObserver`, which additionally observes the host's nearest
+  `[data-theme]` ancestor so a scoped theme wrapper still re-colours its chart;
+  new public `KjChart.refreshPalette()` is the escape hatch for an ancestor that
+  gains `data-theme` after initialisation.
+
+  _Behaviour note:_ `[kjChartOption]` must now be **replaced**, not mutated in
+  place. `afterEveryRender` re-read the same object every tick, so an in-place
+  mutation was eventually picked up; an `effect` compares by identity.
+
+  **`<kj-chart>` honours `provideECharts` and reacts to `theme` (lazy F-3, perf
+  F-19).** The styled wrapper hard-imported the full `echarts` build, so an app
+  that registered a tree-shaken loader still paid for the whole library. It now
+  resolves `KJ_ECHARTS` and falls back to `import('echarts')`. Its
+  `ResizeObserver` is coalesced through `requestAnimationFrame` and cancelled on
+  destroy, and `theme` — read once at init and silently inert before — now
+  disposes and re-creates the instance, guarded so a superseded or
+  destroyed-during-await initialisation bails.
+
+  **Rich text: one document walk per update instead of four (perf F-2).**
+  `onValue` now hands over a snapshot whose `text()` and `json()` are thunks over
+  the immutable editor state, and the `empty` flag behind `data-empty` (the
+  placeholder) short-circuits on the first non-empty block rather than
+  materialising the whole document's text. `KjRichTextEditor`'s emptiness
+  semantics are unchanged, including that two empty paragraphs are not an empty
+  document.
+
+  _Behaviour note:_ `textChange` and `jsonChange` are now coalesced to one
+  animation frame (latest value wins). `onChange` / `valueChange` and the
+  `ControlValueAccessor` form value stay synchronous.
+
+  **Chat: streaming markdown is linear, not quadratic (perf F-10, F-11, F-20).**
+  New exported `createMarkdownRenderer()` keeps a per-message renderer that
+  re-parses only the block still being written and hands committed blocks back by
+  reference, so a long streamed reply is no longer re-lexed and re-sanitised from
+  the top on every token. `<kj-chat-message>` binds `block.html` directly — an
+  `[innerHTML]` binding _is_ `DomSanitizer` at `SecurityContext.HTML` — so the
+  sanitiser runs once per change instead of once per check; `KjChatMessage.safe()`
+  is removed (batch 7's clean-break ruling — bind `block.html` directly).
+  `<kj-chat-thread>` memoises its rows by message
+  identity, so a registered custom renderer's `item` input is no longer re-set on
+  every streamed token.
+
+  _Behaviour note:_ while a reply streams, its body renders one `.kj-chat-md`
+  block per committed markdown block rather than a single one. The blocks are
+  role-less `<div>`s, so the accessibility tree is unchanged, but a consumer
+  stylesheet using `:only-child` or sibling selectors on `.kj-chat-md` needs
+  re-checking. A message containing a link reference definition (`[id]: url`)
+  falls back to a full parse, because a definition resolves links above it.
+
+- 6e43ded: review batch 4: the styled menubar actually works, the rules files are machine-checked, and the spec/typecheck quarantines are gone
+
+  **Menubar (components).** `<kj-menubar-item>` composed `KjMenubarItem` on an
+  inner `<button>`, inside the component's own view. The bar's `KjListNavigator`
+  finds its items with a `contentChildren(KjListItem)` query, and a content query
+  never crosses into a child component's view — so the styled bar registered its
+  items through DI (clicking one opened its submenu) while the navigator saw
+  nothing: no roving tab stop, no arrow keys, no skip-disabled, every item its own
+  Tab stop. The directive now sits on the `<kj-menubar-item>` host, exactly as
+  `KjMenubar` already sat on `<kj-menubar>` and for the same reason. The rendered
+  DOM changes — the item _is_ the `<kj-menubar-item>` element (`role="menuitem"`,
+  roving `tabindex`, `class="kj-menubar-item"`) instead of wrapping a `<button>` —
+  and `.kj-menubar-item` styling is unaffected because it was already a bare class
+  selector. `<kj-menubar-item>` also gained `[kjDropdownMenuTriggerFor]`, forwarded
+  to the composed directive, which is what closes the long-standing
+  "menubar+dropdown-menu wiring pending" TODO: the styled wrapper can now disclose
+  a submenu, which is what a menubar is for.
+
+  **Menubar keyboard (core).** ArrowDown / ArrowUp on a bar item opened the wrong
+  submenu. The composed navigator's orientation is `'vertical'` and it wraps, so
+  its bubble-phase handler moved the bar's roving focus first and `KjMenubar` then
+  disclosed _that_ item — pressing ArrowDown on the last item opened the first
+  item's menu. Both keys are now owned by a capture listener on the bar, which
+  discloses the item the key was pressed on and stops the dispatch. A disabled
+  item discloses nothing.
+
+  **Rules, enforced (repo).** `eslint.config.js` gained three checks that used to
+  be prose: `no-restricted-globals` for `document` / `window` / `navigator` / web
+  storage across library sources (SSR), a local `kouji/binding-prefix` rule
+  requiring a `kj`-prefixed public name on every `input()` / `output()` /
+  `model()` in `@kouji-ui/core`, and a local `kouji/component-styles-layered` rule
+  keeping component CSS out of inline `styles` arrays and pairing `styleUrl` with
+  `ViewEncapsulation.None`. `rules/code_style.md` now documents
+  `ViewEncapsulation.None` as the architecture it has been for 92 components
+  rather than banning it, and states the DOM-globals rule; `RULES.md` records
+  which clauses CI can see and which it cannot.
+
+  **Tests.** The styled `checkbox`, `radio`, `toggle`, `input-group`,
+  `input-mask`, `menubar` and `overflow` features had no spec at all and now have
+  one each; the `popover`, `tooltip` and `dropdown-menu` wrapper specs were three
+  `it.todo` placeholders and are now behavioural suites covering open, keyboard,
+  close and focus return. Both packages' `tsconfig.typecheck.json` quarantine
+  lists are empty: every spec that carried pre-existing type errors was fixed, so
+  `pnpm typecheck` covers the whole source tree.
+
+  **Ids are minted per injector (core).** Every DOM id the library generates went
+  through a module-level counter (41 of them) or `crypto.randomUUID()`. Both are
+  module state: two Angular roots in one document minted the same ids, and the
+  random seeds differed between the server render and the client, so hydration
+  found `for=` / `aria-controls` / `aria-labelledby` pointing at nothing. Ids now
+  come from an injectable `KjId`, counted per prefix so every existing id keeps
+  its exact shape, and a new `KJ_ID_NAMESPACE` token suffixes them when two roots
+  share a page (a second root that leaves it unset gets a dev-mode warning). The
+  eight exported `next*Id()` helpers keep their signatures.
+
+  _Behaviour change:_ accordion, tab and carousel item ids no longer interpolate
+  the item's value — `kj-accordion-trigger-<value>-<n>` became `<minted>-trigger`.
+  A value containing a space or quote used to produce an invalid IDREF, and the id
+  changed whenever the value did, breaking a live `aria-controls`. Anything
+  selecting those ids in CSS or a test needs updating.
+
+  **Overlay page state (core).** Scroll-lock refcounting and the saved inline
+  styles moved onto `<html>`, and `htmlOverflow()` / `cssClip()` deliberately
+  share one key — separate counts left the page unscrollable with no overlay open
+  when a `cssClip` lock nested above an `htmlOverflow` one, or when locks were
+  released out of order. Live regions are found in the DOM by
+  `[data-kj-live-region]` instead of a module map, so there is exactly one polite
+  and one assertive region per document and they survive an app unmount/remount.
+  The overlay container is likewise discovered by `[data-kj-overlay-container]`
+  and self-heals if app code removes the root.
+
+  **SSR (core).** Every bare `document` / `window` / `navigator` / `localStorage`
+  / `sessionStorage` in shipped sources (~90 sites) now resolves through injected
+  `DOCUMENT`, an element's `ownerDocument`, or a named, commented `globalThis`
+  helper in the three genuinely injector-less places. `KjLink`'s "(opens in new
+  tab)" suffix adopts the server-rendered span instead of appending a second on
+  hydration, and disappears when `kjExternal` flips to false. The file-upload
+  trigger's hidden `<input type="file">` is created in `afterNextRender`, not the
+  constructor. The Monaco loader memo is page-scoped, so two roots share one AMD
+  loader instead of racing.
+
+  **Configuration (core).** Every `provideKj*` now takes a deep partial and merges
+  it over the shipped defaults through one helper, so
+  `provideKjButton({ defaults: { size: 'lg' } })` type-checks and keeps
+  `defaults.variant`. Arrays still replace — spread `KJ_*_DEFAULTS.variants` to
+  extend. `KjVariant`, `KjSize`, `bindPresets` and the preset tokens are
+  documented public API rather than `@internal`: composing them is the supported
+  way to build a component that plays the same `provideKj*` game. `provideKjMotion`
+  and `provideKjDirectionality` are new, and `@kouji-ui/components` re-exports
+  every `provideKj*` / `KJ_*_CONFIG` (a spec fails when core adds one the barrel
+  misses).
+
+  **Assistive strings follow the i18n catalog (core).** Pagination, breadcrumb,
+  spinner, alert-dismiss/actions and the OTP completion announcement had English
+  baked into their config defaults, so a French catalog alone could not translate
+  them. They now resolve `config field ?? catalog ?? EN` as signals, and
+  re-render on a runtime locale change. _Behaviour change:_ an app that registered
+  a non-English catalog will see those labels translated where they were English
+  before, and `KJ_PAGINATION_DEFAULTS` / `KJ_BREADCRUMB_DEFAULTS` no longer carry
+  label literals (the fields are now optional). A new `pnpm check:aria-labels` CI
+  gate fails on any _new_ hard-coded accessible name in shipped markup.
+
+  **Disabled is behaviour, not decoration (core).** `<kj-checkbox [disabled]>`,
+  `<kj-radio [disabled]>` and `<kj-toggle [disabled]>` announced
+  `aria-disabled="true"` and still toggled, selected and pressed on a direct
+  click or Space — the announced state contradicted what the control did (WCAG
+  4.1.2), and a disabled radio could move the group's value (3.2.2). All three now
+  guard their state change. `KjCheckbox` also gained `kjIndeterminate`, so
+  `<kj-checkbox [indeterminate]>` finally reports `aria-checked="mixed"` as its
+  documentation always claimed.
+
+  **Radio groups are one Tab stop (components).** Every `<kj-radio>` hard-coded
+  `tabindex="0"`, so an n-option group was n Tab stops and a disabled option was
+  still one of them. The group composes `KjRovingTabindex` and the dot is a roving
+  item: Tab lands on the checked radio (or the first), arrow keys cycle and skip
+  disabled options, Space/Enter selects (WCAG 2.4.3, APG radiogroup).
+
+  **Popovers have a name (core).** `<kj-popover-content>` renders
+  `role="dialog"`; `[kjPopoverTitle]` minted an id that nothing consumed, so the
+  panel was an unnamed dialog (WCAG 4.1.2). The popover family now uses the same
+  `KJ_OVERLAY_TITLE_HOST` contract as dialog/drawer/sheet, and gained
+  `kjAriaLabel` / `kjAriaLabelledBy` inputs; dev mode warns when a panel opens
+  with no name at all.
+
+  **`KjIconDirective` is now `KjIcon`** (and `icon.directive.ts` is `icon.ts`).
+  The class and its file dropped the Angular type suffix per the repo's naming
+  rule — nothing else in the feature is called `KjIcon`. This is a clean break:
+  there is no alias under the old name. Update imports to `KjIcon`.
+
+  **Smaller fixes.** Core `KjTabs` owns its own preset wiring, so a headless
+  `<div kjTabs>` reflects `data-variant` and `provideKjTabs(…)` reaches it — it
+  previously only worked through the styled package. `<kj-input-group>`'s
+  `kjVariant` / `kjSize` reached nothing and are now really forwarded.
+  `<kj-progress-bar [kjValue]="null">` type-checks, matching the indeterminate
+  posture it documents. `KjList`'s `kjArrowNavigation` accepts the bare attribute
+  form its own example uses. `<kj-input-mask>` gained `[(value)]` — the CVA is on
+  the inner input and was unreachable. A group label outside a group now throws a
+  library error naming the parent it needs instead of a bare `NG0201`. A table
+  filter's text input carries its column caption as a real accessible name rather
+  than a visually-hidden span sitting beside it. `KjFieldControl` captures the
+  element's static id once instead of re-reading the DOM every check, which was
+  raising `NG0100` on any control that also binds `[attr.id]`.
+
+- 6e43ded: **Batch 7 cross-area closures.** The last compat shims the no-alias ruling
+  covers, the two remaining parent-context diagnostics, and the packaging gap the
+  Vite / Analog install path was still missing.
+
+  **Breaking — two compat shims deleted.** `KjChatMessage.safe()` is gone; bind
+  `block.html` to `[innerHTML]` directly, which _is_ `DomSanitizer` at
+  `SecurityContext.HTML` and runs once per change rather than once per check. The
+  `'esc'` member of `KjCloseReason` is gone along with the controller's
+  normalisation of it — use `'escape'`. Both were kept only so existing code
+  would keep compiling, which is exactly the shape the ruling forbids.
+
+  **Diagnostics (arch F-14).** `KjProgressBarFill` and `KjTagRemove` were the last
+  two children in core reading their parent's token through a bare `inject()`;
+  both now use `injectParent`, so a mis-composed child fails with
+  ``[KjTagRemove] must be used inside `[kjTag]`…`` instead of `NG0201: No
+provider for InjectionToken KjTag`. `KjTablePagination`'s
+  `injectParent(KJ_TABLE, …) as KjTable<unknown>` cast is deleted — `KJ_TABLE` is
+  declared `InjectionToken<KjTable<unknown>>`, so the cast asserted a type the
+  token already carried. `<kj-textarea>`'s counter warning routes through
+  `kjDevWarn`, so its message string leaves production builds with the branch.
+  Every allowance in `packages/core/src/architecture.spec.ts` is now an empty
+  expectation: core is at zero on all three checks.
+
+  **Shared observers (perf F-5).** The styled `<kj-chart>` built one
+  `ResizeObserver` per instance — it is a standalone ECharts host, not a
+  composition of the core `[kjChart]`, so the earlier sweep missed it. It now
+  rides the root `KjResizeObserver`: a twenty-chart dashboard adds no observers at
+  all, and the service's own rAF coalescing replaces the component's.
+
+  **Packaging (ssr F-8).** `@kouji-ui/themes`, `@kouji-ui/core` and
+  `@kouji-ui/components` now export `./package.json`. A tool that resolves
+  `<pkg>/package.json` — routine for dependency scanning, and something Vite does
+  — previously got `ERR_PACKAGE_PATH_NOT_EXPORTED` from the themes package, which
+  ships no `ng-package.json` and so never had the entry generated for it.
+
+  **Prerender (ssr F-16).** `KjCarousel` read a slide's required `kjSlideValue`
+  before the first binding, emitting an `NG0950` on every prerendered page holding
+  a carousel. Guarded the way `KjTable` was in batch 2: the read still registers
+  the dependency, so the computed recomputes once the value arrives.
+
+- 6e43ded: review batch 7 (naming + structure): renames are clean breaks, one directive per file, one diagnostics helper
+
+  **Every deprecated compatibility alias is gone. This release has breaking
+  renames with no alias layer** — the new name is the only name. Update imports;
+  nothing is kept "for one minor".
+
+  Classes and types, old → new:
+
+  | Removed                                                                                                                                                                                                  | Use                                                                                                                                                     |
+  | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `KjIconDirective`                                                                                                                                                                                        | `KjIcon`                                                                                                                                                |
+  | `KjCardComponent`, `KjCardContentComponent`, `KjCardCoverComponent`, `KjCardFooterComponent`, `KjCardHeaderComponent`, `KjCardSubtitleComponent`, `KjCardTitleComponent`                                 | `KjCard`, `KjCardContent`, `KjCardCover`, `KjCardFooter`, `KjCardHeader`, `KjCardSubtitle`, `KjCardTitle`                                               |
+  | `KjEmptyStateComponent` + `Icon` / `Title` / `Description` / `Actions` siblings                                                                                                                          | `KjEmptyState`, `KjEmptyStateIcon`, `KjEmptyStateTitle`, `KjEmptyStateDescription`, `KjEmptyStateActions`                                               |
+  | `KjPopoverComponent`, `KjTooltipComponent`, `KjToastWrapperComponent`, `KjOverflowPanelComponent`, `KjPaginationDefaultComponent`, `KjDatetimePickerComponent`                                           | the same names without `Component`                                                                                                                      |
+  | `KjTableToolbarComponent`, `KjTablePaginationComponent`, `KjTableStatusBarComponent`, `KjTableSidePanelComponent`, `KjCellTemplateDirective`                                                             | `KjTableToolbar`, `KjTablePagination`, `KjTableStatusBar`, `KjTableSidePanel`, `KjCellTemplate`                                                         |
+  | `KjCascadeOptionComponent`, `KjCascadeSubPanelComponent`, `KjComboboxEmptyComponent`, `KjComboboxLoadingComponent`, `KjConfirmPopupActionsComponent`, `KjFormActionsComponent`, `KjFormSummaryComponent` | the same names without `Component`                                                                                                                      |
+  | `KjRovingTabindexItemDirective`                                                                                                                                                                          | `KjRovingTabindexItem`                                                                                                                                  |
+  | `KjRichTextExtensionDirective` (selector `[kjRichTextExtension]`)                                                                                                                                        | `KjRichTextFeatureDirective` (selector `[kjRichTextFeature]` only)                                                                                      |
+  | `KjRichTextExtension`, `KjRichTextPlugin` (types)                                                                                                                                                        | `KjRichTextFeature`                                                                                                                                     |
+  | `KJ_RICH_TEXT_EXTENSIONS`                                                                                                                                                                                | `KJ_RICH_TEXT_FEATURES`                                                                                                                                 |
+  | `KjDateRange` from the table date filter                                                                                                                                                                 | `KjDateFilterRange` — it collided with the `date-range-presets` interface of the same name, and `@kouji-ui/components` only ever re-exported the latter |
+
+  Inputs, outputs and methods removed with no replacement alias:
+  - `KjRichTextEditor`: `kjExtensions`, `kjPlugins` → `kjFeatures`;
+    `registerExtension()` → `registerFeature()`.
+  - `<kj-input>`: `kjSize` → `size`.
+  - `KjSelectTrigger` / `KjTreeSelectTrigger`: the `kjDisabled` read-alias →
+    `disabled`. The `kjDisabled` **input** is unchanged; only the duplicate
+    getter is gone.
+  - `KjMenubar`: `kjAutoDisclose` and `kjAutoDiscloseDelayMs`. Both were no-ops —
+    the primitives-based menubar never implemented roll-over disclosure. Hover
+    is opt-in per consumer via `pointerenter` on `[kjMenubarItem]`.
+
+  Internal, no API change: the dialog service class is declared `KjDialogService`
+  instead of being renamed by its barrel, so the published name and the
+  declaration finally agree.
+
+  **One directive per file.** `core/carousel` joins `color-picker`, `stepper` and
+  `alert`: the 939-line, nine-directive `carousel.ts` is now nine files plus a
+  `carousel.ts` aggregator, so `@kouji-ui/core` and the `./carousel` path are
+  unchanged. The remaining multi-declaration files are listed, with counts, in
+  `packages/core/src/architecture.spec.ts`, which fails when one grows.
+
+  **Diagnostics.** Everything routes through `kjDevWarn` / `kjDevAssert` /
+  `kjError` in `primitives/diagnostics`, which are `ngDevMode`-guarded, so the
+  branches _and their message strings_ leave a production build. A child that is
+  used outside its parent now gets `[KjCarouselSlide] must be used inside
+\`[kjCarousel]\`…`from the library rather than Angular's`NG0201: No provider
+  for InjectionToken KjCarousel`, which named neither end. The
+`inject(KJ_CAROUSEL) as KjCarousel`casts are gone:`KjCarouselContext`,
+`KjAccordionContext`and`KjTabsContext`carry the registration surface their
+children actually use, published as`KjCarouselSlideRef`,
+`KjCarouselViewportRef`, `KjCarouselAutoplayRef`, `KjAccordionTriggerRef`and`KjTabRef`.
+
+  **Form controls.** `KjFormControl` is the library's only
+  `ControlValueAccessor`; a new `kouji/no-bespoke-value-accessor` lint rule
+  refuses a raw `NG_VALUE_ACCESSOR` provider or a hand-written accessor anywhere
+  outside `primitives/forms/`.
+
+  **Overlay refs.** `KjDialogRef` / `KjDrawerRef` / `KjSheetRef` share one
+  `KjOverlayRef<T, R>` base. Behaviour and public surface are unchanged.
+
+- 6e43ded: review batch 7 (scaling): page-global listeners and observers move to three root services, and roving menus stop publishing `aria-activedescendant`
+
+  **One input-modality reader for the whole page (perf F-5, mfe F-17).** Every
+  `KjFocusRing` used to keep its own copy of "was the last interaction a key or a
+  pointer?" behind its own `keydown` + `pointerdown` capture pair on the document.
+  A 200-row table with a checkbox and a button per row therefore installed 800
+  document-level capture listeners, all of which ran on every keystroke. The
+  global half is now the new root service `KjInputModality`: one listener pair,
+  ref-counted so an app that renders no focus ring pays nothing, exposed as a
+  `Signal<'keyboard' | 'pointer'>`. `KjFocusRing` keeps only its two
+  element-scoped `focus` / `blur` listeners and samples the modality at focus
+  time, so a pointer press elsewhere on the page cannot strip the ring off an
+  element that is still focused. No public API change to the directive.
+
+  **One theme watcher and one `ResizeObserver` per root (perf F-5, mfe F-17).**
+  `[kjChart]` and `<kj-editor>` each attached a `MutationObserver` to
+  `document.documentElement`, so a 20-chart dashboard put 20 observers on one node
+  and fired all of them on every theme toggle; `[kjToast]` attached a
+  `ResizeObserver` per toast. Both are now root services — `KjThemeObserver`
+  (one observer per observed element, shared by every handler registered against
+  it, with a `version` signal for `computed` consumers) and `KjResizeObserver`
+  (one observer for the page, entries coalesced into one animation frame). Each
+  returns a disposer and is SSR-safe. All three services are public API, exported
+  from `@kouji-ui/core`, and are the supported way to build a component that
+  reacts to theme or box changes without adding an observer per instance.
+
+  **`[kjTag]` no longer observes its own subtree by default (perf F-16).** The
+  accessible-name fallback for `[kjTagRemove]` was kept in sync by a
+  `MutationObserver` with `subtree: true` and `characterData: true` on every tag —
+  the broadest configuration available, on a component rendered in bulk. The text
+  is now seeded once on first render, which covers every static chip. **Breaking
+  for a tag whose projected text mutates in place:** set the new
+  `kjTagObserveLabel` to opt the observer back in, or (preferred) bind the new
+  `kjTagLabel` input and drop DOM observation altogether.
+
+  **`[kjTextarea]` measures once per keystroke (perf F-17).** Typing used to cost
+  two style recalcs and two forced layouts: the host `(input)` handler measured,
+  and the value it wrote also re-triggered the measuring effect. The value signal
+  is now the single trigger, measurement is coalesced into one animation frame,
+  and the line-height / padding / border metrics are cached — re-read only when a
+  binding changes, on a window resize, or when a webfont lands. `measure()` gained
+  an optional `remeasureMetrics` parameter for the last case.
+
+  **Carousel viewports observe slides added after first render (perf F-25).**
+  `observeSlides()` ran once from a microtask after init, so a slide rendered by a
+  later `@if` / `@for` never updated `kjValue` when it scrolled into view. The
+  observed set now follows the registered slides, and the settle timer is cleared
+  on destroy — it used to fire against a destroyed viewport and write `kjValue`.
+
+  **Roving menus publish one focus signal, not two (a11y F-15).**
+  `kj-dropdown-menu-content` carried `kjOrientation` / `kjFocusMode` as static
+  attributes in its `host` metadata with a comment claiming they seed the composed
+  `KjListNavigator`'s inputs. They do not — static host attributes are DOM
+  attributes, never host-directive input bindings — so the navigator stayed in
+  activedescendant mode and published `aria-activedescendant` on the `role="menu"`
+  host while DOM focus sat on the child `menuitem` (SC 4.1.2). The attributes and
+  the comments that asserted the mechanism are gone; the roving model reaches the
+  navigator through `KJ_LIST_FOCUS_MODE_DEFAULT`, which the menu and the menubar
+  already provide.
+
+  **Type-ahead cycles on a repeated letter (a11y, carried over).** Pressing `a`
+  `a` `a` in a list buffered `"aaa"` and matched nothing. Per WAI-ARIA APG the
+  buffer now stays one character long and each press visits the next item starting
+  with that letter.
+
+  **`KjListNavigator` leaves the caret its keys (a11y, carried over).** When the
+  navigator is hosted on a text entry — the combobox and command-palette
+  `<input>` — `Home`, `End`, `PageUp` and `PageDown` now move the text cursor
+  whenever the field holds text, and only drive the list from an empty field.
+  `Space` is always the field's.
+
+  **`<kj-table>` announces sorting and filtering (a11y, carried over).** Both
+  rearrange the grid with no cue a screen-reader user can perceive (SC 4.1.3). A
+  visually-hidden polite region now reports them, including the column name when
+  sorting is cleared. Pagination is deliberately not included — the projected
+  `<kj-table-pagination>` already renders its own live "Showing X–Y of Z" summary.
+  Opt out with `kjAnnounceChanges="false"`; route the strings through your own
+  i18n with `kjSortAnnouncement` / `kjFilterAnnouncement`.
+
+- 6e43ded: review batch 3: overlay close policy and lifecycle, machine-checked theme contrast and cascade layers, packaging without CDK
+
+  **Overlay engine (core).** `closeOnEsc` / `closeOnOutside` are honoured end to
+  end: `KjOverlayBuilder.create()` applies a role default (an `alertdialog`
+  answers to neither Escape nor the scrim; every other role closes on Escape and
+  lets the scrim's own `closeOnClick` decide), and `KjDialog.open()` forwards
+  `closeOnEsc` / `closeOnOutside` while `KjDrawerService` / `KjSheetService`
+  forward `closeOnOutside`. `KjOverlayStack` is the single owner of outside
+  dismissal (a press that begins on the overlay's trigger is never "outside").
+  Controllers dispose themselves with their host's `DestroyRef` and run the full
+  close chain synchronously; `KjOverlayTrigger` detaches the trigger-event
+  strategy it attached. `toggle()` during the close transition re-opens (unless
+  the close came from an outside press); `onFocus` / `onFocusOrInput` ignore the
+  focus restore that runs while closing. Overlay toasts register as `passive`
+  stack entries — Escape reaches the dialog beneath. `KjCloseReason` is now
+  `'escape' | 'outside' | 'backdrop' | 'trigger' | 'select' | 'tab' |
+'programmatic'` (the old `'esc'` spelling is removed — use `'escape'`);
+  `KjDialogRef` /
+  `KjDrawerRef` / `KjSheetRef` expose `closeReason()`, and **`afterClosed$` /
+  `result` now settle on a dismissal by Escape or the scrim** (with `undefined`),
+  not only after `close()`. `kjMenuClosed` fires once per close with the mapped
+  reason. Declarative overlays render a real `<kj-backdrop>` when their scope
+  provides a backdrop strategy; `KjBackdrop` closes with reason `'backdrop'`.
+  `kjMount` / `kjSide` / `kjAlign` on `<kj-dropdown-menu-content>` are reactive;
+  `aria-haspopup="menu"` is rendered on dropdown triggers; `[kjDropdownMenu]`
+  owns `role="menu"`; the confirm popup is an `alertdialog` from first paint with
+  `aria-describedby` and `aria-modal="false"`. New: `KJ_OVERLAY_CONTAINER`,
+  `inheritOverlayScope()` (service-launched overlays inherit `data-theme` /
+  `data-density` / `dir` from the focused element or app root), `onHotkey({
+target })` (and it ignores `defaultPrevented` keystrokes), `KjOverlayPanel`
+  reads its strategy tokens from its own element when bound to a foreign
+  controller (no more inherited scroll lock / scrim / role from an enclosing
+  dialog). `--kj-overlay-z-base` is read from the overlay container only while
+  `KJ_OVERLAY_Z_BASE` is at its default.
+
+  **Themes / styles.** New `@kouji-ui/themes/layers.css` export pins the layer
+  order `kj.reset, kj.base, kj.shared, kj.prose, kj.component, kj.tone,
+kj.truncate`; every shipped stylesheet lives inside a layer (stylelint rules
+  `kouji/layered` + `kouji/known-tokens`, root script `lint:css`, run in CI).
+  Contrast is machine-asserted per theme (AA for class-A/C ink on the neutral
+  surfaces and on the `*-subtle` fills, 3:1 for `--kj-border-focus`, and the new
+  required token **`--kj-border-control`** — the idle boundary of every form
+  control, ≥ 3:1 on body/surface/field in all 15 themes; `--kj-border-default`
+  stays decorative). `orrery-light`, `sakura`, `nord`, `light` and `retro` ink /
+  ring nudges. Every theme declares `color-scheme`. Unthemed documents get the
+  light tokens (`:root:not([data-theme])`) and dark under
+  `prefers-color-scheme: dark`. One shared `prefers-reduced-motion` guard in
+  `base.css` zeroes every token-driven transition; sheets with literal durations
+  carry their own guard. Control heights ride the `--kj-ctl-h-*` density ladder
+  (select, date / datetime / time pickers, input-mask, number-input, password
+  input, calendar cells; compact now shrinks them). `--kj-space-2xs` (2px) and a
+  `--kj-line-height-*` ladder are declared; `--kj-color-icon-*` re-resolve per
+  theme root; `--kj-bg-overlay` backs every scrim; `.kj-card[data-shadow="lift"]`
+  draws `--kj-shadow-md`; `.kj-backdrop--blur` has a rule; `contain: layout` on
+  the fixed / portalled surfaces. `prose.css` keys on `[data-kj-tone]` /
+  `[data-kj-truncate]` and the typography directives now reflect those names
+  (the bare `data-tone` / `data-truncate` selectors are supported spellings, not a
+  deprecation window — a hand-typed attribute in consumer markup has no compiler
+  to migrate it, so both remain); `density.css` also matches `[data-kj-density]`. The dead
+  `.kj-dialog-overlay` rule is gone. Docs: pre-paint theme script, theme
+  generator emits the full required token set inside `@layer kj.shared`.
+
+  **Packaging (core + components).** `@angular/cdk` is no longer a peer of either
+  package (uninstall it). Angular `^22` peers. `@kouji-ui/core/styles.css` is
+  published (overlay + icon + prose + motion) and `@kouji-ui/components/src/*.css`
+  is exported, so both resolve by specifier from Vite / Analog / Node. `marked`
+  is configured on a private instance (a consumer's own `marked.parse()` no
+  longer inherits the chat's options). `@tanstack/virtual-core` and
+  `lucide-static` are optional peers loaded through `import()`:
+  `KjTableVirtual.virtualRows()` is typed `KjVirtualRow[]` and virtualization
+  attaches after a dynamic import (a missing peer is reported through
+  `ErrorHandler` while the seeded window keeps rendering); `provideLucideIcons({
+Settings, Trash2 })` registers a tree-shaken subset, `provideLucideIcons()`
+  loads the whole set as one lazy chunk on the first miss (icons resolve one tick
+  later on the client; prerender waits). `provideIcons()` scopes per environment
+  injector (route-level sets layer over the root set). The example barrels no
+  longer export documentation-only components. Build scripts gate the public API
+  graph and the published exports map.
+
+- 6e43ded: review batch 2: roving tab stops that follow selection, keyboard-operable data grid, named dialogs, wired fields, focus-driven tooltips
+
+  **Roving tabindex (core).** `KjRovingTabindex` tracks its active item by
+  reference: the tab stop survives item removal (clamped to the nearest
+  neighbour, refocused only if focus was inside the group), follows the
+  selection through the new `setActive(item | Element)` / `kjRovingActive`
+  seed API, and the arrow keys skip disabled, `aria-disabled` and hidden items.
+  Registration is O(1) and RTL now comes from the nearest `dir` attribute (a
+  CSS-only `direction: rtl` is no longer honoured). New self-scoped
+  `KJ_ROVING_ORIENTATION_DEFAULT` token; `KjTabList` provides it instead of
+  filtering keys itself. Tabs, stepper, carousel, list and date-range presets
+  seed the tab stop from their selection. `KjTabPanel` gets `tabindex="0"` only
+  when active and it has no tabbable content.
+
+  **Calendar (core + components).** The roving cell is always a selectable day
+  (seeded from the value, then `kjStartAt`, then today, clamped into
+  `kjMin` / `kjMax` / the predicate; month navigation past a bound lands on
+  the bound). Calendars no longer steal focus on mount or from the month
+  buttons. Structure is grid > row > gridcell(`<td>`) > native button: day
+  buttons drop `role="gridcell"` and native `disabled` (now
+  `aria-disabled` + `data-disabled`), selection is `aria-pressed`, the root is
+  `role="group"`. New root `KJ_TODAY` token (`null` on the server, so no today
+  marker is prerendered); `KjCalendarContext` gained a required `today`
+  member. `kj-calendar` exposes `kjStartAt`. `Intl.DateTimeFormat` instances
+  are cached per locale + preset.
+
+  **Data grid (core + components).** The body has one Tab stop: new
+  `KJ_TABLE_KEYBOARD_NAV` context (`KjTableKeyboardNavContext`) drives
+  `KjTableCell`'s roving `tabindex`; keys typed into a text control inside a
+  cell are left alone; Enter opens an editable cell. Sortable headers render a
+  real `<button kjTableSort>` (new `KjTableSort` directive;
+  `KjTableHeader.toggleSort` / `hasSortControl`) and Shift-click / Shift+Enter
+  really multi-sorts. The column resize handle is a focusable
+  `role="separator"` with arrow / Home / End / Escape keys and
+  `aria-value*`. Persistence writes a projected slice set
+  (`KJ_TABLE_DEFAULT_PERSISTED_SLICES`, `pickTableState()`,
+  `KjTablePersistedSlice`; never `rowSelection` / `expanded` /
+  `globalFilter`), debounced 300 ms (`kjPersistDebounce`, `kjPersistedSlices`
+  inputs), under an optional `KJ_TABLE_STORAGE_KEY_PREFIX`
+  (`provideKjTableStorageKeyPrefix()`). The four tbody branches share one row
+  template; `KjTableVirtual` measures rows (`measureItem`, `mounted`, new
+  `KjTableVirtualItem` directive, `KJ_VIRTUAL_EXTRA_ATTR`) and prerenders the
+  first `kjInitialRows` / `kjVirtualInitialRows` rows on the server. Cell
+  editors share `injectKjCellEditor()` (`KjCellEditor`,
+  `KjCellEditorOptions`); the filter and editor contracts moved to
+  `filters.context.ts` / `editors.context.ts` (barrel exports kept). A
+  headless `[kjTableCell]` without a nav now carries `tabindex="-1"`.
+
+  **Overlay names (core + components).** `KjOverlayBuilderConfig` gained
+  `ariaLabel` / `ariaLabelledBy` (`KJ_OVERLAY_ARIA_LABEL` /
+  `KJ_OVERLAY_ARIA_LABELLED_BY` tokens, exported from the overlay barrel);
+  `KjDialogOpenOptions` / `KjDrawerOpenOptions` / `KjSheetOpenOptions` pass
+  them through and `KjDialog` / `KjDrawer` / `KjSheet` accept `kjAriaLabel` /
+  `kjAriaLabelledBy`. New title directives `KjDialogTitle` / `KjDrawerTitle` /
+  `KjSheetTitle` (+ `KJ_OVERLAY_TITLE_HOST`, `registerOverlayTitle`,
+  `overlayAccessibleName`) and `<kj-dialog-title>` / `<kj-drawer-title>` /
+  `<kj-sheet-title>` name the panel by reference; dev mode warns once when a
+  panel opens nameless.
+
+  **Field (core + components).** New `KjFieldControl` (`[kjFieldControl]`),
+  composed by `KjInput`: a control inside `kj-field` adopts the field id and
+  gets `aria-describedby` / `aria-invalid` / `aria-required` automatically.
+  Consumers that bound `[id]` or `kjAriaDescribedBy` on a `<kj-input>` inside a
+  `kj-field` should drop them to avoid duplicate ids.
+
+  **Tooltip / popover (core).** Tooltips open on keyboard focus
+  (`onFocus({ focusVisible: true })`), describe their trigger via
+  `aria-describedby` at all times and carry neither `aria-expanded` nor
+  `aria-controls`; `kjDisabled` on tooltip and popover triggers now really
+  blocks opening (`whenEnabled()` helper). `onHover` timers no longer toggle a
+  panel another strategy already opened or closed.
+
+  **Live regions / OTP / toast (core + components).** `KjLiveRegion` writes
+  into an owned text node (host children survive announcements).
+  `KjInputOtp.kjComplete` fires (`value.length === kjLength`); the root is no
+  longer a live region — `registerLiveRegion()` + `context.chars`; the styled
+  `<kj-input-otp>` renders a visually hidden one. Cleared middle OTP cells no
+  longer shift later digits. The toast viewport is a plain `role="region"`
+  landmark (each toast stays its own live region); toast ids are `kj-toast-N`
+  via `KjId`; `.kj-toast-viewport` z-index follows `--kj-overlay-z`.
+
+- 6e43ded: review retry: every accessible name is translatable, an anchored panel hides when its trigger scrolls away, and the docs example theme stops shadowing the token contract
+
+  **Accessible names come from the i18n catalog (cust F-7).** `en.ts` called
+  itself "the source of truth for kouji-ui's visible / assistive-text strings"
+  while twenty-two of them were literals in templates, `host` blocks and input
+  defaults, where no registered catalog could reach them: a consumer who called
+  `provideKjTranslations({ fr: FR_CATALOG })` still heard "Next month", "Send
+  message", "Notifications", "Hue". All twenty-two now resolve through
+  `KjTranslateService`, with new `en` / `fr` keys for calendar, chat, colour
+  picker, command palette, data table, carousel, date picker, tree select, sheet
+  and the toast landmark. English output is byte-identical; what changed is that
+  a catalog can now change it.
+
+  Two of those were not merely untranslatable, they were dead. `<kj-color-picker>`
+  put `aria-label="Open color picker"` on its trigger, which
+  `KjColorPickerTrigger`'s own `[attr.aria-label]` host binding overwrote on the
+  first change detection — the string had never reached a screen reader. The
+  attribute is gone and the directive's name (now `colorPicker.trigger`, which
+  interpolates the current value) is the only one.
+
+  **Behaviour change worth noting:** `<kj-carousel-previous>` / `-next` /
+  `-pause` previously declared `aria-label` as an input defaulting to `"Previous
+slide"` / `"Next slide"` / `"Pause carousel"`. The default is now `undefined`
+  and falls through to the catalog. Setting `aria-label` on the element still
+  wins, so only the _default_ moved.
+
+  `pnpm check:aria-labels` (in CI) grew from two patterns to four — it now also
+  catches a literal in a `host` block, in a host _binding_ expression, and as an
+  `aria-label` input default — and its debt list is empty.
+
+  **An anchored panel hides when its trigger scrolls out of a clipping ancestor
+  (overlay F-7).** A panel is portalled to the overlay container, so nothing
+  clips it: scroll the trigger out of an `overflow: hidden` container and the
+  panel kept painting at the trigger's last viewport position — a live, clickable
+  menu pointing at nothing. `anchoredTo()` now resolves the trigger's clipping
+  ancestors once per open (the `getComputedStyle` walk never repeats per frame)
+  and, while the trigger is entirely outside one of them, gives the panel
+  `visibility: hidden` + `pointer-events: none` and stops repositioning it. It is
+  not closed or unmounted — open state and focus belong to the overlay, and
+  scrolling back restores it exactly. Opt out with
+  `anchoredTo({ hideWhenDetached: false })`.
+
+  **One shared reduced-motion query (perf F-15).**
+  `KjOverlayController.runTransition` built a fresh
+  `matchMedia('(prefers-reduced-motion: reduce)')` on every open and every close.
+  `KjReducedMotion` gained `matchesNow()` — a live, non-reactive read over the
+  page's single `MediaQueryList` — and the controller uses it. The reactive
+  `prefersReducedMotion` signal is unchanged and still seeded in
+  `afterNextRender`, which is why the controller needs the imperative reader: an
+  overlay opened before the first render would otherwise see a stale `false`.
+
+  **`@kouji-ui/components` carousel is one component per file (arch F-12), and
+  `KjCarouselPauseComponent` is now `KjCarouselPause`** — a clean break, no alias.
+  `./carousel` is still one import path.
+
+  **The docs example theme is off the `--kj-` namespace (styles F-17).**
+  `packages/core/src/styles/docs-themes.css` declared twenty `--kj-*` properties,
+  four of which — `--kj-border`, `--kj-shadow-sm`, `--kj-shadow-md`,
+  `--kj-transition` — are real contract tokens with different meanings. Only
+  Angular's emulated encapsulation kept `:root { --kj-border: #333 }` out of the
+  document. They are `--docs-*` now, the file rides the pinned `kj.base` /
+  `kj.shared` layers instead of two layer names nothing pinned, and it is no
+  longer exempt from `pnpm lint:css` or from the themes spec. It ships in neither
+  package.
+
+- 6e43ded: review retry: one delivery path for the overlay CSS, and every shipped control carries its field's ARIA
+
+  **The overlay family's nine stylesheets ship once, not twice** (styles F-21 / lazy F-5). `popover.css`, `tooltip.css`, `dropdown-menu.css`, `dialog.css`, `drawer.css`, `toast.css`, `confirm-popup.css`, `sheet.css` and `action-sheet.css` were each an `@import` in the registered `components/src/overlay/overlay.css` **and** a `styleUrl` on their wrapper component(s) — 19 `styleUrl` sites, seven of them for `confirm-popup.css` alone. Under `ViewEncapsulation.None` the second copy adds nothing to the cascade (identical selectors, identical `@layer kj.component`); it only inlines ~28 KB a second time into the component chunks. The `styleUrl`s are gone and the aggregator is the single source.
+
+  **Action needed if you render `<kj-popover>` / `<kj-dialog>` / `<kj-toast>` (etc.) without registering the aggregator:** register it. It has always been required for the headless composition the docs teach, and it is now required for the wrapper components too.
+
+  ```jsonc
+  "styles": [
+    "node_modules/@kouji-ui/themes/src/index.css",
+    "node_modules/@kouji-ui/core/overlay/overlay.css",
+    "node_modules/@kouji-ui/components/src/overlay/overlay.css"
+  ]
+  ```
+
+  `overlay-styles.spec.ts` fails if a `styleUrl` (or an inline `styles` array) reappears anywhere in the package pointing at an aggregated sheet.
+
+  **A `<textarea kjTextarea>`, a `<button kjSelectTrigger>` and a masked input inside a `[kjField]` now carry the field's relationships.** Previously only `<input kjInput>` composed `KjFieldControl`, so every other shipped control inside a field had no adopted id (the `[kjFieldLabel]` `for=` resolved to nothing), no `aria-describedby`, no `aria-invalid` and no `aria-required` — WCAG 1.3.1 / 3.3.1 / 3.3.2. `KjTextarea` and `KjSelectTrigger` compose it now; `KjInputMask` gets it through `KjInput`.
+  - `KjFieldControl` **merges** `aria-describedby` instead of replacing it: the field's help / error ids, then the new `kjDescribedBy` input, then whatever the element already carried. A consumer's own `aria-describedby="hint"` on a control inside a field used to be dropped.
+  - New `kjDescribedBy` input on `KjFieldControl`, re-exposed by `KjInput`, `KjTextarea` and `KjSelectTrigger`. Use it instead of writing `[attr.aria-describedby]` on those elements — the directive owns that attribute, and a host binding runs after the template's, so a direct write is silently overwritten. `<kj-textarea>`'s character counter moved onto it.
+  - `<div kjInputOtp role="group">` is named by its field's `[kjFieldLabel]` through `aria-labelledby`, because `for=` cannot reach a non-labelable element. It points at the label only when one is rendered — `KjField.labelId` is minted eagerly, so a naive binding would emit an IDREF resolving to nothing. `KjFieldContext` gains `labelRendered` and `registerLabel()`.
+
+  **`[kjPasswordStrength]`'s `kjAnnounce` does something** (arch F-10). It was a published no-op whose TSDoc promised a live region. Register one with the new `KjPasswordStrength.registerLiveRegion(region)` and set `kjAnnounce`, and the meter announces each strength tier as it changes — not each keystroke, and never the tier it mounted with. `<kj-password-input>` renders the visually hidden region itself and exposes the flag as `[kjAnnounceStrength]`. The meter is still not a live region itself: it is a `role="progressbar"`, whose descendants are not exposed, and a live region announces a text change rather than an `aria-valuetext` change.
+
+  **`kjTicks` is coerced like every other static attribute** (arch F-2). `kjTicks="false"` bound the _string_ `"false"`, which is neither `false` nor an array — and the resolver's last branch is `'auto'`, so an author who switched ticks off got one tick per step. The new `coerceTicks` transform keeps the array and `'auto'`, and folds everything else through `booleanAttribute`: a bare `kjTicks` now means `'auto'` and `kjTicks="false"` really means off. Exported alongside `KjSliderTicksInput`.
+
+  **One checked narrowing replaces eight blind casts** (arch F-4). `injectAnchoredPosition({ side, align, offset })` reads this element's position strategy back out of DI and configures it; the eight panels that each wrote `inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>` now call it, and a non-anchored strategy in that slot throws a message naming the panel's mistake instead of failing later inside the strategy. The three inputs stay declared on each panel — Angular discovers a signal input by seeing `input()` as a class property initialiser, so an input a helper returns is not an input.
+
+  **New stylelint rule `kouji/namespaced`** (arch F-5's remaining half). Every selector in `packages/*/src/**/*.css` must be anchored by something the library owns — a `.kj-*` class, a `kj-*` element, a `[data-*]` hook, `:root`, `:host` or `::backdrop`. `ViewEncapsulation.None` is the permanent architecture, so a bare `.card` or `button` selector is a global rule in the consumer's document. `kouji/layered` already fixed where a rule sits in the cascade; this fixes how far it reaches. The library is at zero violations today.
+
+- 6e43ded: round-2 system review: 178 of 184 findings fixed across eight batches
+
+  The round-2 review filed 184 findings across nine dimensions. 178 are closed.
+  The six that are not are listed, with reasons, in `reports/review/README.md`
+  § _Status after fix run_.
+
+  The single most leveraged fix is that **CI now runs the tests**. It had not
+  executed one since 2026-05-07, so 47 of 50 releases shipped under a
+  lint-and-build-only gate — which is why most of the rest went unnoticed.
+
+  ***
+
+  ## Breaking
+
+  ### Focus now moves, and comes back
+  - **Opening a `<kj-select>`, `<kj-tree-select>` or `<kj-cascade-select>` moves
+    focus into the panel.** These were keyboard-inoperable once open: the list
+    navigator listened for keys on a panel that nothing ever focused. Focus now
+    lands on the selected option (else the first navigable one), arrow keys,
+    `Home`, `End` and type-ahead move a roving tab stop, and `Tab` closes the
+    panel and continues past the trigger. If you worked around this by focusing
+    the panel yourself, remove that code — the two are idempotent, but a second
+    `Tab` trap on those panels will fight the built-in one.
+  - **Every overlay restores focus to its opener when it closes.** The opener is
+    `document.activeElement` at open time; on close, focus returns there if it is
+    still inside the panel (or fell to `<body>` after having been inside),
+    falling back to the bound trigger when the opener is gone, hidden or inert.
+    Opt out per overlay with `KjOverlayStrategies.returnFocus: false`, or
+    `tabCycle({ returnFocus: false })`.
+  - **Dialogs, drawers and sheets place initial focus on `[kjAutofocus]` or
+    `[autofocus]` inside the panel, else on the panel itself** — previously the
+    first focusable control, which put the caret in a form field nobody asked for.
+  - **The page behind a modal is genuinely inert.** `solidBackdrop({ inert: true })`
+    applies `inert` to every `<body>` child outside the overlay container and to
+    every overlay opened before this one, refcounted so nested modals thaw the
+    page only when the last one closes. App-authored `inert` is never touched.
+  - **`afterClosed$` and `result` settle on a dismissal** (Escape, scrim press)
+    with `undefined`, not only after an explicit `close()`. `afterOpened$` emits
+    exactly once and completes — it never emitted at all before.
+  - **Tooltip triggers carry `aria-describedby` and no longer carry
+    `aria-expanded` / `aria-controls`** (the APG tooltip pattern). Tooltips open
+    on keyboard focus, and `kjDisabled` on a tooltip or popover trigger really
+    blocks opening — it was inert configuration.
+
+  ### Packaging
+  - **`@angular/cdk` is no longer a peer dependency of either package.**
+    Uninstall it.
+  - **Both packages declare an `exports` map.** `@kouji-ui/core` publishes `.`,
+    `./package.json`, `./styles.css` (the aggregate) and the four per-file
+    stylesheets; `@kouji-ui/components` publishes `.`, `./package.json` and
+    `./src/*.css`. This is a wall as much as a door: a specifier that is not
+    listed — `@kouji-ui/components/fesm2022/*`,
+    `@kouji-ui/components/src/overlay/overlay.ts` — no longer resolves, so deep
+    imports that happened to work before will now fail.
+  - **`@kouji-ui/themes` publishes `.`, `./package.json`, `./layers.css`,
+    `./base.css`, `./density.css` and `./themes/*.css`.** Every documented
+    specifier is resolved by Node's own resolver in CI, so the Vite / Analog
+    install path is covered rather than assumed.
+  - **`@kouji-ui/components/src/overlay/overlay.css` is now the only path that
+    paints a floating panel.** The nine overlay-family stylesheets used to ship
+    twice — once through the aggregator, once as a component `styleUrl` — so
+    about 28 KB of CSS was delivered twice to anyone following Getting Started.
+    The `styleUrl`s are gone; a `<kj-dialog>` rendered without the aggregator
+    registered will paint unstyled.
+  - `@kouji-ui/components` exports `KJ_COMPONENTS_VERSION`, generated from
+    `package.json` and checked in CI.
+
+  ### Renames — clean breaks, no aliases
+
+  Every deprecated compatibility alias in both packages is gone. The new name is
+  the only name; nothing is kept "for one minor".
+
+  Classes and types, old to new:
+
+  | Removed                                                                                                                                                                                                  | Use                                                                                                                                                                          |
+  | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `KjIconDirective`                                                                                                                                                                                        | `KjIcon`                                                                                                                                                                     |
+  | `KjCardComponent`, `KjCardContentComponent`, `KjCardCoverComponent`, `KjCardFooterComponent`, `KjCardHeaderComponent`, `KjCardSubtitleComponent`, `KjCardTitleComponent`                                 | the same names without `Component`                                                                                                                                           |
+  | `KjEmptyStateComponent`, `KjEmptyStateIconComponent`, `KjEmptyStateTitleComponent`, `KjEmptyStateDescriptionComponent`, `KjEmptyStateActionsComponent`                                                   | the same names without `Component`                                                                                                                                           |
+  | `KjPopoverComponent`, `KjTooltipComponent`, `KjToastWrapperComponent`, `KjOverflowPanelComponent`, `KjPaginationDefaultComponent`, `KjDatetimePickerComponent`                                           | the same names without `Component`                                                                                                                                           |
+  | `KjTableToolbarComponent`, `KjTablePaginationComponent`, `KjTableStatusBarComponent`, `KjTableSidePanelComponent`                                                                                        | the same names without `Component`                                                                                                                                           |
+  | `KjCascadeOptionComponent`, `KjCascadeSubPanelComponent`, `KjComboboxEmptyComponent`, `KjComboboxLoadingComponent`, `KjConfirmPopupActionsComponent`, `KjFormActionsComponent`, `KjFormSummaryComponent` | the same names without `Component`                                                                                                                                           |
+  | `KjCarouselPauseComponent`                                                                                                                                                                               | `KjCarouselPause`                                                                                                                                                            |
+  | `KjCellTemplateDirective`                                                                                                                                                                                | `KjCellTemplate`                                                                                                                                                             |
+  | `KjRovingTabindexItemDirective`                                                                                                                                                                          | `KjRovingTabindexItem`                                                                                                                                                       |
+  | `KjRichTextExtensionDirective` (selector `[kjRichTextExtension]`)                                                                                                                                        | `KjRichTextFeatureDirective` (selector `[kjRichTextFeature]`)                                                                                                                |
+  | `KjRichTextExtension`, `KjRichTextPlugin` (types)                                                                                                                                                        | `KjRichTextFeature`                                                                                                                                                          |
+  | `KJ_RICH_TEXT_EXTENSIONS`                                                                                                                                                                                | `KJ_RICH_TEXT_FEATURES`                                                                                                                                                      |
+  | `KjDateRange` from the table date filter                                                                                                                                                                 | `KjDateFilterRange` — it collided with the `date-range-presets` interface of the same name, and the collision made the tuple type unreachable from the package that ships it |
+
+  Inputs, outputs and members, old to new:
+
+  | Removed                                                                                                              | Use                                                                                                                                                                                   |
+  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `[kjBadge]`'s `kjBadgeVariant`                                                                                       | `kjVariant` — badge now composes `KjVariant` + `KjSize`                                                                                                                               |
+  | `<kj-input>`'s `kjSize`                                                                                              | `size`                                                                                                                                                                                |
+  | `KjRichTextEditor.kjExtensions`, `.kjPlugins`                                                                        | `kjFeatures`                                                                                                                                                                          |
+  | `KjRichTextEditor.registerExtension()`                                                                               | `registerFeature()`                                                                                                                                                                   |
+  | `KjSelectTrigger.kjDisabled`, `KjTreeSelectTrigger.kjDisabled` — the read-only getters; the **inputs** are unchanged | `disabled`                                                                                                                                                                            |
+  | `KjMenubar.kjAutoDisclose`, `.kjAutoDiscloseDelayMs`                                                                 | nothing — both were published no-ops, since the primitives-based menubar never implemented roll-over disclosure. Hover is opt-in per consumer via `pointerenter` on `[kjMenubarItem]` |
+  | `KjDatePicker.panelId` and `KjDatePickerContext.panelId`                                                             | `[kjFor]="trigger"` — the real id is minted by the composed `KjOverlayPanel`                                                                                                          |
+  | `KjOverlayBadgeContentComponent.kjSize`                                                                              | the same public name, now owned once by the `KjSize` reached through `KjBadge`                                                                                                        |
+  | `KjChatMessage.safe()`                                                                                               | nothing — `[innerHTML]` already sanitises at `SecurityContext.HTML`                                                                                                                   |
+  | `KjCloseReason`'s `'esc'` spelling                                                                                   | `'escape'`                                                                                                                                                                            |
+
+  ### Other behaviour changes worth reading before you upgrade
+  - **`KjCalendarContext` gained a required `today` member**, fed by the new
+    `KJ_TODAY` token; any third-party implementor must add it. `KjFieldContext`
+    gained `labelRendered` and `registerLabel()`.
+  - **Calendar day buttons are no longer natively `disabled`** — they use
+    `aria-disabled` plus a click guard (the APG shape), and selection is conveyed
+    with `aria-pressed`, not `aria-selected`, which ARIA prohibits on `button`.
+    CSS hooks moved from `:disabled` to `[data-disabled]`.
+  - **The toast viewport is no longer a live region.** Each toast is its own
+    `status` / `alert` region, so an announcement happens once instead of twice.
+  - **`[kjChartOption]` must be replaced, not mutated in place** — it is read by
+    an `effect` now, which compares by identity.
+  - **`<kj-rich-text-editor>`'s `textChange` and `jsonChange` are coalesced to an
+    animation frame.** `valueChange` and the form value stay synchronous.
+  - **Table persistence no longer writes `rowSelection`, `expanded` or
+    `globalFilter`**, and is trailing-debounced 300 ms. Opt slices back in with
+    `kjPersistedSlices`.
+  - **A `<kj-table>` header renders `<button kjTableSort>`**, the body has a single
+    Tab stop (roving), and the resize handle is a focusable `role="separator"`.
+  - **Element ids changed shape.** Accordion, tabs and carousel item ids no longer
+    embed the item value — a value containing a space produced an invalid IDREF —
+    and `KjId.mint` counts per prefix, so overlay ids read `kj-panel-1` /
+    `kj-overlay-1` instead of one interleaved sequence.
+
+  ***
+
+  ## By dimension
+
+  ### Overlay
+
+  The engine was sound; the strategy bus was wired incompletely.
+  `focusTrap.onOpen` / `onClose` were called nowhere, so no modal trapped `Tab` or
+  restored focus. The controller now drives the full close chain in a fixed order,
+  disposes on host destroy (no more orphan stack entries), and settles a previous
+  cycle before a re-open acquires anything. `closeOnEsc` and `closeOnOutside`
+  reach `KjOverlayStack` at last, and outside-press has exactly one owner — an
+  overlay that renders a scrim is never also dismissed by the stack. `data-side`
+  and `data-align` are written from the position strategy, so popover and tooltip
+  arrows are positioned. `anchoredTo` is RTL-aware, passive, rAF-coalesced, and
+  hides a panel whose trigger has scrolled out of a clipping ancestor. Transition
+  duration is measured from the state being _entered_, and takes the longest entry
+  in a list rather than the first. `KjCloseReason` carries a real reason
+  (`escape`, `outside`, `backdrop`, `trigger`, `select`, `tab`, `programmatic`).
+  The styled `<kj-command-palette>` and `[kjSpeedDial]` are built on the primitive
+  instead of forking it.
+
+  ### Styles and theming
+
+  Four `var()` chains resolved to nothing, two of them focus rings that vanished
+  entirely; a new spec walks the whole `@import` graph and fails on any chain
+  whose innermost fallback is undeclared. Every theme declares `color-scheme`.
+  `retro`'s focus ring (2.27:1) and destructive text (3.18:1), and
+  `orrery-light`'s subtle and intent tokens, now meet contrast. `--kj-bg-overlay`
+  backs every scrim, `--kj-space-2xs` exists, `.kj-card[data-shadow="lift"]` draws
+  something, and the `--kj-ctl-h-*` density ladder scales control heights — except
+  where a 2.75 rem WCAG 2.5.5 floor must not shrink, which is asserted. One
+  central `prefers-reduced-motion` block zeroes the motion primitives, with a
+  per-sheet guard on each of the 24 sheets carrying a literal duration. Stylelint
+  enforces both halves of the house rule: every stylesheet is layered
+  (`kouji/layered`) and every selector is anchored by a `.kj-` class, a `kj-`
+  element, a `[data-*]` hook, `:root`, `:host` or `::backdrop`
+  (`kouji/namespaced`). The docs example theme moved off the `--kj-` namespace to
+  `--docs-*`, so it can no longer redefine four real contract tokens.
+
+  ### Customization
+
+  There were four competing customization stories. There is now one: DI presets.
+  `KjVariant`, `KjSize`, `bindPresets` and the preset tokens are documented public
+  API — they already shipped in the `.d.ts`. `KjAlert` and `[kjBadge]` dropped
+  their hand-rolled duplicates and compose them, so both participate in the
+  variant and size fallback cascade. Every `provideKj*` takes `KjDeepPartial<T>`
+  and deep-merges through `mergeKjConfig`, so `provideKjButton({ defaults: { size:
+'lg' } })` keeps `defaults.variant`. `KjExtensible<T>` opens the stylistic
+  unions without losing literal autocomplete. `kjClass` forwards a consumer's
+  class onto the styled root of a `display: contents` wrapper, which is what makes
+  the documented "layer a class on the host" escape hatch true. New:
+  `provideKjMotion`, `provideKjBadge`, `provideKjDirectionality`, and every
+  `provideKj*` and `KJ_*_CONFIG` re-exported from `@kouji-ui/components`, guarded
+  by a spec that scans core's sources and fails when one is missing.
+
+  ### Accessibility
+
+  The critical finding — three list components keyboard-inoperable once open — is
+  fixed, along with the reason it went unnoticed: specs that dispatched keys on
+  elements a user can never focus. Keyboard assertions now press from
+  `document.activeElement` after real focus. The data grid has a roving tab stop,
+  sortable headers are buttons, and column resizing is keyboard-operable. Roving
+  tabindex follows the selection, survives removal of the active item, and skips
+  disabled or hidden ones. Tooltips open on keyboard focus and describe their
+  trigger. `<kj-field>` wires `id`, `aria-describedby`, `aria-invalid` and
+  `aria-required` onto composing controls automatically. Dialogs, drawers and
+  sheets have accessible names, with a dev-mode warning when nothing names a
+  panel. The calendar is an APG grid — `role="group"` root, `gridcell` cells,
+  `aria-pressed` days — that no longer steals focus on mount. Live regions are
+  single-level, and status announcements were added for table sort and filter and
+  for password strength. 22 hard-coded English accessible names moved into the
+  i18n catalog, and the remainder are fenced by a shrink-only CI gate.
+
+  ### Micro-frontends
+
+  MFE is now a decided posture rather than an accidental one: two independently
+  bootstrapped Angular apps in one document is documented as **not supported**
+  (`rules/architecture.md`). Within that boundary, the incidental global state is
+  gone. All 41 module-scope id counters and 4 `crypto.randomUUID()` seeds route
+  through an injectable `KjId` with a `KJ_ID_NAMESPACE` token; the overlay
+  container is discovered in the DOM and self-heals; the scroll-lock refcount and
+  saved styles live on `<html>`; live regions are looked up by attribute; the
+  Monaco loader memo is page-scoped; `onHotkey` takes a target and yields to a
+  handler that already claimed the keystroke; and `provideKjDocumentDirection`
+  documents its single-writer contract and warns when another writer disagrees.
+
+  ### SSR
+
+  `server.ts` and the hand-written static servers are gone — one remains, with a
+  path-traversal guard. Every bare `document`, `window`, `navigator`,
+  `localStorage` and `sessionStorage` in both packages, about 90 sites across 40
+  files, now goes through `inject(DOCUMENT)`, `node.ownerDocument` or a named and
+  commented `globalThis` helper, and an ESLint `no-restricted-globals` rule keeps
+  it that way. `KjLink`'s external-suffix span is hydration-idempotent; the file
+  upload input is created in `afterNextRender`; the virtual table server-renders a
+  seeded window instead of nothing; and `KJ_TODAY` keeps a server clock from
+  prerendering an `aria-current="date"` the client disagrees with. 66 of 69
+  component doc pages now server-render a live component, asserted against the
+  emitted HTML.
+
+  ### Lazy loading and bundle
+
+  The docs component-doc route no longer eagerly bundles all 69 playgrounds.
+  `provideLucideIcons({ Settings, Trash2 })` registers a tree-shaken subset, and
+  the zero-argument form installs a dynamic-import loader — `lucide-static` and
+  `@tanstack/virtual-core` are optional peers, verified absent from the built
+  FESM. The styled `<kj-chart>` honours `provideECharts` instead of always pulling
+  the full build. `marked`'s two module-scope `marked.use()` calls are gone,
+  replaced by a lazily constructed private instance, which also stops our
+  HTML-escaping renderer overrides from leaking into a consumer's own `marked`.
+  Examples and playgrounds are excluded from library builds, with a graph walker
+  that fails the build if `public-api.ts` can reach one. Per-package bundle
+  budgets, raw and gzip, run in CI, and the entry FESM is scanned for static
+  imports of the heavy peers.
+
+  ### Performance
+
+  `KjChart` re-applied the full ECharts option on every application change
+  detection cycle; it is an `effect` now, with a memoised themed palette. Rich
+  text did four full-document walks per update and now does one, with an empty
+  check that short-circuits on the first block. Streaming chat markdown was
+  re-lexed from the top on every token; it is incremental now, with a property
+  test proving chunked streaming is byte-identical to one full parse. Lists are
+  windowed, so a 5 000-option listbox mounts a window rather than 5 000
+  directives, with `aria-posinset` and `aria-setsize` still describing the
+  dataset. Tree-select renders only visible rows instead of hiding collapsed ones.
+  Shared root services replace per-instance observers: `KjInputModality`,
+  `KjThemeObserver`, `KjResizeObserver` and `KjReducedMotion`, which gained
+  `matchesNow()` for readers that run before the first render. Selection
+  membership is an indexed set that falls back to a linear scan when a custom
+  comparator would make an index unsound.
+
+  ### Architecture and code quality
+
+  CI runs lint, typecheck, tests, build, a bundle-size gate and a separate e2e
+  job. The rules files no longer describe a codebase that stopped existing:
+  `ViewEncapsulation.None` is documented as required, and why, and `RULES.md`
+  carries a table naming, per clause, whether a check enforces it or a human must
+  — with a PR template for the two that cannot be linted. What can be enforced now
+  is: `booleanAttribute` on boolean inputs (`kouji/boolean-input-transform`); no
+  `@Input`, `@Output`, query decorators, `@HostListener` or lifecycle hooks
+  (`no-restricted-syntax`); no bespoke `ControlValueAccessor`
+  (`kouji/no-bespoke-value-accessor`); no browser globals; one directive per file
+  and the class and file naming rule (`architecture.spec.ts`,
+  `class-naming.spec.ts`). Diagnostics route through `kjDevWarn`, `kjDevAssert`
+  and `kjError`, so the branches _and their message strings_ leave a production
+  build, and a child used outside its parent gets a message naming both ends
+  instead of `NG0201`. Seven spec-less features gained behavioural specs.
+
+### Patch Changes
+
+- 6e43ded: review batch 1: keyboard-reachable list popups, real focus traps and focus restoration for every overlay, an inert page behind modals, `afterOpened$` that emits
+
+  **Focus management (core).** `KjOverlayController` now drives the focus-trap
+  strategy for real: `tabCycle()` / `inertBased()` and `KjFocusTrap` share one
+  framework-free engine (`createFocusTrap()`, `tabbableElements()`,
+  `focusInitialIn()`, `returnFocusFrom()` — new public exports) with a proper
+  tabbable query (hidden, disabled, inert, `tabindex=-1` and closed `<details>`
+  excluded; positive `tabindex` honoured), recapture of focus that escapes the
+  panel, and an empty panel that keeps focus on itself. Every overlay restores
+  focus to its opener (falling back to the bound trigger) on close; opt out with
+  `returnFocus: false`. Dialogs / drawers / sheets focus `[kjAutofocus]` /
+  `[autofocus]` else the panel itself on open (was: the first control).
+  `solidBackdrop({ inert: true })` really inerts the page behind a modal
+  (refcounted, so nested modals thaw it only when the last one closes).
+  `KjOverlayTrigger` publishes the real panel id in `aria-controls`.
+  `afterOpened$` on `KjDialogRef` / `KjDrawerRef` / `KjSheetRef` emits once when
+  the open transition completes, then completes.
+
+  **List popups (core).** Select, tree-select and cascade-select are keyboard
+  navigable once open: focus moves onto the selected (else first) option, the
+  APG listbox / tree keys work per level, Tab and Escape close and return focus
+  to the trigger. `KjListNavigator` gained `focusActive()`, the
+  `KJ_LIST_FOCUS_MODE_DEFAULT` and `KJ_LIST_NAVIGATOR_ITEMS` tokens, a
+  `focusin` re-sync in roving mode, an SSR guard, and no longer steals focus on
+  mount (menubar included). Cascade sub-panels drop their window listeners on
+  close / destroy and coalesce repositioning on `requestAnimationFrame`;
+  `kj-tree-select-content` no longer installs document listeners. The date
+  picker's `aria-modal` now follows a new `kjTrap` input (default non-modal:
+  ArrowDown enters the calendar, Tab leaves it). Toast focuses its front toast
+  through the shared tabbable query.
+
+  **Components.** Visible focus rings on the sheet grab handle, action-sheet
+  rows, `.kj-option` and `.kj-cascade-option`; an open accordion panel is no
+  longer clipped at 1000px (content now sits in `.kj-accordion-content__inner`);
+  cascade sub-panels stack one level above their panel; collapsed tree-select
+  rows are hidden from the stylesheet; `KJ_COMPONENTS_VERSION` equals
+  `package.json` (generated by `scripts/sync-version.mjs`).
+
 ## 0.9.4
 
 ### Patch Changes
