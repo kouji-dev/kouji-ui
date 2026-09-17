@@ -61,6 +61,20 @@ jobs:
               if [ "$status" = "$failure" ]; then
                 echo "Deploy ended in terminal failure state: $status"
                 echo "$status_response" | jq .
+
+                # The status payload says WHAT failed, never WHY — a deploy that
+                # builds and then fails its health check reports a bare
+                # "update_failed", which is indistinguishable from a build
+                # error in this log. Pull the deploy's own events so the
+                # reason is in the workflow output instead of only in the
+                # Render dashboard.
+                echo "--- Render deploy events ---"
+                curl --silent --show-error \
+                  -H "Authorization: Bearer $RENDER_API_KEY" \
+                  "https://api.render.com/v1/services/$RENDER_SERVICE_ID/events?limit=20" \
+                  | jq -r '.[].event | [.timestamp, .type, (.details // {} | tostring)] | @tsv' \
+                  || echo "(could not fetch events)"
+
                 exit 1
               fi
             done

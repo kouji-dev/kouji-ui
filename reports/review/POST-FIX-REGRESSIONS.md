@@ -148,7 +148,7 @@ moment the app is fixed.
 
 | Spec | Bug |
 | --- | --- |
-| `extractor-v2` icon page | `provideIcons`, `injectKjIconResolver` and `KJ_ICON_REGISTRY` all still carry `@doc-name icon`, but the page's api tab lists 4 items and none of them. The extractor stopped emitting the function / token / type-alias kinds for that page. |
+| `extractor-v2` icon page | Not the extractor — the page. `component-doc.html` never iterates `page().definitions`; it renders only `main()`, the single item matching `mainItemId`. So every non-main symbol on every page (here `provideIcons`, `provideIconResolver`, `injectKjIconResolver`, `KJ_ICON_REGISTRY`, `KJ_ICON_RESOLVER` — 15 carry `@doc-name icon`) is extracted into the manifest and then dropped at render. `apiCount()` counts only the main item's inputs/models too, which is why the tab reads "api 4". Fix: render the non-main definitions in the api tab. |
 | `input-group` addon | Asserts the addon's background equals the input's. The design has them differ (`--kj-input-bg` `#1f1f1f` vs `--kj-input-group-addon-bg` `#141414`); the fix run changed only their border colours. Needs a design decision, not a code fix. |
 | `table` headless page | `/docs/headless/table` does not exist. PR #11 (`be6386db`, 2026-05-21) removed every `@doc*` tag from `packages/core/src/table/*`, so the route silently falls back to the components page. |
 | `theme-generator` share URL | `#t=` links are dead both ways: `copyShareLink()` returns `location.href` with no hash and `encode()` has no production caller, and loading a valid `#t=` payload leaves the draft untouched. The navbar share button uses the same service. |

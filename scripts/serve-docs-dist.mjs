@@ -20,7 +20,19 @@ import { readFile, stat } from 'node:fs/promises';
 import { join, extname, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PORT = Number.isFinite(Number(process.argv[2])) ? Number(process.argv[2]) : 4331;
+// Port precedence: explicit argument, then $PORT, then the Playwright default.
+// $PORT matters because this is also the production start command on Render,
+// which assigns a port per instance and health-checks THAT port — a server
+// hard-coded to 4331 builds fine and then fails its health check, which
+// surfaces as a Render deploy stuck at `update_failed`.
+const PORT = Number.isFinite(Number(process.argv[2]))
+  ? Number(process.argv[2])
+  : Number.isFinite(Number(process.env.PORT))
+    ? Number(process.env.PORT)
+    : 4331;
+// Bind every interface: a platform health check reaches the container from
+// outside, so binding loopback only would be unreachable.
+const HOST = process.env.HOST ?? '0.0.0.0';
 // The root is overridable so a caller can serve a different build directory;
 // it defaults to the one every Playwright config actually wants.
 const ROOT = process.argv[3]
@@ -76,7 +88,15 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   // eslint-disable-next-line no-console
-  console.log(`static docs server: http://localhost:${PORT}/ (root: ${ROOT})`);
+  console.log(`static docs server: http://${HOST}:${PORT}/ (root: ${ROOT})`);
+});
+
+// Without this a failed bind (port taken, no permission) exits silently with a
+// success code, and a platform reports a healthy deploy serving nothing.
+server.on('error', (err) => {
+  // eslint-disable-next-line no-console
+  console.error(`static docs server failed to listen on ${HOST}:${PORT}:`, err.message);
+  process.exit(1);
 });
