@@ -90,8 +90,14 @@ jobs:
       # The Playwright config starts `ng serve docs`, which compiles the docs
       # app from library sources through the tsconfig path aliases — no
       # library build is needed first.
+      #
+      # Run from the REPO ROOT, not `--filter docs`. The filtered form sets the
+      # cwd to apps/docs, and the dev server then resolves the workspace-root
+      # relative entries in angular.json's `styles` array against apps/docs —
+      # "ENOENT: apps/docs/packages/core/src/motion/motion.css". That stayed
+      # invisible until e2e was re-enabled in CI.
       - name: E2E
-        run: pnpm --filter docs test:e2e
+        run: pnpm exec playwright test --config=playwright.config.ts
 
       - name: Upload Playwright report
         if: failure()
