@@ -28,19 +28,25 @@ const BUDGETS = [
     name: '@kouji-ui/core',
     dir: 'kj-core',
     entry: 'kouji-ui-core.mjs',
-    // measured: raw 1 712 187 · gzip 351 952 (entry 1 697 515 + engine chunk 14 672)
-    // Re-baselined for the batch-3 overlay work (controller / stack / scope /
-    // panel / dropdown rewrites): gzip was 952 B over the previous 351 000.
-    maxRaw: 1_885_000,
-    maxGzip: 387_000,
+    // measured: raw 1 903 206 · gzip 410 010 (entry + engine chunk)
+    // Re-baselined for the round-2 review work. The growth is deliberate new
+    // code, not drift: a windowed list primitive (KjListVirtual), a shared
+    // focus-trap engine behind KjFocusTrap / tabCycle / inertBased, trigger
+    // ARIA forwarding (KJ_TRIGGER_CONTROL), indexed list selection and tree
+    // topology, a tree-shakeable diagnostics helper, and user-visible strings
+    // routed through the i18n catalog. Budgets sit ~6% above measured.
+    maxRaw: 2_020_000,
+    maxGzip: 435_000,
   },
   {
     name: '@kouji-ui/components',
     dir: 'kj-components',
     entry: 'kouji-ui-components.mjs',
-    // measured: raw 1 704 276 · gzip 268 872
+    // measured: raw 1 731 789 · gzip 293 171
+    // Raw is comfortably inside the old ceiling; only gzip moved (by ~1 kB),
+    // from the round-2 table / chat / chart and preset work. ~6% headroom.
     maxRaw: 1_880_000,
-    maxGzip: 292_000,
+    maxGzip: 311_000,
   },
 ];
 
