@@ -1,11 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ViewEncapsulation,
   booleanAttribute,
   computed,
+  effect,
+  forwardRef,
   inject,
   input,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import {
   KjTreeSelect,
@@ -13,6 +19,7 @@ import {
   KjTreeSelectNode,
   KjTreeSelectToggle,
   KjTreeSelectTrigger,
+  type KjListItem,
   type KjTreeNode,
 } from '@kouji-ui/core';
 
@@ -29,12 +36,19 @@ interface FlatNode {
   size: number;
   pos: number;
   hasChildren: boolean;
-  /** Path of ancestor values — used to determine visibility when ancestors collapse. */
+  /**
+   * Path of ancestor values, root first. Built once per `kjNodes` change and
+   * shared by every sibling at the same depth, so the visibility pass reads
+   * it instead of re-walking the tree per row.
+   */
   ancestorValues: readonly unknown[];
 }
 
-/** Walk the tree into a flat array. All nodes are included; visibility is
- * determined at render time by checking ancestor expansion state. */
+/**
+ * Walk the tree into a flat array in tree order. Every node is emitted;
+ * {@link KjTreeSelectComponent.visibleRows} narrows the list to the rows
+ * whose ancestors are all expanded, and only those are rendered.
+ */
 function flattenTree(
   nodes: readonly KjTreeNode[],
   level = 1,
@@ -107,10 +121,48 @@ function flattenTree(
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  host: { style: 'display: contents;' },
+  // `display: contents` lives in the stylesheet, not inline: an inline
+  // `display` would beat the `[hidden]` rule that hides collapsed rows.
+  host: { 'class': 'kj-tree-select-row' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTreeSelectNodeComponent {
+  /**
+   * The row's `KjTreeSelectNode`, which carries the `KjListItem` the tree
+   * navigates. It lives in THIS component's view, where neither the root's
+   * content query nor the wrapper's view query can reach it, so the row
+   * registers itself with the wrapper instead.
+   */
+  private readonly node = viewChild(KjTreeSelectNode);
+  private readonly root = inject<KjTreeSelectComponent | null>(
+    forwardRef(() => KjTreeSelectComponent),
+    { optional: true },
+  );
+
+  constructor() {
+    let registeredKey: unknown;
+    let registered = false;
+    effect(() => {
+      const node = this.node();
+      const key = this.value();
+      const root = this.root;
+      if (!root) return;
+      untracked(() => {
+        if (registered && registeredKey !== key) root._unregisterRow(registeredKey);
+        if (!node) {
+          registered = false;
+          return;
+        }
+        root._registerRow(key, node.item);
+        registeredKey = key;
+        registered = true;
+      });
+    });
+    inject(DestroyRef).onDestroy(() => {
+      if (registered) this.root?._unregisterRow(registeredKey);
+    });
+  }
+
   /** The value this node represents. */
   readonly value = input.required<unknown>();
   /** Display label for type-ahead. */
@@ -141,8 +193,9 @@ export class KjTreeSelectNodeComponent {
  * recursive component issues while remaining fully accessible via ARIA
  * `aria-level`, `aria-setsize`, and `aria-posinset` attributes.
  *
- * Collapsed branches' children are hidden via `display:none`; all nodes
- * remain in the DOM to preserve ARIA tree structure.
+ * Only the rows whose ancestors are all expanded are rendered; collapsing a
+ * branch removes its descendants from the DOM, so a large tree mounts one row
+ * per visible node rather than one per node.
  *
  * @example
  * ```html
@@ -194,10 +247,14 @@ export class KjTreeSelectNodeComponent {
  *   surfaces, bump the parent's density token to reach the WCAG 2.5.5 floor.
  *
  * @doc-a11y
- *   Implements the WAI-ARIA Tree APG pattern. All nodes stay in the DOM with
- *   `[hidden]` toggling visibility so the ARIA tree structure (`aria-setsize`,
- *   `aria-level`, `aria-posinset`) is stable across collapse/expand. Focus is
- *   restored to the trigger when the panel closes.
+ *   Implements the WAI-ARIA Tree APG pattern. Only the rows whose ancestors are
+ *   all expanded are rendered — a collapsed branch's descendants leave the DOM
+ *   rather than lingering behind `[hidden]`, which is what the pattern asks for
+ *   (a collapsed subtree is not in the accessibility tree) and what keeps a
+ *   large tree from mounting every node on open. `aria-level` /
+ *   `aria-posinset` / `aria-setsize` stay correct because they describe a node's
+ *   position among its *siblings*, and siblings are always shown or hidden
+ *   together. Focus is restored to the trigger when the panel closes.
  *
  * @doc-related select,cascade-select,combobox
  *
@@ -242,7 +299,7 @@ export class KjTreeSelectNodeComponent {
       <span class="kj-tree-select-caret" aria-hidden="true">▾</span>
     </button>
     <kj-tree-select-content [kjFor]="trig" class="kj-tree-select-panel">
-      @for (row of flatNodes(); track row.node.value) {
+      @for (row of visibleRows(); track row.node.value) {
         <kj-tree-select-node
           [value]="row.node.value"
           [label]="row.node.label"
@@ -251,8 +308,7 @@ export class KjTreeSelectNodeComponent {
           [pos]="row.pos"
           [disabled]="!!row.node.disabled"
           [hasChildren]="row.hasChildren"
-          [multiMode]="ts.selectionMode() === 'multiple'"
-          [hidden]="isRowHidden(row)"
+          [multiMode]="multiMode()"
         >{{ row.node.label }}</kj-tree-select-node>
       }
       @if (flatNodes().length === 0) {
@@ -292,26 +348,86 @@ export class KjTreeSelectComponent {
   readonly ts = inject(KjTreeSelect);
 
   /**
-   * @internal — flat projected list of all tree nodes for rendering.
-   * Children of collapsed branches are still in the list but have `[hidden]`
-   * applied to keep them out of the visual and tab order.
+   * @internal — every node in the tree, flattened in tree order. Recomputed
+   * only when `kjNodes` changes; expansion never touches it.
    */
   readonly flatNodes = computed<FlatNode[]>(() =>
     flattenTree(this.ts.nodes() as readonly KjTreeNode[]),
   );
 
   /**
-   * @internal — whether a row's ancestors include any collapsed branch, making
-   * this row invisible. Reads `expandedValues` signal so Angular tracks it.
+   * @internal — the rows whose ancestors are all expanded: exactly what the
+   * template renders.
+   *
+   * The pass is one walk of {@link flatNodes} per expansion change rather
+   * than a method binding re-evaluated per row per render, and it short-
+   * circuits on depth: a collapsed branch's whole subtree is skipped by
+   * comparing each row's `level` against the depth the walk is hiding
+   * below, so no row re-walks its own ancestor chain.
    */
-  isRowHidden(row: FlatNode): boolean {
-    if (row.ancestorValues.length === 0) return false;
+  readonly visibleRows = computed<FlatNode[]>(() => {
+    const rows = this.flatNodes();
     const expanded = this.ts.expandedValues();
-    // If any ancestor value is NOT expanded, the row is hidden
-    for (const ancestorValue of row.ancestorValues) {
-      if (!expanded.has(ancestorValue)) return true;
+    const out: FlatNode[] = [];
+    // `Infinity` = nothing is being hidden. Otherwise every row deeper than
+    // `hiddenBelow` belongs to the collapsed branch and is skipped.
+    let hiddenBelow = Number.POSITIVE_INFINITY;
+    for (const row of rows) {
+      if (row.level > hiddenBelow) continue;
+      hiddenBelow = Number.POSITIVE_INFINITY;
+      out.push(row);
+      if (row.hasChildren && !expanded.has(row.node.value)) hiddenBelow = row.level;
     }
-    return false;
+    return out;
+  });
+
+  /** @internal — hoisted out of the row loop; one comparison per render, not one per row. */
+  readonly multiMode = computed(() => this.ts.selectionMode() === 'multiple');
+
+  /** Rendered rows, keyed by node value. Written by each `<kj-tree-select-node>`. */
+  private readonly rowItems = signal<ReadonlyMap<unknown, KjListItem<unknown>>>(new Map());
+
+  /** @internal — a rendered row announces the list item it owns. */
+  _registerRow(value: unknown, item: KjListItem<unknown>): void {
+    this.rowItems.update(map => {
+      if (map.get(value) === item) return map;
+      const next = new Map(map);
+      next.set(value, item);
+      return next;
+    });
+  }
+
+  /** @internal — a row leaves the DOM (collapsed branch, data change, destroy). */
+  _unregisterRow(value: unknown): void {
+    this.rowItems.update(map => {
+      if (!map.has(value)) return map;
+      const next = new Map(map);
+      next.delete(value);
+      return next;
+    });
+  }
+
+  /**
+   * The rendered rows in tree order. Ordering comes from
+   * {@link visibleRows} rather than from a DOM comparison, so it is O(n) and
+   * already matches what the user sees.
+   */
+  private readonly viewItems = computed<readonly KjListItem<unknown>[]>(() => {
+    const map = this.rowItems();
+    if (map.size === 0) return [];
+    const out: KjListItem<unknown>[] = [];
+    for (const row of this.visibleRows()) {
+      const item = map.get(row.node.value);
+      if (item) out.push(item);
+    }
+    return out;
+  });
+
+  constructor() {
+    // Content queries stop at a component boundary, so the rows this
+    // template paints have to be handed to the headless root explicitly.
+    this.ts._setViewItems(this.viewItems);
+    inject(DestroyRef).onDestroy(() => this.ts._setViewItems(null));
   }
 
   /** @internal — display label shown in the trigger button. */

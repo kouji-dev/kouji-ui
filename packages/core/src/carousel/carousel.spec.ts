@@ -1,6 +1,6 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, test, beforeEach, vi } from 'vitest';
+import { describe, expect, test, beforeEach, afterEach, vi } from 'vitest';
 import {
   KjCarousel,
   KjCarouselAutoplay,
@@ -241,6 +241,26 @@ describe('KjCarousel (core)', () => {
     expect(dotA.getAttribute('aria-current')).toBeNull();
   });
 
+  test('the active indicator is the roving tab stop (a11y F-19)', async () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.active.set('b');
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const dotA: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="dot-a"]');
+    const dotB: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="dot-b"]');
+    const dotC: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="dot-c"]');
+    expect(dotA.getAttribute('tabindex')).toBe('-1');
+    expect(dotB.getAttribute('tabindex')).toBe('0');
+    expect(dotC.getAttribute('tabindex')).toBe('-1');
+
+    dotC.click();
+    fixture.detectChanges();
+    expect(dotC.getAttribute('tabindex')).toBe('0');
+    expect(dotB.getAttribute('tabindex')).toBe('-1');
+  });
+
   test('indicators in tabs mode flip to role="tablist"/"tab" with aria-selected and aria-controls', async () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.componentInstance.controlPattern = 'tabs';
@@ -333,5 +353,289 @@ describe('KjCarousel (core)', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+/**
+ * perf F-15 — the carousel reads `prefers-reduced-motion` from the shared,
+ * root-provided `KjReducedMotion` service. Ten carousels used to mean ten
+ * `matchMedia` calls and ten `change` listeners (none of which were ever
+ * removed); now the whole application subscribes once.
+ */
+describe('KjCarousel reduced motion', () => {
+  test('does not open a matchMedia subscription per carousel instance', async () => {
+    const original = window.matchMedia;
+    const calls: string[] = [];
+    window.matchMedia = ((query: string) => {
+      calls.push(query);
+      return {
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener() {},
+        removeListener() {},
+        addEventListener() {},
+        removeEventListener() {},
+        dispatchEvent: () => false,
+      };
+    }) as unknown as typeof window.matchMedia;
+
+    try {
+      @Component({
+        standalone: true,
+        imports: directives,
+        changeDetection: ChangeDetectionStrategy.Eager,
+        template: `
+          @for (n of [1, 2, 3]; track n) {
+            <div kjCarousel kjLabel="Gallery">
+              <div kjCarouselViewport>
+                <div kjCarouselSlide kjSlideValue="a">A</div>
+              </div>
+            </div>
+          }
+        `,
+      })
+      class ManyCarousels {}
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [ManyCarousels] });
+      const fixture = TestBed.createComponent(ManyCarousels);
+      fixture.detectChanges();
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(fixture.nativeElement.querySelectorAll('[kjCarousel]').length).toBe(3);
+      const reduced = calls.filter((q) => q.includes('prefers-reduced-motion'));
+      expect(reduced.length).toBeLessThanOrEqual(1);
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+});
+
+/**
+ * arch F-13 — registration moved from `ngOnInit` / `ngOnDestroy` to the
+ * constructor plus `DestroyRef.onDestroy`. The observable contract is that a
+ * slide still registers in DOM order and still unregisters when its view goes.
+ */
+describe('KjCarousel registration without lifecycle hooks', () => {
+  test('slides register in DOM order and unregister when removed', () => {
+    @Component({
+      standalone: true,
+      imports: directives,
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `
+        <div kjCarousel kjLabel="Gallery">
+          <div kjCarouselViewport>
+            @for (v of values(); track v) {
+              <div kjCarouselSlide [kjSlideValue]="v">{{ v }}</div>
+            }
+          </div>
+        </div>
+      `,
+    })
+    class DynamicSlides {
+      readonly values = signal(['a', 'b', 'c']);
+    }
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [DynamicSlides] });
+    const fixture = TestBed.createComponent(DynamicSlides);
+    fixture.detectChanges();
+
+    const labels = () =>
+      Array.from(fixture.nativeElement.querySelectorAll('[kjCarouselSlide]')).map((el) =>
+        (el as HTMLElement).getAttribute('aria-label'),
+      );
+
+    expect(labels()).toEqual(['1 of 3', '2 of 3', '3 of 3']);
+
+    fixture.componentInstance.values.set(['a', 'c']);
+    fixture.detectChanges();
+
+    // The removed slide's DestroyRef ran: the survivors renumber.
+    expect(labels()).toEqual(['1 of 2', '2 of 2']);
+  });
+
+  /**
+   * KNOWN GAP (pre-existing, unchanged by the hook removal): the slide index
+   * is registration order, and a slide inside an `@if` registers after its
+   * later siblings because the embedded view is created in the update pass.
+   * `aria-posinset`-style numbering is therefore wrong for conditionally
+   * rendered slides (WCAG 1.3.1 Info and Relationships). Fixing it means
+   * ordering the registry by `compareDocumentPosition`, which is a change to
+   * the registry contract rather than to these lifecycle hooks.
+   */
+  test('KNOWN GAP: a slide inside an @if registers after its later siblings', () => {
+    @Component({
+      standalone: true,
+      imports: directives,
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `
+        <div kjCarousel kjLabel="Gallery">
+          <div kjCarouselViewport>
+            <div kjCarouselSlide kjSlideValue="a">A</div>
+            @if (true) {
+              <div kjCarouselSlide kjSlideValue="b">B</div>
+            }
+            <div kjCarouselSlide kjSlideValue="c">C</div>
+          </div>
+        </div>
+      `,
+    })
+    class ConditionalSlide {}
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [ConditionalSlide] });
+    const fixture = TestBed.createComponent(ConditionalSlide);
+    fixture.detectChanges();
+
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll('[kjCarouselSlide]'),
+    ).map((el) => (el as HTMLElement).getAttribute('aria-label'));
+    expect(labels).toEqual(['1 of 3', '3 of 3', '2 of 3']);
+  });
+});
+
+describe('KjCarouselViewport \u2014 slide observation', () => {
+  /** jsdom has no IntersectionObserver; this one records targets and can be fired. */
+  class FakeIntersectionObserver {
+    static instances: FakeIntersectionObserver[] = [];
+    readonly targets = new Set<Element>();
+    disconnected = false;
+
+    constructor(private readonly callback: (entries: unknown[]) => void) {
+      FakeIntersectionObserver.instances.push(this);
+    }
+
+    observe(el: Element): void {
+      this.targets.add(el);
+    }
+
+    unobserve(el: Element): void {
+      this.targets.delete(el);
+    }
+
+    disconnect(): void {
+      this.disconnected = true;
+      this.targets.clear();
+    }
+
+    fire(target: Element): void {
+      this.callback([{ isIntersecting: true, intersectionRatio: 1, target }]);
+    }
+  }
+
+  @Component({
+    standalone: true,
+    imports: directives,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `
+      <div kjCarousel kjLabel="Gallery" [(kjValue)]="active">
+        <div kjCarouselViewport>
+          <div kjCarouselSlide kjSlideValue="a">A</div>
+          <div kjCarouselSlide kjSlideValue="b">B</div>
+          @if (extra()) {
+            <div kjCarouselSlide kjSlideValue="c" data-testid="late">C</div>
+          }
+        </div>
+      </div>
+    `,
+  })
+  class LateSlideHost {
+    readonly active = signal<string | null>(null);
+    readonly extra = signal(false);
+  }
+
+  beforeEach(() => {
+    FakeIntersectionObserver.instances = [];
+    vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [LateSlideHost] });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('observes a slide registered after first render', async () => {
+    const fixture = TestBed.createComponent(LateSlideHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const observer = FakeIntersectionObserver.instances[0];
+    expect(observer.targets.size).toBe(2);
+
+    fixture.componentInstance.extra.set(true);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const late = fixture.nativeElement.querySelector('[data-testid="late"]') as HTMLElement;
+    // Before the fix only the initial slide set was ever observed, so a slide
+    // added later never updated `currentValue` when it scrolled into view.
+    expect(observer.targets.has(late)).toBe(true);
+    expect(observer.targets.size).toBe(3);
+  });
+
+  test('stops observing a slide that is removed', async () => {
+    const fixture = TestBed.createComponent(LateSlideHost);
+    fixture.componentInstance.extra.set(true);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const observer = FakeIntersectionObserver.instances[0];
+    const late = fixture.nativeElement.querySelector('[data-testid="late"]') as HTMLElement;
+    expect(observer.targets.has(late)).toBe(true);
+
+    fixture.componentInstance.extra.set(false);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    expect(observer.targets.has(late)).toBe(false);
+  });
+
+  test('a settled slide commits while the viewport is alive', async () => {
+    const fixture = TestBed.createComponent(LateSlideHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const observer = FakeIntersectionObserver.instances[0];
+    const second = fixture.nativeElement.querySelectorAll('[kjCarouselSlide]')[1] as HTMLElement;
+
+    observer.fire(second);
+    await new Promise<void>((r) => setTimeout(r, 120));
+    fixture.detectChanges();
+
+    // The counterpart of the destroy test — proves the 50ms timer really is armed.
+    expect(fixture.componentInstance.active()).toBe('b');
+  });
+
+  test('the settle timer never fires after the viewport is destroyed', async () => {
+    const fixture = TestBed.createComponent(LateSlideHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const carousel = fixture.debugElement.children[0].injector.get(KjCarousel);
+    const observer = FakeIntersectionObserver.instances[0];
+    const second = fixture.nativeElement.querySelectorAll('[kjCarouselSlide]')[1] as HTMLElement;
+
+    // Count writes from here on: the settle callback commits through kjValue.
+    let writes = 0;
+    const realSet = carousel.kjValue.set.bind(carousel.kjValue);
+    carousel.kjValue.set = (value: string | null) => {
+      writes++;
+      realSet(value);
+    };
+
+    observer.fire(second);
+    fixture.destroy();
+    await new Promise<void>((r) => setTimeout(r, 120));
+
+    expect(writes, 'the 50ms settle timer used to outlive the component').toBe(0);
   });
 });

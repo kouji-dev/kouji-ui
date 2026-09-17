@@ -2,6 +2,7 @@
   /* The wrapper hosts use display: contents — they don't add a box. */
 
   .kj-tooltip-content {
+    contain: layout;
     --kj-tooltip-bg:           var(--kj-fg-default);
     --kj-tooltip-fg:           var(--kj-bg-body);
     --kj-tooltip-border-color: transparent;
@@ -11,6 +12,7 @@
     --kj-tooltip-font-size:    0.8125rem;
     --kj-tooltip-shadow:       var(--kj-shadow-md, 0 4px 12px rgb(0 0 0 / 0.18));
     --kj-tooltip-arrow-size:   6px;
+    --kj-tooltip-arrow-inset:  var(--kj-space-sm);
 
     /* Layout — the directive applies position: fixed and writes top/left. */
     display: inline-flex;
@@ -50,6 +52,25 @@
   .kj-tooltip-content[data-side="bottom"] .kj-tooltip-arrow { top:    calc(var(--kj-tooltip-arrow-size) / -2); left: 50%; margin-left: calc(var(--kj-tooltip-arrow-size) / -2); }
   .kj-tooltip-content[data-side="left"]   .kj-tooltip-arrow { right:  calc(var(--kj-tooltip-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-tooltip-arrow-size) / -2); }
   .kj-tooltip-content[data-side="right"]  .kj-tooltip-arrow { left:   calc(var(--kj-tooltip-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-tooltip-arrow-size) / -2); }
+
+  /* Aligned tooltips: the arrow tracks the edge that meets the trigger.
+     `data-align` is already physical, so no RTL variants are needed. */
+  .kj-tooltip-content[data-side="top"][data-align="start"]    .kj-tooltip-arrow,
+  .kj-tooltip-content[data-side="bottom"][data-align="start"] .kj-tooltip-arrow {
+    left: var(--kj-tooltip-arrow-inset); right: auto; margin-left: 0;
+  }
+  .kj-tooltip-content[data-side="top"][data-align="end"]    .kj-tooltip-arrow,
+  .kj-tooltip-content[data-side="bottom"][data-align="end"] .kj-tooltip-arrow {
+    left: auto; right: var(--kj-tooltip-arrow-inset); margin-left: 0;
+  }
+  .kj-tooltip-content[data-side="left"][data-align="start"]  .kj-tooltip-arrow,
+  .kj-tooltip-content[data-side="right"][data-align="start"] .kj-tooltip-arrow {
+    top: var(--kj-tooltip-arrow-inset); bottom: auto; margin-top: 0;
+  }
+  .kj-tooltip-content[data-side="left"][data-align="end"]  .kj-tooltip-arrow,
+  .kj-tooltip-content[data-side="right"][data-align="end"] .kj-tooltip-arrow {
+    top: auto; bottom: var(--kj-tooltip-arrow-inset); margin-top: 0;
+  }
 
   @media (prefers-reduced-motion: no-preference) {
     .kj-tooltip-content {

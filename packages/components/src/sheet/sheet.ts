@@ -1,7 +1,24 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `sheet.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { KjSheetTitle } from '@kouji-ui/core';
 
 export {
   KjSheet,
+  KjSheetTitle,
   KjSheetService,
   KjSheetRef,
   SHEET_DATA,
@@ -23,6 +40,7 @@ export {
  *
  * @doc
  * @doc-name sheet
+ * @doc-description Themed bottom sheet opened from a service, with detents, a grab handle and drag-to-dismiss.
  * @doc-is-main
  * @doc-example Default
  *   A service-launched bottom sheet with a grab handle and drag-to-dismiss.
@@ -42,8 +60,8 @@ export {
  *
  * @doc-aria
  *   role            — "dialog"; `aria-modal="true"` while the backdrop is active
- *   aria-label      — Set via the `ariaLabel` option when no heading is projected
- *   aria-labelledby — Wire to the id of your sheet heading for the accessible name
+ *   aria-labelledby — Set automatically to the id of the projected `<kj-sheet-title>` / `[kjSheetTitle]`; or pass `ariaLabelledBy` to `open()`
+ *   aria-label      — Set via the `ariaLabel` option (or `kjAriaLabel` on `<kj-sheet>`) when no heading is projected
  *   data-state      — "open" / "closed" — drives the slide-up transform
  *   data-kj-detent  — Mirrors the resolved initial height for theming hooks
  *
@@ -65,10 +83,11 @@ export {
  *   Focus is trapped inside the sheet while open and returned to the triggering
  *   element on close (`returnFocus: true`). Siblings outside the sheet are
  *   marked `inert` while it is open. Stacking is safe — only the topmost overlay
- *   receives Escape and outside-click. The wrapper does not generate an
- *   accessible name; provide one via `aria-labelledby` (a visible heading) or
- *   the `ariaLabel` option. Slide transitions respect
- *   `prefers-reduced-motion`, falling back to an opacity fade.
+ *   receives Escape and outside-click. The sheet is named by its
+ *   `<kj-sheet-title>` (`aria-labelledby`); a body without a heading must pass
+ *   the `ariaLabel` option. In dev mode a sheet that opens with neither logs
+ *   a warning. Slide transitions respect `prefers-reduced-motion`, falling
+ *   back to an opacity fade.
  *
  * @doc-related drawer,dialog,action-sheet
  *
@@ -78,9 +97,33 @@ export {
   selector: 'kj-sheet-shell',
   standalone: true,
   template: `<ng-content />`,
-  styleUrl: './sheet.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSheetComponent {}
+
+/**
+ * Styled sheet heading. Renders an `<h2 kjSheetTitle>` so the enclosing
+ * `<kj-sheet>` is named by it (`aria-labelledby`).
+ *
+ * @example
+ * ```html
+ * <kj-sheet>
+ *   <kj-sheet-title>Share</kj-sheet-title>
+ * </kj-sheet>
+ * ```
+ * @doc-category Library/Overlay
+ * @doc
+ * @doc-name sheet
+ */
+@Component({
+  selector: 'kj-sheet-title',
+  standalone: true,
+  imports: [KjSheetTitle],
+  template: `<h2 kjSheetTitle><ng-content /></h2>`,
+  encapsulation: ViewEncapsulation.None,
+  host: { style: 'display: contents;' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class KjSheetTitleComponent {}

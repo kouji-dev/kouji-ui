@@ -5,7 +5,7 @@ import {
   booleanAttribute,
   input,
 } from '@angular/core';
-import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
+import { KjInputGroup, KjInputGroupAddon, KjSize, KjVariant } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjInputGroup` / `KjInputGroupAddon`
@@ -88,6 +88,20 @@ import { KjInputGroup, KjInputGroupAddon } from '@kouji-ui/core';
       directive: KjInputGroup,
       inputs: ['kjDisabled', 'kjOrientation'],
     },
+    // Redundant but explicit, NOT required. Host-directive input exposure IS
+    // transitive: `trackHostDirectiveDef` registers a nested host directive
+    // with the exposure its own composer declared, before the outer entry is
+    // considered, and the outer `inputs` list filters only the directive it
+    // names. `KjInputGroup` already composes `KjVariant` / `KjSize` and exposes
+    // `kjVariant` / `kjSize`, so those names bind here either way; re-listing
+    // them merges two identical maps (`mergeBindingMaps` only throws NG0312
+    // when one public name resolves to two different aliases). Kept so the
+    // wrapper's bindable surface is readable at its own declaration.
+    //
+    // What was actually broken before: these were plain shadow inputs on the
+    // class, which nothing read — no `data-variant` / `data-size` was written.
+    { directive: KjVariant, inputs: ['kjVariant'] },
+    { directive: KjSize, inputs: ['kjSize'] },
   ],
   template: `<ng-content />`,
   styleUrl: './input-group.css',
@@ -99,11 +113,9 @@ export class KjInputGroupComponent {
   /** Layout axis. Forwarded to `KjInputGroup`. @default 'horizontal' */
   readonly kjOrientation = input<'horizontal' | 'vertical'>('horizontal');
 
-  /** Default variant forwarded to the group. */
-  readonly kjVariant = input<string | undefined>(undefined);
-
-  /** Default size forwarded to the group. */
-  readonly kjSize = input<string | undefined>(undefined);
+  // `kjVariant` / `kjSize` are NOT declared here. They are the composed
+  // `KjVariant` / `KjSize` inputs, re-exposed through `hostDirectives.inputs`
+  // above; re-declaring them published a second signal that reached nothing.
 
   /** Group-level disabled. OR-ed with any inner formControl disabled state. */
   readonly kjDisabled = input(false, { transform: booleanAttribute });

@@ -3,6 +3,7 @@ import {
   ElementRef,
   PLATFORM_ID,
   Signal,
+  booleanAttribute,
   computed,
   contentChildren,
   effect,
@@ -62,10 +63,10 @@ export class KjTagList implements KjTagListContext {
   readonly kjTagListOrientation = input<'horizontal' | 'vertical' | 'both'>('horizontal');
 
   /** Only meaningful in `listbox` mode. Drives `aria-multiselectable`. */
-  readonly kjTagListMultiple = input(false);
+  readonly kjTagListMultiple = input(false, { transform: booleanAttribute });
 
   /** Cascading disabled flag. Each chip's effective disabled OR-merges this. */
-  readonly kjTagListDisabled = input(false);
+  readonly kjTagListDisabled = input(false, { transform: booleanAttribute });
 
   /**
    * Maximum number of chips shown before the rest collapse. Chips past this

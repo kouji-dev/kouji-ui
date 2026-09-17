@@ -30,10 +30,14 @@ export interface KjDrawerOpenOptions<D = unknown> {
   data?: D;
   /** Whether clicking the backdrop closes the drawer. Defaults to `true`. */
   closeOnOutside?: boolean;
+  /** Accessible name for a body that projects no `[kjDrawerTitle]`. */
+  ariaLabel?: string;
+  /** Id of the element that names the drawer; wins over `ariaLabel` and any title. */
+  ariaLabelledBy?: string;
 }
 
 /**
- * Programmatic service for opening drawers. Mirrors `KjDialog`. Builds an
+ * Programmatic service for opening drawers. Mirrors `KjDialogService`. Builds an
  * overlay handle wired to the overlay primitives and renders a component
  * inside the singleton overlay container, positioned via `edgeSheet({side})`.
  *
@@ -69,6 +73,10 @@ export class KjDrawerService {
       liveAnnouncer: silent(),
       trigger: programmatic(),
       panelRole: 'dialog',
+      // Unset → the scrim's own `closeOnClick` decides.
+      closeOnOutside: opts.closeOnOutside,
+      ariaLabel: opts.ariaLabel,
+      ariaLabelledBy: opts.ariaLabelledBy,
     });
 
     const ref = new KjDrawerRef<T, R>(handle.controller);
@@ -87,8 +95,11 @@ export class KjDrawerService {
       const eff = effect(() => {
         const s = handle.controller.state();
         if (s === 'open' || s === 'opening') wasOpen = true;
+        if (s === 'open') ref._notifyOpened();
         if (s === 'closed' && wasOpen) {
           eff.destroy();
+          // A dismissal (Escape, scrim) settles afterClosed$ / result too.
+          ref._notifyClosed();
           queueMicrotask(() => handle.destroy());
         }
       });

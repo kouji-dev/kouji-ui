@@ -85,6 +85,16 @@
   .kj-speed-dial-actions[data-direction='left']  { flex-direction: row-reverse; }
   .kj-speed-dial-actions[data-direction='right'] { flex-direction: row; }
 
+  /* The cluster is the dial's overlay panel, so KjOverlayPanel puts `hidden`
+     on it while the dial is closed. Keep the box: an element going from
+     `display: none` to displayed cannot transition, so honouring the UA rule
+     would replace the fan-out with a snap — and would move the FAB in a
+     `data-position="static"` layout. `aria-hidden` below is what actually
+     keeps the collapsed cluster out of the AT tree and out of reach. */
+  .kj-speed-dial-actions[hidden] {
+    display: inline-flex;
+  }
+
   .kj-speed-dial-actions[aria-hidden='true'] {
     visibility: hidden;
     pointer-events: none;

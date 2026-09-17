@@ -116,7 +116,7 @@
   }
 
   .kj-rte__btn:hover:not(:disabled) {
-    background: var(--kj-bg-subtle, var(--kj-bg-body));
+    background: var(--kj-bg-body);
   }
 
   .kj-rte__btn:focus-visible {
@@ -190,7 +190,7 @@
   }
 
   .kj-rte__overlay-btn:hover:not(:disabled) {
-    background: var(--kj-bg-subtle, var(--kj-bg-body));
+    background: var(--kj-bg-body);
   }
 
   .kj-rte__overlay-btn:focus-visible {
@@ -313,7 +313,7 @@
 
   .kj-rte .kj-rte-code {
     padding: 0.1em 0.35em;
-    background: var(--kj-bg-subtle, var(--kj-bg-body));
+    background: var(--kj-bg-body);
     border-radius: 0.25rem;
     font-family: var(--kj-rte-mono);
     font-size: 0.9em;
@@ -323,7 +323,7 @@
     display: block;
     margin: 0 0 var(--kj-space-sm);
     padding: var(--kj-space-md);
-    background: var(--kj-bg-subtle, var(--kj-bg-body));
+    background: var(--kj-bg-body);
     border-radius: var(--kj-radius-field);
     font-family: var(--kj-rte-mono);
     font-size: 0.9em;

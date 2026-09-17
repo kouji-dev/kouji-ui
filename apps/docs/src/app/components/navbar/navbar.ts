@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
 import {
+  KjIcon,
   KjDropdownMenuContent,
   KjDropdownMenuItem,
   KjDropdownMenuTrigger,
@@ -19,6 +20,7 @@ import corePackage from '../../../../../../packages/core/package.json';
     RouterLink,
     RouterLinkActive,
     KjButtonComponent,
+    KjIcon,
     KjDropdownMenuTrigger,
     KjDropdownMenuContent,
     KjDropdownMenuItem,

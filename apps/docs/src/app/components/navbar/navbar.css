@@ -106,11 +106,20 @@
   align-items: center;
 }
 
-/* Trigger is `kj-button.kj-navbar-theme-trigger` — ghost + dropdown menu trigger */
+/* Theme picker trigger. Passed with `kjClass` (not a bare `class`) so it lands
+   on the real <button> inside <kj-button>: the wrapper host is
+   `display: contents`, so height and padding set on it would have nothing to
+   lay out. Styling the component from outside is exactly what `kjClass` is
+   for — retarget its documented knobs, never its internals. */
 .kj-navbar-theme-trigger {
-  height: 32px;
+  /* Same values as before, now read from the tokens that define them, so the
+     control tracks density instead of being pinned at one scale. */
+  height: var(--kj-ctl-h-sm);
+  font-size: var(--kj-text-xs);
+  /* 10px sits exactly between --kj-base-space-sm (8px) and -md (12px). Kept as
+     a literal per the rules' escape hatch rather than silently resizing the
+     control; it wants a control-padding token, which the scale lacks today. */
   padding-inline: 10px;
-  font-size: 12px;
 }
 
 .kj-navbar-burger {

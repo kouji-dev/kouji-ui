@@ -23,11 +23,14 @@ See what they implemented for the same component:
 
 | Directive | Purpose |
 |---|---|
-| `KjFocusTrap` | Trap focus in container |
+| `KjFocusTrap` | Trap focus in container (initial focus + Tab cycle + restore on disable) |
+| `createFocusTrap()` / `tabbableElements()` / `focusInitialIn()` / `returnFocusFrom()` | Framework-free focus-trap engine behind `KjFocusTrap` and the overlay `tabCycle` / `inertBased` strategies — the one tabbable query and restore rule for the whole library |
 | `KjLiveRegion` | Screen reader announcements |
 | `KjRovingTabindex` | Composite widget navigation |
 | `KjVisuallyHidden` | Hidden visually, accessible to SR |
 | `KjAriaDescribedBy` | Cross-element `aria-describedby` |
+| `KjFieldControl` | Wires a form control to its `kj-field` (`id`, `aria-describedby`, `aria-invalid`, `aria-required`); composed by `KjInput` via `hostDirectives` |
+| `KjDialogTitle` / `KjDrawerTitle` / `KjSheetTitle` | Register a heading as the overlay's accessible name (`aria-labelledby`); `overlayAccessibleName()` resolves the input / builder / static / title precedence |
 
 ## After every change
 Run accessibility review per CLAUDE.md.

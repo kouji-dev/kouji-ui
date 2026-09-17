@@ -17,9 +17,10 @@ import {
   KjTranslateService,
   type KjAvatarGroupAriaLabelFormat,
   type KjAvatarShape,
+  injectParent,
 } from '@kouji-ui/core';
 import { KjAvatarComponent } from './avatar';
-import { KjOverflowPanelComponent } from '../overflow/overflow-panel';
+import { KjOverflowPanel } from '../overflow/overflow-panel';
 
 /**
  * Avatar group wrapper. Stacks projected `<kj-avatar>` children with a
@@ -118,7 +119,7 @@ import { KjOverflowPanelComponent } from '../overflow/overflow-panel';
       ],
     },
   ],
-  imports: [KjAvatarComponent, KjPopoverTrigger, KjOverflowPanelComponent],
+  imports: [KjAvatarComponent, KjPopoverTrigger, KjOverflowPanel],
   template: `
     <ng-content />
     @if (overflowCount() > 0) {
@@ -161,7 +162,7 @@ export class KjAvatarGroupComponent {
    * `provide`s itself under `KJ_AVATAR_GROUP`, so injecting the token returns
    * the same instance and gives us access to `overflowCount`, `shape`, etc.
    */
-  protected readonly group = inject(KJ_AVATAR_GROUP);
+  protected readonly group = injectParent(KJ_AVATAR_GROUP, { child: 'KjAvatarGroupComponent', parent: '[kjAvatarGroup]' });
   private readonly i18n = inject(KjTranslateService);
 
   /** Text of the "+N" chip. Defaults to the `overflow.more` translation (`+{count}`). */
@@ -171,7 +172,7 @@ export class KjAvatarGroupComponent {
 
   private readonly avatars = contentChildren(KjAvatarComponent, { descendants: true });
   protected readonly overflowTemplate = contentChild(KjOverflowContent);
-  private readonly panel = viewChild(KjOverflowPanelComponent);
+  private readonly panel = viewChild(KjOverflowPanel);
 
   protected readonly overflowCount = this.group.overflowCount;
 

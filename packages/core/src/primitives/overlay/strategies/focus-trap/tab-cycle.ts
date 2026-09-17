@@ -1,82 +1,80 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjFocusTrapStrategy } from '../../tokens';
+import { createFocusTrap, type KjFocusTrapHandle, type KjInitialFocus } from '../../../../a11y/focus-trap';
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
+/** Options for {@link tabCycle}. */
 export interface KjTabCycleOpts {
-  initialFocus?: 'auto' | 'first' | HTMLElement | (() => HTMLElement | null);
+  /**
+   * Where focus lands when the overlay finishes opening. `'auto'` (default)
+   * picks the first `[kjAutofocus]` / `[autofocus]` element in the panel and
+   * falls back to the panel itself; `'first'` picks the first tabbable
+   * element. Never fights focus that is already inside the panel.
+   */
+  initialFocus?: KjInitialFocus;
+  /** Return focus to the opener when the overlay closes. Default `true`. */
   returnFocus?: boolean;
+  /**
+   * Whether the trap is armed: gates Tab cycling and initial focus. Focus
+   * restoration on close runs regardless, so a non-modal panel that took
+   * focus still hands it back. Default `true`.
+   */
   enabled?: boolean | (() => boolean);
 }
 
+/** The {@link tabCycle} strategy, reconfigurable after construction. */
 export type KjTabCycleStrategy = KjFocusTrapStrategy & {
   configure(opts: Partial<KjTabCycleOpts>): void;
 };
 
+/**
+ * Focus-trap strategy for modal overlays: Tab and Shift+Tab cycle inside
+ * the panel, focus that escapes is pulled back, an empty panel keeps focus
+ * on itself, and the opener regains focus on close. Composes the shared
+ * `createFocusTrap` engine from `@kouji-ui/core` a11y; the trap yields to
+ * any overlay stacked above it.
+ */
 export function tabCycle(initialOpts: KjTabCycleOpts = {}): KjTabCycleStrategy {
   let opts: KjTabCycleOpts = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;
-  let returnTarget: HTMLElement | null = null;
-  let keyListener: ((e: KeyboardEvent) => void) | null = null;
+  // One engine per strategy: `attach` may run more than once (the builder
+  // and then the panel directive both attach), and a second engine would
+  // leave the first one's document listeners behind.
+  const trap: KjFocusTrapHandle = createFocusTrap({
+    container: () => ctx?.panelEl() ?? null,
+    isActive: () => ctx?.isTopmost?.() ?? true,
+    returnFocus: () => opts.returnFocus !== false,
+  });
   const isEnabled = (): boolean => {
     const e = opts.enabled;
     if (e === undefined) return true;
     return typeof e === 'function' ? e() : e;
   };
 
-  const focusables = (): HTMLElement[] => {
-    const panel = ctx?.panelEl();
-    if (!panel) return [];
-    return Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
-  };
-
   return {
-    attach(c) { ctx = c; },
+    get returnFocus() {
+      return opts.returnFocus !== false;
+    },
+    attach(c) {
+      ctx = c;
+    },
     onOpen() {
-      if (!isEnabled()) return;
-      if (!ctx?.platform.isBrowser) return;
-      const panel = ctx.panelEl();
-      if (!panel) return;
-      returnTarget = (document.activeElement as HTMLElement) ?? null;
-      keyListener = (e: KeyboardEvent) => {
-        if (e.key !== 'Tab') return;
-        const els = focusables();
-        if (els.length === 0) return;
-        const first = els[0], last = els[els.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-      };
-      panel.addEventListener('keydown', keyListener);
+      if (!isEnabled() || !ctx?.platform.isBrowser) return;
+      trap.activate();
     },
     onClose() {
-      const panel = ctx?.panelEl();
-      if (panel && keyListener) panel.removeEventListener('keydown', keyListener);
-      keyListener = null;
+      trap.deactivate();
     },
-    detach() { ctx = null; returnTarget = null; },
+    detach() {
+      trap.deactivate();
+      ctx = null;
+    },
     focusFirst() {
-      if (!isEnabled()) return;
-      const cfg = opts.initialFocus ?? 'first';
-      let target: HTMLElement | null;
-      if (cfg instanceof HTMLElement) target = cfg;
-      else if (typeof cfg === 'function') target = cfg();
-      else target = focusables()[0] ?? null;
-      if (!target) {
-        // No focusable children — focus the panel itself so the trigger
-        // doesn't retain focus (WCAG 2.4.3) and so a held Space doesn't
-        // re-fire the trigger's click handler. tabindex=-1 makes the panel
-        // programmatically focusable without entering the tab order.
-        const panel = ctx?.panelEl();
-        if (panel) {
-          if (!panel.hasAttribute('tabindex')) panel.setAttribute('tabindex', '-1');
-          target = panel;
-        }
-      }
-      target?.focus();
+      if (!isEnabled() || !ctx?.platform.isBrowser) return;
+      trap.focusInitial(opts.initialFocus ?? 'auto');
     },
     restoreFocus() {
-      if (!isEnabled()) return;
-      if (opts.returnFocus !== false) returnTarget?.focus();
+      if (!ctx?.platform.isBrowser) return;
+      trap.restoreFocus();
     },
     configure(newOpts: Partial<KjTabCycleOpts>) {
       opts = { ...opts, ...newOpts };

@@ -8,10 +8,12 @@ import { Directive } from '@angular/core';
  * - The `kj-prose` CSS class (applied to a wrapping container) which restyles
  *   every descendant flow element according to the kouji type system.
  * - Five attribute directives — `kjLead`, `kjMuted`, `kjCode`, `kjBlockquote`,
- *   `kjTruncate` — that reflect `data-tone` / `data-truncate` host attributes
- *   so the same styling applies whether the consumer used the directive,
- *   hand-typed `data-tone="muted"` on a span, or wrapped a subtree in
- *   `.kj-prose`.
+ *   `kjTruncate` — that reflect `data-kj-tone` / `data-kj-truncate` host
+ *   attributes so the same styling applies whether the consumer used the
+ *   directive, hand-typed `data-kj-tone="muted"` on a span, or wrapped a
+ *   subtree in `.kj-prose`. The unprefixed `data-tone` / `data-truncate`
+ *   spellings stay supported alongside the prefixed ones — a hand-typed
+ *   attribute has no compiler to migrate it — not as a deprecation window.
  *
  * This class exists **only** to host the live-preview examples and category
  * metadata for the docs extractor. It exposes no template, selector behaviour,
@@ -39,10 +41,10 @@ import { Directive } from '@angular/core';
  *   block clamped to two lines.
  *   @doc-file typography.usage.example.ts
  * @doc-example Lead paragraph
- *   `kjLead` reflects `data-tone="lead"` on a paragraph — softer tone, larger size.
+ *   `kjLead` reflects `data-kj-tone="lead"` on a paragraph — softer tone, larger size.
  *   @doc-file typography.lead.example.ts
  * @doc-example Muted text
- *   `kjMuted` reflects `data-tone="muted"` — dims the foreground for secondary copy.
+ *   `kjMuted` reflects `data-kj-tone="muted"` — dims the foreground for secondary copy.
  *   @doc-file typography.muted.example.ts
  * @doc-example Inline code
  *   `kjCode` styles inline `<code>` runs with the mono token + a subtle surface.
@@ -59,10 +61,10 @@ import { Directive } from '@angular/core';
  *     Tab / Enter behaviour from the browser.
  *
  * @doc-aria
- *   data-tone     — Reflected by `kjLead` / `kjMuted` so the same styling
- *                   applies whether the consumer used the directive or
- *                   hand-typed the attribute on a span
- *   data-truncate — Reflected by `kjTruncate` with the line count, e.g. "2"
+ *   data-kj-tone     — Reflected by `kjLead` / `kjMuted` so the same styling
+ *                      applies whether the consumer used the directive or
+ *                      hand-typed the attribute on a span
+ *   data-kj-truncate — Reflected by `kjTruncate` with the line count, e.g. "2"
  *
  * @doc-touch
  *   — — Non-interactive surface. Inline links inherit the page's link tokens

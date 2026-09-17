@@ -21,7 +21,20 @@ class HostComponent {
   readonly presets = signal<readonly KjColorPreset[]>([]);
 }
 
+/**
+ * The panel is portalled into `.kj-overlay-container` on `<body>` the moment
+ * it opens, so anything inside it has to be queried from the document once the
+ * trigger has been clicked — `container` only ever holds the trigger.
+ */
+const panelQuery = <T extends Element>(selector: string): T | null =>
+  document.querySelector<T>(selector);
+
 describe('KjColorPickerComponent', () => {
+  afterEach(() => {
+    // Portalled panels outlive their fixture in this pool (`isolate: false`).
+    document.querySelectorAll('.kj-overlay-wrapper').forEach((el) => el.remove());
+  });
+
   it('renders the trigger button', async () => {
     const { container } = await render(HostComponent);
     expect(container.querySelector('.kj-color-picker-trigger')).toBeInTheDocument();
@@ -38,16 +51,32 @@ describe('KjColorPickerComponent', () => {
   it('hex input is mounted by default', async () => {
     const { container } = await render(HostComponent);
     fireEvent.click(container.querySelector('.kj-color-picker-trigger')!);
-    expect(container.querySelector('.kj-color-picker-input')).toBeInTheDocument();
+    expect(panelQuery('.kj-color-picker-input')).toBeInTheDocument();
+  });
+
+  it('kjShowHexInput="" (the bare attribute) keeps the hex input mounted', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjColorPickerComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `<kj-color-picker kjShowHexInput kjShowAlpha />`,
+    })
+    class BareHost {}
+
+    const { container } = await render(BareHost);
+    fireEvent.click(container.querySelector('.kj-color-picker-trigger')!);
+    // booleanAttribute: a bare attribute binds '' and must read as `true`.
+    expect(panelQuery('.kj-color-picker-input')).toBeInTheDocument();
+    expect(panelQuery('.kj-color-picker-alpha-slider')).toBeInTheDocument();
   });
 
   it('alpha slider hidden when kjShowAlpha is false', async () => {
     const { container, fixture } = await render(HostComponent);
     fireEvent.click(container.querySelector('.kj-color-picker-trigger')!);
-    expect(container.querySelector('.kj-color-picker-alpha-slider')).toBeNull();
+    expect(panelQuery('.kj-color-picker-alpha-slider')).toBeNull();
     fixture.componentInstance.showAlpha.set(true);
     fixture.detectChanges();
-    expect(container.querySelector('.kj-color-picker-alpha-slider')).toBeInTheDocument();
+    expect(panelQuery('.kj-color-picker-alpha-slider')).toBeInTheDocument();
   });
 
   it('preset listbox renders one option per preset', async () => {
@@ -59,7 +88,7 @@ describe('KjColorPickerComponent', () => {
     fixture.detectChanges();
     fireEvent.click(container.querySelector('.kj-color-picker-trigger')!);
     fixture.detectChanges();
-    const options = container.querySelectorAll('.kj-color-picker-preset');
+    const options = document.querySelectorAll('.kj-color-picker-preset');
     expect(options.length).toBe(2);
   });
 
@@ -69,7 +98,7 @@ describe('KjColorPickerComponent', () => {
     fixture.detectChanges();
     fireEvent.click(container.querySelector('.kj-color-picker-trigger')!);
     fixture.detectChanges();
-    fireEvent.click(container.querySelector('.kj-color-picker-preset')!);
+    fireEvent.click(panelQuery('.kj-color-picker-preset')!);
     fixture.detectChanges();
     expect(fixture.componentInstance.hex()).toBe('#00ff00');
   });

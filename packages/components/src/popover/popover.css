@@ -4,6 +4,7 @@
      `.kj-popover-content` class lands on the panel via `kjPanelClass`. */
 
   .kj-popover-content {
+    contain: layout;
     --kj-popover-bg:           var(--kj-bg-elevated);
     --kj-popover-fg:           var(--kj-fg-default);
     --kj-popover-border-color: var(--kj-border-default);
@@ -12,6 +13,7 @@
     --kj-popover-padding-y:    var(--kj-space-md);
     --kj-popover-shadow:       var(--kj-shadow-md, 0 12px 32px rgb(0 0 0 / 0.18));
     --kj-popover-arrow-size:   8px;
+    --kj-popover-arrow-inset:  var(--kj-space-md);
 
     /* Layout — the directive applies position: fixed and writes top/left. */
     display: block;
@@ -54,11 +56,25 @@
   .kj-popover-content[data-side="left"]   .kj-popover-arrow { right:  calc(var(--kj-popover-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-popover-arrow-size) / -2); border-left-color: transparent; border-bottom-color: transparent; }
   .kj-popover-content[data-side="right"]  .kj-popover-arrow { left:   calc(var(--kj-popover-arrow-size) / -2); top:  50%; margin-top:  calc(var(--kj-popover-arrow-size) / -2); border-right-color: transparent; border-top-color: transparent; }
 
-  /* Modal-mode body scroll lock. Multiple stacked modals coordinate via
-     a counter in KjOverlayService; this just hides body overflow when the
-     attribute is present. */
-  body[data-kj-scroll-lock="true"] {
-    overflow: hidden;
+  /* Aligned panels: the arrow tracks the edge that meets the trigger instead
+     of the panel's centre. `data-align` is the resolved, physical alignment
+     (mirrored under dir="rtl" by the position strategy), so these need no
+     RTL variants. */
+  .kj-popover-content[data-side="top"][data-align="start"]    .kj-popover-arrow,
+  .kj-popover-content[data-side="bottom"][data-align="start"] .kj-popover-arrow {
+    left: var(--kj-popover-arrow-inset); right: auto; margin-left: 0;
+  }
+  .kj-popover-content[data-side="top"][data-align="end"]    .kj-popover-arrow,
+  .kj-popover-content[data-side="bottom"][data-align="end"] .kj-popover-arrow {
+    left: auto; right: var(--kj-popover-arrow-inset); margin-left: 0;
+  }
+  .kj-popover-content[data-side="left"][data-align="start"]  .kj-popover-arrow,
+  .kj-popover-content[data-side="right"][data-align="start"] .kj-popover-arrow {
+    top: var(--kj-popover-arrow-inset); bottom: auto; margin-top: 0;
+  }
+  .kj-popover-content[data-side="left"][data-align="end"]  .kj-popover-arrow,
+  .kj-popover-content[data-side="right"][data-align="end"] .kj-popover-arrow {
+    top: auto; bottom: var(--kj-popover-arrow-inset); margin-top: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { inMemoryAdapter, kjColumn, type KjColumnDef, type KjStorageAdapter } from '@kouji-ui/core';
 import { KjTableComponent } from '../table';
-import { KjTableToolbarComponent } from '../table-toolbar';
+import { KjTableToolbar } from '../table-toolbar';
 import { KjButtonComponent } from '../../button/button';
 
 interface User {
@@ -13,16 +13,21 @@ interface User {
 
 /**
  * Persistence — pass a stable `kjStorageKey` plus an adapter. The table writes
- * its state (sorting, filters, pagination, column visibility, density…) to the
- * adapter on every change and re-hydrates on mount. Click "Remount" to swap
- * the table via `*ngIf` and watch state restore from the in-memory adapter.
- * Swap `inMemoryAdapter()` for `localStorageAdapter()` to survive real reloads.
+ * its view configuration (sorting, column filters, pagination, column sizing /
+ * visibility / order / pinning, grouping, density — `kjPersistedSlices`) to the
+ * adapter, debounced 300 ms after the last change, and re-hydrates on mount.
+ * Row selection, expansion and the global filter are session state and are
+ * not persisted unless you opt them in. Click "Remount" to swap the table via
+ * `@if` and watch state restore from the in-memory adapter. Swap
+ * `inMemoryAdapter()` for `localStorageAdapter()` to survive real reloads, and
+ * namespace keys per app with `provideKjTableStorageKeyPrefix('billing:')`
+ * when several apps share one origin.
  */
 @Component({
   selector: 'kj-table-persistence-example',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KjTableComponent, KjTableToolbarComponent, KjButtonComponent],
+  imports: [KjTableComponent, KjTableToolbar, KjButtonComponent],
   styles: [`
     :host { display: block; }
     .kj-actions { display: flex; gap: 0.5rem; margin-block-end: 0.75rem; }

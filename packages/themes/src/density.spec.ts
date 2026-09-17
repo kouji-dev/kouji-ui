@@ -6,11 +6,14 @@ import { describe, expect, test } from 'vitest';
 const css = readFileSync(resolve(import.meta.dirname, 'density.css'), 'utf-8');
 const baseCss = readFileSync(resolve(import.meta.dirname, 'base.css'), 'utf-8');
 const indexCss = readFileSync(resolve(import.meta.dirname, 'index.css'), 'utf-8');
+const layersCss = readFileSync(resolve(import.meta.dirname, 'layers.css'), 'utf-8');
 
 /** Custom properties registered via `@property` in density.css. */
 function registeredProps(text: string): Set<string> {
   const out = new Set<string>();
-  postcss.parse(text).walkAtRules('property', rule => out.add(rule.params.trim()));
+  postcss.parse(text).walkAtRules('property', rule => {
+    out.add(rule.params.trim());
+  });
   return out;
 }
 
@@ -19,7 +22,9 @@ function declsFor(text: string, selector: string): Map<string, string> {
   const out = new Map<string, string>();
   postcss.parse(text).walkRules(rule => {
     if (!rule.selector.includes(selector)) return;
-    rule.walkDecls(decl => out.set(decl.prop, decl.value));
+    rule.walkDecls(decl => {
+      out.set(decl.prop, decl.value);
+    });
   });
   return out;
 }
@@ -30,11 +35,20 @@ describe('density layer', () => {
   });
 
   test('joins the existing kj.base layer without redeclaring layer order', () => {
-    // Editing the `@layer kj.reset, kj.base, kj.shared, kj.component` statement
-    // desyncs consumers who re-declare it, so density.css must not carry one.
+    // The order statement lives in layers.css (imported first by base.css);
+    // a second statement here would be a second place to keep in sync, so
+    // density.css must not carry one.
     expect(css).toMatch(/@layer\s+kj\.base\s*\{/);
     expect(css).not.toMatch(/@layer\s+[\w.]+\s*,/);
-    expect(baseCss).toMatch(/@layer kj\.reset, kj\.base, kj\.shared, kj\.component;/);
+    expect(baseCss).toMatch(/@import '\.\/layers\.css';/);
+    expect(layersCss).toMatch(
+      /@layer kj\.reset, kj\.base, kj\.shared, kj\.prose, kj\.component, kj\.tone, kj\.truncate;/,
+    );
+  });
+
+  test('adds the 2xs step below xs so the ladder has no hole', () => {
+    const root = declsFor(css, ':root');
+    expect(root.get('--kj-space-2xs')).toBe('var(--kj-space-1)');
   });
 
   describe('@property registration', () => {

@@ -1,9 +1,24 @@
-import { Directive, ElementRef, effect, inject, input } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
+  input,
+} from '@angular/core';
 import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
+import { KjFieldControl } from '../field/field-control';
 
 /**
  * Enhances a native `<input>` with Angular forms integration, disabled/invalid state, and focus-ring.
  * Supports `formControl`, `formControlName`, and `ngModel` bindings.
+ *
+ * Inside a `[kjField]` the input also composes `KjFieldControl`: it adopts the
+ * field's control id (so the label's `for=` resolves), gets `aria-describedby`
+ * from the field's help / error children, and reflects the field's
+ * `aria-required` and `aria-invalid` — the latter ORed with its own
+ * touched-gated `kjInvalid`.
  *
  * @example
  * ```html
@@ -57,10 +72,10 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
     { directive: KjDisabled, inputs: ['kjDisabled'] },
     KjFocusRing,
     KjFormControl,
+    { directive: KjFieldControl, inputs: ['kjDescribedBy'] },
   ],
   host: {
-    '[attr.aria-invalid]': 'formCtrl.touched() && kjInvalid() ? "true" : null',
-    '[attr.data-invalid]': 'formCtrl.touched() && kjInvalid() ? "" : null',
+    '[attr.data-invalid]': 'ownInvalid() ? "" : null',
     '[attr.disabled]': 'formCtrl.disabled() ? "" : null',
     '(input)': 'formCtrl.notifyChange($any($event.target).value)',
     '(blur)': 'formCtrl.notifyTouched()',
@@ -69,11 +84,16 @@ import { KjDisabled, KjFocusRing, KjFormControl } from '../primitives';
 export class KjInput {
   readonly formCtrl = inject(KjFormControl);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
+  private readonly fieldControl = inject(KjFieldControl, { self: true });
 
   /** Whether the input is in an invalid state. Combined with `touched` for ARIA. */
-  kjInvalid = input<boolean>(false);
+  kjInvalid = input(false, { transform: booleanAttribute });
+
+  /** Touched-gated invalid state; `KjFieldControl` ORs it with the field's for `aria-invalid`. */
+  protected readonly ownInvalid = computed(() => this.formCtrl.touched() && this.kjInvalid());
 
   constructor() {
+    this.fieldControl.bindInvalid(this.ownInvalid);
     // Reflect the CVA value signal back to the native input element.
     // Skip when the form control's value is null/undefined so external [value]
     // bindings (template attribute, parent component) are preserved when no

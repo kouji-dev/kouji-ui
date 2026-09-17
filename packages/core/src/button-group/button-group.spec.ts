@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { KjButton } from '../button/button';
 import { KjButtonGroup } from './button-group';
-import { KJ_BUTTON_GROUP } from './button-group.context';
+import { KJ_BUTTON_GROUP, type KjButtonGroupContext } from './button-group.context';
 
 expect.extend(toHaveNoViolations);
 
@@ -59,7 +59,7 @@ describe('KjButtonGroup', () => {
   });
 
   it('provides KJ_BUTTON_GROUP context with variant and size signals', async () => {
-    let captured: ReturnType<typeof inject<typeof KJ_BUTTON_GROUP>> | undefined;
+    let captured: KjButtonGroupContext | undefined;
 
     @Component({
       selector: 'kj-bg-probe',

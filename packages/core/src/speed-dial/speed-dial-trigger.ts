@@ -1,14 +1,24 @@
-import { Directive, inject } from '@angular/core';
-import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
+import { Directive } from '@angular/core';
+import { KJ_SPEED_DIAL } from './speed-dial.context';
+import { KjOverlayTrigger } from '../primitives/overlay/trigger';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * The floating action button that toggles the Speed Dial open/closed.
  *
  * Apply alongside `kjButton` on a native `<button>` so the trigger inherits
  * the button presets (variant, size, focus ring, capture-phase disabled
- * suppression). The trigger itself contributes the menu-button ARIA wiring
- * (`aria-haspopup="menu"`, `aria-expanded`, `aria-controls`) and the click
- * toggle semantics that drive the parent `[kjSpeedDial]`.
+ * suppression). The trigger composes `KjOverlayTrigger`, so the dial's
+ * controller owns the click toggle and registers the open dial with
+ * `KjOverlayStack` — which is what makes Escape work from anywhere inside
+ * the cluster, a press outside dismiss it, and focus return here on close.
+ *
+ * The menu-button ARIA (`aria-haspopup="menu"`, `aria-expanded`,
+ * `aria-controls`) is declared here rather than inherited from
+ * `KjOverlayTrigger`: `aria-controls` must name the cluster's own
+ * `contentId`, and `aria-expanded` follows the dial's `expanded()` — which
+ * is already `false` the instant a close starts, rather than staying `true`
+ * through the fan-out animation.
  *
  * @example
  * ```html
@@ -26,30 +36,16 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
   selector: '[kjSpeedDialTrigger]',
   standalone: true,
   exportAs: 'kjSpeedDialTrigger',
+  hostDirectives: [KjOverlayTrigger],
   host: {
     type: 'button',
     '[attr.aria-haspopup]': '"menu"',
     '[attr.aria-expanded]': 'ctx.expanded() ? "true" : "false"',
     '[attr.aria-controls]': 'ctx.contentId',
     '[attr.data-state]': 'ctx.expanded() ? "open" : "closed"',
-    '(click)': 'onClick($event)',
-    '(keydown.escape)': 'onEscape($event)',
   },
 })
 export class KjSpeedDialTrigger {
   /** @internal */
-  readonly ctx = inject<KjSpeedDialContext>(KJ_SPEED_DIAL);
-
-  protected onClick(event: MouseEvent): void {
-    if (this.ctx.disabled()) return;
-    event.stopPropagation();
-    this.ctx.toggle();
-  }
-
-  protected onEscape(event: Event): void {
-    if (!this.ctx.expanded()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.ctx.close();
-  }
+  readonly ctx = injectParent(KJ_SPEED_DIAL, { child: 'KjSpeedDialTrigger', parent: '[kjSpeedDial]' });
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
-import { KjDrawer, KjDrawerService } from './drawer';
+import { KjDrawer, KjDrawerService, KjDrawerTitle } from './drawer';
 import { KjButtonComponent } from '../button/button';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
 
@@ -16,10 +16,10 @@ const open = signal(false);
 @Component({
   selector: 'kj-drawer-playground-body',
   standalone: true,
-  imports: [KjDrawer],
+  imports: [KjDrawer, KjDrawerTitle],
   template: `
     <kj-drawer>
-      <h2 style="margin:0 0 var(--kj-space-md)">{{ title() }}</h2>
+      <h2 kjDrawerTitle style="margin:0 0 var(--kj-space-md)">{{ title() }}</h2>
       <p>{{ message() }}</p>
     </kj-drawer>
   `,
@@ -99,7 +99,7 @@ export const PLAYGROUND: PlaygroundFile = {
     lines.push('');
     lines.push('// drawer body component');
     lines.push('<kj-drawer>');
-    lines.push(`  <h2>${s.title}</h2>`);
+    lines.push(`  <h2 kjDrawerTitle>${s.title}</h2>`);
     lines.push(`  <p>${s.message}</p>`);
     lines.push('</kj-drawer>');
     return lines.join('\n');

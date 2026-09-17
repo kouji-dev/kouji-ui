@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { kjSubstringFilter, kjFuzzyFilter, stripDiacritics } from './command-palette.filters';
 import { KjCommandPalette } from './command-palette';
@@ -357,6 +357,98 @@ describe('KjCommandPaletteTrigger / KjCommandPaletteDialog — overlay primitive
     // Verify the trigger element exists and remains a valid overlay trigger
     // after the document-level hotkey listener fires.
     expect(btn.hasAttribute('aria-expanded')).toBe(true);
+  });
+
+  describe('hotkey binding and scoping (mfe F-8)', () => {
+    const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+    const chord = (key: string) => new KeyboardEvent('keydown', {
+      key, metaKey: isMac, ctrlKey: !isMac, bubbles: true, cancelable: true,
+    });
+    const settle = (): Promise<void> => new Promise((r) => setTimeout(r, 40));
+
+    afterEach(() => {
+      document.querySelectorAll('.kj-overlay-container > *').forEach((el) => el.remove());
+    });
+
+    it('the bound kjHotkey chord is honoured, and the default chord no longer toggles', async () => {
+      @Component({
+        selector: 'kj-cp-host',
+        standalone: true,
+        imports: [KjCommandPaletteTrigger, KjCommandPaletteDialog],
+        template: `
+          <button kjCommandPaletteTrigger #t="kjCommandPaletteTrigger" kjHotkey="mod+j">Open</button>
+          <kj-command-palette-dialog [kjFor]="t">Palette</kj-command-palette-dialog>
+        `,
+      })
+      class Host {}
+      const { container, fixture } = await render(Host);
+      const btn = container.querySelector('button')!;
+      document.dispatchEvent(chord('k'));
+      fixture.detectChanges();
+      expect(btn.getAttribute('aria-expanded')).toBe('false');
+      document.dispatchEvent(chord('j'));
+      fixture.detectChanges();
+      expect(btn.getAttribute('aria-expanded')).toBe('true');
+      await settle();
+      fixture.destroy();
+      await settle();
+    });
+
+    it('two palettes on one chord: the keystroke opens exactly one (first listener wins)', async () => {
+      @Component({
+        selector: 'kj-cp-host',
+        standalone: true,
+        imports: [KjCommandPaletteTrigger, KjCommandPaletteDialog],
+        template: `
+          <button id="first" kjCommandPaletteTrigger #a="kjCommandPaletteTrigger">A</button>
+          <kj-command-palette-dialog [kjFor]="a">A</kj-command-palette-dialog>
+          <button id="second" kjCommandPaletteTrigger #b="kjCommandPaletteTrigger">B</button>
+          <kj-command-palette-dialog [kjFor]="b">B</kj-command-palette-dialog>
+        `,
+      })
+      class Host {}
+      const { container, fixture } = await render(Host);
+      document.dispatchEvent(chord('k'));
+      fixture.detectChanges();
+      const expanded = ['#first', '#second'].map((id) => container.querySelector(id)!.getAttribute('aria-expanded'));
+      expect(expanded.filter((v) => v === 'true')).toHaveLength(1);
+      await settle();
+      fixture.destroy();
+      await settle();
+    });
+
+    it('the dialog renders a real scrim in front of the page while open (overlay F-18)', async () => {
+      @Component({
+        selector: 'kj-cp-host',
+        standalone: true,
+        imports: [KjCommandPaletteTrigger, KjCommandPaletteDialog],
+        template: `
+          <button kjCommandPaletteTrigger #t="kjCommandPaletteTrigger">Open</button>
+          <kj-command-palette-dialog [kjFor]="t"><button>inside</button></kj-command-palette-dialog>
+        `,
+      })
+      class Host {}
+      const { container, fixture } = await render(Host);
+      const panel = container.querySelector('kj-command-palette-dialog') as HTMLElement;
+      expect(panel.getAttribute('aria-modal')).toBe('true');
+      document.dispatchEvent(chord('k'));
+      fixture.detectChanges();
+      await settle();
+      fixture.detectChanges();
+      const wrapper = panel.closest<HTMLElement>('.kj-overlay-wrapper');
+      expect(wrapper).not.toBeNull();
+      const scrim = wrapper!.querySelector<HTMLElement>('kj-backdrop');
+      expect(scrim).not.toBeNull();
+      expect(scrim!.nextElementSibling).toBe(panel);
+      expect(scrim!.hasAttribute('hidden')).toBe(false);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await settle();
+      fixture.detectChanges();
+      expect(panel.getAttribute('data-state')).toBe('closed');
+      expect(scrim!.hasAttribute('hidden')).toBe(true);
+      fixture.destroy();
+      await settle();
+    });
   });
 });
 

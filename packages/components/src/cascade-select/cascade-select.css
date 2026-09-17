@@ -15,7 +15,7 @@
     gap: var(--kj-space-sm);
     background: var(--kj-bg-field);
     color: var(--kj-fg-default);
-    border: 1px solid var(--kj-border-default);
+    border: 1px solid var(--kj-border-control);
     border-radius: var(--kj-radius-field);
     padding: var(--kj-space-sm) var(--kj-space-md);
     font: 0.875rem var(--kj-font-sans);
@@ -61,7 +61,11 @@
     min-width: 12rem;
     max-height: 20rem;
     overflow: auto;
-    z-index: 1001;
+    /* One level above the root panel it belongs to — `--kj-overlay-z` is
+       the level the overlay stack assigned that panel, inherited from its
+       wrapper, so a cascade opened inside a dialog still stacks its
+       sub-panels above the dialog. */
+    z-index: calc(var(--kj-overlay-z, 1000) + 1);
   }
   .kj-cascade-sub-panel[hidden] { display: none; }
 
@@ -80,6 +84,13 @@
   }
   .kj-cascade-option:hover,
   .kj-cascade-option[data-active] {
+    background: var(--kj-bg-surface);
+  }
+  /* Options hold real focus (roving tabindex) — the ring is the keyboard
+     user's only cue for which row the arrow keys are on (WCAG 2.4.7). */
+  .kj-cascade-option:focus-visible {
+    outline: 2px solid var(--kj-border-focus);
+    outline-offset: -2px;
     background: var(--kj-bg-surface);
   }
   .kj-cascade-option[aria-selected="true"] {

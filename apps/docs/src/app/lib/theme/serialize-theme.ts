@@ -8,17 +8,23 @@ function colorScheme(bgBody: string): 'light' | 'dark' {
 }
 
 /**
- * Serialize resolved tokens to a scoped CSS block:
+ * Serialize resolved tokens to a scoped CSS block that meets the same
+ * contract the built-in themes are held to (`packages/themes/src/themes.spec.ts`):
  *
- *   [data-theme="<name>"] {
- *     color-scheme: light;
- *     --kj-bg-body: oklch(...);
- *     --kj-fg-default: oklch(...);
- *     ...
+ *   @layer kj.shared {
+ *     [data-theme="<name>"] {
+ *       color-scheme: light;
+ *       --kj-bg-body: oklch(...);
+ *       --kj-fg-default: oklch(...);
+ *       ...
+ *     }
  *   }
  *
- * Editable slots emit 1:1. Derived tokens (fg-muted, borders, shadows, etc.)
- * are computed from the editable slots via color-mix at runtime.
+ * Editable slots emit 1:1. Derived tokens (fg-muted, borders, shadows, the
+ * six `*-subtle` fills, the chart lanes) are computed from the editable
+ * slots via color-mix at runtime. The block sits in `kj.shared` like a
+ * built-in theme so it neither outranks component CSS nor a consumer's own
+ * layered overrides.
  */
 export function serializeToScopedBlock(name: string, t: ResolvedTokens): string {
   const lines: string[] = [];
@@ -40,9 +46,9 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   // motion
   lines.push(`--kj-transition: ${t.motion.transition};`);
 
-  // typography
-  lines.push(`--kj-text-body: ${t.typography.bodyRem};`);
-  lines.push(`--kj-text-small: ${t.typography.smallRem};`);
+  // typography — the density ramp names the library reads (density.css).
+  lines.push(`--kj-text-base: ${t.typography.bodyRem};`);
+  lines.push(`--kj-text-sm: ${t.typography.smallRem};`);
 
   // ── Background surfaces (editable) ──
   lines.push(`--kj-bg-body:     ${t.bg['bg-body']};`);
@@ -50,13 +56,12 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   lines.push(`--kj-bg-field:    ${t.bg['bg-field']};`);
   lines.push(`--kj-bg-elevated: ${t.bg['bg-elevated']};`);
 
-  // ── Intent surfaces (editable) ──
-  lines.push(`--kj-bg-primary:  ${t.bg['bg-primary']};`);
-  lines.push(`--kj-bg-accent:   ${t.bg['bg-accent']};`);
-  lines.push(`--kj-bg-info:     ${t.bg['bg-info']};`);
-  lines.push(`--kj-bg-success:  ${t.bg['bg-success']};`);
-  lines.push(`--kj-bg-warning:  ${t.bg['bg-warning']};`);
-  lines.push(`--kj-bg-danger:   ${t.bg['bg-danger']};`);
+  // ── Intent surfaces (editable) + derived subtle fills ──
+  for (const intent of ['primary', 'accent', 'info', 'success', 'warning', 'danger'] as const) {
+    const fill = t.bg[`bg-${intent}`];
+    lines.push(`--kj-bg-${intent}:        ${fill};`);
+    lines.push(`--kj-bg-${intent}-subtle: color-mix(in oklch, ${fill} 12%, ${t.bg['bg-body']});`);
+  }
 
   // ── Derived bg helpers ──
   lines.push(`--kj-bg-overlay:  ${isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.5)'};`);
@@ -89,9 +94,12 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   lines.push(`--kj-fg-danger:  ${t.bg['bg-danger']};`);
 
   // ── Borders (derived) ──
+  // `border-control` is the idle form-control boundary and must clear 3:1
+  // on the page (WCAG 1.4.11); 45% ink over the body does on every seed.
   lines.push(`--kj-border-default:  ${t.bg['bg-elevated']};`);
   lines.push(`--kj-border-muted:    ${t.bg['bg-field']};`);
   lines.push(`--kj-border-strong:   color-mix(in oklch, ${t.bg['bg-elevated']} 60%, ${t.fg['fg-default']});`);
+  lines.push(`--kj-border-control:  color-mix(in oklch, ${t.fg['fg-default']} 45%, ${t.bg['bg-body']});`);
   lines.push(`--kj-border-focus:    ${t.bg['bg-primary']};`);
   lines.push(`--kj-border-disabled: ${t.bg['bg-elevated']};`);
   lines.push(`--kj-border-primary:  ${t.bg['bg-primary']};`);
@@ -103,5 +111,13 @@ export function serializeToScopedBlock(name: string, t: ResolvedTokens): string 
   lines.push(`--kj-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.18);`);
   lines.push(`--kj-shadow-focus: 0 0 0 3px color-mix(in oklch, ${t.bg['bg-primary']} 40%, transparent);`);
 
-  return `[data-theme="${name}"] {\n  ${lines.join('\n  ')}\n}`;
+  // ── Chart lanes — one per intent, in the order the built-in themes use ──
+  lines.push(`--kj-chart-1: var(--kj-bg-primary);`);
+  lines.push(`--kj-chart-2: var(--kj-bg-accent);`);
+  lines.push(`--kj-chart-3: var(--kj-bg-success);`);
+  lines.push(`--kj-chart-4: var(--kj-bg-warning);`);
+  lines.push(`--kj-chart-5: var(--kj-bg-info);`);
+  lines.push(`--kj-chart-6: var(--kj-bg-danger);`);
+
+  return `@layer kj.shared {\n  [data-theme="${name}"] {\n    ${lines.join('\n    ')}\n  }\n}`;
 }

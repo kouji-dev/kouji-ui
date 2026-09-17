@@ -11,8 +11,8 @@ import { KjButton } from '../button';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
       }
       .row {
         display: flex;
@@ -22,12 +22,12 @@ import { KjButton } from '../button';
         flex-wrap: wrap;
       }
       button[kjButton] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border: var(--kj-btn-border);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        font-family: var(--kj-font);
-        transition: var(--kj-transition);
+        font-family: var(--docs-font);
+        transition: var(--docs-transition);
       }
       [data-size='sm'] {
         padding: 0.3rem 0.75rem;

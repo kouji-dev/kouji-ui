@@ -1,14 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   ViewEncapsulation,
-  afterNextRender,
-  inject,
-  signal,
 } from '@angular/core';
 import { KjDatePickerComponent } from '../../date-picker/date-picker';
-import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
+import { injectKjCellEditor } from './cell-editor';
 
 /**
  * Inline date cell editor for `<kj-table>`. Renders the styled
@@ -40,50 +36,32 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjDateEditor {
-  private readonly ctx = inject(KJ_EDITOR_CONTRACT) as KjEditorContract<Date | null>;
-  private readonly hostEl: ElementRef<HTMLElement> = inject(ElementRef);
-  private settled = false;
+  protected readonly editor = injectKjCellEditor<Date | null>({
+    seed: (v) => (v instanceof Date && !Number.isNaN(v.getTime()) ? v : null),
+    focus: () => this.editor.host.querySelector<HTMLInputElement>('input')?.focus(),
+  });
 
-  protected readonly draft = signal<Date | null>(null);
-
-  constructor() {
-    const v = this.ctx.value;
-    this.draft.set(v instanceof Date && !Number.isNaN(v.getTime()) ? v : null);
-    afterNextRender(() => {
-      const input = this.hostEl.nativeElement.querySelector<HTMLInputElement>('input');
-      input?.focus();
-    });
-  }
+  protected readonly draft = this.editor.draft;
 
   protected commit(): void {
-    if (this.settled) return;
     // Parse the input's typed text directly — at the moment Enter fires the
     // styled date-picker has already pushed the parsed Date into its kjValue
     // model via the trigger directive, but signal-propagation timing across
     // the two-way binding chain (root context -> wrapper -> draft) is not
     // guaranteed to be flushed before our handler runs. Reading the input
     // element gives us a deterministic source of truth.
-    const input = this.hostEl.nativeElement.querySelector<HTMLInputElement>('input');
+    const input = this.editor.host.querySelector<HTMLInputElement>('input');
     const raw = (input?.value ?? '').trim();
     if (raw === '') {
-      this.settled = true;
-      this.ctx.commit(null);
+      this.editor.commit(null);
       return;
     }
-    const parsed = parseIsoLike(raw) ?? this.draft();
+    const parsed = parseIsoLike(raw) ?? this.editor.draft();
     if (!parsed || Number.isNaN(parsed.getTime())) {
-      this.settled = true;
-      this.ctx.cancel();
+      this.editor.cancel();
       return;
     }
-    this.settled = true;
-    this.ctx.commit(parsed);
-  }
-
-  protected cancel(): void {
-    if (this.settled) return;
-    this.settled = true;
-    this.ctx.cancel();
+    this.editor.commit(parsed);
   }
 
   protected onKeydown(event: KeyboardEvent): void {
@@ -91,7 +69,7 @@ export class KjDateEditor {
       this.commit();
     } else if (event.key === 'Escape') {
       event.stopPropagation();
-      this.cancel();
+      this.editor.cancel();
     }
   }
 }
@@ -114,4 +92,3 @@ function parseIsoLike(raw: string): Date | null {
   const fallback = new Date(raw);
   return Number.isNaN(fallback.getTime()) ? null : fallback;
 }
-

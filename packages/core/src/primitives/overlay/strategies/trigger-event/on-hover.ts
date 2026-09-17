@@ -10,6 +10,7 @@ const read = <T>(v: Reactive<T> | undefined, fallback: T): T => {
   return v;
 };
 
+/** Options for {@link onHover}. Delays default to 0 and `interactive` to `false`. */
 export interface KjOnHoverOpts {
   openDelay?: Reactive<number>;
   closeDelay?: Reactive<number>;
@@ -22,6 +23,7 @@ export interface KjOnHoverOpts {
   interactive?: Reactive<boolean>;
 }
 
+/** {@link onHover}'s return type — delays stay reconfigurable after DI has built it. */
 export type KjOnHoverStrategy = KjTriggerEventStrategy & {
   configure(opts: Partial<KjOnHoverOpts>): void;
 };
@@ -33,7 +35,7 @@ export type KjOnHoverStrategy = KjTriggerEventStrategy & {
  * first descendant with a layout box.
  */
 const effectiveHoverTarget = (el: HTMLElement): HTMLElement => {
-  if (typeof window === 'undefined') return el;
+  if (!el.ownerDocument?.defaultView) return el;
   const r = el.getBoundingClientRect();
   if (r.width > 0 || r.height > 0) return el;
   let cur: HTMLElement | null = el;
@@ -47,6 +49,7 @@ const effectiveHoverTarget = (el: HTMLElement): HTMLElement => {
   return el;
 };
 
+/** Opens on hover intent and closes when the pointer leaves the trigger (and panel). */
 export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStrategy {
   let opts: Partial<KjOnHoverOpts> = { ...initialOpts };
   let ctx: KjOverlayContext | null = null;
@@ -73,8 +76,9 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
     cancelClose();
     closeTimer = setTimeout(
       () => {
-        toggle?.();
         closeTimer = 0;
+        // Another composed strategy (focus, Escape) may have closed it meanwhile.
+        if (ctx?.isOpen()) toggle?.();
       },
       read(opts.closeDelay, 0),
     ) as unknown as number;
@@ -103,8 +107,10 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
       if (ctx?.isOpen()) return;
       openTimer = setTimeout(
         () => {
-          toggle?.();
           openTimer = 0;
+          // Focus may have opened it during the hover-intent delay; toggling
+          // again would close it under the pointer.
+          if (!ctx?.isOpen()) toggle?.();
         },
         read(opts.openDelay, 0),
       ) as unknown as number;

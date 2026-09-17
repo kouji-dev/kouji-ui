@@ -1,14 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   ViewEncapsulation,
-  afterNextRender,
-  inject,
-  signal,
 } from '@angular/core';
 import { KjToggleComponent } from '../../toggle/toggle';
-import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
+import { injectKjCellEditor } from './cell-editor';
 
 /**
  * Inline boolean cell editor for `<kj-table>`. Renders the styled
@@ -27,10 +23,10 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
       class="kj-editor kj-editor--boolean"
       appearance="switch"
       [(pressed)]="draft"
-      (click)="ctx.commit(draft())"
+      (click)="editor.commit(draft())"
       (keydown.enter)="toggleAndCommit(); $event.preventDefault()"
       (keydown.space)="toggleAndCommit(); $event.preventDefault()"
-      (keydown.escape)="cancel(); $event.stopPropagation()"
+      (keydown.escape)="editor.cancel(); $event.stopPropagation()"
     >
       {{ draft() ? 'On' : 'Off' }}
     </kj-toggle>
@@ -40,22 +36,14 @@ import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjBooleanEditor {
-  protected readonly ctx = inject(KJ_EDITOR_CONTRACT) as KjEditorContract<boolean>;
-  private readonly hostEl: ElementRef<HTMLElement> = inject(ElementRef);
+  /** Every toggle commits, so the editor never settles. */
+  protected readonly editor = injectKjCellEditor<boolean>({
+    seed: (v) => !!v,
+    focus: () => this.editor.host.querySelector<HTMLButtonElement>('button')?.focus(),
+    settleOnce: false,
+  });
 
-  protected readonly draft = signal<boolean>(false);
-
-  constructor() {
-    this.draft.set(!!this.ctx.value);
-    afterNextRender(() => {
-      const btn = this.hostEl.nativeElement.querySelector<HTMLButtonElement>('button');
-      btn?.focus();
-    });
-  }
-
-  protected cancel(): void {
-    this.ctx.cancel();
-  }
+  protected readonly draft = this.editor.draft;
 
   /**
    * Flip the draft and commit. The `[(pressed)]` two-way binding into the
@@ -66,6 +54,6 @@ export class KjBooleanEditor {
   protected toggleAndCommit(): void {
     const next = !this.draft();
     this.draft.set(next);
-    this.ctx.commit(next);
+    this.editor.commit(next);
   }
 }

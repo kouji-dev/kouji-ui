@@ -1,20 +1,24 @@
 export * from './types';
 export * from './tokens';
 export * from './context';
-export { KjId } from './id';
+export { KjId, mintKjId, resolveKjId, KJ_ID_NAMESPACE } from './id';
 export { KjOverlayStack, KJ_OVERLAY_Z_BASE, KJ_OVERLAY_Z_BASE_DEFAULT, KJ_OVERLAY_Z_VAR, applyOverlayZIndex, clearOverlayZIndex } from './stack';
 export type { KjOverlayRegistration, KjOverlayStackHandle } from './stack';
 export type { KjLivePoliteness as KjOverlayLivePoliteness } from './strategies/live-announcer/_announce';
 
+export { KjOverlayRef } from './overlay-ref';
 export { KjOverlayController } from './controller';
 export type { KjOverlayStrategies } from './controller';
-export { KjOverlayBuilder, KjOverlayHandle } from './builder';
+export { KjOverlayBuilder, KjOverlayHandle, KJ_OVERLAY_ARIA_LABEL, KJ_OVERLAY_ARIA_LABELLED_BY } from './builder';
 export type { KjOverlayBuilderConfig, KjAttachOptions } from './builder';
 export { KjOverlayWrapper } from './wrapper';
 export { KjOverlayTrigger } from './trigger';
+export { KJ_TRIGGER_CONTROL, type KjTriggerControl } from './trigger-control';
 export { KjOverlayPanel } from './panel';
 export type { KjOverlayTriggerLike } from './panel';
 export { KjBackdrop } from './backdrop';
 export { KjDismissPress } from './dismiss-press';
-export { getOverlayContainer, createOverlayWrapper } from './container';
+export { getOverlayContainer, createOverlayWrapper, KJ_OVERLAY_CONTAINER } from './container';
+export { inheritOverlayScope, KJ_OVERLAY_SCOPE_ATTRS } from './scope';
+export { inertSiblingsOf, retainInert, releaseInert } from './inert';
 export * from './strategies/index';

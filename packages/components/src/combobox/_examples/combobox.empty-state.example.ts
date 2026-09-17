@@ -2,7 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjComboboxComponent,
   KjComboboxOptionComponent,
-  KjComboboxEmptyComponent,
+  KjComboboxEmpty,
 } from '../combobox';
 
 /**
@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'kj-combobox-empty-state-example',
   standalone: true,
-  imports: [KjComboboxComponent, KjComboboxOptionComponent, KjComboboxEmptyComponent],
+  imports: [KjComboboxComponent, KjComboboxOptionComponent, KjComboboxEmpty],
   styles: [
     `
       :host {

@@ -11,8 +11,8 @@ import { KjButton } from '../button';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
       }
       .row {
         display: flex;
@@ -22,23 +22,23 @@ import { KjButton } from '../button';
       }
       button[kjButton] {
         padding: 0.5rem 1.25rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
-        border: var(--kj-btn-border);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        transition: var(--kj-transition);
+        transition: var(--docs-transition);
       }
       [data-variant='default'] {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
       }
       [data-variant='destructive'] {
-        background: var(--kj-destructive);
+        background: var(--docs-destructive);
         color: #fff;
       }
       [data-variant='link'] {
         background: transparent;
-        color: var(--kj-accent);
+        color: var(--docs-accent);
         border: none;
         padding: 0.5rem 0.5rem;
         text-decoration: none;
@@ -49,7 +49,7 @@ import { KjButton } from '../button';
       }
       [data-variant='ghost'] {
         background: transparent;
-        color: var(--kj-btn-ghost-color);
+        color: var(--docs-btn-ghost-color);
       }
       [aria-disabled='true'] {
         opacity: 0.4;

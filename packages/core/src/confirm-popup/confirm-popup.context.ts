@@ -1,5 +1,6 @@
 import { InjectionToken, type Signal } from '@angular/core';
 import type { KjOverlayController } from '../primitives/overlay/controller';
+import { mintKjId } from '../primitives/overlay/id';
 
 /**
  * Where initial focus lands when the confirm popup opens.
@@ -42,8 +43,7 @@ export const KJ_CONFIRM_POPUP = new InjectionToken<KjConfirmPopupContext>(
   'KjConfirmPopup',
 );
 
-let _confirmPopupMessageIdCounter = 0;
 /** Allocate a stable id used for `aria-describedby` wiring. */
 export function nextConfirmPopupMessageId(): string {
-  return `kj-confirm-popup-message-${++_confirmPopupMessageIdCounter}`;
+  return mintKjId('confirm-popup-message');
 }

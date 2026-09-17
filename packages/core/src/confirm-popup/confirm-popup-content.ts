@@ -1,18 +1,19 @@
 import {
-  DestroyRef,
   Directive,
   PLATFORM_ID,
   effect,
   inject,
+  untracked,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { KjOverlayController } from '../primitives/overlay/controller';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
+import { KJ_OVERLAY_PANEL_ROLE } from '../primitives/overlay/tokens';
 import { KjPopoverContent } from '../popover/popover-content';
 import {
   KJ_CONFIRM_POPUP,
-  type KjConfirmPopupContext,
 } from './confirm-popup.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * The floating confirm popup panel. Composes `kj-popover-content` (a
@@ -22,10 +23,15 @@ import {
  *
  * Layered on top: promotes the panel role from `dialog` to `alertdialog`
  * (per WAI-ARIA APG, `alertdialog` causes assistive tech to interrupt and
- * announce the panel — the right semantic for a destructive confirmation),
- * keeps `aria-modal="false"`, wires `aria-describedby` to the projected
- * `[kjConfirmPopupMessage]`, and moves initial focus to the configured
- * default-focus button (cancel by default, WCAG 3.3.4 *Error Prevention*).
+ * announce the panel — the right semantic for a destructive confirmation)
+ * by providing `KJ_OVERLAY_PANEL_ROLE` on the same element, so
+ * `KjOverlayPanel` renders it from the first paint; states `aria-modal="false"`
+ * explicitly (an alert dialog that leaves the page reachable — the same
+ * declarative override the date-picker calendar uses); wires
+ * `aria-describedby` to the projected `[kjConfirmPopupMessage]` as a host
+ * binding; and moves initial focus to the configured default-focus button
+ * (cancel by default, WCAG 3.3.4 *Error Prevention*) once the overlay is
+ * open.
  *
  * **Note (overlay primitives migration):** `KjPopoverContent` is now a
  * component (not a directive); use the `<kj-popover-content>` selector for
@@ -46,16 +52,23 @@ import {
   selector: '[kjConfirmPopupContent]',
   standalone: true,
   exportAs: 'kjConfirmPopupContent',
+  // Resolved by the composed `KjOverlayPanel` on this very element, after
+  // `<kj-popover-content>`'s own `'dialog'` provider — the panel's `role`
+  // host binding is the single writer of the attribute.
+  providers: [{ provide: KJ_OVERLAY_PANEL_ROLE, useValue: 'alertdialog' as const }],
+  host: {
+    '[attr.aria-modal]': '"false"',
+    '[attr.aria-describedby]': 'ctx.messageId',
+  },
 })
 export class KjConfirmPopupContent {
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly ctx = inject<KjConfirmPopupContext>(KJ_CONFIRM_POPUP);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  protected readonly ctx = injectParent(KJ_CONFIRM_POPUP, { child: 'KjConfirmPopupContent', parent: '[kjConfirmPopup]' });
   /**
    * The panel this directive is layered on (`<kj-popover-content>` composes
    * `KjOverlayPanel` as a host directive, so it lives on this very element).
    * `self: true` keeps the lookup from walking up to an enclosing overlay —
-   * e.g. a `<kj-dialog>` — whose panel would be promoted / focused instead.
+   * e.g. a `<kj-dialog>` — whose panel would be focused instead.
    */
   private readonly _panel = inject(KjOverlayPanel, { self: true, optional: true });
   private get controller(): KjOverlayController | null {
@@ -65,46 +78,21 @@ export class KjConfirmPopupContent {
   private readonly popoverContent = inject(KjPopoverContent, { self: true, optional: true });
 
   constructor() {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    let lastOpen = false;
-    const eff = effect(() => {
-      const open = this.ctx.open();
-      if (open && !lastOpen) {
-        lastOpen = true;
-        queueMicrotask(() => this.promoteRole());
-        if (typeof requestAnimationFrame !== 'undefined') {
-          requestAnimationFrame(() => this.focusDefault());
-        }
-      } else if (!open && lastOpen) {
-        lastOpen = false;
-      }
+    if (!this.isBrowser) return;
+    // Initial focus once the overlay has finished opening — a browser
+    // ignores `focus()` on a panel that is still hidden.
+    effect(() => {
+      if (this.controller?.state() !== 'open') return;
+      untracked(() => this.focusDefault());
     });
-    this.destroyRef.onDestroy(() => eff.destroy());
     // Touch the optional popover-content reference so unused-variable lint
     // stays quiet in the no-op branch.
     void this.popoverContent;
   }
 
-  private findPanel(): HTMLElement | null {
-    return this.controller?.panelEl() ?? null;
-  }
-
-  private promoteRole(): void {
-    const panel = this.findPanel();
-    if (!panel) return;
-    panel.setAttribute('role', 'alertdialog');
-    panel.setAttribute('aria-modal', 'false');
-    panel.setAttribute('aria-describedby', this.ctx.messageId);
-  }
-
   private focusDefault(): void {
-    const panel = this.findPanel();
+    const panel = this.controller?.panelEl();
     if (!panel) return;
-    panel.setAttribute('role', 'alertdialog');
-    panel.setAttribute('aria-modal', 'false');
-    panel.setAttribute('aria-describedby', this.ctx.messageId);
-
     const which = this.ctx.defaultFocus();
     const sel =
       which === 'cancel' ? '[kjConfirmPopupCancel]' : '[kjConfirmPopupAction]';

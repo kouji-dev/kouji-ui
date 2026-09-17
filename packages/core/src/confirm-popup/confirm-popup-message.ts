@@ -1,8 +1,8 @@
-import { Directive, inject } from '@angular/core';
+import { Directive } from '@angular/core';
 import {
   KJ_CONFIRM_POPUP,
-  type KjConfirmPopupContext,
 } from './confirm-popup.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Marks the body / message element inside the confirm popup. Sets the host
@@ -32,5 +32,5 @@ import {
   },
 })
 export class KjConfirmPopupMessage {
-  protected readonly ctx = inject<KjConfirmPopupContext>(KJ_CONFIRM_POPUP);
+  protected readonly ctx = injectParent(KJ_CONFIRM_POPUP, { child: 'KjConfirmPopupMessage', parent: '[kjConfirmPopup]' });
 }

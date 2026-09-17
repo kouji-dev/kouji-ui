@@ -2,6 +2,22 @@
 import type { Klass, LexicalNode } from 'lexical';
 import type { KjImageInsert } from './rich-text-editor.types';
 
+/**
+ * The ambient document.
+ *
+ * Lexical builds these nodes inside its own reconciler, which hands the node
+ * an `EditorConfig` and no injector, and the whole rich-text feature is
+ * dynamically imported behind `afterNextRender` — it never runs on the server.
+ * Read through `globalThis` rather than the bare `document` binding so the SSR
+ * lint rule keeps its meaning for the rest of the library, and so a missing
+ * DOM produces a clear throw here rather than a mystery elsewhere.
+ */
+function editorDocument(): Document {
+  const doc = (globalThis as { document?: Document }).document;
+  if (!doc) throw new Error('[kouji-ui] rich-text nodes require a DOM; load the editor in the browser.');
+  return doc;
+}
+
 /** The image node class plus helpers returned by {@link createKjImageNode}. */
 export interface KjImageNodeApi {
   /** The generated Lexical image node class — pass to a feature's `nodes()`. */
@@ -70,10 +86,10 @@ export function createKjImageNode(lexical: typeof import('lexical')): KjImageNod
     }
 
     createDOM(): HTMLElement {
-      const figure = document.createElement('figure');
+      const figure = editorDocument().createElement('figure');
       figure.className = 'kj-rte-image';
       figure.contentEditable = 'false';
-      const img = document.createElement('img');
+      const img = editorDocument().createElement('img');
       img.src = this.__src;
       img.alt = this.__alt;
       img.setAttribute('data-lexical-image', 'true');
@@ -97,7 +113,7 @@ export function createKjImageNode(lexical: typeof import('lexical')): KjImageNod
     }
 
     exportDOM(): { element: HTMLElement } {
-      const element = document.createElement('img');
+      const element = editorDocument().createElement('img');
       element.setAttribute('data-lexical-image', 'true');
       element.src = this.__src;
       element.alt = this.__alt;

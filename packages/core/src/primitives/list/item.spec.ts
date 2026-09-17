@@ -170,4 +170,33 @@ describe('KjListItem', () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  // arch F-13 — the text fallback used to be read in `ngAfterContentInit`.
+  // It now lands in `afterNextRender`, which is the same once-per-item cost
+  // with no lifecycle hook and a guaranteed-painted DOM.
+  it('falls back to the host text for the label after the first render', async () => {
+    const { fixture } = await render(
+      `<ul role="listbox" aria-label="Options">
+         <li role="option" kjListItem [kjItemValue]="'a'"> Alpha </li>
+       </ul>`,
+      { imports: [KjListItem] },
+    );
+    // afterNextRender is backed by a rAF/microtask hop.
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+    const item = fixture.debugElement.query(By.directive(KjListItem)).injector.get(KjListItem);
+    expect(item.label()).toBe('Alpha');
+  });
+
+  it('an explicit kjItemLabel still wins over the text fallback', async () => {
+    const { fixture } = await render(
+      `<ul role="listbox" aria-label="Options">
+         <li role="option" kjListItem [kjItemValue]="'a'" kjItemLabel="Explicit">Alpha</li>
+       </ul>`,
+      { imports: [KjListItem] },
+    );
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    const item = fixture.debugElement.query(By.directive(KjListItem)).injector.get(KjListItem);
+    expect(item.label()).toBe('Explicit');
+  });
 });

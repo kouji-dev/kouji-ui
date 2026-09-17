@@ -9,9 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { KjListItem } from './item';
-
-let _groupId = 0;
-let _labelId = 0;
+import { KjId } from '../../primitives/overlay/id';
 
 /**
  * Wraps a subset of `KjListItem`s inside a list-style container
@@ -60,7 +58,7 @@ export class KjListGroup {
   /** Optional override id. Falls back to a generated `kj-list-group-N`. */
   readonly kjId = input<string>('');
 
-  private readonly _fallbackId = `kj-list-group-${++_groupId}`;
+  private readonly _fallbackId = inject(KjId).mint('list-group');
 
   /**
    * Resolved id used by the host `id` attribute and as the target of any
@@ -110,15 +108,28 @@ export class KjListGroupLabel {
   /** Optional override id. Falls back to a generated `kj-list-group-label-N`. */
   readonly kjId = input<string>('');
 
-  private readonly _fallbackId = `kj-list-group-label-${++_labelId}`;
+  private readonly _fallbackId = inject(KjId).mint('list-group-label');
 
   /** Resolved id used by the host `id` attribute and by the parent group. */
   readonly id = computed(() => this.kjId() || this._fallbackId);
 
-  private readonly group = inject(KjListGroup);
+  private readonly group = inject(KjListGroup, { optional: true });
 
   constructor() {
-    effect(() => this.group.setLabelId(this.id()));
+    const group = this.group;
+    if (!group) {
+      // Injecting KjListGroup non-optionally produced a bare
+      // "NG0201: No provider found for KjListGroup", which names an internal
+      // class the consumer never typed. A group label outside a group labels
+      // nothing, so this stays an error — just one that says what to write.
+      throw new Error(
+        '[kouji-ui] A group label must sit inside a group. Wrap it in an ' +
+          'element carrying [kjListGroup] — or the feature alias for your ' +
+          'widget, e.g. [kjDropdownMenuGroup] or [kjCommandGroup] — so the ' +
+          'aria-labelledby on that group has something to point at.',
+      );
+    }
+    effect(() => group.setLabelId(this.id()));
   }
 }
 

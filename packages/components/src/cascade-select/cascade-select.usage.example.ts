@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
-  KjCascadeOptionComponent,
+  KjCascadeOption,
   KjCascadeSelectComponent,
-  KjCascadeSubPanelComponent,
+  KjCascadeSubPanel,
 } from './cascade-select';
 
 /**
@@ -15,8 +15,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     KjCascadeSelectComponent,
-    KjCascadeOptionComponent,
-    KjCascadeSubPanelComponent,
+    KjCascadeOption,
+    KjCascadeSubPanel,
   ],
   styles: [`:host { display: flex; flex-direction: column; gap: var(--kj-space-md); align-items: flex-start; }`],
   template: `

@@ -7,11 +7,29 @@
  *
  * Values may contain `{name}` placeholders — see {@link KjTranslationParams} —
  * which {@link KjTranslateService.translate} substitutes at lookup time.
+ *
+ * ## The rule this file enforces
+ *
+ * A user-visible or assistive string in `@kouji-ui/core` /
+ * `@kouji-ui/components` lives **here and nowhere else**. Not as a literal in a
+ * template, not in a host binding, not as a default on a config token. A
+ * component that needs a string injects {@link KjTranslateService} and reads a
+ * key; a per-component config field such as
+ * `KjPaginationConfig.previousLabel` exists only as an *optional* override and
+ * defaults to `undefined`, so translating the library is one
+ * `provideKjTranslations({ fr: FR_CATALOG })` call rather than that plus a
+ * `provideKj*` call per component plus a fork for whatever is left.
+ *
+ * Adding a component that renders text means adding its keys here first;
+ * `catalog-is-source-of-truth.spec.ts` pins the contract for the families that
+ * already follow it.
  */
 export const EN_CATALOG = {
   // -- Overlays --
   'toast.close': 'Close notification',
+  'toast.region': 'Notifications',
   'dialog.close': 'Close dialog',
+  'sheet.close': 'Close sheet',
 
   // -- Collapsed groups (tag list / avatar group "+N" chip) --
   'overflow.more': '+{count}',
@@ -26,6 +44,55 @@ export const EN_CATALOG = {
   'pagination.more': 'More pages',
   'pagination.page': 'Page {page}',
   'pagination.pageOf': 'Page {page} of {total}',
+
+  // -- Breadcrumb --
+  'breadcrumb.nav': 'Breadcrumb',
+  'breadcrumb.truncatedOne': 'Breadcrumb (1 item hidden)',
+  'breadcrumb.truncated': 'Breadcrumb ({hidden} items hidden)',
+  'breadcrumb.showHiddenOne': 'Show 1 hidden breadcrumb',
+  'breadcrumb.showHidden': 'Show {hidden} hidden breadcrumbs',
+
+  // -- Feedback --
+  'spinner.loading': 'Loading',
+  'alert.dismiss': 'Dismiss',
+  'alert.actions': 'Alert actions',
+
+  // -- Data input --
+  'inputOtp.complete': 'Code complete',
+  'colorPicker.trigger': 'Color picker, current value {value}',
+  'colorPicker.presets': 'Preset colors',
+  'colorPicker.area': 'Color saturation and value',
+  'colorPicker.hue': 'Hue',
+  'colorPicker.alpha': 'Opacity',
+  'colorPicker.hex': 'Hex color value',
+  'datePicker.choose': 'Choose date',
+  'treeSelect.expand': 'Expand',
+  'treeSelect.collapse': 'Collapse',
+
+  // -- Command palette --
+  'commandPalette.dialog': 'Command palette',
+  'commandPalette.list': 'Commands',
+
+  // -- Calendar --
+  'calendar.previousMonth': 'Previous month',
+  'calendar.nextMonth': 'Next month',
+
+  // -- Chat --
+  'chat.typing': 'Assistant is typing',
+  'chat.sources': 'Sources',
+  'chat.slashCommands': 'Slash commands',
+  'chat.stop': 'Stop generating',
+  'chat.send': 'Send message',
+
+  // -- Data table --
+  'table.toolbar': 'Data table toolbar',
+  'table.bulkActions': 'Bulk actions',
+
+  // -- Carousel --
+  'carousel.previous': 'Previous slide',
+  'carousel.next': 'Next slide',
+  'carousel.pause': 'Pause carousel',
+  'carousel.slide': 'Slide {index}',
 
   // -- Accessibility live-region announcements --
   'a11y.pageChanged': 'Page {page} of {total}',

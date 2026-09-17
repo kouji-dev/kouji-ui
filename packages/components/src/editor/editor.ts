@@ -4,6 +4,7 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  booleanAttribute,
   computed,
   inject,
   input,
@@ -14,6 +15,7 @@ import {
 import {
   KjEditor,
   KjEditorLoader,
+  KjThemeObserver,
   type KjEditorInstance,
   type KjEditorLanguage,
   type KjEditorLineNumbers,
@@ -22,6 +24,7 @@ import {
   type KjMonaco,
 } from '@kouji-ui/core';
 import { KjSpinnerComponent } from '../spinner/spinner';
+import { DOCUMENT } from '@angular/common';
 
 /**
  * Styled code editor — a themed `<kj-editor>` wrapping the headless `KjEditor`
@@ -89,9 +92,9 @@ export class KjEditorComponent {
   /** Code language — friendly name or Monaco id; short aliases (`ts`, `md`) normalised. */
   readonly kjLanguage = input<KjEditorLanguage>('plaintext');
   /** Read-only mode. */
-  readonly kjReadonly = input<boolean>(false);
+  readonly kjReadonly = input(false, { transform: booleanAttribute });
   /** Show the minimap. */
-  readonly kjMinimap = input<boolean>(false);
+  readonly kjMinimap = input(false, { transform: booleanAttribute });
   /** Gutter line-number mode. */
   readonly kjLineNumbers = input<KjEditorLineNumbers>('on');
   /** Soft wrap. */
@@ -99,19 +102,19 @@ export class KjEditorComponent {
   /** Font size in px. */
   readonly kjFontSize = input<number>(13);
   /** Grow to fit content instead of filling the container (great for code snippets). */
-  readonly kjAutoHeight = input<boolean>(false);
+  readonly kjAutoHeight = input(false, { transform: booleanAttribute });
   /** Cap for `kjAutoHeight` in px (content scrolls past it). Uncapped when unset. */
   readonly kjMaxHeight = input<number | undefined>(undefined);
   /** Accessible name for the editor. */
   readonly kjAriaLabel = input<string>('Code editor');
   /** Start with Tab moving focus out instead of indenting. */
-  readonly kjTabFocusMode = input<boolean>(false);
+  readonly kjTabFocusMode = input(false, { transform: booleanAttribute });
   /** Escape hatch — merged last into Monaco's construction options. */
   readonly kjOptions = input<KjEditorOptions>({});
   /** Show the toolbar (language badge + copy button). */
-  readonly kjShowToolbar = input<boolean>(true);
+  readonly kjShowToolbar = input(true, { transform: booleanAttribute });
   /** Show the status bar (cursor position + keyboard hint). */
-  readonly kjShowStatusBar = input<boolean>(true);
+  readonly kjShowStatusBar = input(true, { transform: booleanAttribute });
 
   /** True until Monaco has mounted. */
   readonly loading = signal(true);
@@ -125,20 +128,18 @@ export class KjEditorComponent {
   /** Human label for the platform-appropriate tab-escape shortcut. */
   readonly escapeHint = computed(() => 'Press Ctrl+M to toggle Tab trapping');
 
+  private readonly document = inject(DOCUMENT);
+  /** Shared root theme watcher — one `MutationObserver` for every editor and chart. */
+  private readonly themes = inject(KjThemeObserver);
   private monaco: KjMonaco | null = null;
 
   constructor() {
     afterNextRender(() => {
       void this.syncTheme();
-      // Re-apply the kj Monaco theme when the app theme switches.
-      if (typeof MutationObserver !== 'undefined') {
-        const obs = new MutationObserver(() => void this.syncTheme());
-        obs.observe(document.documentElement, {
-          attributes: true,
-          attributeFilter: ['data-theme', 'class'],
-        });
-        this.destroyRef.onDestroy(() => obs.disconnect());
-      }
+      // Re-apply the kj Monaco theme when the app theme switches. The watcher
+      // is the shared root service, so N editors on a page cost one observer
+      // on `<html>` rather than N.
+      this.destroyRef.onDestroy(this.themes.observe(() => void this.syncTheme()));
     });
   }
 
@@ -154,7 +155,7 @@ export class KjEditorComponent {
 
   async copy(): Promise<void> {
     try {
-      await navigator.clipboard.writeText(this.kjValue());
+      await this.document.defaultView?.navigator.clipboard.writeText(this.kjValue());
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 1500);
     } catch {
@@ -207,11 +208,11 @@ export class KjEditorComponent {
   /** Resolve a CSS custom property to [r,g,b] via a probe element. */
   private resolveColor(varName: string): [number, number, number] | null {
     const host = this.hostRef.nativeElement;
-    const probe = document.createElement('span');
+    const probe = this.document.createElement('span');
     probe.style.color = `var(${varName})`;
     probe.style.display = 'none';
     host.appendChild(probe);
-    const rgb = getComputedStyle(probe).color;
+    const rgb = this.document.defaultView?.getComputedStyle(probe).color ?? '';
     host.removeChild(probe);
     const m = rgb.match(/rgba?\(([^)]+)\)/);
     if (!m) return null;

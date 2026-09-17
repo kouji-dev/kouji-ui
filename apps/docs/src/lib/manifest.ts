@@ -1,9 +1,9 @@
 /**
- * Shared manifest cache for the Angular SSR server.
+ * Shared manifest cache for the Angular prerender pass.
  *
- * Both `server.ts` (Express API routes) and `app.config.server.ts`
- * (Angular SSR rendering) call `getManifest()` — the extraction runs
- * exactly once and the result is reused across all requests.
+ * `app.config.server.ts` (via `ServerDocsManifestProvider`) calls
+ * `getManifest()` — the extraction runs exactly once and the result is reused
+ * across every prerendered route.
  *
  * In dev the file watcher invalidates the cache when any source file
  * in packages/core/src changes; the next request re-extracts.

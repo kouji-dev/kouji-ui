@@ -9,19 +9,21 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
   linkedSignal,
   output,
   untracked,
 } from '@angular/core';
 import { bindPresets } from '../presets';
 import { KJ_PAGINATION_CONFIG } from './config';
+import { injectKjPaginationLabels } from './labels';
 import {
   KJ_PAGINATION,
   KjPageToken,
   KjPaginationContext,
 } from './pagination.context';
 import { computePageTokens } from './page-tokens';
+import { DOCUMENT } from '@angular/common';
+import { kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Root of the Pagination directive family. Owns the page-state model
@@ -70,14 +72,22 @@ import { computePageTokens } from './page-tokens';
     ...bindPresets(KJ_PAGINATION_CONFIG),
   ],
   host: {
-    '[attr.aria-label]': 'config.navigationLabel',
+    '[attr.aria-label]': 'labels.nav()',
     '[attr.data-page]': 'page()',
     '[attr.data-total-pages]': 'totalPages()',
   },
 })
 export class KjPagination implements KjPaginationContext {
+  private readonly document = inject(DOCUMENT);
   /** @internal */
   readonly config = inject(KJ_PAGINATION_CONFIG);
+
+  /**
+   * Resolved label set: a `provideKjPagination(…)` override when one is set,
+   * otherwise the active i18n catalog. Locale-reactive.
+   * @internal
+   */
+  readonly labels = injectKjPaginationLabels();
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /**
@@ -179,18 +189,10 @@ export class KjPagination implements KjPaginationContext {
         return;
       }
       if (v < 1) {
-        if (isDevMode()) {
-          console.warn(
-            `[kj] kjPage=${v} is out of range; clamping to 1.`,
-          );
-        }
+        kjDevWarn('kjPagination', `kjPage=${v} is out of range; clamping to 1.`);
         untracked(() => this.kjPage.set(1));
       } else if (v > total) {
-        if (isDevMode()) {
-          console.warn(
-            `[kj] kjPage=${v} exceeds kjTotalPages=${total}; clamping to ${total}.`,
-          );
-        }
+        kjDevWarn('kjPagination', `kjPage=${v} exceeds kjTotalPages=${total}; clamping to ${total}.`);
         untracked(() => this.kjPage.set(total));
       }
     });
@@ -216,8 +218,7 @@ export class KjPagination implements KjPaginationContext {
     // default; the live region survives focus changes so AT users hear
     // "Page 5 of 10" even if the click moved focus elsewhere.
     afterNextRender(() => {
-      if (typeof document === 'undefined') return;
-      const span = document.createElement('span');
+      const span = this.document.createElement('span');
       span.setAttribute('aria-live', this.config.pageChangeAnnouncementPoliteness);
       span.setAttribute('aria-atomic', 'true');
       span.setAttribute('data-kj-pagination-live', '');
@@ -249,7 +250,7 @@ export class KjPagination implements KjPaginationContext {
       // even when the same string is announced repeatedly (e.g. on a
       // single-page dataset where every "click" yields "Page 1 of 1").
       const region = this.liveRegion;
-      const message = this.config.pageChangeAnnouncement(page, total);
+      const message = this.labels.announcement(page, total);
       region.textContent = '';
       // queueMicrotask makes the clear paint before the set; AT pickup
       // is more reliable than two synchronous writes back-to-back.

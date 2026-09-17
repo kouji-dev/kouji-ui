@@ -9,6 +9,10 @@ export type Theme =
   | 'sakura' | 'bauhaus' | 'dune' | 'mint'
   | 'forest' | 'nord' | 'terminal';
 
+/**
+ * Every theme @kouji-ui/themes ships (packages/themes/src/index.css). The
+ * pre-paint script in index.html carries the same list — keep both in sync.
+ */
 export const AVAILABLE_THEMES: readonly Theme[] = [
   'kouji', 'dark', 'light', 'retro', 'cyberpunk', 'corporate',
   'sakura', 'bauhaus', 'dune', 'mint',

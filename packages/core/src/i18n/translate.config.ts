@@ -25,9 +25,15 @@ export const KJ_TRANSLATION_CATALOGS = new InjectionToken<
 >('kj.translation.catalogs');
 
 /**
- * Registers one or more alternate message catalogs for the enclosing injector.
+ * Registers one or more alternate message catalogs **for the application**.
  * The English (`en`) catalog is always available without registration, so this
  * only adds the languages you ship. Composes — several calls accumulate.
+ *
+ * {@link KjTranslateService} is `providedIn: 'root'` and reads this token once,
+ * in its constructor, so a call placed in a *route*'s `providers` is ignored.
+ * To add a catalog after bootstrap — a lazily-loaded locale, a feature that
+ * ships its own strings — call `KjTranslateService.register(locale, catalog)`,
+ * which merges into the live map and is the supported late path.
  *
  * Because catalogs are plain `import`-able modules, only the languages you
  * actually import are bundled (tree-shakable).

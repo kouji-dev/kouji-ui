@@ -76,7 +76,15 @@ export class KjButtonGroup implements KjButtonGroupContext {
 
   /**
    * Group-level disabled flag. OR-ed with each child button's own
-   * `kjDisabled` — if either is `true` the child is disabled.
+   * `kjDisabled` — if either is `true` the child is disabled. Default `false`.
+   *
+   * Deliberately **not** the composed `KjDisabled` primitive (arch F-16): this
+   * flag is a cascade the children read through `KJ_BUTTON_GROUP`, not a
+   * disabled posture on this element — a `role="group"` is not operable, and
+   * every child already announces its own `aria-disabled`. The group reflects
+   * `data-disabled` for styling only. It is also the one input the styled
+   * `<kj-button-group>` forwards by name through `hostDirectives`, which
+   * requires the declaration to live on this class (NG0311 otherwise).
    */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
 

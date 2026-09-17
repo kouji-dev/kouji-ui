@@ -68,3 +68,69 @@ describe('provideKjDocumentDirection', () => {
     expect(html.getAttribute('dir')).toBe('untouched');
   });
 });
+
+describe('provideKjDocumentDirection — single-writer contract (mfe F-15)', () => {
+  const html = document.documentElement;
+  let original: string | null;
+
+  beforeEach(() => {
+    original = html.getAttribute('dir');
+    html.removeAttribute('dir');
+  });
+
+  afterEach(() => {
+    if (original === null) html.removeAttribute('dir');
+    else html.setAttribute('dir', original);
+  });
+
+  /** Let the MutationObserver's microtask deliver. */
+  const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+  it('warns once when something else overwrites <html dir>', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { flush } = setup([provideKjLocale({ locale: 'en-US' })]);
+      flush();
+      expect(html.getAttribute('dir')).toBe('ltr');
+
+      // A second writer — another bootstrapped app, or app code reaching for
+      // the attribute directly instead of KjLocale.setDirection().
+      html.setAttribute('dir', 'rtl');
+      await settle();
+
+      const hits = warn.mock.calls.filter((c) => String(c[0]).includes('<html dir> was changed'));
+      expect(hits).toHaveLength(1);
+      expect(String(hits[0][0])).toContain('single writer');
+
+      // Still only one warning after a second offending write.
+      html.setAttribute('dir', 'ltr');
+      await settle();
+      html.setAttribute('dir', 'rtl');
+      await settle();
+      expect(
+        warn.mock.calls.filter((c) => String(c[0]).includes('<html dir> was changed')),
+      ).toHaveLength(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not warn for its own writes', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { locale, flush } = setup([provideKjLocale({ locale: 'en-US' })]);
+      flush();
+      locale.setDirection('rtl');
+      flush();
+      await settle();
+      locale.setDirection('ltr');
+      flush();
+      await settle();
+      expect(
+        warn.mock.calls.filter((c) => String(c[0]).includes('<html dir> was changed')),
+      ).toHaveLength(0);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});

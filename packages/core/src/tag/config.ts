@@ -1,4 +1,5 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
 /** Preset configuration consumed by `KjTag` via `bindPresets`. */
 export interface KjTagConfig {
@@ -8,10 +9,16 @@ export interface KjTagConfig {
 }
 
 /**
- * Default Tag presets shipped by kouji-ui. Variant list is intentionally
- * kept in lock-step with `KjBadge` (see analysis §"Variant parity with
- * Badge") — a non-interactive Tag and a Badge with the same `kjVariant`
- * must look identical.
+ * Default Tag presets shipped by kouji-ui.
+ *
+ * Tag and Badge overlap but are **not** the same vocabulary: `default`,
+ * `secondary` and `outline` render identically on both, `destructive` is
+ * Badge-only (Tag's CSS aliases it onto `danger`), and `primary` / `success` /
+ * `warning` / `danger` / `info` / `ghost` are Tag-only. Pick Tag when the
+ * chip is interactive (removable, selectable) and Badge for inline status
+ * text; do not assume a variant name carries across.
+ *
+ * Spread to extend: `[...KJ_TAG_DEFAULTS.variants, 'brand']`.
  */
 export const KJ_TAG_DEFAULTS: KjTagConfig = {
   variants: [
@@ -39,15 +46,12 @@ export const KJ_TAG_CONFIG = new InjectionToken<KjTagConfig>('kj.tag.config', {
 });
 
 /**
- * Configures the Tag presets for the enclosing injector. Replaces (does
- * not merge) `variants` and `sizes`; spread `KJ_TAG_DEFAULTS.variants` to
- * extend.
+ * Configures the Tag presets for the enclosing injector.
+ *
+ * Deep-merges over {@link KJ_TAG_DEFAULTS} through {@link mergeKjConfig} —
+ * pass only the fields you want to change, at any depth. Arrays still
+ * **replace**; spread `KJ_TAG_DEFAULTS.variants` to extend the list.
  */
-export function provideKjTag(config: Partial<KjTagConfig>): Provider[] {
-  return [
-    {
-      provide: KJ_TAG_CONFIG,
-      useValue: { ...KJ_TAG_DEFAULTS, ...config },
-    },
-  ];
+export function provideKjTag(config: KjDeepPartial<KjTagConfig>): Provider[] {
+  return [{ provide: KJ_TAG_CONFIG, useValue: mergeKjConfig(KJ_TAG_DEFAULTS, config) }];
 }

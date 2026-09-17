@@ -228,3 +228,59 @@ describe('KjBreadcrumbComponent (wrapper)', () => {
     expect(link.textContent.trim()).toBe('Home');
   });
 });
+
+/** arch F-2 — the crumb link's `kjExternal` accepts the bare-attribute form. */
+describe('kj-breadcrumb-link bare boolean attributes', () => {
+  @Component({
+    standalone: true,
+    imports,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `
+      <kj-breadcrumb>
+        <kj-breadcrumb-list>
+          <kj-breadcrumb-item>
+            <kj-breadcrumb-link kjHref="https://example.com" kjExternal>Docs</kj-breadcrumb-link>
+          </kj-breadcrumb-item>
+        </kj-breadcrumb-list>
+      </kj-breadcrumb>
+    `,
+  })
+  class BareHost {}
+
+  test('a bare kjExternal applies the external-link rel plumbing', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const anchor = fixture.nativeElement.querySelector('a.kj-breadcrumb-link') as HTMLAnchorElement;
+    expect(anchor.getAttribute('data-external')).toBe('true');
+    expect(anchor.getAttribute('rel')).toContain('noopener');
+    expect(anchor.getAttribute('rel')).toContain('noreferrer');
+  });
+
+  test('an unset kjExternal leaves the tri-state undefined, not an explicit "not external"', () => {
+    @Component({
+      standalone: true,
+      imports,
+      changeDetection: ChangeDetectionStrategy.Eager,
+      template: `
+        <kj-breadcrumb>
+          <kj-breadcrumb-list>
+            <kj-breadcrumb-item>
+              <kj-breadcrumb-link kjHref="/a">A</kj-breadcrumb-link>
+            </kj-breadcrumb-item>
+          </kj-breadcrumb-list>
+        </kj-breadcrumb>
+      `,
+    })
+    class AutoHost {}
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [AutoHost] });
+    const fixture = TestBed.createComponent(AutoHost);
+    fixture.detectChanges();
+    const anchor = fixture.nativeElement.querySelector('a.kj-breadcrumb-link') as HTMLAnchorElement;
+    expect(anchor.hasAttribute('data-external')).toBe(false);
+    expect(anchor.hasAttribute('rel')).toBe(false);
+  });
+});

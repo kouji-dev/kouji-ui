@@ -1,14 +1,15 @@
 import {
   computed,
   contentChildren,
+  DestroyRef,
   Directive,
   forwardRef,
   inject,
-  OnDestroy,
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
 import { KJ_CASCADE_SELECT } from './cascade-select.context';
 import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Single row inside a `[kjCascadeSelectPanel]` or
@@ -73,15 +74,17 @@ import { KjCascadeSelectSubPanel } from './cascade-select-sub-panel';
     '[attr.data-selected]': 'item.ariaSelected() === "true" ? "" : null',
     '[attr.data-active-path]': 'isOnActivePath() ? "" : null',
     '(click)': 'handleClick()',
+    '(keydown.enter)': 'handleActivateKey($event)',
+    '(keydown.space)': 'handleActivateKey($event)',
     '(mouseenter)': 'handleMouseEnter()',
     '(mouseleave)': 'handleMouseLeave()',
   },
 })
-export class KjCascadeSelectOption implements OnDestroy {
+export class KjCascadeSelectOption {
   /** @internal — composed list-item primitive providing id/value/disabled/activation. */
   readonly item = injectListItem<unknown>();
   /** @internal */
-  readonly ctx = inject(KJ_CASCADE_SELECT);
+  readonly ctx = injectParent(KJ_CASCADE_SELECT, { child: 'KjCascadeSelectOption', parent: '[kjCascadeSelect]' });
 
   /**
    * @internal Closest ancestor sub-panel (if any). `null` when this
@@ -119,6 +122,9 @@ export class KjCascadeSelectOption implements OnDestroy {
   /** @internal Whether this option is a branch node. */
   readonly isBranch = computed(() => this._subPanels().length > 0);
 
+  /** @internal The sub-panel this branch opens, or `null` for a leaf. */
+  readonly subPanel = computed(() => this._subPanels()[0] ?? null);
+
   /** @internal Inverse of `isBranch` for the `data-leaf` attribute. */
   readonly isLeaf = computed(() => !this.isBranch());
 
@@ -139,9 +145,11 @@ export class KjCascadeSelectOption implements OnDestroy {
     return v !== undefined && path.includes(v);
   });
 
-  ngOnDestroy(): void {
-    clearTimeout(this._openTimer);
-    clearTimeout(this._closeTimer);
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      clearTimeout(this._openTimer);
+      clearTimeout(this._closeTimer);
+    });
   }
 
   /**
@@ -158,6 +166,21 @@ export class KjCascadeSelectOption implements OnDestroy {
     clearTimeout(this._closeTimer);
     if (this.subPanelOpen()) this.ctx.closeSubPanel(this.item.id);
     else this.ctx.openSubPanel(this.item.id);
+  }
+
+  /**
+   * @internal Enter / Space on a focused branch (APG tree: the node's
+   * default action) open its sub-panel and move focus into it. The
+   * composed `KjListItem` already cancelled the key; on a leaf it also
+   * committed the value, so there is nothing left to do here.
+   */
+  handleActivateKey(event: Event): void {
+    if (this.item.disabled() || !this.isBranch()) return;
+    event.preventDefault();
+    clearTimeout(this._openTimer);
+    clearTimeout(this._closeTimer);
+    this.ctx.openSubPanel(this.item.id);
+    this.subPanel()?._focusFirst();
   }
 
   /** @internal */

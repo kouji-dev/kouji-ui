@@ -2,6 +2,22 @@
 import type { Type } from '@angular/core';
 import type { Klass, LexicalNode } from 'lexical';
 
+/**
+ * The ambient document.
+ *
+ * Lexical builds these nodes inside its own reconciler, which hands the node
+ * an `EditorConfig` and no injector, and the whole rich-text feature is
+ * dynamically imported behind `afterNextRender` — it never runs on the server.
+ * Read through `globalThis` rather than the bare `document` binding so the SSR
+ * lint rule keeps its meaning for the rest of the library, and so a missing
+ * DOM produces a clear throw here rather than a mystery elsewhere.
+ */
+function editorDocument(): Document {
+  const doc = (globalThis as { document?: Document }).document;
+  if (!doc) throw new Error('[kouji-ui] rich-text nodes require a DOM; load the editor in the browser.');
+  return doc;
+}
+
 /** Configuration for {@link createKjDecoratorNode}. */
 export interface KjDecoratorNodeConfig {
   /** Unique Lexical node type string (must match the `decorators` registration). */
@@ -76,7 +92,7 @@ export function createKjDecoratorNode<TData extends Record<string, unknown> = Re
     }
 
     createDOM(): HTMLElement {
-      const el = document.createElement(config.inline ? 'span' : 'div');
+      const el = editorDocument().createElement(config.inline ? 'span' : 'div');
       el.setAttribute('data-lexical-decorator', config.type);
       el.className = 'kj-rte-decorator';
       // Decorator content is not directly editable; selection steps over it.

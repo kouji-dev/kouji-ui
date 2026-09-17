@@ -1,8 +1,7 @@
 import {
+  DestroyRef,
   Directive,
   ElementRef,
-  OnDestroy,
-  OnInit,
   Signal,
   booleanAttribute,
   computed,
@@ -17,18 +16,12 @@ import {
   KJ_ACCORDION,
   KJ_ACCORDION_ITEM,
   KjAccordionContext,
+  KjAccordionTriggerRef,
   KjAccordionItemContext,
   KjAccordionType,
 } from './accordion.context';
-
-let kjAccordionSeedCounter = 0;
-function nextSeed(): string {
-  // Try crypto.randomUUID where available (browser, jsdom 22+, node 19+).
-  // Fall back to a counter so SSR / older environments still produce a stable string.
-  const cryptoLike = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
-  if (cryptoLike?.randomUUID) return cryptoLike.randomUUID().slice(0, 8);
-  return `kj${(++kjAccordionSeedCounter).toString(36)}`;
-}
+import { KjId } from '../primitives/overlay/id';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Root accordion container. Manages open/close state for accordion items.
@@ -98,7 +91,7 @@ export class KjAccordion implements KjAccordionContext {
   readonly arrowNavigation: Signal<boolean> = this.kjArrowNavigation;
 
   /** @internal Registered triggers in document order — for arrow-key roving. */
-  private readonly _triggers = signal<readonly KjAccordionTrigger[]>([]);
+  private readonly _triggers = signal<readonly KjAccordionTriggerRef[]>([]);
 
   /** Public read-only registration list, in document order. */
   readonly triggers = this._triggers.asReadonly();
@@ -143,13 +136,13 @@ export class KjAccordion implements KjAccordionContext {
     return this._openIds().has(id);
   }
 
-  /** @internal Trigger registration — called from `KjAccordionTrigger.ngOnInit`. */
-  registerTrigger(t: KjAccordionTrigger): void {
+  /** @internal Trigger registration — called from the `KjAccordionTrigger` constructor. */
+  registerTrigger(t: KjAccordionTriggerRef): void {
     this._triggers.update((list) => (list.includes(t) ? list : [...list, t]));
   }
 
-  /** @internal Trigger un-registration — called from `KjAccordionTrigger.ngOnDestroy`. */
-  unregisterTrigger(t: KjAccordionTrigger): void {
+  /** @internal Trigger un-registration — called from the trigger's `DestroyRef`. */
+  unregisterTrigger(t: KjAccordionTriggerRef): void {
     this._triggers.update((list) => list.filter((x) => x !== t));
   }
 
@@ -238,7 +231,7 @@ function arraysEqual(a: readonly string[], b: readonly string[]): boolean {
   },
 })
 export class KjAccordionItem implements KjAccordionItemContext {
-  private readonly accordion = inject(KJ_ACCORDION) as KjAccordion;
+  private readonly accordion = injectParent(KJ_ACCORDION, { child: 'KjAccordionItem', parent: '[kjAccordion]' });
 
   /** The unique value identifying this item within the accordion. */
   readonly kjItemValue = input.required<string>();
@@ -249,13 +242,20 @@ export class KjAccordionItem implements KjAccordionItemContext {
    */
   readonly kjItemDisabled = input(false, { transform: booleanAttribute });
 
-  private readonly idSeed = nextSeed();
+  /**
+   * Deterministic per-item id root. Minted from {@link KjId} so a server
+   * render and its hydrating client agree — `crypto.randomUUID()` never
+   * could. Not derived from `kjItemValue`: the value may hold characters
+   * that are illegal in an id, and it can change while `aria-controls`
+   * points at it.
+   */
+  private readonly idSeed = inject(KjId).mint('accordion-item');
 
   /** Stable id for the trigger element. */
-  readonly headerId = computed(() => `kj-accordion-trigger-${this.kjItemValue()}-${this.idSeed}`);
+  readonly headerId = computed(() => `${this.idSeed}-trigger`);
 
   /** Stable id for the content region element. */
-  readonly contentId = computed(() => `kj-accordion-content-${this.kjItemValue()}-${this.idSeed}`);
+  readonly contentId = computed(() => `${this.idSeed}-content`);
 
   /** Read-only mirror of the item value for context consumers. */
   readonly value: Signal<string> = this.kjItemValue;
@@ -316,19 +316,18 @@ export class KjAccordionItem implements KjAccordionItemContext {
     '(keydown)': 'onKeydown($event)',
   },
 })
-export class KjAccordionTrigger implements OnInit, OnDestroy {
+export class KjAccordionTrigger implements KjAccordionTriggerRef {
   /** The parent accordion item context. */
-  readonly item = inject(KJ_ACCORDION_ITEM) as KjAccordionItem;
-  private readonly accordion = inject(KJ_ACCORDION) as KjAccordion;
+  readonly item = injectParent(KJ_ACCORDION_ITEM, { child: 'KjAccordionTrigger', parent: '[kjAccordionItem]' });
+  private readonly accordion = injectParent(KJ_ACCORDION, { child: 'KjAccordionTrigger', parent: '[kjAccordion]' });
   /** @internal Native host element. */
   readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  ngOnInit(): void {
+  constructor() {
+    // Registration order is DOM order: sibling directives are constructed in
+    // template order, which is what the arrow-key roving depends on.
     this.accordion.registerTrigger(this);
-  }
-
-  ngOnDestroy(): void {
-    this.accordion.unregisterTrigger(this);
+    inject(DestroyRef).onDestroy(() => this.accordion.unregisterTrigger(this));
   }
 
   /** @internal Click handler. */
@@ -397,5 +396,5 @@ export class KjAccordionTrigger implements OnInit, OnDestroy {
 })
 export class KjAccordionContent {
   /** The parent accordion item context. */
-  readonly item = inject(KJ_ACCORDION_ITEM);
+  readonly item = injectParent(KJ_ACCORDION_ITEM, { child: 'KjAccordionContent', parent: '[kjAccordionItem]' });
 }

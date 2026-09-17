@@ -17,7 +17,11 @@ thead {
 }
 
 th {
-  padding: var(--kj-space-md) var(--kj-space-lg);
+  /* No padding here: every header cell in this table renders a
+     `<button kjTableSort>`, and the padding has to belong to the button so the
+     whole cell is the hit area rather than a ~15px strip of text inside it
+     (WCAG 2.5.5 Target Size). */
+  padding: 0;
   text-align: left;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
@@ -28,6 +32,40 @@ th {
   border-right: 1px solid var(--kj-border-default);
 }
 th:last-child { border-right: none; }
+
+/* `<button kjTableSort>` is the real control; it has to fill the header cell
+   so the whole cell stays clickable and the focus ring outlines the label. */
+.docs-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kj-space-xs, 4px);
+  width: 100%;
+  /* Carries the cell's padding (see the `th` rule) and a 2.75rem floor, so the
+     control clears WCAG 2.5.5's 44x44 at AAA even though the label is 0.65rem.
+     Only the header row grows; data rows keep their own density. */
+  min-height: 2.75rem;
+  padding: var(--kj-space-md) var(--kj-space-lg);
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.docs-table__sort:focus-visible {
+  /* Inset, not offset: the button now fills the cell, so an outward ring would
+     be clipped by the header's border and by `.table-wrap`'s overflow. */
+  outline: 2px solid var(--kj-border-focus);
+  outline-offset: -2px;
+  border-radius: var(--kj-radius-field);
+}
+
+/* Direction glyph, driven by the `data-sort` the <th> already reflects. */
+.docs-table__sort-indicator::after { content: '↕'; opacity: 0.35; }
+th[data-sort='asc'] .docs-table__sort-indicator::after { content: '↑'; opacity: 1; }
+th[data-sort='desc'] .docs-table__sort-indicator::after { content: '↓'; opacity: 1; }
 
 td {
   padding: var(--kj-space-md) var(--kj-space-lg);

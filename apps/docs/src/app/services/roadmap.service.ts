@@ -1,5 +1,4 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { RoadmapDataProvider } from './roadmap-data.provider';
 import type { RoadmapItem } from '../pages/roadmap/roadmap-data';
 
@@ -12,11 +11,16 @@ import type { RoadmapItem } from '../pages/roadmap/roadmap-data';
  *   for browser hydration.
  * - Browser (prerendered/SSR): `RoadmapDataProvider` → `BrowserRoadmapDataProvider`
  *   reads from TransferState — zero HTTP call.
- * - Browser fallback (dev / non-prerendered): HTTP `GET /api/roadmap`.
+ *
+ * There is **no HTTP fallback**. The build is `outputMode: "static"` and the
+ * deploy is static, so no `/api/roadmap` route exists in any environment — the
+ * old fallback could only ever produce a 404. Seeding happens instead through
+ * the eager `provideAppInitializer(() => inject(RoadmapService))` in
+ * `app.config.ts`, which runs during the prerender of *every* route and so
+ * writes the items into TransferState even for pages that never show the board.
  */
 @Injectable({ providedIn: 'root' })
 export class RoadmapService {
-  private readonly http = inject(HttpClient);
   private readonly provider = inject(RoadmapDataProvider);
 
   readonly items = signal<readonly RoadmapItem[]>([]);
@@ -25,11 +29,6 @@ export class RoadmapService {
     const seeded = this.provider.getItems();
     if (seeded && seeded.length > 0) {
       this.items.set(seeded);
-    } else {
-      // Dev / non-SSR fallback. The API route lives in `apps/docs/src/server.ts`.
-      this.http
-        .get<readonly RoadmapItem[]>('/api/roadmap')
-        .subscribe(list => this.items.set(list));
     }
   }
 }

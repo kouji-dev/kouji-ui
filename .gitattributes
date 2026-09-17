@@ -1,0 +1,7 @@
+# Executable scripts must keep LF. A CRLF checkout (core.autocrlf=true on
+# Windows) leaves a carriage return on the shebang line, which Node tolerates
+# but esbuild — and therefore vitest, when a spec imports one of these — rejects
+# with "SyntaxError: Invalid or unexpected token".
+*.mjs text eol=lf
+*.mts text eol=lf
+*.sh  text eol=lf

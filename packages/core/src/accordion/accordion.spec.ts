@@ -240,3 +240,48 @@ describe('KjAccordion', () => {
     });
   });
 });
+
+/**
+ * arch F-13 — `KjAccordionTrigger` registers from its constructor and
+ * unregisters through `DestroyRef` instead of `ngOnInit` / `ngOnDestroy`.
+ * The observable contract: registration order still drives arrow navigation,
+ * and a removed trigger leaves the registry.
+ */
+describe('KjAccordion trigger registry without lifecycle hooks', () => {
+  @Component({
+    standalone: true,
+    imports,
+    template: `
+      <div kjAccordion kjArrowNavigation>
+        @for (v of values(); track v) {
+          <div kjAccordionItem [kjItemValue]="v">
+            <button kjAccordionTrigger>{{ v }}</button>
+          </div>
+        }
+      </div>
+    `,
+  })
+  class DynamicHost {
+    readonly values = signal(['a', 'b', 'c']);
+  }
+
+  it('arrow navigation follows the surviving triggers after one is removed', async () => {
+    const { container, fixture } = await render(DynamicHost);
+    let triggers = container.querySelectorAll<HTMLElement>('[kjAccordionTrigger]');
+    expect(triggers.length).toBe(3);
+
+    fixture.componentInstance.values.set(['a', 'c']);
+    fixture.detectChanges();
+
+    triggers = container.querySelectorAll<HTMLElement>('[kjAccordionTrigger]');
+    expect(triggers.length).toBe(2);
+
+    triggers[0].focus();
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(triggers[1]);
+    // Wraps over exactly the two that are left — the removed trigger is gone
+    // from the registry, not a dead entry the roving would land on.
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(triggers[0]);
+  });
+});

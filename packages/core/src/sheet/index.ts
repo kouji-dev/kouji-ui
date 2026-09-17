@@ -1,4 +1,5 @@
 export { KjSheet } from './sheet';
+export { KjSheetTitle } from './sheet-title';
 export {
   KjSheetService,
   SHEET_DATA,

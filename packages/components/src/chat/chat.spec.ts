@@ -341,3 +341,32 @@ describe('KjChatHeaderComponent', () => {
     expect(h1).toMatch(/^kj-chat-header-/);
   });
 });
+
+/** arch F-2 — the bubble's `kjChatBubbleNoTail` accepts the bare-attribute form. */
+describe('kj-chat-bubble bare boolean attributes', () => {
+  it('suppresses the tail from a bare kjChatBubbleNoTail', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjChatComponent, KjChatBubbleComponent],
+      template: `<kj-chat><kj-chat-bubble kjChatBubbleNoTail>hi</kj-chat-bubble></kj-chat>`,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    // The wrapper paints an inner `<p kjChatBubble class="kj-chat-bubble">`;
+    // that is where the directive's data-* attributes land.
+    expect(container.querySelector('.kj-chat-bubble')!.hasAttribute('data-tail')).toBe(false);
+  });
+
+  it('keeps the tail when the attribute is absent', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjChatComponent, KjChatBubbleComponent],
+      template: `<kj-chat><kj-chat-bubble>hi</kj-chat-bubble></kj-chat>`,
+    })
+    class Host {}
+
+    const { container } = await render(Host);
+    expect(container.querySelector('.kj-chat-bubble')!.hasAttribute('data-tail')).toBe(true);
+  });
+});

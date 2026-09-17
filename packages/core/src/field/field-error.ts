@@ -1,7 +1,7 @@
 import { DestroyRef, Directive, booleanAttribute, inject, input } from '@angular/core';
 import { KJ_FIELD } from './field.context';
-
-let kjFieldErrorIdCounter = 0;
+import { KjId } from '../primitives/overlay/id';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Error text inside a `[kjField]`. The host id is auto-minted on
@@ -37,7 +37,7 @@ let kjFieldErrorIdCounter = 0;
   },
 })
 export class KjFieldError {
-  /** @internal */ readonly ctx = inject(KJ_FIELD);
+  /** @internal */ readonly ctx = injectParent(KJ_FIELD, { child: 'KjFieldError', parent: '[kjField]' });
 
   /** Override the auto-minted host id. */
   readonly kjFieldErrorId = input<string | undefined>(undefined);
@@ -50,8 +50,8 @@ export class KjFieldError {
   readonly kjFieldErrorReserve = input(false, { transform: booleanAttribute });
 
   /** @internal */ readonly id = (() => {
-    const seq = ++kjFieldErrorIdCounter;
-    return () => this.kjFieldErrorId() ?? `kj-field-error-${seq}`;
+    const generated = inject(KjId).mint('field-error');
+    return () => this.kjFieldErrorId() ?? generated;
   })();
 
   constructor() {

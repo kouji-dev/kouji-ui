@@ -1,6 +1,7 @@
 // Generated from lucide-static@1.14.0/icon-nodes.json. Do not edit by hand.
 // Re-generate via scripts/generate-lucide-icon-names.mjs.
 
+/** Every Lucide icon name in kebab-case, as shipped by the pinned `lucide-static`. */
 export const LUCIDE_ICON_NAMES_RAW: readonly string[] = [
   'a-arrow-down',
   'a-arrow-up',

@@ -152,3 +152,25 @@ describe('KjButtonComponent', () => {
     );
   });
 });
+
+/** arch F-2 — the wrapper's boolean inputs accept the bare-attribute form. */
+describe('kj-button bare boolean attributes', () => {
+  @Component({
+    standalone: true,
+    imports: [KjButtonComponent],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `<kj-button kjDisabled kjLoading kjFullWidth>Go</kj-button>`,
+  })
+  class BareHost {}
+
+  test('forwards bare kjDisabled / kjLoading / kjFullWidth to the inner button', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button.kj-button') as HTMLElement;
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.getAttribute('aria-busy')).toBe('true');
+    expect(btn.getAttribute('data-full')).toBe('true');
+  });
+});

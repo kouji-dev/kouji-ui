@@ -1,16 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  SecurityContext,
   ViewEncapsulation,
   computed,
   inject,
   input,
   signal,
 } from '@angular/core';
-import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
-import { KjChat, type KjChatMessageData, type KjChatMessageRole } from '@kouji-ui/core';
-import { renderMarkdown, type KjMdBlock } from './markdown';
+import {
+  KjChat,
+  KjTranslateService,
+  type KjChatMessageData,
+  type KjChatMessageRole,
+} from '@kouji-ui/core';
+import { createMarkdownRenderer, type KjMdBlock } from './markdown';
+import { DOCUMENT } from '@angular/common';
 
 /** Human-readable accessible name per role. */
 const ROLE_LABEL: Record<KjChatMessageRole, string> = {
@@ -88,13 +92,13 @@ const ROLE_LABEL: Record<KjChatMessageRole, string> = {
                 <pre class="kj-chat-code__pre"><code>{{ block.code }}</code></pre>
               </div>
             } @else {
-              <div class="kj-chat-md" [innerHTML]="safe(block.html)"></div>
+              <div class="kj-chat-md" [innerHTML]="block.html"></div>
             }
           }
 
           <!-- Typing indicator while streaming with no content yet -->
           @if (message().streaming && message().content.length === 0) {
-            <div class="kj-chat-typing" role="status" aria-label="Assistant is typing">
+            <div class="kj-chat-typing" role="status" [attr.aria-label]="typingLabel()">
               <span class="kj-chat-typing__dot"></span>
               <span class="kj-chat-typing__dot"></span>
               <span class="kj-chat-typing__dot"></span>
@@ -109,7 +113,7 @@ const ROLE_LABEL: Record<KjChatMessageRole, string> = {
 
         <!-- Citations -->
         @if ((message().citations ?? []).length > 0) {
-          <ul class="kj-chat-cites" aria-label="Sources">
+          <ul class="kj-chat-cites" [attr.aria-label]="sourcesLabel()">
             @for (c of message().citations ?? []; track c.id) {
               <li class="kj-chat-cite">
                 @if (c.url) {
@@ -139,7 +143,25 @@ const ROLE_LABEL: Record<KjChatMessageRole, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjChatMessage {
-  private readonly sanitizer = inject(DomSanitizer);
+  private readonly document = inject(DOCUMENT);
+  private readonly i18n = inject(KjTranslateService);
+
+  /**
+   * Accessible name of the streaming indicator, from the i18n catalog
+   * (`chat.typing`) — cust F-7: no assistive string is baked into this
+   * template.
+   */
+  protected readonly typingLabel = this.i18n.translation('chat.typing');
+
+  /** Accessible name of the citation list (`chat.sources`). */
+  protected readonly sourcesLabel = this.i18n.translation('chat.sources');
+
+  /**
+   * Per-message incremental markdown renderer: a streamed reply re-parses only
+   * the block still being written, and hands back the blocks it already parsed
+   * by reference.
+   */
+  private readonly render = createMarkdownRenderer();
 
   /** The message to render. */
   readonly message = input.required<KjChatMessageData>();
@@ -151,26 +173,27 @@ export class KjChatMessage {
   readonly avatarGlyph = computed(() => this.roleLabel().charAt(0));
   readonly showAvatar = computed(() => this.message().role !== 'system');
 
-  /** Parsed markdown blocks for the body. */
-  readonly blocks = computed<KjMdBlock[]>(() => renderMarkdown(this.message().content));
+  /**
+   * Parsed markdown blocks for the body — recomputed only when the message
+   * content changes, never per change-detection pass.
+   *
+   * `block.html` is bound straight to `[innerHTML]`, which is Angular's own
+   * `DomSanitizer` at `SecurityContext.HTML`: it runs when the bound string
+   * changes, not on every check, so a reply streaming at 30 tokens/s no longer
+   * re-parses and re-serialises the whole body thirty times a second. That
+   * keeps the deliberate double layer — `renderMarkdown` escapes raw HTML at
+   * the parse layer, the binding sanitises what comes out — while paying for
+   * each layer once per change. A chat body is model or user output, the one
+   * place in a UI kit where trusting a single layer is a bad bet.
+   */
+  readonly blocks = computed<KjMdBlock[]>(() => this.render(this.message().content));
 
   private readonly _copied = signal<number | null>(null);
   readonly copiedIndex = this._copied.asReadonly();
 
-  /**
-   * Sanitise rather than bypass. `renderMarkdown` already escapes raw HTML at
-   * the parse layer, but a chat body is model or user output — the one place
-   * in a UI kit where trusting a single layer is a bad bet. `sanitize` strips
-   * anything the parser somehow let through instead of waving it past
-   * Angular's checks.
-   */
-  safe(html: string): SafeHtml {
-    return this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
-  }
-
   async copy(code: string, index: number): Promise<void> {
     try {
-      await navigator.clipboard?.writeText(code);
+      await this.document.defaultView?.navigator?.clipboard?.writeText(code);
       this._copied.set(index);
       setTimeout(() => this._copied.set(null), 2000);
     } catch {

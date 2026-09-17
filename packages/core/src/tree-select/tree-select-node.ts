@@ -7,6 +7,8 @@ import {
 } from '@angular/core';
 import { KjListItem, injectListItem } from '../primitives/list';
 import { KJ_TREE_SELECT } from './tree-select.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
+import { KjTranslateService } from '../i18n/translate.service';
 
 /**
  * Individual tree node (treeitem). Composes `KjListItem` via
@@ -76,7 +78,7 @@ export class KjTreeSelectNode {
   /** Whether this node has child nodes (branch vs. leaf). */
   readonly kjHasChildren = input(false, { transform: booleanAttribute });
 
-  private readonly ctx = inject(KJ_TREE_SELECT);
+  private readonly ctx = injectParent(KJ_TREE_SELECT, { child: 'KjTreeSelectNode', parent: '[kjTreeSelect]' });
   /** @internal — composed list-item primitive providing id/value/disabled/activation. */
   readonly item = injectListItem<unknown>();
 
@@ -109,13 +111,24 @@ export class KjTreeSelectNode {
   selector: '[kjTreeSelectToggle]',
   standalone: true,
   host: {
-    '[attr.aria-label]': 'isExpanded() ? "Collapse" : "Expand"',
+    '[attr.aria-label]': 'ariaLabel()',
     '[attr.data-expanded]': 'isExpanded() ? "true" : "false"',
     '(click)': 'handleClick($event)',
   },
 })
 export class KjTreeSelectToggle {
-  private readonly ctx = inject(KJ_TREE_SELECT);
+  private readonly i18n = inject(KjTranslateService);
+
+  /**
+   * Accessible name of the expand/collapse toggle, from the i18n catalog
+   * (`treeSelect.expand` / `treeSelect.collapse`) — cust F-7: no assistive
+   * string is baked into this directive's host block.
+   */
+  protected readonly ariaLabel = computed(() =>
+    this.i18n.translate(this.isExpanded() ? 'treeSelect.collapse' : 'treeSelect.expand'),
+  );
+
+  private readonly ctx = injectParent(KJ_TREE_SELECT, { child: 'KjTreeSelectToggle', parent: '[kjTreeSelect]' });
   /** @internal — parent node context */
   private readonly node = inject(KjTreeSelectNode);
 

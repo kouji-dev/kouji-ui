@@ -1,5 +1,6 @@
-import { Directive, inject } from '@angular/core';
+import { DestroyRef, Directive, inject } from '@angular/core';
 import { KJ_FIELD } from './field.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Label inside a `[kjField]`. Reflects the field's `controlId` as `for=`
@@ -26,5 +27,12 @@ import { KJ_FIELD } from './field.context';
   },
 })
 export class KjFieldLabel {
-  /** @internal */ readonly ctx = inject(KJ_FIELD);
+  /** @internal */ readonly ctx = injectParent(KJ_FIELD, { child: 'KjFieldLabel', parent: '[kjField]' });
+
+  constructor() {
+    // Tells the field that `labelId` now names a live element. A control that
+    // can only be labelled by reference (`<div kjInputOtp role="group">`)
+    // waits for this before pointing `aria-labelledby` at it.
+    inject(DestroyRef).onDestroy(this.ctx.registerLabel());
+  }
 }

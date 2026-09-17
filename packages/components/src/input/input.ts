@@ -2,27 +2,31 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  ViewChild,
   ViewEncapsulation,
-  forwardRef,
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
   input,
   viewChild,
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from '@angular/forms';
-import { KjInput } from '@kouji-ui/core';
+import { KjFormControl, KjInput, type KjExtensible } from '@kouji-ui/core';
 
+/** Native `type` values `<kj-input>` supports. Default `'text'`. */
 export type KjInputType = 'text' | 'email' | 'password' | 'number'
                         | 'search' | 'tel' | 'url' | 'color'
                         | 'date' | 'time' | 'datetime-local';
 
 /** Visual variants — `default` uses the field surface; `sunken` drops to
- *  body bg so the input pops against a card/surface parent. */
-export type KjInputVariant = 'default' | 'sunken';
+ *  body bg so the input pops against a card/surface parent. Open by design
+ *  ({@link KjExtensible}): an unknown value reflects as `data-variant` for a
+ *  consumer rule to pick up. */
+export type KjInputVariant = KjExtensible<'default' | 'sunken'>;
 
 /** Size tier — `xs` (28px) for filter rows / inline editors, `sm` (32px)
  *  for dense forms, `md` (36px, default) for standard rows, `lg` (44px)
- *  for touch-first primary inputs. */
-export type KjInputSize = 'xs' | 'sm' | 'md' | 'lg';
+ *  for touch-first primary inputs. Open by design ({@link KjExtensible}). */
+export type KjInputSize = KjExtensible<'xs' | 'sm' | 'md' | 'lg'>;
 
 /**
  * Styled wrapper around the headless KjInput directive.
@@ -93,25 +97,21 @@ export type KjInputSize = 'xs' | 'sm' | 'md' | 'lg';
   selector: 'kj-input',
   standalone: true,
   imports: [KjInput],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => KjInputComponent),
-      multi: true,
-    },
-  ],
+  hostDirectives: [KjFormControl],
   template: `
     <input
       #nativeInput
       kjInput
       class="kj-input"
+      [class]="kjClass()"
       [type]="type()"
       [value]="value()"
       [placeholder]="placeholder()"
       [attr.autocomplete]="autocomplete() || null"
       [attr.inputmode]="inputmode() || null"
       [attr.data-variant]="variant()"
-      [attr.data-size]="kjSize() === 'md' ? null : kjSize()"
+      [attr.data-size]="resolvedSize() === 'md' ? null : resolvedSize()"
+      [attr.aria-label]="ariaLabel() || null"
       [kjInvalid]="invalid()"
       [kjDisabled]="disabled()"
     />
@@ -124,21 +124,65 @@ export type KjInputSize = 'xs' | 'sm' | 'md' | 'lg';
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjInputComponent implements ControlValueAccessor {
+export class KjInputComponent {
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-input`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target.
+   *
+   * This is the supported per-instance override. Author the rule *unlayered*
+   * so it beats `@layer kj.component` regardless of specificity, and set the
+   * component's documented `--kj-*` knobs from it rather than re-declaring its
+   * internals:
+   *
+   * ```html
+   * <kj-input kjClass="danger-zone">…</kj-input>
+   * ```
+   * ```css
+   * .danger-zone { --kj-input-bg: hotpink; }
+   * ```
+   */
+  readonly kjClass = input<string>('');
+  /** Native `type` of the inner `<input>`. Closed — each value changes behaviour. */
   readonly type = input<KjInputType>('text');
+  /** Visual variant reflected as `data-variant` on the inner `<input>`. */
   readonly variant = input<KjInputVariant>('default');
-  readonly kjSize = input<KjInputSize>('md');
+  /**
+   * Size tier reflected as `data-size` (omitted for the default `'md'`).
+   *
+   * `<kj-*>` element components take bare input names — see
+   * `rules/code_style.md`. This is the only spelling; the prefixed one this
+   * class used to also accept was removed rather than aliased (arch F-11).
+   */
+  readonly size = input<KjInputSize | undefined>(undefined);
+  /** `size` if set, else `'md'`. */
+  protected readonly resolvedSize = computed<KjInputSize>(() => this.size() ?? 'md');
+  /** Initial text of the inner `<input>`. Default `''`. Use `[(ngModel)]` / `[formControl]` for two-way value. */
   readonly value = input<string>('');
+  /** Native `placeholder` on the inner `<input>`. Default `''` (no placeholder). */
   readonly placeholder = input<string>('');
-  readonly invalid = input(false);
-  readonly disabled = input(false);
+  /** Invalid state — reflected as `aria-invalid` once the control is touched. Default `false`. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** Disables the inner `<input>` (native `disabled`). Default `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+  /**
+   * Accessible name for the inner `<input>`, written as `aria-label`. Empty
+   * string omits the attribute.
+   *
+   * Use it only where no visible label can be associated — a table filter
+   * row, a search field whose label is an adjacent icon. Inside a
+   * `<kj-field>`, leave it unset: `KjFieldControl` wires `aria-labelledby` to
+   * the field's `<kj-field-label>` and a competing `aria-label` would win over
+   * the visible text (WCAG 2.5.3 Label in Name).
+   */
+  readonly ariaLabel = input<string>('');
   /** Native `autocomplete` attribute passthrough. Empty string omits the attribute. */
   readonly autocomplete = input<string>('');
   /** Native `inputmode` attribute passthrough. Empty string omits the attribute. */
   readonly inputmode = input<string>('');
 
-  @ViewChild(KjInput, { static: true })
-  protected innerInput?: KjInput;
+  /** The composed headless `kjInput` in this component's view — the real CVA. */
+  protected readonly innerInput = viewChild(KjInput);
 
   /** Native `<input>` element, queried via template-ref. Used by callers
    *  (cell editors, focus-trapping consumers) that need to move keyboard
@@ -150,16 +194,18 @@ export class KjInputComponent implements ControlValueAccessor {
     this.nativeInput()?.nativeElement.focus();
   }
 
-  writeValue(val: unknown): void {
-    this.innerInput?.formCtrl.writeValue(val);
-  }
-  registerOnChange(fn: (value: unknown) => void): void {
-    this.innerInput?.formCtrl.registerOnChange(fn);
-  }
-  registerOnTouched(fn: () => void): void {
-    this.innerInput?.formCtrl.registerOnTouched(fn);
-  }
-  setDisabledState(isDisabled: boolean): void {
-    this.innerInput?.formCtrl.setDisabledState(isDisabled);
+  /**
+   * The composed `KjFormControl` — this component's `ControlValueAccessor`.
+   *
+   * The wrapper is the element a consumer binds `[(ngModel)]` / `[formControl]`
+   * to, but the control that owns the DOM is the headless `kjInput` in the view.
+   * `delegateTo` joins the two, replaying anything Angular's forms layer wrote
+   * before the view query resolved — which is why this is not four hand-written
+   * accessor methods plus a pending-value buffer.
+   */
+  protected readonly formCtrl = inject(KjFormControl);
+
+  constructor() {
+    effect(() => this.formCtrl.delegateTo(this.innerInput()?.formCtrl));
   }
 }

@@ -2,11 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  booleanAttribute,
   computed,
-  inject,
   input,
 } from '@angular/core';
-import { KJ_TABLE, KjTable } from '@kouji-ui/core';
+import { KJ_TABLE, injectParent } from '@kouji-ui/core';
 import {
   KjPaginationComponent,
   KjPaginationFirstComponent,
@@ -136,17 +136,22 @@ import { KjSelectComponent, KjOptionComponent } from '../select';
   `,
   encapsulation: ViewEncapsulation.None,
 })
-export class KjTablePaginationComponent {
+export class KjTablePagination {
   /** Available page sizes for the selector. */
   readonly kjPageSizes = input<readonly number[]>([10, 25, 50, 100]);
   /** Show the "Showing N–M of total" summary. Default `true`. */
-  readonly kjShowSummary = input<boolean>(true);
+  readonly kjShowSummary = input<boolean, unknown>(true, { transform: booleanAttribute });
   /** Size tier — matches the rest of the design system. `xs` for dense
    *  footers, `lg` for touch-first. Forwarded to both the page-size select
    *  and the nav buttons so the row stays visually consistent. */
   readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 
-  protected readonly tableCtx = inject(KJ_TABLE) as KjTable<unknown>;
+  // `KJ_TABLE` is declared as `InjectionToken<KjTable<unknown>>`, so the token
+  // already carries the type the cast used to assert (arch F-14).
+  protected readonly tableCtx = injectParent(KJ_TABLE, {
+    child: 'KjTablePagination',
+    parent: '[kjTable]',
+  });
 
   protected readonly pageSize = computed(() => this.tableCtx.state.pagination().pageSize);
   protected readonly pageIndex = computed(() => this.tableCtx.state.pagination().pageIndex);

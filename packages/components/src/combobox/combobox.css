@@ -9,7 +9,7 @@
     width: 100%;
     background: var(--kj-bg-field);
     color: var(--kj-fg-default);
-    border: var(--kj-border) solid var(--kj-border-default);
+    border: var(--kj-border) solid var(--kj-border-control);
     border-radius: var(--kj-radius-field);
     padding: var(--kj-space-sm) var(--kj-space-md);
     font: 0.875rem var(--kj-font-sans);
@@ -50,6 +50,23 @@
     flex-direction: column;
   }
   .kj-combobox-listbox[hidden] { display: none; }
+
+  /* Windowed option list (`[virtual]`): the outer box is sized to the whole
+     option set so the scrollbar is honest about how much list there is, and
+     the slice is translated down to where the rendered rows belong. The
+     per-row marker carries the option index for the virtualizer and the
+     keyboard cursor, and is `display: contents` so it adds no box between
+     the listbox and its options. `flex: none` stops the listbox's column
+     flex from collapsing the sized box. */
+  .kj-combobox-virtual {
+    position: relative;
+    flex: none;
+    width: 100%;
+  }
+
+  .kj-combobox-row {
+    display: contents;
+  }
 
   .kj-combobox-option {
     display: flex;

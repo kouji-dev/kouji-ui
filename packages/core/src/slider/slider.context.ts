@@ -76,4 +76,8 @@ export interface KjSliderContext {
   valueFromClientPosition(clientX: number, clientY: number): number;
 }
 
+/**
+ * Element-injector token for the slider root's {@link KjSliderContext}, read
+ * by the track, range and thumb directives.
+ */
 export const KJ_SLIDER = new InjectionToken<KjSliderContext>('KjSlider');

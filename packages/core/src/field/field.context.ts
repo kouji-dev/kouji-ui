@@ -10,6 +10,14 @@ export interface KjFieldContext {
   readonly controlId: Signal<string>;
   /** The id of the field's `<label>` element. */
   readonly labelId: Signal<string>;
+  /**
+   * Whether a `[kjFieldLabel]` is actually rendered, so `labelId` names a live
+   * element. A control that associates by `aria-labelledby` (anything that is
+   * not a labelable element — `<div kjInputOtp role="group">`) must check this:
+   * `labelId` is minted eagerly, and pointing `aria-labelledby` at an id
+   * nothing carries leaves the control unnamed AND dangling.
+   */
+  readonly labelRendered: Signal<boolean>;
   /** Whether the registered control is required (mirrored from validators / `kjRequired`). */
   readonly required: Signal<boolean>;
   /** Whether the field is disabled (forwarded to the inner control). */
@@ -22,6 +30,9 @@ export interface KjFieldContext {
   /** Register a help / error element so its id participates in the
    * `aria-describedby` chain. Returns a deregister callback. */
   registerDescribedBy(id: string, kind: 'help' | 'error'): () => void;
+
+  /** Register a rendered `[kjFieldLabel]`. Returns a deregister callback. */
+  registerLabel(): () => void;
 }
 
 /** Injection token for {@link KjFieldContext}. */

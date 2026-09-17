@@ -167,4 +167,64 @@ describe('KjNumberStepper', () => {
     );
     expect(container.querySelector('button')).toHaveAttribute('tabindex', '-1');
   });
+
+// arch F-2 — the number-input family's boolean inputs all carry
+// `transform: booleanAttribute`. Four of them default to `true`, so the
+// meaningful static form there is `kjAllowNegative="false"`; Angular's
+// `booleanAttribute` is the only transform that maps the string `"false"`
+// to `false`.
+describe('KjNumberInput — bare boolean attributes (arch F-2)', () => {
+  it('bare kjReadonly reflects readonly + aria-readonly', async () => {
+    const { container } = await render(
+      `<input kjNumberInput kjReadonly aria-label="Qty" />`,
+      { imports: [KjNumberInput] },
+    );
+    const el = container.querySelector('input') as HTMLInputElement;
+    expect(el.hasAttribute('readonly')).toBe(true);
+    expect(el.getAttribute('aria-readonly')).toBe('true');
+  });
+
+  it('bare kjUseNativeNumber flips the element to type="number"', async () => {
+    const { container } = await render(
+      `<input kjNumberInput kjUseNativeNumber aria-label="Qty" />`,
+      { imports: [KjNumberInput] },
+    );
+    expect(container.querySelector('input')).toHaveAttribute('type', 'number');
+  });
+
+  it('kjAllowNegative="false" turns a default-true flag off', async () => {
+    const { container } = await render(
+      `<input kjNumberInput kjAllowNegative="false" aria-label="Qty" />`,
+      { imports: [KjNumberInput] },
+    );
+    const el = container.querySelector('input') as HTMLInputElement;
+    const minus = new KeyboardEvent('keydown', { key: '-', bubbles: true, cancelable: true });
+    el.dispatchEvent(minus);
+    expect(minus.defaultPrevented).toBe(true);
+  });
+
+  it('the same flag left at its default still accepts a minus sign', async () => {
+    const { container } = await render(
+      `<input kjNumberInput aria-label="Qty" />`,
+      { imports: [KjNumberInput] },
+    );
+    const el = container.querySelector('input') as HTMLInputElement;
+    const minus = new KeyboardEvent('keydown', { key: '-', bubbles: true, cancelable: true });
+    el.dispatchEvent(minus);
+    expect(minus.defaultPrevented).toBe(false);
+  });
+
+  it('bare kjDisabled on a stepper reflects aria-disabled', async () => {
+    const { container } = await render(
+      `<div kjNumberInputGroup>
+         <input kjNumberInput aria-label="Qty" />
+         <button kjNumberStepper kjStep="up" kjDisabled aria-label="Increase">+</button>
+       </div>`,
+      { imports: [KjNumberInput, KjNumberStepper, KjNumberInputGroup] },
+    );
+    const btn = container.querySelector('button') as HTMLElement;
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.hasAttribute('data-disabled')).toBe(true);
+  });
+});
 });

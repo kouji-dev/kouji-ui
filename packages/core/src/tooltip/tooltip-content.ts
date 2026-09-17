@@ -1,5 +1,5 @@
 // tooltip-content.ts
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, inject, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
@@ -8,8 +8,16 @@ import {
 } from '../primitives/overlay/tokens';
 import type { KjSide, KjAlign } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
-import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
+import { anchoredTo, injectAnchoredPosition, pxOffset } from '../primitives/overlay/strategies/position/anchored-to';
 
+/**
+ * The tooltip panel. Portals to the overlay container, anchors to its
+ * trigger and takes `role="tooltip"`, so a `[kjTooltipTrigger]` can point its
+ * `aria-describedby` at it. Pair the two through `[kjFor]`.
+ *
+ * Not focusable and never focus-trapped: per the WAI-ARIA APG a tooltip is a
+ * description of the trigger, not a place the keyboard travels to.
+ */
 @Component({
   selector: 'kj-tooltip-content',
   standalone: true,
@@ -27,12 +35,15 @@ import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-t
   template: `<ng-content />`,
 })
 export class KjTooltipContent {
+  /** Preferred side of the trigger to open on, before flipping. Defaults to `'top'`. */
   readonly kjSide   = input<KjSide>('top');
+
+  /** Alignment along that side. Defaults to `'center'`. */
   readonly kjAlign  = input<KjAlign>('center');
-  readonly kjOffset = input<number, unknown>(8, { transform: (v) => Number(v) || 8 });
+  /** Gap in px between the trigger and the panel. `0` sits flush against the trigger. */
+  readonly kjOffset = input<number, unknown>(8, { transform: pxOffset(8) });
 
   constructor() {
-    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
-    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
+    injectAnchoredPosition({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset });
   }
 }

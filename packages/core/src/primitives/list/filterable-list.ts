@@ -23,7 +23,7 @@ const EMPTY_ITEMS = signal<readonly KjListItem<unknown>[]>([]);
  * - Stamps `item.posInSet` / `item.setSize` for visible items; clears
  *   them to `null` for hidden items.
  *
- * Exposes `visibleItems`, `visibleCount`, `isEmpty`, plus a human
+ * Exposes `visibleItems`, `visibleCount`, `resultCount`, `isEmpty`, plus a human
  * `announcement()` signal consumers wire into a `kjLiveRegion` so
  * WCAG 4.1.3 (Status Messages) is honored.
  *
@@ -62,12 +62,20 @@ export class KjFilterableList<T = unknown> {
   readonly isEmpty = computed(() => this.visibleCount() === 0);
 
   /**
+   * Number of results the user can reach — the dataset size when a window is
+   * declared ({@link setWindow}), otherwise the rendered visible count. A
+   * windowed list has twenty rows in the DOM and five thousand results, and
+   * it is the five thousand a status message has to report.
+   */
+  readonly resultCount = computed(() => this._datasetSize() ?? this.visibleCount());
+
+  /**
    * Human-readable status string for `aria-live` regions.
    * Returns `'N results'` or `'No results'`. Wire to `kjLiveRegion`
    * to satisfy WCAG 4.1.3 Status Messages.
    */
   readonly announcement = computed(() =>
-    this.isEmpty() ? 'No results' : `${this.visibleCount()} results`,
+    this.resultCount() === 0 ? 'No results' : `${this.resultCount()} results`,
   );
 
   /**
@@ -76,6 +84,24 @@ export class KjFilterableList<T = unknown> {
    * This service does NOT activate items itself; the consumer reads it.
    */
   readonly autoActivateFirst = () => this._autoActivateFirst();
+
+  private readonly _windowOffset = signal(0);
+  private readonly _datasetSize = signal<number | null>(null);
+
+  /**
+   * Declare that the registered items are a WINDOW of a larger dataset:
+   * `offset` is the dataset index of the first registered item and `total`
+   * the dataset size (`null` clears the window).
+   *
+   * Without this, a windowed list would stamp `aria-posinset="1"` /
+   * `aria-setsize="20"` on row 3 000, and a screen reader would announce a
+   * 5 000-option listbox as twenty options. Called by the wrapper that owns
+   * the window; every non-windowed consumer leaves it alone.
+   */
+  setWindow(offset: number, total: number | null): void {
+    this._windowOffset.set(Math.max(0, Math.floor(offset)));
+    this._datasetSize.set(total === null ? null : Math.max(0, Math.floor(total)));
+  }
 
   /**
    * Bind consumer-owned source signals. Each is optional; unbound keys
@@ -108,13 +134,14 @@ export class KjFilterableList<T = unknown> {
       const all = this._items();
       const visible = this.visibleItems() as readonly KjListItem<unknown>[];
       const visibleSet = new Set(visible.map(v => v.id));
-      const total = visible.length;
+      const offset = this._windowOffset();
+      const total = this._datasetSize() ?? visible.length;
       let i = 0;
       for (const item of all) {
         const isVisible = visibleSet.has(item.id);
         item.setVisible(isVisible);
         if (isVisible) {
-          item.posInSet.set(++i);
+          item.posInSet.set(offset + ++i);
           item.setSize.set(total);
         } else {
           item.posInSet.set(null);

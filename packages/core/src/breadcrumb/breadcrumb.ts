@@ -5,16 +5,17 @@ import {
   effect,
   inject,
   input,
-  isDevMode,
   signal,
 } from '@angular/core';
 import { KjSize, bindPresets } from '../presets';
 import { KJ_BREADCRUMB_CONFIG } from './config';
+import { injectKjBreadcrumbLabels } from './labels';
 import {
   KJ_BREADCRUMB,
   KjBreadcrumbContext,
   KjBreadcrumbItemContext,
 } from './breadcrumb.context';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /** @internal Internal entry stored in the items signal. */
 interface KjBreadcrumbItemEntry {
@@ -70,6 +71,12 @@ interface KjBreadcrumbItemEntry {
 export class KjBreadcrumb implements KjBreadcrumbContext {
   /** @internal */
   readonly config = inject(KJ_BREADCRUMB_CONFIG);
+
+  /**
+   * Resolved label set: a `provideKjBreadcrumb(…)` override when one is set,
+   * otherwise the active i18n catalog. Locale-reactive.
+   */
+  readonly labels = injectKjBreadcrumbLabels();
 
   /** Override for the `<nav>` `aria-label`. Defaults to `"Breadcrumb"`. */
   readonly kjAriaLabel = input<string | undefined>(undefined);
@@ -158,9 +165,9 @@ export class KjBreadcrumb implements KjBreadcrumbContext {
     const hidden = this.hiddenIndices().length;
     if (explicit) return explicit;
     if (hidden > 0 && this.kjOverflow() === 'truncate') {
-      return this.config.truncatedAriaLabel(this.visibleIndices().length, hidden);
+      return this.labels.truncatedNav(this.visibleIndices().length, hidden);
     }
-    return this.config.defaults.ariaLabel;
+    return this.labels.nav();
   });
 
   /** CSS custom-property value for the separator (so the `::before` reads it). */
@@ -170,14 +177,15 @@ export class KjBreadcrumb implements KjBreadcrumbContext {
   });
 
   constructor() {
-    if (isDevMode()) {
+    if (kjDevMode()) {
       effect(() => {
         const total = this._items().length;
         const currents = this._currents();
         if (total === 0) return;
         if (currents > 1) {
-          console.warn(
-            `[kj] KjBreadcrumb: ${currents} KjBreadcrumbCurrent instances registered; expected 0 or 1. The first wins.`,
+          kjDevWarn(
+            'KjBreadcrumb',
+            `${currents} KjBreadcrumbCurrent instances registered; expected 0 or 1. The first wins.`,
           );
         }
       });

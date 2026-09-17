@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
   KjConfirmPopupActionComponent,
-  KjConfirmPopupActionsComponent,
+  KjConfirmPopupActions,
   KjConfirmPopupCancelComponent,
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
@@ -31,7 +31,7 @@ const defaultFocus = signal<'cancel' | 'confirm'>('cancel');
     KjConfirmPopupMessage,
     KjConfirmPopupActionComponent,
     KjConfirmPopupCancelComponent,
-    KjConfirmPopupActionsComponent,
+    KjConfirmPopupActions,
     KjButtonComponent,
   ],
   styles: [`:host { display: flex; padding: var(--kj-space-lg); min-height: 14rem; }`],

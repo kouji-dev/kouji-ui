@@ -3,12 +3,12 @@ import {
   ElementRef,
   afterNextRender,
   inject,
-  isDevMode,
 } from '@angular/core';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Applies kouji's blockquote tone — left rule, italic, indent — to a
- * `<blockquote>` element. Reflects `data-tone="blockquote"`. Useful when
+ * `<blockquote>` element. Reflects `data-kj-tone="blockquote"`. Useful when
  * the blockquote sits *outside* a `kj-prose` container (the prose container
  * styles its own `<blockquote>` descendants automatically).
  *
@@ -33,19 +33,20 @@ import {
   standalone: true,
   exportAs: 'kjBlockquote',
   host: {
-    '[attr.data-tone]': '"blockquote"',
+    '[attr.data-kj-tone]': '"blockquote"',
   },
 })
 export class KjBlockquote {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    if (isDevMode()) {
+    if (kjDevMode()) {
       afterNextRender(() => {
         const host = this.el.nativeElement;
         if (host.tagName?.toLowerCase() !== 'blockquote') {
-          console.warn(
-            `[kj] kjBlockquote applied to <${host.tagName?.toLowerCase()}>. ` +
+          kjDevWarn(
+            'kjBlockquote',
+            `applied to <${host.tagName?.toLowerCase()}>. ` +
               `Recommended host element is <blockquote> for native semantics ` +
               `(WCAG 1.3.1 / 4.1.2). Apply only to non-blockquote elements ` +
               `when you have a specific styling reason.`,

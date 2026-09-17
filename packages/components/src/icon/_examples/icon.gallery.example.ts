@@ -6,22 +6,22 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { KjIconDirective } from '@kouji-ui/core';
+import { KjIcon } from '@kouji-ui/core';
 import { KjInputComponent } from '../../input/input';
 import { KjButtonComponent } from '../../button/button';
 import { LUCIDE_ICON_NAMES } from '../lucide/icon-names';
 
 /**
  * Lucide icon gallery with a live substring filter. Each tile renders the icon
- * via the `kjIcon` directive, which goes through the lazy loader registered by
- * `provideLucideLoader()` — only icons currently mounted in the DOM trigger a
- * dynamic per-icon `import()`. Click a tile to copy its `<i kjIcon="…">`
- * snippet to the clipboard.
+ * via the `kjIcon` directive, which goes through the loader registered by
+ * `provideLucideIcons()` — the Lucide set is imported as one lazy chunk the
+ * first time an unregistered name is requested, and every later name resolves
+ * from it. Click a tile to copy its `<i kjIcon="…">` snippet to the clipboard.
  */
 @Component({
   selector: 'kj-icon-gallery-example',
   standalone: true,
-  imports: [FormsModule, KjIconDirective, KjInputComponent, KjButtonComponent],
+  imports: [FormsModule, KjIcon, KjInputComponent, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styles: [`

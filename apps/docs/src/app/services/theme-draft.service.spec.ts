@@ -1,7 +1,15 @@
 import { TestBed } from '@angular/core/testing';
+import { describe, expect, test, beforeEach } from 'vitest';
 import { ThemeDraftService } from './theme-draft.service';
 import { BUILT_IN_THEMES } from '../lib/theme/built-in-themes';
 
+/**
+ * These tests were written against the daisyUI-era `DraftTheme.colors` /
+ * `setColor` API and have been rewritten against the 17-slot bg/fg model that
+ * replaced it (`BG_SLOTS` + `FG_SLOTS`, `setBg` / `setFg` / `setBgs` /
+ * `setFgs`). Behaviour under test is unchanged: forking, saving, dirty-slot
+ * tracking and re-derivation.
+ */
 describe('ThemeDraftService', () => {
   let svc: ThemeDraftService;
 
@@ -17,7 +25,7 @@ describe('ThemeDraftService', () => {
 
   test('loadFork seeds draft from a built-in', () => {
     svc.loadFork('kouji');
-    expect(svc.draft().colors.primary).toBe(BUILT_IN_THEMES.kouji.colors.primary);
+    expect(svc.draft().bg['bg-primary']).toBe(BUILT_IN_THEMES.kouji.bg['bg-primary']);
     expect(svc.draft().name).toBe('kouji-fork');
   });
 
@@ -38,10 +46,10 @@ describe('ThemeDraftService', () => {
 
   test('save with same name overwrites', () => {
     svc.loadFork('dark'); svc.setName('mine'); svc.save();
-    svc.setColor('primary', 'oklch(50% 0.1 0)');
+    svc.setBg('bg-primary', 'oklch(50% 0.1 0)');
     svc.save();
     expect(svc.list().filter(t => t.name === 'mine').length).toBe(1);
-    expect(svc.list().find(t => t.name === 'mine')!.colors.primary).toBe('oklch(50% 0.1 0)');
+    expect(svc.list().find(t => t.name === 'mine')!.bg['bg-primary']).toBe('oklch(50% 0.1 0)');
   });
 
   test('loadSaved restores a saved theme into the draft', () => {
@@ -59,10 +67,23 @@ describe('ThemeDraftService', () => {
     expect(svc.draft().name).toBe('');
   });
 
-  test('setColor mutates the draft', () => {
+  test('setBg mutates the draft', () => {
     svc.loadFork('light');
-    svc.setColor('primary', 'oklch(50% 0.1 0)');
-    expect(svc.draft().colors.primary).toBe('oklch(50% 0.1 0)');
+    svc.setBg('bg-primary', 'oklch(50% 0.1 0)');
+    expect(svc.draft().bg['bg-primary']).toBe('oklch(50% 0.1 0)');
+  });
+
+  test('setFg mutates the draft', () => {
+    svc.loadFork('light');
+    svc.setFg('fg-on-primary', '#fefefe');
+    expect(svc.draft().fg['fg-on-primary']).toBe('#fefefe');
+  });
+
+  test('setShape mirrors radiusField onto radiusSelector', () => {
+    svc.loadFork('light');
+    svc.setShape('radiusField', 9);
+    expect(svc.draft().shape.radiusField).toBe(9);
+    expect(svc.draft().shape.radiusSelector).toBe(9);
   });
 });
 
@@ -74,48 +95,70 @@ describe('ThemeDraftService — palette extensions', () => {
     svc = TestBed.inject(ThemeDraftService);
   });
 
-  test('setColors replaces all 9 slots and clears dirty set', () => {
-    svc.setColor('primary', '#aabbcc');
-    svc.setColors({
-      'base-100': '#ffffff', primary: '#3366cc', secondary: '#6633cc',
-      accent: '#cc6633', neutral: '#888888', info: '#1166aa',
-      success: '#229944', warning: '#aa7700', destructive: '#aa2233',
+  test('setBgs replaces every background slot and clears the dirty set', () => {
+    svc.setBg('bg-primary', '#aabbcc');
+    expect(svc.dirtySlots().size).toBe(1);
+    svc.setBgs({
+      'bg-body': '#ffffff', 'bg-surface': '#f7f7f7', 'bg-field': '#ffffff',
+      'bg-elevated': '#eeeeee', 'bg-primary': '#3366cc', 'bg-accent': '#6633cc',
+      'bg-info': '#1166aa', 'bg-success': '#229944', 'bg-warning': '#aa7700',
+      'bg-danger': '#aa2233',
     });
-    expect(svc.draft().colors.primary).toBe('#3366cc');
+    expect(svc.draft().bg['bg-primary']).toBe('#3366cc');
     expect(svc.dirtySlots().size).toBe(0);
   });
 
-  test('setColor marks the slot dirty', () => {
-    svc.setColor('primary', '#123456');
-    expect(svc.dirtySlots().has('primary')).toBe(true);
+  test('setBg marks the slot dirty', () => {
+    svc.setBg('bg-primary', '#123456');
+    expect(svc.dirtySlots().has('bg-primary')).toBe(true);
+  });
+
+  test('setFg marks the slot dirty', () => {
+    svc.setFg('fg-default', '#123456');
+    expect(svc.dirtySlots().has('fg-default')).toBe(true);
   });
 
   test('rederiveFromPrimary preserves dirty slots by default', () => {
     svc.loadFork('kouji');
-    svc.setColor('accent', '#abc123');
+    svc.setBg('bg-accent', '#abc123');
     svc.rederiveFromPrimary();
-    expect(svc.draft().colors.accent).toBe('#abc123');
+    expect(svc.draft().bg['bg-accent']).toBe('#abc123');
   });
 
   test('rederiveFromPrimary with overwriteDirty:true overwrites manual edits', () => {
     svc.loadFork('kouji');
-    svc.setColor('accent', '#abc123');
+    svc.setBg('bg-accent', '#abc123');
     svc.rederiveFromPrimary({ overwriteDirty: true });
-    expect(svc.draft().colors.accent).not.toBe('#abc123');
+    expect(svc.draft().bg['bg-accent']).not.toBe('#abc123');
   });
 
   test('loadFork clears dirty set', () => {
-    svc.setColor('primary', '#abcdef');
+    svc.setBg('bg-primary', '#abcdef');
     svc.loadFork('kouji');
     expect(svc.dirtySlots().size).toBe(0);
   });
 
-  test('applyRandomInspiration replaces palette and clears content overrides', () => {
+  test('applyRandomInspiration replaces the palette and clears the dirty set', () => {
     svc.loadFork('kouji');
-    svc.setContentOverride('base-200', 'oklch(92% 0.02 0)');
-    expect(svc.draft().contentOverrides['base-200']).toBeDefined();
+    svc.setBg('bg-primary', '#abcdef');
+    expect(svc.dirtySlots().size).toBe(1);
     svc.applyRandomInspiration();
-    expect(svc.draft().contentOverrides).toEqual({});
+    expect(svc.draft().bg['bg-primary']).not.toBe('#abcdef');
     expect(svc.dirtySlots().size).toBe(0);
+  });
+
+  test('applyRandomInspiration with includeShape also shuffles shape and motion', () => {
+    svc.loadFork('kouji');
+    const before = { ...svc.draft().shape };
+    let seed = 0;
+    svc.applyRandomInspiration({ includeShape: true, random: () => ((seed += 0.37) % 1) });
+    const after = svc.draft().shape;
+    const changed =
+      after.radiusBox !== before.radiusBox ||
+      after.radiusField !== before.radiusField ||
+      after.border !== before.border ||
+      after.depth !== before.depth;
+    expect(changed).toBe(true);
+    expect(svc.draft().motion.transition).toBeTruthy();
   });
 });

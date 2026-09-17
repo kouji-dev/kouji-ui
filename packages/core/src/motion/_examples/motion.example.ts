@@ -27,20 +27,20 @@ const PRESETS = [
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        color: var(--kj-text);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        color: var(--docs-text);
+        font-family: var(--docs-font);
       }
       .toolbar {
         margin-bottom: 1.5rem;
       }
       button {
         padding: 0.5rem 1.25rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border: var(--kj-btn-border);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border: var(--docs-btn-border);
         cursor: pointer;
       }
       .grid {
@@ -62,13 +62,13 @@ const PRESETS = [
         padding: 0.5rem;
         text-align: center;
         font-size: 0.75rem;
-        background: var(--kj-surface);
-        border: 1px solid var(--kj-border);
-        color: var(--kj-text);
+        background: var(--docs-surface);
+        border: 1px solid var(--docs-border);
+        color: var(--docs-text);
       }
       .label {
         font-size: 0.75rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
       }
     `,
   ],

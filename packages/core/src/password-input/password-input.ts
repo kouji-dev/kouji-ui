@@ -23,11 +23,9 @@ import {
   KjPasswordScoreLabel,
 } from './password-input.context';
 import { defaultPasswordScorer } from './password-input.scorer';
-
-let _passwordInputIdCounter = 0;
-function generateId(): string {
-  return `kj-password-${++_passwordInputIdCounter}`;
-}
+import type { KjLiveRegion } from '../a11y/live-region';
+import { KjId } from '../primitives/overlay/id';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /** Default English labels for the four strength tiers. Override via `kjStrengthLabels`. */
 const DEFAULT_STRENGTH_LABELS: Record<KjPasswordScore, KjPasswordScoreLabel> = {
@@ -113,6 +111,11 @@ export class KjPasswordInput implements KjPasswordInputContext {
    * read by `KjPasswordToggle` to suppress its click. The host `KjInput`
    * still owns its own form-disabled wiring (via Angular forms `disable()`);
    * this input is the imperative override for non-form contexts.
+   *
+   * arch F-16: not swapped for a composed `KjDisabled` — the host reflects
+   * `disabled()`, which is this input ORed with the form control's state, so
+   * a control disabled through `FormControl.disable()` still announces as
+   * disabled. `KjDisabled` reflects its own input only.
    * @default false
    */
   readonly kjDisabled = input(false, { transform: booleanAttribute });
@@ -121,6 +124,9 @@ export class KjPasswordInput implements KjPasswordInputContext {
    * Two-way bindable reveal state. `true` flips the `type` attribute to
    * `"text"`. Wires `KjPasswordToggle` and any programmatic show into the
    * single source of truth.
+   *
+   * Two-way `model()` signals take no `transform` in Angular, so the bare
+   * attribute form is not supported here — bind it: `[kjRevealed]="true"`.
    * @default false
    */
   readonly kjRevealed = model<boolean>(false);
@@ -191,7 +197,7 @@ export class KjPasswordInput implements KjPasswordInputContext {
 
   constructor() {
     if (!this.el.nativeElement.id) {
-      this._generatedId.set(generateId());
+      this._generatedId.set(inject(KjId).mint('password'));
     }
   }
 
@@ -258,7 +264,7 @@ export class KjPasswordInput implements KjPasswordInputContext {
 })
 export class KjPasswordToggle {
   /** @internal */
-  protected readonly ctx = inject(KJ_PASSWORD_INPUT);
+  protected readonly ctx = injectParent(KJ_PASSWORD_INPUT, { child: 'KjPasswordToggle', parent: '[kjPasswordInput]' });
   /** @internal — host `KjButton` (required: `[kjPasswordToggle]` composes onto a `[kjButton]`). */
   private readonly kjButton = inject(KjButton, { optional: true });
 
@@ -308,9 +314,13 @@ export class KjPasswordToggle {
  * `aria-valuenow="{score}"`, `aria-valuetext="{label}"`). Subscribes to the
  * shared {@link KJ_PASSWORD_INPUT} context for the score signal.
  *
- * Score updates are **not** announced via live region by default — the
- * implicit `aria-valuetext` change is enough on focus, and announcing on every
- * keystroke would flood AT.
+ * Score updates are silent by default: the implicit `aria-valuetext` change is
+ * enough while the meter has focus, and announcing every keystroke would flood
+ * AT. Set `kjAnnounce` and register a live region with
+ * {@link registerLiveRegion} to opt in — the styled `<kj-password-input>` does
+ * both (`[kjAnnounceStrength]`). The meter is **not** the live region itself:
+ * it is a `role="progressbar"`, whose children are not exposed, and a live
+ * region announces a text change, not an attribute change.
  *
  * Registers itself with the root on construction so the scorer only runs when
  * a meter is actually mounted.
@@ -343,10 +353,10 @@ export class KjPasswordToggle {
 export class KjPasswordStrength {
   private readonly destroyRef = inject(DestroyRef);
   /** @internal */
-  protected readonly ctx = inject(KJ_PASSWORD_INPUT);
+  protected readonly ctx = injectParent(KJ_PASSWORD_INPUT, { child: 'KjPasswordStrength', parent: '[kjPasswordInput]' });
 
   /** Stable id used for `aria-describedby` wiring on the host input. */
-  readonly strengthId = `kj-password-strength-${++_passwordInputIdCounter}`;
+  readonly strengthId = inject(KjId).mint('password-strength');
 
   /**
    * Accessible label for the meter. The meter is **not** `aria-hidden` —
@@ -356,15 +366,66 @@ export class KjPasswordStrength {
   readonly kjAriaLabel = input<string>('Password strength');
 
   /**
-   * When `true`, the strength label is also read via a live region on every
-   * change. Off by default to avoid AT spam.
+   * Announce the strength label through the registered live region whenever it
+   * changes. Needs a region — call {@link registerLiveRegion} with one (the
+   * styled `<kj-password-input>` renders one and wires this flag to its
+   * `kjAnnounceStrength` input). With `kjAnnounce` off, or with no region, the
+   * meter stays silent and the score is conveyed by `aria-valuetext` alone.
+   *
+   * What is announced is the tier, not the keystroke: `scoreLabel` only moves
+   * when the score crosses one of the five boundaries, so a long password
+   * produces a handful of announcements rather than one per character. The
+   * label the meter is mounted with is never announced — only a change from
+   * it — so arriving at a pre-filled form says nothing.
    * @default false
    */
   readonly kjAnnounce = input(false, { transform: booleanAttribute });
 
+  /** The live region announcements go to, `null` until one registers. */
+  private readonly liveRegion = signal<Pick<KjLiveRegion, 'announce'> | null>(null);
+
   constructor() {
     const deregister = this.ctx.registerStrength();
     this.destroyRef.onDestroy(deregister);
+
+    // `lastAnnounced` starts as the label the meter mounted with and is kept in
+    // step even while announcing is off, so switching the flag on (or
+    // registering a region late) never fires a retroactive announcement for a
+    // change the user already saw.
+    let lastAnnounced: string | null = null;
+    effect(() => {
+      const label = this.ctx.scoreLabel();
+      const region = this.liveRegion();
+      const name = this.kjAriaLabel();
+      if (!this.kjAnnounce() || !region || lastAnnounced === null) {
+        lastAnnounced = label;
+        return;
+      }
+      if (!label || label === lastAnnounced) return;
+      lastAnnounced = label;
+      region.announce(`${name}: ${label}`);
+    });
+  }
+
+  /**
+   * Registers the live region the meter announces through when `kjAnnounce` is
+   * set. Render it **outside** this `role="progressbar"` host — a progressbar's
+   * children are not exposed to assistive technology — and visually hidden, so
+   * the announcement is heard and not seen.
+   *
+   * ```html
+   * <div kjPasswordStrength kjAnnounce #meter="kjPasswordStrength"></div>
+   * <span kjVisuallyHidden kjLiveRegion #region="kjLiveRegion"></span>
+   * ```
+   *
+   * @param region - Any object with a `KjLiveRegion`-compatible `announce`.
+   * @returns A callback that deregisters the region.
+   */
+  registerLiveRegion(region: Pick<KjLiveRegion, 'announce'>): () => void {
+    this.liveRegion.set(region);
+    return () => {
+      if (this.liveRegion() === region) this.liveRegion.set(null);
+    };
   }
 }
 
@@ -399,10 +460,10 @@ export class KjPasswordStrength {
 export class KjPasswordCapsLockWarning {
   private readonly destroyRef = inject(DestroyRef);
   /** @internal */
-  protected readonly ctx = inject(KJ_PASSWORD_INPUT);
+  protected readonly ctx = injectParent(KJ_PASSWORD_INPUT, { child: 'KjPasswordCapsLockWarning', parent: '[kjPasswordInput]' });
 
   /** Stable id used for `aria-describedby` wiring on the host input. */
-  readonly warningId = `kj-password-caps-${++_passwordInputIdCounter}`;
+  readonly warningId = inject(KjId).mint('password-caps');
 
   constructor() {
     const deregister = this.ctx.registerCapsLockWarning();

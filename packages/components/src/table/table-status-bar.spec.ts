@@ -2,7 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable, kjColumn } from '@kouji-ui/core';
-import { KjTableStatusBarComponent } from './table-status-bar';
+import { KjTableStatusBar } from './table-status-bar';
 
 interface Row {
   id: string;
@@ -11,7 +11,7 @@ interface Row {
 
 @Component({
   standalone: true,
-  imports: [KjTable, KjTableStatusBarComponent],
+  imports: [KjTable, KjTableStatusBar],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()">
@@ -24,7 +24,7 @@ class Host {
   readonly data = signal<Row[]>([]);
 }
 
-describe('KjTableStatusBarComponent', () => {
+describe('KjTableStatusBar', () => {
   it('renders "0 rows" when data is empty', async () => {
     const { container } = await render(Host);
     expect(container.textContent).toContain('0 rows');

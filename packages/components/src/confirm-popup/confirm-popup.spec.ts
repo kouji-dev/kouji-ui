@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
   KjConfirmPopupActionComponent,
-  KjConfirmPopupActionsComponent,
+  KjConfirmPopupActions,
   KjConfirmPopupCancelComponent,
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
@@ -76,7 +76,7 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
         KjConfirmPopupMessageComponent,
         KjConfirmPopupActionComponent,
         KjConfirmPopupCancelComponent,
-        KjConfirmPopupActionsComponent,
+        KjConfirmPopupActions,
       ],
       template: `
         <kj-confirm-popup
@@ -126,7 +126,7 @@ describe('KjConfirmPopupComponent (wrapper)', () => {
         KjConfirmPopupMessageComponent,
         KjConfirmPopupActionComponent,
         KjConfirmPopupCancelComponent,
-        KjConfirmPopupActionsComponent,
+        KjConfirmPopupActions,
       ],
       template: `
         <kj-confirm-popup>

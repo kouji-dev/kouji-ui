@@ -1,9 +1,7 @@
 import {
+  DestroyRef,
   Directive,
   ElementRef,
-  HostListener,
-  OnDestroy,
-  OnInit,
   effect,
   inject,
 } from '@angular/core';
@@ -41,14 +39,20 @@ import { KjCommandPalette } from './command-palette';
     '[attr.aria-expanded]': '"true"',
     '[attr.aria-busy]': 'palette.loading() ? "true" : null',
     '(input)': 'palette.setQuery($any($event.target).value)',
+    '(keydown)': 'onKeydown($event)',
   },
 })
-export class KjCommandInput implements OnInit, OnDestroy {
+export class KjCommandInput {
   protected readonly palette = inject(KjCommandPalette);
   private readonly nav = inject(KjListNavigator);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
   constructor() {
+    // The navigator is composed on this same element, so it is available the
+    // moment this constructor runs — no lifecycle hook needed.
+    this.palette._setNavigator(this.nav);
+    inject(DestroyRef).onDestroy(() => this.palette._setNavigator(null));
+
     // Reflect the query signal back onto the DOM input. The `(input)` binding
     // is one-way (DOM → signal), so an external reset of `kjQuery` (e.g. the
     // wrapper clearing it when the palette closes) would otherwise leave the
@@ -61,15 +65,7 @@ export class KjCommandInput implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit(): void {
-    this.palette._setNavigator(this.nav);
-  }
-
-  ngOnDestroy(): void {
-    this.palette._setNavigator(null);
-  }
-
-  @HostListener('keydown', ['$event'])
+  /** @internal Escape handling — first press clears the query, second closes. */
   onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       // First press: clear query. Second press propagates to the dialog.

@@ -37,32 +37,41 @@
   .kj-accordion-trigger[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 
   /* Always in the DOM so open/close can animate; visual state is driven by
-     `[data-state]` from the headless directive. `overflow: hidden` clips the
-     content during the max-height transition so children don't bleed out. */
+     `[data-state]` from the headless directive. The panel is a one-row grid
+     whose track tweens 0fr → 1fr, so an open panel is exactly as tall as its
+     content — there is no fixed ceiling that could clip tall, zoomed or
+     large-font content (WCAG 1.4.4 Resize Text / 1.4.10 Reflow). */
   .kj-accordion-content {
+    display: grid;
+    grid-template-rows: 0fr;
     color: var(--kj-fg-default);
     font: 0.875rem / 1.5 var(--kj-font-sans);
-    overflow: hidden;
-    max-height: 0;
     opacity: 0;
-    /* `padding` participates in the height transition — collapses to 0 when
-       closed so the panel reads as fully hidden. */
-    padding: 0 var(--kj-space-lg);
     transition:
-      max-height var(--kj-transition, 0.2s ease),
-      opacity var(--kj-transition, 0.2s ease),
-      padding var(--kj-transition, 0.2s ease);
+      grid-template-rows var(--kj-transition, 0.2s ease),
+      opacity var(--kj-transition, 0.2s ease);
   }
   .kj-accordion-content[data-state="open"] {
-    /* `1000px` is the conventional "tall enough" ceiling for height tweens
-       on content of unknown size. If panels routinely exceed this, raise the
-       value — the cost is only a slightly slower expand animation. */
-    max-height: 1000px;
+    grid-template-rows: 1fr;
     opacity: 1;
+  }
+
+  /* The grid item. `min-height: 0` lets the 0fr track collapse it below its
+     content height; `overflow: hidden` keeps children from bleeding out while
+     the track is mid-transition. Vertical padding lives here so it tweens to
+     0 with the track and a closed panel reads as fully hidden. */
+  .kj-accordion-content__inner {
+    min-height: 0;
+    overflow: hidden;
+    padding: 0 var(--kj-space-lg);
+    transition: padding var(--kj-transition, 0.2s ease);
+  }
+  .kj-accordion-content[data-state="open"] > .kj-accordion-content__inner {
     padding: 0 var(--kj-space-lg) var(--kj-space-md);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .kj-accordion-content { transition: none; }
+    .kj-accordion-content,
+    .kj-accordion-content__inner { transition: none; }
   }
 }

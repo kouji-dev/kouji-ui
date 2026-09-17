@@ -1,6 +1,7 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjPositionStrategy } from '../../tokens';
 
+/** No-op positioning: the stylesheet places the panel. Pairs with `inPlace()`. */
 export function inPlaceSibling(): KjPositionStrategy {
   let _ctx: KjOverlayContext | null = null;
   return {

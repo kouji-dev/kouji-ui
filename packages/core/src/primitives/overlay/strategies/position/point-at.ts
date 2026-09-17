@@ -2,11 +2,13 @@ import { isSignal, type Signal } from '@angular/core';
 import type { KjOverlayContext } from '../../context';
 import type { KjPositionStrategy } from '../../tokens';
 
+/** Viewport coordinates `pointAt()` anchors to; signals re-position the panel as they change. */
 export interface KjPointAtOpts {
   x: Signal<number> | number;
   y: Signal<number> | number;
 }
 
+/** Anchors the panel to a point rather than an element — the context-menu placement. */
 export function pointAt(opts: KjPointAtOpts): KjPositionStrategy {
   let ctx: KjOverlayContext | null = null;
   const read = (v: Signal<number> | number): number => isSignal(v) ? v() : v;

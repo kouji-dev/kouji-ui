@@ -1,11 +1,32 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `toast.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import {
   Component,
   ChangeDetectionStrategy,
   ViewEncapsulation,
+  inject,
   input,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { KjToastViewport, KjToast, KjToastClose } from '@kouji-ui/core';
+import {
+  KjToastViewport,
+  KjToast,
+  KjToastClose,
+  KjTranslateService,
+} from '@kouji-ui/core';
 import type { KjToastVariant } from '@kouji-ui/core';
 
 /**
@@ -16,6 +37,7 @@ import type { KjToastVariant } from '@kouji-ui/core';
  *
  * @doc
  * @doc-name toast
+ * @doc-description Themed toast queue: a service-enqueued notification rendered into a named viewport landmark.
  * @doc-is-main
  * @doc-example Default
  *   The default playground — enqueue a single toast from a button click.
@@ -35,15 +57,16 @@ import type { KjToastVariant } from '@kouji-ui/core';
  *   @doc-file toast.dismissible.example.ts
  *
  * @doc-keyboard
- *   F6           — Moves focus into the toast viewport (when the host app wires it)
+ *   Tab          — Reaches the dismiss + action buttons inside a toast, in DOM order
  *   Enter|Space  — Activates the focused action / close button inside a toast
- *   Tab          — Cycles through the dismiss + action buttons inside a toast
- *   Escape       — Optional — apps can wire to `dismiss(id)` on the active toast
+ *
+ *   A toast never takes focus and the library binds no global key: F6 and
+ *   Escape are the host app's to wire if it wants them.
  *
  * @doc-aria
- *   role="region"     — applied to `<kj-toast-viewport>` with `aria-label="Notifications"`
- *   role="status"     — applied to each toast (non-blocking polite announce)
- *   aria-live         — "polite" for default; "assertive" for error variants
+ *   role="region"     — applied to `<kj-toast-viewport>` with `aria-label="Notifications"`; the viewport itself is not a live region, so each toast is announced exactly once
+ *   role="status"     — applied to each toast (implicit polite live region); `role="alert"` (assertive) for the destructive variant
+ *   aria-atomic       — "true" on each toast so the whole message is read together
  *   aria-label        — Defaults to "Dismiss notification" on `<kj-toast-close>`
  *   data-variant      — Mirrors the toast variant for theme hooks
  *
@@ -53,15 +76,16 @@ import type { KjToastVariant } from '@kouji-ui/core';
  *   WCAG 2.5.5 floor on touch-first surfaces.
  *
  * @doc-a11y
- *   Implements the toast pattern from ARIA APG. Each toast is a polite live
- *   region so AT users hear the title without losing their place. Error /
- *   warning variants escalate to `aria-live="assertive"` per theme. Focus is
+ *   Implements the toast pattern from ARIA APG. Each toast is its own live
+ *   region (`status`, or `alert` for destructive) so AT users hear the message
+ *   without losing their place, and the viewport is only a named landmark —
+ *   one live-region level, one announcement per toast (WCAG 4.1.3). Focus is
  *   never stolen — the user keeps typing while toasts arrive in the viewport.
  *
  * @doc-related dialog,alert,spinner
  *
  * @doc-css-var
- *   --kj-toast-z-index  — Stack level for the viewport. Default 2000 — above the overlay stack (dialogs, palettes, popovers start at 1000), so toasts always show on top.
+ *   --kj-toast-z-index  — Stack level for the `<kj-toast-viewport>` queue. Default 2000 — above the overlay stack (dialogs, palettes, popovers start at 1000), so queued toasts show on top. A toast opened through `KjOverlayBuilder` / `KjToastService.show({ component })` is stacked by the overlay stack instead (`--kj-overlay-z`), so a dialog opened after it paints above it.
  *   --kj-toast-gap      — Vertical gap between stacked toasts in both collapsed and expanded states.
  *
  * @doc-category Library/Overlay
@@ -70,12 +94,11 @@ import type { KjToastVariant } from '@kouji-ui/core';
   selector: 'kj-toast-wrapper',
   standalone: true,
   template: `<ng-content />`,
-  styleUrl: './toast.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjToastWrapperComponent {}
+export class KjToastWrapper {}
 
 /**
  * Toast viewport. Mount once near your trigger button (or in your app shell).
@@ -91,7 +114,7 @@ export class KjToastWrapperComponent {}
       kjToastViewport
       class="kj-toast-viewport"
       #vp="kjToastViewport"
-      aria-label="Notifications"
+      [attr.aria-label]="regionLabel()"
     >
       @for (r of vp.renderable(); track r.id) {
         <li>
@@ -100,12 +123,18 @@ export class KjToastWrapperComponent {}
       }
     </ol>
   `,
-  styleUrl: './toast.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjToastViewportComponent {}
+export class KjToastViewportComponent {
+  /**
+   * Accessible name of the `role="region"` landmark, from the i18n catalog
+   * (`toast.region`) — cust F-7: no assistive string is baked into this
+   * template.
+   */
+  protected readonly regionLabel = inject(KjTranslateService).translation('toast.region');
+}
 
 /**
  * Single toast item. Bind `[variant]` from `ctx.variant` and `[id]` from `ctx.id`.
@@ -128,7 +157,10 @@ export class KjToastViewportComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjToastComponent {
+  /** Intent preset driving the toast's chrome and live-region politeness. Defaults to `'default'`. */
   readonly variant = input<KjToastVariant>('default');
+
+  /** The queue id of this toast, forwarded to the dismiss button. Defaults to `''`. */
   readonly id = input<string>('');
 }
 

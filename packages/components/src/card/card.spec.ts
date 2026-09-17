@@ -1,11 +1,11 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import { KjCardComponent } from './card';
+import { KjCard, KjCardContent } from './card';
 
 @Component({
   standalone: true,
-  imports: [KjCardComponent],
+  imports: [KjCard],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-card [variant]="variant">Content</kj-card>`,
 })
@@ -13,7 +13,7 @@ class HostComponent {
   variant: 'default' | 'outline' | 'subtle' = 'default';
 }
 
-describe('KjCardComponent', () => {
+describe('KjCard', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
@@ -46,5 +46,31 @@ describe('KjCardComponent', () => {
     fixture.detectChanges();
     const card = fixture.nativeElement.querySelector('kj-card');
     expect(card.textContent.trim()).toBe('Content');
+  });
+});
+
+/** arch F-2 — `padded` accepts the bare-attribute form and `[padded]="false"` still wins. */
+describe('kj-card-content padded', () => {
+  @Component({
+    standalone: true,
+    imports: [KjCardContent],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `
+      <kj-card-content id="bare" padded>a</kj-card-content>
+      <kj-card-content id="off" [padded]="false">b</kj-card-content>
+      <kj-card-content id="default">c</kj-card-content>
+    `,
+  })
+  class PaddedHost {}
+
+  test('reflects data-padded for the bare attribute and the default, not for [padded]="false"', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [PaddedHost] });
+    const fixture = TestBed.createComponent(PaddedHost);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('#bare')!.hasAttribute('data-padded')).toBe(true);
+    expect(root.querySelector('#default')!.hasAttribute('data-padded')).toBe(true);
+    expect(root.querySelector('#off')!.hasAttribute('data-padded')).toBe(false);
   });
 });

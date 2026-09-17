@@ -4,6 +4,7 @@ import {
   ElementRef,
   Injector,
   afterNextRender,
+  booleanAttribute,
   computed,
   effect,
   inject,
@@ -80,9 +81,16 @@ export class KjChat implements KjChatContext {
 
   /**
    * Explicit group override. When defined, wins over the auto-computed value;
-   * use this when no `KjChatLog` parent is present.
+   * use this when no `KjChatLog` parent is present. Default `undefined` (auto).
+   *
+   * Tri-state, so the transform is not a bare `booleanAttribute`: an absent
+   * input stays `undefined` (auto-grouping), while the bare attribute form
+   * `kjChatGrouped` binds `''` and must read as `true` like any HTML boolean
+   * attribute.
    */
-  readonly kjChatGrouped = input<boolean | undefined>(undefined);
+  readonly kjChatGrouped = input<boolean | undefined, unknown>(undefined, {
+    transform: (value: unknown) => (value === undefined ? undefined : booleanAttribute(value)),
+  });
 
   /**
    * Per-row role. Default `'article'` gives AT users a per-message landmark

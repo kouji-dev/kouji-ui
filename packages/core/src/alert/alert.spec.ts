@@ -2,7 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   KjAlert,
   KjAlertActions,
@@ -12,6 +12,9 @@ import {
   KjAlertTitle,
 } from './alert';
 import { provideKjAlert } from './config';
+import { KJ_VARIANT_FALLBACK } from '../presets';
+import { EN_CATALOG, FR_CATALOG, provideKjTranslations } from '../i18n/index';
+import { provideKjLocale } from '../locale/index';
 
 expect.extend(toHaveNoViolations);
 
@@ -213,5 +216,173 @@ describe('KjAlert', () => {
       { imports: ALERT_IMPORTS },
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe('KjAlert — shared preset system (cust F-6)', () => {
+  // KjAlert used to hand-roll variant/size: its own inputs, its own
+  // `data-variant` / `data-size` host bindings and its own dev-mode warn,
+  // which kept it out of the KJ_VARIANT_FALLBACK cascade every other
+  // stylistic component participates in. It now composes KjVariant / KjSize
+  // + bindPresets(KJ_ALERT_CONFIG) like Button, Tag and Spinner.
+
+  it('reflects data-size from the composed KjSize', async () => {
+    const { container } = await render(
+      `<div kjAlert kjSize="lg"><span kjAlertDescription>x</span></div>`,
+      { imports: ALERT_IMPORTS },
+    );
+    expect(container.querySelector('[kjAlert]')!.getAttribute('data-size')).toBe('lg');
+  });
+
+  it('inherits a variant from KJ_VARIANT_FALLBACK when kjVariant is unset', async () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: KJ_VARIANT_FALLBACK, useValue: signal('error') }],
+    });
+    const { container } = await render(`<div kjAlert><span kjAlertDescription>x</span></div>`, {
+      imports: ALERT_IMPORTS,
+    });
+    const host = container.querySelector('[kjAlert]')!;
+    expect(host.getAttribute('data-variant')).toBe('error');
+    // The mode matrix reads the *resolved* variant, so a cascaded `error`
+    // must still promote the alert to assertive.
+    expect(host.getAttribute('role')).toBe('alert');
+  });
+
+  it('an explicit kjVariant beats the cascade', async () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: KJ_VARIANT_FALLBACK, useValue: signal('error') }],
+    });
+    const { container } = await render(
+      `<div kjAlert kjVariant="success"><span kjAlertDescription>x</span></div>`,
+      { imports: ALERT_IMPORTS },
+    );
+    expect(container.querySelector('[kjAlert]')!.getAttribute('data-variant')).toBe('success');
+  });
+
+  it('warns once — not twice — for an unknown variant', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await render(`<div kjAlert kjVariant="nope"><span kjAlertDescription>x</span></div>`, {
+      imports: ALERT_IMPORTS,
+    });
+    const variantWarnings = warn.mock.calls.filter((c) =>
+      String(c[0]).includes('unknown variant "nope"'),
+    );
+    expect(variantWarnings).toHaveLength(1);
+    warn.mockRestore();
+  });
+
+  it('deep-merges provideKjAlert so naming one default keeps the other', async () => {
+    TestBed.configureTestingModule({
+      providers: [...provideKjAlert({ defaults: { size: 'lg' } })],
+    });
+    const { container } = await render(`<div kjAlert><span kjAlertDescription>x</span></div>`, {
+      imports: ALERT_IMPORTS,
+    });
+    const host = container.querySelector('[kjAlert]')!;
+    expect(host.getAttribute('data-size')).toBe('lg');
+    expect(host.getAttribute('data-variant')).toBe('info');
+  });
+});
+
+describe('KjAlert labels come from the i18n catalog (cust F-7)', () => {
+  it('dismiss and actions labels default to the EN catalog', async () => {
+    const { container } = await render(
+      `<div kjAlert>
+         <span kjAlertDescription>x</span>
+         <div kjAlertActions></div>
+         <button kjAlertDismiss>x</button>
+       </div>`,
+      { imports: ALERT_IMPORTS },
+    );
+    expect(container.querySelector('[kjAlertDismiss]')!.getAttribute('aria-label')).toBe(
+      EN_CATALOG['alert.dismiss'],
+    );
+    expect(container.querySelector('[kjAlertActions]')!.getAttribute('aria-label')).toBe(
+      EN_CATALOG['alert.actions'],
+    );
+  });
+
+  it('a registered catalog translates them with no per-component config', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideKjLocale({ locale: 'fr' }),
+        provideKjTranslations({ fr: FR_CATALOG }),
+      ],
+    });
+    const { container } = await render(
+      `<div kjAlert>
+         <span kjAlertDescription>x</span>
+         <div kjAlertActions></div>
+         <button kjAlertDismiss>x</button>
+       </div>`,
+      { imports: ALERT_IMPORTS },
+    );
+    expect(container.querySelector('[kjAlertDismiss]')!.getAttribute('aria-label')).toBe(
+      FR_CATALOG['alert.dismiss'],
+    );
+    expect(container.querySelector('[kjAlertActions]')!.getAttribute('aria-label')).toBe(
+      FR_CATALOG['alert.actions'],
+    );
+  });
+
+  it('an explicit input still wins over the catalog', async () => {
+    const { container } = await render(
+      `<div kjAlert>
+         <span kjAlertDescription>x</span>
+         <button kjAlertDismiss kjAlertDismissLabel="Close banner">x</button>
+       </div>`,
+      { imports: ALERT_IMPORTS },
+    );
+    expect(container.querySelector('[kjAlertDismiss]')!.getAttribute('aria-label')).toBe(
+      'Close banner',
+    );
+  });
+});
+
+/**
+ * arch F-13 — `KjAlertTitle` / `KjAlertDescription` register in their
+ * constructor and unregister through `DestroyRef` rather than `ngOnDestroy`.
+ * The observable contract is the alert's accessible name / description.
+ */
+describe('KjAlert title + description registry without lifecycle hooks', () => {
+  @Component({
+    standalone: true,
+    imports: [KjAlert, KjAlertTitle, KjAlertDescription],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `
+      <div kjAlert>
+        @if (showTitle()) {
+          <div kjAlertTitle>Saved</div>
+        }
+        @if (showDescription()) {
+          <div kjAlertDescription>Your changes are live.</div>
+        }
+      </div>
+    `,
+  })
+  class Host {
+    readonly showTitle = signal(true);
+    readonly showDescription = signal(true);
+  }
+
+  it('wires aria-labelledby / aria-describedby, and drops them when the cells go', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    const alert = fixture.nativeElement.querySelector('[kjAlert]') as HTMLElement;
+    const titleId = (fixture.nativeElement.querySelector('[kjAlertTitle]') as HTMLElement).id;
+    const descId = (fixture.nativeElement.querySelector('[kjAlertDescription]') as HTMLElement).id;
+    expect(titleId).not.toBe('');
+    expect(alert.getAttribute('aria-labelledby')).toBe(titleId);
+    expect(alert.getAttribute('aria-describedby')).toBe(descId);
+
+    fixture.componentInstance.showTitle.set(false);
+    fixture.componentInstance.showDescription.set(false);
+    fixture.detectChanges();
+
+    expect(alert.hasAttribute('aria-labelledby')).toBe(false);
+    expect(alert.hasAttribute('aria-describedby')).toBe(false);
   });
 });

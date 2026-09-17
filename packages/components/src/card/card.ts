@@ -1,4 +1,11 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  booleanAttribute,
+  input,
+} from '@angular/core';
+import type { KjExtensible } from '@kouji-ui/core';
 
 /**
  * Themed surface container — card, panel, feature box.
@@ -78,8 +85,15 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@a
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardComponent {
-  readonly variant = input<'default' | 'outline' | 'subtle'>('default');
+export class KjCard {
+  /**
+   * Surface treatment reflected as `data-variant` on the host. Open by design
+   * ({@link KjExtensible}): `'default' | 'outline' | 'subtle'` autocomplete and
+   * any other string is reflected verbatim, so a consumer registers a new one
+   * with an unlayered `.kj-card[data-variant="brand"]` rule that sets
+   * `--kj-card-bg` / `--kj-card-border-color`.
+   */
+  readonly variant = input<KjExtensible<'default' | 'outline' | 'subtle'>>('default');
 }
 
 /**
@@ -103,8 +117,13 @@ export class KjCardComponent {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardCoverComponent {
-  readonly size = input<'sm' | 'md' | 'lg'>('md');
+export class KjCardCover {
+  /**
+   * Cover height preset reflected as `data-size`. Open ({@link KjExtensible}) —
+   * override `--kj-card-cover-height` directly for a one-off.
+   */
+  readonly size = input<KjExtensible<'sm' | 'md' | 'lg'>>('md');
+  /** `object-fit` for media in the cover slot. Closed — it maps to two CSS values. */
   readonly fit = input<'cover' | 'contain'>('cover');
 }
 
@@ -121,7 +140,7 @@ export class KjCardCoverComponent {
   host: { 'class': 'kj-card-header' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardHeaderComponent {}
+export class KjCardHeader {}
 
 /**
  * Card heading. Renders semantically as `<h3>`.
@@ -131,12 +150,21 @@ export class KjCardHeaderComponent {}
 @Component({
   selector: 'kj-card-title',
   standalone: true,
-  template: `<h3 class="kj-card-title"><ng-content /></h3>`,
+  template: `<h3 class="kj-card-title" [class]="kjClass()"><ng-content /></h3>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardTitleComponent {}
+export class KjCardTitle {
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-card-title`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target. See "Customizing a component" in
+   * `rules/code_style.md`: author the rule unlayered so it beats
+   * `@layer kj.component`, and set the documented `--kj-*` knobs from it.
+   */
+  readonly kjClass = input<string>('');
+}
 
 /**
  * Card subtitle — smaller, lighter text below the title.
@@ -146,12 +174,21 @@ export class KjCardTitleComponent {}
 @Component({
   selector: 'kj-card-subtitle',
   standalone: true,
-  template: `<p class="kj-card-subtitle"><ng-content /></p>`,
+  template: `<p class="kj-card-subtitle" [class]="kjClass()"><ng-content /></p>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardSubtitleComponent {}
+export class KjCardSubtitle {
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-card-subtitle`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target. See "Customizing a component" in
+   * `rules/code_style.md`: author the rule unlayered so it beats
+   * `@layer kj.component`, and set the documented `--kj-*` knobs from it.
+   */
+  readonly kjClass = input<string>('');
+}
 
 /**
  * Main body slot. `padded` toggles the standard padding (default true).
@@ -169,8 +206,9 @@ export class KjCardSubtitleComponent {}
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardContentComponent {
-  readonly padded = input(true);
+export class KjCardContent {
+  /** Applies the content padding block. Reflects `data-padded`. Default `true`. */
+  readonly padded = input(true, { transform: booleanAttribute });
 }
 
 /**
@@ -189,6 +227,7 @@ export class KjCardContentComponent {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCardFooterComponent {
+export class KjCardFooter {
+  /** Inline placement of the footer actions. Reflects `data-align`. Default `'end'`. */
   readonly align = input<'start' | 'center' | 'end' | 'between'>('end');
 }

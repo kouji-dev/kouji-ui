@@ -1,1 +1,5 @@
-export { KjDirectionality, type KjDirection } from './directionality';
+export {
+  KjDirectionality,
+  provideKjDirectionality,
+  type KjDirection,
+} from './directionality';

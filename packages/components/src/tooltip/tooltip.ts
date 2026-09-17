@@ -1,3 +1,18 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `tooltip.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import {
   KjTooltipTrigger,
@@ -53,13 +68,13 @@ export {
  *   @doc-file tooltip.group.example.ts
  *
  * @doc-keyboard
- *   Tab     — Moves focus onto the trigger; opens the tooltip (no delay on focus)
+ *   Tab     — Moves focus onto the trigger; opens the tooltip immediately (`:focus-visible`, no hover delay)
  *   Escape  — Closes the open tooltip without losing trigger focus
  *   Shift+Tab — Moves focus away; closes the tooltip
  *
  * @doc-aria
  *   role="tooltip"   — applied to `<kj-tooltip-content>` by the directive
- *   aria-describedby — wired from the trigger to the content's id while open
+ *   aria-describedby — the trigger references the content's id at all times, so the description is available the moment focus lands (WAI-ARIA tooltip pattern)
  *   data-state       — "open" | "closed" mirror for CSS targeting on the content
  *   data-side        — Mirrors the resolved placement for theme/arrow hooks
  *
@@ -69,10 +84,12 @@ export {
  *   Popover instead when the content is essential on touch.
  *
  * @doc-a11y
- *   Implements the WAI-ARIA Tooltip APG pattern via `aria-describedby` on the
- *   trigger. Hover-intent timing prevents flicker on quick mouse movement.
- *   Escape closes the tooltip per APG. Never put interactive controls inside
- *   the tooltip — use Popover for that.
+ *   Implements the WAI-ARIA Tooltip APG pattern: the trigger opens on hover
+ *   intent and on keyboard focus (`:focus-visible`), is described by the
+ *   tooltip via `aria-describedby`, and Escape dismisses the open tooltip
+ *   while focus stays on the trigger. Hover-intent timing prevents flicker on
+ *   quick mouse movement. `[kjDisabled]` keeps the tooltip closed. Never put
+ *   interactive controls inside the tooltip — use Popover for that.
  *
  * @doc-related popover,dropdown-menu,kbd
  *
@@ -86,6 +103,7 @@ export {
  *   --kj-tooltip-font-size     — Font size of the content text.
  *   --kj-tooltip-shadow        — Elevation shadow on the content panel.
  *   --kj-tooltip-arrow-size    — Edge length of the diamond arrow. Default 6px.
+ *   --kj-tooltip-arrow-inset   — Distance from the aligned edge to the arrow when [kjAlign] is start/end.
  *
  * @doc-category Library/Overlay
  */
@@ -94,9 +112,8 @@ export {
   standalone: true,
   imports: [KjTooltipTrigger, KjTooltipContent, KjTooltipArrow, KjTooltipGroup],
   template: `<ng-content />`,
-  styleUrl: './tooltip.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjTooltipComponent {}
+export class KjTooltip {}

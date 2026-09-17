@@ -1,5 +1,6 @@
-import { Directive, booleanAttribute, inject, input } from '@angular/core';
-import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
+import { Directive, booleanAttribute, input } from '@angular/core';
+import { KJ_SPEED_DIAL } from './speed-dial.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * One action button in a Speed Dial cluster.
@@ -28,13 +29,15 @@ import { KJ_SPEED_DIAL, type KjSpeedDialContext } from './speed-dial.context';
   },
 })
 export class KjSpeedDialAction {
-  private readonly ctx = inject<KjSpeedDialContext>(KJ_SPEED_DIAL);
+  private readonly ctx = injectParent(KJ_SPEED_DIAL, { child: 'KjSpeedDialAction', parent: '[kjSpeedDial]' });
 
   /** Whether activating this action should close the dial. Default `true`. */
   readonly kjCloseOnActivate = input(true, { transform: booleanAttribute });
 
   protected onClick(): void {
     if (!this.kjCloseOnActivate()) return;
-    this.ctx.close();
+    // `'select'` rather than a bare programmatic close: a consumer reading
+    // `KjOverlayController.closeReason` can tell an activation from a dismissal.
+    this.ctx.close('select');
   }
 }

@@ -52,6 +52,7 @@ export interface KjFileUploadValidationMessages {
   count: string;
 }
 
+/** English fallbacks used when `kjValidationMessages` leaves a reason unset. */
 export const KJ_FILE_UPLOAD_DEFAULT_MESSAGES: KjFileUploadValidationMessages = {
   size: 'File too large',
   type: 'File type not allowed',

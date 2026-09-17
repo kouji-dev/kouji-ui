@@ -10,9 +10,11 @@ interface User {
 }
 
 /**
- * Keyboard navigation — full WCAG 2.1 grid keymap. Click into the grid and
- * try the keys listed in the legend. Focus is row-based; cells advertise
- * `tabindex="-1"` so arrow keys drive movement instead of Tab.
+ * Keyboard navigation — full WCAG 2.1 grid keymap. Tab into the grid: the
+ * body is a single Tab stop (roving tabindex) that lands on the first cell,
+ * or on the cell you focused last, and the keys in the legend move from
+ * there. Sortable headers are real buttons and resize handles are focusable
+ * separators, each with its own Tab stop.
  *
  * Internally `KjTableKeyboardNav` resolves cells via Angular's
  * `contentChildren(KjTableCell)`, so only currently-rendered (visible) cells
@@ -74,6 +76,8 @@ interface User {
     <aside class="keymap" aria-label="Keyboard shortcuts">
       <h3>Keyboard shortcuts</h3>
       <dl>
+        <dt><kbd>Tab</kbd></dt>
+        <dd>Enter the grid on the last focused cell (first cell initially); Tab again leaves it</dd>
         <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></dt>
         <dd>Move focus between cells</dd>
         <dt><kbd>Home</kbd> / <kbd>End</kbd></dt>

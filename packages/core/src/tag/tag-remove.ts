@@ -1,5 +1,6 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, computed, input } from '@angular/core';
 import { KjButton } from '../button/button';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 import { KJ_TAG } from './tag.context';
 
 /**
@@ -8,10 +9,12 @@ import { KJ_TAG } from './tag.context';
  * capture-phase click suppression, and the focus ring — there is no second
  * keyboard / a11y story to maintain.
  *
- * The accessible name is derived automatically from the parent tag's
- * projected text content (`"Remove {label}"`) via a `MutationObserver` on
- * `KjTag`. Override with `kjTagRemoveLabel` when the auto-derived name is
- * insufficient (e.g. icon-only tag, custom phrasing).
+ * The accessible name is derived automatically from the parent tag's projected
+ * text content (`"Remove {label}"`), captured once on first render. Override
+ * with `kjTagRemoveLabel` when the auto-derived name is insufficient (e.g.
+ * icon-only tag, custom phrasing). When the tag's text is *replaced* after
+ * first render, bind `kjTagLabel` on the tag — or, as a last resort, set
+ * `kjTagObserveLabel` to re-derive it from the DOM.
  *
  * @example
  * ```html
@@ -35,7 +38,7 @@ import { KJ_TAG } from './tag.context';
   },
 })
 export class KjTagRemove {
-  private readonly tag = inject(KJ_TAG);
+  private readonly tag = injectParent(KJ_TAG, { child: 'KjTagRemove', parent: '[kjTag]' });
 
   /** Override the auto-derived `aria-label` for the remove button. */
   readonly kjTagRemoveLabel = input<string | undefined>(undefined);

@@ -1,6 +1,7 @@
-import { Directive, computed, inject } from '@angular/core';
+import { Directive, computed } from '@angular/core';
 import { KJ_SLIDER } from './slider.context';
 import { fractionForValue } from './slider.geometry';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Highlighted span representing the *selected* portion of the track —
@@ -28,7 +29,7 @@ import { fractionForValue } from './slider.geometry';
 })
 export class KjSliderRange {
   /** @internal */
-  readonly ctx = inject(KJ_SLIDER);
+  readonly ctx = injectParent(KJ_SLIDER, { child: 'KjSliderRange', parent: '[kjSlider]' });
 
   /** @internal — `start` ≤ `end` regardless of inversion (CSS handles flipping). */
   readonly fractions = computed(() => {

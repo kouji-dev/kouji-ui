@@ -1,4 +1,5 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
 /**
  * Shape of the Alert preset configuration. Mirrors `KjButtonConfig` —
@@ -32,15 +33,12 @@ export const KJ_ALERT_CONFIG = new InjectionToken<KjAlertConfig>('kj.alert.confi
 });
 
 /**
- * Configures the Alert presets for the enclosing injector. Replaces
- * (does not merge) `variants` / `sizes`; spread `KJ_ALERT_DEFAULTS.variants`
- * to extend.
+ * Configures the Alert presets for the enclosing injector.
+ *
+ * Deep-merges over {@link KJ_ALERT_DEFAULTS} through {@link mergeKjConfig} —
+ * pass only the fields you want to change, at any depth. Arrays still
+ * **replace**; spread `KJ_ALERT_DEFAULTS.variants` to extend the list.
  */
-export function provideKjAlert(config: Partial<KjAlertConfig>): Provider[] {
-  return [
-    {
-      provide: KJ_ALERT_CONFIG,
-      useValue: { ...KJ_ALERT_DEFAULTS, ...config },
-    },
-  ];
+export function provideKjAlert(config: KjDeepPartial<KjAlertConfig>): Provider[] {
+  return [{ provide: KJ_ALERT_CONFIG, useValue: mergeKjConfig(KJ_ALERT_DEFAULTS, config) }];
 }

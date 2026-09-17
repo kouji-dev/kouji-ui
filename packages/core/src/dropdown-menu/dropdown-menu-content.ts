@@ -1,6 +1,7 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ElementRef,
   ViewEncapsulation,
   Injector,
   computed,
@@ -30,26 +31,34 @@ import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-t
 import { pointAt } from '../primitives/overlay/strategies/position/point-at';
 import { inPlaceSibling } from '../primitives/overlay/strategies/position/in-place-sibling';
 import {
-  KJ_LIST_FOCUS_MODE,
+  KJ_LIST_FOCUS_MODE_DEFAULT,
   KJ_LIST_NAVIGATOR_CONFIG,
   KjListItem,
   ownListItems,
   KjListNavigator,
   KjTypeAhead,
   type KjCompareFn,
-  type KjListFocusMode,
   type KjListNavigatorConfig,
 } from '../primitives/list';
 import {
   KjDropdownMenuTrigger,
   KJ_DROPDOWN_MENU,
+  menuCloseReasonToOverlay,
   type KjDropdownMenuCloseReason,
   type KjDropdownMenuContext,
+  type KjDropdownMenuMount,
 } from './dropdown-menu-trigger';
+import { DOCUMENT } from '@angular/common';
 
 type KjDeferredMount = KjMountStrategy & { setDelegate(d: KjMountStrategy): void };
 type KjDeferredPosition = KjPositionStrategy & { setDelegate(d: KjPositionStrategy): void };
 
+/**
+ * A mount slot whose concrete strategy is chosen after construction (the
+ * DI factory runs before the component's inputs are set). `setDelegate`
+ * may run again when the input changes: the previous delegate is closed
+ * (if the overlay is open) and detached, the new one attached and opened.
+ */
 function deferredMount(): KjDeferredMount {
   let ctx: KjOverlayContext | null = null;
   let delegate: KjMountStrategy | null = null;
@@ -64,10 +73,15 @@ function deferredMount(): KjDeferredMount {
     resolveContainer() {
       const from = delegate?.resolveContainer();
       if (from) return from;
-      if (typeof document === 'undefined') return null as unknown as HTMLElement;
-      return document.body;
+      return (ctx?.panelEl()?.ownerDocument ?? ctx?.triggerEl()?.ownerDocument)
+        ?.body as HTMLElement;
     },
     setDelegate(d) {
+      if (delegate === d) return;
+      if (delegate) {
+        if (opened) delegate.onClose?.();
+        delegate.detach();
+      }
       delegate = d;
       if (attached && ctx) d.attach(ctx);
       if (opened) d.onOpen?.();
@@ -87,27 +101,35 @@ function deferredPosition(): KjDeferredPosition {
     update() { delegate?.update(); },
     detach() { delegate?.detach(); ctx = null; attached = false; },
     setDelegate(d) {
+      if (delegate === d) return;
+      if (delegate) {
+        if (opened) delegate.onClose?.();
+        delegate.detach();
+      }
       delegate = d;
       if (attached && ctx) d.attach(ctx);
-      if (opened) d.onOpen?.();
+      if (opened) { d.onOpen?.(); d.update(); }
     },
   };
 }
 
 /**
  * The dropdown-menu content panel. Composes `KjOverlayPanel` and dispatches
- * mount + position strategies based on `kjMount`:
+ * mount + position strategies based on `kjMount`, reactively — the delegate
+ * is picked in an effect once the input is bound, and again if it changes:
  *
  * - `'portal'` (default) — `bodyPortal()` + `anchoredTo(trigger, side, align)`
- * - `'point'`            — `bodyPortal()` + `pointAt({x, y})` (right-click / context-menu)
+ * - `'point'`            — `bodyPortal()` + `pointAt({x, y})` (right-click / context-menu);
+ *                          the point comes from the `[kjDropdownMenuTrigger]` bound via
+ *                          `[kjFor]` (or an enclosing one)
  * - `'inline'`           — `inPlace()`    + `inPlaceSibling()`
  *
- * Sets `role="menu"` via the panel role token. Composes
- * `KjListNavigator{kjOrientation:'vertical', kjFocusMode:'roving'}` and
- * provides `KjTypeAhead`, so projected `[kjDropdownMenuItem]`s get the
- * full WAI-ARIA APG menu keyboard contract (Up/Down/Home/End/type-ahead)
- * + roving DOM focus for free. Implements {@link KjListNavigatorConfig}
- * — items are actions, no selection model.
+ * Sets `role="menu"` via the panel role token. Composes `KjListNavigator` —
+ * whose own default orientation is already vertical — in the roving focus
+ * model (`KJ_LIST_FOCUS_MODE_DEFAULT`) and provides `KjTypeAhead`, so projected
+ * `[kjDropdownMenuItem]`s get the full WAI-ARIA APG menu keyboard contract
+ * (Up/Down/Home/End/type-ahead) + roving DOM focus for free. Implements
+ * {@link KjListNavigatorConfig} — items are actions, no selection model.
  *
  * @doc-category Core/Overlay
  */
@@ -127,36 +149,27 @@ function deferredPosition(): KjDeferredPosition {
     { provide: KJ_OVERLAY_POSITION_STRATEGY, useFactory: () => deferredPosition() },
     { provide: KJ_DROPDOWN_MENU, useExisting: KjDropdownMenuContent },
     { provide: KJ_LIST_NAVIGATOR_CONFIG, useExisting: forwardRef(() => KjDropdownMenuContent) },
-    // Force roving focus mode at the element injector. `KjListNavigator`
-    // also provides this token (driven by its own `kjFocusMode` input,
-    // which defaults to `'activedescendant'`). Overriding here means
-    // `KjListItem`s under this content compute their `tabindex` from a
-    // signal that always reads `'roving'` — independent of whether the
-    // consumer remembered to set `kjFocusMode` on the navigator.
-    {
-      provide: KJ_LIST_FOCUS_MODE,
-      useFactory: () => signal<KjListFocusMode>('roving'),
-    },
+    // Roving DOM focus per WAI-ARIA APG menu: seeds the composed navigator's
+    // `kjFocusMode` (a template binding still wins), which owns the tab-stop
+    // seed and the focus-follow on activation.
+    { provide: KJ_LIST_FOCUS_MODE_DEFAULT, useValue: 'roving' },
     KjTypeAhead,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
     'class': 'kj-dropdown-menu',
-    // The KjListNavigator host directive reads `kjOrientation` and
-    // `kjFocusMode` as signal inputs; setting the matching static
-    // attributes here seeds their initial values for the menu pattern
-    // (vertical orientation + roving DOM focus per WAI-ARIA APG).
-    'kjOrientation': 'vertical',
-    'kjFocusMode': 'roving',
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `<ng-content />`,
 })
 export class KjDropdownMenuContent implements KjDropdownMenuContext, KjListNavigatorConfig {
+  /** Preferred side of the trigger the menu opens on. Default `'bottom'`. */
   readonly kjSide  = input<KjSide>('bottom');
+  /** Alignment along that side. Default `'start'`. */
   readonly kjAlign = input<KjAlign>('start');
-  readonly kjMount = input<'portal' | 'point' | 'inline'>('portal');
+  /** Where the panel is mounted: portalled to the overlay container, or in place. Default `'portal'`. */
+  readonly kjMount = input<KjDropdownMenuMount>('portal');
 
   // ── KjListNavigatorConfig ────────────────────────────────────────────
   /**
@@ -185,6 +198,8 @@ export class KjDropdownMenuContent implements KjDropdownMenuContext, KjListNavig
   }
 
   private readonly _injector = inject(Injector);
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly document = inject(DOCUMENT);
   private _panelCache: KjOverlayPanel | null | undefined = undefined;
   private get _panel(): KjOverlayPanel | null {
     if (this._panelCache === undefined) {
@@ -196,9 +211,9 @@ export class KjDropdownMenuContent implements KjDropdownMenuContext, KjListNavig
   /** Mirror of trigger's closeOnSelect — defaults to true; trigger overrides via its own provider. */
   readonly closeOnSelect = computed(() => true);
 
-  /** Item-driven close. Routes through the panel's controller (resolved via `kjFor`). */
-  hide(_reason: KjDropdownMenuCloseReason): void {
-    this._panel?.controller?.close('programmatic');
+  /** Item-driven close. Routes through the panel's controller (resolved via `kjFor`) with the matching overlay reason. */
+  hide(reason: KjDropdownMenuCloseReason): void {
+    this._panel?.controller?.close(menuCloseReasonToOverlay(reason));
   }
 
   /** Escape key — closes the menu. KjListNavigator does not own Escape. */
@@ -225,47 +240,43 @@ export class KjDropdownMenuContent implements KjDropdownMenuContext, KjListNavig
   constructor() {
     const mount = inject(KJ_OVERLAY_MOUNT_STRATEGY) as KjDeferredMount;
     const position = inject(KJ_OVERLAY_POSITION_STRATEGY) as KjDeferredPosition;
-    const trigDir = inject(KjDropdownMenuTrigger, { optional: true });
-    const m = this.kjMount();
-    if (m === 'inline') {
-      mount.setDelegate(inPlace());
-      position.setDelegate(inPlaceSibling());
-    } else if (m === 'point' && trigDir) {
-      mount.setDelegate(bodyPortal());
-      position.setDelegate(pointAt({ x: trigDir.kjPointX, y: trigDir.kjPointY }));
-    } else {
-      mount.setDelegate(bodyPortal());
-      position.setDelegate(anchoredTo({ side: this.kjSide, align: this.kjAlign }));
-    }
+    // The trigger is a sibling in the usual composition, reached through
+    // `[kjFor]`; an enclosing trigger element is honoured as well.
+    const enclosingTrigger = inject(KjDropdownMenuTrigger, { optional: true });
 
-    // Roving seed: when nothing is active yet (e.g. just-opened menu),
-    // point the navigator at the first non-disabled item so its host
-    // gets `tabindex=0` and is reachable by Tab. Mirrors the seed effect
-    // inside `KjListNavigator` for the `'roving'` focus mode — needed
-    // here because the navigator's own seed gates on `kjFocusMode()`,
-    // which stays at the directive's default `'activedescendant'`
-    // (host-directive inputs cannot be defaulted from this component).
+    // Delegate selection tracks `kjMount` (and, for a point menu, the
+    // trigger bound through `kjFor`): inputs are not populated at
+    // construction, so reading them there would pin the default forever.
     effect(() => {
-      const items = this.items();
-      const nav = this.getNav();
-      if (!nav) return;
-      if (nav.activeId() !== null) return;
-      const first = items.find(i => !i.disabled());
-      if (first) untracked(() => nav.setActive(first.id));
+      const m = this.kjMount();
+      const bound = this._panel?.kjFor();
+      const trigger = enclosingTrigger ?? (bound instanceof KjDropdownMenuTrigger ? bound : null);
+      untracked(() => {
+        if (m === 'inline') {
+          mount.setDelegate(inPlace());
+          position.setDelegate(inPlaceSibling());
+        } else if (m === 'point' && trigger) {
+          mount.setDelegate(bodyPortal());
+          position.setDelegate(pointAt({ x: trigger.kjPointX, y: trigger.kjPointY }));
+        } else {
+          mount.setDelegate(bodyPortal());
+          position.setDelegate(anchoredTo({ side: this.kjSide, align: this.kjAlign }));
+        }
+      });
     });
 
-    // Roving focus follow: move DOM focus onto the active item's host.
-    // Same rationale as the seed effect — the navigator's own
-    // focus-follow effect gates on `kjFocusMode() === 'roving'`.
+    // Initial focus: the navigator seeds the tab stop while the panel is
+    // still hidden, where a browser ignores `focus()`. Move focus onto it
+    // once the overlay is open so a keyboard user lands on the first item
+    // (WAI-ARIA APG menu button) instead of stranded on the trigger. Focus
+    // the user already moved into the menu is left alone; the controller
+    // returns it to the trigger on close.
     effect(() => {
-      const nav = this.getNav();
-      if (!nav) return;
-      const item = nav.activeItem();
-      if (!item) return;
-      const host = item._host();
-      if (host && typeof document !== 'undefined' && document.activeElement !== host) {
-        untracked(() => host.focus());
-      }
+      if (this._panel?.controller?.state() !== 'open') return;
+      untracked(() => {
+        if (this.hostEl.contains(this.document.activeElement)) return;
+        this.getNav()?.focusActive();
+      });
     });
   }
 }

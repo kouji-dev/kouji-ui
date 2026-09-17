@@ -1,11 +1,11 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
-import { KjDatetimePickerComponent } from './datetime-picker';
+import { KjDatetimePicker } from './datetime-picker';
 
 @Component({
   standalone: true,
-  imports: [KjDatetimePickerComponent],
+  imports: [KjDatetimePicker],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `<kj-datetime-picker [(kjValue)]="value" kjTimeLabel="Heure" />`,
 })
@@ -13,13 +13,13 @@ class HostComponent {
   value: Date | null = null;
 }
 
-describe('KjDatetimePickerComponent', () => {
+describe('KjDatetimePicker', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
 
-  function picker(fixture: { debugElement: { children: { componentInstance: unknown }[] } }): KjDatetimePickerComponent {
-    return fixture.debugElement.children[0]!.componentInstance as KjDatetimePickerComponent;
+  function picker(fixture: { debugElement: { children: { componentInstance: unknown }[] } }): KjDatetimePicker {
+    return fixture.debugElement.children[0]!.componentInstance as KjDatetimePicker;
   }
 
   test('renders trigger input and (hidden) panel with a time field', () => {

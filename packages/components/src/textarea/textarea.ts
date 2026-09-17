@@ -5,19 +5,18 @@ import {
   booleanAttribute,
   computed,
   effect,
-  forwardRef,
   input,
-  signal,
+  inject,
 } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
+  KjFormControl,
   KjLiveRegion,
   KjTextarea,
   type KjTextareaAutoresize,
   type KjTextareaResize,
+  KjId,
+  kjDevWarn,
 } from '@kouji-ui/core';
-
-let nextId = 0;
 
 /**
  * Number transform that preserves `undefined` (instead of NaN-ing on absent
@@ -141,13 +140,7 @@ function numberWithDefault(def: number) {
   selector: 'kj-textarea',
   standalone: true,
   imports: [KjTextarea, KjLiveRegion],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => KjTextareaComponent),
-      multi: true,
-    },
-  ],
+  hostDirectives: [KjFormControl],
   template: `
     <textarea
       kjTextarea
@@ -164,7 +157,7 @@ function numberWithDefault(def: number) {
       [kjMinRows]="kjMinRows()"
       [kjMaxRows]="kjMaxRows()"
       [kjMaxLength]="kjMaxLength()"
-      [attr.aria-describedby]="ariaDescribedBy()"
+      [kjDescribedBy]="ariaDescribedBy()"
       (input)="onInnerInput($any($event.target).value)"
       (blur)="onInnerBlur()"
     ></textarea>
@@ -188,7 +181,7 @@ function numberWithDefault(def: number) {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjTextareaComponent implements ControlValueAccessor {
+export class KjTextareaComponent {
   /** Uncontrolled fallback value. Templated forms use `[(ngModel)]` / `[formControl]`. */
   readonly kjValue = input<string>('');
 
@@ -237,7 +230,7 @@ export class KjTextareaComponent implements ControlValueAccessor {
   readonly kjSize = input<string | undefined>(undefined);
 
   /** @internal stable id for the counter / aria-describedby wiring. */
-  protected readonly counterId = `kj-textarea-counter-${++nextId}`;
+  protected readonly counterId = inject(KjId).mint('textarea-counter');
 
   // ── CVA plumbing ───────────────────────────────────────────────────────
   // The wrapper itself acts as the form-control bound to `<kj-textarea>` so
@@ -245,17 +238,27 @@ export class KjTextareaComponent implements ControlValueAccessor {
   // wrapper element. The inner `[kjTextarea]` directive's own KjFormControl is
   // a local signal channel that powers value reflection + the counter; both
   // are kept in sync via the (input) handler.
-  private readonly cvaValue = signal<string>('');
-  protected readonly cvaDisabled = signal<boolean>(false);
+  /**
+   * The composed `KjFormControl` — this component's `ControlValueAccessor`.
+   * The four accessor methods this replaced held the same two pieces of state
+   * the primitive already owns.
+   */
+  protected readonly formCtrl = inject(KjFormControl);
+
+  /** @internal Value written by the forms layer, normalised to a string. */
+  private readonly cvaValue = computed<string>(() => {
+    const v = this.formCtrl.value();
+    return v == null ? '' : String(v);
+  });
+
+  /** @internal Disabled state pushed down by the forms layer. */
+  protected readonly cvaDisabled = this.formCtrl.disabled;
 
   /** @internal Effective textarea value: CVA-bound value with kjValue fallback. */
   protected readonly currentValue = computed(() => {
     const v = this.cvaValue();
     return v !== '' && v != null ? v : this.kjValue();
   });
-
-  private _onChange?: (value: string) => void;
-  private _onTouched?: () => void;
 
   /** @internal Whether the visible counter element should render. */
   protected readonly showCounter = computed(
@@ -282,7 +285,7 @@ export class KjTextareaComponent implements ControlValueAccessor {
 
   /** @internal — composed aria-describedby (counter id when visible). */
   protected readonly ariaDescribedBy = computed(() =>
-    this.showCounter() ? this.counterId : null,
+    this.showCounter() ? this.counterId : '',
   );
 
   /** @internal — threshold-based announcement string (mirrors the directive's
@@ -300,9 +303,10 @@ export class KjTextareaComponent implements ControlValueAccessor {
   constructor() {
     // Dev-mode guidance: counter requested without max length is a no-op.
     effect(() => {
-      if (this.kjShowCounter() && !Number.isFinite(this.kjMaxLength()) && typeof console !== 'undefined') {
-        console.warn(
-          '[kj-textarea] kjShowCounter is set without kjMaxLength — counter will not render.',
+      if (this.kjShowCounter() && !Number.isFinite(this.kjMaxLength())) {
+        kjDevWarn(
+          'kj-textarea',
+          'kjShowCounter is set without kjMaxLength — counter will not render.',
         );
       }
     });
@@ -310,30 +314,11 @@ export class KjTextareaComponent implements ControlValueAccessor {
 
   /** @internal — host (input) wired into the wrapper's CVA. */
   onInnerInput(value: string): void {
-    this.cvaValue.set(value);
-    this._onChange?.(value);
+    this.formCtrl.notifyChange(value);
   }
 
   /** @internal — host (blur) marks CVA touched. */
   onInnerBlur(): void {
-    this._onTouched?.();
-  }
-
-  // ── ControlValueAccessor implementation ────────────────────────────────
-  writeValue(val: unknown): void {
-    const next = val == null ? '' : String(val);
-    this.cvaValue.set(next);
-  }
-
-  registerOnChange(fn: (value: string) => void): void {
-    this._onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this._onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.cvaDisabled.set(isDisabled);
+    this.formCtrl.notifyTouched();
   }
 }

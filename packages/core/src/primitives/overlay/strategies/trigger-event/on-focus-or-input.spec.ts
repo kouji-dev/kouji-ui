@@ -29,6 +29,29 @@ describe('onFocusOrInput', () => {
     s.detach(); trigger.remove();
   });
 
+  it('focus returning to the input while the listbox is closing does not re-open; typing does', () => {
+    const trigger = document.createElement('input');
+    document.body.appendChild(trigger);
+    const state = signal<'closed' | 'opening' | 'open' | 'closing'>('closing');
+    const ctx: KjOverlayContext = {
+      state, isOpen: signal(false),
+      triggerEl: signal(trigger), panelEl: signal(null),
+      stack: {} as never, platform: { isBrowser: true },
+      requestClose: () => {},
+    };
+    const toggle = vi.fn();
+    const s = onFocusOrInput();
+    s.attach(ctx);
+    s.bindToggle(toggle);
+
+    trigger.dispatchEvent(new Event('focusin'));
+    expect(toggle).not.toHaveBeenCalled();
+    trigger.dispatchEvent(new Event('input'));
+    expect(toggle).toHaveBeenCalledTimes(1);
+
+    s.detach(); trigger.remove();
+  });
+
   it('ariaHasPopup is "listbox"', () => {
     expect(onFocusOrInput().ariaHasPopup).toBe('listbox');
   });

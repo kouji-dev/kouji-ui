@@ -5,25 +5,25 @@ import {
   EnvironmentInjector,
   Injector,
   ViewEncapsulation,
+  booleanAttribute,
   inject,
   input,
   output,
   viewChild,
 } from '@angular/core';
 import {
-  KjIconDirective,
+  KjIcon,
   KjLiveRegion,
   KjRichTextEditor,
   KjRovingTabindex,
-  KjRovingTabindexItemDirective,
+  KjRovingTabindexItem,
   KJ_RTE_OVERLAY_DATA,
   type KjActiveOverlay,
   type KjRichTextFeature,
   type KjRteToolbarItem,
+  KjId,
 } from '@kouji-ui/core';
 import { defaultFeatures } from './features/default-features';
-
-let kjRteUid = 0;
 
 /**
  * Styled, accessible rich-text editor composing the headless
@@ -72,9 +72,9 @@ let kjRteUid = 0;
   imports: [
     KjRichTextEditor,
     KjRovingTabindex,
-    KjRovingTabindexItemDirective,
+    KjRovingTabindexItem,
     KjLiveRegion,
-    KjIconDirective,
+    KjIcon,
     NgComponentOutlet,
   ],
   host: { class: 'kj-rte' },
@@ -162,22 +162,22 @@ export class KjRichTextEditorComponent {
   readonly kjLabelledBy = input<string>('');
   /** Placeholder shown while the editor is empty. */
   readonly kjPlaceholder = input<string>('');
-  /** Render read-only (non-editable) content. */
-  readonly kjReadonly = input<boolean>(false);
+  /** Render read-only (non-editable) content. Defaults to `false`. */
+  readonly kjReadonly = input(false, { transform: booleanAttribute });
   /** Accessible label for the toolbar. */
   readonly kjToolbarLabel = input<string>('Formatting');
-  /** Whether the formatting toolbar is shown. */
-  readonly kjShowToolbar = input<boolean>(true);
+  /** Whether the formatting toolbar is shown. Defaults to `true`. */
+  readonly kjShowToolbar = input(true, { transform: booleanAttribute });
 
-  /** Emits the serialized HTML whenever the content changes. */
+  /** Emits the serialized HTML whenever the content changes. Synchronous — it is the form value. */
   readonly valueChange = output<string>();
-  /** Emits the plain text whenever the content changes. */
+  /** Emits the plain text whenever the content changes. Coalesced to one animation frame. */
   readonly textChange = output<string>();
-  /** Emits the Lexical serialized state whenever the content changes. */
+  /** Emits the Lexical serialized state whenever the content changes. Coalesced to one animation frame. */
   readonly jsonChange = output<unknown>();
 
   /** @internal Stable id used for aria-controls / labelledby wiring. */
-  protected readonly contentId = `kj-rte-${kjRteUid++}`;
+  protected readonly contentId = inject(KjId).mint('rte');
 
   private readonly live = viewChild(KjLiveRegion);
   private readonly overlayInjectors = new WeakMap<object, Injector>();

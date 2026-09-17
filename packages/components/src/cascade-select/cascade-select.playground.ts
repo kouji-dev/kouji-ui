@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
-  KjCascadeOptionComponent,
+  KjCascadeOption,
   KjCascadeSelectComponent,
-  KjCascadeSubPanelComponent,
+  KjCascadeSubPanel,
 } from './cascade-select';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
 
@@ -53,8 +53,8 @@ const REGIONS: ReadonlyArray<{
   standalone: true,
   imports: [
     KjCascadeSelectComponent,
-    KjCascadeOptionComponent,
-    KjCascadeSubPanelComponent,
+    KjCascadeOption,
+    KjCascadeSubPanel,
   ],
   template: `
     <kj-cascade-select

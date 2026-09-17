@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjAriaDescribedBy } from '@kouji-ui/core';
+import { KjFieldControl } from '@kouji-ui/core';
 import {
   KjFieldComponent,
   KjFieldGroupComponent,
@@ -20,7 +20,7 @@ import {
     KjFieldLabelComponent,
     KjFieldHelpComponent,
     KjFieldGroupComponent,
-    KjAriaDescribedBy,
+    KjFieldControl,
   ],
   styles: [
     `
@@ -42,18 +42,11 @@ import {
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-field #f="kjField">
+    <kj-field>
       <kj-field-label>Amount</kj-field-label>
       <kj-field-group>
         <span prefix>$</span>
-        <input
-          kjAriaDescribedBy
-          class="kj-bare"
-          type="number"
-          placeholder="0.00"
-          [id]="f.controlId()"
-          [kjDescribedBy]="$any(f.describedByIds())"
-        />
+        <input kjFieldControl class="kj-bare" type="number" placeholder="0.00" />
         <span suffix>USD</span>
       </kj-field-group>
       <kj-field-help>Enter the total in US dollars.</kj-field-help>

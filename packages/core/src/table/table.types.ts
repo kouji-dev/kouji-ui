@@ -9,7 +9,10 @@ export type KjColumnPin = 'left' | 'right' | null;
 
 /** Built-in aggregation kinds; pass a function for custom. */
 export type KjAggregationKind = 'sum' | 'avg' | 'min' | 'max' | 'count';
+/** Custom aggregation: receives the group's rows, returns the footer value. */
 export type KjAggregationFn<T> = (rows: readonly T[]) => unknown;
+
+/** A column's aggregation — a built-in kind or a custom function. */
 export type KjAggregation<T> = KjAggregationKind | KjAggregationFn<T>;
 
 /** Editor / filter UI override: a component class OR a template ref. */
@@ -17,6 +20,7 @@ export type KjEditorRef<TData = unknown, TValue = unknown> =
   | Type<unknown>
   | TemplateRef<{ row: TData; value: TValue; commit: (v: TValue) => void; cancel: () => void }>;
 
+/** Filter UI override: a component class OR a template ref. */
 export type KjFilterUiRef<TData = unknown> =
   | Type<unknown>
   | TemplateRef<{ column: unknown; table: Table<TData> }>;
@@ -75,6 +79,9 @@ export interface KjTableState {
   readonly grouping: GroupingState;
   readonly density: KjTableDensity;
 }
+
+/** A slice of `KjTableState` that a storage adapter may persist. */
+export type KjTablePersistedSlice = keyof KjTableState;
 
 /** Loader return value for kjTableResource. Matches TanStack manualPagination + rowCount. */
 export interface KjResourceResult<TData> {

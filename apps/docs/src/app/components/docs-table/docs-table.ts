@@ -1,6 +1,6 @@
 ﻿import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
 import { createColumnHelper, type ColumnDef } from '@tanstack/angular-table';
-import { KjTable, KjTableHeader, KjVisuallyHidden } from '@kouji-ui/core';
+import { KjTable, KjTableHeader, KjTableSort, KjVisuallyHidden } from '@kouji-ui/core';
 
 export interface DocsTableColumn {
   key: string;
@@ -10,7 +10,7 @@ export interface DocsTableColumn {
 @Component({
   selector: 'app-docs-table',
   standalone: true,
-  imports: [KjTable, KjTableHeader, KjVisuallyHidden],
+  imports: [KjTable, KjTableHeader, KjTableSort, KjVisuallyHidden],
   templateUrl: './docs-table.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './docs-table.css',
@@ -27,7 +27,11 @@ export class DocsTableComponent {
       this.ch.accessor((row) => row[col.key], {
         id: col.key,
         header: col.header,
-        enableSorting: false,
+        // Sortable: the API tables on a docs page are long enough that
+        // ordering by name or type is useful, and the demo is the reference
+        // for `<button kjTableSort>`. `enableSorting: false` would leave the
+        // button registered but inert.
+        enableSorting: true,
       }),
     ),
   );

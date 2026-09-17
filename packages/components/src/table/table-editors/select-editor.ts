@@ -5,13 +5,11 @@ import {
   ViewEncapsulation,
   computed,
   effect,
-  inject,
   input,
-  signal,
   viewChild,
 } from '@angular/core';
 import { KjOptionComponent, KjSelectComponent } from '../../select/select';
-import { KJ_EDITOR_CONTRACT, type KjEditorContract } from './index';
+import { injectKjCellEditor } from './cell-editor';
 
 /** Option entry accepted by `<kj-select-editor>`. */
 export type KjSelectEditorOption = string | { value: unknown; label: string };
@@ -38,9 +36,9 @@ interface ResolvedOption {
   template: `
     <kj-select
       class="kj-editor kj-editor--select"
-      [value]="draftValue()"
+      [value]="editor.draft()"
       (valueChange)="onValueChange($event)"
-      (keydown.escape)="cancel(); $event.stopPropagation()"
+      (keydown.escape)="editor.cancel(); $event.stopPropagation()"
     >
       @for (opt of resolved(); track opt.label) {
         <kj-option [value]="opt.value">{{ opt.label }}</kj-option>
@@ -52,7 +50,11 @@ interface ResolvedOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSelectEditor {
-  private readonly ctx = inject(KJ_EDITOR_CONTRACT) as KjEditorContract<unknown>;
+  /** Every activation commits, so the editor never settles. */
+  protected readonly editor = injectKjCellEditor<unknown>({
+    seed: (v) => v,
+    settleOnce: false,
+  });
 
   /**
    * Template-bound reference to the inner `<kj-select>`. Exposes the
@@ -67,7 +69,7 @@ export class KjSelectEditor {
 
   protected readonly resolved = computed<ResolvedOption[]>(() => {
     const direct = this.kjOptions();
-    const fromMeta = this.ctx.meta?.['options'] as ReadonlyArray<KjSelectEditorOption> | undefined;
+    const fromMeta = this.editor.meta?.['options'] as ReadonlyArray<KjSelectEditorOption> | undefined;
     const source = direct.length > 0 ? direct : (fromMeta ?? []);
     return source.map(opt =>
       typeof opt === 'string'
@@ -76,12 +78,9 @@ export class KjSelectEditor {
     );
   });
 
-  protected readonly draftValue = signal<unknown>(undefined);
-
   private focused = false;
 
   constructor() {
-    this.draftValue.set(this.ctx.value);
     // Two reactive hops: first the editor's viewChild resolves to the
     // `<kj-select>` instance, then that instance's own `triggerEl`
     // signal resolves to the trigger button's ElementRef. `effect` tracks
@@ -97,11 +96,7 @@ export class KjSelectEditor {
   }
 
   protected onValueChange(next: unknown): void {
-    this.draftValue.set(next);
-    this.ctx.commit(next);
-  }
-
-  protected cancel(): void {
-    this.ctx.cancel();
+    this.editor.draft.set(next);
+    this.editor.commit(next);
   }
 }

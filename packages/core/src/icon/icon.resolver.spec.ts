@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { ApplicationRef, Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Provider, EnvironmentProviders } from '@angular/core';
@@ -79,6 +79,33 @@ describe('injectKjIconResolver', () => {
       await Promise.resolve();
       await Promise.resolve();
       expect(resolve('x')).toBe('url("ok")');
+    });
+
+    it('a pending load holds a pending task, so the app (and SSR) waits for the icon', async () => {
+      let resolveLoad: (v: string) => void = () => {};
+      const loader = (_n: string) => new Promise<string>((res) => (resolveLoad = res));
+      const resolve = makeResolver([provideIconLoader(loader)]);
+      const appRef = TestBed.inject(ApplicationRef);
+
+      expect(resolve('settings')).toBeNull();
+      let stable = false;
+      void appRef.whenStable().then(() => (stable = true));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(stable).toBe(false);
+
+      resolveLoad('url("loaded")');
+      await appRef.whenStable();
+      expect(resolve('settings')).toBe('url("loaded")');
+    });
+
+    it('a rejected load releases its pending task', async () => {
+      const resolve = makeResolver([provideIconLoader(async () => { throw new Error('boom'); })]);
+      const appRef = TestBed.inject(ApplicationRef);
+      expect(resolve('x')).toBeNull();
+      await appRef.whenStable();
+      // Stable again, and the name is retried on the next request (not cached as failed).
+      expect(resolve('x')).toBeNull();
     });
 
     it('loader path takes precedence over fallback resolver', async () => {

@@ -1,8 +1,10 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjPositionStrategy } from '../../tokens';
 
+/** Viewport edge a sheet or drawer slides in from. */
 export type KjSheetSide = 'left' | 'right' | 'top' | 'bottom';
 
+/** Stretches the panel along one viewport edge — the drawer / sheet placement. */
 export function edgeSheet(opts: { side: KjSheetSide }): KjPositionStrategy {
   let ctx: KjOverlayContext | null = null;
   const side = opts.side;

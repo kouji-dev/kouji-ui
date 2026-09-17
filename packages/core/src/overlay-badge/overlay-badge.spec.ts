@@ -176,7 +176,7 @@ describe('KjOverlayBadge', () => {
 
     it('host-composes KjBadge — data-variant lands on the content node', async () => {
       const { container } = await render(
-        `<button kjOverlayBadge>Bell<span kjOverlayBadgeContent [kjBadgeVariant]="'destructive'">4</span></button>`,
+        `<button kjOverlayBadge>Bell<span kjOverlayBadgeContent [kjVariant]="'destructive'">4</span></button>`,
         { imports },
       );
       expect(container.querySelector('[kjOverlayBadgeContent]')).toHaveAttribute(
@@ -216,5 +216,24 @@ describe('KjOverlayBadge', () => {
       imports,
     });
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  // arch F-2
+  describe('bare boolean attributes (arch F-2)', () => {
+    it('kjDot reflects data-dot from the bare attribute form', async () => {
+      const { container } = await render(
+        `<button kjOverlayBadge kjDot kjDescription="4 unread"><span kjOverlayBadgeContent>4</span></button>`,
+        { imports: [KjOverlayBadge, KjOverlayBadgeContent] },
+      );
+      expect(container.querySelector('[kjOverlayBadgeContent]')).toHaveAttribute('data-dot', '');
+    });
+
+    it('kjDecorative hides the badge from AT from the bare attribute form', async () => {
+      const { container } = await render(
+        `<button kjOverlayBadge kjDecorative><span kjOverlayBadgeContent>4</span></button>`,
+        { imports: [KjOverlayBadge, KjOverlayBadgeContent] },
+      );
+      expect(container.querySelector('[kjOverlayBadgeContent]')).toHaveAttribute('aria-hidden', 'true');
+    });
   });
 });

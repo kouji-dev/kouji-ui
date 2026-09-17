@@ -6,6 +6,10 @@
 
 @layer kj.shared {
   [data-theme="sakura"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — soft, organic ── */
     --kj-radius-box:      var(--kj-base-radius-3);
     --kj-radius-field:    var(--kj-base-radius-2);
@@ -61,13 +65,14 @@
     --kj-fg-primary:    #a01548;
     --kj-fg-accent:     #6a1b4f;
     --kj-fg-info:       #5b4880;
-    --kj-fg-success:    #2e7d52;
+    --kj-fg-success:    #24754a;
     --kj-fg-warning:    #8a5a1f;
     --kj-fg-danger:     #9b1b3a;
 
     --kj-border-default:   #f0d9d4;
     --kj-border-muted:     #f7e6e3;
     --kj-border-strong:    #d4a4a0;
+    --kj-border-control:  #a87a77;
     --kj-border-focus:     #c2185b;
     --kj-border-disabled:  #f0d9d4;
     --kj-border-primary:   #c2185b;

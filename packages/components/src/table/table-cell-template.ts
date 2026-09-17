@@ -26,7 +26,7 @@ import { Directive, TemplateRef, inject, input } from '@angular/core';
  * @doc-name table
  */
 @Directive({ selector: 'ng-template[kjCellTemplate]', standalone: true })
-export class KjCellTemplateDirective {
+export class KjCellTemplate {
   /** Column id this template renders. */
   readonly kjCellTemplate = input.required<string>();
   /** @internal */

@@ -5,6 +5,7 @@ import {
   Injector,
   ViewEncapsulation,
   afterNextRender,
+  computed,
   effect,
   inject,
   input,
@@ -22,6 +23,13 @@ import {
   type KjChatStore,
 } from '@kouji-ui/core';
 import { KjChatMessage } from './chat-message';
+
+/** One rendered row: the message, the component drawing it, and its stable inputs. */
+interface KjChatRow {
+  readonly message: KjChatMessageData;
+  readonly renderer: KjChatRenderer | null;
+  readonly inputs: { readonly item: KjChatItemInput; readonly message: KjChatMessageData };
+}
 
 /**
  * The AI thread surface: a scrollable message log driven by a {@link KjChatStore}.
@@ -80,13 +88,11 @@ import { KjChatMessage } from './chat-message';
   providers: [KjChatAnnouncer],
   template: `
     <div #log kjChatLog kjChatLogLive="off" class="kj-chat-thread" [kjChatLogLabel]="kjLabel()">
-      @for (m of store().messages(); track m.id) {
-        @if (rendererFor(m); as renderer) {
-          <ng-container
-            *ngComponentOutlet="renderer; inputs: { item: itemFor(m), message: m }"
-          ></ng-container>
+      @for (row of rows(); track row.message.id) {
+        @if (row.renderer; as renderer) {
+          <ng-container *ngComponentOutlet="renderer; inputs: row.inputs"></ng-container>
         } @else {
-          <kj-chat-message [message]="m" />
+          <kj-chat-message [message]="row.message" />
         }
       }
     </div>
@@ -113,6 +119,44 @@ export class KjChatThread {
   private readonly config = inject(KJ_CHAT_CONFIG);
 
   /**
+   * Memoised per message object, so a row whose message did not change keeps
+   * the *same* `inputs` record.
+   *
+   * `NgComponentOutlet` re-sets any input whose value is not identical, and the
+   * thread is dirty-checked on every streamed token — a fresh object literal per
+   * render therefore woke every custom renderer thirty times a second for data
+   * that had not moved. A `Map` keyed by the message object is exactly right
+   * here: `KjChatStore` replaces the message it patches and keeps the identity
+   * of every other one.
+   */
+  private rowCache = new Map<KjChatMessageData, KjChatRow>();
+
+  /** One row per message: its renderer (if any) and a stable `inputs` record. */
+  protected readonly rows = computed<readonly KjChatRow[]>(() => {
+    const next = new Map<KjChatMessageData, KjChatRow>();
+    const rows = this.store()
+      .messages()
+      .map((message) => {
+        const row = this.rowCache.get(message) ?? this.buildRow(message);
+        next.set(message, row);
+        return row;
+      });
+    // Rebuilt rather than pruned: a dropped message must not keep its row alive.
+    this.rowCache = next;
+    return rows;
+  });
+
+  private buildRow(message: KjChatMessageData): KjChatRow {
+    const item: KjChatItemInput = {
+      id: message.id,
+      type: message.type,
+      role: message.role,
+      data: message.data ?? message.content,
+    };
+    return { message, renderer: this.rendererFor(message), inputs: { item, message } };
+  }
+
+  /**
    * The registered component for a message's `type`, or `null` to let the
    * built-in renderer draw it. A message with no `type` never consults the
    * registry — that is the overwhelmingly common case and must stay free.
@@ -121,19 +165,9 @@ export class KjChatThread {
    * that to the built-in renderer: a transcript that silently drops a turn is
    * worse than one that renders it plainly.
    */
-  protected rendererFor(message: KjChatMessageData): KjChatRenderer | null {
+  private rendererFor(message: KjChatMessageData): KjChatRenderer | null {
     if (!message.type) return null;
     return this.config.renderers[message.type] ?? this.config.fallback ?? null;
-  }
-
-  /** The neutral shape handed to a registered renderer's `item` input. */
-  protected itemFor(message: KjChatMessageData): KjChatItemInput {
-    return {
-      id: message.id,
-      type: message.type,
-      role: message.role,
-      data: message.data ?? message.content,
-    };
   }
 
   private readonly injector = inject(Injector);

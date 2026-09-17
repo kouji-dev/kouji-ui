@@ -4,7 +4,7 @@ import { KjBlockquote } from '@kouji-ui/core';
 /**
  * Blockquote example using the `kjBlockquote` directive.
  *
- * Reflects `data-tone="blockquote"` on a `<blockquote>` host. Useful when the
+ * Reflects `data-kj-tone="blockquote"` on a `<blockquote>` host. Useful when the
  * blockquote sits outside a `kj-prose` container — for example a testimonial
  * pulled into a marketing-page hero — and still needs the kouji left-rule,
  * italic, and indent treatment.

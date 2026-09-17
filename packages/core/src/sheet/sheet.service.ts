@@ -39,8 +39,10 @@ export interface KjSheetOpenOptions<D = unknown> {
   dismissible?: boolean;
   /** Whether clicking the backdrop closes the sheet. Defaults to `true`. */
   closeOnOutside?: boolean;
-  /** Accessible name applied when the body does not provide a heading. */
+  /** Accessible name applied when the body projects no `[kjSheetTitle]`. */
   ariaLabel?: string;
+  /** Id of the element that names the sheet; wins over `ariaLabel` and any title. */
+  ariaLabelledBy?: string;
 }
 
 /**
@@ -84,6 +86,10 @@ export class KjSheetService {
       liveAnnouncer: silent(),
       trigger: programmatic(),
       panelRole: 'dialog',
+      // Unset → the scrim's own `closeOnClick` decides.
+      closeOnOutside: opts.closeOnOutside,
+      ariaLabel: opts.ariaLabel,
+      ariaLabelledBy: opts.ariaLabelledBy,
     });
 
     const ref = new KjSheetRef<T, R>(handle.controller);
@@ -103,8 +109,11 @@ export class KjSheetService {
       const eff = effect(() => {
         const s = handle.controller.state();
         if (s === 'open' || s === 'opening') wasOpen = true;
+        if (s === 'open') ref._notifyOpened();
         if (s === 'closed' && wasOpen) {
           eff.destroy();
+          // A dismissal (Escape, scrim) settles afterClosed$ / result too.
+          ref._notifyClosed();
           queueMicrotask(() => handle.destroy());
         }
       });

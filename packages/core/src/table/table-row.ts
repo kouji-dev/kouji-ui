@@ -1,9 +1,15 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, computed, input } from '@angular/core';
 import type { RowData, Table } from '@tanstack/angular-table';
 import { KJ_TABLE, KjTable } from './table';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 type Row<T> = ReturnType<Table<T>['getRowModel']>['rows'][number];
 
+/**
+ * A `<tr>` in a `[kjTable]`. Takes `role="row"`, publishes the 1-based
+ * `aria-rowindex` (header row included) and reflects selection as
+ * `aria-selected` / `data-selected`.
+ */
 @Directive({
   selector: '[kjTableRow]',
   standalone: true,
@@ -18,7 +24,7 @@ export class KjTableRow<TData extends RowData = unknown> {
   /** TanStack row instance — pass from getRowModel().rows. */
   kjRow = input.required<Row<TData>>();
 
-  private readonly table = inject(KJ_TABLE) as unknown as KjTable<TData>;
+  private readonly table = injectParent(KJ_TABLE, { child: 'KjTableRow', parent: '[kjTable]' }) as unknown as KjTable<TData>;
 
   /** 1-based ARIA index — accounts for header row(s). */
   readonly ariaRowIndex = computed(() => this.kjRow().index + 2);

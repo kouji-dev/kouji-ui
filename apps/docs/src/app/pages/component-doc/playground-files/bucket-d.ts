@@ -1,15 +1,4 @@
-import type { PlaygroundFile } from '../playground-types';
-import { PLAYGROUND as NumberInputPlayground } from '@kouji-ui/components/number-input/number-input.playground';
-import { PLAYGROUND as OverlayBadgePlayground } from '@kouji-ui/components/overlay-badge/overlay-badge.playground';
-import { PLAYGROUND as PaginationPlayground } from '@kouji-ui/components/pagination/pagination.playground';
-import { PLAYGROUND as PasswordInputPlayground } from '@kouji-ui/components/password-input/password-input.playground';
-import { PLAYGROUND as PopoverPlayground } from '@kouji-ui/components/popover/popover.playground';
-import { PLAYGROUND as ProgressBarPlayground } from '@kouji-ui/components/progress-bar/progress-bar.playground';
-import { PLAYGROUND as RadioPlayground } from '@kouji-ui/components/radio/radio.playground';
-import { PLAYGROUND as SelectPlayground } from '@kouji-ui/components/select/select.playground';
-import { PLAYGROUND as SkeletonPlayground } from '@kouji-ui/components/skeleton/skeleton.playground';
-import { PLAYGROUND as SliderPlayground } from '@kouji-ui/components/slider/slider.playground';
-import { PLAYGROUND as SpeedDialPlayground } from '@kouji-ui/components/speed-dial/speed-dial.playground';
+import type { PlaygroundLoader } from '../playground-types';
 
 /**
  * Bucket D migrations. Keys are `DocItem.symbol` (e.g. `KjButtonComponent`)
@@ -18,17 +7,16 @@ import { PLAYGROUND as SpeedDialPlayground } from '@kouji-ui/components/speed-di
  * Each value imports the `PLAYGROUND` export from the component's
  * `<comp>.playground.ts` file co-located in `packages/components/src/<comp>/`.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const BUCKET_D_FILES: Record<string, PlaygroundFile> = {
-  KjNumberInputComponent: NumberInputPlayground,
-  KjOverlayBadgeComponent: OverlayBadgePlayground,
-  KjPaginationComponent: PaginationPlayground,
-  KjPasswordInputComponent: PasswordInputPlayground,
-  KjPopoverComponent: PopoverPlayground,
-  KjProgressBarComponent: ProgressBarPlayground,
-  KjRadioGroupComponent: RadioPlayground,
-  KjSelectComponent: SelectPlayground,
-  KjSkeletonComponent: SkeletonPlayground,
-  KjSliderComponent: SliderPlayground,
-  KjSpeedDialComponent: SpeedDialPlayground,
+export const BUCKET_D_LOADERS: Record<string, PlaygroundLoader> = {
+  KjNumberInputComponent: () => import('@kouji-ui/components/number-input/number-input.playground').then((m) => m.PLAYGROUND),
+  KjOverlayBadgeComponent: () => import('@kouji-ui/components/overlay-badge/overlay-badge.playground').then((m) => m.PLAYGROUND),
+  KjPaginationComponent: () => import('@kouji-ui/components/pagination/pagination.playground').then((m) => m.PLAYGROUND),
+  KjPasswordInputComponent: () => import('@kouji-ui/components/password-input/password-input.playground').then((m) => m.PLAYGROUND),
+  KjPopover: () => import('@kouji-ui/components/popover/popover.playground').then((m) => m.PLAYGROUND),
+  KjProgressBarComponent: () => import('@kouji-ui/components/progress-bar/progress-bar.playground').then((m) => m.PLAYGROUND),
+  KjRadioGroupComponent: () => import('@kouji-ui/components/radio/radio.playground').then((m) => m.PLAYGROUND),
+  KjSelectComponent: () => import('@kouji-ui/components/select/select.playground').then((m) => m.PLAYGROUND),
+  KjSkeletonComponent: () => import('@kouji-ui/components/skeleton/skeleton.playground').then((m) => m.PLAYGROUND),
+  KjSliderComponent: () => import('@kouji-ui/components/slider/slider.playground').then((m) => m.PLAYGROUND),
+  KjSpeedDialComponent: () => import('@kouji-ui/components/speed-dial/speed-dial.playground').then((m) => m.PLAYGROUND),
 };

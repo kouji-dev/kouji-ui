@@ -1,15 +1,18 @@
 import { Directive } from '@angular/core';
+import { mintKjId } from '../primitives/overlay/id';
+import { registerOverlayTitle } from '../dialog/dialog-title';
 
-let _popoverTitleIdCounter = 0;
 /** Allocate a stable id used for the panel's `aria-labelledby`. */
 export function nextPopoverTitleId(): string {
-  return `kj-popover-title-${++_popoverTitleIdCounter}`;
+  return mintKjId('popover-title');
 }
 
 /**
- * Marks the heading element inside the popover content. Generates a stable
- * id so consumer code (or a future panel-level hook) can wire
- * `aria-labelledby`.
+ * Marks the heading element inside the popover content. Mints a stable id
+ * (or keeps the element's own) and registers it with the enclosing
+ * `<kj-popover-content>`, which binds it as `aria-labelledby` — so the
+ * `role="dialog"` panel is announced by its title rather than as an unnamed
+ * dialog (WCAG 4.1.2).
  *
  * Mirrors `KjDialogTitle` in the dialog family — applied to whatever heading
  * level the consumer's information architecture wants (`<h2>` … `<h4>`),
@@ -34,6 +37,6 @@ export function nextPopoverTitleId(): string {
   },
 })
 export class KjPopoverTitle {
-  /** Auto-generated id used for the panel's `aria-labelledby`. */
-  readonly titleId = nextPopoverTitleId();
+  /** Resolved id the panel uses for `aria-labelledby`. */
+  readonly titleId = registerOverlayTitle('popover-title');
 }

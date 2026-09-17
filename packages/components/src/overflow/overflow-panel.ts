@@ -14,7 +14,7 @@ import {
   type KjOverflowContext,
   type KjOverlayTriggerLike,
 } from '@kouji-ui/core';
-import { KjPopoverComponent } from '../popover/popover';
+import { KjPopover } from '../popover/popover';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -36,7 +36,7 @@ const FOCUSABLE =
 @Component({
   selector: 'kj-overflow-panel',
   standalone: true,
-  imports: [NgTemplateOutlet, KjPopoverComponent, KjPopoverContent],
+  imports: [NgTemplateOutlet, KjPopover, KjPopoverContent],
   template: `
     <kj-popover>
       <kj-popover-content
@@ -64,7 +64,7 @@ const FOCUSABLE =
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjOverflowPanelComponent {
+export class KjOverflowPanel {
   /** The "+N" chip's popover trigger. */
   readonly kjFor = input.required<KjOverlayTriggerLike>();
   /** Number of collapsed items. */
@@ -77,7 +77,9 @@ export class KjOverflowPanelComponent {
   readonly kjLabels = input<readonly string[]>([]);
   /** Consumer template rendered instead of the label list. */
   readonly kjTemplate = input<KjOverflowContent | undefined>(undefined);
+  /** Side of the trigger the panel is anchored to. Default `'bottom'`. */
   readonly kjSide = input<'top' | 'right' | 'bottom' | 'left'>('bottom');
+  /** Alignment along the anchored side. Default `'start'`. */
   readonly kjAlign = input<'start' | 'center' | 'end'>('start');
 
   private readonly panel = viewChild(KjPopoverContent, { read: ElementRef });

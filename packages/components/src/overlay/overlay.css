@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────
-   @kouji-ui/components — overlay-family surface stylesheet
+   @kouji-ui/components — overlay-family stylesheet
    --------------------------------------------------------------
    Register this file once in your build, next to the themes and
    the core overlay primitive:
@@ -10,24 +10,36 @@
        "node_modules/@kouji-ui/components/src/overlay/overlay.css"
      ]
 
-   WHY IT MUST BE REGISTERED. Every overlay panel in the kit is
+   IT IS THE ONLY DELIVERY PATH. The nine sheets below are not
+   `styleUrl`s on anything — registering this file is what paints
+   every popover, tooltip, dropdown menu, dialog, drawer, toast,
+   confirm popup, sheet and action sheet in the kit. Skip it and
+   they come up transparent, borderless and shadowless.
+
+   WHY IT CANNOT BE A COMPONENT STYLE. Every overlay panel is
    rendered by a HEADLESS directive from `@kouji-ui/core` —
    `<kj-popover-content>`, `<kj-dropdown-menu-content>`,
-   `<kj-tooltip-content>`, `<kj-dialog-content>`. Directives carry
-   no styles, and Angular injects a component's `styleUrl` only
-   when that component is INSTANTIATED. So a panel composed the
-   documented way (trigger directive + content directive, with no
-   `<kj-popover>`-style wrapper anywhere on the page) used to
-   paint with no background, no border and no shadow: the surface
-   CSS lived solely inside a wrapper component nobody rendered.
-   This stylesheet is that surface CSS, decoupled from the
-   wrappers — the wrapper components still `styleUrl` the same
-   files, so registering it is idempotent.
+   `<kj-tooltip-content>`, `<kj-dialog-content>`. Directives carry no
+   styles, and Angular injects a component's `styleUrl` only when
+   that component is INSTANTIATED. The `<kj-popover>`-style wrappers
+   are optional (the library's own usage examples never render one),
+   so the surface CSS has to live somewhere no wrapper owns.
+
+   The wrappers used to carry `styleUrl` for the same nine files as
+   well. Under `ViewEncapsulation.None` that second copy adds nothing
+   to the cascade — identical rules, identical layer — it only ships
+   ~28 KB a second time, inlined into the component chunks (seven
+   times over for `confirm-popup.css`). They were dropped; this file
+   is the single source. `overlay-styles.spec.ts` fails if one comes
+   back, and fails if a family's sheet is left out of the list below.
 
    Kept in the SOURCE layout on purpose: `ng-packagr` copies every
    stylesheet under `src` into the published package unchanged, so
    these relative imports resolve identically from
-   `node_modules/@kouji-ui/components/src/overlay/overlay.css`.
+   `node_modules/@kouji-ui/components/src/overlay/overlay.css`, and
+   the package `exports` map exposes the whole tree as
+   `@kouji-ui/components/src/*.css` for bundlers that resolve
+   package specifiers (Vite, Rollup, Analog).
    The core primitive is NOT imported from here — CSS cannot reach
    across packages by relative path once installed; register
    `@kouji-ui/core/overlay/overlay.css` for the container /

@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   ViewEncapsulation,
+  booleanAttribute,
   computed,
   effect,
   input,
@@ -10,10 +11,15 @@ import {
   output,
   signal,
   viewChild,
+  inject,
 } from '@angular/core';
-import { matchSlashCommands, parseSlash, type KjSlashCommand } from '@kouji-ui/core';
-
-let _promptId = 0;
+import {
+  matchSlashCommands,
+  parseSlash,
+  type KjSlashCommand,
+  KjId,
+  KjTranslateService,
+} from '@kouji-ui/core';
 
 /**
  * Prompt composer for an AI thread: an auto-growing textarea with send / stop
@@ -37,7 +43,12 @@ let _promptId = 0;
   template: `
     <form class="kj-prompt" (submit)="onSubmit($event)">
       @if (slashOpen()) {
-        <ul class="kj-prompt__slash" role="listbox" [id]="listboxId" aria-label="Slash commands">
+        <ul
+          class="kj-prompt__slash"
+          role="listbox"
+          [id]="listboxId"
+          [attr.aria-label]="slashCommandsLabel()"
+        >
           @for (cmd of slashMatches(); track cmd.name; let i = $index) {
             <li
               class="kj-prompt__slash-item"
@@ -84,7 +95,7 @@ let _promptId = 0;
           <button
             type="button"
             class="kj-prompt__btn kj-prompt__btn--stop"
-            aria-label="Stop generating"
+            [attr.aria-label]="stopLabel()"
             (click)="onStop()"
           >
             <span aria-hidden="true">■</span>
@@ -93,7 +104,7 @@ let _promptId = 0;
           <button
             type="submit"
             class="kj-prompt__btn kj-prompt__btn--send"
-            aria-label="Send message"
+            [attr.aria-label]="sendLabel()"
             [disabled]="kjDisabled() || kjValue().trim().length === 0"
           >
             <span aria-hidden="true">↥</span>
@@ -108,9 +119,23 @@ let _promptId = 0;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjPromptInput {
-  private readonly uid = ++_promptId;
-  readonly textareaId = `kj-prompt-${this.uid}`;
-  readonly listboxId = `kj-prompt-slash-${this.uid}`;
+  private readonly ids = inject(KjId);
+  private readonly i18n = inject(KjTranslateService);
+
+  /**
+   * Accessible name of the slash-command listbox, from the i18n catalog
+   * (`chat.slashCommands`) — cust F-7: no assistive string is baked into this
+   * template.
+   */
+  protected readonly slashCommandsLabel = this.i18n.translation('chat.slashCommands');
+
+  /** Accessible name of the stop-streaming button (`chat.stop`). */
+  protected readonly stopLabel = this.i18n.translation('chat.stop');
+
+  /** Accessible name of the send button (`chat.send`). */
+  protected readonly sendLabel = this.i18n.translation('chat.send');
+  readonly textareaId = this.ids.mint('prompt');
+  readonly listboxId = this.ids.mint('prompt-slash');
 
   /** Two-way bound draft text. */
   readonly kjValue = model<string>('');
@@ -118,10 +143,10 @@ export class KjPromptInput {
   readonly kjPlaceholder = input('Message the assistant…');
   /** Accessible label for the textarea. */
   readonly kjLabel = input('Message');
-  /** When true, show the Stop button instead of Send. */
-  readonly kjStreaming = input(false);
-  /** Disable the composer entirely. */
-  readonly kjDisabled = input(false);
+  /** When true, show the Stop button instead of Send. Default `false`. */
+  readonly kjStreaming = input(false, { transform: booleanAttribute });
+  /** Disable the composer entirely. Default `false`. */
+  readonly kjDisabled = input(false, { transform: booleanAttribute });
   /** Available slash commands. */
   readonly kjSlashCommands = input<readonly KjSlashCommand[]>([]);
 

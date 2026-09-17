@@ -8,7 +8,7 @@
   .kj-input {
     --kj-input-bg:               var(--kj-bg-field);
     --kj-input-fg:               var(--kj-fg-default);
-    --kj-input-border-color:     var(--kj-border-default);
+    --kj-input-border-color:     var(--kj-border-control);
     --kj-input-border-style:     solid;
     --kj-input-border-width:     var(--kj-border);
     --kj-input-radius:           var(--kj-radius-field);

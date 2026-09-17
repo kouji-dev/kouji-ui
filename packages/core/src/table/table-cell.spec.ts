@@ -40,4 +40,16 @@ describe('KjTableCell', () => {
     expect(td.getAttribute('role')).toBe('gridcell');
     expect(td.getAttribute('aria-colindex')).toBe('1');
   });
+
+  it('exposes the TanStack cell id', async () => {
+    const { fixture } = await render(Host);
+    const cell = fixture.debugElement.query((el) => el.name === 'td').injector.get(KjTableCell);
+    expect(cell.cellId()).toBe('0_name');
+  });
+
+  it('without a keyboard-navigation owner the cell is focusable but never a Tab stop', async () => {
+    const { container } = await render(Host);
+    const td = container.querySelector('tbody td') as HTMLElement;
+    expect(td.getAttribute('tabindex')).toBe('-1');
+  });
 });

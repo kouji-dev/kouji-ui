@@ -1,7 +1,7 @@
 import { DestroyRef, Directive, inject, input } from '@angular/core';
 import { KJ_FIELD } from './field.context';
-
-let kjFieldHelpIdCounter = 0;
+import { KjId } from '../primitives/overlay/id';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Helper / description text inside a `[kjField]`. The host id is
@@ -29,14 +29,14 @@ let kjFieldHelpIdCounter = 0;
   },
 })
 export class KjFieldHelp {
-  /** @internal */ readonly ctx = inject(KJ_FIELD);
+  /** @internal */ readonly ctx = injectParent(KJ_FIELD, { child: 'KjFieldHelp', parent: '[kjField]' });
 
   /** Override the auto-minted host id. */
   readonly kjFieldHelpId = input<string | undefined>(undefined);
 
   /** @internal */ readonly id = (() => {
-    const seq = ++kjFieldHelpIdCounter;
-    return () => this.kjFieldHelpId() ?? `kj-field-help-${seq}`;
+    const generated = inject(KjId).mint('field-help');
+    return () => this.kjFieldHelpId() ?? generated;
   })();
 
   constructor() {

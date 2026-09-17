@@ -59,7 +59,12 @@ export interface DocsTrack {
  * - Server/prerender: `DocsManifestProvider` → `ServerDocsManifestProvider` → `getManifest()` (ts-morph)
  *   → result stored in TransferState for browser hydration.
  * - Browser (prerendered): `DocsManifestProvider` → `BrowserDocsManifestProvider` → reads TransferState.
- * - Browser fallback (dev / non-prerendered): HTTP `GET /api/docs/manifest`.
+ * - Browser fallback (a route that was never prerendered and lands on the CSR
+ *   shell): HTTP `GET /api/docs/manifest`. NOTE: the build is
+ *   `outputMode: "static"`, so no deployment serves that route today — the
+ *   request 404s and the page reports "not found". Every enumerated slug is
+ *   prerendered, so this path is only reachable for a slug that
+ *   `getPrerenderParams()` did not list.
  */
 @Injectable({ providedIn: 'root' })
 export class DocsService {

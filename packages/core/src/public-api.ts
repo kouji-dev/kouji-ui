@@ -15,7 +15,9 @@ export * from './motion/index';
 // -- i18n (typed translation strings) --
 export * from './i18n/index';
 
-// -- Internal presets (composed via hostDirectives; filtered from docs) --
+// -- Presets (KjVariant / KjSize / bindPresets + the four preset tokens).
+//    Supported public API, not internal: composing them is how you build a
+//    component that plays the same provideKj* game as the shipped ones. --
 export * from './presets/index';
 
 // -- Foundation components --

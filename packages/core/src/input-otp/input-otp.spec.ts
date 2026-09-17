@@ -1,6 +1,7 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { FormsModule } from '@angular/forms';
+import { vi } from 'vitest';
 import { KjInputOtp, KjInputOtpCell } from './input-otp';
 
 // ── Test host component ───────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ import { KjInputOtp, KjInputOtpCell } from './input-otp';
       [kjCharSet]="charSet()"
       [kjMask]="masked()"
       [(ngModel)]="value"
+      (kjComplete)="completed.push($event)"
     >
       @for (i of cells(); track i) {
         <input kjInputOtpCell [kjIndex]="i" />
@@ -30,6 +32,8 @@ class TestHost {
   readonly charSet = signal<'digits' | 'alphanumeric'>('digits');
   readonly masked = signal(false);
   readonly cells = signal([0, 1, 2, 3, 4, 5]);
+  readonly completed: string[] = [];
+  readonly otp = viewChild.required(KjInputOtp);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -251,6 +255,83 @@ describe('KjInputOtp + KjInputOtpCell', () => {
       expect(inputs[0].value).toBe('1');
       expect(inputs[5].value).toBe('6');
     });
+
+    it('emits kjComplete exactly once when the last cell fills, with the full code', async () => {
+      const { container, fixture } = await setup();
+      const host = fixture.componentInstance as TestHost;
+      const inputs = getInputs(container);
+
+      fireEvent.input(inputs[0], { target: { value: '12345' } });
+      await fixture.whenStable();
+      expect(host.completed).toEqual([]);
+
+      fireEvent.input(inputs[5], { target: { value: '6' } });
+      await fixture.whenStable();
+      expect(host.completed).toEqual(['123456']);
+
+      // Moving focus / re-rendering does not re-emit.
+      inputs[2].focus();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(host.completed).toEqual(['123456']);
+    });
+
+    it('does not complete while a middle cell is empty', async () => {
+      const { container, fixture } = await setup();
+      const host = fixture.componentInstance as TestHost;
+      const inputs = getInputs(container);
+
+      fireEvent.input(inputs[0], { target: { value: '12' } });
+      fireEvent.input(inputs[3], { target: { value: '456' } });
+      await fixture.whenStable();
+
+      expect(inputs[2].value).toBe('');
+      expect(host.completed).toEqual([]);
+    });
+
+    it('re-arms after a cell is cleared and emits again on refill', async () => {
+      const { container, fixture } = await setup();
+      const host = fixture.componentInstance as TestHost;
+      const inputs = getInputs(container);
+
+      fireEvent.input(inputs[0], { target: { value: '123456' } });
+      await fixture.whenStable();
+      expect(host.completed).toHaveLength(1);
+
+      inputs[5].focus();
+      fireEvent.keyDown(inputs[5], { key: 'Delete' });
+      await fixture.whenStable();
+      expect(host.completed).toHaveLength(1);
+
+      fireEvent.input(inputs[5], { target: { value: '9' } });
+      await fixture.whenStable();
+      expect(host.completed).toEqual(['123456', '123459']);
+    });
+
+    it('announces "Code complete" through a registered live region, once per completion', async () => {
+      const { container, fixture } = await setup();
+      const host = fixture.componentInstance as TestHost;
+      const region = { announce: vi.fn() };
+      const deregister = host.otp().registerLiveRegion(region);
+      const inputs = getInputs(container);
+
+      fireEvent.input(inputs[0], { target: { value: '123456' } });
+      await fixture.whenStable();
+      expect(region.announce).toHaveBeenCalledTimes(1);
+      expect(region.announce).toHaveBeenCalledWith('Code complete');
+
+      // The root is not a live region itself: the cells are never wrapped by one.
+      const root = container.querySelector('[kjInputOtp]')!;
+      expect(root.hasAttribute('aria-live')).toBe(false);
+      expect(getInputs(container)).toHaveLength(6);
+
+      deregister();
+      inputs[5].focus();
+      fireEvent.keyDown(inputs[5], { key: 'Delete' });
+      fireEvent.input(inputs[5], { target: { value: '6' } });
+      await fixture.whenStable();
+      expect(region.announce).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('mask mode', () => {
@@ -303,6 +384,95 @@ describe('KjInputOtp + KjInputOtpCell', () => {
       await fixture.whenStable();
 
       expect(inputs[0].value).toBe('');
+    });
+  });
+
+  // arch F-13 — the root's `ngOnInit`/`ngOnDestroy` and the cell's
+  // `ngOnInit`/`ngOnDestroy` are gone; the char array is sized by an effect
+  // and each cell registers through an `effect(onCleanup)`.
+  describe('no lifecycle hooks (arch F-13)', () => {
+    it('neither class declares a lifecycle hook any more', () => {
+      const root = KjInputOtp.prototype as unknown as Record<string, unknown>;
+      const cell = KjInputOtpCell.prototype as unknown as Record<string, unknown>;
+      for (const hook of ['ngOnInit', 'ngOnDestroy', 'ngAfterViewInit', 'ngAfterContentInit']) {
+        expect(root[hook]).toBeUndefined();
+        expect(cell[hook]).toBeUndefined();
+      }
+    });
+
+    it('sizes the char array from kjLength without ngOnInit', async () => {
+      const { fixture } = await setup();
+      expect(fixture.componentInstance.otp().chars()).toEqual(['', '', '', '', '', '']);
+    });
+
+    it('cells register with the root, so typing auto-advances focus', async () => {
+      const { container, fixture } = await setup();
+      const inputs = getInputs(container);
+      inputs[0].focus();
+      fireEvent.input(inputs[0], { target: { value: '1' } });
+      fixture.detectChanges();
+      // Auto-advance only works if the cell registered its element.
+      expect(document.activeElement).toBe(inputs[1]);
+    });
+
+    it('a removed cell unregisters itself (effect cleanup replaces ngOnDestroy)', async () => {
+      const { container, fixture } = await setup();
+      fixture.componentInstance.cells.set([0, 1, 2]);
+      fixture.componentInstance.length.set(3);
+      fixture.detectChanges();
+      const inputs = getInputs(container);
+      expect(inputs).toHaveLength(3);
+      inputs[1].focus();
+      fireEvent.input(inputs[1], { target: { value: '2' } });
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(inputs[2]);
+    });
+  });
+
+  // arch F-2 — `kjMask`, `kjAutoSubmit`, `kjInvalid`, `kjReadonly` and the
+  // composed `kjDisabled` all carry `transform: booleanAttribute`, so the
+  // bare-attribute form the docs teach is not a silent no-op.
+  describe('bare boolean attributes (arch F-2)', () => {
+    async function renderBare(attrs: string) {
+      return render(
+        `<div kjInputOtp ${attrs} kjAriaLabel="Code">
+           <input kjInputOtpCell [kjIndex]="0" />
+           <input kjInputOtpCell [kjIndex]="1" />
+         </div>`,
+        { imports: [KjInputOtp, KjInputOtpCell] },
+      );
+    }
+
+    it('bare kjMask flips the cells to type="password"', async () => {
+      const { container } = await renderBare('kjMask');
+      for (const cell of getInputs(container)) {
+        expect(cell.getAttribute('type')).toBe('password');
+      }
+    });
+
+    it('bare kjReadonly marks every cell readonly', async () => {
+      const { container } = await renderBare('kjReadonly');
+      for (const cell of getInputs(container)) {
+        expect(cell.hasAttribute('readonly')).toBe(true);
+      }
+    });
+
+    it('bare kjDisabled disables every cell and reflects on the group', async () => {
+      const { container } = await renderBare('kjDisabled');
+      const group = container.querySelector('[kjInputOtp]') as HTMLElement;
+      expect(group.getAttribute('aria-disabled')).toBe('true');
+      for (const cell of getInputs(container)) {
+        expect(cell.hasAttribute('disabled')).toBe(true);
+      }
+    });
+
+    it('bare kjAutoSubmit is read as true by the root', async () => {
+      const { fixture } = await renderBare('kjAutoSubmit');
+      const group = fixture.nativeElement.querySelector('[kjInputOtp]') as HTMLElement;
+      const otp = fixture.debugElement
+        .query((n: { nativeElement?: HTMLElement }) => n.nativeElement === group)
+        .injector.get(KjInputOtp);
+      expect(otp.kjAutoSubmit()).toBe(true);
     });
   });
 });

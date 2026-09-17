@@ -4,5 +4,6 @@ export {
   KJ_ACCORDION_ITEM,
   type KjAccordionContext,
   type KjAccordionItemContext,
+  type KjAccordionTriggerRef,
   type KjAccordionType,
 } from './accordion.context';

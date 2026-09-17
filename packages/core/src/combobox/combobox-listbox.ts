@@ -7,7 +7,7 @@ import {
 } from '../primitives/overlay/tokens';
 import type { KjSide, KjAlign } from '../primitives/overlay/types';
 import { bodyPortal } from '../primitives/overlay/strategies/mount/body-portal';
-import { anchoredTo } from '../primitives/overlay/strategies/position/anchored-to';
+import { anchoredTo, injectAnchoredPosition, pxOffset } from '../primitives/overlay/strategies/position/anchored-to';
 import { KjCombobox } from './combobox-root';
 
 /**
@@ -36,14 +36,19 @@ export class KjComboboxListbox {
   /** @internal */
   readonly ctx = inject(KjCombobox);
 
+  /** Preferred side of the input the listbox opens on. Default `'bottom'`. */
   readonly kjSide = input<KjSide>('bottom');
+  /** Alignment along that side. Default `'start'`. */
   readonly kjAlign = input<KjAlign>('start');
-  readonly kjOffset = input<number, unknown>(4, {
-    transform: v => Number(v) || 4,
-  });
+  /** Gap in px between the input and the listbox. Default `4`. */
+  readonly kjOffset = input<number, unknown>(4, { transform: pxOffset(4) });
 
   constructor() {
-    const pos = inject(KJ_OVERLAY_POSITION_STRATEGY) as ReturnType<typeof anchoredTo>;
-    pos.configure({ side: this.kjSide, align: this.kjAlign, offset: this.kjOffset, matchTriggerWidth: 'min' });
+    injectAnchoredPosition({
+      side: this.kjSide,
+      align: this.kjAlign,
+      offset: this.kjOffset,
+      matchTriggerWidth: 'min',
+    });
   }
 }

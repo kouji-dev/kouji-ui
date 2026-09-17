@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDrawer, KjDrawerRef, KjDrawerService } from '@kouji-ui/core';
+import { KjDrawer, KjDrawerRef, KjDrawerService, KjDrawerTitle } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
 /**
@@ -9,11 +9,11 @@ import { KjButtonComponent } from '../../button/button';
 @Component({
   selector: 'kj-drawer-usage-body',
   standalone: true,
-  imports: [KjDrawer, KjButtonComponent],
+  imports: [KjDrawer, KjDrawerTitle, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-drawer>
-      <h2 style="margin: 0 0 var(--kj-space-md)">Settings</h2>
+      <h2 kjDrawerTitle style="margin: 0 0 var(--kj-space-md)">Settings</h2>
       <p>Adjust your preferences.</p>
       <div style="display:flex; gap: var(--kj-space-sm); margin-top: var(--kj-space-lg)">
         <kj-button kjVariant="ghost" (click)="ref.close()">Cancel</kj-button>

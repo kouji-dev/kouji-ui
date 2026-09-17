@@ -4,7 +4,9 @@ export { KjCalendarGrid } from './calendar-grid';
 export { KjCalendarDay } from './calendar-day';
 export {
   KJ_CALENDAR,
+  KJ_TODAY,
   type KjCalendarContext,
+  type KjTodayProvider,
 } from './calendar.context';
 export {
   addDays,

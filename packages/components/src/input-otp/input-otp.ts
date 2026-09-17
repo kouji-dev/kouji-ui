@@ -1,20 +1,17 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  afterNextRender,
   booleanAttribute,
   computed,
-  forwardRef,
+  effect,
+  inject,
   input,
   output,
   viewChild,
 } from '@angular/core';
-import {
-  ControlValueAccessor,
-  NG_VALUE_ACCESSOR,
-} from '@angular/forms';
-import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
+import { KjFormControl, KjInputOtp, KjInputOtpCell, KjLiveRegion, KjVisuallyHidden } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjInputOtp` + `KjInputOtpCell`
@@ -62,6 +59,7 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
  *   aria-invalid     — Reflected on the group when [kjInvalid] is true (touched-gated)
  *   aria-disabled    — Reflected on the group when [kjDisabled] is true
  *   aria-readonly    — Reflected on the group when [kjReadonly] is true
+ *   aria-live        — A visually hidden polite live region beside the group announces "Code complete" (WCAG 4.1.3)
  *   inputmode        — Set on each cell to "numeric" for digits charset
  *
  * @doc-touch
@@ -69,9 +67,11 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
  *   2.5.5. The visual separator is `aria-hidden` and never receives focus.
  *
  * @doc-a11y
- *   `KjInputOtp` owns paste distribution, charset filtering, and the live
- *   announcement on `(kjComplete)`. The widget composes `KjFormControl` (CVA)
- *   so `[(ngModel)]` and `[formControl]` work out of the box — the full
+ *   `KjInputOtp` owns paste distribution, charset filtering, and completion
+ *   detection; the wrapper registers a visually hidden `kjLiveRegion` with it
+ *   so "Code complete" is announced when the last cell fills, without the live
+ *   region ever wrapping the focused cells. The widget composes `KjFormControl`
+ *   (CVA) so `[(ngModel)]` and `[formControl]` work out of the box — the full
  *   concatenated code is the form value; the decorative separator is never
  *   included.
  *
@@ -97,14 +97,8 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
 @Component({
   selector: 'kj-input-otp',
   standalone: true,
-  imports: [KjInputOtp, KjInputOtpCell],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => KjInputOtpComponent),
-      multi: true,
-    },
-  ],
+  imports: [KjInputOtp, KjInputOtpCell, KjLiveRegion, KjVisuallyHidden],
+  hostDirectives: [KjFormControl],
   template: `
     <div
       kjInputOtp
@@ -131,13 +125,14 @@ import { KjInputOtp, KjInputOtpCell } from '@kouji-ui/core';
         }
       }
     </div>
+    <div kjVisuallyHidden kjLiveRegion></div>
   `,
   styleUrl: './input-otp.css',
   encapsulation: ViewEncapsulation.None,
   host: { class: 'kj-input-otp' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjInputOtpComponent implements ControlValueAccessor, AfterViewInit {
+export class KjInputOtpComponent {
   // ── Forwarded inputs ─────────────────────────────────────────────────────────
 
   /** Number of OTP cells. Common values: 4, 6, 8. */
@@ -186,59 +181,35 @@ export class KjInputOtpComponent implements ControlValueAccessor, AfterViewInit 
   /** The inner `KjInputOtp` directive that owns the CVA logic. */
   private readonly _otp = viewChild.required(KjInputOtp);
 
+  /** Visually hidden live region the root announces completion through. */
+  private readonly _liveRegion = viewChild.required(KjLiveRegion);
+
   /** The array of cell indices `[0, 1, ..., kjLength-1]`. */
   readonly _indices = computed(() =>
     Array.from({ length: this.kjLength() }, (_, i) => i),
   );
 
-  /** Buffered CVA calls made before the view is initialised. */
-  private _pendingValue: string | null = null;
-  private _pendingOnChange: ((val: string) => void) | null = null;
-  private _pendingOnTouched: (() => void) | null = null;
-  private _pendingDisabled: boolean | null = null;
-  private _viewReady = false;
+  /**
+   * The composed `KjFormControl` — this component's `ControlValueAccessor`.
+   *
+   * The headless `kjInputOtp` in the view is the control that owns the cells,
+   * so every forms interaction is delegated to it. `toInner` keeps the
+   * documented `value ?? ''` coercion: the root's reflect effect ignores a
+   * `null` write, so clearing the form has to arrive as an empty string for the
+   * cells to empty.
+   */
+  protected readonly formCtrl = inject(KjFormControl);
 
-  ngAfterViewInit(): void {
-    this._viewReady = true;
-    const ctrl = this._otp().formCtrl;
-    if (this._pendingValue !== null) ctrl.writeValue(this._pendingValue);
-    if (this._pendingOnChange !== null) ctrl.registerOnChange(this._pendingOnChange as (val: unknown) => void);
-    if (this._pendingOnTouched !== null) ctrl.registerOnTouched(this._pendingOnTouched);
-    if (this._pendingDisabled !== null) ctrl.setDisabledState(this._pendingDisabled);
-  }
+  constructor() {
+    afterNextRender(() => {
+      this._otp().registerLiveRegion(this._liveRegion());
+    });
 
-  // ── ControlValueAccessor ─────────────────────────────────────────────────────
-
-  writeValue(value: string | null): void {
-    const v = value ?? '';
-    if (this._viewReady) {
-      this._otp().formCtrl.writeValue(v);
-    } else {
-      this._pendingValue = v;
-    }
-  }
-
-  registerOnChange(fn: (val: string) => void): void {
-    if (this._viewReady) {
-      this._otp().formCtrl.registerOnChange(fn as (val: unknown) => void);
-    } else {
-      this._pendingOnChange = fn;
-    }
-  }
-
-  registerOnTouched(fn: () => void): void {
-    if (this._viewReady) {
-      this._otp().formCtrl.registerOnTouched(fn);
-    } else {
-      this._pendingOnTouched = fn;
-    }
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    if (this._viewReady) {
-      this._otp().formCtrl.setDisabledState(isDisabled);
-    } else {
-      this._pendingDisabled = isDisabled;
-    }
+    // Runs as soon as the view query resolves — and, unlike `afterNextRender`,
+    // still runs while server-rendering, so a prerendered OTP shows its form
+    // value.
+    effect(() =>
+      this.formCtrl.delegateTo(this._otp().formCtrl, { toInner: (v) => v ?? '' }),
+    );
   }
 }

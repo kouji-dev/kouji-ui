@@ -48,3 +48,14 @@ export interface PlaygroundFile {
   readonly controls: readonly ControlSpec[];
   readonly snippet: (values: Record<string, unknown>) => string;
 }
+
+/**
+ * A code-split reference to one `PlaygroundFile`.
+ *
+ * The registry stores loaders rather than the files themselves: a
+ * `PlaygroundFile` holds a live component class, and a module-scope map of 69
+ * class references pins the whole styled library into the `/docs/*\/:slug`
+ * route chunk. A thunk keeps the module graph broken until the reader actually
+ * opens that component's page.
+ */
+export type PlaygroundLoader = () => Promise<PlaygroundFile>;

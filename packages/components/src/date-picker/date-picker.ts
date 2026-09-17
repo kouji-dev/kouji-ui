@@ -148,7 +148,13 @@ export class KjDatePickerComponent {
   /** Currently selected date. Two-way bindable — `[(kjValue)]`. `null` clears. */
   readonly kjValue = model<Date | null>(null);
 
-  /** Two-way bindable open state for the popover. */
+  /**
+   * Two-way bindable open state for the popover. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<kj-date-picker kjOpen>`) binds the empty string and reads as `false`.
+   * Bind it: `[(kjOpen)]="open"` or `[kjOpen]="true"`.
+   */
   readonly kjOpen = model<boolean>(false);
 
   /** Earliest selectable date (inclusive). `null` = open. */

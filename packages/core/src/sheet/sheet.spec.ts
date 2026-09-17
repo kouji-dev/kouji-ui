@@ -1,8 +1,9 @@
 import { ApplicationRef, Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KjSheet } from './sheet';
+import { KjSheetTitle } from './sheet-title';
 import { KjSheetService, SHEET_DATA, type KjSheetOpenOptions } from './sheet.service';
 import { KjSheetRef } from './sheet.ref';
 
@@ -109,6 +110,20 @@ describe('KjSheetService', () => {
     await expect(ref.result).resolves.toBe('hello');
   });
 
+  it('a dismissal (Escape / scrim) settles afterClosed$ and result like close() does', async () => {
+    const ref = openSheet<SimpleSheet, string>(SimpleSheet);
+    await new Promise((r) => setTimeout(r, 40));
+    TestBed.inject(ApplicationRef).tick();
+    const emitted: (string | undefined)[] = [];
+    ref.afterClosed$.subscribe((r) => emitted.push(r));
+    ref.controller.close('escape');
+    await new Promise((r) => setTimeout(r, 40));
+    TestBed.inject(ApplicationRef).tick();
+    expect(ref.closeReason()).toBe('escape');
+    expect(emitted).toEqual([undefined]);
+    await expect(ref.result).resolves.toBeUndefined();
+  });
+
   it('passes data through SHEET_DATA', () => {
     openSheet(DataSheet, { data: 'greetings' });
     expect(findPanel()!.textContent).toContain('greetings');
@@ -121,5 +136,103 @@ describe('KjSheetService', () => {
     panel!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await ref.result;
     expect(ref.state()).not.toBe('open');
+  });
+
+  it('Escape reaches the panel through a host binding, not only the overlay stack', async () => {
+    // arch F-13: `@HostListener('keydown.escape')` became a `host: {}` entry.
+    // The stack's document-capture listener would close the sheet either way,
+    // so this asserts the binding itself still runs.
+    const spy = vi.spyOn(KjSheet.prototype, 'onEscape');
+    try {
+      const ref = openSheet<SimpleSheet, unknown>(SimpleSheet);
+      findPanel()!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await ref.result;
+      expect(spy).toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('afterOpened$ emits exactly once, when the open transition completes, then completes', async () => {
+    const ref = openSheet(SimpleSheet);
+    let emissions = 0;
+    let completed = false;
+    ref.afterOpened$.subscribe({ next: () => emissions++, complete: () => { completed = true; } });
+    expect(emissions).toBe(0);
+    await flush();
+    expect(ref.state()).toBe('open');
+    expect(emissions).toBe(1);
+    expect(completed).toBe(true);
+    TestBed.inject(ApplicationRef).tick();
+    expect(emissions).toBe(1);
+    ref.close();
+    await flush();
+  });
+
+  it('returns focus to the opener on close', async () => {
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const ref = openSheet(SimpleSheet);
+    await flush();
+    const panel = findPanel()!;
+    expect(document.activeElement).toBe(panel);
+    panel.querySelector<HTMLElement>('#ok')!.focus();
+    ref.close();
+    await flush();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
+});
+
+const settle = (): Promise<void> => new Promise((r) => setTimeout(r, 40));
+
+/** Lets the open / close transition finish and flushes root effects. */
+async function flush(): Promise<void> {
+  await settle();
+  TestBed.inject(ApplicationRef).tick();
+  await settle();
+}
+
+@Component({
+  selector: 'kj-titled-sheet',
+  standalone: true,
+  imports: [KjSheet, KjSheetTitle],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<kj-sheet><h2 kjSheetTitle>Share</h2><button id="ok" (click)="ref.close()">OK</button></kj-sheet>`,
+})
+class TitledSheet {
+  readonly ref = inject<KjSheetRef<TitledSheet, string>>(KjSheetRef);
+}
+
+describe('KjSheet accessible name', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+  });
+
+  afterEach(() => {
+    cleanupOverlays();
+  });
+
+  it('a projected [kjSheetTitle] names the sheet via aria-labelledby, even with an ariaLabel fallback', async () => {
+    const ref = openSheet<TitledSheet>(TitledSheet, { ariaLabel: 'Fallback' });
+    await flush();
+    const panel = findPanel()!;
+    const title = panel.querySelector('h2')!;
+    expect(title.id).toMatch(/^kj-sheet-title-\d+$/);
+    expect(title.classList.contains('kj-sheet__title')).toBe(true);
+    expect(panel.getAttribute('aria-labelledby')).toBe(title.id);
+    expect(panel.hasAttribute('aria-label')).toBe(false);
+    expect(panel).toHaveAccessibleName('Share');
+    ref.close();
+    await flush();
+  });
+
+  it('ariaLabelledBy wins over a projected title', async () => {
+    const ref = openSheet<TitledSheet>(TitledSheet, { ariaLabelledBy: 'page-heading' });
+    expect(findPanel()!.getAttribute('aria-labelledby')).toBe('page-heading');
+    ref.close();
+    await flush();
   });
 });

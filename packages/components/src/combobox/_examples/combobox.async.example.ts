@@ -2,8 +2,8 @@ import { Component, signal, effect, ChangeDetectionStrategy } from '@angular/cor
 import {
   KjComboboxComponent,
   KjComboboxOptionComponent,
-  KjComboboxLoadingComponent,
-  KjComboboxEmptyComponent,
+  KjComboboxLoading,
+  KjComboboxEmpty,
 } from '../combobox';
 
 const ALL_USERS = [
@@ -30,8 +30,8 @@ const ALL_USERS = [
   imports: [
     KjComboboxComponent,
     KjComboboxOptionComponent,
-    KjComboboxLoadingComponent,
-    KjComboboxEmptyComponent,
+    KjComboboxLoading,
+    KjComboboxEmpty,
   ],
   styles: [
     `

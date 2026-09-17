@@ -17,6 +17,7 @@ import {
   $getSelection,
   $isRangeSelection,
   $insertNodes,
+  $isElementNode,
   $createParagraphNode,
   FORMAT_TEXT_COMMAND,
   UNDO_COMMAND,
@@ -84,10 +85,29 @@ export interface RichTextEngineConfig {
   onAnnounce?(message: string): void;
 }
 
+/**
+ * The document, as handed to {@link RichTextEngineCallbacks.onValue}.
+ *
+ * `html` is materialised eagerly — it is the form value, so every consumer
+ * needs it. `text` and `json` are **thunks**: each is a second and third full
+ * walk of the document, and the directive coalesces the outputs that need them
+ * to one animation frame, so on a fast typist they are computed once per frame
+ * instead of once per keystroke. Both are safe to call after the update that
+ * produced them: each opens its own read over the (immutable) editor state.
+ */
+export interface KjRichTextValueSnapshot {
+  /** Serialized HTML — the form value. */
+  readonly html: string;
+  /** Plain-text content of the document. */
+  text(): string;
+  /** Lexical `SerializedEditorState` for the document. */
+  json(): SerializedEditorState;
+}
+
 /** Callbacks the engine invokes to push state/value changes to the directive. */
 export interface RichTextEngineCallbacks {
   onState(state: KjRichTextState): void;
-  onValue(value: { html: string; text: string; json: SerializedEditorState }): void;
+  onValue(value: KjRichTextValueSnapshot): void;
 }
 
 /**
@@ -236,10 +256,14 @@ export class RichTextEngine {
 
     this.teardowns.push(
       this.editor.registerUpdateListener(({ editorState }) => {
-        editorState.read(() => {
-          const html = $generateHtmlFromNodes(this.editor, null);
-          const text = $getRoot().getTextContent();
-          this.callbacks.onValue({ html, text, json: editorState.toJSON() });
+        // One eager full-document walk per committed update (the HTML form
+        // value); `text` and `json` are lazy, and `readState` short-circuits
+        // its emptiness check instead of materialising the text a second time.
+        const html = editorState.read(() => $generateHtmlFromNodes(this.editor, null));
+        this.callbacks.onValue({
+          html,
+          text: () => editorState.read(() => $getRoot().getTextContent()),
+          json: () => editorState.toJSON(),
         });
         this.emitState();
       }),
@@ -266,8 +290,7 @@ export class RichTextEngine {
     let empty = true;
 
     this.editor.getEditorState().read(() => {
-      const root = $getRoot();
-      empty = root.getTextContent().length === 0;
+      empty = $isDocumentEmpty();
 
       const selection = $getSelection();
       if (!$isRangeSelection(selection)) return;
@@ -456,6 +479,26 @@ export class RichTextEngine {
     this.teardowns = [];
     this.editor.setRootElement(null);
   }
+}
+
+/**
+ * Whether the document has no text content — `root.getTextContent().length === 0`,
+ * decided without materialising the string.
+ *
+ * Mirrors `ElementNode.getTextContent()` exactly, including the `'\n\n'`
+ * separator it emits between non-inline children: the first non-empty child (or
+ * the first separator) settles the answer, so a long document costs one block
+ * instead of a full tree walk. Must run inside an editor-state read.
+ */
+function $isDocumentEmpty(): boolean {
+  const children = $getRoot().getChildren();
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i]!;
+    if (child.getTextContentSize() > 0) return false;
+    // A separator would be appended after this child — non-empty either way.
+    if ($isElementNode(child) && i !== children.length - 1 && !child.isInline()) return false;
+  }
+  return true;
 }
 
 /** Map a top-level element node to a {@link KjBlockType} via its type string. */

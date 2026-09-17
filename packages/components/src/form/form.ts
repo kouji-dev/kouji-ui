@@ -151,7 +151,7 @@ export class KjFormComponent {}
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjFormActionsComponent {
+export class KjFormActions {
   /** Accessible label for the action group. */
   readonly kjLabel = input<string>('Form actions');
   /** Alignment of the action row. Defaults to `'end'`. */
@@ -201,7 +201,7 @@ export class KjFormActionsComponent {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjFormSummaryComponent {
+export class KjFormSummary {
   private readonly form = inject(KjForm, { optional: true });
   private readonly fallbackInvalid = signal<readonly { path: string; label: string }[]>([]);
 

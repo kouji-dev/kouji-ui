@@ -19,8 +19,7 @@ composes it with a toolbar and design tokens. **No `@angular/cdk`** (strict repo
 | `feature.ts` | The `KjRichTextFeature` contract (`load`/`nodes`/`setup`/`toolbar`/`overlay`/`decorators`), the `KjRichTextContext` (package-agnostic helpers), `KjRteToolbarItem`, `KjRteOverlay`, `KjDecoratorRegistration`. |
 | `rich-text-editor.ts` | `KjRichTextEditor` directive (`[kjRichTextEditor]`). SSR-safe lazy init; merges features (DI + `kjFeatures` + child directives); exposes `state`, `toolbarItems`/`toolbarGroups`, `activeOverlay`, `runItem`; value in/out + `ControlValueAccessor`. Provides `KJ_RICH_TEXT`; hosts the decorator mount adapter. |
 | `rich-text.context.ts` | `KJ_RICH_TEXT` context token, `KJ_RICH_TEXT_FEATURES` multi-token + `provideKjRichText(...)`, `KJ_RICH_TEXT_NODE`/`injectRichTextNode()`, `KJ_RTE_OVERLAY_DATA`/`injectRteOverlayData()`, `KjDecoratorMountAdapter`. |
-| `rich-text-extension.ts` | `KjRichTextExtensionDirective` (`[kjRichTextFeature]`, `[kjRichTextExtension]`) — child directive that self-registers a feature (like `Option`↔`Select`). |
-| `rich-text-plugin.ts` | Deprecated aliases: `KjRichTextExtension`/`KjRichTextPlugin` → `KjRichTextFeature`. |
+| `rich-text-feature.ts` | `KjRichTextFeatureDirective` (`[kjRichTextFeature]`) — child directive that self-registers a feature (like `Option`↔`Select`). |
 | `decorator-node.ts` | `createKjDecoratorNode(lexical, config)` — Angular-rendered decorator node. Returns `{ Node, $create, $is }`. No eager Lexical import. |
 | `image-node.ts` | `createKjImageNode(lexical)` — self-rendering image node (own `<figure><img>` + HTML round-trip). No eager Lexical import; used by the `image` feature. |
 | `engine.ts` | Browser-only orchestrator (lazy). Awaits each feature's `load()`, collects nodes **before** `createEditor`, runs setups, package-agnostic state, decorator bridge. Base editing only is statically imported. |

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { render } from '@testing-library/angular';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { KJ_ROVING_TABINDEX } from '../a11y/roving-tabindex';
+import { KJ_ROVING_TABINDEX, KjRovingTabindexItem } from '../a11y/roving-tabindex';
 import { KjList, KjListRow } from './list';
 
 expect.extend(toHaveNoViolations);
@@ -133,7 +133,11 @@ describe('KjList', () => {
         standalone: true,
         imports,
         template: `
-          <ul kjList kjArrowNavigation aria-label="Primary">
+          <!-- Either form works: kjArrowNavigation now carries the same
+               booleanAttribute transform as KjAccordion's input of the same
+               name, so the bare attribute in KjList's own TSDoc example
+               type-checks too. Bound here to name the value explicitly. -->
+          <ul kjList [kjArrowNavigation]="true" aria-label="Primary">
             <li kjListRow>A</li>
           </ul>
         `,
@@ -148,6 +152,97 @@ describe('KjList', () => {
       );
       const rovingFromChild: unknown = rootDebugEl.injector.get(KJ_ROVING_TABINDEX, null);
       expect(rovingFromChild).not.toBeNull();
+    });
+
+    it('the active row seeds the tab stop onto its roving item (a11y F-19)', async () => {
+      @Component({
+        standalone: true,
+        imports: [...imports, KjRovingTabindexItem],
+        template: `
+          <nav kjList kjAs="nav" [kjArrowNavigation]="true" aria-label="Primary">
+            <div kjListRow><a kjRovingTabindexItem href="#home">Home</a></div>
+            <div kjListRow [kjActive]="true"><a kjRovingTabindexItem href="#settings" aria-current="page">Settings</a></div>
+            <div kjListRow><a kjRovingTabindexItem href="#about">About</a></div>
+          </nav>
+        `,
+      })
+      class Host {}
+
+      const { container } = await render(Host);
+      const links = container.querySelectorAll<HTMLAnchorElement>('a');
+      expect(links[0]).toHaveAttribute('tabindex', '-1');
+      expect(links[1]).toHaveAttribute('tabindex', '0');
+      expect(links[2]).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('an UNBOUND kjOrientation still pins the axis (off-axis keys ignored)', async () => {
+      // A `hostDirectives` input alias carries a binding, never a default, so
+      // `<ul kjList>` used to leave the roving primitive at `'both'` while the
+      // host reported `data-orientation="vertical"` — ArrowRight walked a
+      // vertical nav list. `KJ_ROVING_ORIENTATION_DEFAULT` carries the
+      // effective value whether or not the input is bound.
+      @Component({
+        standalone: true,
+        imports: [...imports, KjRovingTabindexItem],
+        template: `
+          <ul kjList [kjArrowNavigation]="true" aria-label="Primary">
+            <li kjListRow><a kjRovingTabindexItem href="#home">Home</a></li>
+            <li kjListRow><a kjRovingTabindexItem href="#about">About</a></li>
+          </ul>
+        `,
+      })
+      class Host {}
+
+      const { container, detectChanges } = await render(Host);
+      const root = container.querySelector('[kjList]')!;
+      expect(root).toHaveAttribute('data-orientation', 'vertical');
+      const links = container.querySelectorAll<HTMLAnchorElement>('a');
+      links[0].focus();
+
+      const press = (key: string) => {
+        (document.activeElement ?? document.body).dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+        detectChanges();
+      };
+
+      press('ArrowRight');
+      expect(links[0]).toHaveAttribute('tabindex', '0');
+      expect(links[1]).toHaveAttribute('tabindex', '-1');
+
+      press('ArrowDown');
+      expect(links[1]).toHaveAttribute('tabindex', '0');
+      expect(links[0]).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('a bound kjOrientation still wins over the pinned default', async () => {
+      @Component({
+        standalone: true,
+        imports: [...imports, KjRovingTabindexItem],
+        template: `
+          <ul kjList kjOrientation="horizontal" [kjArrowNavigation]="true" aria-label="Tools">
+            <li kjListRow><a kjRovingTabindexItem href="#a">A</a></li>
+            <li kjListRow><a kjRovingTabindexItem href="#b">B</a></li>
+          </ul>
+        `,
+      })
+      class Host {}
+
+      const { container, detectChanges } = await render(Host);
+      const links = container.querySelectorAll<HTMLAnchorElement>('a');
+      links[0].focus();
+      const press = (key: string) => {
+        (document.activeElement ?? document.body).dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+        detectChanges();
+      };
+
+      press('ArrowDown');
+      expect(links[0]).toHaveAttribute('tabindex', '0');
+
+      press('ArrowRight');
+      expect(links[1]).toHaveAttribute('tabindex', '0');
     });
   });
 
@@ -232,6 +327,42 @@ describe('KjList', () => {
         { imports },
       );
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  // arch F-2 — a bare attribute binds the empty string, which is falsy. Every
+  // boolean input needs `booleanAttribute` or the form the docs teach no-ops.
+  describe('bare boolean attributes (arch F-2)', () => {
+    it('kjDivided / kjHoverable reflect from the bare attribute form', async () => {
+      const { container } = await render(
+        `<ul kjList kjDivided kjHoverable aria-label="Files"><li kjListRow>A</li></ul>`,
+        { imports },
+      );
+      const root = container.querySelector('[kjList]')!;
+      expect(root).toHaveAttribute('data-divided', '');
+      expect(root).toHaveAttribute('data-hoverable', '');
+    });
+
+    it('kjDisabled / kjActive on a row reflect from the bare attribute form', async () => {
+      const { container } = await render(
+        `<ul kjList aria-label="Files"><li kjListRow kjDisabled kjActive>A</li></ul>`,
+        { imports },
+      );
+      // The row paints the chrome only — `aria-disabled` is the projected
+      // child's job, per KjListRow's own contract.
+      const row = container.querySelector('[kjListRow]')!;
+      expect(row).toHaveAttribute('data-disabled', '');
+      expect(row).toHaveAttribute('data-active', '');
+    });
+
+    it('kjListWrap="false" turns wrapping off (a string attribute, not a binding)', async () => {
+      const { container } = await render(
+        `<ul kjList kjListWrap="false" aria-label="Files"><li kjListRow>A</li></ul>`,
+        { imports },
+      );
+      // `booleanAttribute('false')` is false — without the transform the
+      // string 'false' would have been truthy and wrapping would stay on.
+      expect(container.querySelector('[kjList]')).toBeTruthy();
     });
   });
 });

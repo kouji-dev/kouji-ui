@@ -5,6 +5,7 @@ import {
   KjDropdownMenuItem,
   KjDropdownMenuSeparator,
   KjDropdownMenuLabel,
+  KjDropdownMenuGroup,
 } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 
@@ -21,6 +22,7 @@ import { KjButtonComponent } from '../../button/button';
     KjDropdownMenuItem,
     KjDropdownMenuSeparator,
     KjDropdownMenuLabel,
+    KjDropdownMenuGroup,
     KjButtonComponent,
   ],
   styles: [
@@ -40,10 +42,12 @@ import { KjButtonComponent } from '../../button/button';
   template: `
     <kj-button kjDropdownMenuTrigger #t="kjDropdownMenuTrigger">Account</kj-button>
     <kj-dropdown-menu-content [kjFor]="t">
-      <span kjDropdownMenuLabel>My account</span>
-      <button kjDropdownMenuItem (click)="last.set('profile')">Profile</button>
-      <button kjDropdownMenuItem (click)="last.set('settings')">Settings</button>
-      <button kjDropdownMenuItem [kjDisabled]="true">Billing (admin only)</button>
+      <div kjDropdownMenuGroup>
+        <span kjDropdownMenuLabel>My account</span>
+        <button kjDropdownMenuItem (click)="last.set('profile')">Profile</button>
+        <button kjDropdownMenuItem (click)="last.set('settings')">Settings</button>
+        <button kjDropdownMenuItem [kjDisabled]="true">Billing (admin only)</button>
+      </div>
       <hr kjDropdownMenuSeparator />
       <button kjDropdownMenuItem (click)="last.set('logout')">Logout</button>
     </kj-dropdown-menu-content>

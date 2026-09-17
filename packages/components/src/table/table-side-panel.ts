@@ -208,8 +208,14 @@ export class KjTableSidePanelContent {
   host: { style: 'display: contents;' },
   template: ``,
 })
-export class KjTableSidePanelComponent {
-  /** Whether the side panel is visible. Two-way bindable. */
+export class KjTableSidePanel {
+  /**
+   * Whether the side panel is visible. Two-way bindable. Defaults to `false`.
+   *
+   * Angular's `model()` accepts no `transform`, so the bare-attribute form
+   * (`<kj-table-side-panel kjOpen>`) binds the empty string and reads as
+   * `false`. Bind it: `[(kjOpen)]="open"` or `[kjOpen]="true"`.
+   */
   readonly kjOpen = model(false);
   /** Drawer header text. */
   readonly kjTitle = input('Columns');

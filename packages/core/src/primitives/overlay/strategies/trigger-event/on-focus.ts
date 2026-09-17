@@ -1,7 +1,37 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjTriggerEventStrategy } from '../../tokens';
 
-export function onFocus(): KjTriggerEventStrategy {
+/** Options for {@link onFocus}. */
+export interface KjOnFocusOpts {
+  /**
+   * Open only when the trigger matches `:focus-visible` — keyboard focus, or
+   * programmatic focus after a keyboard interaction — so a pointer click,
+   * which focuses the trigger too, never surfaces a tooltip that hover
+   * already owns. Environments without `:focus-visible` support open on any
+   * focus. Default `false`.
+   */
+  focusVisible?: boolean;
+}
+
+/** `true` unless the element demonstrably fails `:focus-visible`. */
+const isFocusVisible = (el: Element): boolean => {
+  try {
+    return el.matches(':focus-visible');
+  } catch {
+    return true;
+  }
+};
+
+/**
+ * Opens the overlay when the trigger gains focus and closes it when focus
+ * leaves both the trigger and the panel. Composes with `onHover` for
+ * tooltips and hover popovers so keyboard users reach the same content.
+ *
+ * Focus that lands on the trigger while the overlay is closing is the
+ * controller returning it there (Escape, Tab out, a pick) — never a request
+ * to open again.
+ */
+export function onFocus(opts: KjOnFocusOpts = {}): KjTriggerEventStrategy {
   let ctx: KjOverlayContext | null = null;
   let toggle: (() => void) | null = null;
   let onIn: ((e: FocusEvent) => void) | null = null;
@@ -11,7 +41,11 @@ export function onFocus(): KjTriggerEventStrategy {
     if (!ctx?.platform.isBrowser) return;
     const trigger = ctx.triggerEl();
     if (!trigger || onIn) return;
-    onIn = () => { if (!ctx?.isOpen()) toggle?.(); };
+    onIn = () => {
+      if (ctx?.isOpen() || ctx?.state() === 'closing') return;
+      if (opts.focusVisible && !isFocusVisible(trigger)) return;
+      toggle?.();
+    };
     onOut = (e: FocusEvent) => {
       const related = e.relatedTarget as Node | null;
       const panel = ctx?.panelEl();

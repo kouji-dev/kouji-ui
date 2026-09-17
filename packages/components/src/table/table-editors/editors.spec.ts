@@ -1,6 +1,6 @@
-import { Component, Type } from '@angular/core';
+import { Component, Type, ViewEncapsulation } from '@angular/core';
 import { fireEvent, render } from '@testing-library/angular';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type Mock } from 'vitest';
 import {
   KJ_EDITOR_CONTRACT,
   KjBooleanEditor,
@@ -8,18 +8,103 @@ import {
   KjNumberEditor,
   KjSelectEditor,
   KjTextEditor,
+  injectKjCellEditor,
   type KjEditorContract,
 } from './index';
 
-function makeCtx<T>(initial: T): KjEditorContract<T> & { commit: ReturnType<typeof vi.fn>; cancel: ReturnType<typeof vi.fn> } {
+/** Minimal editor over the shared state machine, to pin its contract. */
+@Component({
+  selector: 'kj-probe-editor',
+  standalone: true,
+  template: `
+    <input
+      [value]="editor.draft()"
+      (input)="editor.draft.set($any($event.target).value)"
+      (keydown.enter)="editor.commit()"
+      (keydown.escape)="editor.cancel()"
+      (focusout)="editor.onFocusOut($event)"
+    />
+    <button type="button">inside</button>
+  `,
+  encapsulation: ViewEncapsulation.None,
+})
+class ProbeEditor {
+  readonly editor = injectKjCellEditor<string>({
+    seed: (v) => (typeof v === 'string' ? v : ''),
+    focus: () => this.editor.host.querySelector('input')?.focus(),
+    validate: (v) => v !== 'bad',
+  });
+}
+
+describe('injectKjCellEditor', () => {
+  it('seeds the draft from the contract and focuses the control after the first render', async () => {
+    const ctx = makeCtx<string>('seed');
+    const { container } = await mount(ProbeEditor, ctx);
+    const input = container.querySelector('input') as HTMLInputElement;
+    expect(input.value).toBe('seed');
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('settles once: the first commit wins and later commits or cancels are ignored', async () => {
+    const ctx = makeCtx<string>('a');
+    const { container } = await mount(ProbeEditor, ctx);
+    const input = container.querySelector('input') as HTMLInputElement;
+    fireEvent.input(input, { target: { value: 'b' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(ctx.commit).toHaveBeenCalledTimes(1);
+    expect(ctx.commit).toHaveBeenCalledWith('b');
+    expect(ctx.cancel).not.toHaveBeenCalled();
+  });
+
+  it('a draft that fails validation cancels instead of committing', async () => {
+    const ctx = makeCtx<string>('a');
+    const { container } = await mount(ProbeEditor, ctx);
+    const input = container.querySelector('input') as HTMLInputElement;
+    fireEvent.input(input, { target: { value: 'bad' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(ctx.commit).not.toHaveBeenCalled();
+    expect(ctx.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('focus moving inside the editor does not commit; focus leaving it does', async () => {
+    const ctx = makeCtx<string>('a');
+    const { container } = await mount(ProbeEditor, ctx);
+    const input = container.querySelector('input') as HTMLInputElement;
+    const inside = container.querySelector('button') as HTMLButtonElement;
+    fireEvent.focusOut(input, { relatedTarget: inside });
+    expect(ctx.commit).not.toHaveBeenCalled();
+    fireEvent.focusOut(input, { relatedTarget: document.body });
+    expect(ctx.commit).toHaveBeenCalledWith('a');
+  });
+});
+
+describe('KjNumberEditor — blur', () => {
+  it('commits the number when focus leaves the editor and cancels a non-finite draft', async () => {
+    const ctx = makeCtx<number>(3);
+    const { container } = await mount(KjNumberEditor, ctx);
+    const input = container.querySelector('input') as HTMLInputElement;
+    fireEvent.focusOut(input, { relatedTarget: document.body });
+    expect(ctx.commit).toHaveBeenCalledWith(3);
+    expect(ctx.cancel).not.toHaveBeenCalled();
+  });
+});
+
+interface SpyContract<T> extends KjEditorContract<T> {
+  commit: Mock<(next: T) => void>;
+  cancel: Mock<() => void>;
+}
+
+function makeCtx<T>(initial: T): SpyContract<T> {
   return {
     value: initial,
-    commit: vi.fn(),
-    cancel: vi.fn(),
+    commit: vi.fn<(next: T) => void>(),
+    cancel: vi.fn<() => void>(),
   };
 }
 
-async function mount<T>(cmp: Type<T>, ctx: KjEditorContract<unknown>, host?: Type<unknown>) {
+async function mount<T, V>(cmp: Type<T>, ctx: KjEditorContract<V>, host?: Type<unknown>) {
   return render(host ?? cmp, {
     imports: [cmp],
     providers: [{ provide: KJ_EDITOR_CONTRACT, useValue: ctx }],

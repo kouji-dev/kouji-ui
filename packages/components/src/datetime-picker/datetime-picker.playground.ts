@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { KjDatetimePickerComponent } from './datetime-picker';
+import { KjDatetimePicker } from './datetime-picker';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
 
 /**
@@ -15,7 +15,7 @@ const value = signal<Date | null>(new Date());
 @Component({
   selector: 'kj-datetime-picker-playground',
   standalone: true,
-  imports: [KjDatetimePickerComponent],
+  imports: [KjDatetimePicker],
   styles: [`
     :host { display: flex; flex-direction: column; gap: var(--kj-space-md); min-height: 20rem; }
     .selected { font-family: var(--kj-font-mono, monospace); color: var(--kj-fg-muted); font-size: 0.875rem; }

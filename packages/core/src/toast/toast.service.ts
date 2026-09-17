@@ -1,5 +1,6 @@
 import { EnvironmentInjector, Injectable, TemplateRef, Type, effect, inject, runInInjectionContext, signal } from '@angular/core';
 import { KjOverlayBuilder } from '../primitives/overlay/builder';
+import { KjId } from '../primitives/overlay/id';
 import { inPlace } from '../primitives/overlay/strategies/mount/in-place';
 import { corner, type KjCornerPosition } from '../primitives/overlay/strategies/position/corner';
 import { polite } from '../primitives/overlay/strategies/live-announcer/polite';
@@ -8,6 +9,7 @@ import { programmatic } from '../primitives/overlay/strategies/trigger-event/pro
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
 import { KjToastRef } from './toast.ref';
 
+/** Visual variant of a toast, reflected to `data-variant` on the panel. */
 export type KjToastVariant = 'default' | 'success' | 'destructive' | 'warning';
 
 /** Variant tag accepted by the variant-sugar methods (`success`/`info`/`warn`/`error`). */
@@ -112,6 +114,7 @@ const VARIANT_FROM_SUGAR: Record<KjToastSugarVariant, KjToastVariant> = {
 export class KjToastService {
   private readonly strategy = inject(KJ_TOAST_STRATEGY);
   private readonly builder = inject(KjOverlayBuilder);
+  private readonly idSvc = inject(KjId);
   private readonly env = inject(EnvironmentInjector);
   private readonly _toasts = signal<KjToastItem[]>([]);
   /** Live list of active toasts. Read by `[kjToastViewport]`. */
@@ -130,9 +133,12 @@ export class KjToastService {
 
   /**
    * Overlay-based entry point. Builds an overlay via `KjOverlayBuilder` with
-   * `bodyPortal` mount, `corner` positioning and a polite/assertive live
-   * announcer based on the variant. Returns a `KjToastRef` whose `close()`
-   * dismisses the toast and unwinds the overlay.
+   * an in-place mount inside the overlay container, `corner` positioning and
+   * a polite/assertive live announcer based on the variant. The overlay is a
+   * passive stack entry: it takes a level above what is open but never owns
+   * Escape or an outside press, so a toast shown over a dialog leaves the
+   * dialog's gestures alone. Returns a `KjToastRef` whose `close()` dismisses
+   * the toast and unwinds the overlay.
    */
   show<TData = unknown>(opts: KjToastOptions<TData>): KjToastRef;
   /** Show a toast with a plain text message. The viewport's default template renders it. */
@@ -153,7 +159,7 @@ export class KjToastService {
   }
 
   private openOverlay(opts: KjToastOptions): KjToastRef {
-    const id = opts.id ?? crypto.randomUUID();
+    const id = opts.id ?? this.idSvc.mint('toast');
     const variant = opts.variant ?? 'default';
     const handle = this.builder.create({
       mount: inPlace(),
@@ -164,6 +170,10 @@ export class KjToastService {
       liveAnnouncer: variant === 'destructive' ? assertive() : polite(),
       trigger: programmatic(),
       panelRole: variant === 'destructive' ? 'alert' : 'status',
+      // A transient, non-interactive surface: never the owner of a gesture.
+      closeOnEsc: false,
+      closeOnOutside: false,
+      passive: true,
     });
 
     if (opts.component) {
@@ -203,7 +213,7 @@ export class KjToastService {
   }
 
   private enqueue(options: KjToastOptions): string {
-    const id = options.id ?? crypto.randomUUID();
+    const id = options.id ?? this.idSvc.mint('toast');
     const toast: KjToastItem = {
       id,
       variant: options.variant ?? 'default',

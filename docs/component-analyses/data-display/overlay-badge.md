@@ -166,8 +166,9 @@ its own size in the relevant axis. Not v1.
 Nothing under `packages/core/src/overlay-badge/` or
 `packages/components/src/overlay-badge/`. Adjacent prerequisites:
 
-- `packages/core/src/badge/badge.ts` — `KjBadge` directive with
-  `kjBadgeVariant`. Reused as the visual content.
+- `packages/core/src/badge/badge.ts` — `KjBadge` directive, which
+  composes `KjVariant` / `KjSize` (`[kjVariant]`, `[kjSize]`). Reused
+  as the visual content.
 - `packages/components/src/badge/badge.ts` — `KjBadgeComponent`
   (`<kj-badge>`). Consumers can project this into the overlay slot
   for a fully styled badge.
@@ -197,7 +198,7 @@ Nothing under `packages/core/src/overlay-badge/` or
 | Dot mode | `kjDot: input<boolean>(false)` on `KjOverlayBadge`; reflected as `data-dot` on the content node | When `true`, content ignores `kjValue` and renders an empty fixed-size circle. |
 | Numeric value with overflow | `kjValue: input<number \| string \| null>(null)` and `kjMaxValue: input<number \| null>(99)` on `KjOverlayBadge` | A `computed` derives `display = value > max ? \`${max}+\` : String(value)`. `null` value collapses to dot-or-nothing depending on `kjDot`. |
 | Hidden | `kjHidden: input<boolean>(false)` | Drives `[hidden]` on the content node; the host's `aria-describedby` link to the description id is also dropped. |
-| Variant / size | Composed on the **content** node, not the anchor: `hostDirectives: [{ directive: KjBadge, inputs: ['kjBadgeVariant'] }, KjVariant, KjSize]` on `KjOverlayBadgeContentComponent` | The anchor stays neutral so two anchors with different badge variants on the same page are independent. |
+| Variant / size | Composed on the **content** node, not the anchor: `hostDirectives: [KjOverlayBadgeContent]`, which composes `KjBadge`, which composes `KjVariant` / `KjSize`. Host-directive input exposure is transitive, so `[kjVariant]` / `[kjSize]` bind on the content node with nothing re-declared (listing either on an outer composer is an NG0311). | The anchor stays neutral so two anchors with different badge variants on the same page are independent. |
 | Description for assistive tech | `kjDescription: input<string>('')` on `KjOverlayBadge` | Renders a `<span kjVisuallyHidden id="…">` adjacent to (or inside) the content node; appends the id to host's `aria-describedby`. Without this, the badge is decorative — see the a11y section. |
 | Decorative mode | `kjDecorative: input<boolean>(false)` on `KjOverlayBadge` | Sets `aria-hidden="true"` on the content node and skips the `aria-describedby` wiring. Use for "we already announce the count in the host's accessible name" cases. |
 | RTL flipping | CSS-only, via `inset-inline-start` / `inset-inline-end` keyed off `data-position` | No JS bidi reads. |
@@ -298,9 +299,9 @@ project one for the simple case.
 
 | Primitive | Where | Why |
 |---|---|---|
-| `KjBadge` | `hostDirective` on `KjOverlayBadgeContentComponent` | All visual chrome — variant, padding, font, border-radius — comes from the existing badge styles. One source of truth. Forwards `kjBadgeVariant` from the wrapper component. |
-| `KjVariant` | `hostDirective` on `KjOverlayBadgeContentComponent` | Routes the variant token via `data-variant`. Same primitive Badge already composes (when Badge migrates to the preset system). |
-| `KjSize` | `hostDirective` on `KjOverlayBadgeContentComponent` | Same — sizing tokens. |
+| `KjBadge` | `hostDirective` on `KjOverlayBadgeContent` (and so, transitively, on `KjOverlayBadgeContentComponent`) | All visual chrome — variant, padding, font, border-radius — comes from the existing badge styles. One source of truth. |
+| `KjVariant` | `hostDirective` on `KjBadge` | Routes the variant token via `data-variant`, validated against `KJ_BADGE_CONFIG`. Reached transitively — not composed a second time here. |
+| `KjSize` | `hostDirective` on `KjBadge` | Same — sizing tokens, via `data-size`. |
 | `KjVisuallyHidden` | Applied to the description `<span>` | Renders the SR-only text without painting it. |
 | `KjAriaDescribedBy` | **Not composed** | We need to *merge* with existing `aria-describedby` on the host, not own it. Direct host binding instead. |
 | `KjLiveRegion` | Conditionally applied to the description span when `kjLive !== 'off'` | Re-announces on value change. |
@@ -320,8 +321,8 @@ default badge slot:
   <span
     kjOverlayBadgeContent
     class="kj-overlay-badge"
-    [kjBadgeVariant]="kjVariant()"
-    [attr.data-size]="kjSize()"
+    [kjVariant]="kjVariant()"
+    [kjSize]="kjSize()"
   >
     @if (!kjDot()) { {{ displayValue() }} }
   </span>
@@ -423,8 +424,8 @@ forwards via `hostDirectives` `inputs` arrays.
 | `[hidden]` | `ctx.hidden() \|\| (ctx.value() == null && !ctx.dot())` |
 
 No public inputs of its own — all driven by the parent context. Composes
-`KjBadge` (forwarding `kjBadgeVariant`), `KjVariant`, `KjSize` via
-`hostDirectives` so the consumer can apply variants directly to the
+`KjBadge` via `hostDirectives`, which brings `KjVariant` / `KjSize` with
+it, so the consumer can apply `[kjVariant]` / `[kjSize]` directly to the
 content node when projecting one manually.
 
 ### Wrapper inputs (components package)
@@ -439,8 +440,8 @@ content node when projecting one manually.
 | `<kj-overlay-badge>` | `kjDescription` | `KjOverlayBadge.kjDescription` |
 | `<kj-overlay-badge>` | `kjDecorative` | `KjOverlayBadge.kjDecorative` |
 | `<kj-overlay-badge>` | `kjLive` | `KjOverlayBadge.kjLive` |
-| `<kj-overlay-badge>` | `kjVariant` | `KjBadge.kjBadgeVariant` (on the internal content span) |
-| `<kj-overlay-badge>` | `kjSize` | `KjSize.kjSize` (on the internal content span) |
+| `<kj-overlay-badge>` | `kjVariant` | `KjVariant.kjVariant`, through `KjBadge` (on the internal content span) |
+| `<kj-overlay-badge>` | `kjSize` | `KjSize.kjSize`, through `KjBadge` (on the internal content span) |
 
 The wrapper's host carries `class="kj-overlay-badge-anchor"`, which
 applies `position: relative; display: inline-flex` so projected

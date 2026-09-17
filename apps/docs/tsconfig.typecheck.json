@@ -1,0 +1,20 @@
+/* Type-check-only program over the docs app (strict templates included).
+   Extends the app config so `@kouji-ui/*` resolves to source; `rootDir` is the
+   repo root because those library sources are inside the program.
+   Run via `pnpm typecheck`.
+
+   The QUARANTINE that used to live here is gone: every spec under
+   `src/app/lib/theme`, `src/app/services` and `src/app/components` has been
+   rewritten against the 17-slot bg/fg `DraftTheme` model, so nothing is
+   excluded and a type error in a spec fails the check like any other file.
+   Do not add entries back — fix the spec instead. */
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/typecheck",
+    "rootDir": "../..",
+    "noEmit": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { render } from '@testing-library/angular';
-import { describe, it, expect } from 'vitest';
+import { render, fireEvent } from '@testing-library/angular';
+import { afterEach, describe, it, expect } from 'vitest';
 import {
   KjCombobox,
   KjComboboxInput,
@@ -71,5 +71,47 @@ describe('KjCombobox', () => {
     const opts = container.querySelectorAll('[kjComboboxOption]');
     expect(opts.length).toBe(2);
     opts.forEach(o => expect(o.getAttribute('role')).toBe('option'));
+  });
+});
+
+/**
+ * arch F-13 — `KjComboboxInput` hands its composed `KjListNavigator` to the
+ * root from its constructor (it is composed on the same element, so it exists
+ * by then) instead of from `ngOnInit`. Without the handover the root's
+ * `activeId()` stays null and no option is ever marked active.
+ */
+describe('KjCombobox navigator handover', () => {
+  afterEach(() => {
+    document.querySelectorAll('.kj-overlay-wrapper').forEach((el) => el.remove());
+  });
+
+  it('ArrowDown marks the first option active', async () => {
+    @Component({
+      selector: 'kj-cb-host',
+      standalone: true,
+      imports: [KjCombobox, KjComboboxInput, KjComboboxListbox, KjComboboxOption],
+      template: `
+        <div kjCombobox>
+          <input kjComboboxInput #t="kjOverlayTrigger" aria-label="Country" />
+          <div kjComboboxListbox [kjFor]="t">
+            <button kjComboboxOption [kjOptionValue]="'fr'">France</button>
+            <button kjComboboxOption [kjOptionValue]="'de'">Germany</button>
+          </div>
+        </div>
+      `,
+    })
+    class Host {}
+
+    const { container, fixture } = await render(Host);
+    const input = container.querySelector<HTMLInputElement>('input[kjComboboxInput]')!;
+    input.focus();
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r, 0));
+
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    fixture.detectChanges();
+
+    const active = document.querySelectorAll('[kjComboboxOption][data-active]');
+    expect(active.length).toBe(1);
   });
 });

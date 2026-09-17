@@ -80,7 +80,12 @@
   .kj-chat-msg__body :is(p) {
     margin: 0 0 var(--kj-space-xs);
   }
-  .kj-chat-msg__body :is(p):last-child {
+  /* Only the last paragraph of the whole body drops its trailing gap. The body
+     is a sequence of markdown / code blocks — a bare `p:last-child` also hit the
+     final paragraph of every prose block, collapsing the gap before a code
+     fence and between the prose blocks a streamed reply is committed in. */
+  .kj-chat-msg__body > :last-child :is(p):last-child,
+  .kj-chat-msg__body > :is(p):last-child {
     margin-bottom: 0;
   }
   .kj-chat-msg__error {
@@ -253,7 +258,7 @@
     padding: var(--kj-space-sm);
     border: 1px solid var(--kj-border-default);
     border-radius: var(--kj-radius-box);
-    background: var(--kj-bg-field, var(--kj-input-bg));
+    background: var(--kj-bg-field);
   }
   .kj-prompt:focus-within {
     border-color: var(--kj-border-focus);
@@ -283,8 +288,9 @@
   .kj-prompt__btn {
     display: grid;
     place-items: center;
-    width: 2.75rem;
-    height: 2.75rem; /* WCAG 2.5.5 target */
+    /* WCAG 2.5.5 floor: scales up with density, never below 44px. */
+    width: max(var(--kj-ctl-h-lg), 2.75rem);
+    height: max(var(--kj-ctl-h-lg), 2.75rem);
     border-radius: 50%;
     border: none;
     cursor: pointer;

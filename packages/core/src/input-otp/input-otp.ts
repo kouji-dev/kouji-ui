@@ -1,8 +1,7 @@
 import {
+  DestroyRef,
   Directive,
   ElementRef,
-  OnDestroy,
-  OnInit,
   Signal,
   booleanAttribute,
   computed,
@@ -12,23 +11,32 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { KjDisabled } from '../primitives/interaction/disabled';
 import { KjFormControl } from '../primitives/forms/form-control';
-import { KjLiveRegion } from '../a11y/live-region';
+import type { KjLiveRegion } from '../a11y/live-region';
+import { KjTranslateService } from '../i18n/translate.service';
 import { KjFocusRing } from '../primitives/interaction/focus-ring';
+import { KJ_FIELD } from '../field/field.context';
 import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Root headless directive for the OTP input widget.
  *
  * Owns the concatenated value, cell count, character-set filtering, paste
- * distribution, auto-advance, completion announcement, and the
+ * distribution, auto-advance, completion detection, and the
  * `KJ_INPUT_OTP` context that every `KjInputOtpCell` reads from.
  *
  * Composes `KjFormControl` via `hostDirectives` so the **whole widget** is a
  * single Angular form control — `[(ngModel)]` and `[formControl]` bind to the
  * concatenated string.
+ *
+ * Completion is announced through a live region the consumer registers with
+ * {@link registerLiveRegion} (the styled `<kj-input-otp>` renders a visually
+ * hidden one). The root is deliberately not a live region itself: it owns the
+ * rendered cells, and a live region must never wrap the focused control.
  *
  * @example
  * ```html
@@ -52,7 +60,6 @@ import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
   hostDirectives: [
     { directive: KjDisabled, inputs: ['kjDisabled'] },
     KjFormControl,
-    KjLiveRegion,
   ],
   providers: [
     { provide: KJ_INPUT_OTP, useExisting: forwardRef(() => KjInputOtp) },
@@ -60,14 +67,35 @@ import { KJ_INPUT_OTP, KjInputOtpContext } from './input-otp.context';
   host: {
     'role': 'group',
     '[attr.aria-label]': 'kjAriaLabel() ?? null',
+    '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-invalid]': 'formCtrl.touched() && kjInvalid() ? "true" : null',
     '[attr.data-invalid]': 'formCtrl.touched() && kjInvalid() ? "" : null',
   },
 })
-export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
+export class KjInputOtp implements KjInputOtpContext {
   readonly formCtrl = inject(KjFormControl);
+  /**
+   * The enclosing `[kjField]`, when there is one. The OTP root is a
+   * `role="group"` and not a labelable element, so the field's
+   * `[kjFieldLabel]` `for=` can never reach it — `aria-labelledby` is the only
+   * association that works, and `KjFieldControl` (which owns `id` +
+   * `for=`) is therefore the wrong tool here.
+   */
+  private readonly field = inject(KJ_FIELD, { optional: true });
+  private readonly i18n = inject(KjTranslateService);
   private readonly disabled$ = inject(KjDisabled);
-  private readonly liveRegion = inject(KjLiveRegion);
+  /**
+   * `aria-labelledby` pointing at the field's label, or `null` outside a field
+   * / when the consumer named the group themselves with `kjAriaLabel`.
+   */
+  protected readonly labelledBy = computed(() => {
+    if (this.kjAriaLabel()) return null;
+    const field = this.field;
+    return field?.labelRendered() ? field.labelId() : null;
+  });
+
+  /** Live region that announces completion; `null` until one is registered. */
+  private liveRegion: Pick<KjLiveRegion, 'announce'> | null = null;
 
   // ── Inputs ──────────────────────────────────────────────────────────────────
 
@@ -97,7 +125,7 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
 
   // ── Outputs ─────────────────────────────────────────────────────────────────
 
-  /** Emitted when the full code is entered (value.length === kjLength). */
+  /** Emitted once each time every cell is filled (value.length === kjLength). */
   readonly kjComplete = output<string>();
 
   /** Emitted after a paste distributes characters across cells. */
@@ -124,6 +152,12 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
     this._chars().slice(0, this.kjLength()).join(''),
   );
 
+  /** Per-cell characters, `''` for an empty cell — always `kjLength` long. */
+  readonly chars: Signal<readonly string[]> = computed(() => {
+    const raw = this._chars();
+    return Array.from({ length: this.kjLength() }, (_, i) => raw[i] ?? '');
+  });
+
   readonly length: Signal<number> = computed(() => this.kjLength());
 
   readonly disabled: Signal<boolean> = computed(
@@ -143,11 +177,27 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
   // ── Lifecycle ────────────────────────────────────────────────────────────────
 
   constructor() {
+    // Size the char array once `kjLength` is bound. This ran in `ngOnInit`
+    // before; an effect reaches the same point in the lifecycle without a
+    // lifecycle hook, and re-seeds if the array is ever emptied.
+    effect(() => {
+      const len = this.kjLength();
+      if (untracked(() => this._chars()).length !== 0) return;
+      this._chars.set(Array(len).fill(''));
+    });
+
+    // Drop the cell registry when the directive dies.
+    inject(DestroyRef).onDestroy(() => this._cells.clear());
+
     // Reflect CVA value writes to internal char array (e.g. programmatic setValue).
     effect(() => {
       const incoming = this.formCtrl.value();
       if (incoming == null) return;
       const str = String(incoming);
+      // `notifyChange` echoes our own joined value back through the form
+      // control; re-splitting it would collapse empty cells and shift every
+      // character after a gap one cell to the left.
+      if (str === untracked(() => this.value())) return;
       const chars = str.split('').slice(0, this.kjLength());
       this._chars.set(chars);
     });
@@ -158,17 +208,6 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
       this.formCtrl.notifyChange(val);
       this._checkCompletion(val);
     });
-  }
-
-  ngOnInit(): void {
-    // Initialise the char array to the correct length on first render.
-    if (this._chars().length === 0) {
-      this._chars.set(Array(this.kjLength()).fill(''));
-    }
-  }
-
-  ngOnDestroy(): void {
-    this._cells.clear();
   }
 
   // ── KjInputOtpContext methods ────────────────────────────────────────────────
@@ -221,6 +260,21 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
     this._cells.set(index, el);
   }
 
+  /**
+   * Registers the live region that announces the `inputOtp.complete` catalog
+   * string ("Code complete" in English). Render it
+   * outside the cell group (visually hidden) so the announcement never
+   * touches the focused cells.
+   * @param region - Any object with a `KjLiveRegion`-compatible `announce`.
+   * @returns A callback that deregisters the region.
+   */
+  registerLiveRegion(region: Pick<KjLiveRegion, 'announce'>): () => void {
+    this.liveRegion = region;
+    return () => {
+      if (this.liveRegion === region) this.liveRegion = null;
+    };
+  }
+
   /** Deregister a cell element on destroy. */
   unregisterCell(index: number): void {
     this._cells.delete(index);
@@ -256,10 +310,12 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
   // ── Private helpers ──────────────────────────────────────────────────────────
 
   private _checkCompletion(val: string): void {
-    const complete = val.length >= this.kjLength() && !val.includes('');
+    // `value` joins the cell array, so empty cells add nothing: the length
+    // reaches `kjLength` only when every cell holds a character.
+    const complete = val.length === this.kjLength();
     if (complete && !this._wasComplete) {
       this._wasComplete = true;
-      this.liveRegion.announce('Code complete');
+      this.liveRegion?.announce(this.i18n.translate('inputOtp.complete'));
       // Always emit kjComplete so consumers can react regardless of
       // kjAutoSubmit. kjAutoSubmit is a UX hint for consumers, not a gate.
       this.kjComplete.emit(val);
@@ -316,7 +372,7 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
     '[attr.disabled]': 'ctx.disabled() ? "" : null',
     '[attr.readonly]': 'ctx.readonly() ? "" : null',
     '[attr.type]': 'ctx.masked() ? "password" : "text"',
-    '[value]': 'ctx.value()[kjIndex()] ?? ""',
+    '[value]': 'ctx.chars()[kjIndex()] ?? ""',
     '(input)': 'onInput($event)',
     '(keydown)': 'onKeydown($event)',
     '(paste)': 'ctx.handlePaste($event, kjIndex())',
@@ -325,19 +381,17 @@ export class KjInputOtp implements KjInputOtpContext, OnInit, OnDestroy {
     '(blur)': 'onBlur()',
   },
 })
-export class KjInputOtpCell implements OnInit, OnDestroy {
+export class KjInputOtpCell {
   /** The context provided by the parent `KjInputOtp`. */
-  readonly ctx = inject(KJ_INPUT_OTP);
+  readonly ctx = injectParent(KJ_INPUT_OTP, { child: 'KjInputOtpCell', parent: '[kjInputOtp]' });
 
   /** Zero-based index of this cell within the OTP group. Required. */
   readonly kjIndex = input.required<number>();
 
   /** Whether this cell is the roving tab stop. */
   protected readonly isTabStop = computed(() => {
-    const chars = this.ctx.value();
-    const len = this.ctx.length();
     // Tab stop is the first empty cell, or cell 0 when all are filled.
-    const firstEmpty = Array.from({ length: len }, (_, i) => chars[i] ?? '').findIndex(c => !c);
+    const firstEmpty = this.ctx.chars().findIndex(c => !c);
     const tabStopIndex = firstEmpty === -1 ? 0 : firstEmpty;
     return this.kjIndex() === tabStopIndex;
   });
@@ -358,12 +412,16 @@ export class KjInputOtpCell implements OnInit, OnDestroy {
 
   private readonly _elRef = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
-  ngOnInit(): void {
-    this.ctx.registerCell(this.kjIndex(), this._elRef.nativeElement);
-  }
-
-  ngOnDestroy(): void {
-    this.ctx.unregisterCell(this.kjIndex());
+  constructor() {
+    // Register with the parent once `kjIndex` is bound (it is required, so it
+    // cannot be read in the constructor body), re-register if the cell moves,
+    // and release the slot on cleanup — which also covers destruction, so no
+    // `ngOnInit` / `ngOnDestroy` pair is needed.
+    effect((onCleanup) => {
+      const index = this.kjIndex();
+      this.ctx.registerCell(index, this._elRef.nativeElement);
+      onCleanup(() => this.ctx.unregisterCell(index));
+    });
   }
 
   // ── Event handlers ───────────────────────────────────────────────────────────
@@ -386,7 +444,7 @@ export class KjInputOtpCell implements OnInit, OnDestroy {
 
     if (filtered === '' && raw !== '') {
       // Character rejected — restore original value.
-      target.value = this.ctx.value()[this.kjIndex()] ?? '';
+      target.value = this.ctx.chars()[this.kjIndex()] ?? '';
       return;
     }
 
@@ -404,7 +462,7 @@ export class KjInputOtpCell implements OnInit, OnDestroy {
 
     if (key === 'Backspace') {
       event.preventDefault();
-      const currentChar = this.ctx.value()[this.kjIndex()] ?? '';
+      const currentChar = this.ctx.chars()[this.kjIndex()] ?? '';
       if (currentChar !== '') {
         // Filled cell: clear it and move focus back.
         this.ctx.setCellValue(this.kjIndex(), '');

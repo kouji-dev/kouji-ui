@@ -1,6 +1,7 @@
-import { Directive, inject } from '@angular/core';
+import { Directive } from '@angular/core';
 import { KjLink } from '../link/link';
 import { KJ_BREADCRUMB } from './breadcrumb.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Per-crumb anchor. Composes `KjLink` via `hostDirectives` so the per-crumb
@@ -40,5 +41,5 @@ import { KJ_BREADCRUMB } from './breadcrumb.context';
 })
 export class KjBreadcrumbLink {
   /** @internal */
-  readonly ctx = inject(KJ_BREADCRUMB);
+  readonly ctx = injectParent(KJ_BREADCRUMB, { child: 'KjBreadcrumbLink', parent: '[kjBreadcrumb]' });
 }

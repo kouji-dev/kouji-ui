@@ -17,41 +17,41 @@ import { KjButton } from '../../button/button';
         align-items: flex-start;
         justify-content: center;
         padding: 3rem 2rem 10rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 220px;
       }
       button[kjButton] {
         padding: 0.5rem 1.25rem;
-        border: 1px solid var(--kj-border);
+        border: 1px solid var(--docs-border);
         background: transparent;
-        color: var(--kj-text);
+        color: var(--docs-text);
         cursor: pointer;
         font-family: inherit;
         font-size: 0.875rem;
       }
       button[kjButton]:hover {
-        border-color: var(--kj-accent);
-        color: var(--kj-accent);
+        border-color: var(--docs-accent);
+        color: var(--docs-accent);
       }
       kj-popover-content {
         display: block;
         z-index: 20;
-        background: var(--kj-surface);
-        border: 1px solid var(--kj-border);
+        background: var(--docs-surface);
+        border: 1px solid var(--docs-border);
         padding: 1rem;
         min-width: 14rem;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .popover-title {
         font-size: 0.875rem;
         font-weight: 600;
         margin: 0 0 0.5rem;
-        color: var(--kj-accent);
+        color: var(--docs-accent);
       }
       .popover-body {
         font-size: 0.8125rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
         margin: 0 0 1rem;
         line-height: 1.5;
       }
@@ -65,14 +65,14 @@ import { KjButton } from '../../button/button';
         font-size: 0.8125rem;
       }
       [data-variant='default'] {
-        border-color: var(--kj-accent);
-        color: var(--kj-accent-on);
-        background: var(--kj-accent);
+        border-color: var(--docs-accent);
+        color: var(--docs-accent-on);
+        background: var(--docs-accent);
       }
       [data-variant='ghost'] {
         border-color: transparent;
         background: transparent;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
       }
     `,
   ],

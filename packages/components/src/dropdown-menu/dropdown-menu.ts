@@ -1,3 +1,18 @@
+/* CSS DELIVERY — no `styleUrl` in this file, on purpose.
+ *
+ * `dropdown-menu.css` reaches the document exactly once, through
+ * `src/overlay/overlay.css`, which every consumer registers (see that
+ * file's header and the Getting Started page). It has to be a registered
+ * global sheet because the panels are rendered by HEADLESS `@kouji-ui/core`
+ * directives, which carry no styles and are usable with no wrapper
+ * component on the page at all.
+ *
+ * These components used to `styleUrl` the same file as well. Under
+ * `ViewEncapsulation.None` that adds nothing to the cascade — same rules,
+ * same layer — it just ships the bytes a second time inside the component
+ * chunk (styles F-21 / lazy F-5). `overlay-styles.spec.ts` fails if a
+ * `styleUrl` comes back.
+ */
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import {
   KjDropdownMenuTrigger,
@@ -120,7 +135,6 @@ export {
     KjDropdownMenuGroup,
   ],
   template: `<ng-content />`,
-  styleUrl: './dropdown-menu.css',
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,

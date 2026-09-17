@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDialog as KjDialogService } from '../dialog.service';
+import { KjDialogService } from '../dialog.service';
 import { KjDialogRef } from '../dialog.ref';
 
 @Component({
@@ -11,13 +11,13 @@ import { KjDialogRef } from '../dialog.ref';
     `
       :host {
         display: block;
-        background: var(--kj-surface);
-        border: var(--kj-btn-border);
+        background: var(--docs-surface);
+        border: var(--docs-btn-border);
         padding: 1.5rem;
         min-width: 20rem;
-        box-shadow: var(--kj-shadow-hard);
-        font-family: var(--kj-font);
-        color: var(--kj-text);
+        box-shadow: var(--docs-shadow-hard);
+        font-family: var(--docs-font);
+        color: var(--docs-text);
       }
       h2 {
         margin: 0 0 0.5rem;
@@ -25,14 +25,14 @@ import { KjDialogRef } from '../dialog.ref';
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        border-bottom: 2px solid var(--kj-border);
+        border-bottom: 2px solid var(--docs-border);
         padding-bottom: 0.5rem;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .dialog-body {
         margin: 0.75rem 0 1.5rem;
         font-size: 0.8rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
         line-height: 1.6;
       }
       .dialog-actions {
@@ -42,25 +42,25 @@ import { KjDialogRef } from '../dialog.ref';
       }
       button {
         padding: 0.3rem 0.875rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        background: var(--kj-surface);
-        color: var(--kj-text);
-        border: var(--kj-btn-border);
+        background: var(--docs-surface);
+        color: var(--docs-text);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        box-shadow: var(--kj-shadow-sm);
-        transition: var(--kj-transition);
+        box-shadow: var(--docs-shadow-sm);
+        transition: var(--docs-transition);
       }
       button:hover {
         transform: translate(-1px, -1px);
-        box-shadow: var(--kj-shadow-md);
+        box-shadow: var(--docs-shadow-md);
       }
       .btn-primary {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
       }
     `,
   ],
@@ -90,28 +90,28 @@ export class DialogRetroContent {
         align-items: center;
         justify-content: center;
         padding: 3rem 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 160px;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       button {
         padding: 0.4rem 1rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.8rem;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        background: var(--kj-surface);
-        color: var(--kj-text);
-        border: var(--kj-btn-border);
+        background: var(--docs-surface);
+        color: var(--docs-text);
+        border: var(--docs-btn-border);
         cursor: pointer;
-        box-shadow: var(--kj-shadow-sm);
-        transition: var(--kj-transition);
+        box-shadow: var(--docs-shadow-sm);
+        transition: var(--docs-transition);
       }
       button:hover {
         transform: translate(-1px, -1px);
-        box-shadow: var(--kj-shadow-md);
+        box-shadow: var(--docs-shadow-md);
       }
     `,
   ],

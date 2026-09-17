@@ -21,7 +21,7 @@
     --kj-checkbox-bg:          var(--kj-bg-body);
     --kj-checkbox-bg-checked:  var(--kj-bg-primary);
     --kj-checkbox-fg-checked:  var(--kj-fg-on-primary);
-    --kj-checkbox-border:      var(--kj-border-default);
+    --kj-checkbox-border:      var(--kj-border-control);
     --kj-checkbox-radius:      var(--kj-radius-selector);
 
     display: inline-flex;

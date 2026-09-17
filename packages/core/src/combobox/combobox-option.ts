@@ -23,6 +23,11 @@ import { KjCombobox } from './combobox-root';
         'kjItemValue:kjOptionValue',
         'kjItemLabel:kjOptionLabel',
         'kjItemKeywords:kjOptionKeywords',
+        // Forwarded under its own name so a data-driven option list can mark
+        // a row disabled without also having to set the native `disabled`
+        // attribute — `KjListItem` is what carries `aria-disabled` and what
+        // the navigator skips.
+        'kjDisabled',
       ],
     },
   ],

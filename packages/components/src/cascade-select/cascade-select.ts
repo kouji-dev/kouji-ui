@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  booleanAttribute,
   computed,
   forwardRef,
   inject,
@@ -13,7 +14,7 @@ import {
   KjCascadeSelectPanel,
   KjCascadeSelectSubPanel,
   KjCascadeSelectTrigger,
-  KjIconDirective,
+  KjIcon,
 } from '@kouji-ui/core';
 
 /**
@@ -45,20 +46,23 @@ import {
  *   @doc-file cascade-select.disabled.example.ts
  *
  * @doc-keyboard
- *   Enter|Space    — Opens the panel from the trigger; activates the focused option
+ *   Enter|Space    — Opens the panel from the trigger; on a branch opens its sub-panel, on a leaf commits the value
+ *   ArrowDown|ArrowUp|Alt+ArrowDown — Opens the panel from the trigger; focus lands on the option on the selected path (else the first)
  *   ArrowDown      — Moves focus to the next option in the current panel
  *   ArrowUp        — Moves focus to the previous option in the current panel
- *   ArrowRight     — Opens a branch option's sub-panel
+ *   ArrowRight     — Opens a branch option's sub-panel and moves focus onto its first option
  *   ArrowLeft      — Closes the current sub-panel and returns focus to its owner
  *   Home|End       — Jumps to the first / last option in the current panel
  *   Escape         — Closes all panels and returns focus to the trigger
+ *   Tab            — Closes all panels, returns focus to the trigger and moves on to the next focusable element
  *
  * @doc-aria
- *   role                 — `combobox` on the trigger; each panel is `listbox`; options are `option`
- *   aria-haspopup        — `"listbox"` on the trigger
- *   aria-expanded        — Reflected on the trigger; flips with the panel open state
+ *   role                 — `tree` on the root panel, `group` on each sub-panel, `treeitem` on every option
+ *   aria-haspopup        — `"tree"` on the trigger
+ *   aria-expanded        — Reflected on the trigger and on branch options; flips with the panel open state
  *   aria-controls        — Trigger references the root panel id
- *   aria-activedescendant — Trigger references the currently-focused option id
+ *   aria-labelledby      — Each sub-panel names its owning branch option
+ *   tabindex             — roving: the focused option is the active one ("0"), every other option is "-1"
  *   aria-disabled        — Reflected on disabled options
  *
  * @doc-touch
@@ -128,8 +132,8 @@ export class KjCascadeSelectComponent {
   /** Placeholder shown when no value is selected. */
   readonly placeholder = input<string>('Select…');
 
-  /** Whether the trigger is disabled. */
-  readonly disabled = input(false);
+  /** Whether the trigger is disabled. Default `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
 
   /** @internal — read the composed root directive's value for the label. */
   private readonly cascade = inject(KjCascadeSelect);
@@ -159,9 +163,9 @@ export class KjCascadeSelectComponent {
   // 21 NG2017 forbids that for alias-exposed inputs). The `useExisting`
   // provider routes `inject(KjCascadeSelectOption)` from projected
   // sub-panels to this same instance.
-  imports: [KjIconDirective],
+  imports: [KjIcon],
   providers: [
-    { provide: KjCascadeSelectOption, useExisting: forwardRef(() => KjCascadeOptionComponent) },
+    { provide: KjCascadeSelectOption, useExisting: forwardRef(() => KjCascadeOption) },
   ],
   template: `
     <span class="kj-cascade-option-label">{{ item.label() }}</span>
@@ -174,7 +178,7 @@ export class KjCascadeSelectComponent {
   host: { 'class': 'kj-cascade-option' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCascadeOptionComponent extends KjCascadeSelectOption {}
+export class KjCascadeOption extends KjCascadeSelectOption {}
 
 /**
  * Sub-panel container for child options of a `<kj-cascade-option>`.
@@ -198,4 +202,4 @@ export class KjCascadeOptionComponent extends KjCascadeSelectOption {}
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjCascadeSubPanelComponent {}
+export class KjCascadeSubPanel {}

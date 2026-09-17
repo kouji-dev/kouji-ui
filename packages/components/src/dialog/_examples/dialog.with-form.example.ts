@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDialog, KjDialogService, KjDialogRef } from '@kouji-ui/core';
+import { KjDialog, KjDialogService, KjDialogRef, KjDialogTitle } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 import { KjInputComponent } from '../../input/input';
 import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
@@ -7,11 +7,11 @@ import { KjFieldComponent, KjFieldLabelComponent } from '../../field/field';
 @Component({
   selector: 'kj-dialog-form-body',
   standalone: true,
-  imports: [KjDialog, KjButtonComponent, KjInputComponent, KjFieldComponent, KjFieldLabelComponent],
+  imports: [KjDialog, KjDialogTitle, KjButtonComponent, KjInputComponent, KjFieldComponent, KjFieldLabelComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-dialog>
-      <h2 style="margin: 0 0 var(--kj-space-md);">Edit profile</h2>
+      <h2 kjDialogTitle style="margin: 0 0 var(--kj-space-md);">Edit profile</h2>
       <kj-field>
         <kj-field-label>Display name</kj-field-label>
         <kj-input placeholder="Jane Doe" />

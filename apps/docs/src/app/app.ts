@@ -1,29 +1,34 @@
-import {
-  ApplicationRef,
-  Component,
-  DestroyRef,
-  OnInit,
-  PLATFORM_ID,
-  inject,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
-import { filter, first } from 'rxjs/operators';
 import { LoadingScreenComponent } from './components/loading-screen/loading-screen';
 import { LoadingService } from './services/loading.service';
 import { SearchComponent } from './components/search/search.component';
 import { ThemeService } from './services/theme.service';
 import { ProgressBarComponent } from './components/progress-bar/progress-bar';
 
+/**
+ * Root shell.
+ *
+ * The splash is deliberately **not** part of the prerendered output. Every
+ * route is prerendered (`outputMode: "static"`), so the real content is in the
+ * HTML from the first byte; rendering `<kj-loading-screen>` server-side —
+ * `position: fixed; inset: 0; z-index: 9999` — plus `visibility: hidden` on
+ * the shell would occlude it until hydration finished, and would occlude it
+ * *forever* on a client whose JS never runs. The `@defer (when isBrowser)`
+ * block keeps the splash available for client-side transitions
+ * (`LoadingService.show()`) while leaving the server render untouched, and
+ * keeps its chunk out of the initial bundle.
+ */
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, LoadingScreenComponent, SearchComponent, ProgressBarComponent],
   template: `
-    @if (loading.isLoading()) {
-      <kj-loading-screen />
+    @defer (when isBrowser) {
+      @if (loading.isLoading()) {
+        <kj-loading-screen />
+      }
     }
     <div class="app-shell" [class.content-hidden]="loading.isLoading()">
       <router-outlet />
@@ -56,7 +61,7 @@ import { ProgressBarComponent } from './components/progress-bar/progress-bar';
     `,
   ],
 })
-export class App implements OnInit {
+export class App {
   protected readonly loading = inject(LoadingService);
   protected readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -65,20 +70,4 @@ export class App implements OnInit {
   // never sets data-theme on <html>, leaving every --kj-color-* unresolved
   // until the user visits a route that mounts the sidebar.
   private readonly themeService = inject(ThemeService);
-  private readonly appRef = inject(ApplicationRef);
-  private readonly destroyRef = inject(DestroyRef);
-
-  ngOnInit(): void {
-    if (!this.isBrowser) return;
-    // Hide the splash once Angular reports the app is stable — i.e. hydration
-    // is done and there are no pending async tasks. Replaces the prior fixed
-    // 1600ms timer that kept the splash up regardless of actual readiness.
-    this.appRef.isStable
-      .pipe(
-        filter((stable) => stable),
-        first(),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => this.loading.hide());
-  }
 }

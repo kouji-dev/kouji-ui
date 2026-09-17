@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjConfirmPopupActionComponent,
-  KjConfirmPopupActionsComponent,
+  KjConfirmPopupActions,
   KjConfirmPopupCancelComponent,
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
@@ -25,7 +25,7 @@ import { KjButtonComponent } from '../../button/button';
     KjConfirmPopupMessageComponent,
     KjConfirmPopupActionComponent,
     KjConfirmPopupCancelComponent,
-    KjConfirmPopupActionsComponent,
+    KjConfirmPopupActions,
     KjButtonComponent,
   ],
   styles: [

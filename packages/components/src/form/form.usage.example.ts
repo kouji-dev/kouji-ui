@@ -4,9 +4,9 @@ import { KjButtonComponent } from '../button/button';
 import { KjFieldComponent, KjFieldLabelComponent } from '../field/field';
 import { KjInputComponent } from '../input/input';
 import {
-  KjFormActionsComponent,
+  KjFormActions,
   KjFormComponent,
-  KjFormSummaryComponent,
+  KjFormSummary,
 } from './form';
 
 /**
@@ -19,8 +19,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     KjFormComponent,
-    KjFormActionsComponent,
-    KjFormSummaryComponent,
+    KjFormActions,
+    KjFormSummary,
     KjFieldComponent,
     KjFieldLabelComponent,
     KjInputComponent,

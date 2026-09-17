@@ -7,6 +7,7 @@ import {
 import {
   Directive,
   ElementRef,
+  type Signal,
   booleanAttribute,
   computed,
   effect,
@@ -17,6 +18,7 @@ import {
 } from '@angular/core';
 
 import { KjInput } from '../input/input';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import { compileMask } from './input-mask.compile';
 import { MaskEngine } from './input-mask.engine';
 import { KJ_INPUT_MASK_TOKENS } from './input-mask.tokens';
@@ -52,10 +54,13 @@ import { KJ_INPUT_MASK_TOKENS } from './input-mask.tokens';
   standalone: true,
   exportAs: 'kjInputMask',
   hostDirectives: [
-    // KjInput already composes KjDisabled internally — do NOT add KjDisabled
-    // here or it will match twice on the same element (NG0309).
-    // kjDisabled is forwarded via our own input below and bound via the
-    // KjDisabled instance injected from the host directive chain.
+    // `kjDisabled` is NOT listed here and must not be: `KjInput` composes
+    // `KjDisabled` and exposes `kjDisabled` itself, and that exposure is
+    // transitive (Angular registers a nested host directive with its own
+    // composer's `inputs` map, then merges identical maps), so `[kjDisabled]`
+    // already binds on this element and writes `aria-disabled` / `data-disabled`.
+    // The mirror below re-reads that one instance rather than adding a second
+    // owner for the same public name. See `input-mask.spec.ts`, 'arch F-2/F-16'.
     { directive: KjInput, inputs: ['kjInvalid'] },
   ],
   providers: [
@@ -105,11 +110,18 @@ export class KjInputMask implements Validator {
   readonly kjSlotChar = input<string>('_');
 
   /**
-   * Forwarded to the inherited `KjDisabled` directive. Setting this disables
-   * the input via `aria-disabled` / `data-disabled`.
-   * @default false
+   * Whether the input is disabled. Default `false`. Owned by the `KjDisabled`
+   * instance the composed `KjInput` brings to this element — it reflects
+   * `aria-disabled` / `data-disabled` and applies `booleanAttribute`, so the
+   * bare `kjDisabled` attribute works.
+   *
+   * arch F-16: this used to be a second `input()` with the same public name.
+   * Angular exposes a host directive's inputs transitively, so the binding
+   * already reached `KjDisabled`; the local copy was a second owner that read
+   * the same value and did nothing with it. Bind `[kjDisabled]` on the host;
+   * this signal is the read-only mirror.
    */
-  readonly kjDisabled = input(false, { transform: booleanAttribute });
+  readonly kjDisabled: Signal<boolean> = inject(KjDisabled).disabled;
 
   /**
    * When `true`, the field value is cleared on blur if the mask is incomplete.

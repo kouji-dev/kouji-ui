@@ -1,4 +1,5 @@
 import { InjectionToken, Provider } from '@angular/core';
+import { type KjDeepPartial, mergeKjConfig } from '../presets/merge-config';
 
 /** Shape of the bubble's preset configuration. */
 export interface KjChatBubbleConfig {
@@ -37,17 +38,20 @@ export const KJ_CHAT_BUBBLE_CONFIG = new InjectionToken<KjChatBubbleConfig>(
 );
 
 /**
- * Configures the Chat-Bubble presets for the enclosing injector. Replaces
- * (does not merge) `variants` and `sizes`; spread `KJ_CHAT_BUBBLE_DEFAULTS.variants`
- * to extend.
+ * Configures the Chat-Bubble presets for the enclosing injector.
+ *
+ * Deep-merges over {@link KJ_CHAT_BUBBLE_DEFAULTS} through {@link mergeKjConfig}: pass only the
+ * fields you want to change, at any depth — `provideKjChatBubble({ defaults: { variant: '…' } })`
+ * keeps every other shipped default. Arrays still **replace**, so spread
+ * `KJ_CHAT_BUBBLE_DEFAULTS.variants` to extend rather than swap the list.
  */
 export function provideKjChatBubble(
-  config: Partial<KjChatBubbleConfig>,
+  config: KjDeepPartial<KjChatBubbleConfig>,
 ): Provider[] {
   return [
     {
       provide: KJ_CHAT_BUBBLE_CONFIG,
-      useValue: { ...KJ_CHAT_BUBBLE_DEFAULTS, ...config },
+      useValue: mergeKjConfig(KJ_CHAT_BUBBLE_DEFAULTS, config),
     },
   ];
 }

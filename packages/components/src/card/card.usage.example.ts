@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { KjButtonComponent } from '../button/button';
 import {
-  KjCardComponent,
-  KjCardContentComponent,
-  KjCardFooterComponent,
-  KjCardHeaderComponent,
-  KjCardSubtitleComponent,
-  KjCardTitleComponent,
+  KjCard,
+  KjCardContent,
+  KjCardFooter,
+  KjCardHeader,
+  KjCardSubtitle,
+  KjCardTitle,
 } from './card';
 
 /**
@@ -18,12 +18,12 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    KjCardComponent,
-    KjCardHeaderComponent,
-    KjCardTitleComponent,
-    KjCardSubtitleComponent,
-    KjCardContentComponent,
-    KjCardFooterComponent,
+    KjCard,
+    KjCardHeader,
+    KjCardTitle,
+    KjCardSubtitle,
+    KjCardContent,
+    KjCardFooter,
     KjButtonComponent,
   ],
   styles: [`:host { display: block; max-width: 32rem; }`],

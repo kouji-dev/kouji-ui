@@ -2,12 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
   ViewEncapsulation,
   computed,
+  forwardRef,
   inject,
+  input,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
+import { KJ_OVERLAY_TITLE_HOST, overlayAccessibleName, type KjOverlayTitleHost } from '../dialog/dialog-title';
 import {
   SHEET_ARIA_LABEL,
   SHEET_DETENT,
@@ -15,6 +17,7 @@ import {
   type KjSheetDetent,
 } from './sheet.service';
 import { KjSheetRef } from './sheet.ref';
+import { KjTranslateService } from '../i18n/translate.service';
 
 /** Downward drag fraction past which release dismisses. */
 const DEFAULT_DISMISS_THRESHOLD = 0.4;
@@ -24,7 +27,10 @@ const DEFAULT_DISMISS_VELOCITY = 600;
 /**
  * Bottom-sheet body component. Composes {@link KjOverlayPanel} so the host
  * inherits `role="dialog"`, `aria-modal`, `[data-state]`, and the bottom
- * edge-sheet position from `KjSheetService.open()`.
+ * edge-sheet position from `KjSheetService.open()`, and names itself: a
+ * projected `[kjSheetTitle]` becomes `aria-labelledby`, else the
+ * `ariaLabelledBy` / `ariaLabel` passed to `open()` (or the
+ * `kjAriaLabelledBy` / `kjAriaLabel` inputs) apply.
  *
  * Renders a grab handle (a real `<button>` for keyboard/click dismissal) and
  * hosts drag-to-dismiss: a downward pointer drag past 40% of the panel height
@@ -37,16 +43,19 @@ const DEFAULT_DISMISS_VELOCITY = 600;
   selector: 'kj-sheet',
   standalone: true,
   hostDirectives: [{ directive: KjOverlayPanel }],
+  providers: [{ provide: KJ_OVERLAY_TITLE_HOST, useExisting: forwardRef(() => KjSheet) }],
   host: {
     'class': 'kj-sheet',
     '[attr.data-kj-detent]': 'detent',
-    '[attr.aria-label]': 'ariaLabel',
+    '[attr.aria-labelledby]': 'name.ariaLabelledBy()',
+    '[attr.aria-label]': 'name.ariaLabel()',
     '[attr.data-kj-dragging]': 'dragging() ? "" : null',
     '[style.touch-action]': 'dragging() ? "none" : null',
     '(pointerdown)': 'onPointerDown($event)',
     '(pointermove)': 'onPointerMove($event)',
     '(pointerup)': 'onPointerUp($event)',
     '(pointercancel)': 'onPointerCancel($event)',
+    '(keydown.escape)': 'onEscape()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -55,7 +64,7 @@ const DEFAULT_DISMISS_VELOCITY = 600;
       <button
         type="button"
         class="kj-sheet__handle"
-        aria-label="Close sheet"
+        [attr.aria-label]="closeLabel()"
         (click)="close()"
       >
         <span class="kj-sheet__grip" aria-hidden="true"></span>
@@ -64,13 +73,36 @@ const DEFAULT_DISMISS_VELOCITY = 600;
     <div class="kj-sheet__content"><ng-content /></div>
   `,
 })
-export class KjSheet {
+export class KjSheet implements KjOverlayTitleHost {
+  /**
+   * Accessible name of the drag handle, from the i18n catalog
+   * (`sheet.close`) — cust F-7: no assistive string is baked into this
+   * template.
+   */
+  protected readonly closeLabel = inject(KjTranslateService).translation('sheet.close');
+
   /** Resolved initial detent (provided by `KjSheetService.open`). */
   readonly detent = inject<KjSheetDetent>(SHEET_DETENT, { optional: true }) ?? 'auto';
   /** Whether grab-handle + drag-to-dismiss is active. */
   readonly dismissible = inject<boolean>(SHEET_DISMISSIBLE, { optional: true }) ?? true;
   /** Fallback accessible name applied to the host when no heading is projected. */
   readonly ariaLabel = inject<string | null>(SHEET_ARIA_LABEL, { optional: true }) ?? null;
+  /** Accessible name when no `[kjSheetTitle]` is projected (declarative form of the `ariaLabel` option). */
+  readonly kjAriaLabel = input<string | undefined>(undefined);
+  /** Id of the element naming the sheet; wins over any title or label. */
+  readonly kjAriaLabelledBy = input<string | undefined>(undefined);
+
+  /** @internal */
+  readonly name = overlayAccessibleName({
+    label: this.kjAriaLabel,
+    labelledBy: this.kjAriaLabelledBy,
+    fallbackLabel: this.ariaLabel,
+  });
+
+  /** @internal Adopts a `[kjSheetTitle]` id for `aria-labelledby`. */
+  registerTitle(id: string): () => void {
+    return this.name.registerTitle(id);
+  }
 
   private readonly ref = inject<KjSheetRef<unknown>>(KjSheetRef, { optional: true });
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -137,7 +169,6 @@ export class KjSheet {
   }
 
   /** Esc closes via the overlay-stack coordinator on the controller. */
-  @HostListener('keydown.escape')
   onEscape(): void {
     this.ref?.close();
   }

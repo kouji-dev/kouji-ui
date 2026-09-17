@@ -3,10 +3,13 @@ import {
   afterNextRender, booleanAttribute, computed, inject, input, signal,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
+import { KjResizeObserver } from '../primitives/interaction';
+import { tabbableElements } from '../a11y/focus-trap';
 import { KjToastService, KjToastTemplateContext, KjToastVariant } from './toast.service';
 import { KJ_TOAST_STRATEGY } from './toast.strategy';
 import { KjToastPositionX, KjToastPositionY } from './toast.types';
 import { KjTranslateService } from '../i18n/index';
+import { DOCUMENT } from '@angular/common';
 
 export type { KjToastVariant, KjToastContext, KjToastOptions } from './toast.service';
 export type { KjToastPositionX, KjToastPositionY } from './toast.types';
@@ -72,6 +75,8 @@ export class KjToast {
   private readonly svc = inject(KjToastService);
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
+  /** Shared root `ResizeObserver` — one instance for the whole toast queue. */
+  private readonly resizes = inject(KjResizeObserver);
   private readonly _height = signal<number>(0);
 
   readonly role = computed(() =>
@@ -114,13 +119,11 @@ export class KjToast {
       const node = this.el.nativeElement;
       const measure = () => this._height.set(Math.round(node.getBoundingClientRect().height));
       measure();
-      // Use border-box geometry via getBoundingClientRect — contentRect strips padding.
-      // Guard ResizeObserver for SSR / older test environments.
-      if (typeof ResizeObserver !== 'undefined') {
-        const ro = new ResizeObserver(measure);
-        ro.observe(node);
-        this.destroyRef.onDestroy(() => ro.disconnect());
-      }
+      // Use border-box geometry via getBoundingClientRect — contentRect strips
+      // padding. The observation rides the shared root `ResizeObserver`, so a
+      // queue of toasts costs one observer instead of one per toast (and it is
+      // a no-op where ResizeObserver is unavailable: SSR, older test envs).
+      this.destroyRef.onDestroy(this.resizes.observe(node, measure));
     });
   }
 }
@@ -138,6 +141,12 @@ export interface KjToastRenderable<TData = unknown> {
  * inputs-driven CSS variables and `data-position-x` / `data-position-y`
  * attributes so client CSS can drive position, gap, stacking strategy, and
  * z-index.
+ *
+ * The viewport is a `role="region"` landmark (give it an `aria-label`, e.g.
+ * "Notifications", so F6 users can find it) and deliberately **not** a live
+ * region: each `[kjToast]` inside it is its own `status` / `alert` live
+ * region, and nesting live regions makes screen readers announce every
+ * toast twice.
  *
  * **CSS variables exposed on the host:**
  * - `--kj-toast-gap` — gap between stacked toasts
@@ -174,9 +183,6 @@ export interface KjToastRenderable<TData = unknown> {
   host: {
     'role': 'region',
     'tabindex': '-1',
-    '[attr.aria-live]': '"polite"',
-    '[attr.aria-atomic]': '"false"',
-    '[attr.aria-relevant]': '"additions removals"',
     '[attr.data-position-x]': 'kjToastPositionX()',
     '[attr.data-position-y]': 'kjToastPositionY()',
     '[attr.data-expanded]': 'expanded()',
@@ -192,6 +198,7 @@ export interface KjToastRenderable<TData = unknown> {
 })
 export class KjToastViewport {
   private readonly svc = inject(KjToastService);
+  private readonly document = inject(DOCUMENT);
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
   private readonly strategy = inject(KJ_TOAST_STRATEGY);
@@ -219,7 +226,12 @@ export class KjToastViewport {
    * strategy has `expandOnHover: true`, the viewport flips automatically on hover/focus.
    * Set explicitly to force one state or to drive expansion from custom logic.
    */
-  readonly kjToastExpand = input<boolean | undefined>(undefined);
+  readonly kjToastExpand = input<boolean | undefined, unknown>(undefined, {
+    // Tri-state: `undefined` means "follow the strategy". A bare attribute has
+    // to read as `true` (arch F-2) without collapsing the unset case, so the
+    // transform only runs on a value Angular actually wrote.
+    transform: (value) => (value === undefined ? undefined : booleanAttribute(value)),
+  });
 
   /**
    * When `true` (default), hover/focus on the viewport pauses every in-flight
@@ -303,9 +315,7 @@ export class KjToastViewport {
     const fronts = root.querySelectorAll('[kjToast][data-front="true"]');
     const front = fronts.length > 0 ? (fronts[fronts.length - 1] as HTMLElement) : null;
     if (!front) return;
-    const focusable = front.querySelector(
-      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ) as HTMLElement | null;
+    const focusable = tabbableElements(front)[0] ?? null;
     (focusable ?? front).focus();
   }
 
@@ -354,7 +364,7 @@ export class KjToastViewport {
     // inside → out) and Escape (dismiss focused toast + restore focus) so
     // there is exactly one source of truth — host listeners would race the
     // document listener over the same event.
-    const doc = (typeof document !== 'undefined' ? document : null);
+    const doc = this.document;
     if (doc) {
       const onDocKeydown = (event: KeyboardEvent) => {
         if (event.key !== 'F6' && event.key !== 'Escape') return;

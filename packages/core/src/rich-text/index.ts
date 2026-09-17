@@ -7,11 +7,10 @@ export {
   type KjActiveOverlay,
   type KjRteToolbarGroup,
 } from './rich-text-editor';
-export { KjRichTextExtensionDirective } from './rich-text-extension';
+export { KjRichTextFeatureDirective } from './rich-text-feature';
 export {
   KJ_RICH_TEXT,
   KJ_RICH_TEXT_FEATURES,
-  KJ_RICH_TEXT_EXTENSIONS,
   KJ_RICH_TEXT_NODE,
   KJ_RTE_OVERLAY_DATA,
   provideKjRichText,
@@ -41,5 +40,3 @@ export type {
   KjRichTextValue,
   KjImageInsert,
 } from './rich-text-editor.types';
-// Deprecated aliases (renamed to KjRichTextFeature).
-export type { KjRichTextExtension, KjRichTextPlugin } from './rich-text-plugin';

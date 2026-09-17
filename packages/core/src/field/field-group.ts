@@ -1,5 +1,6 @@
-import { Directive, inject } from '@angular/core';
+import { Directive } from '@angular/core';
 import { KJ_FIELD } from './field.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Compound input layout inside a `[kjField]`. Wraps an input together
@@ -35,5 +36,5 @@ import { KJ_FIELD } from './field.context';
   },
 })
 export class KjFieldGroup {
-  /** @internal */ readonly ctx = inject(KJ_FIELD);
+  /** @internal */ readonly ctx = injectParent(KJ_FIELD, { child: 'KjFieldGroup', parent: '[kjField]' });
 }

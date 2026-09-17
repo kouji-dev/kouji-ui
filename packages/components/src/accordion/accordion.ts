@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
+  booleanAttribute,
+  input,
+} from '@angular/core';
 import { KjAccordion, KjAccordionItem, KjAccordionTrigger, KjAccordionContent } from '@kouji-ui/core';
 
 /**
@@ -101,7 +107,8 @@ export class KjAccordionComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAccordionTriggerComponent {
-  readonly disabled = input(false);
+  /** Disables the trigger button. Default `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
 }
 
 /**
@@ -132,12 +139,19 @@ export class KjAccordionTriggerComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjAccordionItemComponent {
+  /** Trigger text. When set, the item renders its own trigger. Default `undefined`. */
   readonly label = input<string | undefined>(undefined);
-  readonly disabled = input(false);
+  /** Disables the item (forwarded to the composed `KjAccordionItem`). Default `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
 }
 
 /**
  * Body shown when the parent item is expanded.
+ *
+ * The projected content sits in an inner wrapper (`.kj-accordion-content__inner`)
+ * that is the single item of a one-row grid on the panel; the open/close
+ * transition tweens that row between `0fr` and `1fr`, so an open panel grows to
+ * its real content height instead of stopping at a fixed ceiling.
  * @doc
  * @doc-name accordion
  */
@@ -145,7 +159,7 @@ export class KjAccordionItemComponent {
   selector: 'kj-accordion-content',
   standalone: true,
   imports: [KjAccordionContent],
-  template: `<div kjAccordionContent class="kj-accordion-content"><ng-content /></div>`,
+  template: `<div kjAccordionContent class="kj-accordion-content"><div class="kj-accordion-content__inner"><ng-content /></div></div>`,
   encapsulation: ViewEncapsulation.None,
   host: { style: 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,

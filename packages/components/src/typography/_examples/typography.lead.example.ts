@@ -5,7 +5,7 @@ import { KjLead } from '@kouji-ui/core';
  * Lead paragraph example using the `kjLead` directive.
  *
  * Marks the opening paragraph of a section with a slightly larger size and a
- * softer tone via `data-tone="lead"`. The directive keeps lead semantics
+ * softer tone via `data-kj-tone="lead"`. The directive keeps lead semantics
  * paragraph-bound and warns in dev mode when applied to a non-`<p>` host.
  */
 @Component({

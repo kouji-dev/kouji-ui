@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import { vi } from 'vitest';
 import { provideMonaco, type KjMonaco } from '@kouji-ui/core';
@@ -75,5 +76,91 @@ describe('KjEditorComponent', () => {
   it('exposes a copy button with an accessible label', async () => {
     await setup();
     expect(screen.getByRole('button', { name: 'Copy code' })).toBeInTheDocument();
+  });
+});
+
+// arch F-2 — every boolean on this wrapper was a plain `input<boolean>(…)`,
+// so `<kj-editor kjReadonly>` (the form the docs teach) bound '' and stayed
+// editable, and `kjShowToolbar="false"` bound the truthy string 'false'.
+describe('KjEditorComponent — bare boolean attributes (arch F-2)', () => {
+  it('a bare kjReadonly attribute reaches Monaco', async () => {
+    const fake = makeFakeMonaco();
+    @Component({
+      standalone: true,
+      imports: [KjEditorComponent],
+      template: `<kj-editor kjValue="x" kjReadonly kjMinimap />`,
+    })
+    class Host {}
+    await render(Host, {
+      providers: [provideMonaco({ loader: () => Promise.resolve(fake.monaco) })],
+    });
+    const create = fake.monaco.editor.create as unknown as ReturnType<typeof vi.fn>;
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    const opts = create.mock.calls[0][1] as { readOnly?: boolean; minimap?: { enabled: boolean } };
+    expect(opts.readOnly).toBe(true);
+    expect(opts.minimap).toEqual({ enabled: true });
+  });
+
+  it('kjShowToolbar="false" hides the toolbar, as booleanAttribute reads it', async () => {
+    const fake = makeFakeMonaco();
+    @Component({
+      standalone: true,
+      imports: [KjEditorComponent],
+      template: `<kj-editor kjValue="x" kjLanguage="typescript" kjShowToolbar="false" />`,
+    })
+    class Host {}
+    const { container } = await render(Host, {
+      providers: [provideMonaco({ loader: () => Promise.resolve(fake.monaco) })],
+    });
+    expect(container.querySelector('.kj-editor-toolbar')).toBeNull();
+  });
+
+  it('shares ONE theme MutationObserver across editors', async () => {
+    const RealMO = globalThis.MutationObserver;
+    let themeObservations = 0;
+    globalThis.MutationObserver = class extends RealMO {
+      // Count only theme observations on <html>: other library services
+      // legitimately observe other things.
+      override observe(target: Node, init?: MutationObserverInit) {
+        if (target === document.documentElement && init?.attributeFilter?.includes('data-theme')) {
+          themeObservations++;
+        }
+        super.observe(target, init);
+      }
+    };
+    try {
+      const fake = makeFakeMonaco();
+      @Component({
+        standalone: true,
+        imports: [KjEditorComponent],
+        template: `
+          <kj-editor kjValue="a" />
+          <kj-editor kjValue="b" />
+          <kj-editor kjValue="c" />
+        `,
+      })
+      class Host {}
+      await render(Host, {
+        providers: [provideMonaco({ loader: () => Promise.resolve(fake.monaco) })],
+      });
+      // Three editors used to mean three observers on <html>.
+      expect(themeObservations).toBe(1);
+    } finally {
+      globalThis.MutationObserver = RealMO;
+    }
+  });
+
+  it('re-applies the Monaco theme when the app theme switches', async () => {
+    const { fake } = await setup();
+    await waitFor(() =>
+      expect(fake.monaco.editor.setTheme as ReturnType<typeof vi.fn>).toHaveBeenCalled(),
+    );
+    (fake.monaco.editor.setTheme as ReturnType<typeof vi.fn>).mockClear();
+
+    document.documentElement.setAttribute('data-theme', 'dark');
+    await waitFor(() =>
+      expect(fake.monaco.editor.setTheme as ReturnType<typeof vi.fn>).toHaveBeenCalled(),
+    );
+    document.documentElement.removeAttribute('data-theme');
   });
 });

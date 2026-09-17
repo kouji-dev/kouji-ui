@@ -1,4 +1,5 @@
 import { Component, PLATFORM_ID, inject } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
 import { KjReducedMotion } from './reduced-motion';
 
@@ -141,5 +142,92 @@ describe('KjReducedMotion', () => {
     } finally {
       window.matchMedia = original;
     }
+  });
+
+  /**
+   * perf F-15. `KjOverlayController.runTransition` used to build its own
+   * `matchMedia('(prefers-reduced-motion: reduce)')` on every open and every
+   * close. It could not read the signal instead, because the signal is seeded
+   * in `afterNextRender` (to keep hydration stable) and an overlay opened
+   * before that render would have read a stale `false`. `matchesNow()` is the
+   * reader that fixes both halves: live value, one shared MediaQueryList.
+   */
+  describe('matchesNow()', () => {
+    it('reads the live value before the first render has seeded the signal', () => {
+      const original = window.matchMedia;
+      window.matchMedia = stubMatchMedia(true).impl;
+      try {
+        TestBed.configureTestingModule({});
+        // Injected, never rendered — so the `afterNextRender` that seeds the
+        // signal has not run. This is exactly the state an overlay opened
+        // during the first tick sees.
+        const motion = TestBed.inject(KjReducedMotion);
+        expect(motion.prefersReducedMotion()).toBe(false);
+        expect(motion.matchesNow()).toBe(true);
+      } finally {
+        window.matchMedia = original;
+      }
+    });
+
+    it('shares one MediaQueryList across every call and the signal', async () => {
+      const original = window.matchMedia;
+      const stub = stubMatchMedia(false);
+      let constructed = 0;
+      window.matchMedia = ((q: string) => {
+        constructed++;
+        return stub.impl(q);
+      }) as typeof window.matchMedia;
+      try {
+        @Component({ standalone: true, template: '' })
+        class Host {
+          readonly motion = inject(KjReducedMotion);
+        }
+        const { fixture } = await render(Host);
+        const motion = fixture.componentInstance.motion;
+        for (let i = 0; i < 10; i++) motion.matchesNow();
+        await flushAfterNextRender();
+        for (let i = 0; i < 10; i++) motion.matchesNow();
+        expect(constructed).toBe(1);
+      } finally {
+        window.matchMedia = original;
+      }
+    });
+
+    it('is false where matchMedia is unavailable', async () => {
+      const original = window.matchMedia;
+      (window as unknown as { matchMedia: undefined }).matchMedia = undefined;
+      try {
+        @Component({ standalone: true, template: '' })
+        class Host {
+          readonly motion = inject(KjReducedMotion);
+        }
+        const { fixture } = await render(Host);
+        expect(fixture.componentInstance.motion.matchesNow()).toBe(false);
+      } finally {
+        window.matchMedia = original;
+      }
+    });
+
+    it('is false on the server without touching matchMedia', async () => {
+      const original = window.matchMedia;
+      let constructed = 0;
+      window.matchMedia = ((q: string) => {
+        constructed++;
+        return stubMatchMedia(true).impl(q);
+      }) as typeof window.matchMedia;
+      try {
+        @Component({ standalone: true, template: '' })
+        class Host {
+          readonly motion = inject(KjReducedMotion);
+        }
+        const { fixture } = await render(Host, {
+          providers: [{ provide: PLATFORM_ID, useValue: 'server' }],
+        });
+        expect(fixture.componentInstance.motion.matchesNow()).toBe(false);
+        expect(constructed).toBe(0);
+      } finally {
+        window.matchMedia = original;
+      }
+    });
   });
 });

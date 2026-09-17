@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
-  KjEmptyStateComponent,
-  KjEmptyStateTitleComponent,
-  KjEmptyStateDescriptionComponent,
-  KjEmptyStateActionsComponent,
+  KjEmptyState,
+  KjEmptyStateTitle,
+  KjEmptyStateDescription,
+  KjEmptyStateActions,
 } from './empty-state';
 import { KjButtonComponent } from '../button/button';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
@@ -22,10 +22,10 @@ const showAction = signal(true);
   selector: 'kj-empty-state-playground',
   standalone: true,
   imports: [
-    KjEmptyStateComponent,
-    KjEmptyStateTitleComponent,
-    KjEmptyStateDescriptionComponent,
-    KjEmptyStateActionsComponent,
+    KjEmptyState,
+    KjEmptyStateTitle,
+    KjEmptyStateDescription,
+    KjEmptyStateActions,
     KjButtonComponent,
   ],
   template: `

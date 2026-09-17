@@ -14,8 +14,8 @@ import { KjButton } from '../../button/button';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 360px;
         position: relative;
         overflow: hidden;

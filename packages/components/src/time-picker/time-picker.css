@@ -11,7 +11,7 @@
   .kj-time-picker {
     --kj-time-picker-bg:               var(--kj-bg-field);
     --kj-time-picker-fg:               var(--kj-fg-default);
-    --kj-time-picker-border-color:     var(--kj-border-default);
+    --kj-time-picker-border-color:     var(--kj-border-control);
     --kj-time-picker-border-width:     var(--kj-border);
     --kj-time-picker-radius:           var(--kj-radius-field);
     --kj-time-picker-padding-x:        var(--kj-space-md);
@@ -25,7 +25,7 @@
        set `align-self` here — when the parent is a column-flex stack
        (e.g. <kj-form-field>'s label + control), `center` would horizontally
        center this `inline-flex` host instead of leaving it at start. */
-    --kj-time-picker-height:           2.25rem;
+    --kj-time-picker-height:           var(--kj-ctl-h-md);
 
     display: inline-flex;
     align-items: center;
@@ -39,8 +39,8 @@
     font: var(--kj-time-picker-font-size) / 1.4 var(--kj-time-picker-font);
     transition: var(--kj-transition);
   }
-  .kj-time-picker[data-size="sm"] { --kj-time-picker-height: 2rem;    --kj-time-picker-font-size: 0.8125rem; }
-  .kj-time-picker[data-size="lg"] { --kj-time-picker-height: 2.75rem; --kj-time-picker-font-size: 1rem; }
+  .kj-time-picker[data-size="sm"] { --kj-time-picker-height: var(--kj-ctl-h-sm);    --kj-time-picker-font-size: 0.8125rem; }
+  .kj-time-picker[data-size="lg"] { --kj-time-picker-height: var(--kj-ctl-h-lg); --kj-time-picker-font-size: 1rem; }
 
   .kj-time-picker:focus-within {
     --kj-time-picker-border-color: var(--kj-bg-primary);
@@ -68,7 +68,7 @@
     font-variant-numeric: tabular-nums;
     text-align: center;
     appearance: textfield;
-    border-radius: var(--kj-radius-sm, 0.25rem);
+    border-radius: var(--kj-radius-field, 0.25rem);
     transition: background var(--kj-transition);
   }
 

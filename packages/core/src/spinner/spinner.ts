@@ -1,15 +1,16 @@
 import {
-  DestroyRef,
   Directive,
   ElementRef,
-  afterNextRender,
   computed,
+  effect,
   inject,
   input,
-  signal,
 } from '@angular/core';
+import { KjTranslateService } from '../i18n/translate.service';
+import { KjReducedMotion } from '../motion/reduced-motion';
 import { KjSize, KjVariant, bindPresets } from '../presets';
 import { KJ_SPINNER_CONFIG, KjSpinnerAnimation } from './config';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Marks an element as a kouji indeterminate spinner. Owns the small
@@ -58,13 +59,19 @@ import { KJ_SPINNER_CONFIG, KjSpinnerAnimation } from './config';
 export class KjSpinner {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly config = inject(KJ_SPINNER_CONFIG);
+  private readonly i18n = inject(KjTranslateService);
 
   /**
-   * Animation shape preset. Reflects `data-animation`. Default `'spin'`.
-   * Themes own the keyframes for each value.
+   * Animation shape preset. Reflects `data-animation`. Defaults to
+   * `KJ_SPINNER_CONFIG.defaults.animation` (`'spin'` as shipped).
+   *
+   * Open like `kjVariant` / `kjSize`: an unknown value is reflected verbatim
+   * — themes own the keyframes — and warned about once in dev mode against
+   * `KJ_SPINNER_CONFIG.animations`. Register a custom shape with
+   * `provideKjSpinner({ animations: [...], defaults: { animation: … } })`.
    */
   readonly kjAnimation = input<KjSpinnerAnimation>(
-    (this.config.defaults.animation as KjSpinnerAnimation) ?? 'spin',
+    this.config.defaults.animation ?? 'spin',
   );
 
   /**
@@ -72,8 +79,21 @@ export class KjSpinner {
    * no `aria-label` attribute and no `aria-labelledby` attribute already set
    * (so a consumer-authored `aria-labelledby` wins, and a consumer-authored
    * `aria-label` is not double-bound).
+   *
+   * Unset, it resolves through `KJ_SPINNER_CONFIG.defaults.ariaLabel` and then
+   * the i18n catalog (`spinner.loading`), so translating it is
+   * `provideKjTranslations(…)` — not a per-component config call.
    */
-  readonly kjAriaLabel = input<string>(this.config.defaults.ariaLabel ?? 'Loading');
+  readonly kjAriaLabel = input<string | undefined>(undefined);
+
+  /**
+   * The accessible name actually used: explicit input > `provideKjSpinner`
+   * override > i18n catalog. Locale-reactive, and the single source the host
+   * `aria-label` and any wrapper-rendered hidden label must both read.
+   */
+  readonly resolvedAriaLabel = computed(
+    () => this.kjAriaLabel() ?? this.config.defaults.ariaLabel ?? this.i18n.translate('spinner.loading'),
+  );
 
   /** True when the host had a consumer-authored `aria-labelledby` at mount. */
   protected readonly hasAriaLabelledBy: boolean;
@@ -92,17 +112,37 @@ export class KjSpinner {
    * Reflects the user's `prefers-reduced-motion` preference. The directive
    * does not animate anything itself — it mirrors the boolean as
    * `data-reduced-motion="true"` and themes own the alternate keyframe.
+   *
+   * Read from the root `KjReducedMotion` service: the OS setting is
+   * application-wide, so one `matchMedia` subscription serves every spinner
+   * on the page instead of one per instance (perf F-15).
    */
-  protected readonly reducedMotion = signal<boolean>(false);
+  protected readonly reducedMotion = inject(KjReducedMotion).prefersReducedMotion;
 
   protected readonly ariaLabelAttr = computed(() => {
     if (this.hasAriaLabelledBy) return null;
     if (this.nativeAriaLabel !== null) return this.nativeAriaLabel;
-    return this.kjAriaLabel();
+    return this.resolvedAriaLabel();
   });
 
   constructor() {
-    const destroyRef = inject(DestroyRef);
+    if (kjDevMode()) {
+      // `animations` was a config field nothing read. It is the spinner's
+      // equivalent of `variants` / `sizes`, so it gets the same dev-mode
+      // validation KjVariant / KjSize apply — otherwise the TSDoc tells
+      // consumers to extend a list that has no effect at all.
+      effect(() => {
+        const value = this.kjAnimation();
+        if (!this.config.animations.includes(value)) {
+          kjDevWarn(
+            'kj-spinner',
+            `unknown animation "${value}". Allowed values: ` +
+              `${this.config.animations.join(', ')}. Register it with ` +
+              `provideKjSpinner({ animations: [...KJ_SPINNER_DEFAULTS.animations, '${value}'] }).`,
+          );
+        }
+      });
+    }
 
     // Read consumer-authored aria attributes synchronously in the
     // constructor — by the time `afterNextRender` runs, Angular's host
@@ -112,18 +152,5 @@ export class KjSpinner {
     const host = this.el.nativeElement;
     this.hasAriaLabelledBy = host.hasAttribute('aria-labelledby');
     this.nativeAriaLabel = host.getAttribute('aria-label');
-
-    afterNextRender(() => {
-      // SSR-safe: matchMedia is only present in a real browser. The
-      // server-rendered HTML carries no `data-reduced-motion`; the post-
-      // hydrate read sets it on the client when the preference is active.
-      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-        const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-        this.reducedMotion.set(mql.matches);
-        const onChange = (e: MediaQueryListEvent) => this.reducedMotion.set(e.matches);
-        mql.addEventListener('change', onChange);
-        destroyRef.onDestroy(() => mql.removeEventListener('change', onChange));
-      }
-    });
   }
 }

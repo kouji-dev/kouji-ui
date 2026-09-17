@@ -5,6 +5,10 @@
 
 @layer kj.shared {
   [data-theme="cyberpunk"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — sharp, no rounding ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -62,14 +66,15 @@
     --kj-fg-primary:    #8c003f;
     --kj-fg-accent:     #2a0066;
     --kj-fg-info:       #006670;
-    --kj-fg-success:    #1a7a08;
+    --kj-fg-success:    #126d00;
     --kj-fg-warning:    #6b3a00;
     --kj-fg-danger:     #8c0024;
 
     --kj-border-default:   #0a0a0a;
     --kj-border-muted:     #d6c008;
     --kj-border-strong:    #0a0a0a;
-    --kj-border-focus:     #ff007f;
+    --kj-border-control:  #0a0a0a;
+    --kj-border-focus:     #ea0074;
     --kj-border-disabled:  #d6c008;
     --kj-border-primary:   #ff007f;
     --kj-border-danger:    #ff0040;

@@ -9,7 +9,7 @@ import {
 import type { Column } from '@tanstack/angular-table';
 import { KjVisuallyHidden, type KjColumnMeta, type KjSetFilterModel } from '@kouji-ui/core';
 import { KjOptionComponent, KjSelectComponent } from '../../select/select';
-import { KJ_FILTER_CONTEXT, type KjFilterContext } from './text-filter';
+import { KJ_FILTER_CONTEXT, type KjFilterContext } from './filters.context';
 
 /** Option descriptor for the select filter dropdown. */
 export interface KjSelectFilterOption {

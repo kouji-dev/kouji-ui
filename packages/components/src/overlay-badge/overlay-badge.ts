@@ -2,17 +2,17 @@ import {
   Component,
   ChangeDetectionStrategy,
   ViewEncapsulation,
+  booleanAttribute,
   computed,
-  inject,
   input,
 } from '@angular/core';
 import {
-  KjBadge,
   KjBadgeVariant,
   KjOverlayBadge,
   KjOverlayBadgeContent,
   KJ_OVERLAY_BADGE,
   KjVisuallyHidden,
+  injectParent,
 } from '@kouji-ui/core';
 
 /**
@@ -121,8 +121,8 @@ import {
       <span
         kjOverlayBadgeContent
         class="kj-overlay-badge"
-        [kjBadgeVariant]="kjVariant()"
-        [attr.data-size]="kjSize()"
+        [kjVariant]="kjVariant()"
+        [kjSize]="kjSize()"
       >
         @if (!ctx.dot()) {
           {{ displayValue() }}
@@ -143,7 +143,7 @@ import {
 })
 export class KjOverlayBadgeComponent {
   /** Read the anchor directive's context so the template can mirror its state. */
-  protected readonly ctx = inject(KJ_OVERLAY_BADGE);
+  protected readonly ctx = injectParent(KJ_OVERLAY_BADGE, { child: 'KjOverlayBadgeComponent', parent: '[kjOverlayBadge]' });
 
   /**
    * The numeric or textual badge content. Numbers truncate via
@@ -164,12 +164,19 @@ export class KjOverlayBadgeComponent {
    * visibility (`[kjHidden]="!unread()"`). Drops the description id from
    * the anchor's `aria-describedby` while hidden.
    */
-  readonly kjHidden = input<boolean>(false);
+  readonly kjHidden = input(false, { transform: booleanAttribute });
 
-  /** Visual variant of the badge — forwarded to the inner `kjBadge` host. */
+  /**
+   * Visual variant of the badge — forwarded to the inner `kjBadge` host,
+   * which reflects it as `data-variant` through the composed `KjVariant`.
+   * Configurable app-wide with `provideKjBadge(…)`.
+   */
   readonly kjVariant = input<KjBadgeVariant>('default');
 
-  /** Size token — forwarded to the inner content node as `data-size`. */
+  /**
+   * Size token — forwarded to the inner content node, which reflects it as
+   * `data-size` through the composed `KjSize`.
+   */
   readonly kjSize = input<'sm' | 'md' | 'lg'>('md');
 
   /**
@@ -213,20 +220,19 @@ export class KjOverlayBadgeComponent {
 @Component({
   selector: 'kj-overlay-badge-content',
   standalone: true,
-  hostDirectives: [
-    KjOverlayBadgeContent,
-    { directive: KjBadge, inputs: ['kjBadgeVariant: kjVariant'] },
-  ],
+  // `KjOverlayBadgeContent` already composes `KjBadge`, whose own composed
+  // `KjVariant` / `KjSize` expose `kjVariant` / `kjSize` transitively — so
+  // `[kjVariant]` and `[kjSize]` bind on this element, reflecting
+  // `data-variant` / `data-size`, with nothing re-declared here. Listing
+  // either on the outer composer is an NG0311; re-declaring `kjSize` as a
+  // local input would give one public name two owners on one element.
+  hostDirectives: [KjOverlayBadgeContent],
   template: `<ng-content />`,
   styleUrl: './overlay-badge.css',
   encapsulation: ViewEncapsulation.None,
   host: {
     'class': 'kj-overlay-badge',
-    '[attr.data-size]': 'kjSize()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjOverlayBadgeContentComponent {
-  /** Size token mirrored to `data-size` for CSS hooks. */
-  readonly kjSize = input<'sm' | 'md' | 'lg'>('md');
-}
+export class KjOverlayBadgeContentComponent {}

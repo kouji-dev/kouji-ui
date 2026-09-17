@@ -1,4 +1,4 @@
-import { InjectionToken, Signal } from '@angular/core';
+import { ElementRef, InjectionToken, Signal, WritableSignal } from '@angular/core';
 
 /** Carousel orientation. Drives `aria-orientation`, the scroll-snap axis, and the keyboard arrow mapping. */
 export type KjCarouselOrientation = 'horizontal' | 'vertical';
@@ -47,6 +47,85 @@ export interface KjCarouselContext {
   play(): void;
   /** Push a polite announcement to the live region (user-initiated changes only). */
   announce(message: string): void;
+
+  // ── Internal composition surface ──────────────────────────────────────
+  //
+  // arch F-14: every child directive used to reach these by casting
+  // `inject(KJ_CAROUSEL) as KjCarousel`, which defeats the interface boundary
+  // the context pattern exists to create — the cast compiles against whatever
+  // the class happens to expose, so nothing tells you when a child starts
+  // depending on a private. They are part of the contract, marked `@internal`
+  // because a consumer composing the published directives never calls them.
+
+  /** @internal Two-way active-slide value. The viewport writes it on settle. */
+  readonly kjValue: WritableSignal<string | null>;
+  /** @internal Registered slides, in DOM order. */
+  readonly slides: Signal<readonly KjCarouselSlideRef[]>;
+  /** @internal Default slide alignment; a slide's own `kjSlideAlign` wins. */
+  readonly kjAlign: Signal<KjCarouselAlign>;
+  /** @internal Slides visible at once; feeds the viewport's flex-basis variable. */
+  readonly kjSlidesPerView: Signal<number | 'auto'>;
+  /** @internal Active control pattern, or `'buttons'` when no indicators are mounted. */
+  readonly controlPattern: Signal<KjCarouselControlPattern>;
+
+  /** @internal */ registerSlide(slide: KjCarouselSlideRef): void;
+  /** @internal */ unregisterSlide(slide: KjCarouselSlideRef): void;
+  /** @internal */ registerViewport(viewport: KjCarouselViewportRef): void;
+  /** @internal */ unregisterViewport(viewport: KjCarouselViewportRef): void;
+  /** @internal */ registerAutoplay(autoplay: KjCarouselAutoplayRef): void;
+  /** @internal */ unregisterAutoplay(autoplay: KjCarouselAutoplayRef): void;
+  /** @internal */ registerIndicators(indicators: KjCarouselIndicatorsContext): void;
+  /** @internal */ unregisterIndicators(indicators: KjCarouselIndicatorsContext): void;
+  /** @internal Registered by the styled wrapper, which owns the live region element. */
+  registerLiveRegion(region: { announce: (message: string) => void } | null): void;
+
+  /** @internal Viewport hover state — gate 4 of autoplay. */
+  setHovering(hovering: boolean): void;
+  /** @internal Viewport focus-within state — gate 5 of autoplay. */
+  setFocusWithin(focusWithin: boolean): void;
+
+  /** @internal At the first slide and not looping — the Previous button's disabled state. */
+  atStart(): boolean;
+  /** @internal At the last slide and not looping — the Next button's disabled state. */
+  atEnd(): boolean;
+  /** @internal `"Slide 3 of 7: <label>"`, or `null` when `value` is not registered. */
+  buildSlideAnnouncement(value: string): string | null;
+  /** @internal Whether `prefers-reduced-motion: reduce` is in force. */
+  prefersReducedMotion(): boolean;
+}
+
+/**
+ * What the root needs from a registered slide, and what the styled wrapper
+ * reads back off `slides()`.
+ *
+ * Declared structurally rather than as `KjCarouselSlide` so this file stays
+ * free of directive imports — the root can be typed against it without a
+ * cycle, and a child no longer has to cast `inject(KJ_CAROUSEL)` back to the
+ * concrete class to reach the registration API (arch F-14).
+ */
+export interface KjCarouselSlideRef extends KjCarouselSlideContext {
+  /** The slide's host element — the scroll target and the observed node. */
+  readonly el: ElementRef<HTMLElement>;
+  /** The slide's identifier input. */
+  readonly kjSlideValue: Signal<string>;
+  /** Optional accessible name appended to `"N of M"`. */
+  readonly kjSlideLabel: Signal<string | undefined>;
+}
+
+/** What the root needs from the viewport it scrolls. See {@link KjCarouselSlideRef}. */
+export interface KjCarouselViewportRef {
+  /** The scroll container's host element. */
+  readonly el: ElementRef<HTMLElement>;
+  /** Re-sync the IntersectionObserver with the registered slide set. */
+  observeSlides(): void;
+}
+
+/** What the root's autoplay gating reads off a registered autoplay directive. */
+export interface KjCarouselAutoplayRef {
+  /** Auto-pause while the pointer is over the carousel root. */
+  readonly kjPauseOnHover: Signal<boolean>;
+  /** Auto-pause while focus is within the carousel root. */
+  readonly kjPauseOnFocus: Signal<boolean>;
 }
 
 /** Per-slide context exposed to projected helpers. */

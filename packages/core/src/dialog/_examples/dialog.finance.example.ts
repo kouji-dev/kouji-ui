@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { KjDialog as KjDialogService } from '../dialog.service';
+import { KjDialogService } from '../dialog.service';
 import { KjDialogRef } from '../dialog.ref';
 
 @Component({
@@ -11,25 +11,25 @@ import { KjDialogRef } from '../dialog.ref';
     `
       :host {
         display: block;
-        background: var(--kj-surface);
-        border: 1px solid var(--kj-border);
-        border-radius: var(--kj-radius-lg);
+        background: var(--docs-surface);
+        border: 1px solid var(--docs-border);
+        border-radius: var(--docs-radius-lg);
         padding: 1.5rem;
         min-width: 22rem;
-        box-shadow: var(--kj-shadow-hard);
-        font-family: var(--kj-font);
-        color: var(--kj-text);
+        box-shadow: var(--docs-shadow-hard);
+        font-family: var(--docs-font);
+        color: var(--docs-text);
       }
       h2 {
         margin: 0 0 0.375rem;
         font-size: 1.0625rem;
         font-weight: 600;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .dialog-body {
         margin: 0 0 1.5rem;
         font-size: 0.875rem;
-        color: var(--kj-text-muted);
+        color: var(--docs-text-muted);
         line-height: 1.6;
       }
       .dialog-actions {
@@ -41,22 +41,22 @@ import { KjDialogRef } from '../dialog.ref';
         padding: 0.4rem 1rem;
         font-size: 0.8125rem;
         font-weight: 500;
-        border-radius: var(--kj-radius-md);
+        border-radius: var(--docs-radius-md);
         cursor: pointer;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
       }
       .btn-cancel {
-        background: var(--kj-surface);
-        color: var(--kj-text);
-        border: 1px solid var(--kj-border);
+        background: var(--docs-surface);
+        color: var(--docs-text);
+        border: 1px solid var(--docs-border);
       }
       .btn-cancel:hover {
-        background: var(--kj-bg);
+        background: var(--docs-bg);
       }
       .btn-primary {
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border: 1px solid var(--kj-accent);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border: 1px solid var(--docs-accent);
       }
       .btn-primary:hover {
         background: #2563eb;
@@ -89,19 +89,19 @@ export class DialogFinanceContent {
         align-items: center;
         justify-content: center;
         padding: 3rem 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 160px;
       }
       button {
         padding: 0.45rem 1.125rem;
-        background: var(--kj-accent);
-        color: var(--kj-accent-on);
-        border: var(--kj-btn-border);
-        border-color: var(--kj-accent);
-        border-radius: var(--kj-radius-md);
+        background: var(--docs-accent);
+        color: var(--docs-accent-on);
+        border: var(--docs-btn-border);
+        border-color: var(--docs-accent);
+        border-radius: var(--docs-radius-md);
         cursor: pointer;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.875rem;
         font-weight: 500;
       }

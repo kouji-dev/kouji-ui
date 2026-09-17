@@ -1,16 +1,16 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { KjAriaDescribedBy } from '@kouji-ui/core';
+import { KjFieldControl } from '@kouji-ui/core';
 import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '../field';
 
 /**
  * Default usage example for `kj-field` — label + input + help text.
- * The help id is auto-wired into the input's `aria-describedby` via the
- * `kjField` template ref's `describedByIds` signal.
+ * `kjFieldControl` on the input adopts the field's control id (so the label's
+ * `for` resolves) and gets the help id as `aria-describedby`.
  */
 @Component({
   selector: 'kj-field-default-example',
   standalone: true,
-  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjAriaDescribedBy],
+  imports: [KjFieldComponent, KjFieldLabelComponent, KjFieldHelpComponent, KjFieldControl],
   styles: [
     `
       :host {
@@ -34,16 +34,9 @@ import { KjFieldComponent, KjFieldHelpComponent, KjFieldLabelComponent } from '.
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <kj-field #f="kjField">
+    <kj-field>
       <kj-field-label>Email</kj-field-label>
-      <input
-        kjAriaDescribedBy
-        class="kj-input"
-        type="email"
-        placeholder="you@example.com"
-        [id]="f.controlId()"
-        [kjDescribedBy]="$any(f.describedByIds())"
-      />
+      <input kjFieldControl class="kj-input" type="email" placeholder="you@example.com" />
       <kj-field-help>We'll never share your email.</kj-field-help>
     </kj-field>
   `,

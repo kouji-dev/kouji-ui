@@ -14,11 +14,11 @@ import { KjToastService } from '../toast.service';
       :host {
         display: block;
         padding: 2rem;
-        background: var(--kj-bg);
-        font-family: var(--kj-font);
+        background: var(--docs-bg);
+        font-family: var(--docs-font);
         min-height: 260px;
         position: relative;
-        color: var(--kj-text);
+        color: var(--docs-text);
       }
       .row {
         display: flex;
@@ -27,20 +27,20 @@ import { KjToastService } from '../toast.service';
       }
       button {
         padding: 0.35rem 0.875rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        border: var(--kj-btn-border);
+        border: var(--docs-btn-border);
         border-radius: 0;
         cursor: pointer;
-        box-shadow: var(--kj-shadow-sm);
-        transition: var(--kj-transition);
+        box-shadow: var(--docs-shadow-sm);
+        transition: var(--docs-transition);
       }
       button:hover {
         transform: translate(-1px, -1px);
-        box-shadow: var(--kj-shadow-md);
+        box-shadow: var(--docs-shadow-md);
       }
       .btn-ok {
         background: #16a34a;
@@ -80,12 +80,12 @@ import { KjToastService } from '../toast.service';
         align-items: center;
         justify-content: space-between;
         padding: 0.625rem 0.875rem;
-        font-family: var(--kj-font);
+        font-family: var(--docs-font);
         font-size: 0.75rem;
-        border: var(--kj-btn-border);
-        background: var(--kj-bg);
-        color: var(--kj-text);
-        box-shadow: var(--kj-shadow-md);
+        border: var(--docs-btn-border);
+        background: var(--docs-bg);
+        color: var(--docs-text);
+        box-shadow: var(--docs-shadow-md);
         animation: slideIn 0.15s ease;
       }
       @keyframes slideIn {

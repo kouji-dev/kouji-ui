@@ -6,7 +6,18 @@
         <tr>
           @for (h of hg.headers; track h.id) {
             <th kjTableHeader [kjHeader]="h" scope="col">
-              {{ h.column.columnDef.header }}
+              <!--
+                WAI-ARIA sortable-table pattern: the <button kjTableSort> is
+                the focusable control and carries the column label as its
+                accessible name, while the <th> keeps aria-sort and stays out
+                of the Tab order. The legacy focusable-<th> mode announces a
+                column header with no action name, so this demo models the
+                shape consumers should copy.
+              -->
+              <button kjTableSort class="docs-table__sort">
+                {{ h.column.columnDef.header }}
+                <span class="docs-table__sort-indicator" aria-hidden="true"></span>
+              </button>
             </th>
           }
         </tr>

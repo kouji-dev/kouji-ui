@@ -3,7 +3,7 @@
   <header class="gs-header">
     <span class="tag">Guide</span>
     <h1>Getting Started</h1>
-    <p class="lead">kouji-ui is a headless Angular 21 UI library. The core has zero CSS — bring your own styles.</p>
+    <p class="lead">kouji-ui is a headless Angular 22 UI library. The core is behaviour — bring your own styles, or add the themed components.</p>
   </header>
 
   <!-- Installation -->
@@ -21,16 +21,33 @@
 
     <kj-docs-callout variant="info">
       <span class="callout-icon">◈</span>
-      <p><strong>Angular 21+ only.</strong> Standalone components, signals throughout, zero peer dependencies.</p>
+      <p><strong>Angular 22+ only.</strong> Standalone components, signals throughout. No Angular CDK and no third-party UI runtime — the only required peers are <code>&#64;angular/*</code> and <code>rxjs</code>.</p>
     </kj-docs-callout>
 
     <h3 id="global-stylesheets">Global stylesheets</h3>
-    <p>Register these once in <code>angular.json</code>. The two <code>overlay.css</code> entries are what paint every floating panel — popover, tooltip, dropdown menu, dialog, drawer, toast, confirm popup, sheet.</p>
+    <p>Register these once in <code>angular.json</code>. <code>&#64;kouji-ui/core/styles.css</code> is the core's one global stylesheet — overlay chrome, the <code>[kjIcon]</code> mask, <code>.kj-prose</code> typography and the <code>kjMotion</code> presets. Together with the components <code>overlay.css</code> it is the only thing that paints every floating panel — popover, tooltip, dropdown menu, dialog, drawer, toast, confirm popup, sheet. The wrapper components carry no <code>styleUrl</code> of their own, so omitting <code>overlay.css</code> leaves every panel unstyled.</p>
     <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="globalStyles" kjLanguage="json" kjAriaLabel="Global stylesheets" />
+    <p>On Vite or Analog there is no <code>angular.json</code>: import the same three files by package specifier from your global stylesheet. Every path is declared in the packages' <code>exports</code> maps, so bundlers that enforce them resolve it.</p>
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="viteStyles" kjLanguage="css" kjAriaLabel="Global stylesheets (Vite / Analog)" />
+    <p>Prefer à la carte? The core aggregate is exactly these four files, each published on its own:</p>
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="coreStylesAlaCarte" kjLanguage="css" kjAriaLabel="Core stylesheets, one by one" />
     <kj-docs-callout variant="warning">
       <span class="callout-icon">◈</span>
       <p><strong>Overlay panels need these.</strong> Every panel is rendered by a headless directive (<code>&lt;kj-popover-content&gt;</code>, <code>&lt;kj-dropdown-menu-content&gt;</code>, …), and directives carry no styles. Skip the overlay stylesheets and a panel composed straight from the directives comes up with no background, no border and no shadow — even though the markup is correct. Wrapper components such as <code>&lt;kj-popover&gt;</code> inline the same CSS, so a page that happens to render one looks fine while the rest do not.</p>
     </kj-docs-callout>
+  </section>
+
+  <!-- Vite / Analog -->
+  <section id="vite-analog" class="section">
+    <h2 id="vite-analog">Vite / Analog</h2>
+    <p>There is no <code>angular.json</code> outside the Angular CLI, so the three global stylesheets are imported by package specifier from your own global stylesheet (see <a href="#global-stylesheets">Global stylesheets</a> above), and that stylesheet is imported once from the app entry.</p>
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="viteMain" kjLanguage="ts" kjAriaLabel="Vite entry point" />
+    <p>Nothing else is needed in <code>vite.config.ts</code>. Both packages ship pure-ESM FESM2022 with <code>"sideEffects": false</code>, no CommonJS interop and no module-scope <code>document</code> / <code>window</code> access, so Vite externalizes them for SSR without <code>ssr.noExternal</code>.</p>
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="analogConfig" kjLanguage="ts" kjAriaLabel="Analog vite config" />
+
+    <h3 id="optional-peers">Optional peers</h3>
+    <p>Only the <code>&#64;angular/*</code> packages and <code>rxjs</code> are required. Everything heavy — ECharts, Monaco, Lexical, TanStack Virtual, Lucide — is an <em>optional</em> peer reached through a dynamic <code>import()</code> or an <code>import type</code>, so a bare <code>import &#39;&#64;kouji-ui/core&#39;</code> resolves in plain Node with none of them installed.</p>
+    <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="optionalPeers" kjLanguage="bash" kjAriaLabel="Optional peer dependencies" />
   </section>
 
   <!-- Quick start -->
@@ -43,7 +60,7 @@
   <!-- Headless usage -->
   <section id="headless" class="section">
     <h2 id="headless">Headless usage</h2>
-    <p>The core package ships zero CSS. Directives add ARIA attributes and <code>data-*</code> attributes you can target in your stylesheets:</p>
+    <p>The core package ships no component styles. Directives add ARIA attributes and <code>data-*</code> attributes you can target in your stylesheets:</p>
     <kj-editor [kjShowToolbar]="false" [kjShowStatusBar]="false" [kjReadonly]="true" [kjAutoHeight]="true" [kjValue]="headlessStyles" kjLanguage="css" kjAriaLabel="Headless styles example" />
   </section>
 

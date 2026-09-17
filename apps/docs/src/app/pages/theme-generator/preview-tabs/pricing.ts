@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   KjBadgeComponent,
   KjButtonComponent,
-  KjCardComponent,
+  KjCard,
   KjDividerComponent,
 } from '@kouji-ui/components';
 
@@ -50,7 +50,7 @@ const TIERS: readonly PricingTier[] = [
   imports: [
     KjBadgeComponent,
     KjButtonComponent,
-    KjCardComponent,
+    KjCard,
     KjDividerComponent,
   ],
   templateUrl: './pricing.html',

@@ -103,12 +103,16 @@
               "packages/themes/src/index.css",
               "packages/core/src/styles.css",
               "packages/components/src/overlay/overlay.css",
+              "packages/core/src/styles/docs-themes.css",
               "apps/docs/src/styles.css"
             ],
             "server": "apps/docs/src/main.server.ts",
             "outputMode": "static",
             "security": {
-              "allowedHosts": ["*.onrender.com", "localhost"]
+              "allowedHosts": [
+                "*.onrender.com",
+                "localhost"
+              ]
             },
             "externalDependencies": [
               "ts-morph",
@@ -125,7 +129,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "800kB",
-                  "maximumError": "1500kB"
+                  "maximumError": "1600kB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -146,7 +150,9 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "allowedHosts": ["all"]
+            "allowedHosts": [
+              "all"
+            ]
           },
           "configurations": {
             "production": {

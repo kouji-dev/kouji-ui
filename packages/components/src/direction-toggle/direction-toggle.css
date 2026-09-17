@@ -7,9 +7,9 @@
 
 @layer kj.component {
   .kj-direction-toggle {
-    --kj-direction-toggle-bg:           var(--kj-bg-subtle, transparent);
-    --kj-direction-toggle-fg:           var(--kj-fg, currentColor);
-    --kj-direction-toggle-border-color: var(--kj-border-color, currentColor);
+    --kj-direction-toggle-bg:           transparent;
+    --kj-direction-toggle-fg:           var(--kj-fg-default, currentColor);
+    --kj-direction-toggle-border-color: var(--kj-border-control, currentColor);
     --kj-direction-toggle-radius:       var(--kj-radius-field, 0.5rem);
     --kj-direction-toggle-padding-x:    var(--kj-space-md, 0.75rem);
     --kj-direction-toggle-padding-y:    var(--kj-space-sm, 0.5rem);
@@ -36,13 +36,12 @@
   }
 
   .kj-direction-toggle:hover {
-    background: var(--kj-bg-subtle-hover, var(--kj-direction-toggle-bg));
+    background: var(--kj-bg-surface, var(--kj-direction-toggle-bg));
   }
 
   /* Focus ring only for keyboard users. */
   .kj-direction-toggle:focus-visible {
-    outline: var(--kj-focus-ring-width, 2px) solid
-      var(--kj-focus-ring-color, currentColor);
+    outline: 2px solid var(--kj-border-focus, currentColor);
     outline-offset: 2px;
   }
 

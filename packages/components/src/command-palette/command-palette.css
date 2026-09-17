@@ -1,234 +1,247 @@
 /* ── Command Palette (modal) ────────────────────────────────────────── */
 
-/* Shell wraps backdrop + dialog. Always rendered for hydration stability;
-   the `is-open` modifier toggles visibility. */
-.kj-command-palette__shell {
-  display: none;
-}
-.kj-command-palette__shell.is-open {
-  display: contents;
-}
-
-/* Backdrop covers the viewport behind the dialog. */
-.kj-command-palette__backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: var(--kj-overlay-z, 1000);
-  animation: kj-command-palette-fade 0.1s ease-out;
-}
-
-/* The dialog panel itself — centered, fixed, animated in. */
-.kj-command-palette__dialog {
-  position: fixed;
-  top: 15vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(640px, 92vw);
-  display: flex;
-  flex-direction: column;
-  background: var(--kj-bg-elevated);
-  border: 1px solid var(--kj-border-default);
-  z-index: calc(var(--kj-overlay-z, 1000) + 1);
-  overflow: hidden;
-  animation: kj-command-palette-slide 0.15s ease-out;
-}
-
-@keyframes kj-command-palette-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes kj-command-palette-slide {
-  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .kj-command-palette__backdrop,
+/* The dialog is an overlay panel: `KjOverlayController` portals it into the
+   shared `.kj-overlay-container`, renders the scrim as a `<kj-backdrop>`
+   (styled by the core overlay stylesheet) and drives `data-state` / `hidden`
+   on it. Only the panel's own box and its open / close animation live here. */
+@layer kj.component {
+  /* The dialog panel itself — centered, fixed, animated in. */
   .kj-command-palette__dialog {
-    animation: none;
+    contain: layout;
+    position: fixed;
+    top: 15vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, 92vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--kj-bg-elevated);
+    border: 1px solid var(--kj-border-default);
+    z-index: var(--kj-overlay-z, 1000);
+    overflow: hidden;
+    animation: kj-command-palette-slide 0.15s ease-out;
   }
-}
 
-/* ── Input wrapper ───────────────────────────────────────────────────── */
+  /* Beats the panel's own `display: flex` — the UA `[hidden]` rule does not. */
+  .kj-command-palette__dialog[hidden] {
+    display: none;
+  }
 
-.kj-command-palette__input-wrapper {
-  display: flex;
-  align-items: center;
-  padding: 0.875rem var(--kj-space-lg, 1.25rem);
-  border-bottom: 1px solid var(--kj-border-default);
-  gap: var(--kj-space-md, 0.75rem);
-}
+  /* The controller waits for this animation before it un-portals the panel,
+     so the palette fades out instead of vanishing. */
+  .kj-command-palette__dialog[data-state='closing'] {
+    animation: kj-command-palette-slide-out 0.12s ease-in forwards;
+  }
 
-.kj-command-palette__search-icon {
-  flex-shrink: 0;
-  width: 1rem;
-  height: 1rem;
-  color: var(--kj-fg-muted);
-}
+  @keyframes kj-command-palette-slide {
+    from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
 
-.kj-command-palette__input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--kj-font-mono);
-  font-size: 0.875rem;
-  color: var(--kj-fg-default);
-  appearance: none;
-  -webkit-appearance: none;
-}
+  @keyframes kj-command-palette-slide-out {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to   { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  }
 
-.kj-command-palette__input::placeholder {
-  color: var(--kj-fg-muted);
-}
+  @media (prefers-reduced-motion: reduce) {
+    .kj-command-palette__dialog,
+    .kj-command-palette__dialog[data-state='closing'] {
+      animation: none;
+    }
+  }
 
-.kj-command-palette__input::-webkit-search-cancel-button {
-  display: none;
-}
+  /* ── Input wrapper ───────────────────────────────────────────────────── */
 
-/* Standalone <kj-command-input> rendered outside the modal. */
-.kj-command-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--kj-font-mono);
-  font-size: 0.875rem;
-  color: var(--kj-fg-default);
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  padding: 0.875rem var(--kj-space-lg, 1.25rem);
-}
+  .kj-command-palette__input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem var(--kj-space-lg, 1rem);
+    border-bottom: 1px solid var(--kj-border-default);
+    gap: var(--kj-space-md, 0.75rem);
+  }
 
-/* ── ESC kbd badge in input wrapper ──────────────────────────────────── */
+  .kj-command-palette__search-icon {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--kj-fg-muted);
+  }
 
-.kj-command-palette__esc-kbd {
-  font-family: var(--kj-font-mono);
-  font-size: 0.65rem;
-  color: var(--kj-fg-muted);
-  background: var(--kj-bg-surface);
-  border: 1px solid var(--kj-border-default);
-  padding: 0.15rem 0.4rem;
-  flex-shrink: 0;
-  cursor: pointer;
-}
+  .kj-command-palette__input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--kj-font-mono);
+    font-size: 0.875rem;
+    color: var(--kj-fg-default);
+    appearance: none;
+    -webkit-appearance: none;
+  }
 
-.kj-command-palette__esc-kbd:hover {
-  color: var(--kj-fg-default);
-}
+  .kj-command-palette__input::placeholder {
+    color: var(--kj-fg-muted);
+  }
 
-/* ── List ────────────────────────────────────────────────────────────── */
+  .kj-command-palette__input::-webkit-search-cancel-button {
+    display: none;
+  }
 
-.kj-command-palette__list {
-  overflow-y: auto;
-  max-height: 22rem;
-  padding: var(--kj-space-sm, 0.375rem) 0;
-}
+  /* Standalone <kj-command-input> rendered outside the modal. */
+  .kj-command-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--kj-font-mono);
+    font-size: 0.875rem;
+    color: var(--kj-fg-default);
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 0.875rem var(--kj-space-lg, 1rem);
+  }
 
-/* ── Empty / hint state ──────────────────────────────────────────────── */
+  /* ── ESC kbd badge in input wrapper ──────────────────────────────────── */
 
-.kj-command-palette__empty,
-.kj-command-empty {
-  padding: var(--kj-space-xl, 1.5rem) var(--kj-space-lg, 1.25rem);
-  text-align: center;
-  font-family: var(--kj-font-mono);
-  font-size: 0.8rem;
-  color: var(--kj-fg-muted);
-}
+  .kj-command-palette__esc-kbd {
+    font-family: var(--kj-font-mono);
+    font-size: 0.65rem;
+    color: var(--kj-fg-muted);
+    background: var(--kj-bg-surface);
+    border: 1px solid var(--kj-border-default);
+    padding: 0.15rem 0.4rem;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
 
-/* ── Command item ─────────────────────────────────────────────────────── */
+  .kj-command-palette__esc-kbd:hover {
+    color: var(--kj-fg-default);
+  }
 
-.kj-command-item {
-  display: flex;
-  flex-direction: var(--kj-command-item-direction, row);
-  align-items: var(--kj-command-item-align, center);
-  gap: var(--kj-command-item-gap, var(--kj-space-md, 0.75rem));
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.625rem var(--kj-space-lg, 1.25rem);
-  border: none;
-  border-inline-start: 2px solid transparent;
-  background: transparent;
-  font-family: var(--kj-font-mono);
-  font-size: 0.875rem;
-  color: var(--kj-fg-default);
-  text-align: start;
-  cursor: pointer;
-  transition: background 0.1s;
-}
+  /* ── List ────────────────────────────────────────────────────────────── */
 
-.kj-command-item:hover,
-.kj-command-item[data-active] {
-  background: var(--kj-bg-surface);
-  border-inline-start-color: var(--kj-bg-primary);
-}
+  .kj-command-palette__list {
+    overflow-y: auto;
+    max-height: 22rem;
+    padding: var(--kj-space-sm, 0.375rem) 0;
+  }
 
-.kj-command-item[aria-disabled="true"] {
-  opacity: 0.45;
-  cursor: not-allowed;
-  pointer-events: none;
-}
+  /* Windowed list (`[kjVirtual]`): the outer box is sized to the whole
+     dataset so the scrollbar is honest, and the slice is translated down to
+     where the rendered rows belong. The per-row marker carries the dataset
+     index for the virtualizer and the cursor, and is `display: contents` so
+     it adds no box of its own between the list and its options. */
+  .kj-command-palette__virtual {
+    position: relative;
+    width: 100%;
+  }
 
-/* ── Group ───────────────────────────────────────────────────────────── */
+  .kj-command-palette__row {
+    display: contents;
+  }
 
-.kj-command-group {
-  padding-block: 0.25rem;
-}
+  /* ── Empty / hint state ──────────────────────────────────────────────── */
 
-.kj-command-group__label {
-  padding: 0.375rem var(--kj-space-lg, 1.25rem) 0.125rem;
-  font-family: var(--kj-font-mono);
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--kj-fg-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+  .kj-command-palette__empty,
+  .kj-command-empty {
+    padding: var(--kj-space-xl, 1.5rem) var(--kj-space-lg, 1rem);
+    text-align: center;
+    font-family: var(--kj-font-mono);
+    font-size: 0.8rem;
+    color: var(--kj-fg-muted);
+  }
 
-/* ── Separator ───────────────────────────────────────────────────────── */
+  /* ── Command item ─────────────────────────────────────────────────────── */
 
-.kj-command-separator {
-  height: 1px;
-  background: var(--kj-border-default);
-  margin-block: 0.25rem;
-}
-
-/* ── Footer ──────────────────────────────────────────────────────────── */
-
-.kj-command-palette__footer {
-  display: flex;
-  gap: var(--kj-space-xl, 1.5rem);
-  padding: var(--kj-space-sm, 0.375rem) var(--kj-space-lg, 1.25rem);
-  border-top: 1px solid var(--kj-border-default);
-  background: var(--kj-bg-surface);
-}
-
-.kj-command-palette__footer span {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: var(--kj-font-mono);
-  font-size: 0.65rem;
-  color: var(--kj-fg-muted);
-}
-
-.kj-command-palette__footer kbd {
-  background: var(--kj-bg-surface);
-  border: 1px solid var(--kj-border-default);
-  color: var(--kj-fg-muted);
-  font-family: var(--kj-font-mono);
-  font-size: 0.6rem;
-  padding: 0.1rem 0.35rem;
-}
-
-/* ── Reduced motion ──────────────────────────────────────────────────── */
-
-@media (prefers-reduced-motion: reduce) {
   .kj-command-item {
-    transition: none;
+    display: flex;
+    flex-direction: var(--kj-command-item-direction, row);
+    align-items: var(--kj-command-item-align, center);
+    gap: var(--kj-command-item-gap, var(--kj-space-md, 0.75rem));
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem var(--kj-space-lg, 1rem);
+    border: none;
+    border-inline-start: 2px solid transparent;
+    background: transparent;
+    font-family: var(--kj-font-mono);
+    font-size: 0.875rem;
+    color: var(--kj-fg-default);
+    text-align: start;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .kj-command-item:hover,
+  .kj-command-item[data-active] {
+    background: var(--kj-bg-surface);
+    border-inline-start-color: var(--kj-bg-primary);
+  }
+
+  .kj-command-item[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ── Group ───────────────────────────────────────────────────────────── */
+
+  .kj-command-group {
+    padding-block: 0.25rem;
+  }
+
+  .kj-command-group__label {
+    padding: 0.375rem var(--kj-space-lg, 1rem) 0.125rem;
+    font-family: var(--kj-font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--kj-fg-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Separator ───────────────────────────────────────────────────────── */
+
+  .kj-command-separator {
+    height: 1px;
+    background: var(--kj-border-default);
+    margin-block: 0.25rem;
+  }
+
+  /* ── Footer ──────────────────────────────────────────────────────────── */
+
+  .kj-command-palette__footer {
+    display: flex;
+    gap: var(--kj-space-xl, 1.5rem);
+    padding: var(--kj-space-sm, 0.375rem) var(--kj-space-lg, 1rem);
+    border-top: 1px solid var(--kj-border-default);
+    background: var(--kj-bg-surface);
+  }
+
+  .kj-command-palette__footer span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--kj-font-mono);
+    font-size: 0.65rem;
+    color: var(--kj-fg-muted);
+  }
+
+  .kj-command-palette__footer kbd {
+    background: var(--kj-bg-surface);
+    border: 1px solid var(--kj-border-default);
+    color: var(--kj-fg-muted);
+    font-family: var(--kj-font-mono);
+    font-size: 0.6rem;
+    padding: 0.1rem 0.35rem;
+  }
+
+  /* ── Reduced motion ──────────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    .kj-command-item {
+      transition: none;
+    }
   }
 }

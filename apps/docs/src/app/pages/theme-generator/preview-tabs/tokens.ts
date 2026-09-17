@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { KjCardComponent } from '@kouji-ui/components';
+import { KjCard } from '@kouji-ui/components';
 import { ThemeDraftService } from '../../../services/theme-draft.service';
 import { oklchToHex } from '../../../lib/theme/theme-color-utils';
 import type { BgSlot, FgSlot } from '../../../lib/theme/types';
@@ -43,7 +43,7 @@ const TYPE_SCALE: readonly TypeRow[] = [
 @Component({
   selector: 'kj-preview-tokens',
   standalone: true,
-  imports: [KjCardComponent],
+  imports: [KjCard],
   templateUrl: './tokens.html',
   styleUrl: './tokens.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

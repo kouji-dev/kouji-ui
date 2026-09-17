@@ -1,129 +1,132 @@
-.kj-calendar {
-  display: inline-block;
-  padding: var(--kj-space-sm);
-  /* No chrome of its own — when projected into `.kj-date-picker__panel`
-     (which already paints `bg-elevated` + border + radius + shadow), a
-     duplicate border reads as a hairline ring inside the panel. A
-     stand-alone calendar inherits its parent container's surface. */
-  background: transparent;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  color: var(--kj-fg-default);
-}
+@layer kj.component {
+  .kj-calendar {
+    display: inline-block;
+    padding: var(--kj-space-sm);
+    /* No chrome of its own — when projected into `.kj-date-picker__panel`
+       (which already paints `bg-elevated` + border + radius + shadow), a
+       duplicate border reads as a hairline ring inside the panel. A
+       stand-alone calendar inherits its parent container's surface. */
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    color: var(--kj-fg-default);
+  }
 
-.kj-calendar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--kj-space-xs, 0.25rem);
-  margin-bottom: var(--kj-space-xs, 0.25rem);
-}
+  .kj-calendar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--kj-space-xs, 0.25rem);
+    margin-bottom: var(--kj-space-xs, 0.25rem);
+  }
 
-.kj-calendar__caption {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  flex: 1;
-  text-align: center;
-}
+  .kj-calendar__caption {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+  }
 
-.kj-calendar__nav {
-  appearance: none;
-  background: transparent;
-  border: var(--kj-border) solid transparent;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: var(--kj-radius-field);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  color: inherit;
-}
+  .kj-calendar__nav {
+    appearance: none;
+    background: transparent;
+    border: var(--kj-border) solid transparent;
+    width: var(--kj-ctl-h-xs);
+    height: var(--kj-ctl-h-xs);
+    border-radius: var(--kj-radius-field);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    color: inherit;
+  }
 
-.kj-calendar__nav:hover:not([disabled]) {
-  /* `bg-field` (not `bg-surface`) — guarantees the hover is visible on
-     `bg-elevated` panels where surface and elevated collapse to the same
-     value (light / corporate themes). */
-  background: var(--kj-bg-field);
-}
+  .kj-calendar__nav:hover:not([disabled]) {
+    /* `bg-field` (not `bg-surface`) — guarantees the hover is visible on
+       `bg-elevated` panels where surface and elevated collapse to the same
+       value (light / corporate themes). */
+    background: var(--kj-bg-field);
+  }
 
-.kj-calendar__nav[disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+  .kj-calendar__nav[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 
-.kj-calendar__grid {
-  border-collapse: collapse;
-  /* Fixed layout so every column gets the same explicit `2rem` width set
-     on `.kj-calendar__weekday` / `.kj-calendar__cell` regardless of cell
-     content. */
-  width: auto;
-  table-layout: fixed;
-}
+  .kj-calendar__grid {
+    border-collapse: collapse;
+    /* Fixed layout so every column gets the same explicit `2rem` width set
+       on `.kj-calendar__weekday` / `.kj-calendar__cell` regardless of cell
+       content. */
+    width: auto;
+    table-layout: fixed;
+  }
 
-/* th/td share the same width contributor (the inner button or label) so
-   weekday headers align perfectly above day cells. `min-width: 2rem` on
-   both keeps the seven columns equal even when a weekday abbreviation is
-   narrower than a 2-digit day. */
-.kj-calendar__weekday {
-  width: 2rem;
-  padding: 0;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--kj-fg-muted);
-  text-align: center;
-}
+  /* th/td share the same width contributor (the inner button or label) so
+     weekday headers align perfectly above day cells. `min-width: 2rem` on
+     both keeps the seven columns equal even when a weekday abbreviation is
+     narrower than a 2-digit day. */
+  .kj-calendar__weekday {
+    width: 2rem;
+    padding: 0;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--kj-fg-muted);
+    text-align: center;
+  }
 
-.kj-calendar__cell {
-  width: 2rem;
-  padding: 1px;
-}
+  .kj-calendar__cell {
+    width: 2rem;
+    padding: 1px;
+  }
 
-.kj-calendar__day {
-  appearance: none;
-  background: transparent;
-  border: var(--kj-border) solid transparent;
-  border-radius: var(--kj-radius-selector);
-  width: 100%;          /* Fill the cell so the button hits-area aligns
-                           with the header column above. */
-  height: 2rem;
-  min-height: 1.75rem;  /* WCAG 2.5.5 AA: ≥ 24×24px */
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8125rem;
-  color: inherit;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+  .kj-calendar__day {
+    appearance: none;
+    background: transparent;
+    border: var(--kj-border) solid transparent;
+    border-radius: var(--kj-radius-selector);
+    width: 100%;          /* Fill the cell so the button hits-area aligns
+                             with the header column above. */
+    height: var(--kj-ctl-h-sm);
+    min-height: 1.75rem;  /* WCAG 2.5.8 (AA) floor: stays ≥ 24×24px at compact */
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.kj-calendar__day:hover:not([disabled]) {
-  background: var(--kj-bg-field);
-}
+  .kj-calendar__day:hover:not([data-disabled]) {
+    background: var(--kj-bg-field);
+  }
 
-.kj-calendar__day:focus-visible {
-  outline: 2px solid var(--kj-border-focus);
-  outline-offset: 2px;
-}
+  .kj-calendar__day:focus-visible {
+    outline: 2px solid var(--kj-border-focus);
+    outline-offset: 2px;
+  }
 
-.kj-calendar__day[data-today] {
-  border-color: var(--kj-border-focus);
-  font-weight: 600;
-}
+  .kj-calendar__day[data-today] {
+    border-color: var(--kj-border-focus);
+    font-weight: 600;
+  }
 
-.kj-calendar__day[data-selected] {
-  background: var(--kj-bg-primary);
-  color: var(--kj-fg-on-primary);
-}
+  .kj-calendar__day[data-selected] {
+    background: var(--kj-bg-primary);
+    color: var(--kj-fg-on-primary);
+  }
 
-.kj-calendar__day[data-outside-month] {
-  opacity: 0.35;
-}
+  .kj-calendar__day[data-outside-month] {
+    opacity: 0.35;
+  }
 
-.kj-calendar__day[data-disabled],
-.kj-calendar__day[disabled] {
-  opacity: 0.35;
-  cursor: not-allowed;
+  /* Disabled days keep `aria-disabled` (still focusable, clicks ignored) rather
+     than the native attribute, so the state hook is `data-disabled`. */
+  .kj-calendar__day[data-disabled] {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
 }

@@ -5,16 +5,15 @@ import {
   ViewEncapsulation,
   computed,
   inject,
-  input,
 } from '@angular/core';
-import { KjSpinner, type KjSpinnerAnimation, KjVariant, KjSize, KjVisuallyHidden } from '@kouji-ui/core';
+import { KjSpinner, KjVariant, KjSize, KjVisuallyHidden } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjSpinner` directive.
  *
  * Composes `KjSpinner` via `hostDirectives` so the wrapper's host element is
  * *the* spinner — `role="status"`, `aria-live="polite"`, `aria-atomic="true"`,
- * the `aria-label` default ("Loading"), `data-animation`, and
+ * the `aria-label` default (the i18n catalog's `spinner.loading`), `data-animation`, and
  * `data-reduced-motion` all land on `<kj-spinner>` itself. `kjVariant` and
  * `kjSize` are wrapper-level inputs that the host mirrors to `data-variant` /
  * `data-size` (the directive's own nested `KjVariant` / `KjSize` host
@@ -113,7 +112,7 @@ import { KjSpinner, type KjSpinnerAnimation, KjVariant, KjSize, KjVisuallyHidden
   template: `
     <span class="kj-spinner__glyph" aria-hidden="true"></span>
     @if (shouldRenderHiddenLabel()) {
-      <span kjVisuallyHidden>{{ kjAriaLabel() }}</span>
+      <span kjVisuallyHidden>{{ spinner.resolvedAriaLabel() }}</span>
     }
   `,
   styleUrl: './spinner.css',
@@ -122,38 +121,26 @@ import { KjSpinner, type KjSpinnerAnimation, KjVariant, KjSize, KjVisuallyHidden
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjSpinnerComponent {
-  // Inputs are forwarded via `hostDirectives.inputs` above. Re-declared here
-  // for the docs extractor only — the forwarded copies are authoritative.
-  /**
-   * Color preset reflected to `data-variant` on the host. Unset falls back
-   * to the `provideKjSpinner(…)` default (`'neutral'`, which resolves to
-   * `currentColor` in shipped themes — so a spinner inside a coloured
-   * surface inherits its parent's text colour).
-   */
-  readonly kjVariant = input<string | undefined>(undefined);
+  // No shadow inputs. Every public input is forwarded through
+  // `hostDirectives.inputs` and owned by the composed directive:
+  //
+  // - `kjVariant` / `kjSize` — `KjVariant` / `KjSize`. Unset, they resolve
+  //   through the `provideKjSpinner(…)` preset chain (`'neutral'` / `'md'` as
+  //   shipped), which is exactly what a re-declared input with a literal
+  //   default used to clobber in the published `.d.ts` and the generated docs.
+  // - `kjAnimation` — `KjSpinner`; reflected as `data-animation`, validated in
+  //   dev mode against `KJ_SPINNER_CONFIG.animations`.
+  // - `kjAriaLabel` — `KjSpinner`; unset it resolves through
+  //   `provideKjSpinner({ defaults: { ariaLabel } })` and then the i18n
+  //   catalog (`spinner.loading`).
 
   /**
-   * Size preset reflected to `data-size` on the host. Unset falls back to
-   * the configured default (`'md'`). Sizes ship as `xs | sm | md | lg`; an
-   * `xl` is intentionally absent — a spinner that big almost always wants a
-   * determinate Progress Bar instead.
+   * The composed directive. The template reads its `resolvedAriaLabel()` so
+   * the visually-hidden label and the host `aria-label` are the *same*
+   * string — the wrapper used to render its own hard-coded `'Loading'` while
+   * the host announced the configured/translated one.
    */
-  readonly kjSize = input<string | undefined>(undefined);
-
-  /**
-   * Animation shape preset forwarded to `KjSpinner.kjAnimation` via the
-   * composed host directive. Reflects on the host as `data-animation`.
-   * Themes own the keyframes per value.
-   */
-  readonly kjAnimation = input<KjSpinnerAnimation>('spin');
-
-  /**
-   * Accessible name forwarded to `KjSpinner.kjAriaLabel` via the composed
-   * host directive. Default `'Loading'`. Used both as the host's
-   * `aria-label` and as the visually-hidden text rendered inside the
-   * wrapper when no consumer-authored `aria-labelledby` is on the element.
-   */
-  readonly kjAriaLabel = input<string>('Loading');
+  protected readonly spinner = inject(KjSpinner, { self: true });
 
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 

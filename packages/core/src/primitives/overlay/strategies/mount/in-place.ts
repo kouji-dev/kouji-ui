@@ -1,6 +1,7 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjMountStrategy } from '../../tokens';
 
+/** Leaves the panel where it is declared — no portal. The default for inline overlays. */
 export function inPlace(): KjMountStrategy {
   let ctx: KjOverlayContext | null = null;
   return {
@@ -13,8 +14,8 @@ export function inPlace(): KjMountStrategy {
       const panel = ctx?.panelEl();
       const parent = panel?.parentElement;
       if (parent) return parent;
-      if (typeof document === 'undefined') return null as unknown as HTMLElement;
-      return document.body;
+      return (panel?.ownerDocument ?? ctx?.triggerEl()?.ownerDocument)
+        ?.body as HTMLElement;
     },
   };
 }

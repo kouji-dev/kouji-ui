@@ -1,5 +1,10 @@
 /* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
 /* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+/* Library build. ng-packagr compiles exactly what `src/public-api.ts` reaches
+   (the entry file is its program's only root), so `exclude` below keeps docs
+   examples, playgrounds and specs out of any program built from this file
+   (IDEs, tsc -p) — it cannot stop a barrel from re-exporting one. That gate is
+   `scripts/check-public-api-graph.mjs`, run by the package `build` script. */
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
@@ -9,7 +14,14 @@
     "types": []
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts"],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/_examples/**",
+    "**/*.example.ts",
+    "**/*.playground.ts",
+    "src/example-components.ts",
+    "src/test-setup.ts"
+  ],
   "angularCompilerOptions": {
     "extendedDiagnostics": {
       "checks": {

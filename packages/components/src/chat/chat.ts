@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  booleanAttribute,
   input,
 } from '@angular/core';
 import {
@@ -238,8 +239,8 @@ export class KjChatBubbleComponent {
   readonly kjVariant = input<KjChatBubbleVariant | undefined>(undefined);
   /** Density preset. Drives padding + font-size on the bubble. Unset falls back to the configured default (`'md'`). */
   readonly kjSize = input<KjChatBubbleSize | undefined>(undefined);
-  /** Suppresses the tail unconditionally. Auto-suppression on grouped rows is independent. */
-  readonly kjChatBubbleNoTail = input(false);
+  /** Suppresses the tail unconditionally. Auto-suppression on grouped rows is independent. Default `false`. */
+  readonly kjChatBubbleNoTail = input(false, { transform: booleanAttribute });
 }
 
 /**

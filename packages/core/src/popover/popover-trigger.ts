@@ -1,4 +1,5 @@
-import { Directive, booleanAttribute, effect, inject, input } from '@angular/core';
+import { Directive, Signal, effect, inject, input } from '@angular/core';
+import { KjDisabled } from '../primitives/interaction/disabled';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
 import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
@@ -12,9 +13,11 @@ import { onHover } from '../primitives/overlay/strategies/trigger-event/on-hover
 import {
   composeTriggerEvents,
   switchableTriggerEvent,
+  whenEnabled,
   type KjSwitchableTriggerStrategy,
 } from '../primitives/overlay/strategies/trigger-event/compose';
 
+/** How the popover opens: `'click'` toggles, `'hover'` opens on hover intent / focus / tap. */
 export type KjPopoverTriggerKind = 'click' | 'hover';
 
 /**
@@ -37,7 +40,10 @@ export type KjPopoverTriggerKind = 'click' | 'hover';
   selector: '[kjPopoverTrigger]',
   exportAs: 'kjPopoverTrigger',
   standalone: true,
-  hostDirectives: [{ directive: KjOverlayTrigger, inputs: ['kjOpen'] }],
+  hostDirectives: [
+    { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
+  ],
   providers: [
     KjOverlayController,
     // The kind is an input, unknown when this factory runs — the shell is
@@ -52,7 +58,15 @@ export type KjPopoverTriggerKind = 'click' | 'hover';
 export class KjPopoverTrigger {
   /** How the panel opens: `click` toggles; `hover` opens on hover intent, focus, or tap. */
   readonly kjTrigger = input<KjPopoverTriggerKind>('click');
-  readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /**
+   * While true the trigger never opens the panel (an open panel can still
+   * close). Default `false`. Owned by the composed `KjDisabled` host
+   * directive, which also reflects `aria-disabled` / `data-disabled` — the
+   * hand-rolled input this replaced reflected neither, so a disabled trigger
+   * was announced as operable (WCAG 4.1.2). Read-only mirror; bind
+   * `[kjDisabled]` on the host.
+   */
+  readonly kjDisabled: Signal<boolean> = inject(KjDisabled).disabled;
   /** Hover intent before opening, in ms (`hover` kind only). Default 150. */
   readonly kjOpenDelay = input<number, unknown>(150, { transform: (v) => Number(v) || 0 });
   /** Grace period after the pointer leaves the trigger or the panel, in ms (`hover` kind only). Default 150. */
@@ -69,19 +83,25 @@ export class KjPopoverTrigger {
 
   constructor() {
     const strategy = inject(KJ_OVERLAY_TRIGGER_EVENT_STRATEGY) as KjSwitchableTriggerStrategy;
+    // `enabled` is read at event time (outside the effect), so a kjDisabled
+    // change never rebuilds the strategy.
+    const enabled = () => !this.kjDisabled();
     effect(() => {
       strategy.use(
-        this.kjTrigger() === 'hover'
-          ? composeTriggerEvents(
-              onHover({
-                openDelay: this.kjOpenDelay,
-                closeDelay: this.kjCloseDelay,
-                interactive: true,
-              }),
-              onFocus(),
-              onClick({ openOnly: true }),
-            )
-          : onClick(),
+        whenEnabled(
+          this.kjTrigger() === 'hover'
+            ? composeTriggerEvents(
+                onHover({
+                  openDelay: this.kjOpenDelay,
+                  closeDelay: this.kjCloseDelay,
+                  interactive: true,
+                }),
+                onFocus(),
+                onClick({ openOnly: true }),
+              )
+            : onClick(),
+          enabled,
+        ),
       );
     });
   }

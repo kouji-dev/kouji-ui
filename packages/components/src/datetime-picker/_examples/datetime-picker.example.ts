@@ -1,8 +1,8 @@
 import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
-import { KjDatetimePickerComponent } from '../datetime-picker';
+import { KjDatetimePicker } from '../datetime-picker';
 
 /**
- * Default usage example for KjDatetimePickerComponent.
+ * Default usage example for KjDatetimePicker.
  *
  * A single `Date` two-way binding carries both the calendar day and the
  * time-of-day. Picking a day keeps the popover open so the time field can be
@@ -11,7 +11,7 @@ import { KjDatetimePickerComponent } from '../datetime-picker';
 @Component({
   selector: 'kj-datetime-picker-example',
   standalone: true,
-  imports: [KjDatetimePickerComponent],
+  imports: [KjDatetimePicker],
   styles: [
     `
       :host {

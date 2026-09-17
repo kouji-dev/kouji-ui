@@ -24,6 +24,7 @@ function toHex2(n: number): string {
   return v.toString(16).padStart(2, '0');
 }
 
+/** Red / green / blue channels, each 0–255. */
 export interface KjRgb {
   r: number; // 0..255
   g: number; // 0..255
@@ -31,6 +32,7 @@ export interface KjRgb {
   a: number; // 0..1
 }
 
+/** Hue (0–360), saturation and value (each 0–100). The picker's working space. */
 export interface KjHsv {
   h: number; // 0..360
   s: number; // 0..1
@@ -38,6 +40,7 @@ export interface KjHsv {
   a: number; // 0..1
 }
 
+/** Hue (0–360), saturation and lightness (each 0–100). */
 export interface KjHsl {
   h: number; // 0..360
   s: number; // 0..1

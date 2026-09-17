@@ -3,6 +3,7 @@ import {
   Component,
   ChangeDetectionStrategy,
   ViewEncapsulation,
+  inject,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
@@ -23,6 +24,7 @@ import { tabCycle } from '../primitives/overlay/strategies/focus-trap/tab-cycle'
 import { htmlOverflow } from '../primitives/overlay/strategies/scroll-lock/html-overflow';
 import { silent } from '../primitives/overlay/strategies/live-announcer/silent';
 import { programmatic } from '../primitives/overlay/strategies/trigger-event/programmatic';
+import { KjTranslateService } from '../i18n/translate.service';
 
 /**
  * Modal panel for the command palette (Cmd-K pattern). Composes
@@ -67,8 +69,15 @@ import { programmatic } from '../primitives/overlay/strategies/trigger-event/pro
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    '[attr.aria-label]': '"Command palette"',
+    '[attr.aria-label]': 'ariaLabel()',
   },
   template: `<ng-content />`,
 })
-export class KjCommandPaletteDialog {}
+export class KjCommandPaletteDialog {
+  /**
+   * Accessible name of the palette dialog, from the i18n catalog
+   * (`commandPalette.dialog`) — cust F-7: no assistive string is baked into
+   * this component's host block.
+   */
+  protected readonly ariaLabel = inject(KjTranslateService).translation('commandPalette.dialog');
+}

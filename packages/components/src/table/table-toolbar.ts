@@ -7,7 +7,7 @@ import {
   inject,
   output,
 } from '@angular/core';
-import { KJ_TABLE, KjTable } from '@kouji-ui/core';
+import { KJ_TABLE, KjTable, KjTranslateService } from '@kouji-ui/core';
 import { KjInputComponent } from '../input/input';
 import { KjButtonComponent } from '../button/button';
 import { KjButtonGroupComponent } from '../button-group/button-group';
@@ -146,7 +146,7 @@ export class KjBulkAction {}
     </kj-dropdown-menu-content>
 
     @if (hasSelection()) {
-      <div class="kj-table-toolbar__bulk" role="group" aria-label="Bulk actions">
+      <div class="kj-table-toolbar__bulk" role="group" [attr.aria-label]="bulkActionsLabel()">
         <ng-content select="[kjBulkAction]" />
       </div>
     }
@@ -182,13 +182,25 @@ export class KjBulkAction {}
   host: {
     'class': 'kj-table-toolbar',
     'role': 'toolbar',
-    'aria-label': 'Data table toolbar',
+    '[attr.aria-label]': 'toolbarLabel()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjTableToolbarComponent {
+export class KjTableToolbar {
   /** The host table — resolved through `KJ_TABLE` injected from any ancestor. */
   protected readonly table = inject<KjTable<unknown>>(KJ_TABLE);
+
+  private readonly i18n = inject(KjTranslateService);
+
+  /**
+   * Accessible name of the `role="toolbar"` host, from the i18n catalog
+   * (`table.toolbar`) — cust F-7: no assistive string is baked into this
+   * component, host block included.
+   */
+  protected readonly toolbarLabel = this.i18n.translation('table.toolbar');
+
+  /** Accessible name of the bulk-action group (`table.bulkActions`). */
+  protected readonly bulkActionsLabel = this.i18n.translation('table.bulkActions');
 
   /** Emits when the user picks an export format from the toolbar's export menu. */
   readonly export = output<KjTableExportFormat>();

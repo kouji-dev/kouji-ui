@@ -1,82 +1,102 @@
 /* ─────────────────────────────────────────────────────────────
-   kouji-ui docs example themes
-   Three theme layers: kj.tokens (defaults) + kj.theme (overrides)
+   kouji-ui DOCS EXAMPLE themes — not part of the published token
+   contract, and deliberately not shipped (core's ng-package.json does
+   not list it as an asset).
+
+   Every property here is `--docs-*`. It used to be `--kj-*`, and four of
+   the names it declared — `--kj-border`, `--kj-shadow-sm`,
+   `--kj-shadow-md`, `--kj-transition` — are entries in the real contract
+   with entirely different meanings (styles F-17). Emulated encapsulation
+   was the only thing keeping `:root { --kj-border: #333 }` out of the
+   consumer's document; the day one of these examples turned
+   encapsulation off it would have rewritten the theme globally. The
+   `--docs-` prefix removes the hazard rather than relying on that.
+
+   Layers are the pinned ones from `@kouji-ui/themes/layers.css`, and for
+   the same reason the real themes use them: `kj.base` holds the defaults
+   every theme inherits, `kj.shared` holds the per-theme override blocks.
+   The previous `kj.tokens` / `kj.theme` names were pinned by nothing, so
+   their priority depended on load order.
    ──────────────────────────────────────────────────────────── */
 
-@layer kj.tokens, kj.theme;
-
-/* ── Default (dark) tokens — applied to :root and .kj-theme-default ── */
-@layer kj.tokens {
+/* ── Default tokens — applied to :root and .kj-theme-default ──
+   These ALIAS the real theme contract rather than hard-coding a palette. The
+   default examples are meant to show a component under whichever theme the
+   reader picked, so pinning them to one dark palette made every example paint
+   a near-black panel on all 15 themes. The two blocks below stay literal on
+   purpose: `retro` and `finance` are deliberately *themed* examples that must
+   look the same whatever the page theme is. */
+@layer kj.base {
   :root,
   .kj-theme-default {
-    --kj-bg: #0c0c0c;
-    --kj-surface: #1a1a1a;
-    --kj-text: #f0ede6;
-    --kj-text-muted: #888;
-    --kj-border: #333;
-    --kj-accent: #b8f500;
-    --kj-accent-on: #0c0c0c;
-    --kj-destructive: #ef4444;
-    --kj-radius-sm: 0px;
-    --kj-radius-md: 0px;
-    --kj-radius-lg: 0px;
-    --kj-shadow-sm: none;
-    --kj-shadow-md: none;
-    --kj-shadow-hard: none;
-    --kj-font: 'JetBrains Mono', monospace;
-    --kj-btn-border: none;
-    --kj-btn-outline-border: 1px solid rgba(240, 237, 230, 0.6);
-    --kj-btn-ghost-color: rgba(240, 237, 230, 0.55);
-    --kj-backdrop: rgba(0, 0, 0, 0.75);
-    --kj-transition: opacity 0.15s;
+    --docs-bg: var(--kj-bg-body);
+    --docs-surface: var(--kj-bg-surface);
+    --docs-text: var(--kj-fg-default);
+    --docs-text-muted: var(--kj-fg-muted);
+    --docs-border: var(--kj-border-default);
+    --docs-accent: var(--kj-bg-primary);
+    --docs-accent-on: var(--kj-fg-on-primary);
+    --docs-destructive: var(--kj-bg-danger);
+    --docs-radius-sm: var(--kj-radius-selector);
+    --docs-radius-md: var(--kj-radius-field);
+    --docs-radius-lg: var(--kj-radius-box);
+    --docs-shadow-sm: var(--kj-shadow-sm);
+    --docs-shadow-md: var(--kj-shadow-md);
+    --docs-shadow-hard: var(--kj-shadow-lg);
+    --docs-font: var(--kj-font-sans);
+    --docs-btn-border: none;
+    --docs-btn-outline-border: var(--kj-border) solid var(--kj-border-default);
+    --docs-btn-ghost-color: var(--kj-fg-muted);
+    --docs-backdrop: var(--kj-bg-overlay);
+    --docs-transition: var(--kj-transition);
   }
 }
 
 /* ── Theme overrides ── */
-@layer kj.theme {
+@layer kj.shared {
   .kj-theme-retro {
-    --kj-bg: #fef9c3;
-    --kj-surface: #fef9c3;
-    --kj-text: #000;
-    --kj-text-muted: #444;
-    --kj-border: #000;
-    --kj-accent: #16a34a;
-    --kj-accent-on: #fff;
-    --kj-destructive: #dc2626;
-    --kj-radius-sm: 0px;
-    --kj-radius-md: 0px;
-    --kj-radius-lg: 0px;
-    --kj-shadow-sm: 2px 2px 0 #000;
-    --kj-shadow-md: 4px 4px 0 #000;
-    --kj-shadow-hard: 6px 6px 0 #000;
-    --kj-font: 'Courier New', monospace;
-    --kj-btn-border: 2px solid #000;
-    --kj-btn-outline-border: 2px solid #000;
-    --kj-btn-ghost-color: #555;
-    --kj-backdrop: rgba(0, 0, 0, 0.6);
-    --kj-transition: transform 0.08s, box-shadow 0.08s;
+    --docs-bg: #fef9c3;
+    --docs-surface: #fef9c3;
+    --docs-text: #000;
+    --docs-text-muted: #444;
+    --docs-border: #000;
+    --docs-accent: #16a34a;
+    --docs-accent-on: #fff;
+    --docs-destructive: #dc2626;
+    --docs-radius-sm: 0px;
+    --docs-radius-md: 0px;
+    --docs-radius-lg: 0px;
+    --docs-shadow-sm: 2px 2px 0 #000;
+    --docs-shadow-md: 4px 4px 0 #000;
+    --docs-shadow-hard: 6px 6px 0 #000;
+    --docs-font: 'Courier New', monospace;
+    --docs-btn-border: 2px solid #000;
+    --docs-btn-outline-border: 2px solid #000;
+    --docs-btn-ghost-color: #555;
+    --docs-backdrop: rgba(0, 0, 0, 0.6);
+    --docs-transition: transform 0.08s, box-shadow 0.08s;
   }
 
   .kj-theme-finance {
-    --kj-bg: #f9fafb;
-    --kj-surface: #fff;
-    --kj-text: #111827;
-    --kj-text-muted: #6b7280;
-    --kj-border: #e5e7eb;
-    --kj-accent: #3b82f6;
-    --kj-accent-on: #fff;
-    --kj-destructive: #ef4444;
-    --kj-radius-sm: 4px;
-    --kj-radius-md: 6px;
-    --kj-radius-lg: 12px;
-    --kj-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --kj-shadow-md: 0 8px 30px rgba(0, 0, 0, 0.1);
-    --kj-shadow-hard: 0 20px 60px rgba(0, 0, 0, 0.12);
-    --kj-font: system-ui, -apple-system, sans-serif;
-    --kj-btn-border: 1px solid transparent;
-    --kj-btn-outline-border: 1px solid #6b7280;
-    --kj-btn-ghost-color: #374151;
-    --kj-backdrop: rgba(0, 0, 0, 0.4);
-    --kj-transition: background 0.12s;
+    --docs-bg: #f9fafb;
+    --docs-surface: #fff;
+    --docs-text: #111827;
+    --docs-text-muted: #6b7280;
+    --docs-border: #e5e7eb;
+    --docs-accent: #3b82f6;
+    --docs-accent-on: #fff;
+    --docs-destructive: #ef4444;
+    --docs-radius-sm: 4px;
+    --docs-radius-md: 6px;
+    --docs-radius-lg: 12px;
+    --docs-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --docs-shadow-md: 0 8px 30px rgba(0, 0, 0, 0.1);
+    --docs-shadow-hard: 0 20px 60px rgba(0, 0, 0, 0.12);
+    --docs-font: system-ui, -apple-system, sans-serif;
+    --docs-btn-border: 1px solid transparent;
+    --docs-btn-outline-border: 1px solid #6b7280;
+    --docs-btn-ghost-color: #374151;
+    --docs-backdrop: rgba(0, 0, 0, 0.4);
+    --docs-transition: background 0.12s;
   }
 }

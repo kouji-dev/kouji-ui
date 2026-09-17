@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   KjDialog,
+  KjDialogTitle,
   KjDialogService,
   KjDialogRef,
   KjPopoverTrigger,
@@ -17,6 +18,7 @@ import { KjButtonComponent } from '../../button/button';
   standalone: true,
   imports: [
     KjDialog,
+    KjDialogTitle,
     KjButtonComponent,
     KjPopoverTrigger,
     KjPopoverContent,
@@ -28,7 +30,7 @@ import { KjButtonComponent } from '../../button/button';
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-dialog>
-      <h2>Outer dialog</h2>
+      <h2 kjDialogTitle>Outer dialog</h2>
       <p>Open overlays from inside a modal — popover, tooltip, or another dialog.</p>
 
       <kj-button kjTooltipTrigger #tt="kjTooltipTrigger">Hover for tooltip</kj-button>
@@ -57,11 +59,11 @@ class OuterBody {
 @Component({
   selector: 'kj-dialog-nested-inner-body',
   standalone: true,
-  imports: [KjDialog, KjButtonComponent],
+  imports: [KjDialog, KjDialogTitle, KjButtonComponent],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-dialog>
-      <h2>Inner dialog</h2>
+      <h2 kjDialogTitle>Inner dialog</h2>
       <p>Stacked above the outer dialog.</p>
       <kj-button (click)="ref.close()">Close</kj-button>
     </kj-dialog>

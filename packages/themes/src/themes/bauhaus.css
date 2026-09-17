@@ -7,6 +7,10 @@
 
 @layer kj.shared {
   [data-theme="bauhaus"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — sharp, geometric ── */
     --kj-radius-box:      var(--kj-base-radius-0);
     --kj-radius-field:    var(--kj-base-radius-0);
@@ -72,6 +76,7 @@
     --kj-border-default:   #1a1a1a;
     --kj-border-muted:     #4a4a4a;
     --kj-border-strong:    #1a1a1a;
+    --kj-border-control:  #1a1a1a;
     --kj-border-focus:     #1d3aff;
     --kj-border-disabled:  #b8b0a0;
     --kj-border-primary:   #b81728;

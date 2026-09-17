@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
+import { KJ_SPINNER_DEFAULTS, provideKjSpinner } from '@kouji-ui/core';
 import { KjSpinnerComponent } from './spinner';
 
 /**
@@ -180,5 +181,63 @@ describe('KjSpinnerComponent', () => {
       const host = fixture.nativeElement.querySelector('kj-spinner') as HTMLElement;
       expect(host.getAttribute('data-animation')).toBe('bars');
     });
+  });
+});
+
+describe('KjSpinnerComponent — no shadow inputs (cust F-14)', () => {
+  // The wrapper re-declared `kjVariant` / `kjSize` / `kjAnimation` /
+  // `kjAriaLabel` "for the docs extractor". Those were separate signal
+  // instances with hard-coded defaults, and `{{ kjAriaLabel() }}` in the
+  // template rendered the wrapper's literal 'Loading' while the host's
+  // `aria-label` came from the configured/translated one — two accessible
+  // names that could disagree.
+
+  @Component({
+    standalone: true,
+    imports: [KjSpinnerComponent],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    providers: [...provideKjSpinner({ defaults: { ariaLabel: 'Chargement' } })],
+    template: `<kj-spinner />`,
+  })
+  class ConfiguredLabelHost {}
+
+  test('the hidden label and the host aria-label are the same string', async () => {
+    TestBed.configureTestingModule({ imports: [ConfiguredLabelHost] });
+    const fixture = TestBed.createComponent(ConfiguredLabelHost);
+    fixture.detectChanges();
+    await flushAfterNextRender();
+    fixture.detectChanges();
+
+    const host = (fixture.nativeElement as HTMLElement).querySelector('kj-spinner')!;
+    const hidden = host.querySelector('[kjVisuallyHidden], .kj-visually-hidden');
+    expect(host.getAttribute('aria-label')).toBe('Chargement');
+    expect(hidden?.textContent?.trim()).toBe('Chargement');
+  });
+
+  test('provideKjSpinner defaults reach the wrapper instead of a literal', async () => {
+    @Component({
+      standalone: true,
+      imports: [KjSpinnerComponent],
+      changeDetection: ChangeDetectionStrategy.Eager,
+      providers: [
+        ...provideKjSpinner({
+          variants: [...KJ_SPINNER_DEFAULTS.variants, 'brand'],
+          defaults: { variant: 'brand', size: 'lg' },
+        }),
+      ],
+      template: `<kj-spinner />`,
+    })
+    class Host {}
+
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    await flushAfterNextRender();
+
+    const host = (fixture.nativeElement as HTMLElement).querySelector('kj-spinner')!;
+    expect(host.getAttribute('data-variant')).toBe('brand');
+    expect(host.getAttribute('data-size')).toBe('lg');
+    // Deep merge keeps the shipped animation default.
+    expect(host.getAttribute('data-animation')).toBe(KJ_SPINNER_DEFAULTS.defaults.animation);
   });
 });

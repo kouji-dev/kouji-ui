@@ -1,6 +1,7 @@
 export {
   KjCommandPaletteComponent,
   KjCommandPaletteFooter,
+  KjCommandPaletteSurface,
   KjCommandPaletteItemTemplate,
   KjCommandItemComponent,
   KjCommandGroupComponent,

@@ -1,4 +1,12 @@
-import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  InjectionToken,
+  PLATFORM_ID,
+  inject,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
+import { startOfDay } from './date-utils';
 
 /**
  * Shared state contract for the Calendar family. Implemented by `KjCalendar`
@@ -17,6 +25,9 @@ export interface KjCalendarContext {
 
   /** The "active" date — the cell that owns `tabindex=0`. Drives keyboard focus. */
   readonly focusedDate: WritableSignal<Date>;
+
+  /** Today's date, or `null` where the clock is unknown (server render). */
+  readonly today: Signal<Date | null>;
 
   /** Earliest selectable date (inclusive). `null` = open. */
   readonly minDate: Signal<Date | null>;
@@ -51,3 +62,27 @@ export interface KjCalendarContext {
 
 /** DI token for the Calendar context. */
 export const KJ_CALENDAR = new InjectionToken<KjCalendarContext>('KjCalendar');
+
+/** Returns today's date, or `null` when the clock is not the visitor's. */
+export type KjTodayProvider = () => Date | null;
+
+/**
+ * Supplies "today" to the calendar family. The root default returns the
+ * browser's current date and `null` on the server, so prerendered HTML never
+ * carries an `aria-current="date"` / `data-today` marker from the build
+ * machine's clock — the first client render adds it. Provide your own to pin
+ * today (tests, replay) or to derive it from the visitor's time zone.
+ *
+ * @example
+ * ```ts
+ * providers: [{ provide: KJ_TODAY, useValue: () => new Date(2025, 3, 15) }]
+ * ```
+ * @doc-category Core/Data input
+ */
+export const KJ_TODAY = new InjectionToken<KjTodayProvider>('KJ_TODAY', {
+  providedIn: 'root',
+  factory: () => {
+    const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+    return () => (isBrowser ? startOfDay(new Date()) : null);
+  },
+});

@@ -10,7 +10,7 @@ import type { Column } from '@tanstack/angular-table';
 import type { KjNumberFilterModel, KjNumberFilterType } from '@kouji-ui/core';
 import { KjNumberInputComponent } from '../../number-input/number-input';
 import { KjOptionComponent, KjSelectComponent } from '../../select/select';
-import { KJ_FILTER_CONTEXT, type KjFilterContext } from './text-filter';
+import { KJ_FILTER_CONTEXT, type KjFilterContext } from './filters.context';
 
 /** Legacy tuple shape — kept exported because external consumers still pass
  *  `[min, max]` into `column.setFilterValue` for `inRange`-style filters. */

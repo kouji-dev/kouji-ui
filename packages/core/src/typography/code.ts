@@ -3,13 +3,13 @@ import {
   ElementRef,
   afterNextRender,
   inject,
-  isDevMode,
 } from '@angular/core';
+import { kjDevMode, kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Marks an inline `<code>` element with kouji's inline-code tone — monospace
  * font, subtle background fill, and inline padding. Reflects
- * `data-tone="code"`. The directive does not handle multi-line `<pre><code>`
+ * `data-kj-tone="code"`. The directive does not handle multi-line `<pre><code>`
  * blocks; those are styled by the prose container's `pre code` selector or
  * by a consumer-wired syntax highlighter.
  *
@@ -29,19 +29,20 @@ import {
   standalone: true,
   exportAs: 'kjCode',
   host: {
-    '[attr.data-tone]': '"code"',
+    '[attr.data-kj-tone]': '"code"',
   },
 })
 export class KjCode {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    if (isDevMode()) {
+    if (kjDevMode()) {
       afterNextRender(() => {
         const host = this.el.nativeElement;
         if (host.tagName?.toLowerCase() !== 'code') {
-          console.warn(
-            `[kj] kjCode applied to <${host.tagName?.toLowerCase()}>. ` +
+          kjDevWarn(
+            'kjCode',
+            `applied to <${host.tagName?.toLowerCase()}>. ` +
               `Recommended host element is <code> for native semantics ` +
               `(WCAG 1.3.1 / 4.1.2). Apply only to non-code elements when ` +
               `you have a specific styling reason.`,

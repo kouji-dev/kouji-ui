@@ -4,7 +4,7 @@ import { KjCode } from '@kouji-ui/core';
 /**
  * Inline code example using the `kjCode` directive.
  *
- * Reflects `data-tone="code"` on a `<code>` host so the kouji type system
+ * Reflects `data-kj-tone="code"` on a `<code>` host so the kouji type system
  * applies the inline code styling (mono font, subtle background, padding)
  * outside a `kj-prose` container, where it would otherwise apply
  * automatically.

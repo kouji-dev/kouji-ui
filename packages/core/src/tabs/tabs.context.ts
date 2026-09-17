@@ -11,6 +11,18 @@ export type KjTabsOrientation = 'horizontal' | 'vertical';
  * `KjTabPanel`). Holds the active value, orientation, activation mode, and
  * id helpers for ARIA wiring.
  */
+/**
+ * What the root reads off a registered tab. Structural rather than `KjTab`,
+ * so this file imports no directive and a child never has to cast the
+ * injected context back to the concrete class (arch F-14).
+ */
+export interface KjTabRef {
+  /** The tab's identifying value. */
+  readonly kjTabValue: Signal<string>;
+  /** Whether the tab is disabled — skipped by selection and roving focus. */
+  readonly kjTabDisabled: Signal<boolean>;
+}
+
 export interface KjTabsContext {
   /** Currently active tab value. */
   readonly value: Signal<string>;
@@ -26,6 +38,11 @@ export interface KjTabsContext {
   isActive(value: string): boolean;
   /** Activates the tab/panel pair for `value`. No-op when the tab is disabled. */
   select(value: string): void;
+
+  /** @internal Registered tabs, in DOM order. */
+  readonly tabs: Signal<readonly KjTabRef[]>;
+  /** @internal */ register(tab: KjTabRef): void;
+  /** @internal */ unregister(tab: KjTabRef): void;
 }
 
 /** Injection token for the root `KjTabs` directive context. */

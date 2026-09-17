@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject } from '@angular/core';
-import { KJ_TABLE, KjTable } from '@kouji-ui/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed } from '@angular/core';
+import { KJ_TABLE, KjTable, injectParent } from '@kouji-ui/core';
 
 /**
  * Tiny counts strip rendered at the bottom of a data table. Displays
@@ -53,8 +53,8 @@ import { KJ_TABLE, KjTable } from '@kouji-ui/core';
   `],
   encapsulation: ViewEncapsulation.Emulated,
 })
-export class KjTableStatusBarComponent {
-  private readonly table = inject(KJ_TABLE) as unknown as KjTable<unknown>;
+export class KjTableStatusBar {
+  private readonly table = injectParent(KJ_TABLE, { child: 'KjTableStatusBar', parent: '[kjTable]' }) as unknown as KjTable<unknown>;
 
   protected readonly rowCount = computed(() => this.table.table().getRowCount());
 

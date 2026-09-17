@@ -1,11 +1,7 @@
 import type { KjLiveAnnouncerStrategy } from '../../tokens';
-import { announce } from './_announce';
+import { createAnnouncer } from './_announcer';
 
+/** Announces overlay messages into the page's shared `aria-live="polite"` region. */
 export function polite(): KjLiveAnnouncerStrategy {
-  return {
-    attach() {},
-    onOpen() {}, onClose() {},
-    detach() {},
-    announce(msg: string) { announce(msg, 'polite'); },
-  };
+  return createAnnouncer('polite');
 }

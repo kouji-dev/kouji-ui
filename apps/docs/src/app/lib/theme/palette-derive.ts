@@ -1,4 +1,4 @@
-import { clampChroma, converter, formatHex } from 'culori';
+import { clampChroma, converter, formatHex, wcagContrast } from 'culori';
 import { analogous, complementary, triadic } from './harmonies';
 import { pickInspiringSeedHex } from './seed-swatches';
 import type { BgSlot, FgSlot, ShapeKey } from './types';
@@ -21,13 +21,23 @@ function oklchHex(l: number, c: number, h: number): string {
   return formatHex(clampChroma({ mode: 'oklch', l, c, h }, 'oklch')) ?? '#000000';
 }
 
-function lOf(hex: string): number {
-  return toOklch(hex)?.l ?? 0.5;
-}
-
-/** WCAG-friendly on-color picker: near-black or near-white based on the bg's OKLCH lightness. */
+/**
+ * Ink for a fill, chosen so the pair clears WCAG 1.4.3 (AA, 4.5:1).
+ *
+ * Thresholding on OKLCH lightness is not a contrast guarantee: a mid-lightness
+ * fill (`#009434`, L ≈ 0.61) reads as "light" and gets near-black ink, while
+ * white ink on it is only 3.97:1 — a seed-derived palette shipped four such
+ * pairs. So measure both candidates and take the better one. The soft
+ * near-black (`#0a0a0a`) is preferred for its softer feel, but around relative
+ * luminance 0.19 neither soft candidate reaches 4.5:1, and there the pure
+ * endpoints are used — `max(contrast(#000), contrast(#fff))` is never below
+ * 4.58:1 for any colour, so this always terminates in a passing pair.
+ */
 function onColor(bgHex: string): string {
-  return lOf(bgHex) > 0.6 ? '#0a0a0a' : '#ffffff';
+  const best = (candidates: readonly string[]) =>
+    candidates.reduce((a, b) => (wcagContrast(b, bgHex) > wcagContrast(a, bgHex) ? b : a));
+  const soft = best(['#0a0a0a', '#ffffff']);
+  return wcagContrast(soft, bgHex) >= 4.5 ? soft : best(['#000000', '#ffffff']);
 }
 
 const SEMANTIC_HUES = { info: 220, success: 145, warning: 70, danger: 25 } as const;
@@ -42,8 +52,9 @@ const SEMANTIC_HUES = { info: 220, success: 145, warning: 70, danger: 25 } as co
  * hues but borrow the seed's lightness and chroma ranges.
  *
  * All conversions go through `clampChroma` to stay inside the sRGB gamut. Each
- * foreground is computed by luminance, so every Class A and Class B pair
- * clears AA contrast (≥ 4.5:1) by construction.
+ * foreground is picked by measured contrast against its fill (see `onColor`),
+ * so every Class A and Class B pair clears AA (≥ 4.5:1) by construction —
+ * `palette-derive.spec.ts` asserts that over every curated seed, both modes.
  */
 export function deriveFromSeed(seed: string, opts: DeriveOpts): DerivedPalette {
   const harmony: Harmony = opts.harmony ?? 'triadic';

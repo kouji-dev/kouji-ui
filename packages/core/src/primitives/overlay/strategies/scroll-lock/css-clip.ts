@@ -1,39 +1,40 @@
+import { resolveOverlayDocument } from '../../container';
+import type { KjOverlayContext } from '../../context';
 import type { KjScrollLockStrategy } from '../../tokens';
+import { acquireScrollLock } from './_lock';
 
-let _count = 0;
-let _saved: string | null = null;
-
+/**
+ * Locks page scroll with `overflow: clip` on `<html>` — no scrollbar removal,
+ * so nothing shifts, at the cost of losing programmatic scrolling too.
+ *
+ * Shares {@link acquireScrollLock}'s `<html>`-hosted refcount with
+ * {@link htmlOverflow}, so nesting the two cannot strand the page.
+ */
 export function cssClip(): KjScrollLockStrategy {
-  let acquired = false;
+  let doc: Document | null = resolveOverlayDocument();
+  let isBrowser = true;
+  let release: (() => void) | null = null;
+
+  const adoptDocument = (ctx?: KjOverlayContext): void => {
+    doc ??= ctx?.panelEl?.()?.ownerDocument ?? ctx?.triggerEl?.()?.ownerDocument ?? null;
+  };
+
   return {
-    attach() {},
+    attach(ctx) {
+      isBrowser = ctx?.platform?.isBrowser ?? true;
+      adoptDocument(ctx);
+    },
     onOpen() {
-      if (typeof document === 'undefined') return;
-      _count++;
-      acquired = true;
-      if (_count === 1) {
-        _saved = document.documentElement.style.overflow;
-        document.documentElement.style.overflow = 'clip';
-      }
+      if (!isBrowser || release) return;
+      adoptDocument();
+      if (!doc?.documentElement) return;
+      release = acquireScrollLock(doc, (root) => {
+        const saved = { 'overflow': root.style.overflow };
+        root.style.overflow = 'clip';
+        return saved;
+      });
     },
-    onClose() {
-      if (typeof document === 'undefined' || !acquired) return;
-      acquired = false;
-      _count--;
-      if (_count === 0) {
-        document.documentElement.style.overflow = _saved ?? '';
-        _saved = null;
-      }
-    },
-    detach() {
-      if (acquired) {
-        acquired = false;
-        _count--;
-        if (_count === 0 && typeof document !== 'undefined') {
-          document.documentElement.style.overflow = _saved ?? '';
-          _saved = null;
-        }
-      }
-    },
+    onClose() { release?.(); release = null; },
+    detach() { release?.(); release = null; },
   };
 }

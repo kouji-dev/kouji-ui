@@ -10,7 +10,7 @@ import {
   KjPaginationLastComponent,
   KjPaginationEllipsisComponent,
   KjPaginationInfoComponent,
-  KjPaginationDefaultComponent,
+  KjPaginationDefault,
 } from './pagination';
 
 const imports = [
@@ -22,7 +22,7 @@ const imports = [
   KjPaginationLastComponent,
   KjPaginationEllipsisComponent,
   KjPaginationInfoComponent,
-  KjPaginationDefaultComponent,
+  KjPaginationDefault,
 ];
 
 @Component({
@@ -198,5 +198,40 @@ describe('KjPaginationComponent (wrapper)', () => {
     expect(root.querySelector('button.kj-pagination-action--next')).not.toBeNull();
     expect(root.querySelector('button.kj-pagination-action--last')).not.toBeNull();
     expect(root.querySelectorAll('button.kj-pagination-item').length).toBeGreaterThan(0);
+  });
+});
+
+// arch F-2 — `kjDisabled`, `kjShowFirstLast` and `kjShowInfo` were plain
+// `input<boolean>(…)`, so the bare-attribute form the docs teach no-opped.
+@Component({
+  standalone: true,
+  imports,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <kj-pagination [kjPage]="1" [kjTotalPages]="5">
+      <kj-pagination-item [kjPage]="2" kjDisabled>2</kj-pagination-item>
+    </kj-pagination>
+    <kj-pagination-default id="d" [kjPage]="1" [kjTotalPages]="5" kjShowInfo />
+  `,
+})
+class BareAttributeHost {}
+
+describe('KjPagination — bare boolean attributes (arch F-2)', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [BareAttributeHost] });
+  });
+
+  test('a bare kjDisabled on an item reaches the composed KjDisabled', () => {
+    const fixture = TestBed.createComponent(BareAttributeHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('kj-pagination-item button');
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.hasAttribute('data-disabled')).toBe(true);
+  });
+
+  test('a bare kjShowInfo on the default layout renders the info region', () => {
+    const fixture = TestBed.createComponent(BareAttributeHost);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#d kj-pagination-info')).not.toBeNull();
   });
 });

@@ -109,10 +109,20 @@ const AA_NORMAL_PAIRS: PairSpec[] = [
   { fg: 'fg-on-danger',  bg: 'bg-danger'  },
 ];
 
-/** Non-text pairs (3:1 minimum) — borders, separators, focus rings. */
+/**
+ * Non-text pairs (3:1 minimum) — borders, separators, focus rings.
+ * The serializer derives `--kj-border-focus` from `bg-primary`, and the ring
+ * sits 2px outside the control, so the primary fill is checked against every
+ * neutral surface it can be drawn over (WCAG 1.4.11 — the built-in themes
+ * are held to the same edges in packages/themes/src/themes.spec.ts).
+ */
 const NON_TEXT_PAIRS: PairSpec[] = [
   { fg: 'bg-elevated', bg: 'bg-body' },
   { fg: 'bg-elevated', bg: 'bg-surface' },
+  { fg: 'bg-primary', bg: 'bg-body' },
+  { fg: 'bg-primary', bg: 'bg-surface' },
+  { fg: 'bg-primary', bg: 'bg-field' },
+  { fg: 'bg-primary', bg: 'bg-elevated' },
 ];
 
 const BODY_MIN_REM = 1;

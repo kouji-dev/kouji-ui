@@ -4,10 +4,10 @@ import {
   computed,
   input,
   signal,
+  inject,
 } from '@angular/core';
 import { KJ_FIELD, KjFieldContext } from './field.context';
-
-let kjFieldIdCounter = 0;
+import { KjId } from '../primitives/overlay/id';
 
 /**
  * Root directive for a form field. Owns id minting, the
@@ -16,16 +16,23 @@ let kjFieldIdCounter = 0;
  *
  * Project a single labelled control plus any number of `[kjFieldLabel]`,
  * `[kjFieldHelp]`, and `[kjFieldError]` children. The label auto-wires
- * `for=`; help and error ids are appended to the inner control's
- * `aria-describedby` via {@link KjAriaDescribedBy}; `aria-invalid` is
- * toggled based on `kjInvalid`.
+ * `for=`; the control — `[kjInput]`, or any element carrying
+ * `[kjFieldControl]` — adopts the control id, gets the help / error ids as
+ * `aria-describedby`, and reflects `aria-invalid` / `aria-required` from
+ * `kjInvalid` / `kjRequired`. Override the minted control id with
+ * `kjFieldId` rather than binding `[id]` on the control.
+ *
+ * One field wraps exactly ONE control. Every element composing
+ * `[kjFieldControl]` — directly, or through `[kjInput]`, `[kjTextarea]`,
+ * `[kjInputMask]` or `[kjSelectTrigger]` — adopts the same `controlId`, so a
+ * field authored with two controls renders a duplicate `id` and the label's
+ * `for=` resolves to whichever comes first. Use one field per control.
  *
  * @example
  * ```html
  * <div kjField [kjInvalid]="ctrl.touched && ctrl.invalid" [kjRequired]="true">
  *   <label kjFieldLabel>Email</label>
- *   <input kjInput type="email" [formControl]="ctrl"
- *          kjAriaDescribedBy [kjDescribedBy]="describedByIds()" />
+ *   <input kjInput type="email" [formControl]="ctrl" />
  *   <span kjFieldHelp>We'll never share it.</span>
  *   <span kjFieldError>Enter a valid email.</span>
  * </div>
@@ -49,7 +56,9 @@ let kjFieldIdCounter = 0;
   },
 })
 export class KjField implements KjFieldContext {
-  private readonly uid = ++kjFieldIdCounter;
+  private readonly ids = inject(KjId);
+  private readonly generatedControlId = this.ids.mint('field');
+  private readonly generatedLabelId = this.ids.mint('field-label');
 
   /** Layout orientation. Reflected as `data-orientation`. */
   readonly kjFieldOrientation = input<'vertical' | 'horizontal'>('vertical');
@@ -60,8 +69,15 @@ export class KjField implements KjFieldContext {
     transform: booleanAttribute,
   });
 
-  /** Whether the field (and its inner control) is disabled. Forwarded to
-   * the control via the field context. */
+  /**
+   * Whether the field (and its inner control) is disabled. Default `false`.
+   * Forwarded to the control via the field context.
+   *
+   * arch F-16: the field does not compose `KjDisabled`. It reflects
+   * `data-disabled` only — it is a grouping container, and `aria-disabled` on
+   * a non-interactive wrapper is not a state AT can act on. The disabled
+   * semantics belong to the control the field wraps.
+   */
   readonly kjDisabled = input<boolean, unknown>(false, {
     transform: booleanAttribute,
   });
@@ -81,11 +97,15 @@ export class KjField implements KjFieldContext {
   readonly kjFieldLabelId = input<string | undefined>(undefined);
 
   /** @internal */ readonly controlId = computed(
-    () => this.kjFieldId() ?? `kj-field-${this.uid}`,
+    () => this.kjFieldId() ?? this.generatedControlId,
   );
   /** @internal */ readonly labelId = computed(
-    () => this.kjFieldLabelId() ?? `kj-field-label-${this.uid}`,
+    () => this.kjFieldLabelId() ?? this.generatedLabelId,
   );
+
+  /** How many `[kjFieldLabel]` children are currently rendered. */
+  private readonly labelRegistrations = signal(0);
+  /** @internal */ readonly labelRendered = computed(() => this.labelRegistrations() > 0);
   /** @internal */ readonly required = computed(() => this.kjRequired());
   /** @internal */ readonly disabled = computed(() => this.kjDisabled());
   /** @internal */ readonly invalid = computed(() => this.kjInvalid());
@@ -117,5 +137,11 @@ export class KjField implements KjFieldContext {
     const target = kind === 'help' ? this.helpIds : this.errorIds;
     target.update((ids) => (ids.includes(id) ? ids : [...ids, id]));
     return () => target.update((ids) => ids.filter((x) => x !== id));
+  }
+
+  /** @internal */
+  registerLabel(): () => void {
+    this.labelRegistrations.update((n) => n + 1);
+    return () => this.labelRegistrations.update((n) => Math.max(0, n - 1));
   }
 }

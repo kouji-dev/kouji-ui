@@ -20,8 +20,9 @@ export interface KjRichTextHost {
   readonly toolbarItems: Signal<readonly KjRteToolbarItem[]>;
   /**
    * Register a feature with this editor. Must be called before the editor
-   * initializes (during a child directive's `ngOnInit`, or via
-   * {@link provideKjRichText}) for node-contributing features to take effect.
+   * initializes (from a child directive's registration effect, which runs
+   * during change detection, or via {@link provideKjRichText}) for
+   * node-contributing features to take effect.
    */
   registerFeature(feature: KjRichTextFeature): void;
 }
@@ -40,9 +41,6 @@ export const KJ_RICH_TEXT = new InjectionToken<KjRichTextHost>('KJ_RICH_TEXT');
 export const KJ_RICH_TEXT_FEATURES = new InjectionToken<KjRichTextFeature[]>(
   'KJ_RICH_TEXT_FEATURES',
 );
-
-/** @deprecated Renamed to {@link KJ_RICH_TEXT_FEATURES}. Same token instance. */
-export const KJ_RICH_TEXT_EXTENSIONS = KJ_RICH_TEXT_FEATURES;
 
 /**
  * Register one or more rich-text features for every editor in this injector

@@ -19,32 +19,50 @@ describe('KjDatePickerComponent', () => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
 
-  test('renders an input + toggle button', () => {
+  // These three used to look for a `button.kj-date-picker__toggle`. No such
+  // element exists, and none ever did — `<kj-date-picker>` follows the APG
+  // combobox pattern, where the INPUT is the trigger and carries the disclosure
+  // state itself. They have been red since CI stopped running tests, so they
+  // are re-pointed at the real control rather than at a button that was never
+  // rendered. The `aria-controls` id was stale for the same reason: panels are
+  // minted `kj-panel-N` by the overlay primitive.
+  test('renders a combobox input that is its own trigger', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('input.kj-date-picker__input')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('button.kj-date-picker__toggle')).not.toBeNull();
+    const input = fixture.nativeElement.querySelector('input.kj-date-picker__input');
+    expect(input).not.toBeNull();
+    expect(input.getAttribute('role')).toBe('combobox');
+    // The pattern puts the popup on the input itself; there is no separate
+    // toggle button beside it. (The calendar inside the panel has plenty of
+    // buttons, so this is scoped to the control row.)
+    expect(fixture.nativeElement.querySelector('.kj-date-picker__panel')).not.toBeNull();
+    expect(input.getAttribute('aria-haspopup')).toBe('dialog');
   });
 
-  test('toggle button has aria-haspopup="dialog" + aria-controls', () => {
+  test('the trigger input has aria-haspopup="dialog" + aria-controls', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const toggle = fixture.nativeElement.querySelector('button.kj-date-picker__toggle');
-    expect(toggle.getAttribute('aria-haspopup')).toBe('dialog');
-    expect(toggle.getAttribute('aria-controls')).toMatch(/^kj-date-picker-panel-/);
+    const input = fixture.nativeElement.querySelector('input.kj-date-picker__input');
+    expect(input.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    expect(input.getAttribute('aria-controls')).toMatch(/^kj-panel-/);
   });
 
-  test('toggle click opens the panel', () => {
+  test('activating the trigger opens the panel', () => {
     const fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();
-    const toggle = fixture.nativeElement.querySelector(
-      'button.kj-date-picker__toggle',
-    ) as HTMLButtonElement;
-    toggle.click();
+    const input = fixture.nativeElement.querySelector(
+      'input.kj-date-picker__input',
+    ) as HTMLInputElement;
+    input.click();
     fixture.detectChanges();
     expect(fixture.componentInstance.open()).toBe(true);
-    const panel = fixture.nativeElement.querySelector('.kj-date-picker__panel');
-    expect(panel.hasAttribute('hidden')).toBe(false);
+    expect(input.getAttribute('aria-expanded')).toBe('true');
+    // An open overlay is portalled out of the component's view, so the panel is
+    // no longer inside the fixture — query the document for it.
+    const panel = document.querySelector('.kj-date-picker__panel');
+    expect(panel).not.toBeNull();
+    expect(panel!.hasAttribute('hidden')).toBe(false);
   });
 
   test('panel is hidden initially', () => {

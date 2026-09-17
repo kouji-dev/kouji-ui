@@ -19,9 +19,9 @@ import {
   KjNumberInputComponent,
   KjToggleComponent,
 } from '@kouji-ui/components';
-import { KjIconDirective } from '@kouji-ui/core';
+import { KjIcon } from '@kouji-ui/core';
 import { ClipboardService } from '../../services/clipboard.service';
-import { PLAYGROUND_FILES } from './playground-files';
+import { PlaygroundRegistryService } from './playground-registry';
 import type { ControlSpec, PlaygroundFile } from './playground-types';
 
 /**
@@ -39,8 +39,14 @@ import type { ControlSpec, PlaygroundFile } from './playground-types';
  *     re-renders via signal reactivity AND the engine recomputes
  *     `snippet(currentValues)` for the code block.
  *
- * Pages with no entry in `PLAYGROUND_FILES` render the static "not yet
+ * Pages with no entry in `PLAYGROUND_LOADERS` render the static "not yet
  * wired" placeholder.
+ *
+ * The entry itself arrives asynchronously: `PlaygroundRegistryService` loads
+ * one chunk per playground (see `playground-files/index.ts` for why a static
+ * registry could not be code-split) and blocks application stability while it
+ * does, so the prerender renders a *real* component into the stage instead of
+ * finishing first and emitting an empty one.
  */
 @Component({
   selector: 'app-playground',
@@ -48,7 +54,7 @@ import type { ControlSpec, PlaygroundFile } from './playground-types';
   imports: [
     FormsModule,
     KjButtonComponent,
-    KjIconDirective,
+    KjIcon,
     KjInputComponent,
     KjNumberInputComponent,
     KjToggleComponent,
@@ -63,12 +69,19 @@ export class PlaygroundComponent {
   readonly symbol = input.required<string>();
 
   private readonly clipboard = inject(ClipboardService);
+  private readonly registry = inject(PlaygroundRegistryService);
   private readonly stage = viewChild<string, ViewContainerRef>('stage', { read: ViewContainerRef });
 
+  /**
+   * Resolved playground file for the current symbol — `null` while its chunk
+   * is in flight, and for any symbol with no playground at all. The template
+   * shows the "not yet wired" placeholder for both, which is correct: a
+   * loading stage and a missing stage look the same and last a frame.
+   */
+  private readonly resolved = signal<PlaygroundFile | null>(null);
+
   /** Look up the playground file, or null if the symbol isn't wired yet. */
-  protected readonly playgroundFile = computed<PlaygroundFile | null>(
-    () => PLAYGROUND_FILES[this.symbol()] ?? null,
-  );
+  protected readonly playgroundFile = this.resolved.asReadonly();
 
   /**
    * Generated template snippet, recomputed on every state change. Reads each
@@ -92,6 +105,19 @@ export class PlaygroundComponent {
   private readonly liveRef = signal<ComponentRef<unknown> | null>(null);
 
   constructor() {
+    // Resolve the playground chunk whenever the symbol changes. `get()` is
+    // memoised per symbol and blocks stability, so this is safe to re-enter
+    // and the prerender waits for it. A late answer for a symbol the reader
+    // has already navigated away from is dropped.
+    effect(() => {
+      const symbol = this.symbol();
+      untracked(() => this.resolved.set(null));
+      void this.registry.get(symbol).then((pf) => {
+        if (untracked(() => this.symbol()) !== symbol) return;
+        this.resolved.set(pf);
+      });
+    });
+
     // Mount / unmount the live component when an entry + stage become
     // available. The demo owns its template; we just instantiate it and let
     // it bind to the shared state signals via its own template.

@@ -3,7 +3,7 @@ import { Directive } from '@angular/core';
 /**
  * Reduces a phrasing element's colour intensity to the muted token so the
  * text reads as secondary information against the primary text. Reflects
- * `data-tone="muted"`; the kouji theme layer owns the actual colour mix and
+ * `data-kj-tone="muted"`; the kouji theme layer owns the actual colour mix and
  * is verified against the AAA contrast bar (≥ 7:1) on `base-100`,
  * `base-200`, and `base-300` page backgrounds.
  *
@@ -23,7 +23,7 @@ import { Directive } from '@angular/core';
   standalone: true,
   exportAs: 'kjMuted',
   host: {
-    '[attr.data-tone]': '"muted"',
+    '[attr.data-kj-tone]': '"muted"',
   },
 })
 export class KjMuted {}

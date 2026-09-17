@@ -13,9 +13,6 @@ export interface KjDatePickerContext {
   /** Open / closed state of the popover. */
   readonly open: WritableSignal<boolean>;
 
-  /** Auto-minted id of the popover panel — consumers wire `aria-controls`. */
-  readonly panelId: string;
-
   /** Earliest selectable date; `null` = open. */
   readonly minDate: Signal<Date | null>;
 
@@ -47,4 +44,5 @@ export interface KjDatePickerContext {
   toggle(): void;
 }
 
+/** Element-injector token exposing {@link KjDatePickerContext} to the trigger and the calendar panel. */
 export const KJ_DATE_PICKER = new InjectionToken<KjDatePickerContext>('KjDatePicker');

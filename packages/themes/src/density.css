@@ -61,6 +61,7 @@
 
     /* t-shirt names stay the documented API; numeric is the dense-UI
        escape hatch. These land on the same values they always had. */
+    --kj-space-2xs: var(--kj-space-1);   /*  2px — hairline gaps (menubar) */
     --kj-space-xs:  var(--kj-space-2);   /*  4px */
     --kj-space-sm:  var(--kj-space-4);   /*  8px */
     --kj-space-md:  var(--kj-space-6);   /* 12px */
@@ -99,7 +100,16 @@
        sm/md/lg stay each component's semantic API; this shared ladder is
        what those variants resolve to, so density scales every variant
        uniformly instead of each component hardcoding a rem value. Values
-       match the current button heights exactly at density 1. */
+       match the current button heights exactly at density 1.
+
+       Target size: the md default is 36px, which meets WCAG 2.5.8 Target
+       Size (Minimum, AA: 24px) but not 2.5.5 Target Size (Enhanced, AAA:
+       44px). That is a deliberate density trade-off — desktop forms at 44px
+       per control do not fit — so 44px is reached with the `lg` size on
+       every control, and the touch-first surfaces (action sheet, menubar
+       items, dropdown items, tree-select trigger) keep a literal 2.75rem
+       floor that never shrinks under `compact`. An app that wants AAA
+       everywhere sets `--kj-ctl-h-md: var(--kj-ctl-h-lg)` at its root. */
     --kj-ctl-h-xs: round(calc(1.75rem * var(--kj-density)), 1px); /* 28px */
     --kj-ctl-h-sm: round(calc(2rem    * var(--kj-density)), 1px); /* 32px */
     --kj-ctl-h-md: round(calc(2.25rem * var(--kj-density)), 1px); /* 36px */
@@ -117,16 +127,25 @@
      "standard" is declared as an explicit no-op so KjTableDensity's existing
      three values all remain valid — renaming or dropping one would be an API
      break. "comfy" is accepted as an alias; "comfortable" stays canonical. */
+  /* `data-kj-density` is the namespaced spelling every other kouji-ui
+     attribute hook uses (data-kj-motion, data-kj-tone …). `data-density`
+     stays as an alias: KjTable reflects it and consumers may hand-type it.
+     Both only write --kj-* custom properties, so a host app that uses the
+     bare name for something else sees no visible change. */
+  [data-kj-density="compact"],
   [data-density="compact"] {
     --kj-density: 0.85;
     --kj-type-scale: 0.875;
   }
 
+  [data-kj-density="standard"],
   [data-density="standard"] {
     --kj-density: 1;
     --kj-type-scale: 1;
   }
 
+  [data-kj-density="comfortable"],
+  [data-kj-density="comfy"],
   [data-density="comfortable"],
   [data-density="comfy"] {
     --kj-density: 1.18;

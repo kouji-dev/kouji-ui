@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { KjInputGroupAddon } from './input-group-addon';
 import { KjInputGroup } from './input-group';
-import { KJ_INPUT_GROUP } from './input-group.context';
+import { KJ_INPUT_GROUP, type KjInputGroupContext } from './input-group.context';
 
 expect.extend(toHaveNoViolations);
 
@@ -57,7 +57,7 @@ describe('KjInputGroup', () => {
   });
 
   it('provides KJ_INPUT_GROUP context', async () => {
-    let captured: ReturnType<typeof inject<typeof KJ_INPUT_GROUP>> | undefined;
+    let captured: KjInputGroupContext | undefined;
 
     @Component({
       selector: 'kj-ig-probe',
@@ -83,7 +83,7 @@ describe('KjInputGroup', () => {
   });
 
   it('addons register with the group and expose an id', async () => {
-    let captured: ReturnType<typeof inject<typeof KJ_INPUT_GROUP>> | undefined;
+    let captured: KjInputGroupContext | undefined;
 
     @Component({
       selector: 'kj-ig-ctx-probe',
@@ -113,7 +113,7 @@ describe('KjInputGroup', () => {
   });
 
   it('addon with kjAriaHidden="true" is excluded from id lists', async () => {
-    let captured: ReturnType<typeof inject<typeof KJ_INPUT_GROUP>> | undefined;
+    let captured: KjInputGroupContext | undefined;
 
     @Component({
       selector: 'kj-ig-hidden-probe',
@@ -182,5 +182,64 @@ describe('KjInputGroup', () => {
       { imports: [KjInputGroup, KjInputGroupAddon] },
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  // arch F-2 — `kjAriaHidden`'s transform used to map the bare attribute's
+  // `''` back to `undefined`, so `<span kjInputGroupAddon kjAriaHidden>` wrote
+  // no attribute at all and the addon still joined the `aria-labelledby`
+  // chain. It now reads as `true`, the rule `KjLink.kjExternal` already used.
+  describe('bare boolean attributes (arch F-2)', () => {
+    it('bare kjAriaHidden hides the addon', async () => {
+      const { container } = await render(
+        `<div kjInputGroup>
+           <span kjInputGroupAddon kjAriaHidden>$</span>
+         </div>`,
+        { imports: [KjInputGroup, KjInputGroupAddon] },
+      );
+      const addon = container.querySelector('[kjInputGroupAddon]') as HTMLElement;
+      expect(addon.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('bare kjAriaHidden also drops the addon from the id lists', async () => {
+      @Component({
+        standalone: true,
+        imports: [KjInputGroup, KjInputGroupAddon],
+        template: `
+          <div kjInputGroup>
+            <span kjInputGroupAddon kjAriaHidden>$</span>
+            <span kjInputGroupAddon kjPosition="end">USD</span>
+            <ng-container #probe />
+          </div>
+        `,
+      })
+      class HiddenBareProbe {}
+      const { fixture } = await render(HiddenBareProbe);
+      const ctx: KjInputGroupContext = fixture.debugElement
+        .query((n) => n.nativeElement?.hasAttribute?.('kjInputGroup') === true)
+        .injector.get(KJ_INPUT_GROUP);
+      expect(ctx.startAddonIds()).toEqual([]);
+      expect(ctx.endAddonIds().length).toBe(1);
+    });
+
+    it('the tri-state survives: [kjAriaHidden]="undefined" still writes nothing', async () => {
+      const { container } = await render(
+        `<div kjInputGroup>
+           <span kjInputGroupAddon [kjAriaHidden]="undefined">$</span>
+         </div>`,
+        { imports: [KjInputGroup, KjInputGroupAddon] },
+      );
+      const addon = container.querySelector('[kjInputGroupAddon]') as HTMLElement;
+      expect(addon.hasAttribute('aria-hidden')).toBe(false);
+    });
+
+    it('bare kjDisabled reaches the composed KjDisabled and data-disabled', async () => {
+      const { container } = await render(
+        `<div kjInputGroup kjDisabled data-test="g"></div>`,
+        { imports: [KjInputGroup] },
+      );
+      const group = container.querySelector('[data-test="g"]') as HTMLElement;
+      expect(group.getAttribute('aria-disabled')).toBe('true');
+      expect(group.hasAttribute('data-disabled')).toBe(true);
+    });
   });
 });

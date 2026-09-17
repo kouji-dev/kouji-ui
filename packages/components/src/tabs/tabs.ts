@@ -2,18 +2,11 @@ import {
   Component,
   ChangeDetectionStrategy,
   ViewEncapsulation,
+  booleanAttribute,
   inject,
   input,
 } from '@angular/core';
-import {
-  KjTabs,
-  KjTabList,
-  KjTab,
-  KjTabPanel,
-  KjVariant,
-  KJ_TABS_CONFIG,
-  bindPresets,
-} from '@kouji-ui/core';
+import { KjTabs, KjTabList, KjTab, KjTabPanel, KjVariant } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjTabs` directive — root of the tabs
@@ -37,13 +30,13 @@ import {
  * ```
  *
  * @doc-keyboard
- *   ArrowRight|ArrowLeft — Moves focus between tabs when orientation is "horizontal" (off-axis arrows are swallowed)
+ *   ArrowRight|ArrowLeft — Moves focus between tabs when orientation is "horizontal" (off-axis arrows are ignored; disabled tabs are skipped)
  *   ArrowDown|ArrowUp    — Moves focus between tabs when orientation is "vertical"
- *   Home                 — Moves focus to the first tab
- *   End                  — Moves focus to the last tab
+ *   Home                 — Moves focus to the first enabled tab
+ *   End                  — Moves focus to the last enabled tab
  *   Enter|Space          — Activates the focused tab (always honoured; required in `activationMode="manual"`)
  *   Delete               — Fires `kjClose` when the tab has `kjClosable="true"`
- *   Tab                  — Single tab stop: leaves the tablist and moves to the active panel (roving tabindex)
+ *   Tab                  — Single tab stop on the selected tab; leaves the tablist for the active panel, which is itself focusable when it has no controls of its own (roving tabindex)
  *
  * @doc-aria
  *   role="tablist"       — on `<kj-tab-list>`
@@ -115,9 +108,14 @@ import {
     // provideKjTabs default > library default) and reflects data-variant —
     // the same contract Button uses. Declaring it as a plain input here would
     // hardcode the default and clobber provideKjTabs(…).
+    //
+    // Host-directive input forwarding is not transitive: `KjTabs` composes
+    // `KjVariant` and spreads `bindPresets(KJ_TABS_CONFIG)` itself, but the
+    // wrapper must list `KjVariant` directly to re-expose it as `variant`.
+    // Angular applies each directive once per host, so this binds the same
+    // instance `KjTabs` already composes.
     { directive: KjVariant, inputs: ['kjVariant: variant'] },
   ],
-  providers: [...bindPresets(KJ_TABS_CONFIG)],
   template: `<ng-content />`,
   styleUrl: './tabs.css',
   encapsulation: ViewEncapsulation.None,
@@ -125,17 +123,18 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTabsComponent {
-  /**
-   * Visual chrome for the tab strip, reflected as `data-variant` on the host.
-   * Ships `'default'` (underline strip) and `'pills'` (recessed chip tray);
-   * register more with `provideKjTabs({ variants: [...] })` and key a CSS rule
-   * on `.kj-tabs[data-variant="…"]`.
-   *
-   * Declared here for the docs extractor only — the value is owned by the
-   * composed `KjVariant` preset directive (see `hostDirectives`), which is
-   * what actually resolves and reflects it.
-   */
-  readonly variant = input<string | undefined>(undefined);
+  // No shadow inputs.
+  //
+  // `variant` is the composed `KjVariant`'s `kjVariant`, re-exposed under the
+  // components-package spelling by `hostDirectives.inputs` above. Re-declaring
+  // it here published a second signal whose literal default contradicted the
+  // `provideKjTabs(…)`-configurable one in the emitted `.d.ts` and in the
+  // generated docs.
+  //
+  // Visual chrome ships as `'default'` (underline strip) and `'pills'`
+  // (recessed chip tray); register more with
+  // `provideKjTabs({ variants: [...] })` and key a CSS rule on
+  // `.kj-tabs[data-variant="…"]`.
 }
 
 /**
@@ -176,6 +175,7 @@ export class KjTabListComponent {}
       type="button"
       kjTab
       class="kj-tab"
+      [class]="kjClass()"
       [kjTabValue]="value()"
       [kjTabDisabled]="disabled()"
     >
@@ -187,10 +187,18 @@ export class KjTabListComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjTabComponent {
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-tab`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target. See "Customizing a component" in
+   * `rules/code_style.md`: author the rule unlayered so it beats
+   * `@layer kj.component`, and set the documented `--kj-*` knobs from it.
+   */
+  readonly kjClass = input<string>('');
   /** String key wiring this tab to the panel of the same `value`. */
   readonly value = input.required<string>();
-  /** When true, the tab is announced as disabled and cannot be activated. */
-  readonly disabled = input(false);
+  /** When true, the tab is announced as disabled and cannot be activated. Defaults to `false`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
 }
 
 /**

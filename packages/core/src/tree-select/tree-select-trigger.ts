@@ -1,5 +1,5 @@
-import { Directive, booleanAttribute, inject, input } from '@angular/core';
-import { KjFocusRing } from '../primitives';
+import { Directive, inject } from '@angular/core';
+import { KjDisabled, KjFocusRing } from '../primitives';
 import { KjOverlayTrigger } from '../primitives/overlay/trigger';
 import type { KjOverlayPanel } from '../primitives/overlay/panel';
 import { KjOverlayController } from '../primitives/overlay/controller';
@@ -44,6 +44,9 @@ function treeClickTrigger(): KjTriggerEventStrategy {
   standalone: true,
   hostDirectives: [
     KjFocusRing,
+    // arch F-16: one owner for `kjDisabled`, and the reflection the
+    // hand-rolled copy never did (`aria-disabled` / `data-disabled`).
+    { directive: KjDisabled, inputs: ['kjDisabled'] },
     { directive: KjOverlayTrigger, inputs: ['kjOpen'] },
   ],
   providers: [
@@ -62,13 +65,20 @@ export class KjTreeSelectTrigger {
   /** @internal */
   readonly controller = inject(KjOverlayController);
 
-  /** Disabled state. */
-  readonly kjDisabled = input(false, { transform: booleanAttribute });
+  /**
+   * Whether the trigger is disabled — bound with `kjDisabled`, owned by the
+   * composed {@link KjDisabled}, which reflects `aria-disabled` /
+   * `data-disabled`. A disabled trigger refuses every open key.
+   */
+  readonly disabled = inject(KjDisabled).disabled;
 
   /** @internal */
   onKeydown(event: KeyboardEvent): void {
+    if (this.disabled()) return;
     switch (event.key) {
+      // APG combobox: ArrowDown / ArrowUp / Alt+ArrowDown open the popup.
       case 'ArrowDown':
+      case 'ArrowUp':
       case ' ':
       case 'Enter':
         event.preventDefault();

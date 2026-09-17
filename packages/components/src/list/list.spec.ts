@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { render } from '@testing-library/angular';
 
+import { KjList } from '@kouji-ui/core';
 import { KjListComponent, KjListItemComponent } from './list';
 
 const imports = [KjListComponent, KjListItemComponent];
@@ -118,4 +119,48 @@ describe('KjListComponent', () => {
     expect(listEl.getAttribute('role')).toBe('navigation');
     expect(listEl.getAttribute('aria-label')).toBe('Primary');
   });
+
+// arch F-2 — the styled list exposes the headless flags under bare names
+// (`divided`, `hoverable`, `active`, `disabled`). All carry
+// `transform: booleanAttribute`, so `<kj-list divided>` is not a no-op.
+describe('KjListComponent — bare boolean attributes (arch F-2)', () => {
+  it('bare divided / hoverable reach the composed KjList', async () => {
+    const { container } = await render(`<kj-list divided hoverable />`, {
+      imports: [KjListComponent],
+    });
+    const list = container.querySelector('kj-list') as HTMLElement;
+    expect(list.hasAttribute('data-divided')).toBe(true);
+    expect(list.hasAttribute('data-hoverable')).toBe(true);
+  });
+
+  it('bare active / disabled reach the composed KjListRow', async () => {
+    const { container } = await render(
+      `<kj-list><kj-list-item active disabled>Row</kj-list-item></kj-list>`,
+      { imports: [KjListComponent, KjListItemComponent] },
+    );
+    const row = container.querySelector('kj-list-item') as HTMLElement;
+    expect(row.hasAttribute('data-active')).toBe(true);
+    expect(row.hasAttribute('data-disabled')).toBe(true);
+  });
+
+  it('wrap="false" turns the default-true flag off', async () => {
+    const { fixture } = await render(`<kj-list wrap="false" />`, {
+      imports: [KjListComponent],
+    });
+    const host = fixture.nativeElement.querySelector('kj-list') as HTMLElement;
+    const list = fixture.debugElement
+      .query((n: { nativeElement?: HTMLElement }) => n.nativeElement === host)
+      .injector.get(KjList);
+    expect(list.kjListWrap()).toBe(false);
+  });
+
+  it('the same flag with no attribute stays true', async () => {
+    const { fixture } = await render(`<kj-list />`, { imports: [KjListComponent] });
+    const host = fixture.nativeElement.querySelector('kj-list') as HTMLElement;
+    const list = fixture.debugElement
+      .query((n: { nativeElement?: HTMLElement }) => n.nativeElement === host)
+      .injector.get(KjList);
+    expect(list.kjListWrap()).toBe(true);
+  });
+});
 });

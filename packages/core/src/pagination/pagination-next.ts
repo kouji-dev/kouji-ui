@@ -8,7 +8,8 @@ import {
 import { KjFocusRing } from '../primitives';
 import { KJ_SIZE_FALLBACK, KJ_VARIANT_FALLBACK, KjVariant, KjSize } from '../presets';
 import { KJ_PAGINATION } from './pagination.context';
-import { KJ_PAGINATION_CONFIG } from './config';
+import { injectKjPaginationLabels } from './labels';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Boundary control that advances one page. Mirror of
@@ -38,11 +39,11 @@ import { KJ_PAGINATION_CONFIG } from './config';
     // Bridge the pagination root's cascaded variant/size into the preset
     // fallback chain: explicit input > root cascade > provideKjPagination
     // default. See KJ_VARIANT_FALLBACK / KJ_SIZE_FALLBACK.
-    { provide: KJ_VARIANT_FALLBACK, useFactory: () => inject(KJ_PAGINATION).variant },
-    { provide: KJ_SIZE_FALLBACK, useFactory: () => inject(KJ_PAGINATION).size },
+    { provide: KJ_VARIANT_FALLBACK, useFactory: () => injectParent(KJ_PAGINATION, { child: 'KjPaginationNext', parent: '[kjPagination]' }).variant },
+    { provide: KJ_SIZE_FALLBACK, useFactory: () => injectParent(KJ_PAGINATION, { child: 'KjPaginationNext', parent: '[kjPagination]' }).size },
   ],
   host: {
-    '[attr.aria-label]': 'config.nextLabel',
+    '[attr.aria-label]': 'labels.next()',
     '[attr.aria-disabled]': 'isDisabled() ? "true" : null',
     '[attr.data-disabled]': 'isDisabled() ? "" : null',
     '[attr.tabindex]': '"0"',
@@ -52,9 +53,13 @@ import { KJ_PAGINATION_CONFIG } from './config';
 })
 export class KjPaginationNext {
   /** @internal */
-  readonly pagination = inject(KJ_PAGINATION);
-  /** @internal */
-  readonly config = inject(KJ_PAGINATION_CONFIG);
+  readonly pagination = injectParent(KJ_PAGINATION, { child: 'KjPaginationNext', parent: '[kjPagination]' });
+  /**
+   * Resolved label set: a `provideKjPagination(…)` override when one is set,
+   * otherwise the active i18n catalog. Locale-reactive.
+   * @internal
+   */
+  readonly labels = injectKjPaginationLabels();
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** True when the parent is on the last page or the dataset is empty. */

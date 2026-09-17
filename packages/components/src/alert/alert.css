@@ -28,6 +28,9 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .kj-alert { transition: none; }
+  }
 
   /* Severity variants — flip accent + (optionally) bg/fg. */
   .kj-alert[data-variant="info"]    { --kj-alert-accent: var(--kj-fg-info, #2563eb); }
@@ -120,7 +123,8 @@
     align-items: center;
     justify-content: center;
   }
-  .kj-alert__dismiss:hover { opacity: 1; background: rgb(0 0 0 / 0.06); }
+  /* Tint follows the theme's ink so the hover reads on dark surfaces too. */
+  .kj-alert__dismiss:hover { opacity: 1; background: color-mix(in oklch, var(--kj-fg-default) 8%, transparent); }
   .kj-alert__dismiss:focus-visible {
     outline: 2px solid var(--kj-alert-accent);
     outline-offset: 2px;

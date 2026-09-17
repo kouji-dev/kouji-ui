@@ -1,6 +1,5 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { fireEvent } from '@testing-library/angular';
 import { afterEach, describe, expect, test } from 'vitest';
 import {
   KjTimePicker,
@@ -64,6 +63,18 @@ function setup(): {
   return { fixture, root: fixture.nativeElement };
 }
 
+/**
+ * Focus the segment the way a user would, then dispatch the key from whatever
+ * holds focus — a spec must never "press" a key on an element the keyboard
+ * could not have reached (rules/accessibility.md).
+ */
+function press(el: HTMLElement, key: string): void {
+  el.focus();
+  document.activeElement!.dispatchEvent(
+    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+  );
+}
+
 describe('KjTimePicker (headless)', () => {
   afterEach(() => TestBed.resetTestingModule());
 
@@ -88,7 +99,7 @@ describe('KjTimePicker (headless)', () => {
   test('ArrowUp on minutes increments by step', () => {
     const { fixture, root } = setup();
     const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
-    fireEvent.keyDown(minutes, { key: 'ArrowUp' });
+    press(minutes, 'ArrowUp');
     fixture.detectChanges();
     expect(minutes.getAttribute('aria-valuenow')).toBe('31');
   });
@@ -96,7 +107,7 @@ describe('KjTimePicker (headless)', () => {
   test('ArrowDown on minutes decrements by step', () => {
     const { fixture, root } = setup();
     const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
-    fireEvent.keyDown(minutes, { key: 'ArrowDown' });
+    press(minutes, 'ArrowDown');
     fixture.detectChanges();
     expect(minutes.getAttribute('aria-valuenow')).toBe('29');
   });
@@ -106,7 +117,7 @@ describe('KjTimePicker (headless)', () => {
     fixture.componentInstance.value.set(new Date(2024, 0, 1, 9, 59, 0));
     fixture.detectChanges();
     const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
-    fireEvent.keyDown(minutes, { key: 'ArrowUp' });
+    press(minutes, 'ArrowUp');
     fixture.detectChanges();
     const hours = root.querySelector('[data-testid="hours"]') as HTMLInputElement;
     expect(minutes.getAttribute('aria-valuenow')).toBe('0');
@@ -116,10 +127,10 @@ describe('KjTimePicker (headless)', () => {
   test('Home / End jump to segment bounds', () => {
     const { fixture, root } = setup();
     const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
-    fireEvent.keyDown(minutes, { key: 'End' });
+    press(minutes, 'End');
     fixture.detectChanges();
     expect(minutes.getAttribute('aria-valuenow')).toBe('59');
-    fireEvent.keyDown(minutes, { key: 'Home' });
+    press(minutes, 'Home');
     fixture.detectChanges();
     expect(minutes.getAttribute('aria-valuenow')).toBe('0');
   });
@@ -155,7 +166,7 @@ describe('KjTimePicker (headless)', () => {
   test('emits a Date by default and a string when kjValueShape="string"', () => {
     const { fixture, root } = setup();
     const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
-    fireEvent.keyDown(minutes, { key: 'ArrowUp' });
+    press(minutes, 'ArrowUp');
     fixture.detectChanges();
     const v1 = fixture.componentInstance.value();
     expect(v1 instanceof Date).toBe(true);
@@ -163,7 +174,7 @@ describe('KjTimePicker (headless)', () => {
     fixture.componentInstance.valueShape.set('string');
     fixture.componentInstance.value.set('09:30');
     fixture.detectChanges();
-    fireEvent.keyDown(minutes, { key: 'ArrowUp' });
+    press(minutes, 'ArrowUp');
     fixture.detectChanges();
     expect(typeof fixture.componentInstance.value()).toBe('string');
     expect(fixture.componentInstance.value()).toBe('09:31');
@@ -182,8 +193,39 @@ describe('KjTimePicker (headless)', () => {
     fixture.componentInstance.value.set(new Date(2024, 0, 1, 9, 30, 0));
     fixture.detectChanges();
     const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
-    fireEvent.keyDown(minutes, { key: 'ArrowUp' });
+    press(minutes, 'ArrowUp');
     fixture.detectChanges();
     expect(minutes.getAttribute('aria-valuenow')).toBe('45');
+  });
+});
+
+// ── The two value bridges must not fight ───────────────────────────────────
+// `kjValue` and the `KjFormControl` value are two independent sources that
+// both write the internal parts signal. While each guard *read* the parts
+// signal, a write by one bridge woke the other, so any disagreement between
+// the two sources — a consumer writing `[(kjValue)]` after a keyboard commit
+// has already pushed a value through the form control — ping-ponged forever
+// and the effect queue never settled. Note the pre-fix failure mode is a
+// HANG, not a red assertion: the run stops here.
+describe('KjTimePicker — value bridges settle', () => {
+  afterEach(() => TestBed.resetTestingModule());
+
+  test('a consumer write to [(kjValue)] after a keyboard commit settles and wins', () => {
+    const { fixture, root } = setup();
+    const minutes = root.querySelector('[data-testid="minutes"]') as HTMLInputElement;
+
+    // Commit through the keyboard: this pushes 09:31 into the form control.
+    press(minutes, 'ArrowUp');
+    fixture.detectChanges();
+    expect(minutes.getAttribute('aria-valuenow')).toBe('31');
+
+    // Now the consumer writes a different value straight into the model. The
+    // form control still holds 09:31, so the two sources disagree.
+    fixture.componentInstance.value.set(new Date(2024, 0, 1, 7, 15, 0));
+    fixture.detectChanges();
+
+    expect(minutes.getAttribute('aria-valuenow')).toBe('15');
+    const hours = root.querySelector('[data-testid="hours"]') as HTMLInputElement;
+    expect(hours.getAttribute('aria-valuenow')).toBe('7');
   });
 });

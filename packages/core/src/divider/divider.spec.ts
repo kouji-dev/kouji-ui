@@ -221,3 +221,22 @@ describe('KjDivider', () => {
     });
   });
 });
+
+/** arch F-2 — `kjStructural` accepts the bare-attribute form. */
+describe('KjDivider bare boolean attributes', () => {
+  it('promotes the divider to role="separator" from a bare kjStructural', async () => {
+    const { container } = await render(`<div kjDivider kjStructural></div>`, {
+      imports: [KjDivider],
+    });
+    await flushAfterNextRender();
+    const host = container.querySelector('[kjDivider]')!;
+    expect(host).toHaveAttribute('role', 'separator');
+    expect(host).not.toHaveAttribute('aria-hidden');
+  });
+
+  it('stays decorative without the attribute', async () => {
+    const { container } = await render(`<div kjDivider></div>`, { imports: [KjDivider] });
+    await flushAfterNextRender();
+    expect(container.querySelector('[kjDivider]')).toHaveAttribute('aria-hidden', 'true');
+  });
+});

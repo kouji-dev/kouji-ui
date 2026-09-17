@@ -1,14 +1,6 @@
 @layer kj.component {
-  .kj-dialog-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgb(0 0 0 / 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--kj-overlay-z, 1000);
-  }
   .kj-dialog {
+    contain: layout;
     display: flex;
     flex-direction: column;
     background: var(--kj-bg-elevated);

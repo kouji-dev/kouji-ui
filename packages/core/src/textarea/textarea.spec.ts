@@ -1,7 +1,7 @@
 import { Component, type DebugElement, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { describe, expect, test, beforeEach } from 'vitest';
+import { describe, expect, test, beforeEach, vi } from 'vitest';
 import { KjTextarea } from './textarea';
 
 @Component({
@@ -172,5 +172,90 @@ describe('KjTextarea', () => {
     fixture.componentInstance.ctrl.setValue('a'.repeat(15));
     fixture.detectChanges();
     expect(dir.counterAnnouncement()).toBe('');
+  });
+
+  describe('auto-resize measurement', () => {
+    const nextFrame = () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    function autoFixture() {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.componentInstance.autoresize = 'auto';
+      fixture.detectChanges();
+      const de: DebugElement = fixture.debugElement.children[0];
+      const dir = de.injector.get(KjTextarea);
+      const ta: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+      return { fixture, dir, ta };
+    }
+
+    test('a keystroke measures ONCE — the host handler no longer measures on its own', async () => {
+      const { fixture, dir, ta } = autoFixture();
+      await nextFrame();
+      const measure = vi.spyOn(dir, 'measure');
+
+      ta.value = 'hello';
+      ta.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await nextFrame();
+
+      // Was two: `onInput` measured AND the value effect measured.
+      expect(measure).toHaveBeenCalledTimes(1);
+      measure.mockRestore();
+    });
+
+    test('a burst of value changes collapses into one measurement', async () => {
+      const { fixture, dir } = autoFixture();
+      await nextFrame();
+      const measure = vi.spyOn(dir, 'measure');
+
+      for (const value of ['a', 'ab', 'abc']) {
+        fixture.componentInstance.ctrl.setValue(value);
+        fixture.detectChanges();
+      }
+      await nextFrame();
+
+      expect(measure).toHaveBeenCalledTimes(1);
+      measure.mockRestore();
+    });
+
+    test('typing never re-runs getComputedStyle — the metrics are cached', async () => {
+      const { fixture, ta } = autoFixture();
+      await nextFrame();
+      const computed = vi.spyOn(window, 'getComputedStyle');
+
+      for (const value of ['a', 'ab', 'abc']) {
+        ta.value = value;
+        ta.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await nextFrame();
+      }
+
+      const onTextarea = computed.mock.calls.filter(([el]) => el === ta);
+      expect(onTextarea, 'one style recalculation per keystroke was the defect').toHaveLength(0);
+      computed.mockRestore();
+    });
+
+    test('a window resize re-reads the cached metrics', async () => {
+      const { ta } = autoFixture();
+      await nextFrame();
+      const computed = vi.spyOn(window, 'getComputedStyle');
+
+      window.dispatchEvent(new Event('resize'));
+
+      const onTextarea = computed.mock.calls.filter(([el]) => el === ta);
+      expect(onTextarea.length).toBeGreaterThan(0);
+      computed.mockRestore();
+    });
+
+    test('measure() is a no-op while auto-resize is off', () => {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.detectChanges();
+      const de: DebugElement = fixture.debugElement.children[0];
+      const dir = de.injector.get(KjTextarea);
+      const ta: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+      ta.style.height = '';
+      dir.measure();
+      expect(ta.style.height).toBe('');
+    });
   });
 });

@@ -1,6 +1,7 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjTriggerEventStrategy } from '../../tokens';
 
+/** Options for {@link onClick}. */
 export interface KjOnClickOpts {
   /**
    * Only ever open on click, never close. Used when click is a secondary
@@ -10,6 +11,7 @@ export interface KjOnClickOpts {
   openOnly?: boolean;
 }
 
+/** Toggles the overlay on a click of the trigger. The default trigger strategy. */
 export function onClick(opts: KjOnClickOpts = {}): KjTriggerEventStrategy {
   let ctx: KjOverlayContext | null = null;
   let toggle: (() => void) | null = null;

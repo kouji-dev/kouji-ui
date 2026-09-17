@@ -16,7 +16,7 @@
     --kj-otp-cell-gap:          0.5rem;
     --kj-otp-cell-bg:           var(--kj-bg-field);
     --kj-otp-cell-fg:           var(--kj-fg-default);
-    --kj-otp-cell-border-color: var(--kj-border-default);
+    --kj-otp-cell-border-color: var(--kj-border-control);
     --kj-otp-cell-border-width: var(--kj-border);
     --kj-otp-cell-radius:       var(--kj-radius-field);
     --kj-otp-cell-font:         var(--kj-font-sans);

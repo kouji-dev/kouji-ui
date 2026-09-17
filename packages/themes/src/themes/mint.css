@@ -7,6 +7,10 @@
 
 @layer kj.shared {
   [data-theme="mint"] {
+    /* Native widgets, scrollbars, form-control chrome and the canvas behind
+       the document follow the theme instead of the UA default. */
+    color-scheme: light;
+
     /* ── shape — soft, organic ── */
     --kj-radius-box:      var(--kj-base-radius-2);
     --kj-radius-field:    var(--kj-base-radius-1);
@@ -53,7 +57,7 @@
 
     --kj-fg-default:    #0c2a1f;
     --kj-fg-muted:      #284a3a;
-    --kj-fg-subtle:     #4a6a5a;
+    --kj-fg-subtle:     #345344;
     --kj-fg-disabled:   #a8b8ad;
 
     /* Every intent fill is dark enough that white text passes AA
@@ -81,6 +85,7 @@
     --kj-border-default:   #c8dec5;
     --kj-border-muted:     #def0db;
     --kj-border-strong:    #94b099;
+    --kj-border-control:  #708b75;
     --kj-border-focus:     #047857;
     --kj-border-disabled:  #cee0cb;
     --kj-border-primary:   #047857;

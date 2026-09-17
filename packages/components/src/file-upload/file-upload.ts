@@ -1,14 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  OnDestroy,
-  Output,
-  ViewChild,
+  DestroyRef,
   ViewEncapsulation,
   booleanAttribute,
   computed,
+  inject,
   input,
+  output,
+  viewChild,
 } from '@angular/core';
 import {
   KjFileUpload,
@@ -218,7 +218,7 @@ import {
   host: { 'style': 'display: contents;' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KjFileUploadComponent implements OnDestroy {
+export class KjFileUploadComponent {
   /** MIME / extension list for the picker. */
   readonly kjAccept = input<string>('');
 
@@ -249,18 +249,35 @@ export class KjFileUploadComponent implements OnDestroy {
   /** When `true`, image rows render an `<img>` thumbnail via `URL.createObjectURL`. */
   readonly kjShowPreview = input(false, { transform: booleanAttribute });
 
-  @Output() readonly kjSelect = new EventEmitter<File[]>();
-  @Output() readonly kjReject = new EventEmitter<KjFileRejection[]>();
-  @Output() readonly kjRemove = new EventEmitter<KjUploadableFile>();
+  /** Re-emits the directive's survivors-after-validation list. */
+  readonly kjSelect = output<File[]>();
+  /** Re-emits the directive's rejection list. */
+  readonly kjReject = output<KjFileRejection[]>();
+  /** Re-emits each file the user removes from the list. */
+  readonly kjRemove = output<KjUploadableFile>();
+
+  private readonly uploadRef = viewChild(KjFileUpload);
 
   /** Direct access to the underlying directive — consumers drive simulated uploads via this. */
-  @ViewChild(KjFileUpload, { static: true }) readonly upload!: KjFileUpload;
+  get upload(): KjFileUpload {
+    // Non-null-asserted for source compatibility with the `@ViewChild`
+    // field this replaced; the directive is unconditional in the template,
+    // so it exists from the first render onwards.
+    return this.uploadRef()!;
+  }
 
   // ─── View helpers ───
   protected readonly isImage = (file: File): boolean => /^image\//.test(file.type);
 
   /** Cache so `URL.createObjectURL` isn't called repeatedly per change-detection. */
   private readonly previewCache = new Map<string, string>();
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      for (const url of this.previewCache.values()) URL.revokeObjectURL(url);
+      this.previewCache.clear();
+    });
+  }
 
   protected previewUrl(f: KjUploadableFile): string {
     let url = this.previewCache.get(f.id);
@@ -290,12 +307,7 @@ export class KjFileUploadComponent implements OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    for (const url of this.previewCache.values()) URL.revokeObjectURL(url);
-    this.previewCache.clear();
-  }
-
   // Expose the most-useful imperative bits for the simulated-upload examples.
   /** @internal */
-  readonly files = computed(() => this.upload?.files() ?? []);
+  readonly files = computed(() => this.uploadRef()?.files() ?? []);
 }

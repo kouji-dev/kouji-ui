@@ -2,7 +2,6 @@ import {
   Directive,
   ElementRef,
   Injector,
-  afterNextRender,
   booleanAttribute,
   computed,
   inject,
@@ -19,6 +18,8 @@ import {
   KjFormContext,
   KjFormControlRegistration,
 } from './form.context';
+import { KjReducedMotion } from '../motion/reduced-motion';
+import { kjDevWarn } from '../primitives/diagnostics/dev-mode';
 
 /**
  * Async submit handler signature accepted by `[kjAsyncSubmit]`. The directive
@@ -98,7 +99,11 @@ export class KjForm implements KjFormContext {
   readonly kjInvalidSubmit = output<FormGroup>();
 
   // ── Models / state ───────────────────────────────────────────────────
-  /** Two-way bindable submitting flag. When unbound, the directive owns it internally. */
+  /**
+   * Two-way bindable submitting flag. Default `false`; when unbound, the
+   * directive owns it internally. `model()` takes no `transform`, so bind it
+   * rather than using a bare attribute.
+   */
   readonly kjSubmitting = model(false);
 
   private readonly _submitted = signal(false);
@@ -106,7 +111,12 @@ export class KjForm implements KjFormContext {
   private readonly _invalidControls = signal<readonly InvalidControlInfo[]>([]);
   private readonly _errorSummaryId = signal<string | null>(null);
   private readonly registry = new Map<string, KjFormControlRegistration>();
-  private prefersReducedMotion = false;
+  /**
+   * The user's `prefers-reduced-motion` setting, from the root
+   * `KjReducedMotion` service — one application-wide `matchMedia`
+   * subscription instead of one per `<form kjForm>`.
+   */
+  private readonly reducedMotion = inject(KjReducedMotion).prefersReducedMotion;
 
   // ── Public surface (KjFormContext) ───────────────────────────────────
   readonly form = computed<FormGroup | null>(() => {
@@ -119,16 +129,6 @@ export class KjForm implements KjFormContext {
   readonly invalid = this._invalid.asReadonly();
   readonly invalidControls = this._invalidControls.asReadonly();
   readonly errorSummaryId = this._errorSummaryId.asReadonly();
-
-  constructor() {
-    afterNextRender(() => {
-      try {
-        this.prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      } catch {
-        this.prefersReducedMotion = false;
-      }
-    });
-  }
 
   registerControl(reg: KjFormControlRegistration): () => void {
     this.registry.set(reg.path, reg);
@@ -159,11 +159,10 @@ export class KjForm implements KjFormContext {
 
     if (!form) {
       // No Angular forms binding — log a dev-mode warning and bail out.
-      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        console.warn(
-          '[KjForm] <form kjForm> has no `[formGroup]` or `ngForm` binding. The directive is a coordinator over Angular Forms and needs one to function.',
-        );
-      }
+      kjDevWarn(
+        'KjForm',
+        '<form kjForm> has no `[formGroup]` or `ngForm` binding. The directive is a coordinator over Angular Forms and needs one to function.',
+      );
       return;
     }
 
@@ -213,7 +212,7 @@ export class KjForm implements KjFormContext {
       target.focus?.();
     }
     if (this.kjScrollOnError()) {
-      const behavior = this.prefersReducedMotion ? 'auto' : this.kjScrollBehavior();
+      const behavior = this.reducedMotion() ? 'auto' : this.kjScrollBehavior();
       target.scrollIntoView?.({ block: this.kjScrollBlock(), behavior });
     }
   }

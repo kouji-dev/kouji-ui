@@ -1,36 +1,40 @@
 import {
+  afterRenderEffect,
+  booleanAttribute,
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
   inject,
   input,
   model,
-  OnDestroy,
-  OnInit,
   output,
   signal,
   Signal,
   untracked,
 } from '@angular/core';
-import { KjRovingTabindex, KjRovingTabindexItemDirective } from '../a11y/roving-tabindex';
+import { tabbableElements } from '../a11y/focus-trap';
+import {
+  KJ_ROVING_ORIENTATION_DEFAULT,
+  KJ_ROVING_TABINDEX,
+  KjRovingTabindex,
+  KjRovingTabindexItem,
+} from '../a11y/roving-tabindex';
 import { KjDisabled } from '../primitives/interaction/disabled';
 import { KjFocusRing } from '../primitives/interaction/focus-ring';
 import {
   KJ_TABS,
   KjTabsActivationMode,
+  KjTabRef,
   KjTabsContext,
   KjTabsOrientation,
 } from './tabs.context';
-
-let kjTabsSeedCounter = 0;
-function nextSeed(): string {
-  // Try crypto.randomUUID where available (browser, jsdom 22+, node 19+).
-  // Fall back to a counter so SSR / older environments still produce a stable string.
-  const cryptoLike = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
-  if (cryptoLike?.randomUUID) return cryptoLike.randomUUID().slice(0, 8);
-  return `kj${(++kjTabsSeedCounter).toString(36)}`;
-}
+import { KjId } from '../primitives/overlay/id';
+import { KjVariant } from '../presets/variant';
+import { bindPresets } from '../presets/bind-presets';
+import { KJ_TABS_CONFIG } from './config';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Root tabs container. Owns the active value, orientation, activation mode,
@@ -57,7 +61,21 @@ function nextSeed(): string {
 @Directive({
   selector: '[kjTabs]',
   standalone: true,
-  providers: [{ provide: KJ_TABS, useExisting: KjTabs }],
+  // The preset wiring lives here, not in the styled `<kj-tabs>` wrapper, so a
+  // headless `<div kjTabs>` reflects `data-variant` and `provideKjTabs(…)`
+  // reaches it — before this, both only worked through the styled package.
+  //
+  // `KjVariant`'s input is deliberately NOT re-exposed here. `<kj-tabs>`
+  // publishes it under the components-package spelling (`variant`), and
+  // Angular rejects one host-directive input exposed under two public names
+  // (TS-99 / NG0312). Headless consumers choose a variant with
+  // `provideKjTabs({ defaults: { variant: … } })` at whatever injector scope
+  // they want, or by adding `KjVariant` to the element themselves.
+  hostDirectives: [KjVariant],
+  providers: [
+    { provide: KJ_TABS, useExisting: KjTabs },
+    ...bindPresets(KJ_TABS_CONFIG),
+  ],
   host: {
     '[attr.data-orientation]': 'kjOrientation()',
   },
@@ -85,16 +103,17 @@ export class KjTabs implements KjTabsContext {
   /** Read-only view of the activation mode. */
   readonly activationMode: Signal<KjTabsActivationMode> = this.kjActivationMode;
 
-  private readonly idSeed = nextSeed();
+  /** Deterministic id root for this tab set — see the note on `KjId`. */
+  private readonly idSeed = inject(KjId).mint('tabs');
 
   /** @internal Map of value → registered tab; keeps document order via insertion. */
-  private readonly _tabs = signal<readonly KjTab[]>([]);
+  private readonly _tabs = signal<readonly KjTabRef[]>([]);
 
   /** Public read-only registration list, in document order. */
   readonly tabs = this._tabs.asReadonly();
 
   /** Currently resolved active tab (may be undefined when value matches no tab). */
-  readonly activeTab = computed<KjTab | undefined>(() =>
+  readonly activeTab = computed<KjTabRef | undefined>(() =>
     this._tabs().find((t) => t.kjTabValue() === this.kjValue()),
   );
 
@@ -116,13 +135,13 @@ export class KjTabs implements KjTabsContext {
     });
   }
 
-  /** @internal Called by `KjTab.ngOnInit` to register itself in document order. */
-  register(tab: KjTab): void {
+  /** @internal Called by `KjTab` on construction to register itself in document order. */
+  register(tab: KjTabRef): void {
     this._tabs.update((list) => (list.includes(tab) ? list : [...list, tab]));
   }
 
   /** @internal Called by `KjTab` on destroy. */
-  unregister(tab: KjTab): void {
+  unregister(tab: KjTabRef): void {
     this._tabs.update((list) => list.filter((t) => t !== tab));
   }
 
@@ -177,9 +196,10 @@ export class KjTabs implements KjTabsContext {
  * Tab list container. Hosts `role="tablist"` + `aria-orientation` and composes
  * `KjRovingTabindex` to manage the single-tab-stop arrow-key navigation.
  *
- * Orientation is read from the parent `KJ_TABS` context and forwarded to the
- * roving primitive through its `kjRovingOrientation` input via a host binding
- * on the exposed input.
+ * The roving primitive's axis is pinned to the parent `KJ_TABS` orientation
+ * through `KJ_ROVING_ORIENTATION_DEFAULT`, so off-axis arrow keys are ignored
+ * by the primitive itself (the WAI-ARIA APG contract for tab strips) and the
+ * tab stop follows the selected tab.
  *
  * @doc-category Core/Navigation
  * @doc
@@ -189,42 +209,18 @@ export class KjTabs implements KjTabsContext {
   selector: '[kjTabList]',
   standalone: true,
   hostDirectives: [KjRovingTabindex],
+  providers: [
+    { provide: KJ_ROVING_ORIENTATION_DEFAULT, useFactory: () => injectParent(KJ_TABS, { child: 'KjTabList', parent: '[kjTabs]' }).orientation },
+  ],
   host: {
     '[attr.role]': '"tablist"',
     '[attr.aria-orientation]': 'tabs.orientation()',
     '[attr.data-orientation]': 'tabs.orientation()',
   },
 })
-export class KjTabList implements OnInit, OnDestroy {
+export class KjTabList {
   /** @internal */
-  readonly tabs = inject(KJ_TABS);
-  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-
-  private readonly keydownFilter = (event: KeyboardEvent): void => {
-    const orientation = this.tabs.orientation();
-    if (orientation === 'horizontal') {
-      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-        // Off-axis: prevent the composed KjRovingTabindex from acting.
-        event.stopImmediatePropagation();
-      }
-    } else if (orientation === 'vertical') {
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        event.stopImmediatePropagation();
-      }
-    }
-  };
-
-  ngOnInit(): void {
-    // Capture phase + `addEventListener` directly on the host: this listener
-    // fires before the composed KjRovingTabindex's `(keydown)` host binding,
-    // so we can swallow off-axis arrow keys per the parent KjTabs orientation
-    // (the WAI-ARIA APG contract for tab strips).
-    this.el.nativeElement.addEventListener('keydown', this.keydownFilter, true);
-  }
-
-  ngOnDestroy(): void {
-    this.el.nativeElement.removeEventListener('keydown', this.keydownFilter, true);
-  }
+  readonly tabs = injectParent(KJ_TABS, { child: 'KjTabList', parent: '[kjTabs]' });
 }
 
 /**
@@ -241,34 +237,47 @@ export class KjTabList implements OnInit, OnDestroy {
 @Directive({
   selector: '[kjTab]',
   standalone: true,
-  hostDirectives: [KjRovingTabindexItemDirective, KjFocusRing, KjDisabled],
+  hostDirectives: [
+    KjRovingTabindexItem,
+    KjFocusRing,
+    // arch F-16: `KjDisabled` was composed but exposed no input, so its
+    // `aria-disabled` / `data-disabled` bindings always wrote `null` while a
+    // second, untransformed `kjTabDisabled` input wrote the real value onto
+    // the same two attributes. Exposing the primitive's input under the
+    // published name leaves exactly one owner — and gives the bare-attribute
+    // form the `booleanAttribute` transform it was missing (arch F-2).
+    { directive: KjDisabled, inputs: ['kjDisabled: kjTabDisabled'] },
+  ],
   host: {
     '[attr.role]': '"tab"',
     '[attr.id]': 'tabs.tabId(kjTabValue())',
     '[attr.aria-controls]': 'tabs.panelId(kjTabValue())',
     '[attr.aria-selected]': 'isActive() ? "true" : "false"',
-    '[attr.aria-disabled]': 'kjTabDisabled() ? "true" : null',
     '[attr.data-state]': 'isActive() ? "active" : "inactive"',
-    '[attr.data-disabled]': 'kjTabDisabled() ? "" : null',
     '(click)': 'onClick()',
     '(keydown)': 'onKeydown($event)',
     '(focus)': 'onFocus()',
   },
 })
-export class KjTab implements OnInit, OnDestroy {
+export class KjTab implements KjTabRef {
   /** @internal */
-  readonly tabs = inject(KJ_TABS) as KjTabs;
+  readonly tabs = injectParent(KJ_TABS, { child: 'KjTab', parent: '[kjTabs]' });
   /** @internal Native host element. */
   readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly roving = inject(KJ_ROVING_TABINDEX, { optional: true });
 
   /** Required string key wiring this tab to its corresponding panel. */
   readonly kjTabValue = input.required<string>();
 
-  /** When true, the tab cannot be activated but remains in the focus ring. */
-  readonly kjTabDisabled = input<boolean>(false);
+  /**
+   * When true, the tab cannot be activated and arrow keys skip it. Defaults to
+   * `false`. Bound as `kjTabDisabled`; owned by the composed {@link KjDisabled},
+   * which reflects `aria-disabled` and `data-disabled`.
+   */
+  readonly kjTabDisabled = inject(KjDisabled).disabled;
 
-  /** When true, Delete on the focused tab fires `kjClose`. */
-  readonly kjClosable = input<boolean>(false);
+  /** When true, Delete on the focused tab fires `kjClose`. Defaults to `false`. */
+  readonly kjClosable = input(false, { transform: booleanAttribute });
 
   /** Fires when the user closes this tab (Delete key). Emits the tab's value. */
   readonly kjClose = output<string>();
@@ -276,12 +285,13 @@ export class KjTab implements OnInit, OnDestroy {
   /** Whether this tab is the currently active one. */
   readonly isActive = computed(() => this.tabs.isActive(this.kjTabValue()));
 
-  ngOnInit(): void {
+  constructor() {
     this.tabs.register(this);
-  }
-
-  ngOnDestroy(): void {
-    this.tabs.unregister(this);
+    inject(DestroyRef).onDestroy(() => this.tabs.unregister(this));
+    // APG tabs: the tablist's single tab stop is the selected tab.
+    effect(() => {
+      if (this.isActive()) this.roving?.setActive(this.el.nativeElement);
+    });
   }
 
   /** @internal Click handler. */
@@ -321,6 +331,12 @@ export class KjTab implements OnInit, OnDestroy {
  * projected content with `@if (panel.mounted())` to implement the
  * lazy-then-persistent mount posture from the analysis.
  *
+ * Per the APG, the active panel gets `tabindex="0"` when it contains no
+ * tabbable element, so Tab from the tab strip lands on the panel content
+ * instead of skipping it; a panel with its own controls stays out of the
+ * tab sequence. The check runs after each render in which the panel is
+ * active.
+ *
  * @doc-category Core/Navigation
  * @doc
  * @doc-name tabs
@@ -334,12 +350,14 @@ export class KjTab implements OnInit, OnDestroy {
     '[attr.id]': 'tabs.panelId(kjPanelValue())',
     '[attr.aria-labelledby]': 'tabs.tabId(kjPanelValue())',
     '[attr.hidden]': 'isActive() ? null : ""',
+    '[attr.tabindex]': 'isActive() && !hasTabbableContent() ? "0" : null',
     '[attr.data-state]': 'isActive() ? "active" : "inactive"',
   },
 })
 export class KjTabPanel {
   /** @internal */
-  readonly tabs = inject(KJ_TABS);
+  readonly tabs = injectParent(KJ_TABS, { child: 'KjTabPanel', parent: '[kjTabs]' });
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** Required string key wiring this panel to its corresponding tab. */
   readonly kjPanelValue = input.required<string>();
@@ -348,6 +366,7 @@ export class KjTabPanel {
   readonly isActive = computed(() => this.tabs.isActive(this.kjPanelValue()));
 
   private readonly _mounted = signal(false);
+  private readonly _hasTabbableContent = signal(false);
 
   /**
    * `true` after this panel has been activated at least once. Consumers wrap
@@ -356,9 +375,16 @@ export class KjTabPanel {
    */
   readonly mounted = this._mounted.asReadonly();
 
+  /** Whether the panel currently contains a tabbable element (measured after render). */
+  readonly hasTabbableContent = this._hasTabbableContent.asReadonly();
+
   constructor() {
     effect(() => {
       if (this.isActive() && !this._mounted()) this._mounted.set(true);
+    });
+    afterRenderEffect(() => {
+      if (!this.isActive()) return;
+      this._hasTabbableContent.set(tabbableElements(this.el.nativeElement).length > 0);
     });
   }
 }

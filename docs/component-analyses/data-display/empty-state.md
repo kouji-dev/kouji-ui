@@ -214,7 +214,7 @@ Components-only, in `@kouji-ui/components`, no entry in
 `@kouji-ui/core`. The component family is:
 
 ```
-KjEmptyStateComponent           (selector: kj-empty-state)
+KjEmptyState           (selector: kj-empty-state)
   ├── slot: [kj-empty-state-icon]      (decorative leading visual)
   ├── slot: [kj-empty-state-title]     (renders <h3>)
   ├── slot: [kj-empty-state-description] (renders <p>)
@@ -255,13 +255,13 @@ Per CLAUDE.md, drop the Angular type suffix unless there's a
 collision. Empty State has no directive in core, so there is no
 collision. File and class names:
 
-- `KjEmptyStateComponent` — root (collision-avoiding suffix; if
+- `KjEmptyState` — root (collision-avoiding suffix; if
   we ever introduce a `KjEmptyState` directive, the suffix on
   the component is what allows them to co-exist; until then,
   the suffix is kept for **forward-compat parity** with Card,
   Badge, Tag, Kbd, etc., all of which use `…Component`).
-- `KjEmptyStateIconComponent`, `KjEmptyStateTitleComponent`,
-  `KjEmptyStateDescriptionComponent`, `KjEmptyStateActionsComponent`
+- `KjEmptyStateIcon`, `KjEmptyStateTitle`,
+  `KjEmptyStateDescription`, `KjEmptyStateActions`
 - File names: `empty-state.ts`, `empty-state-icon.ts`,
   `empty-state-title.ts`, `empty-state-description.ts`,
   `empty-state-actions.ts` — no `.component.ts` suffix (per the
@@ -283,15 +283,15 @@ shape needs to be settled before they cite it in their docs.
 
 | Feature | Where it lives | Notes |
 |---|---|---|
-| `kjVariant` | Local input on `KjEmptyStateComponent` (reflected to `[attr.data-variant]`) | Two values: `'neutral'` (default — "no data yet", "no results", any non-error empty state) and `'error'` ("we couldn't load this — try again"). **Deliberate two-value set.** Resisted: `'success'` (an empty state is by definition not a success — if there's nothing to celebrate, an alert/toast is the right component), `'warning'` (warnings are runtime interruptions, not steady-state content; banner/alert territory). The `KjVariant` host-directive primitive is *not* composed because Empty State's variants are a closed set that does not align with the standard `primary/secondary/etc.` palette. |
+| `kjVariant` | Local input on `KjEmptyState` (reflected to `[attr.data-variant]`) | Two values: `'neutral'` (default — "no data yet", "no results", any non-error empty state) and `'error'` ("we couldn't load this — try again"). **Deliberate two-value set.** Resisted: `'success'` (an empty state is by definition not a success — if there's nothing to celebrate, an alert/toast is the right component), `'warning'` (warnings are runtime interruptions, not steady-state content; banner/alert territory). The `KjVariant` host-directive primitive is *not* composed because Empty State's variants are a closed set that does not align with the standard `primary/secondary/etc.` palette. |
 | `kjSize` | `KjSize` host directive on the component | Presets `sm / md / lg`. **Three sizes for three real placements:** `sm` = inline empty (replaces ~3 list rows; smaller icon, tighter padding, typography one step down — fits inside a `<kj-card>` body cleanly); `md` = default (replaces a feed or section); `lg` = full-page or full-route empty (centred in a viewport-height container, larger illustration). The `xs` size is **deliberately omitted** — there is no real placement smaller than "inside a card" that wants an empty state with all four slots. |
-| `kjLive` | Local input on `KjEmptyStateComponent` | Boolean. Default `false`. When `true` and `variant="neutral"`, the host's `role` becomes `status` and AT announces the content politely on appearance; when `true` and `variant="error"`, the host's `role` becomes `alert` and AT announces assertively. **The default is `false`** because the most common use of Empty State — the never-populated case ("no projects yet, create your first") — appears in the *initial* render of the page, when the AT has already announced the page's content. Live-announcing it again is noise. The `true` setting is reserved for **dynamic replacement** — the search-input case where the user typed and the result set collapsed — and for the **runtime-error** case. See [Accessibility](#accessibility-wcag-21-aaa). |
-| `kjEmptyStateLabel` | Local input on `KjEmptyStateComponent` | Optional `aria-label` override. Default: AT reads the projected title + description via the live region (when `kjLive` is on) or via inline content (when off). Override only when a single-string accessible name is more appropriate (rare; e.g. when title and description are stylised in a way that reads awkwardly aloud). |
-| Icon slot | `KjEmptyStateIconComponent` (selector `kj-empty-state-icon`) | Renders the consumer-projected icon / illustration with `aria-hidden="true"` and CSS that sizes it relative to the parent `data-size`. The component does **not** know what icon library is used; the consumer projects an `<svg>`, an icon-component, or an `<img>`. **Decision: always `aria-hidden`.** The icon is decorative — the title and description carry the accessible meaning. If a consumer's icon legitimately *is* the meaning (e.g. a custom illustration that is the only "search" cue), they pass the meaning into the title slot too; the icon stays hidden. Standard pattern across the field. |
-| Title slot | `KjEmptyStateTitleComponent` (selector `kj-empty-state-title`) | Renders an `<h3>` by default. **Heading level configurable** via `kjLevel` input (`1 \| 2 \| 3 \| 4 \| 5 \| 6`, default `3`) because an empty state's appropriate heading level depends on its container's heading depth. A full-page empty state replacing the route's primary content wants `<h2>` or `<h1>`; an empty state inside a card body two sections deep wants `<h4>`. Mirror the same pattern Card established for `<kj-card-title>` (planned). |
-| Description slot | `KjEmptyStateDescriptionComponent` (selector `kj-empty-state-description`) | Renders a `<p>`. No further config. |
-| Actions slot | `KjEmptyStateActionsComponent` (selector `kj-empty-state-actions`) | Renders a `<div>` with `display: flex; gap; justify-content: center;`. Consumer projects 0–2 buttons / links: typically one primary `<button kjButton variant="primary">` ("Create your first project") and optionally one secondary `<button kjButton variant="ghost">` or `<a kjLink>` ("Learn more"). Component does **not** enforce button count — three buttons is allowed but discouraged in docs. |
-| Secondary actions slot | Optional named slot via `<ng-content select="[secondary]">` inside `KjEmptyStateActionsComponent` | Renders below the primary actions in a smaller-text row. Use for "still stuck? contact support" tertiary affordances. **Optional** because most empty states need only the primary row. |
+| `kjLive` | Local input on `KjEmptyState` | Boolean. Default `false`. When `true` and `variant="neutral"`, the host's `role` becomes `status` and AT announces the content politely on appearance; when `true` and `variant="error"`, the host's `role` becomes `alert` and AT announces assertively. **The default is `false`** because the most common use of Empty State — the never-populated case ("no projects yet, create your first") — appears in the *initial* render of the page, when the AT has already announced the page's content. Live-announcing it again is noise. The `true` setting is reserved for **dynamic replacement** — the search-input case where the user typed and the result set collapsed — and for the **runtime-error** case. See [Accessibility](#accessibility-wcag-21-aaa). |
+| `kjEmptyStateLabel` | Local input on `KjEmptyState` | Optional `aria-label` override. Default: AT reads the projected title + description via the live region (when `kjLive` is on) or via inline content (when off). Override only when a single-string accessible name is more appropriate (rare; e.g. when title and description are stylised in a way that reads awkwardly aloud). |
+| Icon slot | `KjEmptyStateIcon` (selector `kj-empty-state-icon`) | Renders the consumer-projected icon / illustration with `aria-hidden="true"` and CSS that sizes it relative to the parent `data-size`. The component does **not** know what icon library is used; the consumer projects an `<svg>`, an icon-component, or an `<img>`. **Decision: always `aria-hidden`.** The icon is decorative — the title and description carry the accessible meaning. If a consumer's icon legitimately *is* the meaning (e.g. a custom illustration that is the only "search" cue), they pass the meaning into the title slot too; the icon stays hidden. Standard pattern across the field. |
+| Title slot | `KjEmptyStateTitle` (selector `kj-empty-state-title`) | Renders an `<h3>` by default. **Heading level configurable** via `kjLevel` input (`1 \| 2 \| 3 \| 4 \| 5 \| 6`, default `3`) because an empty state's appropriate heading level depends on its container's heading depth. A full-page empty state replacing the route's primary content wants `<h2>` or `<h1>`; an empty state inside a card body two sections deep wants `<h4>`. Mirror the same pattern Card established for `<kj-card-title>` (planned). |
+| Description slot | `KjEmptyStateDescription` (selector `kj-empty-state-description`) | Renders a `<p>`. No further config. |
+| Actions slot | `KjEmptyStateActions` (selector `kj-empty-state-actions`) | Renders a `<div>` with `display: flex; gap; justify-content: center;`. Consumer projects 0–2 buttons / links: typically one primary `<button kjButton variant="primary">` ("Create your first project") and optionally one secondary `<button kjButton variant="ghost">` or `<a kjLink>` ("Learn more"). Component does **not** enforce button count — three buttons is allowed but discouraged in docs. |
+| Secondary actions slot | Optional named slot via `<ng-content select="[secondary]">` inside `KjEmptyStateActions` | Renders below the primary actions in a smaller-text row. Use for "still stuck? contact support" tertiary affordances. **Optional** because most empty states need only the primary row. |
 | Touch target | Inherited from projected buttons | `KjButton` already enforces 44×44 minimum; Empty State adds nothing. |
 
 ## Accessibility (WCAG 2.1 AAA)
@@ -316,8 +316,8 @@ that guidance and **do not** put `role="region"` on Empty State.
 
 | Criterion | Requirement | Where it lives |
 |---|---|---|
-| 1.1.1 Non-text Content | The illustration/icon is decorative; the accessible meaning is in the title + description | `KjEmptyStateIconComponent` host-binds `aria-hidden="true"` unconditionally. The consumer's projected `<svg>` / icon-component does not need its own `aria-label`; the wrapper's `aria-hidden` is sufficient. |
-| 1.3.1 Info & Relationships | The title is a heading at an appropriate level; the description follows it; the actions are buttons or links — all conveyed by native semantics | `KjEmptyStateTitleComponent` renders `<h{kjLevel()}>`; `KjEmptyStateDescriptionComponent` renders `<p>`; actions are projected `<button kjButton>` / `<a kjLink>`. The root component does **not** wrap the whole thing in a `role="region"` or `<section>` — see ["No landmark"](#no-landmark) below. |
+| 1.1.1 Non-text Content | The illustration/icon is decorative; the accessible meaning is in the title + description | `KjEmptyStateIcon` host-binds `aria-hidden="true"` unconditionally. The consumer's projected `<svg>` / icon-component does not need its own `aria-label`; the wrapper's `aria-hidden` is sufficient. |
+| 1.3.1 Info & Relationships | The title is a heading at an appropriate level; the description follows it; the actions are buttons or links — all conveyed by native semantics | `KjEmptyStateTitle` renders `<h{kjLevel()}>`; `KjEmptyStateDescription` renders `<p>`; actions are projected `<button kjButton>` / `<a kjLink>`. The root component does **not** wrap the whole thing in a `role="region"` or `<section>` — see ["No landmark"](#no-landmark) below. |
 | 1.4.3 / 1.4.6 Contrast | Title and description text ≥ 7:1 against the empty-state background (which is typically the same as the surrounding container — card surface or page background) | Theme tokens. `--kj-color-base-content` on `--kj-color-base-100`. **Verify** for the `error` variant where the description may be tinted toward `--kj-color-error-content` — must clear 7:1 against the same background. |
 | 1.4.11 Non-text Contrast | If the icon has a meaningful outline (the "raised illustration" theme variant), its outline ≥ 3:1 against the page | Theme/token responsibility. Most empty-state illustrations are flat-coloured shapes that already clear 3:1; risk is concentrated in line-drawing illustrations on tinted backgrounds. |
 | 2.1.1 Keyboard / 2.1.2 No Keyboard Trap | n/a | Empty State has no interactive contract of its own. The projected action buttons are reachable via Tab and own their own keyboard story (KjButton). |
@@ -421,13 +421,13 @@ contract — the docs page calls this out.
 ## Composition model
 
 ```
-KjEmptyStateComponent              (selector: kj-empty-state)
+KjEmptyState              (selector: kj-empty-state)
   └── hostDirective: KjSize        (data-size routing)
 
-KjEmptyStateIconComponent          (selector: kj-empty-state-icon)
-KjEmptyStateTitleComponent         (selector: kj-empty-state-title)
-KjEmptyStateDescriptionComponent   (selector: kj-empty-state-description)
-KjEmptyStateActionsComponent       (selector: kj-empty-state-actions)
+KjEmptyStateIcon          (selector: kj-empty-state-icon)
+KjEmptyStateTitle         (selector: kj-empty-state-title)
+KjEmptyStateDescription   (selector: kj-empty-state-description)
+KjEmptyStateActions       (selector: kj-empty-state-actions)
 ```
 
 One root, four sub-components, one host directive composition
@@ -447,7 +447,7 @@ context token would be machinery without a payoff.
 
 | Primitive | Where | Why |
 |---|---|---|
-| `KjSize` | `hostDirectives` on `KjEmptyStateComponent` (with a `KJ_SIZE_PRESET` provider declared by the component) | Standard size routing. Reflects `data-size`, validates against the preset list, ships dev-mode warnings on unknown values. Preset: `[sm, md, lg]` default `md`. |
+| `KjSize` | `hostDirectives` on `KjEmptyState` (with a `KJ_SIZE_PRESET` provider declared by the component) | Standard size routing. Reflects `data-size`, validates against the preset list, ships dev-mode warnings on unknown values. Preset: `[sm, md, lg]` default `md`. |
 | `KjVariant` | **Not used.** | Empty State's variant set (`neutral` / `error`) does not align with the standard `KjVariant` palette (`primary` / `secondary` / `accent` / `info` / `success` / `warning` / `error` / `ghost`). Forcing alignment would either pollute `KjVariant` with a meaningless `'neutral'` token or force consumers to pass `'info'` and rely on docs to map it back to neutral. Local input + local data attribute is simpler. |
 | `KjLiveRegion` | **Not used (yet).** | This is the one revisit-trigger from the Decision section. If `KjLiveRegion` lands as a shared primitive, Empty State composes it via `hostDirectives` and the local `kjLive` input forwards into it. Until then, the live-region role is a single `[attr.role]` host binding on the root. |
 | `KjButton`, `KjLink`, `KjFocusRing`, `KjFocusTrap`, `KjDisabled`, `KjFormControl`, `KjRovingTabindex` | **Not used.** | Empty State has no interactive contract. The projected action buttons compose these primitives themselves. |
@@ -507,7 +507,7 @@ context token would be machinery without a payoff.
 
 All public-facing inputs/outputs/models are `kj`-prefixed.
 
-### `KjEmptyStateComponent` (`<kj-empty-state>`)
+### `KjEmptyState` (`<kj-empty-state>`)
 
 | Name | Kind | Type | Default | Notes |
 |---|---|---|---|---|
@@ -522,7 +522,7 @@ All public-facing inputs/outputs/models are `kj`-prefixed.
 
 No outputs. No models. Empty State is one-way display.
 
-### `KjEmptyStateIconComponent` (`<kj-empty-state-icon>`)
+### `KjEmptyStateIcon` (`<kj-empty-state-icon>`)
 
 | Name | Kind | Type | Default | Notes |
 |---|---|---|---|---|
@@ -530,7 +530,7 @@ No outputs. No models. Empty State is one-way display.
 
 No inputs. The consumer projects icon content via `<ng-content>`.
 
-### `KjEmptyStateTitleComponent` (`<kj-empty-state-title>`)
+### `KjEmptyStateTitle` (`<kj-empty-state-title>`)
 
 | Name | Kind | Type | Default | Notes |
 |---|---|---|---|---|
@@ -538,11 +538,11 @@ No inputs. The consumer projects icon content via `<ng-content>`.
 
 No outputs. Consumer projects text via `<ng-content>`.
 
-### `KjEmptyStateDescriptionComponent` (`<kj-empty-state-description>`)
+### `KjEmptyStateDescription` (`<kj-empty-state-description>`)
 
 No inputs. Renders `<p>` containing the projected `<ng-content>`.
 
-### `KjEmptyStateActionsComponent` (`<kj-empty-state-actions>`)
+### `KjEmptyStateActions` (`<kj-empty-state-actions>`)
 
 No inputs. Renders a `<div>` with two `<ng-content>` slots:
 
@@ -664,7 +664,7 @@ No inputs. Renders a `<div>` with two `<ng-content>` slots:
 6. **Does the description allow rich content (links inside
    prose)?** Common case: "No results match `octopus`. Try
    adjusting your filters or [browse all items]." **Decision:
-   yes.** `KjEmptyStateDescriptionComponent` projects
+   yes.** `KjEmptyStateDescription` projects
    `<ng-content>` into a `<p>`; the consumer can include
    inline `<a kjLink>` freely. Docs page shows this pattern.
    The accessible-name story doesn't change — the description

@@ -4,9 +4,9 @@ import type { RoadmapItem } from '../pages/roadmap/roadmap-data';
 
 /**
  * Browser-side roadmap provider.
- * Reads from TransferState embedded during SSR — zero HTTP call for prerendered
- * or SSR'd pages. Returns null when TransferState is empty (dev / no-SSR), in
- * which case `RoadmapService` falls back to a `GET /api/roadmap` request.
+ * Reads from TransferState embedded during prerender — zero HTTP call. Returns
+ * null when TransferState is empty, in which case the board renders empty:
+ * there is no runtime server and therefore no `/api/roadmap` to fall back to.
  */
 @Injectable()
 export class BrowserRoadmapDataProvider extends RoadmapDataProvider {

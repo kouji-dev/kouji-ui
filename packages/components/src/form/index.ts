@@ -1,5 +1,5 @@
 export {
   KjFormComponent,
-  KjFormActionsComponent,
-  KjFormSummaryComponent,
+  KjFormActions,
+  KjFormSummary,
 } from './form';

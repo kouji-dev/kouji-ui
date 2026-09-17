@@ -3,7 +3,7 @@ import { KjConfirmPopupTrigger } from '@kouji-ui/core';
 import { KjButtonComponent } from '../../button/button';
 import {
   KjConfirmPopupActionComponent,
-  KjConfirmPopupActionsComponent,
+  KjConfirmPopupActions,
   KjConfirmPopupCancelComponent,
   KjConfirmPopupComponent,
   KjConfirmPopupContentComponent,
@@ -25,7 +25,7 @@ import {
     KjConfirmPopupMessageComponent,
     KjConfirmPopupActionComponent,
     KjConfirmPopupCancelComponent,
-    KjConfirmPopupActionsComponent,
+    KjConfirmPopupActions,
     KjButtonComponent,
   ],
   styles: [

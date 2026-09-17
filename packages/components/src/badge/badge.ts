@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ViewEncapsulation, booleanAttribute, input } from '@angular/core';
-import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
+import { KjBadge, type KjBadgeVariant, type KjExtensible } from '@kouji-ui/core';
 
 /**
  * Styled wrapper around the headless `KjBadge` directive.
@@ -71,9 +71,10 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
     <span
       kjBadge
       class="kj-badge"
-      [kjBadgeVariant]="variant()"
+      [class]="kjClass()"
+      [kjVariant]="variant()"
+      [kjSize]="size()"
       [kjBadgeDot]="dot()"
-      [attr.data-size]="size()"
       [style.--kj-badge-bg]="bg() || null"
       [style.--kj-badge-fg]="fg() || null"
       [style.--kj-badge-dot-color]="dotColor() || null"
@@ -87,8 +88,41 @@ import { KjBadge, KjBadgeVariant } from '@kouji-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KjBadgeComponent {
+  /**
+   * Class names added to the **styled root element** — the inner `.kj-badge`,
+   * not this `display: contents` host, which paints nothing and which no CSS
+   * selector can usefully target.
+   *
+   * This is the supported per-instance override. Author the rule *unlayered*
+   * so it beats `@layer kj.component` regardless of specificity, and set the
+   * component's documented `--kj-*` knobs from it rather than re-declaring its
+   * internals:
+   *
+   * ```html
+   * <kj-badge kjClass="danger-zone">…</kj-badge>
+   * ```
+   * ```css
+   * .danger-zone { --kj-badge-bg: hotpink; }
+   * ```
+   */
+  readonly kjClass = input<string>('');
+  /**
+   * Visual variant reflected as `data-variant` by the composed `KjVariant`.
+   * Open by design ({@link KjBadgeVariant}) — the four shipped values
+   * autocomplete and any other string is reflected verbatim for an unlayered
+   * `.kj-badge[data-variant="…"]` rule to pick up. Register it with
+   * `provideKjBadge({ variants: […] })` to change the app-wide default and
+   * silence the dev-mode warning.
+   */
   readonly variant = input<KjBadgeVariant>('default');
-  readonly size = input<'xs' | 'sm' | 'md' | 'lg'>('md');
+  /**
+   * Size preset reflected as `data-size` by the composed `KjSize`. Open
+   * ({@link KjExtensible}); the shipped rules set `--kj-badge-padding-*` /
+   * `--kj-badge-font-size`. Configurable with
+   * `provideKjBadge({ defaults: { size: '…' } })`.
+   */
+  readonly size = input<KjExtensible<'xs' | 'sm' | 'md' | 'lg'>>('md');
+  /** Renders a leading status dot. */
   readonly dot = input(false, { transform: booleanAttribute });
   /** Custom background — any CSS color/var(). Wins over the variant (inline style). Empty = variant colours. */
   readonly bg = input<string>('');

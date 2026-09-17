@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   KjButtonComponent,
-  KjCardComponent,
+  KjCard,
   KjFieldComponent,
   KjFieldLabelComponent,
   KjInputComponent,
@@ -22,7 +22,7 @@ import {
   imports: [
     FormsModule,
     KjButtonComponent,
-    KjCardComponent,
+    KjCard,
     KjFieldComponent,
     KjFieldLabelComponent,
     KjInputComponent,

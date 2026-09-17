@@ -24,6 +24,10 @@ import {
   type KjListSelectionMode,
 } from '../primitives/list';
 
+/**
+ * Element-injector token for the {@link KjSelect} root, read by the trigger,
+ * the content panel and the options so they share one instance.
+ */
 export const KJ_SELECT = new InjectionToken<KjSelect>('KjSelect');
 
 /**

@@ -4,10 +4,18 @@ import { kjColumn, kjColumnGroup } from './column-helpers';
 interface User { id: string; name: string; email: string; age: number; }
 type AnyRec = Record<string, unknown>;
 
+/**
+ * TanStack's `ColumnDef` is a discriminated union whose members carry no index
+ * signature, so a field the helper writes (`accessorKey`, `filterFn`, the
+ * stripped `kj*` knobs) is not readable off the static type. The helpers under
+ * test produce plain objects, so the spec reads them structurally.
+ */
+const rec = (v: unknown): AnyRec | undefined => v as AnyRec | undefined;
+
 describe('kjColumn', () => {
   it('returns a ColumnDef compatible with TanStack', () => {
     const col = kjColumn<User>({ accessorKey: 'name', header: 'Name' });
-    expect(col.accessorKey).toBe('name');
+    expect(rec(col)?.['accessorKey']).toBe('name');
     expect(col.header).toBe('Name');
   });
 
@@ -18,14 +26,14 @@ describe('kjColumn', () => {
       kjEditable: true,
       kjPin: 'left',
     });
-    expect((col.meta as AnyRec)?.kj).toEqual({
+    expect(rec(col.meta)?.['kj']).toEqual({
       type: 'text',
       editable: true,
       pin: 'left',
     });
     // top-level kj* fields are stripped — TanStack sees only its native fields.
-    expect((col as AnyRec).kjType).toBeUndefined();
-    expect((col as AnyRec).kjEditable).toBeUndefined();
+    expect(rec(col)?.['kjType']).toBeUndefined();
+    expect(rec(col)?.['kjEditable']).toBeUndefined();
   });
 
   it('preserves existing meta', () => {
@@ -34,28 +42,28 @@ describe('kjColumn', () => {
       meta: { foo: 'bar' } as AnyRec,
       kjEditable: true,
     });
-    expect((col.meta as AnyRec).foo).toBe('bar');
-    expect(((col.meta as AnyRec).kj as AnyRec).editable).toBe(true);
+    expect(rec(col.meta)?.['foo']).toBe('bar');
+    expect(rec(rec(col.meta)?.['kj'])?.['editable']).toBe(true);
   });
 
   it('omits meta.kj when no kj* knobs are passed', () => {
     const col = kjColumn<User>({ accessorKey: 'name' });
-    expect((col.meta as AnyRec)?.kj).toBeUndefined();
+    expect(rec(col.meta)?.['kj']).toBeUndefined();
   });
 
   it('auto-wires filterFn from kjType so the built-in filter UIs round-trip', () => {
     const text   = kjColumn<User>({ accessorKey: 'name',  kjType: 'text'   });
     const number = kjColumn<User>({ accessorKey: 'age',   kjType: 'number' });
     const sel    = kjColumn<User>({ accessorKey: 'email', kjType: 'select' });
-    expect(typeof (text as AnyRec).filterFn).toBe('function');
-    expect(typeof (number as AnyRec).filterFn).toBe('function');
-    expect(typeof (sel as AnyRec).filterFn).toBe('function');
+    expect(typeof rec(text)?.['filterFn']).toBe('function');
+    expect(typeof rec(number)?.['filterFn']).toBe('function');
+    expect(typeof rec(sel)?.['filterFn']).toBe('function');
   });
 
   it('respects a user-supplied filterFn over the auto-wired default', () => {
     const custom = () => true;
     const col = kjColumn<User>({ accessorKey: 'age', kjType: 'number', filterFn: custom });
-    expect((col as AnyRec).filterFn).toBe(custom);
+    expect(rec(col)?.['filterFn']).toBe(custom);
   });
 });
 
@@ -69,6 +77,6 @@ describe('kjColumnGroup', () => {
       ],
     });
     expect(grp.header).toBe('Identity');
-    expect((grp as AnyRec).columns).toHaveLength(2);
+    expect(rec(grp)?.['columns']).toHaveLength(2);
   });
 });

@@ -1,6 +1,7 @@
-import { Directive, computed, inject } from '@angular/core';
+import { Directive, computed } from '@angular/core';
 import { addMonths, formatMonthYear } from './date-utils';
 import { KJ_CALENDAR } from './calendar.context';
+import { injectParent } from '../primitives/diagnostics/inject-parent';
 
 /**
  * Calendar header directive. Carries the auto-minted caption id so the grid's
@@ -22,7 +23,7 @@ import { KJ_CALENDAR } from './calendar.context';
   exportAs: 'kjCalendarHeader',
 })
 export class KjCalendarHeader {
-  private readonly ctx = inject(KJ_CALENDAR);
+  private readonly ctx = injectParent(KJ_CALENDAR, { child: 'KjCalendarHeader', parent: '[kjCalendar]' });
 
   /** The id assigned to the header caption (mirror onto the caption's `id`). */
   readonly captionId = this.ctx.captionId;

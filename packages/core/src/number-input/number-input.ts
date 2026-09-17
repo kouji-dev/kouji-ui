@@ -22,8 +22,7 @@ import {
   snapToStep,
   type KjNumberFormatOptions,
 } from './number-input.format';
-
-let nextId = 0;
+import { KjId } from '../primitives/overlay/id';
 
 /**
  * Enhances a native `<input>` with numeric-spinbox semantics: bounded
@@ -180,7 +179,7 @@ export class KjNumberInput implements KjNumberInputContext {
   // ── Internal state ────────────────────────────────────────────────────────
 
   private readonly editing = signal(false);
-  private readonly _id = `kj-number-${++nextId}`;
+  private readonly _id = inject(KjId).mint('number');
 
   /** Computed effective minimum (number; `-Infinity` if unbounded). */
   readonly min = computed(() => {

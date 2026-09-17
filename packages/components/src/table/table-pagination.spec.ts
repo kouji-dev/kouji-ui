@@ -2,7 +2,7 @@ import { Component, signal, viewChild, ChangeDetectionStrategy } from '@angular/
 import { fireEvent, render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 import { KjTable, kjColumn } from '@kouji-ui/core';
-import { KjTablePaginationComponent } from './table-pagination';
+import { KjTablePagination } from './table-pagination';
 
 interface Row {
   id: string;
@@ -19,7 +19,7 @@ function makeRows(n: number): Row[] {
 // dedicated `<td>` so the markup remains valid `<table>` content.
 @Component({
   standalone: true,
-  imports: [KjTable, KjTablePaginationComponent],
+  imports: [KjTable, KjTablePagination],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <table [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
@@ -45,7 +45,7 @@ class Host {
   }
 }
 
-describe('KjTablePaginationComponent', () => {
+describe('KjTablePagination', () => {
   it('renders summary "Showing 1–10 of 25" when pageIndex=0, pageSize=10, total=25', async () => {
     const { fixture, getByText } = await render(Host);
     fixture.componentInstance.tableRef().setState({ pagination: { pageIndex: 0, pageSize: 10 } });
@@ -112,6 +112,39 @@ describe('KjTablePaginationComponent', () => {
     const { fixture, queryByText } = await render(Host);
     fixture.componentInstance.tableRef().setState({ pagination: { pageIndex: 0, pageSize: 10 } });
     fixture.componentInstance.setShowSummary(false);
+    fixture.detectChanges();
+    expect(queryByText(/Showing /)).toBeNull();
+  });
+});
+
+// ── Attribute form of the boolean input (arch F-2) ─────────────────────────
+// `kjShowSummary="false"` must read as `false`. Without
+// `transform: booleanAttribute` the non-empty string was truthy and the
+// summary stayed on screen.
+@Component({
+  standalone: true,
+  imports: [KjTable, KjTablePagination],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <table [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
+      <tbody>
+        <tr>
+          <td><kj-table-pagination kjShowSummary="false" /></td>
+        </tr>
+      </tbody>
+    </table>
+  `,
+})
+class AttrHost {
+  protected readonly data = signal<Row[]>(makeRows(25));
+  protected readonly cols = [kjColumn<Row>({ accessorKey: 'name', header: 'Name' })];
+  readonly tableRef = viewChild.required(KjTable);
+}
+
+describe('KjTablePagination — attribute booleans', () => {
+  it('kjShowSummary="false" hides the summary', async () => {
+    const { fixture, queryByText } = await render(AttrHost);
+    fixture.componentInstance.tableRef().setState({ pagination: { pageIndex: 0, pageSize: 10 } });
     fixture.detectChanges();
     expect(queryByText(/Showing /)).toBeNull();
   });

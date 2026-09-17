@@ -12,6 +12,10 @@ export {
   type KjPageToken,
 } from './pagination.context';
 export {
+  injectKjPaginationLabels,
+  type KjPaginationLabels,
+} from './labels';
+export {
   KJ_PAGINATION_CONFIG,
   KJ_PAGINATION_DEFAULTS,
   provideKjPagination,

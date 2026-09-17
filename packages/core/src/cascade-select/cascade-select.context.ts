@@ -1,4 +1,5 @@
 import { InjectionToken, Signal } from '@angular/core';
+import { mintKjId } from '../primitives/overlay/id';
 
 /**
  * A node in the cascade tree — value, label, optional children.
@@ -64,8 +65,13 @@ export const KJ_CASCADE_SELECT = new InjectionToken<KjCascadeSelectContext>(
   'KjCascadeSelect',
 );
 
-let _idCounter = 0;
-/** Allocate a stable id for cascade sub-panels / options. */
+/**
+ * Allocate a stable id for cascade sub-panels / options.
+ *
+ * Routes through the injector's {@link KjId} when called in an injection
+ * context (every call site in the library is a field initialiser), so server
+ * and client agree on the id.
+ */
 export function nextCascadeId(prefix: string): string {
-  return `${prefix}-${++_idCounter}`;
+  return mintKjId(prefix.replace(/^kj-/, ''));
 }

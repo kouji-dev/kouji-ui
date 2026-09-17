@@ -46,10 +46,17 @@ export const KJ_LOCALE_CONFIG = new InjectionToken<KjLocaleConfig>(
  * every locale-sensitive kouji-ui primitive falls back to for number, currency,
  * and date formatting plus logical text direction.
  *
- * Call once at the application scope (`bootstrapApplication`'s `providers`) or
- * on a route to scope a sub-tree. Runtime changes go through the
- * {@link KjLocale} service (`setLocale` / `setDirection` / `setCurrency`) — the
- * seam the upcoming RTL switch and language menu build on.
+ * **Application-scoped.** Call it once, in `bootstrapApplication`'s
+ * `providers`. {@link KjLocale} is `providedIn: 'root'`, so it reads this
+ * token from the root injector — a `provideKjLocale(…)` in a *route*'s
+ * `providers` type-checks, compiles, and has no effect. (A sub-tree that
+ * genuinely needs its own locale must list `KjLocale` itself alongside it in
+ * that route's `providers`, which gives the sub-tree a second service
+ * instance; every directive under it then resolves that one.)
+ *
+ * Runtime changes go through the {@link KjLocale} service (`setLocale` /
+ * `setDirection` / `setCurrency`) — the seam the RTL switch and the language
+ * menu build on.
  *
  * @example
  * ```ts

@@ -1,21 +1,32 @@
 /* ─────────────────────────────────────────────────────────────
    @kouji-ui/core — aggregated global stylesheet
    --------------------------------------------------------------
-   Single entry-point for the core-only global CSS pieces that
-   ship without a corresponding Angular component (prose + icon
-   attribute styles).
+   Published as `@kouji-ui/core/styles.css`: one line in the
+   `styles` array of angular.json, or `@import "@kouji-ui/core/styles.css"`
+   from a bundler that resolves package exports. It pulls in every
+   global piece the package ships — each is also published on its
+   own for à-la-carte registration:
 
-   Also pulls in the overlay primitive's container / wrapper /
-   backdrop chrome, which is published on its own as
-   `@kouji-ui/core/overlay/overlay.css` for consumers that would
-   rather register just that. The THEMED overlay surfaces
-   (popover, tooltip, dropdown-menu, dialog, drawer, toast,
-   confirm-popup, sheet, action-sheet) live one package up, in
-   `@kouji-ui/components/src/overlay/overlay.css` — register that
-   one too, or every panel composed from the headless directives
-   paints with no background, border or shadow.
+     @kouji-ui/core/overlay/overlay.css     overlay container / wrapper / backdrop chrome
+     @kouji-ui/core/icon/icon.css           [kjIcon] mask + font rendering
+     @kouji-ui/core/typography/prose.css    .kj-prose long-form typography
+     @kouji-ui/core/motion/motion.css       kjMotion enter / exit presets
+
+   The THEMED overlay surfaces (popover, tooltip, dropdown-menu,
+   dialog, drawer, toast, confirm-popup, sheet, action-sheet) live
+   one package up, in `@kouji-ui/components/src/overlay/overlay.css`
+   — register that one too, or every panel composed from the
+   headless directives paints with no background, border or shadow.
+
+   The @imports below are SOURCE-relative because the docs app
+   registers this file straight from the repo. ng-packagr flattens
+   the parts (`ng-package.json` assets), so `scripts/write-core-styles.mjs`
+   rewrites each import to its published path when the package
+   builds; `package-exports.spec.ts` pins that every import maps to
+   a shipped, exported asset.
    ──────────────────────────────────────────────────────────── */
 
 @import "./primitives/overlay/overlay.css";
 @import "./typography/prose.css";
 @import "./icon/icon.css";
+@import "./motion/motion.css";

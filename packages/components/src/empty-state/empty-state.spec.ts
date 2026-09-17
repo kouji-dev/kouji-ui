@@ -2,11 +2,11 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
-  KjEmptyStateComponent,
-  KjEmptyStateIconComponent,
-  KjEmptyStateTitleComponent,
-  KjEmptyStateDescriptionComponent,
-  KjEmptyStateActionsComponent,
+  KjEmptyState,
+  KjEmptyStateIcon,
+  KjEmptyStateTitle,
+  KjEmptyStateDescription,
+  KjEmptyStateActions,
   type KjEmptyStateVariant,
   type KjEmptyStateLive,
   type KjEmptyStateLevel,
@@ -15,11 +15,11 @@ import {
 @Component({
   standalone: true,
   imports: [
-    KjEmptyStateComponent,
-    KjEmptyStateIconComponent,
-    KjEmptyStateTitleComponent,
-    KjEmptyStateDescriptionComponent,
-    KjEmptyStateActionsComponent,
+    KjEmptyState,
+    KjEmptyStateIcon,
+    KjEmptyStateTitle,
+    KjEmptyStateDescription,
+    KjEmptyStateActions,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
@@ -40,7 +40,7 @@ class HostComponent {
   label: string | undefined = undefined;
 }
 
-describe('KjEmptyStateComponent', () => {
+describe('KjEmptyState', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
@@ -168,7 +168,7 @@ describe('KjEmptyStateComponent', () => {
   test('kjSize host directive reflects data-size to the host', () => {
     @Component({
       standalone: true,
-      imports: [KjEmptyStateComponent, KjEmptyStateTitleComponent],
+      imports: [KjEmptyState, KjEmptyStateTitle],
       template: `<kj-empty-state kjSize="lg"
         ><kj-empty-state-title>X</kj-empty-state-title></kj-empty-state
       >`,
@@ -184,11 +184,11 @@ describe('KjEmptyStateComponent', () => {
   });
 });
 
-describe('KjEmptyStateActionsComponent', () => {
+describe('KjEmptyStateActions', () => {
   test('exposes secondary slot via [secondary] selector', () => {
     @Component({
       standalone: true,
-      imports: [KjEmptyStateActionsComponent],
+      imports: [KjEmptyStateActions],
       template: `
         <kj-empty-state-actions kjHasSecondary>
           <button>Primary</button>
@@ -207,5 +207,52 @@ describe('KjEmptyStateActionsComponent', () => {
     const secondary = actions.querySelector('.kj-empty-state-actions__secondary');
     expect(secondary).not.toBeNull();
     expect(secondary.querySelector('a[secondary]')).not.toBeNull();
+  });
+});
+
+// arch F-2 — `kjLive` is a `false | 'polite' | 'assertive'` union, so a bare
+// attribute bound the empty string: falsy, no role, silent no-op.
+@Component({
+  standalone: true,
+  imports: [KjEmptyState],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <kj-empty-state id="bare" kjLive>Nothing here</kj-empty-state>
+    <kj-empty-state id="assertive" kjLive="assertive">Failed</kj-empty-state>
+    <kj-empty-state id="off" kjLive="false">Quiet</kj-empty-state>
+  `,
+})
+class LiveAttributeHost {}
+
+describe('KjEmptyState — kjLive attribute form (arch F-2)', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [LiveAttributeHost] });
+  });
+
+  test('a bare kjLive attribute means polite: role="status", aria-live="polite"', () => {
+    const fixture = TestBed.createComponent(LiveAttributeHost);
+    fixture.detectChanges();
+    const el = fixture.nativeElement.querySelector('#bare');
+    expect(el.getAttribute('role')).toBe('status');
+    expect(el.getAttribute('aria-live')).toBe('polite');
+  });
+
+  test('an explicit politeness string still switches the live region on', () => {
+    const fixture = TestBed.createComponent(LiveAttributeHost);
+    fixture.detectChanges();
+    const el = fixture.nativeElement.querySelector('#assertive');
+    // Politeness itself is derived from kjVariant (pre-existing contract);
+    // what the transform must preserve is that a union member is not read as
+    // a boolean and silently dropped.
+    expect(el.getAttribute('role')).toBe('status');
+    expect(el.getAttribute('aria-atomic')).toBe('true');
+  });
+
+  test('kjLive="false" opts out, as booleanAttribute reads it', () => {
+    const fixture = TestBed.createComponent(LiveAttributeHost);
+    fixture.detectChanges();
+    const el = fixture.nativeElement.querySelector('#off');
+    expect(el.hasAttribute('role')).toBe(false);
+    expect(el.hasAttribute('aria-live')).toBe(false);
   });
 });

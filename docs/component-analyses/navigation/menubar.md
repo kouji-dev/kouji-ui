@@ -247,7 +247,7 @@ specifies the canonical contract:
 | Top-level shape | data-driven (`MenuItem[]`) | n/a | compound (`MenubarMenu` + `Trigger` + `Content`) | n/a | **directive composition** (`[kjMenubarItem]` + reused `[kjDropdownMenuTriggerFor]` + `[kjMenu]`) |
 | Popup body | own `MenubarSub`-style nesting | n/a | compound `MenubarItem`, `MenubarCheckboxItem`, etc. | `role="menu"` + `menuitem*` | **reuse `KjMenu` family** ([dropdown-menu.md](../actions/dropdown-menu.md)) |
 | Reuses dropdown menu? | **no** (own `MenubarSub`/`MenubarItem` namespace) | n/a | **no** (`MenubarItem` ≠ `DropdownMenuItem` despite identical behaviour) | n/a | **yes** — `[kjMenu]`/`[kjMenuItem]`/`[kjMenuItemCheckbox]` etc. used directly inside menubar popups |
-| Roll-over disclosure | opt-in (`autoDisplay`) | n/a | default (built-in) | recommended in example | **default**, opt-out via `kjAutoDisclose=false` |
+| Roll-over disclosure | opt-in (`autoDisplay`) | n/a | default (built-in) | recommended in example | **not shipped** — hover is opt-in per consumer (listen for `pointerenter` on `[kjMenubarItem]`) |
 | Cross-bar arrow nav | yes | n/a | yes | required | yes |
 | ArrowRight from popup → next bar | yes | n/a | yes | required | yes |
 | Keyboard shortcuts in items | rendered via `MenuItem.label` text | n/a | `<MenubarShortcut>` slot | (informative) | `[kjMenuShortcut]` directive |
@@ -371,8 +371,11 @@ belong only to menubar.
   current popup and opens the hovered item's popup, with focus moving
   into the new popup's first item. Clicking the open bar item
   (toggling-closed) or Esc, or Tab, or click-outside exits auto-disclose
-  mode. The bar's auto-disclose mode is **on by default**, configurable
-  via `kjAutoDisclose: boolean` on `[kjMenubar]`. **Coarse-pointer
+  mode. **Not implemented:** the primitives-based bar ships no
+  auto-disclose mode and no input for one — the `kjAutoDisclose` /
+  `kjAutoDiscloseDelayMs` inputs this section designed were published as
+  no-ops and removed (arch F-11, no-alias ruling). A consumer that wants
+  roll-over wires `pointerenter` on `[kjMenubarItem]`. **Coarse-pointer
   guard:** auto-disclose only fires on `(pointer: fine)` — on touch,
   hover doesn't make sense and would behave as "first tap opens, second
   tap on adjacent triggers it" anyway, which is what we want.
@@ -806,8 +809,6 @@ All public inputs / outputs / models are `kj`-prefixed per
 | Member | Kind | Type | Default | Notes |
 |---|---|---|---|---|
 | `kjLoop` | input | `boolean` | `false` | When `true`, ArrowRight at the last bar item wraps to the first (and ArrowLeft at the first wraps to the last). Matches Radix's `loop` prop. |
-| `kjAutoDisclose` | input | `boolean` | `true` | When `true`, hovering a bar item while another is open transfers ownership (roll-over disclosure). When `false`, hover does nothing — every bar item is click-to-open. |
-| `kjAutoDiscloseDelayMs` | input | `number` | `0` | Hover dwell before transferring ownership. Default `0` (immediate, matching Radix). Some consumers may want `100`–`200` ms to suppress accidental transfers when sweeping the cursor across the bar. |
 | `kjAriaLabel` | input | `string \| null` | `null` | Optional accessible name. Either this or `aria-labelledby` (set as a host attribute by the consumer) must be set. Dev-mode warning if neither — see [Open question 1](#open-questions--risks). |
 | (host) `[attr.role]` | host binding | computed | `'menubar'` | Always `'menubar'`. |
 | (host) `[attr.aria-orientation]` | host binding | computed | `'horizontal'` | Always horizontal in v1. |
@@ -907,7 +908,9 @@ No inputs / outputs / models. Pure ARIA + class-attribute reflection.
    popup is open.** Tab is the canonical escape route. If a consumer
    wants Esc-to-exit, they can wire it themselves. Document.
 
-3. **Auto-disclose dwell delay.** `kjAutoDiscloseDelayMs` defaults to
+3. **Auto-disclose dwell delay.** *(Moot — auto-disclose was never
+   implemented and its two inputs were removed.)* The design was for a
+   dwell that defaults to
    `0`. macOS menubar uses ~150ms; Windows menubar uses ~0ms. Radix
    uses 0. The risk of `0` is a sweeping cursor accidentally opening
    every menu in turn. The risk of `150` is the user feeling the bar

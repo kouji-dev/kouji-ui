@@ -1,8 +1,10 @@
 import type { KjOverlayContext } from '../../context';
 import type { KjMountStrategy } from '../../tokens';
 
+/** Where `inContainer()` moves the panel: an element, or a getter resolved at open time. */
 export type KjContainerTarget = HTMLElement | (() => HTMLElement);
 
+/** Portals the panel into a consumer-chosen container and restores its original slot on close. */
 export function inContainer(target: KjContainerTarget): KjMountStrategy {
   let ctx: KjOverlayContext | null = null;
   let originalParent: HTMLElement | null = null;

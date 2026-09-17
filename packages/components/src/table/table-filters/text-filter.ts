@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  InjectionToken,
   ViewEncapsulation,
   computed,
   inject,
@@ -10,24 +9,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
-import type { Column, Table } from '@tanstack/angular-table';
-import { KjVisuallyHidden, type KjTextFilterModel } from '@kouji-ui/core';
+import type { KjTextFilterModel } from '@kouji-ui/core';
 import { KjInputComponent } from '../../input/input';
-
-/**
- * Context passed to every built-in filter UI. Resolves the TanStack
- * `Column` whose filter value the input writes, and the parent `Table`
- * for cross-column wiring (e.g. faceted unique values).
- */
-export interface KjFilterContext<TData = unknown> {
-  readonly column: Column<TData, unknown>;
-  readonly table: Table<TData>;
-}
-
-/** DI token used to inject the `KjFilterContext` into filter components. */
-export const KJ_FILTER_CONTEXT = new InjectionToken<KjFilterContext>(
-  'kj.filter.context',
-);
+import { KJ_FILTER_CONTEXT, type KjFilterContext } from './filters.context';
 
 /** Default debounce window for the text filter, in milliseconds. */
 const DEFAULT_DEBOUNCE_MS = 300;
@@ -52,7 +36,7 @@ const DEFAULT_DEBOUNCE_MS = 300;
 @Component({
   selector: 'kj-text-filter',
   standalone: true,
-  imports: [ReactiveFormsModule, KjInputComponent, KjVisuallyHidden],
+  imports: [ReactiveFormsModule, KjInputComponent],
   styleUrl: './filters.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -61,11 +45,15 @@ const DEFAULT_DEBOUNCE_MS = 300;
   },
   template: `
     <div class="kj-text-filter__label">
-      <span kjVisuallyHidden>{{ ariaLabel() }}</span>
+      <!-- The column caption is the input's programmatic name. It used to be a
+           visually-hidden <span> *beside* the field, which names nothing:
+           the filter input was announced as an unlabelled search box
+           (WCAG 1.3.1 / 4.1.2). -->
       <kj-input
         class="kj-text-filter__input"
         type="search"
         kjSize="xs"
+        [ariaLabel]="ariaLabel()"
         [formControl]="control"
       />
     </div>

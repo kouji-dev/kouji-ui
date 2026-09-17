@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { KjIconDirective, type KjIconColor, type KjIconSize } from '@kouji-ui/core';
+import { KjIcon, type KjIconColor, type KjIconSize } from '@kouji-ui/core';
 import type { PlaygroundFile } from '@kouji-ui/components/playground-types';
 
 /**
@@ -16,7 +16,7 @@ const label = signal('');
 @Component({
   selector: 'kj-icon-playground',
   standalone: true,
-  imports: [KjIconDirective],
+  imports: [KjIcon],
   template: `
     <span
       [kjIcon]="name()"

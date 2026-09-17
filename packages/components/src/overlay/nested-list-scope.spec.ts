@@ -135,7 +135,7 @@ describe('a nested list composite does not activate its ancestor list', () => {
     fixture.componentInstance.open.set(true);
     fixture.detectChanges();
     settle(appRef);
-    const shell = container()?.querySelector<HTMLElement>('.kj-command-palette__shell') ?? null;
+    const shell = container()?.querySelector<HTMLElement>('.kj-command-palette__dialog') ?? null;
     expect(shell, 'the open palette is portalled into the overlay container').not.toBeNull();
     return { fixture, appRef, shell: shell! };
   }
@@ -259,7 +259,7 @@ describe('a nested list composite does not activate its ancestor list', () => {
     fixture.detectChanges();
     settle(appRef);
 
-    const shell = container()!.querySelector<HTMLElement>('.kj-command-palette__shell')!;
+    const shell = container()!.querySelector<HTMLElement>('.kj-command-palette__dialog')!;
     shell.querySelector<HTMLElement>('.menu-trigger')!.click();
     settle(appRef);
     const item = container()!.querySelector<HTMLElement>('.kj-dropdown-menu-item');
