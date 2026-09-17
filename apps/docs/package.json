@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "ng serve docs",
     "build": "ng build docs",
+    "start": "node ../../scripts/serve-docs-dist.mjs",
     "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test --config=../../playwright.config.ts",
     "test:e2e:static": "playwright test --config=../../playwright.i18n.config.ts",
