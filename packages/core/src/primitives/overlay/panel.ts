@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { KjId } from './id';
-import { KjOverlayController } from './controller';
+import { KjOverlayController, overlayStrategyOwner } from './controller';
 import { KjBackdrop } from './backdrop';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
@@ -71,6 +71,35 @@ function resolveTokens(self: boolean): ResolvedTokens {
 }
 
 /**
+ * `tokens` minus every strategy already attached to a controller other than
+ * `controller`. Strategies are resolved through the injector chain, so an
+ * overlay rendered inside another one (a select, combobox or date picker in
+ * a service-launched dialog) would otherwise find the enclosing overlay's
+ * own instances for every slot it does not provide itself — and run the
+ * dialog's scrim, `inert` and focus trap as if the dropdown were a second
+ * modal, freezing the dialog it belongs to. Those instances belong to the
+ * enclosing overlay; the nested one falls back to "none" for that slot.
+ */
+function withoutForeign(tokens: ResolvedTokens, controller: KjOverlayController | null): ResolvedTokens {
+  if (!controller) return tokens;
+  const mine = <T extends object>(s: T | null): T | null => {
+    if (!s) return s;
+    const owner = overlayStrategyOwner(s);
+    return owner && owner !== controller ? null : s;
+  };
+  return {
+    ...tokens,
+    mount:         mine(tokens.mount),
+    position:      mine(tokens.position),
+    backdrop:      mine(tokens.backdrop),
+    focusTrap:     mine(tokens.focusTrap),
+    scrollLock:    mine(tokens.scrollLock),
+    liveAnnouncer: mine(tokens.liveAnnouncer),
+    trigger:       mine(tokens.trigger),
+  };
+}
+
+/**
  * Marks an element as the overlay's panel — wires it to the controller,
  * resolves the panel role/aria-modal, and binds DOM state attributes
  * (`data-state`, `data-side`, `data-align`, `hidden`, `id`) for transition
@@ -84,7 +113,10 @@ function resolveTokens(self: boolean): ResolvedTokens {
  * must not inherit the dialog's scroll lock, scrim or `alertdialog` role.
  * A panel whose controller is on its host chain (a builder-launched body,
  * or the root pattern where one directive provides controller and
- * strategies for the whole subtree) reads them from that chain as before.
+ * strategies for the whole subtree) reads them from that chain, minus any
+ * strategy instance an enclosing overlay is already running: a select inside
+ * a service-launched dialog finds the dialog's scrim, focus trap and scroll
+ * lock up the chain, and must not adopt them.
  *
  * A portalled panel whose scope provides a backdrop strategy also gets a
  * real `<kj-backdrop>` scrim (created next to the panel, moved into the
@@ -151,8 +183,13 @@ export class KjOverlayPanel {
     const t = this.kjFor();
     return !!t && t.controller !== this.hostController;
   });
-  /** The tokens that apply to this panel. */
-  private readonly tokens = computed(() => (this.scoped() ? this.own : this.inherited));
+  /**
+   * The tokens that apply to this panel. Inherited ones exclude strategies an
+   * enclosing overlay already runs (see {@link withoutForeign}).
+   */
+  private readonly tokens = computed(() =>
+    this.scoped() ? this.own : withoutForeign(this.inherited, this.hostController),
+  );
   readonly role    = computed<KjPanelRole>(() => this.tokens().role ?? 'dialog');
   readonly isModal = computed(() => !!this.tokens().backdrop?.inertSiblings);
   readonly state   = computed(() => this.controller?.state() ?? 'closed');

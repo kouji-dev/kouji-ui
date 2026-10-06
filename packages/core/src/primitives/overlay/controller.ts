@@ -90,6 +90,23 @@ const STRATEGY_SLOTS = ['mount', 'position', 'backdrop', 'scrollLock', 'focusTra
 type StrategySlot = (typeof STRATEGY_SLOTS)[number];
 
 /**
+ * The controller each attached strategy instance serves. A strategy is
+ * stateful (it holds one overlay's context and its inert / scroll-lock
+ * release handles), so one instance must never run two overlays at once.
+ */
+const strategyOwners = new WeakMap<object, KjOverlayController>();
+
+/**
+ * @internal The controller `strategy` is attached to, if any. `KjOverlayPanel`
+ * uses it to drop strategies it inherited from an enclosing overlay (a
+ * select inside a modal dialog must not run the dialog's scrim, inert and
+ * focus trap as its own).
+ */
+export function overlayStrategyOwner(strategy: object): KjOverlayController | undefined {
+  return strategyOwners.get(strategy);
+}
+
+/**
  * Owns the overlay's open/closed state machine plus the rAF/transition
  * orchestration. Strategies (mount/position/backdrop/focus-trap/scroll-lock/
  * live-announcer/trigger-event) attach to it and receive `onOpen` when the
@@ -243,11 +260,19 @@ export class KjOverlayController {
       }
       for (const slot of STRATEGY_SLOTS) {
         const old = prev[slot] as KjStrategy | null | undefined;
-        if (old && old !== next[slot]) old.detach();
+        if (old && old !== next[slot]) {
+          old.detach();
+          if (strategyOwners.get(old) === this) strategyOwners.delete(old);
+        }
       }
     }
     this.strategies = next;
-    for (const slot of STRATEGY_SLOTS) (next[slot] as KjStrategy | null | undefined)?.attach(this.context);
+    for (const slot of STRATEGY_SLOTS) {
+      const strategy = next[slot] as KjStrategy | null | undefined;
+      if (!strategy) continue;
+      strategyOwners.set(strategy, this);
+      strategy.attach(this.context);
+    }
   }
 
   open(): void {
@@ -308,7 +333,10 @@ export class KjOverlayController {
     if (!this.strategies) return;
     const s = this.strategies;
     for (const slot of [...STRATEGY_SLOTS].reverse() as StrategySlot[]) {
-      (s[slot] as KjStrategy | null | undefined)?.detach();
+      const strategy = s[slot] as KjStrategy | null | undefined;
+      if (!strategy) continue;
+      strategy.detach();
+      if (strategyOwners.get(strategy) === this) strategyOwners.delete(strategy);
     }
     this.strategies = null;
   }
