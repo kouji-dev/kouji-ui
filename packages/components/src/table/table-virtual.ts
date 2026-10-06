@@ -41,6 +41,14 @@ export interface KjVirtualRow {
   readonly lane: number;
 }
 
+/** Visible row window reported by `KjTableVirtual.range()` and `<kj-table>`'s `(rangeChange)`. */
+export interface KjTableRange {
+  /** First row index in view (inclusive), overscan excluded. */
+  readonly startIndex: number;
+  /** Last row index in view (inclusive), overscan excluded. */
+  readonly endIndex: number;
+}
+
 /**
  * Mounts a `@tanstack/virtual-core` `Virtualizer` on the host element (the
  * scroll container — typically a wrapper around the table or a tbody-level
@@ -122,6 +130,9 @@ export class KjTableVirtual {
   private readonly _totalSize = signal<number>(0);
   private readonly _paddingTop = signal<number>(0);
   private readonly _paddingBottom = signal<number>(0);
+  private readonly _range = signal<KjTableRange | null>(null, { equal: sameRange });
+  /** Scroll offset requested before the virtualizer mounted, applied on mount. */
+  private pendingOffset: number | null = null;
 
   /** Window exposed before the virtualizer attaches: the first `kjInitialRows` rows at the estimated size. */
   private readonly seeded = computed(() => {
@@ -150,6 +161,19 @@ export class KjTableVirtual {
   /** Bottom spacer height in px (totalSize − end of last virtual row). */
   readonly paddingBottom = computed<number>(() =>
     this._mounted() ? this._paddingBottom() : this.seeded().bottom,
+  );
+
+  /**
+   * Rows actually in view (overscan excluded). Before the virtualizer mounts
+   * it is the seeded window; `null` while there are no rows.
+   */
+  readonly range = computed<KjTableRange | null>(
+    () => {
+      if (this._mounted()) return this._range();
+      const n = this.seeded().rows.length;
+      return n > 0 ? { startIndex: 0, endIndex: n - 1 } : null;
+    },
+    { equal: sameRange },
   );
 
   constructor() {
@@ -185,6 +209,43 @@ export class KjTableVirtual {
    */
   measureItem(el: HTMLElement): void {
     this.virtualizer?.measureElement(el);
+  }
+
+  /**
+   * Scroll so row `index` is in view.
+   * @param index Row index in the dataset.
+   * @param align Where the row lands in the viewport. Default `'start'`.
+   */
+  scrollToIndex(index: number, align: 'start' | 'center' | 'end' | 'auto' = 'start'): void {
+    const v = this.virtualizer;
+    if (v) {
+      v.scrollToIndex(Math.max(0, Math.min(index, this.kjCount() - 1)), { align });
+      return;
+    }
+    this.scrollToOffset(Math.max(0, index) * this.kjEstimateSize());
+  }
+
+  /**
+   * Scroll the container to a px offset. Requested before the virtualizer
+   * mounts, it is applied once the virtualizer attaches.
+   * @param offset Distance from the top of the virtual content, in px.
+   */
+  scrollToOffset(offset: number): void {
+    const v = this.virtualizer;
+    if (v) {
+      v.scrollToOffset(Math.max(0, offset));
+      return;
+    }
+    this.pendingOffset = Math.max(0, offset);
+  }
+
+  /**
+   * Forget every measured row height, falling back to the estimate until
+   * rows are measured again — call it when the rows behind each index are
+   * replaced wholesale (a server-side reset).
+   */
+  resetMeasurements(): void {
+    this.virtualizer?.measure();
   }
 
   /**
@@ -238,6 +299,10 @@ export class KjTableVirtual {
     });
     this.sync();
     this._mounted.set(true);
+    if (this.pendingOffset !== null) {
+      v.scrollToOffset(this.pendingOffset);
+      this.pendingOffset = null;
+    }
   }
 
   /**
@@ -279,6 +344,7 @@ export class KjTableVirtual {
     const total = v.getTotalSize();
     this._virtualRows.set(items);
     this._totalSize.set(total);
+    this._range.set(visibleRange(v.range, v.options.count));
     if (items.length === 0) {
       this._paddingTop.set(0);
       this._paddingBottom.set(0);
@@ -289,4 +355,19 @@ export class KjTableVirtual {
     this._paddingTop.set(first.start);
     this._paddingBottom.set(Math.max(0, total - (last.start + last.size)));
   }
+}
+
+/** The virtualizer's in-view range clamped to the row count, or `null` when there are no rows. */
+function visibleRange(
+  range: { startIndex: number; endIndex: number } | null,
+  count: number,
+): KjTableRange | null {
+  if (!range || count <= 0) return null;
+  const startIndex = Math.max(0, Math.min(range.startIndex, count - 1));
+  const endIndex = Math.max(startIndex, Math.min(range.endIndex, count - 1));
+  return { startIndex, endIndex };
+}
+
+function sameRange(a: KjTableRange | null, b: KjTableRange | null): boolean {
+  return a === b || (!!a && !!b && a.startIndex === b.startIndex && a.endIndex === b.endIndex);
 }

@@ -27,7 +27,12 @@ export class KjTableRow<TData extends RowData = unknown> {
   private readonly table = injectParent(KJ_TABLE, { child: 'KjTableRow', parent: '[kjTable]' }) as unknown as KjTable<TData>;
 
   /** 1-based ARIA index — accounts for header row(s). */
-  readonly ariaRowIndex = computed(() => this.kjRow().index + 2);
+  readonly ariaRowIndex = computed(() => {
+    const row = this.kjRow();
+    // Infinite mode: the row's place in the whole result set, not in the loaded window.
+    const source = row.depth === 0 ? this.table.sourceIndex()?.[row.index] : undefined;
+    return (source ?? row.index) + 2;
+  });
   readonly isSelectable = computed(() => Object.keys(this.table.state.rowSelection()).length >= 0); // always true if selection enabled
   readonly isSelected   = computed(() => {
     // Track parent selection signal so the computed re-runs on selection changes.

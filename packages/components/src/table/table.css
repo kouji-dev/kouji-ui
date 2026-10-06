@@ -482,6 +482,23 @@
     display: none;
   }
 
+  /* `kjLoadingMode="overlay"`: the rows on screen are about to be replaced
+     (a server-side reset), so they dim under the centred loader instead of
+     staying live under the slim bar. Above the sticky header (z 2-3). */
+  .kj-table-loading[data-mode="overlay"] {
+    z-index: 4;
+  }
+
+  /* Infinite mode: a row whose page is not loaded yet. Its height is pinned
+     inline to `kjEstimatedRowSize` so the virtualizer's offsets hold. */
+  .kj-table-skeleton-row > td {
+    vertical-align: middle;
+  }
+  .kj-table-skeleton-row kj-skeleton {
+    display: block;
+    width: 70%;
+  }
+
   @keyframes kj-table-loading-pulse {
     0%, 100% { opacity: 0.55; }
     50%      { opacity: 1;    }

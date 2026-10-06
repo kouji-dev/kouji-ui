@@ -170,3 +170,61 @@ describe('KjTable (extended)', () => {
     expect(dir.state.globalFilter()).toBe('');
   });
 });
+
+// ── Infinite mode ──────────────────────────────────────────────────────────
+@Component({
+  standalone: true,
+  imports: [KjTable],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<table [kjTable]="columns" [kjTableData]="data()" #tbl="kjTable"></table>`,
+})
+class InfiniteHost {
+  readonly columns: ColumnDef<User>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'age', header: 'Age' },
+  ];
+  readonly data = signal<User[]>(sparseUsers());
+}
+
+/** A 10-row result set with rows 2, 3 and 7 loaded. */
+function sparseUsers(): User[] {
+  const out = new Array<User>(10);
+  out[2] = { name: 'C', age: 3 };
+  out[3] = { name: 'D', age: 1 };
+  out[7] = { name: 'H', age: 2 };
+  return out;
+}
+
+describe('KjTable — setInfinite()', () => {
+  async function setup(): Promise<KjTable<User>> {
+    const { fixture } = await render(InfiniteHost);
+    const tbl = fixture.debugElement.children[0]!.injector.get(KjTable) as KjTable<User>;
+    tbl.setInfinite(true);
+    fixture.detectChanges();
+    return tbl;
+  }
+
+  it('drops the holes and maps each row back to its result-set index', async () => {
+    const tbl = await setup();
+    const rows = tbl.table().getCoreRowModel().rows;
+    expect(rows.map((r) => r.original.name)).toEqual(['C', 'D', 'H']);
+    expect(tbl.sourceIndex()).toEqual([2, 3, 7]);
+    // Default ids are result-set indexes, stable while pages load around them.
+    expect(rows.map((r) => r.id)).toEqual(['2', '3', '7']);
+  });
+
+  it('leaves sorting and paging to the server', async () => {
+    const tbl = await setup();
+    tbl.setState({ sorting: [{ id: 'age', desc: false }], pagination: { pageIndex: 0, pageSize: 1 } });
+    expect(tbl.table().getRowModel().rows.map((r) => r.original.name)).toEqual(['C', 'D', 'H']);
+  });
+
+  it('is off by default: no compaction, client-side sorting', async () => {
+    const { fixture } = await render(TableTestComponent);
+    const tbl = fixture.debugElement.children[0]!.injector.get(KjTable) as KjTable<User>;
+    expect(tbl.infinite()).toBe(false);
+    expect(tbl.sourceIndex()).toBeNull();
+    tbl.setState({ sorting: [{ id: 'age', desc: false }] });
+    expect(tbl.table().getRowModel().rows.map((r) => r.original.name)).toEqual(['Bob', 'Alice']);
+  });
+});

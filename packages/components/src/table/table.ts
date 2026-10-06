@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   PLATFORM_ID,
   TemplateRef,
   Type,
   ViewEncapsulation,
+  afterNextRender,
   booleanAttribute,
   computed,
   effect,
@@ -18,6 +20,7 @@ import {
   untracked,
   contentChild,
   contentChildren,
+  viewChild,
 } from '@angular/core';
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import type { ResourceRef } from '@angular/core';
@@ -42,7 +45,9 @@ import {
   type KjTableState,
 } from '@kouji-ui/core';
 import type { Cell, Column, Header, Row, RowData } from '@tanstack/angular-table';
-import { KjTableVirtual } from './table-virtual';
+import { KjTableVirtual, type KjTableRange } from './table-virtual';
+import type { KjTableInfiniteResource } from './table-infinite-resource';
+import { KjSkeletonComponent } from '../skeleton/skeleton';
 import { KjTableVirtualItem } from './table-virtual-item';
 import { KjCellTemplate } from './table-cell-template';
 import {
@@ -80,6 +85,26 @@ export interface KjRowClickEvent<TData> {
   readonly row: TData;
   readonly event: MouseEvent;
 }
+
+/** Header "select all" payload emitted by `(selectAll)`. */
+export interface KjSelectAllEvent {
+  /** The state the header checkbox was toggled to. */
+  readonly checked: boolean;
+}
+
+/**
+ * What the header "select all" checkbox selects:
+ * - `'page'` — the rows of the current page (every loaded row when the table
+ *   is infinite or unpaginated). The default.
+ * - `'loaded'` — every row the table holds, across pages.
+ * - `'external'` — nothing: the table only emits `(selectAll)` and the
+ *   consumer decides (e.g. "the whole server result set"), reflecting its
+ *   choice back through `kjSelectAllChecked`.
+ */
+export type KjSelectAllMode = 'page' | 'loaded' | 'external';
+
+/** How `<kj-table>` shows loading while it already has rows. */
+export type KjTableLoadingMode = 'bar' | 'overlay';
 
 const VIRTUAL_AUTO_THRESHOLD = 200;
 
@@ -184,6 +209,14 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
  *   folded into their row's height. Before the virtualizer mounts (server,
  *   first paint) the first `kjVirtualInitialRows` rows render at the estimate.
  *   @doc-file table.virtualized.example.ts
+ * @doc-example Infinite scroll [full]
+ *   Server-side infinite scrolling: `kjTableInfiniteResource()` caches pages,
+ *   fetches the ones the visible range needs and aborts the rest; bind it with
+ *   `[kjInfinite]`. The scrollbar spans the whole result set (`kjRowCount`),
+ *   rows not loaded yet render as skeletons, a filter change resets to the
+ *   top behind a `kjLoadingMode="overlay"` loader, and a silent reload keeps
+ *   rows and scroll position.
+ *   @doc-file table.infinite.example.ts
  * @doc-example Density [full]
  *   `compact` / `standard` / `comfortable` adjust row padding.
  *   @doc-file table.density.example.ts
@@ -278,6 +311,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
     KjCellEditorOutlet,
     KjFilterCellOutlet,
     KjVisuallyHidden,
+    KjSkeletonComponent,
     NgTemplateOutlet,
   ],
   host: {
@@ -301,7 +335,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
            have to remember the marker attribute. -->
       <ng-content select="kj-table-toolbar, [kjToolbar]" />
 
-      <div class="kj-table-body">
+      <div class="kj-table-body" #body>
         <table kjTableKeyboardNav
           role="grid"
           [attr.aria-rowcount]="aria.rowCount()"
@@ -397,8 +431,8 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                   <th scope="col" class="kj-table-select-cell">
                     @if (kjSelectionMode() === 'multi') {
                       <kj-checkbox
-                        [checked]="t.table().getIsAllPageRowsSelected()"
-                        [indeterminate]="t.table().getIsSomePageRowsSelected()"
+                        [checked]="headerChecked()"
+                        [indeterminate]="headerIndeterminate()"
                         (checkedChange)="onSelectAll($event)"
                         kjAriaLabel="Select all rows"
                       />
@@ -482,7 +516,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
           @if (shouldVirtualize()) {
             <tbody
               kjTableVirtual
-              [kjCount]="centerRows().length"
+              [kjCount]="virtualCount()"
               [kjEstimateSize]="kjEstimatedRowSize()"
               [kjInitialRows]="kjVirtualInitialRows()"
               #v="kjTableVirtual"
@@ -492,9 +526,25 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                   <td [attr.colspan]="aria.colCount()" [style.height.px]="v.paddingTop()"></td>
                 </tr>
               }
+              @let slots = infiniteSlots();
+              @let rowsAt = slots ?? centerRows();
               @for (vr of v.virtualRows(); track vr.key) {
-                @if (centerRows()[vr.index]; as r) {
+                @if (rowsAt[vr.index]; as r) {
                   <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: r, virtualIndex: vr.index, virtual: v }" />
+                } @else if (slots) {
+                  <!-- Not loaded yet: a placeholder row at the estimated height. -->
+                  <tr class="kj-table-skeleton-row"
+                      role="row"
+                      aria-busy="true"
+                      [attr.aria-rowindex]="vr.index + 2"
+                      [style.height.px]="kjEstimatedRowSize()">
+                    @if (showSelectionColumn()) {
+                      <td class="kj-table-select-cell"></td>
+                    }
+                    @for (col of t.table().getVisibleLeafColumns(); track col.id) {
+                      <td><kj-skeleton kjSkeletonShape="text" /></td>
+                    }
+                  </tr>
                 }
               }
               @if (v.paddingBottom() > 0) {
@@ -545,7 +595,8 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
         <div class="kj-table-loading"
              aria-live="polite"
              aria-busy="true"
-             [attr.data-has-rows]="effectiveData().length > 0 ? '' : null">
+             [attr.data-mode]="kjLoadingMode()"
+             [attr.data-has-rows]="kjLoadingMode() === 'bar' && effectiveData().length > 0 ? '' : null">
           @if (loadingTpl(); as tpl) {
             <ng-container [ngTemplateOutlet]="tpl" />
           } @else {
@@ -590,6 +641,34 @@ export class KjTableComponent<TData extends RowData = unknown> {
   readonly kjVariant = input<'bordered' | 'striped' | 'clean'>('bordered');
   /** External "I'm loading" flag, ORed with the resource's `isLoading()`. Defaults to `false`. */
   readonly kjLoading = input(false, { transform: booleanAttribute });
+  /**
+   * How loading shows while rows are on screen: `'bar'` (default) — a slim
+   * stripe over the rows, which stay usable; `'overlay'` — the rows dim and
+   * the loading template (`kjLoadingTemplate` / `[kjLoading]`) is centred over
+   * them, the right cue when the rows are about to be replaced (a reset). An
+   * empty table always gets the full overlay.
+   */
+  readonly kjLoadingMode = input<KjTableLoadingMode>('bar');
+
+  // ── Server-side infinite scrolling ────────────────────────────────────
+  /**
+   * Size of the server result set. When set, the table is infinite: it
+   * always virtualizes, the scrollbar spans `kjRowCount` rows, `kjData` is
+   * index-aligned with the result set (`kjData[i]` is row `i`, holes for rows
+   * not loaded yet, which render as skeleton rows at `kjEstimatedRowSize`),
+   * and sorting / filtering / paging are left to the server. Report the
+   * visible rows to your loader through `(rangeChange)`. `null` (default)
+   * keeps the regular client-side table.
+   */
+  readonly kjRowCount = input<number | null>(null);
+  /**
+   * A `kjTableInfiniteResource()` to drive the table: rows, `kjRowCount`,
+   * `(rangeChange)`, loading (`isResetting()`), errors and the scroll reset
+   * after a request change are wired for you. Leave `kjData` unbound.
+   */
+  readonly kjInfinite = input<KjTableInfiniteResource<TData> | null>(null);
+  /** Trailing debounce for `(rangeChange)`, in ms; `0` emits on every scroll frame. Default 80. */
+  readonly kjRangeChangeDebounce = input<number>(80);
 
   // ── Selection ───────────────────────────────────────────────────────────
   /**
@@ -605,6 +684,15 @@ export class KjTableComponent<TData extends RowData = unknown> {
    * purely from row clicks / external state without the column.
    */
   readonly kjShowSelectionColumn = input<boolean, unknown>(true, { transform: booleanAttribute });
+  /** What the header checkbox (and Ctrl/Cmd+A) selects — see {@link KjSelectAllMode}. Default `'page'`. */
+  readonly kjSelectAllMode = input<KjSelectAllMode>('page');
+  /**
+   * Overrides the header checkbox state — `true`, `false` or
+   * `'indeterminate'`. Pair it with `kjSelectAllMode="external"` when "all"
+   * means the whole server result set. `null` (default) derives it from the
+   * selected rows.
+   */
+  readonly kjSelectAllChecked = input<boolean | 'indeterminate' | null>(null);
 
   // ── Persistence ─────────────────────────────────────────────────────────
   /** Storage key; `null` disables persistence. Prefixed by `KJ_TABLE_STORAGE_KEY_PREFIX`. */
@@ -733,6 +821,14 @@ export class KjTableComponent<TData extends RowData = unknown> {
   readonly rowClick = output<KjRowClickEvent<TData>>();
   /** Fires on a double click anywhere in a body row. */
   readonly rowDoubleClick = output<KjRowClickEvent<TData>>();
+  /**
+   * The rows in view of a virtualized body (overscan excluded), trailing-
+   * debounced by `kjRangeChangeDebounce`. Feed it to the page loader of an
+   * infinite table.
+   */
+  readonly rangeChange = output<KjTableRange>();
+  /** Fires when the header checkbox (or Ctrl/Cmd+A) asks to select or clear all rows. */
+  readonly selectAll = output<KjSelectAllEvent>();
 
   // ── Refs ────────────────────────────────────────────────────────────────
   /**
@@ -764,6 +860,16 @@ export class KjTableComponent<TData extends RowData = unknown> {
   /** Writes a pending debounced storage write immediately. */
   private flushPersist: (() => void) | null = null;
 
+  /** The scroll container (`.kj-table-body`). */
+  private readonly bodyRef = viewChild.required<ElementRef<HTMLElement>>('body');
+  /** The virtualizer, while the body is virtualized. */
+  private readonly virtualRef = viewChild(KjTableVirtual);
+  private readonly _scrollOffset = signal(0);
+  /** Vertical scroll offset of the body, in px — save it to `restoreScroll()` later. */
+  readonly scrollOffset = this._scrollOffset.asReadonly();
+  /** Last range emitted through `(rangeChange)`. */
+  private lastRange: KjTableRange | null = null;
+
   // ── Computed ────────────────────────────────────────────────────────────
   /**
    * Effective rows driving TanStack:
@@ -793,6 +899,35 @@ export class KjTableComponent<TData extends RowData = unknown> {
    * a 10k dataset look like 25 rows that can't scroll. `getPrePaginationRowModel`
    * keeps sort + filter applied but returns the full slice.
    */
+  /** Size of the server result set in infinite mode (`kjRowCount`, else the bound resource's total); `null` otherwise. */
+  protected readonly infiniteTotal = computed<number | null>(
+    () => this.kjRowCount() ?? this.kjInfinite()?.total() ?? null,
+  );
+
+  /** Whether the table is a server-side infinite window. */
+  protected readonly infiniteMode = computed<boolean>(() => this.infiniteTotal() !== null);
+
+  /** Rows the virtualizer spans: the whole result set when infinite, else the center rows. */
+  protected readonly virtualCount = computed<number>(
+    () => this.infiniteTotal() ?? this.centerRows().length,
+  );
+
+  /**
+   * Infinite mode: center rows placed at their result-set index, holes where
+   * a row is not loaded yet (rendered as a skeleton). `null` otherwise.
+   */
+  protected readonly infiniteSlots = computed<readonly (Row<TData> | undefined)[] | null>(() => {
+    const count = this.infiniteTotal();
+    if (count === null) return null;
+    const source = this.t.sourceIndex();
+    const slots = new Array<Row<TData> | undefined>(Math.max(0, count));
+    for (const r of this.centerRows()) {
+      const i = source?.[r.index] ?? r.index;
+      if (i < count) slots[i] = r;
+    }
+    return slots;
+  });
+
   protected readonly centerRows = computed<Row<TData>[]>(() => {
     const tbl = this.t.table();
     if (this.kjEnableRowPinning()) return tbl.getCenterRows();
@@ -821,12 +956,14 @@ export class KjTableComponent<TData extends RowData = unknown> {
   /** True when the active resource is loading OR `kjLoading` is set. */
   protected readonly isLoading = computed<boolean>(() => {
     if (this.kjLoading()) return true;
+    if (this.kjInfinite()?.isResetting()) return true;
     const res = this.kjResource();
     return res ? res.isLoading() : false;
   });
 
   /** True when the active resource is in error state. */
   protected readonly hasError = computed<boolean>(() => {
+    if (this.kjInfinite()?.error() != null) return true;
     const res = this.kjResource();
     return res ? res.error() != null : false;
   });
@@ -902,6 +1039,7 @@ export class KjTableComponent<TData extends RowData = unknown> {
    * would otherwise be split across paginated pages.
    */
   protected readonly shouldVirtualize = computed<boolean>(() => {
+    if (this.infiniteMode()) return true;
     const mode = this.kjVirtual();
     if (mode === true) return true;
     if (mode === false) return false;
@@ -909,7 +1047,7 @@ export class KjTableComponent<TData extends RowData = unknown> {
   });
 
   protected readonly aria = {
-    rowCount: computed(() => this.effectiveData().length + 1),
+    rowCount: computed(() => (this.infiniteTotal() ?? this.effectiveData().length) + 1),
     colCount: computed(() => {
       const cols = this.t.kjTable();
       // Approximate: flatten one level of column groups for ARIA.
@@ -1043,6 +1181,133 @@ export class KjTableComponent<TData extends RowData = unknown> {
     effect(() => {
       this.stateChange.emit(this.t.state());
     });
+
+    // Infinite mode: the core directive drops the holes and leaves sorting,
+    // filtering and paging to the server.
+    effect(() => {
+      const on = this.infiniteMode();
+      untracked(() => this.t.setInfinite(on));
+    });
+
+    // `kjInfinite` resource -> rows. Same single-source rule as `kjResource`.
+    effect(() => {
+      const inf = this.kjInfinite();
+      if (!inf) return;
+      const rows = inf.rows() as TData[];
+      untracked(() => this.t.kjTableData.set(rows));
+    });
+
+    // A completed reset replaces the rows behind every index: forget their
+    // heights and go back to the top.
+    effect(() => {
+      const inf = this.kjInfinite();
+      if (!inf || inf.resets() === 0) return;
+      untracked(() => {
+        this.virtualRef()?.resetMeasurements();
+        this.scrollToTop();
+      });
+    });
+
+    // Visible range -> `(rangeChange)` (trailing-debounced) and the bound
+    // infinite resource.
+    effect((onCleanup) => {
+      const range = this.virtualRef()?.range() ?? null;
+      const inf = this.kjInfinite();
+      const delay = this.kjRangeChangeDebounce();
+      if (!range) return;
+      const emit = (): void => {
+        inf?.setRange(range);
+        if (sameRange(range, this.lastRange)) return;
+        this.lastRange = range;
+        this.rangeChange.emit(range);
+      };
+      if (delay <= 0) {
+        untracked(emit);
+        return;
+      }
+      const timer = setTimeout(emit, delay);
+      onCleanup(() => clearTimeout(timer));
+    });
+
+    // Track the body's scroll offset without a template listener (a scroll
+    // event must not dirty the view).
+    afterNextRender(() => {
+      const body = this.bodyRef().nativeElement;
+      const onScroll = (): void => this._scrollOffset.set(body.scrollTop);
+      body.addEventListener('scroll', onScroll, { passive: true });
+      this.destroyRef.onDestroy(() => body.removeEventListener('scroll', onScroll));
+    });
+  }
+
+  // ── Scroll API ──────────────────────────────────────────────────────────
+  /** Scroll the body back to the first row. */
+  scrollToTop(): void {
+    this.restoreScroll(0);
+  }
+
+  /**
+   * Scroll so row `index` (a result-set index when infinite, else a position
+   * among the center rows) is in view.
+   * @param index Row index.
+   * @param align Where the row lands in the viewport. Default `'start'`.
+   */
+  scrollToIndex(index: number, align: 'start' | 'center' | 'end' | 'auto' = 'start'): void {
+    const virtual = this.virtualRef();
+    if (virtual) {
+      virtual.scrollToIndex(index, align);
+      return;
+    }
+    const body = this.bodyRef().nativeElement;
+    const tbody = body.querySelector(':scope > table > tbody:not(.kj-table-tbody-pinned)');
+    const row = tbody?.querySelectorAll<HTMLElement>(':scope > tr[role="row"]')[index];
+    if (!row) return;
+    const head = body.querySelector<HTMLElement>(':scope > table > thead');
+    const delta = row.getBoundingClientRect().top - body.getBoundingClientRect().top - (head?.offsetHeight ?? 0);
+    const shift =
+      align === 'center'
+        ? (body.clientHeight - row.offsetHeight) / 2
+        : align === 'end'
+          ? body.clientHeight - row.offsetHeight
+          : 0;
+    this.setScrollTop(body.scrollTop + delta - shift);
+  }
+
+  /**
+   * Scroll the body to a px offset — typically a `scrollOffset()` saved
+   * earlier. A virtualized body that has not mounted yet applies it on mount.
+   * @param offset Vertical offset, in px.
+   */
+  restoreScroll(offset: number): void {
+    const virtual = this.virtualRef();
+    if (virtual) {
+      virtual.scrollToOffset(offset);
+      this._scrollOffset.set(Math.max(0, offset));
+      return;
+    }
+    this.setScrollTop(offset);
+  }
+
+  private setScrollTop(offset: number): void {
+    const body = this.bodyRef().nativeElement;
+    body.scrollTop = Math.max(0, offset);
+    this._scrollOffset.set(body.scrollTop);
+  }
+
+  // ── Select all ──────────────────────────────────────────────────────────
+  /** Header checkbox checked state. */
+  protected headerChecked(): boolean {
+    const forced = this.kjSelectAllChecked();
+    if (forced !== null) return forced === true;
+    const tbl = this.t.table();
+    return this.kjSelectAllMode() === 'loaded' ? tbl.getIsAllRowsSelected() : tbl.getIsAllPageRowsSelected();
+  }
+
+  /** Header checkbox indeterminate state. */
+  protected headerIndeterminate(): boolean {
+    const forced = this.kjSelectAllChecked();
+    if (forced !== null) return forced === 'indeterminate';
+    const tbl = this.t.table();
+    return this.kjSelectAllMode() === 'loaded' ? tbl.getIsSomeRowsSelected() : tbl.getIsSomePageRowsSelected();
   }
 
   // ── Cell-edit handlers ──────────────────────────────────────────────────
@@ -1082,7 +1347,8 @@ export class KjTableComponent<TData extends RowData = unknown> {
       // Cmd/Ctrl+A — select all (multi mode only).
       if (this.kjSelectionMode() === 'multi') {
         event.preventDefault();
-        this.t.table().toggleAllRowsSelected(true);
+        this.selectAll.emit({ checked: true });
+        if (this.kjSelectAllMode() !== 'external') this.t.table().toggleAllRowsSelected(true);
       }
     }
   }
@@ -1160,7 +1426,10 @@ export class KjTableComponent<TData extends RowData = unknown> {
 
   /** Header "select all" checkbox change. */
   protected onSelectAll(checked: boolean): void {
-    this.t.table().toggleAllPageRowsSelected(checked);
+    this.selectAll.emit({ checked });
+    const mode = this.kjSelectAllMode();
+    if (mode === 'page') this.t.table().toggleAllPageRowsSelected(checked);
+    else if (mode === 'loaded') this.t.table().toggleAllRowsSelected(checked);
   }
 
   /**
@@ -1343,4 +1612,8 @@ function sameSlices(a: Partial<KjTableState>, b: Partial<KjTableState>): boolean
     if (!Object.is(a[k], b[k])) return false;
   }
   return true;
+}
+
+function sameRange(a: KjTableRange | null, b: KjTableRange | null): boolean {
+  return a === b || (!!a && !!b && a.startIndex === b.startIndex && a.endIndex === b.endIndex);
 }
