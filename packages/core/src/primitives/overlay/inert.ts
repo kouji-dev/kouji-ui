@@ -49,33 +49,32 @@ export function inertSiblingsOf(panel: HTMLElement): () => void {
   // the right one: inerting is scoped to the tree the panel actually lives in.
   const body = panel.ownerDocument?.body;
   if (!body) return () => {};
-  // The overlay root, whether or not the panel lives in it. An inline-mounted
-  // (`inPlace`) modal sits outside it, yet the overlays it opens — a select,
-  // combobox or date picker dropdown — mount into it after the modal opened:
-  // inerting the root itself would freeze them. Its wrappers open at this
-  // point are frozen one by one below instead; later ones stay live.
-  const container =
-    panel.closest('.kj-overlay-container') ??
-    Array.from(body.children).find(
-      (c) =>
-        c.hasAttribute('data-kj-overlay-container') || c.classList.contains('kj-overlay-container'),
-    ) ??
-    null;
+  // Overlay roots are never inerted, whether or not the panel lives in one.
+  // An inline-mounted (`inPlace`) modal sits outside the root, yet the
+  // overlays it opens — a select, combobox or date picker dropdown — mount
+  // into it after the modal opened: inerting the root would freeze them. The
+  // wrappers open at this point (below the modal) are frozen one by one
+  // instead; later ones stay live.
+  const containers = Array.from(body.children).filter(isOverlayContainer);
+  const own = panel.closest('.kj-overlay-container');
+  if (own && !containers.includes(own)) containers.push(own);
   const targets: Element[] = [];
 
   for (const child of Array.from(body.children)) {
-    if (child === container) continue;
+    if (isOverlayContainer(child)) continue;
     if (child.contains(panel)) continue;
     if (SKIPPED_TAGS.has(child.tagName)) continue;
     if (child.hasAttribute('aria-live') || child.hasAttribute('data-kj-live-region')) continue;
     targets.push(child);
   }
 
-  if (container) {
-    const own = Array.from(container.children).find((w) => w.contains(panel));
+  for (const container of containers) {
+    const ownWrapper = Array.from(container.children).find((w) => w.contains(panel));
     for (const wrapper of Array.from(container.children)) {
-      if (wrapper === own) continue;
-      const below = !own || !!(wrapper.compareDocumentPosition(own) & Node.DOCUMENT_POSITION_FOLLOWING);
+      if (wrapper === ownWrapper) continue;
+      const below =
+        !ownWrapper ||
+        !!(wrapper.compareDocumentPosition(ownWrapper) & Node.DOCUMENT_POSITION_FOLLOWING);
       if (below) targets.push(wrapper);
     }
   }
@@ -87,4 +86,11 @@ export function inertSiblingsOf(panel: HTMLElement): () => void {
     released = true;
     for (const el of targets) releaseInert(el);
   };
+}
+
+/** Whether `el` is an overlay root (`getOverlayContainer()`'s element, or a look-alike). */
+function isOverlayContainer(el: Element): boolean {
+  return (
+    el.hasAttribute('data-kj-overlay-container') || el.classList.contains('kj-overlay-container')
+  );
 }
