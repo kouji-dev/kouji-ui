@@ -36,7 +36,9 @@ export function releaseInert(el: Element): void {
  * Makes everything behind a modal `panel` inert: every child of `<body>`
  * outside the overlay container (except script/style nodes and live
  * regions), plus every overlay wrapper opened before the panel's own — a
- * dialog stacked on a dialog freezes the one below. A body child that
+ * dialog stacked on a dialog freezes the one below. The container itself is
+ * never inerted, even for a panel mounted outside it, so overlays the modal
+ * opens afterwards (dropdowns, pickers) stay usable. A body child that
  * contains the panel (an inline-mounted modal) is left alone, because
  * inerting it would inert the panel itself.
  *
@@ -47,7 +49,18 @@ export function inertSiblingsOf(panel: HTMLElement): () => void {
   // the right one: inerting is scoped to the tree the panel actually lives in.
   const body = panel.ownerDocument?.body;
   if (!body) return () => {};
-  const container = panel.closest('.kj-overlay-container');
+  // The overlay root, whether or not the panel lives in it. An inline-mounted
+  // (`inPlace`) modal sits outside it, yet the overlays it opens — a select,
+  // combobox or date picker dropdown — mount into it after the modal opened:
+  // inerting the root itself would freeze them. Its wrappers open at this
+  // point are frozen one by one below instead; later ones stay live.
+  const container =
+    panel.closest('.kj-overlay-container') ??
+    Array.from(body.children).find(
+      (c) =>
+        c.hasAttribute('data-kj-overlay-container') || c.classList.contains('kj-overlay-container'),
+    ) ??
+    null;
   const targets: Element[] = [];
 
   for (const child of Array.from(body.children)) {

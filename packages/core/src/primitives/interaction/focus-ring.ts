@@ -1,4 +1,12 @@
-import { Directive, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
+import {
+  Directive,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { KjInputModality } from './input-modality';
@@ -45,10 +53,14 @@ export class KjFocusRing {
     afterNextRender(() => {
       if (!isPlatformBrowser(this.platformId)) return;
 
-      const onFocus = () => {
-        this._focusVisible.set(this.inputModality.modality() === 'keyboard');
-      };
-      const onBlur = () => { this._focusVisible.set(false); };
+      // `focus` / `blur` can fire synchronously while Angular renders — a
+      // focused element that a binding disables or removes blurs at once in
+      // Chromium — and a raw listener inherits the template's reactive
+      // context, where a signal write throws NG0600. `untracked` runs the
+      // handlers outside it (Angular's own listeners do the same).
+      const onFocus = () =>
+        untracked(() => this._focusVisible.set(this.inputModality.modality() === 'keyboard'));
+      const onBlur = () => untracked(() => this._focusVisible.set(false));
 
       const releaseModality = this.inputModality.retain();
       this.el.nativeElement.addEventListener('focus', onFocus);

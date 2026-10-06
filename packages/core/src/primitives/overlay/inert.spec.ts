@@ -91,4 +91,27 @@ describe('inert helpers', () => {
     release();
     expect(other.hasAttribute('inert')).toBe(false);
   });
+
+  it('an inline-mounted modal never inerts the overlay container, so overlays it opens stay usable', () => {
+    const app = add(document.createElement('app-root'));
+    const panel = document.createElement('div');
+    app.appendChild(panel);
+    const other = add(document.createElement('div'));
+    const container = add(document.createElement('div'));
+    container.className = 'kj-overlay-container';
+    container.setAttribute('data-kj-overlay-container', '');
+    const before = mkWrapper(container); // e.g. a popover open behind the modal
+
+    const release = inertSiblingsOf(panel);
+    expect(other.hasAttribute('inert')).toBe(true);
+    expect(container.hasAttribute('inert')).toBe(false);
+    expect(before.wrapper.hasAttribute('inert')).toBe(true);
+    // A dropdown the modal opens afterwards mounts into the live container.
+    const dropdown = mkWrapper(container);
+    expect(dropdown.wrapper.closest('[inert]')).toBeNull();
+
+    release();
+    expect(other.hasAttribute('inert')).toBe(false);
+    expect(before.wrapper.hasAttribute('inert')).toBe(false);
+  });
 });

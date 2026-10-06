@@ -1,6 +1,6 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { render } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { KjTable } from './table';
 import { KjTableRow } from './table-row';
 import { KjTableCell } from './table-cell';
@@ -179,6 +179,51 @@ describe('KjTableKeyboardNav', () => {
       input.focus();
       press('ArrowLeft');
       expect(document.activeElement).toBe(input);
+    });
+  });
+
+  describe('data changes after init', () => {
+    it('re-setting the data twice after a cell was focused renders the new rows (no NG0950)', async () => {
+      const { container, fixture } = await render(Host);
+      // A focused cell makes the Tab stop check every rendered cell's id —
+      // which, resolved mid-render, read cells whose `kjCell` was not bound yet.
+      cellsOf(container)[3].focus();
+      fixture.detectChanges();
+      const next = (ids: string[]): Row[] => ids.map((id) => ({ id, a: `a-${id}`, b: `b-${id}` }));
+      fixture.componentInstance.data.set(next(['x1', 'x2']));
+      fixture.detectChanges();
+      fixture.componentInstance.data.set(next(['y1', 'y2', 'y3', 'y4']));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const cells = cellsOf(container);
+      expect(cells.length).toBe(8);
+      expect(cells[0].textContent).toContain('a-y1');
+      expect(tabStops(container)).toEqual([cells[0]]);
+    });
+  });
+
+  describe('render cost', () => {
+    it('resolves the Tab stop once per render, not once per cell (no O(n²) DOM-order sort)', async () => {
+      const rows: Row[] = Array.from({ length: 25 }, (_, i) => ({
+        id: `r${i}`,
+        a: `${i}`,
+        b: `${i}`,
+      }));
+      const compare = vi.spyOn(Node.prototype, 'compareDocumentPosition');
+      try {
+        const { container, fixture } = await render(Host);
+        compare.mockClear();
+        fixture.componentInstance.data.set(rows);
+        fixture.detectChanges();
+        const cells = cellsOf(container);
+        expect(cells.length).toBe(50); // the core table pages at 25 rows
+        expect(tabStops(container)).toEqual([cells[0]]);
+        // One DOM-order pass over 50 cells is ~50 comparisons; the per-cell
+        // resolution it replaces made ~1 250 (quadratic).
+        expect(compare.mock.calls.length).toBeLessThan(3 * cells.length);
+      } finally {
+        compare.mockRestore();
+      }
     });
   });
 });
