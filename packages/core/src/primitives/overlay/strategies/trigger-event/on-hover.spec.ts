@@ -141,4 +141,65 @@ describe('onHover', () => {
     expect(toggled).toBe(1);
     s.detach();
   });
+
+  describe('hover target resolution', () => {
+    const ctxFor = (trigger: HTMLElement, isOpen = signal(false)): KjOverlayContext => ({
+      state: signal('closed'),
+      isOpen,
+      triggerEl: signal(trigger),
+      panelEl: signal(null),
+      stack: {} as never,
+      platform: { isBrowser: true },
+      requestClose: () => {},
+    });
+    const box = (w: number) => ({ width: w, height: w }) as DOMRect;
+
+    it('never measures the trigger on attach — a hover trigger per table row must not force a layout each', () => {
+      const trigger = document.createElement('span');
+      const child = document.createElement('button');
+      trigger.appendChild(child);
+      const triggerRect = vi.spyOn(trigger, 'getBoundingClientRect');
+      const childRect = vi.spyOn(child, 'getBoundingClientRect');
+      const s = onHover();
+      s.attach(ctxFor(trigger));
+      s.bindToggle(() => {});
+      expect(triggerRect).not.toHaveBeenCalled();
+      expect(childRect).not.toHaveBeenCalled();
+      s.detach();
+    });
+
+    it('a display: contents trigger resolves its boxed descendant on the first hover, once', async () => {
+      const trigger = document.createElement('span');
+      const child = document.createElement('button');
+      trigger.appendChild(child);
+      document.body.appendChild(trigger);
+      const triggerRect = vi.spyOn(trigger, 'getBoundingClientRect').mockReturnValue(box(0));
+      vi.spyOn(child, 'getBoundingClientRect').mockReturnValue(box(20));
+      const isOpen = signal(false);
+      const toggle = vi.fn(() => isOpen.set(!isOpen()));
+      const s = onHover({ openDelay: 0, closeDelay: 0 });
+      s.attach(ctxFor(trigger, isOpen));
+      s.bindToggle(toggle);
+
+      // A browser fires the bubbling pointerover, then pointerenter on the box.
+      child.dispatchEvent(new Event('pointerover', { bubbles: true }));
+      child.dispatchEvent(new Event('pointerenter'));
+      await new Promise((r) => setTimeout(r, 5));
+      expect(toggle).toHaveBeenCalledTimes(1);
+      expect(isOpen()).toBe(true);
+      expect(triggerRect).toHaveBeenCalledTimes(1);
+
+      // Leave is heard on the resolved descendant.
+      child.dispatchEvent(new Event('pointerleave'));
+      await new Promise((r) => setTimeout(r, 5));
+      expect(toggle).toHaveBeenCalledTimes(2);
+      expect(isOpen()).toBe(false);
+
+      // Later hovers reuse the resolved target without measuring again.
+      child.dispatchEvent(new Event('pointerover', { bubbles: true }));
+      expect(triggerRect).toHaveBeenCalledTimes(1);
+      s.detach();
+      trigger.remove();
+    });
+  });
 });

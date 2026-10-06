@@ -33,6 +33,9 @@ export type KjOnHoverStrategy = KjTriggerEventStrategy & {
  * do not bubble, and elements with `display: contents` (e.g. `<kj-button>`)
  * never receive these events because they have no rendered box. Walk to the
  * first descendant with a layout box.
+ *
+ * Measures, so it forces a layout: call it only on a hover, never on attach —
+ * a table with a hover trigger per row would otherwise lay out once per row.
  */
 const effectiveHoverTarget = (el: HTMLElement): HTMLElement => {
   if (!el.ownerDocument?.defaultView) return el;
@@ -56,9 +59,11 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
   let toggle: (() => void) | null = null;
   let openTimer = 0,
     closeTimer = 0;
-  let onEnter: ((e: Event) => void) | null = null;
-  let onLeave: ((e: Event) => void) | null = null;
-  let listenTarget: HTMLElement | null = null;
+  let onEnter: (() => void) | null = null;
+  let onLeave: (() => void) | null = null;
+  let onFirstOver: (() => void) | null = null;
+  let triggerTarget: HTMLElement | null = null;
+  let boxTarget: HTMLElement | null = null;
   let panelTarget: HTMLElement | null = null;
 
   const cancelClose = () => {
@@ -100,11 +105,12 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
     if (!ctx?.platform.isBrowser) return;
     const trigger = ctx.triggerEl();
     if (!trigger || onEnter) return;
-    listenTarget = effectiveHoverTarget(trigger);
     onEnter = () => {
       cancelClose();
       wirePanel();
-      if (ctx?.isOpen()) return;
+      // The first hover can reach here twice (the bubbled `pointerover` that
+      // resolves the box target, then that target's own `pointerenter`).
+      if (ctx?.isOpen() || openTimer) return;
       openTimer = setTimeout(
         () => {
           openTimer = 0;
@@ -119,8 +125,26 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
       wirePanel();
       scheduleClose();
     };
-    listenTarget.addEventListener('pointerenter', onEnter);
-    listenTarget.addEventListener('pointerleave', onLeave);
+    // Nothing is measured here. The trigger listens directly (enough when it
+    // has a box); a `display: contents` trigger only sees the bubbled
+    // `pointerover` of a descendant, so the first one resolves — and measures,
+    // once — the descendant that actually receives enter / leave.
+    onFirstOver = () => {
+      if (!onEnter || !onLeave || !triggerTarget) return;
+      triggerTarget.removeEventListener('pointerover', onFirstOver!);
+      onFirstOver = null;
+      const target = effectiveHoverTarget(triggerTarget);
+      if (target !== triggerTarget) {
+        boxTarget = target;
+        target.addEventListener('pointerenter', onEnter);
+        target.addEventListener('pointerleave', onLeave);
+      }
+      onEnter();
+    };
+    triggerTarget = trigger;
+    trigger.addEventListener('pointerenter', onEnter);
+    trigger.addEventListener('pointerleave', onLeave);
+    trigger.addEventListener('pointerover', onFirstOver);
   };
 
   return {
@@ -136,16 +160,21 @@ export function onHover(initialOpts: Partial<KjOnHoverOpts> = {}): KjOnHoverStra
     onOpen() {},
     onClose() {},
     detach() {
-      if (listenTarget && onEnter) listenTarget.removeEventListener('pointerenter', onEnter);
-      if (listenTarget && onLeave) listenTarget.removeEventListener('pointerleave', onLeave);
+      for (const el of [triggerTarget, boxTarget]) {
+        if (!el) continue;
+        if (onEnter) el.removeEventListener('pointerenter', onEnter);
+        if (onLeave) el.removeEventListener('pointerleave', onLeave);
+      }
+      if (triggerTarget && onFirstOver)
+        triggerTarget.removeEventListener('pointerover', onFirstOver);
       if (panelTarget) {
         panelTarget.removeEventListener('pointerenter', cancelClose);
         panelTarget.removeEventListener('pointerleave', scheduleClose);
       }
       if (openTimer) clearTimeout(openTimer);
       if (closeTimer) clearTimeout(closeTimer);
-      onEnter = onLeave = null;
-      listenTarget = null;
+      onEnter = onLeave = onFirstOver = null;
+      triggerTarget = boxTarget = null;
       panelTarget = null;
       openTimer = closeTimer = 0;
       toggle = null;

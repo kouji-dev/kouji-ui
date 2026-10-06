@@ -311,6 +311,11 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                pinned bottom). Declared inside <table> so the keyboard-nav
                content query and the KJ_TABLE / KJ_TABLE_KEYBOARD_NAV lookups
                see the stamped rows. -->
+          <!-- Content templates are read ONCE per refresh here, never from a
+               row or cell: stamped views dirty content queries, and a query
+               read per cell can re-collect it across every view (O(n²)). -->
+          @let cellTpls = cellTemplateMap();
+          @let expansionTpl = kjRowExpansionTpl();
           <ng-template #rowTpl let-r let-virtualIndex="virtualIndex" let-virtual="virtual">
             @let editing = editingRowId() === r.id ? editingCell() : null;
             <tr kjTableRow [kjRow]="r"
@@ -363,7 +368,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                     {{ c.renderValue() }}
                   } @else if (c.getIsPlaceholder?.()) {
                   } @else {
-                    @let tpl = cellTemplateFor(c.column.id);
+                    @let tpl = cellTpls.get(c.column.id);
                     @if (tpl) {
                       <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: r.original, row: r.original, value: c.getValue(), cell: c }" />
                     } @else {
@@ -373,11 +378,11 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                 </td>
               }
             </tr>
-            @if (kjRowExpansionTpl() && r.getIsExpanded?.() && !r.getIsGrouped?.()) {
+            @if (expansionTpl && r.getIsExpanded?.() && !r.getIsGrouped?.()) {
               <tr class="kj-table-expansion-row" data-kj-virtual-extra>
                 <td [attr.colspan]="aria.colCount()">
                   <ng-container
-                    [ngTemplateOutlet]="kjRowExpansionTpl()!"
+                    [ngTemplateOutlet]="expansionTpl"
                     [ngTemplateOutletContext]="{ $implicit: r.original, row: r.original }"
                   />
                 </td>
@@ -700,16 +705,23 @@ export class KjTableComponent<TData extends RowData = unknown> {
     () => this.errorTemplate()?.template ?? null,
   );
 
-  /** Column id → registered cell template, rebuilt only when the content children change. */
-  private readonly cellTemplateMap = computed<ReadonlyMap<string, TemplateRef<unknown>>>(() => {
+  /**
+   * Column id → registered cell template. The view reads it once per refresh
+   * into a `@let` snapshot that rows and cells look up — never per cell:
+   * stamped views dirty content queries, and a dirty query re-collects across
+   * every view on its next read. Equal maps keep the previous identity so the snapshot does not
+   * churn when the query re-settles unchanged.
+   */
+  protected readonly cellTemplateMap = computed<ReadonlyMap<string, TemplateRef<unknown>>>(
+    () => this.collectCellTemplates(),
+    { equal: sameTemplateMap },
+  );
+
+  /** Builds the column id → template map from the content query. */
+  private collectCellTemplates(): ReadonlyMap<string, TemplateRef<unknown>> {
     const map = new Map<string, TemplateRef<unknown>>();
     for (const t of this.cellTemplates()) map.set(t.kjCellTemplate(), t.template);
     return map;
-  });
-
-  /** Resolve the registered template for a column, if any. */
-  protected cellTemplateFor(columnId: string): TemplateRef<unknown> | null {
-    return this.cellTemplateMap().get(columnId) ?? null;
   }
 
   // ── Outputs ─────────────────────────────────────────────────────────────
@@ -1310,6 +1322,16 @@ export class KjTableComponent<TData extends RowData = unknown> {
 // ── helpers ───────────────────────────────────────────────────────────────
 function cellMeta<TData>(col: Column<TData, unknown>): KjColumnMeta<TData> | undefined {
   return (col.columnDef.meta as { kj?: KjColumnMeta<TData> } | undefined)?.kj;
+}
+
+/** Same column ids mapped to the same template instances. */
+function sameTemplateMap(
+  a: ReadonlyMap<string, TemplateRef<unknown>>,
+  b: ReadonlyMap<string, TemplateRef<unknown>>,
+): boolean {
+  if (a.size !== b.size) return false;
+  for (const [k, v] of a) if (b.get(k) !== v) return false;
+  return true;
 }
 
 /** Same slices by identity — the core directive replaces a slice object only when its content changed. */

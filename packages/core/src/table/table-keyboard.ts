@@ -1,8 +1,8 @@
-import { Directive, computed, contentChildren, signal } from '@angular/core';
+import { Directive, afterRenderEffect, contentChildren, signal } from '@angular/core';
 import { KjTableCell } from './table-cell';
 import { KJ_TABLE_KEYBOARD_NAV, type KjTableKeyboardNavContext } from './table-keyboard.context';
 
-/** `Node.DOCUMENT_POSITION_PRECEDING` — inlined so the DOM-order sort also runs on the server. */
+/** `Node.DOCUMENT_POSITION_PRECEDING`, inlined so the module never touches the `Node` global. */
 const DOCUMENT_POSITION_PRECEDING = 2;
 
 /** Text-entry controls whose own arrow / Home / End handling must win over grid navigation. */
@@ -50,21 +50,34 @@ export class KjTableKeyboardNav implements KjTableKeyboardNavContext {
   /** Id of the cell the user focused last; survives the cell leaving the DOM. */
   private readonly activeId = signal<string | null>(null);
 
+  /** Tab stop resolved after the last render (see {@link tabStopId}). */
+  private readonly resolvedStopId = signal<string | null>(null);
+
   /**
    * Id of the cell that owns `tabindex="0"`: the last focused cell while it
    * is rendered, else the first rendered cell in DOM order.
+   *
+   * Every cell reads this, so it must not touch the `cells` query: each
+   * stamped cell view dirties the query, and a per-cell read would re-collect
+   * it and re-sort the DOM once per cell — O(n²) for an n-cell body. It is
+   * resolved once per render instead, after the cells are in the DOM. Until
+   * then (and on the server) no cell is a Tab stop.
    */
-  readonly tabStopId = computed<string | null>(() => {
-    const cells = this.cells();
-    if (cells.length === 0) return null;
-    const active = this.activeId();
-    if (active !== null && cells.some((c) => c.cellId() === active)) return active;
-    return firstInDomOrder(cells).cellId();
-  });
+  readonly tabStopId = this.resolvedStopId.asReadonly();
+
+  constructor() {
+    afterRenderEffect(() => {
+      const cells = this.cells();
+      const active = this.activeId();
+      this.resolvedStopId.set(resolveTabStop(cells, active));
+    });
+  }
 
   /** Record `cellId` as the last focused cell. @param cellId TanStack `cell.id`. */
   setActive(cellId: string): void {
     this.activeId.set(cellId);
+    // A cell that just took focus is rendered: it is the Tab stop right away.
+    this.resolvedStopId.set(cellId);
   }
 
   onKeyDown(event: KeyboardEvent): void {
@@ -152,6 +165,13 @@ export class KjTableKeyboardNav implements KjTableKeyboardNavContext {
     }
     return null;
   }
+}
+
+/** The active cell while it is rendered, else the first rendered cell in DOM order. */
+function resolveTabStop(cells: readonly KjTableCell[], active: string | null): string | null {
+  if (cells.length === 0) return null;
+  if (active !== null && cells.some((c) => c.cellId() === active)) return active;
+  return firstInDomOrder(cells).cellId();
 }
 
 /**

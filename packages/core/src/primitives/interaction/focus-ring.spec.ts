@@ -1,4 +1,5 @@
 import { render, fireEvent } from '@testing-library/angular';
+import { computed } from '@angular/core';
 import { vi } from 'vitest';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { KjFocusRing } from './focus-ring';
@@ -51,6 +52,32 @@ describe('KjFocusRing', () => {
     fireEvent.keyDown(document);
     fireEvent.focus(btn);
     expect(btn).toHaveAttribute('data-focus-visible', '');
+  });
+
+  it('a blur fired while Angular renders (focused element disabled or removed) writes no signal in a reactive context (NG0600)', async () => {
+    const { container } = await render(
+      `<button kjFocusRing>Click me</button>`,
+      { imports: [KjFocusRing] },
+    );
+    const btn = container.querySelector('button')!;
+    fireEvent.focus(btn);
+    expect(btn).toHaveAttribute('data-focus-visible', '');
+    const errors: unknown[] = [];
+    const onError = (e: ErrorEvent) => {
+      errors.push(e.error);
+      e.preventDefault();
+    };
+    window.addEventListener('error', onError);
+    try {
+      // Chromium dispatches blur synchronously from inside the binding that
+      // disables or detaches the focused element; a computed stands in for
+      // that template's reactive context.
+      const rendering = computed(() => btn.dispatchEvent(new FocusEvent('blur')));
+      rendering();
+    } finally {
+      window.removeEventListener('error', onError);
+    }
+    expect(errors).toEqual([]);
   });
 
   it('passes axe accessibility audit', async () => {
