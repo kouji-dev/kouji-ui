@@ -128,6 +128,53 @@ export class KjTable<TData extends RowData = unknown> {
   }
 
   /**
+   * Server-side infinite mode. When on, `kjTableData` is index-aligned with
+   * the server's result set and may hold holes (`undefined` / `null`) for
+   * rows that are not loaded yet: the holes are dropped before the rows reach
+   * TanStack, and {@link sourceIndex} maps each loaded row back to its
+   * position in the full result set. Sorting, filtering and pagination are
+   * left to the server (TanStack's `manual*` flags), so a header click only
+   * changes `state.sorting()` — feed it into your loader's request.
+   */
+  private readonly _infinite = signal(false);
+  /** Whether server-side infinite mode is on — see {@link setInfinite}. */
+  readonly infinite = this._infinite.asReadonly();
+  /**
+   * Turn server-side infinite mode on or off.
+   * @param on `true` while the data is a sparse window of a server result set.
+   */
+  setInfinite(on: boolean): void {
+    this._infinite.set(on);
+  }
+
+  /** Rows handed to TanStack plus, in infinite mode, their positions in the full result set. */
+  private readonly compacted = computed<{ rows: TData[]; sourceIndex: readonly number[] | null }>(() => {
+    const data = this.kjTableData();
+    if (!this._infinite()) return { rows: data, sourceIndex: null };
+    const rows: TData[] = [];
+    const sourceIndex: number[] = [];
+    // `forEach` skips true holes, so a `new Array(total)` window costs only
+    // its loaded entries.
+    data.forEach((row, i) => {
+      if (row == null) return;
+      rows.push(row);
+      sourceIndex.push(i);
+    });
+    return { rows, sourceIndex };
+  });
+
+  /**
+   * In infinite mode, the result-set position of each loaded top-level row,
+   * indexed by its TanStack `row.index`; `null` otherwise.
+   */
+  readonly sourceIndex = computed<readonly number[] | null>(() => this.compacted().sourceIndex);
+
+  /** Position of a top-level row in the full result set (its `row.index` outside infinite mode). */
+  private sourceIndexOf(index: number): number {
+    return this.compacted().sourceIndex?.[index] ?? index;
+  }
+
+  /**
    * Apply a TanStack updater (value or function) to a single state slice.
    *
    * Dedupes content-equal updates: TanStack often calls `on*Change` with a
@@ -170,11 +217,15 @@ export class KjTable<TData extends RowData = unknown> {
 
   /** The TanStack table instance. Access rows, headers, and state here. */
   readonly table: () => Table<TData> = createAngularTable<TData>(() => ({
-    data: this.kjTableData(),
+    data: this.compacted().rows,
     columns: this.boundColumns(),
+    // In infinite mode a top-level row's index is its result-set position,
+    // so default ids stay stable while pages load around them.
     getRowId: this.kjGetRowId()
-      ? (row, index) => this.kjGetRowId()!(row, index)
-      : undefined,
+      ? (row, index, parent) => this.kjGetRowId()!(row, parent ? index : this.sourceIndexOf(index))
+      : this._infinite()
+        ? (_row, index, parent) => (parent ? `${parent.id}.${index}` : String(this.sourceIndexOf(index)))
+        : undefined,
     // `columnResizeMode: 'onEnd'` defers the actual column width write until
     // the user releases the resize handle. While dragging, the wrapper reads
     // `state.columnSizingInfo().deltaOffset` to render a vertical preview
@@ -184,7 +235,9 @@ export class KjTable<TData extends RowData = unknown> {
     // TanStack to manual pagination so the loader-page becomes the
     // visible page (no client-side slicing) and pagination controls
     // derive their totals from the remote count.
-    manualPagination: this._rowCount() !== null,
+    manualPagination: this._rowCount() !== null || this._infinite(),
+    manualSorting: this._infinite(),
+    manualFiltering: this._infinite(),
     rowCount: this._rowCount() ?? undefined,
     state: { ...this._state(), columnSizingInfo: this._columnSizingInfo() },
     onSortingChange:          u => this.patch('sorting', u),

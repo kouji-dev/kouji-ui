@@ -10,6 +10,7 @@ export { KjTableExample } from './table.example';
 export { KjTableExportExample } from './table.export.example';
 export { KjTableFilterableExample } from './table.filterable.example';
 export { KjTableGroupingExample } from './table.grouping.example';
+export { KjTableInfiniteExample } from './table.infinite.example';
 export { KjTableKeyboardExample } from './table.keyboard.example';
 export { KjTableMasterDetailExample } from './table.master-detail.example';
 export { KjTablePersistenceExample } from './table.persistence.example';
