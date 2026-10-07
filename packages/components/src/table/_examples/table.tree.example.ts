@@ -187,12 +187,14 @@ export class KjTableTreeExample {
   protected readonly byId = (row: Invoice): string => row.id;
   protected readonly lines = (row: Invoice): readonly Invoice[] | undefined => row.lines;
 
-  protected onExpanded(event: KjExpandedChangeEvent<Invoice>): void {
-    const what = event.row ? event.row.label : 'Every invoice';
+  // `<kj-table>` infers its row type as `unknown` in templates: narrow here.
+  protected onExpanded(event: KjExpandedChangeEvent<unknown>): void {
+    const row = event.row as Invoice | null;
+    const what = row ? row.label : 'Every invoice';
     this.lastEvent.set(`${what} ${event.expanded ? 'expanded' : 'collapsed'}`);
   }
 
-  protected onRowClick(event: KjRowClickEvent<Invoice>): void {
-    this.lastEvent.set(`Opened ${event.row.label}`);
+  protected onRowClick(event: KjRowClickEvent<unknown>): void {
+    this.lastEvent.set(`Opened ${(event.row as Invoice).label}`);
   }
 }
