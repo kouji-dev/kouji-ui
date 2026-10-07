@@ -455,7 +455,10 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                       {{ c.getValue() }}
                       <span class="kj-table-group-toggle__count">({{ r.subRows?.length ?? 0 }})</span>
                     </button>
-                  } @else if (c.getIsAggregated?.()) {
+                  } @else if (r.getIsGrouped?.() && c.getIsAggregated?.()) {
+                    <!-- TanStack reports every cell of a row with sub-rows as
+                         aggregated; only a grouping row really aggregates. A
+                         tree parent renders like any other row. -->
                     {{ c.renderValue() }}
                   } @else if (c.getIsPlaceholder?.()) {
                   } @else {
