@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { kjColumn } from '@kouji-ui/core';
 import { KjTableComponent, type KjExpandedChangeEvent, type KjRowClickEvent } from './table';
 import { kjTableInfiniteResource, type KjTableInfinitePage } from './table-infinite-resource';
+import { KjCellTemplate } from './table-cell-template';
 import type { KjTableRange } from './table-virtual';
 
 // jsdom shims (see table-infinite.spec.ts): a 200px viewport, 20px rows.
@@ -479,5 +480,153 @@ describe('kj-table — infinite tree', () => {
     await settle(fixture);
     expect(rowCount()).toBe('1011');
     expect(toggle('n0').getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+// ── Parent rows render their cells (regression, 0.12.1) ────────────────────
+// TanStack reports every cell of a row with sub-rows as "aggregated"; only a
+// grouping row may render the aggregate.
+interface Amount {
+  readonly id: string;
+  readonly name: string;
+  readonly amount: number;
+  readonly team: string;
+  readonly children?: readonly Amount[];
+}
+
+const AMOUNTS: Amount[] = [
+  {
+    id: 'p',
+    name: 'Parent',
+    amount: 10,
+    team: 'x',
+    children: [{ id: 'p1', name: 'Child', amount: 3, team: 'x' }],
+  },
+  { id: 'q', name: 'Leaf', amount: 4, team: 'y' },
+];
+
+@Component({
+  standalone: true,
+  imports: [KjTableComponent, KjCellTemplate],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <kj-table
+      [kjData]="data"
+      [kjColumns]="cols"
+      [kjGetRowId]="byId"
+      [kjGetSubRows]="kids"
+      [kjVirtual]="virtual()"
+      [kjEstimatedRowSize]="20"
+      kjDefaultExpanded
+    >
+      <ng-template kjCellTemplate="name" let-r>
+        <b class="tpl">{{ r.name }}!</b>
+      </ng-template>
+    </kj-table>
+  `,
+})
+class ParentCellsHost {
+  readonly virtual = signal(false);
+  readonly data = AMOUNTS;
+  readonly cols = [
+    kjColumn<Amount>({ accessorKey: 'name', header: 'Name', cell: () => '' }),
+    kjColumn<Amount>({ accessorKey: 'amount', header: 'Amount', aggregationFn: 'sum' }),
+    kjColumn<Amount>({ accessorKey: 'team', header: 'Team' }),
+  ];
+  readonly byId = (row: Amount): string => row.id;
+  readonly kids = (row: Amount): readonly Amount[] | undefined => row.children;
+  readonly table = viewChild.required(KjTableComponent);
+}
+
+const cellTexts = (tr: Element): string[] =>
+  Array.from(tr.querySelectorAll('td[role="gridcell"]')).map((td) =>
+    (td.textContent ?? '').replace(/\s+/g, ' ').trim(),
+  );
+
+describe('kj-table — tree parent cells', () => {
+  for (const virtual of [false, true]) {
+    it(`a parent renders its kjCellTemplate and accessor values (${virtual ? 'virtual' : 'plain'})`, async () => {
+      const { container, fixture } = await render(ParentCellsHost, {
+        detectChangesOnRender: false,
+      });
+      fixture.componentInstance.virtual.set(virtual);
+      fixture.detectChanges();
+      await settle(fixture);
+      const rows = Array.from(container.querySelectorAll('tbody > tr[role="row"]'));
+      expect(rows.map((tr) => tr.getAttribute('data-depth'))).toEqual(['0', '1', '0']);
+      // Parent: template + own value (not the sum of its children).
+      expect(rows[0]!.querySelector('.tpl')?.textContent).toBe('Parent!');
+      expect(cellTexts(rows[0]!)).toEqual(['1Parent!', '10', 'x']);
+      expect(cellTexts(rows[1]!)).toEqual(['Child!', '3', 'x']);
+    });
+  }
+
+  it('grouping still renders the aggregate on group rows', async () => {
+    const { container, fixture } = await render(ParentCellsHost);
+    fixture.componentInstance
+      .table()
+      .tableRef()
+      .setState({ grouping: ['team'] });
+    fixture.detectChanges();
+    await settle(fixture);
+    const group = container.querySelector('tbody > tr[data-row-grouped]')!;
+    expect(group).toBeTruthy();
+    // Team "x" groups the parent row: sum of its amount.
+    expect(cellTexts(group)).toContain('10');
+    expect(group.querySelector('.tpl')).toBeNull();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [KjTableComponent, KjCellTemplate],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `
+    <kj-table
+      [kjColumns]="cols"
+      [kjGetRowId]="byId"
+      [kjGetSubRows]="kids"
+      [kjInfinite]="people"
+      [kjEstimatedRowSize]="20"
+      [kjRangeChangeDebounce]="0"
+      kjDefaultExpanded
+    >
+      <ng-template kjCellTemplate="name" let-r>
+        <b class="tpl">{{ r.name }}!</b>
+      </ng-template>
+    </kj-table>
+  `,
+})
+class InfiniteParentCellsHost {
+  readonly calls: { offset: number; settle: (p: KjTableInfinitePage<Node>) => void }[] = [];
+  readonly people = kjTableInfiniteResource<Node, null>({
+    request: () => null,
+    pageSize: 10,
+    overscanPages: 0,
+    loader: ({ offset }) => new Promise((resolve) => this.calls.push({ offset, settle: resolve })),
+  });
+  readonly cols = [
+    kjColumn<Node>({ accessorKey: 'name', header: 'Name' }),
+    kjColumn<Node>({ accessorKey: 'id', header: 'ID' }),
+  ];
+  readonly byId = (row: Node): string => row.id;
+  readonly kids = (row: Node): readonly Node[] | undefined => row.children;
+}
+
+describe('kj-table — infinite tree parent cells', () => {
+  it('a loaded parent renders its template and accessor values', async () => {
+    const { container, fixture } = await render(InfiniteParentCellsHost);
+    const host = fixture.componentInstance;
+    await settle(fixture);
+    for (const c of host.calls.splice(0)) {
+      const rows: Node[] = [];
+      for (let i = c.offset; i < c.offset + 10; i++) rows.push(node(i));
+      c.settle({ rows, total: 100 });
+    }
+    await settle(fixture);
+    const parent = container.querySelector('tbody > tr[aria-rowindex="2"]')!;
+    expect(parent.getAttribute('data-depth')).toBe('0');
+    expect(parent.querySelector('.tpl')?.textContent).toBe('Row 0!');
+    expect(cellTexts(parent)[1]).toBe('n0');
   });
 });
