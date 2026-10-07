@@ -118,8 +118,8 @@ class TreeHost {
   readonly mode = signal<'none' | 'single' | 'multi'>('multi');
   readonly column = signal(true);
   readonly virtual = signal<boolean | 'auto'>(false);
-  readonly events: KjExpandedChangeEvent<Item>[] = [];
-  readonly clicks: KjRowClickEvent<Item>[] = [];
+  readonly events: KjExpandedChangeEvent<unknown>[] = [];
+  readonly clicks: KjRowClickEvent<unknown>[] = [];
   readonly cols = COLS;
   readonly byId = byId;
   readonly children = children;
@@ -299,7 +299,7 @@ describe('kj-table — row click with a selection column', () => {
     plainRow(rows(), 1).click();
     update();
     expect(host.table().tableRef().state.rowSelection()).toEqual({});
-    expect(host.clicks.map((c) => c.row.id)).toEqual(['b']);
+    expect(host.clicks.map((c) => (c.row as Item).id)).toEqual(['b']);
   });
 
   it('single: a row click does not select either', async () => {
