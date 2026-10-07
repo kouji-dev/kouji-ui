@@ -24,10 +24,19 @@ export class KjTableRow<TData extends RowData = unknown> {
   /** TanStack row instance — pass from getRowModel().rows. */
   kjRow = input.required<Row<TData>>();
 
+  /**
+   * Overrides the 1-based `aria-rowindex` — for rows whose place in the grid
+   * is not their `row.index`, like the children of a tree row. `null`
+   * (default) derives it from the row.
+   */
+  kjAriaRowIndex = input<number | null>(null);
+
   private readonly table = injectParent(KJ_TABLE, { child: 'KjTableRow', parent: '[kjTable]' }) as unknown as KjTable<TData>;
 
   /** 1-based ARIA index — accounts for header row(s). */
   readonly ariaRowIndex = computed(() => {
+    const override = this.kjAriaRowIndex();
+    if (override != null) return override;
     const row = this.kjRow();
     // Infinite mode: the row's place in the whole result set, not in the loaded window.
     const source = row.depth === 0 ? this.table.sourceIndex()?.[row.index] : undefined;

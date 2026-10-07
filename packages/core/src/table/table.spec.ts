@@ -228,3 +228,141 @@ describe('KjTable — setInfinite()', () => {
     expect(tbl.table().getRowModel().rows.map((r) => r.original.name)).toEqual(['Bob', 'Alice']);
   });
 });
+
+// ── Tree rows ──────────────────────────────────────────────────────────────
+interface Node {
+  id: string;
+  name: string;
+  age: number;
+  children?: Node[];
+}
+
+const TREE: Node[] = [
+  {
+    id: 'a',
+    name: 'A',
+    age: 1,
+    children: [
+      { id: 'a1', name: 'A1', age: 2 },
+      { id: 'a2', name: 'A2', age: 3 },
+    ],
+  },
+  { id: 'b', name: 'B', age: 4 },
+  { id: 'c', name: 'C', age: 5, children: [{ id: 'c1', name: 'C1', age: 6 }] },
+];
+
+@Component({
+  standalone: true,
+  imports: [KjTable],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  template: `<table
+    [kjTable]="columns"
+    [kjTableData]="data()"
+    [kjGetRowId]="byId"
+    [kjGetSubRows]="children"
+    [kjDefaultExpanded]="open()"
+    [kjSelectSubRows]="selectSub()"
+  ></table>`,
+})
+class TreeHost {
+  readonly columns: ColumnDef<Node>[] = [{ accessorKey: 'name', header: 'Name' }];
+  readonly data = signal<Node[]>(TREE);
+  readonly open = signal(false);
+  readonly selectSub = signal(false);
+  readonly byId = (n: Node): string => n.id;
+  readonly children = (n: Node): Node[] | undefined => n.children;
+}
+
+describe('KjTable — tree rows', () => {
+  async function setup(init?: (h: TreeHost) => void) {
+    const { fixture } = await render(TreeHost);
+    init?.(fixture.componentInstance);
+    fixture.detectChanges();
+    const tbl = fixture.debugElement.children[0]!.injector.get(KjTable) as KjTable<Node>;
+    const ids = (): string[] => tbl.table().getRowModel().rows.map((r) => r.id);
+    const row = (id: string) => tbl.table().getRow(id);
+    return { fixture, tbl, ids, row };
+  }
+
+  it('starts collapsed: only top-level rows, children known as subRows', async () => {
+    const { tbl, ids, row } = await setup();
+    expect(ids()).toEqual(['a', 'b', 'c']);
+    expect(row('a').subRows.map((r) => r.id)).toEqual(['a1', 'a2']);
+    expect(row('a1').depth).toBe(1);
+    expect(tbl.isAllExpanded()).toBe(false);
+  });
+
+  it('setRowExpanded inserts the children after their parent, with the same columns', async () => {
+    const { tbl, ids, row } = await setup();
+    expect(tbl.setRowExpanded(row('a'))).toBe(true);
+    expect(ids()).toEqual(['a', 'a1', 'a2', 'b', 'c']);
+    expect(row('a1').getVisibleCells().map((c) => c.getValue())).toEqual(['A1']);
+    tbl.setRowExpanded(row('a'));
+    expect(ids()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('kjDefaultExpanded opens every parent; a collapsed row stays collapsed', async () => {
+    const { tbl, ids, row, fixture } = await setup((h) => h.open.set(true));
+    expect(ids()).toEqual(['a', 'a1', 'a2', 'b', 'c', 'c1']);
+    expect(tbl.isAllExpanded()).toBe(true);
+    // Leaf rows are not "expanded" (no master-detail panel by default).
+    expect(tbl.getRowExpanded(row('b'))).toBe(false);
+    tbl.setRowExpanded(row('a'), false);
+    expect(ids()).toEqual(['a', 'b', 'c', 'c1']);
+    expect(tbl.isAllExpanded()).toBe(false);
+    // New data resets the expansion to the default.
+    fixture.componentInstance.data.set([...TREE, { id: 'd', name: 'D', age: 7, children: [{ id: 'd1', name: 'D1', age: 8 }] }]);
+    fixture.detectChanges();
+    expect(ids()).toEqual(['a', 'a1', 'a2', 'b', 'c', 'c1', 'd', 'd1']);
+  });
+
+  it('expandAll / collapseAll / resetExpansion', async () => {
+    const { tbl, ids, row } = await setup();
+    tbl.setRowExpanded(row('c'));
+    tbl.expandAll();
+    expect(ids()).toEqual(['a', 'a1', 'a2', 'b', 'c', 'c1']);
+    expect(tbl.isAllExpanded()).toBe(true);
+    tbl.collapseAll();
+    expect(ids()).toEqual(['a', 'b', 'c']);
+    tbl.expandAll();
+    tbl.setRowExpanded(row('a'), false);
+    tbl.resetExpansion();
+    expect(ids()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('selects children independently unless kjSelectSubRows', async () => {
+    const { tbl, row, fixture } = await setup();
+    row('a').toggleSelected(true);
+    expect(tbl.state.rowSelection()).toEqual({ a: true });
+    row('a2').toggleSelected(true);
+    expect(tbl.state.rowSelection()).toEqual({ a: true, a2: true });
+
+    tbl.setState({ rowSelection: {} });
+    fixture.componentInstance.selectSub.set(true);
+    fixture.detectChanges();
+    row('a').toggleSelected(true);
+    expect(tbl.state.rowSelection()).toEqual({ a: true, a1: true, a2: true });
+  });
+
+  it('infinite mode: top-level ids stay result-set indexes, children nest under them', async () => {
+    const { tbl, row, fixture } = await setup();
+    const sparse = new Array<Node>(10);
+    sparse[4] = TREE[0]!;
+    fixture.componentInstance.data.set(sparse);
+    tbl.setInfinite(true);
+    fixture.detectChanges();
+    expect(tbl.sourceIndex()).toEqual([4]);
+    tbl.setRowExpanded(row('a'));
+    // A page landing is not a reset: the expansion survives it.
+    const more = [...sparse];
+    more[5] = TREE[1]!;
+    fixture.componentInstance.data.set(more);
+    fixture.detectChanges();
+    expect(tbl.table().getRowModel().rows.map((r) => [r.id, r.depth])).toEqual([
+      ['a', 0],
+      ['a1', 1],
+      ['a2', 1],
+      ['b', 0],
+    ]);
+  });
+});

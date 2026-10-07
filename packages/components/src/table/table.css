@@ -24,6 +24,8 @@
     --kj-table-row-height: var(--kj-row-h);
     /* Themable header band — defaults to the table surface. */
     --kj-table-header-bg: var(--kj-bg-surface);
+    /* Tree rows: inline indent added per nesting level. */
+    --kj-table-tree-indent: 1.25rem;
   }
   :host([data-density="compact"])     { --kj-table-row-height: 1.75rem; }
   :host([data-density="comfortable"]) { --kj-table-row-height: 2.75rem; }
@@ -569,5 +571,66 @@
   :host tbody tr[data-row-grouped] td {
     background: var(--kj-bg-elevated);
     font-weight: 600;
+  }
+
+  /* ── Tree rows ──────────────────────────────────────────────────
+     The first data cell of every row carries the expand toggle (or a
+     same-width spacer on leaves) and is indented by its depth. */
+  :host td.kj-table-tree-cell {
+    padding-inline-start: calc(
+      var(--kj-base-space-md) + var(--kj-table-tree-depth, 0) * var(--kj-table-tree-indent)
+    );
+    white-space: nowrap;
+  }
+  :host([data-density="compact"]) td.kj-table-tree-cell {
+    padding-inline-start: calc(
+      var(--kj-base-space-sm) + var(--kj-table-tree-depth, 0) * var(--kj-table-tree-indent)
+    );
+  }
+  :host([data-density="comfortable"]) td.kj-table-tree-cell {
+    padding-inline-start: calc(
+      var(--kj-base-space-lg) + var(--kj-table-tree-depth, 0) * var(--kj-table-tree-indent)
+    );
+  }
+  .kj-table-tree-toggle,
+  .kj-table-tree-spacer {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    margin-inline-end: var(--kj-base-space-xs, 0.25rem);
+  }
+  .kj-table-tree-toggle {
+    gap: 0.125rem;
+    padding: 0 var(--kj-base-space-xs, 0.25rem) 0 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--kj-radius-selector);
+    font: inherit;
+    color: var(--kj-fg-muted);
+    cursor: pointer;
+  }
+  .kj-table-tree-toggle:hover {
+    background: var(--kj-bg-elevated);
+    color: var(--kj-fg-default);
+  }
+  .kj-table-tree-toggle:focus-visible {
+    outline: 2px solid var(--kj-border-focus);
+    outline-offset: 1px;
+  }
+  .kj-table-tree-toggle__chevron {
+    transition: transform var(--kj-transition);
+  }
+  .kj-table-tree-toggle[aria-expanded="true"] .kj-table-tree-toggle__chevron {
+    transform: rotate(90deg);
+  }
+  :host([dir="rtl"]) .kj-table-tree-toggle[aria-expanded="false"] .kj-table-tree-toggle__chevron,
+  :host-context([dir="rtl"]) .kj-table-tree-toggle[aria-expanded="false"] .kj-table-tree-toggle__chevron {
+    transform: scaleX(-1);
+  }
+  .kj-table-tree-toggle__count {
+    font-size: 0.75em;
+    font-variant-numeric: tabular-nums;
   }
 }
