@@ -3,9 +3,21 @@ import {
   createAngularTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel,
   getPaginationRowModel, getExpandedRowModel, getGroupedRowModel,
   type ColumnSizingInfoState,
+  type ExpandedState,
+  type Row,
   type Table,
 } from '@tanstack/angular-table';
-import { Directive, InjectionToken, computed, input, model, signal } from '@angular/core';
+import {
+  Directive,
+  InjectionToken,
+  booleanAttribute,
+  computed,
+  effect,
+  input,
+  model,
+  signal,
+  untracked,
+} from '@angular/core';
 import { toDeepSignal, type DeepSignal } from '../primitives/signals/deep-signal';
 import { createGridApi } from './grid-api-impl';
 import type { KjColumnApi, KjGridApi } from './grid-api';
@@ -93,6 +105,28 @@ export class KjTable<TData extends RowData = unknown> {
    */
   kjGetRowId = input<((row: TData, index: number) => string) | undefined>(undefined);
 
+  /**
+   * Tree rows: returns a row's children (TanStack `getSubRows`). Children are
+   * real table rows with the same columns, shown under their parent while it
+   * is expanded. `undefined` (default) keeps the table flat.
+   */
+  kjGetSubRows = input<((row: TData, index: number) => readonly TData[] | undefined) | undefined>(undefined);
+
+  /**
+   * Tree rows: whether selecting a parent also selects its children
+   * (TanStack `enableSubRowSelection`). Defaults to `false` — every row is
+   * selected on its own.
+   */
+  kjSelectSubRows = input<boolean, unknown>(false, { transform: booleanAttribute });
+
+  /**
+   * Tree rows: whether parents start expanded. Applies to every parent with
+   * no explicit expanded state — on first render, to rows loaded later, and
+   * again after {@link resetExpansion} (an infinite table's request change).
+   * Defaults to `false`.
+   */
+  kjDefaultExpanded = input<boolean, unknown>(false, { transform: booleanAttribute });
+
   private readonly _state = signal<KjTableState>(DEFAULT_STATE);
 
   /**
@@ -145,6 +179,34 @@ export class KjTable<TData extends RowData = unknown> {
    */
   setInfinite(on: boolean): void {
     this._infinite.set(on);
+  }
+
+  /**
+   * Whether a tree parent with no explicit entry in `state.expanded` is open.
+   * Starts at `kjDefaultExpanded`; {@link expandAll} / {@link collapseAll}
+   * flip it so rows loaded later follow the last bulk action.
+   */
+  private readonly _expandDefault = signal(false);
+
+  /**
+   * `state.expanded` as TanStack sees it. Open-by-default with no exceptions
+   * is handed over as `true`: TanStack skips expansion altogether for an
+   * empty record, and `getIsRowExpanded` still keeps leaf rows closed.
+   */
+  private readonly tanstackExpanded = computed<ExpandedState>(() => {
+    const expanded = this._state().expanded;
+    if (expanded === true) return true;
+    if (this._expandDefault() && Object.keys(expanded).length === 0) return true;
+    return expanded;
+  });
+
+  /** Whether a row is expanded: its explicit state, else the tree default for parents. */
+  private isRowExpanded(row: Row<TData>): boolean {
+    const expanded = this._state().expanded;
+    if (expanded === true) return true;
+    const own = expanded[row.id];
+    if (own !== undefined) return own;
+    return this._expandDefault() && (row.subRows?.length ?? 0) > 0;
   }
 
   /** Rows handed to TanStack plus, in infinite mode, their positions in the full result set. */
@@ -239,7 +301,17 @@ export class KjTable<TData extends RowData = unknown> {
     manualSorting: this._infinite(),
     manualFiltering: this._infinite(),
     rowCount: this._rowCount() ?? undefined,
-    state: { ...this._state(), columnSizingInfo: this._columnSizingInfo() },
+    getSubRows: this.kjGetSubRows() as ((row: TData, index: number) => TData[] | undefined) | undefined,
+    getIsRowExpanded: row => this.isRowExpanded(row),
+    enableSubRowSelection: this.kjSelectSubRows(),
+    // Expansion is reset by the directive itself (see the constructor): an
+    // infinite table's page loads must not wipe it.
+    autoResetExpanded: false,
+    state: {
+      ...this._state(),
+      expanded: this.tanstackExpanded(),
+      columnSizingInfo: this._columnSizingInfo(),
+    },
     onSortingChange:          u => this.patch('sorting', u),
     onColumnFiltersChange:    u => this.patch('columnFilters', u),
     onGlobalFilterChange:     u => this.patch('globalFilter', u),
@@ -264,6 +336,94 @@ export class KjTable<TData extends RowData = unknown> {
     enableRowSelection:      true,
     enableMultiRowSelection: true,
   }));
+
+  constructor() {
+    // New rows reset the expansion to `kjDefaultExpanded` (TanStack's own
+    // auto-reset, kept), except in infinite mode where data changes are page
+    // loads — the infinite wrapper calls `resetExpansion()` on a real reset.
+    let seeded = false;
+    effect(() => {
+      this.kjTableData();
+      if (!seeded) {
+        seeded = true;
+        return;
+      }
+      untracked(() => {
+        if (!this._infinite()) this.resetExpansion();
+      });
+    });
+
+    // A new `kjDefaultExpanded` restarts the tree from that default.
+    effect(() => {
+      const open = this.kjDefaultExpanded();
+      untracked(() => {
+        if (this._expandDefault() === open) return;
+        this._expandDefault.set(open);
+        this.patch('expanded', {});
+      });
+    });
+  }
+
+  // ── Tree rows ───────────────────────────────────────────────────────────
+
+  /**
+   * Whether every loaded parent row is expanded (`false` when no row has
+   * children). Rows of an infinite table that are not loaded yet do not count.
+   */
+  readonly isAllExpanded = computed<boolean>(() => {
+    this._state();
+    this._expandDefault();
+    let parents = 0;
+    for (const row of this.table().getCoreRowModel().flatRows) {
+      if (!row.subRows?.length) continue;
+      parents++;
+      if (!this.isRowExpanded(row)) return false;
+    }
+    return parents > 0;
+  });
+
+  /**
+   * Whether a row is expanded — its own choice, else `kjDefaultExpanded`
+   * (or the last expand-all / collapse-all) for parents.
+   * @param row The row.
+   */
+  getRowExpanded(row: Row<TData>): boolean {
+    return this.isRowExpanded(row);
+  }
+
+  /**
+   * Expand or collapse one row. Unlike TanStack's `row.toggleExpanded()`, the
+   * choice is stored explicitly, so it holds against `kjDefaultExpanded`.
+   * @param row The row.
+   * @param expanded The new state; omitted, the current one flips.
+   * @returns The row's new expanded state.
+   */
+  setRowExpanded(row: Row<TData>, expanded?: boolean): boolean {
+    const next = expanded ?? !this.isRowExpanded(row);
+    const prev = this._state().expanded;
+    // `true` ("every row") becomes "open by default" plus this exception.
+    if (prev === true) this._expandDefault.set(true);
+    this.patch('expanded', { ...(prev === true ? {} : prev), [row.id]: next });
+    return next;
+  }
+
+  /** Expand every parent row, including the ones loaded later. */
+  expandAll(): void {
+    this._expandDefault.set(true);
+    this.patch('expanded', {});
+  }
+
+  /** Collapse every parent row, including the ones loaded later. */
+  collapseAll(): void {
+    this._expandDefault.set(false);
+    this.patch('expanded', {});
+  }
+
+  /** Forget per-row expansion and go back to `kjDefaultExpanded` — e.g. when the rows are replaced. */
+  resetExpansion(): void {
+    this._expandDefault.set(untracked(this.kjDefaultExpanded));
+    this.patch('expanded', {});
+  }
 
   /** Merge a partial state. Unspecified slices are left untouched. */
   setState(partial: Partial<KjTableState>): void {

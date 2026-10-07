@@ -46,6 +46,7 @@ import {
 } from '@kouji-ui/core';
 import type { Cell, Column, Header, Row, RowData } from '@tanstack/angular-table';
 import { KjTableVirtual, type KjTableRange } from './table-virtual';
+import { infiniteLayout, listLayout, type KjVirtualLayout } from './table-tree-layout';
 import type { KjTableInfiniteResource } from './table-infinite-resource';
 import { KjSkeletonComponent } from '../skeleton/skeleton';
 import { KjTableVirtualItem } from './table-virtual-item';
@@ -102,6 +103,16 @@ export interface KjSelectAllEvent {
  *   choice back through `kjSelectAllChecked`.
  */
 export type KjSelectAllMode = 'page' | 'loaded' | 'external';
+
+/** Payload of `(expandedChange)`: a tree row toggled, or every row by expand-all / collapse-all. */
+export interface KjExpandedChangeEvent<TData> {
+  /** The toggled row; `null` for `expandAll()` / `collapseAll()`. */
+  readonly row: TData | null;
+  /** The toggled row's id; `null` for `expandAll()` / `collapseAll()`. */
+  readonly rowId: string | null;
+  /** The new state. */
+  readonly expanded: boolean;
+}
 
 /** How `<kj-table>` shows loading while it already has rows. */
 export type KjTableLoadingMode = 'bar' | 'overlay';
@@ -217,6 +228,15 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
  *   top behind a `kjLoadingMode="overlay"` loader, and a silent reload keeps
  *   rows and scroll position.
  *   @doc-file table.infinite.example.ts
+ * @doc-example Tree rows [full]
+ *   `[kjGetSubRows]` turns rows into a tree: children are real rows with the
+ *   same columns, indented under a chevron toggle with their count
+ *   (Enter on the cell, ArrowRight / ArrowLeft). `kjDefaultExpanded`,
+ *   `expandAll()` / `collapseAll()` / `isAllExpanded()` and
+ *   `(expandedChange)`; children select on their own unless
+ *   `kjSelectSubRows`. Works with `[kjInfinite]`: the loader pages top-level
+ *   rows and expanded children are inserted into the virtual list.
+ *   @doc-file table.tree.example.ts
  * @doc-example Density [full]
  *   `compact` / `standard` / `comfortable` adjust row padding.
  *   @doc-file table.density.example.ts
@@ -259,6 +279,8 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
  *                            virtualizer estimates from it.
  *   --kj-table-header-bg   — Fill behind the sticky header band. Defaults to
  *                            --kj-bg-surface.
+ *   --kj-table-tree-indent — Inline indent per tree level (`kjGetSubRows`).
+ *                            Defaults to 1.25rem.
  *
  *   The table has no `data-variant` slot: unlike button/alert/tag it is not a
  *   preset-driven component, so these two custom properties (plus the shared
@@ -269,6 +291,8 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
  *
  * @doc-aria
  *   role=grid          The <table>, with aria-rowcount / aria-colcount
+ *                      (role=treegrid when kjGetSubRows is bound: rows carry
+ *                      aria-level, parents aria-expanded)
  *   role=status        A visually-hidden polite region announces sorting and
  *                      filtering changes (SC 4.1.3). Silent until something
  *                      changes; switch it off with [kjAnnounceChanges]="false"
@@ -295,7 +319,14 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
   hostDirectives: [
     {
       directive: KjTable,
-      inputs: ['kjTable: kjColumns', 'kjTableData: kjData', 'kjGetRowId'],
+      inputs: [
+        'kjTable: kjColumns',
+        'kjTableData: kjData',
+        'kjGetRowId',
+        'kjGetSubRows',
+        'kjSelectSubRows',
+        'kjDefaultExpanded',
+      ],
     },
   ],
   imports: [
@@ -337,7 +368,7 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
 
       <div class="kj-table-body" #body>
         <table kjTableKeyboardNav
-          role="grid"
+          [attr.role]="treeMode() ? 'treegrid' : 'grid'"
           [attr.aria-rowcount]="aria.rowCount()"
           [attr.aria-colcount]="aria.colCount()"
         >
@@ -350,13 +381,20 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                read per cell can re-collect it across every view (O(n²)). -->
           @let cellTpls = cellTemplateMap();
           @let expansionTpl = kjRowExpansionTpl();
-          <ng-template #rowTpl let-r let-virtualIndex="virtualIndex" let-virtual="virtual">
+          @let tree = treeMode();
+          <ng-template #rowTpl let-r let-virtualIndex="virtualIndex" let-virtual="virtual" let-flatIndex="flatIndex">
             @let editing = editingRowId() === r.id ? editingCell() : null;
+            @let expanded = !!r.getIsExpanded?.();
+            @let treeParent = tree && r.subRows?.length > 0;
             <tr kjTableRow [kjRow]="r"
+                [kjAriaRowIndex]="tree ? treeRowIndex(virtualIndex, flatIndex) : null"
                 [kjTableVirtualItem]="virtualIndex ?? null"
                 [kjVirtualOwner]="virtual ?? null"
-                [kjMeasureDeps]="r.getIsExpanded?.()"
+                [kjMeasureDeps]="expanded"
                 [attr.data-row-grouped]="r.getIsGrouped?.() ? '' : null"
+                [attr.data-depth]="tree ? r.depth : null"
+                [attr.aria-level]="tree ? r.depth + 1 : null"
+                [attr.aria-expanded]="treeParent ? expanded : null"
                 (click)="onRowClick(r, $event)"
                 (dblclick)="onRowDblClick(r, $event)">
               @if (showSelectionColumn()) {
@@ -370,14 +408,33 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                   />
                 </td>
               }
-              @for (c of r.getVisibleCells(); track c.id) {
+              @for (c of r.getVisibleCells(); track c.id; let firstCell = $first) {
                 @let isEditing = editing !== null && editing.columnId === c.column.id;
+                @let treeCell = tree && firstCell;
                 <td kjTableCell [kjCell]="c"
                     [class.kj-table-cell--editing]="isEditing"
+                    [class.kj-table-tree-cell]="treeCell"
+                    [style.--kj-table-tree-depth]="treeCell ? r.depth : null"
                     [style.width.px]="kjEnableResize() ? c.column.getSize() : null"
                     (click)="onCellClick(c, $event)"
                     (dblclick)="onCellDblClick(c, $event)"
-                    (keydown)="onCellKeydown(c, $event)">
+                    (keydown)="onCellKeydown(c, $event, treeCell)">
+                  @if (treeCell) {
+                    @if (treeParent) {
+                      <button type="button"
+                              class="kj-table-tree-toggle"
+                              tabindex="-1"
+                              [attr.aria-expanded]="expanded"
+                              [attr.aria-label]="kjTreeToggleLabel()(r.subRows.length)"
+                              (click)="onTreeToggle(r, $event)"
+                              (keydown)="onTreeToggleKeydown(r, $event)">
+                        <i class="kj-table-tree-toggle__chevron" kjIcon="chevron-right" kjIconSize="sm" aria-hidden="true"></i>
+                        <span class="kj-table-tree-toggle__count" aria-hidden="true">{{ r.subRows.length }}</span>
+                      </button>
+                    } @else {
+                      <span class="kj-table-tree-spacer" aria-hidden="true"></span>
+                    }
+                  }
                   @if (isEditing) {
                     <span class="kj-table-cell-ghost" aria-hidden="true">{{ c.getValue() }}</span>
                     <span
@@ -526,12 +583,11 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
                   <td [attr.colspan]="aria.colCount()" [style.height.px]="v.paddingTop()"></td>
                 </tr>
               }
-              @let slots = infiniteSlots();
-              @let rowsAt = slots ?? centerRows();
+              @let layout = virtualLayout();
               @for (vr of v.virtualRows(); track vr.key) {
-                @if (rowsAt[vr.index]; as r) {
+                @if (layout.at(vr.index); as r) {
                   <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: r, virtualIndex: vr.index, virtual: v }" />
-                } @else if (slots) {
+                } @else if (layout.sparse) {
                   <!-- Not loaded yet: a placeholder row at the estimated height. -->
                   <tr class="kj-table-skeleton-row"
                       role="row"
@@ -555,8 +611,8 @@ const BUILTIN_FILTERS: Readonly<Record<string, Type<unknown>>> = {
             </tbody>
           } @else {
             <tbody>
-              @for (r of centerRows(); track r.id) {
-                <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: r }" />
+              @for (r of centerRows(); track r.id; let i = $index) {
+                <ng-container *ngTemplateOutlet="rowTpl; context: { $implicit: r, flatIndex: i }" />
               }
             </tbody>
           }
@@ -765,6 +821,18 @@ export class KjTableComponent<TData extends RowData = unknown> {
    */
   readonly kjPageSize = input<number | 'all' | null>(null);
 
+  // ── Tree rows ───────────────────────────────────────────────────────────
+  // `kjGetSubRows`, `kjSelectSubRows` and `kjDefaultExpanded` are forwarded
+  // to the hosted `KjTable` directive (see `hostDirectives`).
+
+  /**
+   * Accessible name of a tree row's expand toggle, from its child count. The
+   * toggle carries `aria-expanded`, so the name should not repeat the state.
+   */
+  readonly kjTreeToggleLabel = input<(count: number) => string>(
+    (count) => (count === 1 ? '1 child row' : `${count} child rows`),
+  );
+
   // ── Row expansion template ─────────────────────────────────────────────
   /** Template for master-detail row expansion. Receives `$implicit = row`. */
   readonly kjRowExpansionTpl = contentChild<TemplateRef<unknown>>('kjRowExpansion');
@@ -829,6 +897,8 @@ export class KjTableComponent<TData extends RowData = unknown> {
   readonly rangeChange = output<KjTableRange>();
   /** Fires when the header checkbox (or Ctrl/Cmd+A) asks to select or clear all rows. */
   readonly selectAll = output<KjSelectAllEvent>();
+  /** Fires when a tree row is expanded or collapsed, or on `expandAll()` / `collapseAll()`. */
+  readonly expandedChange = output<KjExpandedChangeEvent<TData>>();
 
   // ── Refs ────────────────────────────────────────────────────────────────
   /**
@@ -907,26 +977,26 @@ export class KjTableComponent<TData extends RowData = unknown> {
   /** Whether the table is a server-side infinite window. */
   protected readonly infiniteMode = computed<boolean>(() => this.infiniteTotal() !== null);
 
-  /** Rows the virtualizer spans: the whole result set when infinite, else the center rows. */
-  protected readonly virtualCount = computed<number>(
-    () => this.infiniteTotal() ?? this.centerRows().length,
-  );
-
   /**
-   * Infinite mode: center rows placed at their result-set index, holes where
-   * a row is not loaded yet (rendered as a skeleton). `null` otherwise.
+   * What the virtualized body shows at each index. Infinite mode: top-level
+   * rows at their result-set index, holes where a row is not loaded yet
+   * (rendered as a skeleton), and the children of expanded parents inserted
+   * after them. Otherwise the center rows as they are.
    */
-  protected readonly infiniteSlots = computed<readonly (Row<TData> | undefined)[] | null>(() => {
+  protected readonly virtualLayout = computed<KjVirtualLayout<Row<TData>>>(() => {
     const count = this.infiniteTotal();
-    if (count === null) return null;
-    const source = this.t.sourceIndex();
-    const slots = new Array<Row<TData> | undefined>(Math.max(0, count));
-    for (const r of this.centerRows()) {
-      const i = source?.[r.index] ?? r.index;
-      if (i < count) slots[i] = r;
-    }
-    return slots;
+    if (count === null) return listLayout(this.centerRows());
+    return infiniteLayout(this.centerRows(), count, this.t.sourceIndex());
   });
+
+  /** Rows the virtualizer spans: the whole result set (plus expanded children) when infinite, else the center rows. */
+  protected readonly virtualCount = computed<number>(() => this.virtualLayout().count);
+
+  /** Whether rows can have children (`kjGetSubRows` is bound). */
+  protected readonly treeMode = computed<boolean>(() => !!this.t.kjGetSubRows());
+
+  /** Whether every loaded parent row is expanded. */
+  readonly isAllExpanded = computed<boolean>(() => this.t.isAllExpanded());
 
   protected readonly centerRows = computed<Row<TData>[]>(() => {
     const tbl = this.t.table();
@@ -1047,7 +1117,11 @@ export class KjTableComponent<TData extends RowData = unknown> {
   });
 
   protected readonly aria = {
-    rowCount: computed(() => (this.infiniteTotal() ?? this.effectiveData().length) + 1),
+    rowCount: computed(() => {
+      if (this.infiniteMode()) return this.virtualCount() + 1;
+      if (this.treeMode()) return this.t.table().getPrePaginationRowModel().rows.length + 1;
+      return this.effectiveData().length + 1;
+    }),
     colCount: computed(() => {
       const cols = this.t.kjTable();
       // Approximate: flatten one level of column groups for ARIA.
@@ -1203,6 +1277,7 @@ export class KjTableComponent<TData extends RowData = unknown> {
       const inf = this.kjInfinite();
       if (!inf || inf.resets() === 0) return;
       untracked(() => {
+        this.t.resetExpansion();
         this.virtualRef()?.resetMeasurements();
         this.scrollToTop();
       });
@@ -1211,10 +1286,16 @@ export class KjTableComponent<TData extends RowData = unknown> {
     // Visible range -> `(rangeChange)` (trailing-debounced) and the bound
     // infinite resource.
     effect((onCleanup) => {
-      const range = this.virtualRef()?.range() ?? null;
+      const virtualRange = this.virtualRef()?.range() ?? null;
       const inf = this.kjInfinite();
       const delay = this.kjRangeChangeDebounce();
-      if (!range) return;
+      if (!virtualRange) return;
+      // Infinite tree: the loader pages top-level rows, so expanded children
+      // in view count as their parent.
+      const layout = this.virtualLayout();
+      const range: KjTableRange = this.infiniteMode()
+        ? { startIndex: layout.topOf(virtualRange.startIndex), endIndex: layout.topOf(virtualRange.endIndex) }
+        : virtualRange;
       const emit = (): void => {
         inf?.setRange(range);
         if (sameRange(range, this.lastRange)) return;
@@ -1254,7 +1335,7 @@ export class KjTableComponent<TData extends RowData = unknown> {
   scrollToIndex(index: number, align: 'start' | 'center' | 'end' | 'auto' = 'start'): void {
     const virtual = this.virtualRef();
     if (virtual) {
-      virtual.scrollToIndex(index, align);
+      virtual.scrollToIndex(this.virtualLayout().indexOfTop(index), align);
       return;
     }
     const body = this.bodyRef().nativeElement;
@@ -1326,8 +1407,9 @@ export class KjTableComponent<TData extends RowData = unknown> {
     this.tryBeginEdit(cell);
   }
 
-  protected onCellKeydown(cell: Cell<TData, unknown>, event: KeyboardEvent): void {
+  protected onCellKeydown(cell: Cell<TData, unknown>, event: KeyboardEvent, treeCell = false): void {
     const onCell = event.target === event.currentTarget;
+    if (treeCell && !this.isEditing(cell) && this.onTreeCellKeydown(cell, event, onCell)) return;
     if (event.key === 'F2' || (event.key === 'Enter' && onCell && !this.isEditing(cell))) {
       event.preventDefault();
       this.tryBeginEdit(cell);
@@ -1351,6 +1433,29 @@ export class KjTableComponent<TData extends RowData = unknown> {
         if (this.kjSelectAllMode() !== 'external') this.t.table().toggleAllRowsSelected(true);
       }
     }
+  }
+
+  /**
+   * Treegrid keys on a row's first cell: ArrowRight expands a collapsed
+   * parent, ArrowLeft collapses an expanded one (otherwise the arrows move
+   * between cells), Enter toggles a parent whose cell is not editable.
+   * @returns Whether the key was handled.
+   */
+  private onTreeCellKeydown(cell: Cell<TData, unknown>, event: KeyboardEvent, onCell: boolean): boolean {
+    const row = cell.row;
+    if (!row.subRows?.length) return false;
+    const expanded = this.t.getRowExpanded(row);
+    const rtl = this.direction.current() === 'rtl';
+    const open = rtl ? 'ArrowLeft' : 'ArrowRight';
+    const close = rtl ? 'ArrowRight' : 'ArrowLeft';
+    let next: boolean | null = null;
+    if (event.key === open && !expanded) next = true;
+    else if (event.key === close && expanded) next = false;
+    else if (event.key === 'Enter' && onCell && !cellMeta(cell.column)?.editable) next = !expanded;
+    if (next === null) return false;
+    event.preventDefault();
+    this.setExpanded(row, next);
+    return true;
   }
 
   private tryBeginEdit(cell: Cell<TData, unknown>): void {
@@ -1378,7 +1483,8 @@ export class KjTableComponent<TData extends RowData = unknown> {
   }
 
   /**
-   * Toggle / replace row selection based on `kjSelectionMode`:
+   * Toggle / replace row selection based on `kjSelectionMode` — only when
+   * the selection column is hidden (`kjShowSelectionColumn` off):
    *   - `'multi'`  → plain click toggles this row and moves the anchor.
    *     Shift-click selects every row between the anchor and here (range).
    *     Ctrl/Cmd-click toggles this row only (anchor moves, others kept).
@@ -1388,6 +1494,9 @@ export class KjTableComponent<TData extends RowData = unknown> {
   private applySelectionFromClick(row: Row<TData>, event: MouseEvent): void {
     const mode = this.kjSelectionMode();
     if (mode === 'none') return;
+    // With a checkbox column, selection belongs to the checkboxes: a row
+    // click stays free for `(rowClick)` (e.g. navigation).
+    if (this.showSelectionColumn()) return;
     const tbl = this.t.table();
     if (mode === 'single') {
       tbl.setRowSelection({ [row.id]: true });
@@ -1456,7 +1565,57 @@ export class KjTableComponent<TData extends RowData = unknown> {
    */
   protected onGroupToggle(row: Row<TData>, event: MouseEvent): void {
     event.stopPropagation();
-    (row as { toggleExpanded?: () => void }).toggleExpanded?.();
+    this.t.setRowExpanded(row);
+  }
+
+  // ── Tree rows ───────────────────────────────────────────────────────────
+  /** Expand every parent row (rows loaded later too) and emit `(expandedChange)`. */
+  expandAll(): void {
+    this.t.expandAll();
+    this.expandedChange.emit({ row: null, rowId: null, expanded: true });
+  }
+
+  /** Collapse every parent row (rows loaded later too) and emit `(expandedChange)`. */
+  collapseAll(): void {
+    this.t.collapseAll();
+    this.expandedChange.emit({ row: null, rowId: null, expanded: false });
+  }
+
+  /**
+   * Expand or collapse one row and emit `(expandedChange)`. The scroll
+   * position is kept: children are inserted below their parent.
+   * @param row The TanStack row.
+   * @param expanded The new state; omitted, the current one flips.
+   */
+  protected setExpanded(row: Row<TData>, expanded?: boolean): void {
+    const next = this.t.setRowExpanded(row, expanded);
+    this.expandedChange.emit({ row: row.original, rowId: row.id, expanded: next });
+  }
+
+  /** Click on a tree toggle: toggles the row, never selects or fires `(rowClick)`. */
+  protected onTreeToggle(row: Row<TData>, event: MouseEvent): void {
+    event.stopPropagation();
+    this.setExpanded(row);
+  }
+
+  /** Enter / Space on a focused tree toggle: toggle without the cell's own key handling. */
+  protected onTreeToggleKeydown(row: Row<TData>, event: KeyboardEvent): void {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.setExpanded(row);
+  }
+
+  /**
+   * 1-based `aria-rowindex` of a tree row: its place in the flattened rows
+   * (header row included), or `null` for rows outside the main body.
+   */
+  protected treeRowIndex(virtualIndex: number | undefined, flatIndex: number | undefined): number | null {
+    if (virtualIndex != null) return virtualIndex + 2;
+    if (flatIndex == null) return null;
+    const { pageIndex, pageSize } = this.t.state.pagination();
+    const paged = !this.shouldVirtualize() && pageSize < Number.MAX_SAFE_INTEGER;
+    return (paged ? pageIndex * pageSize : 0) + flatIndex + 2;
   }
 
   // ── Header helpers ──────────────────────────────────────────────────────

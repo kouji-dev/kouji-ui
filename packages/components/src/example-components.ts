@@ -372,6 +372,7 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   KjTableFilterableExample: 'table',
   KjTableGroupingExample: 'table',
   KjTableInfiniteExample: 'table',
+  KjTableTreeExample: 'table',
   KjTableKeyboardExample: 'table',
   KjTableMasterDetailExample: 'table',
   KjTablePersistenceExample: 'table',

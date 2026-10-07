@@ -18,13 +18,14 @@ interface Row {
     <table [kjTable]="cols" [kjTableData]="data()" #t="kjTable">
       <tbody>
         @for (r of t.table().getRowModel().rows; track r.id) {
-          <tr kjTableRow [kjRow]="r"></tr>
+          <tr kjTableRow [kjRow]="r" [kjAriaRowIndex]="override()"></tr>
         }
       </tbody>
     </table>
   `,
 })
 class Host {
+  readonly override = signal<number | null>(null);
   protected readonly cols = [kjColumn<Row>({ accessorKey: 'name', header: 'Name' })];
   protected readonly data = signal<Row[]>([
     { id: 'a', name: 'A' },
@@ -39,6 +40,13 @@ describe('KjTableRow', () => {
     expect(rows[0].getAttribute('role')).toBe('row');
     expect(rows[0].getAttribute('aria-rowindex')).toBe('2'); // 1 = header
     expect(rows[1].getAttribute('aria-rowindex')).toBe('3');
+  });
+
+  it('kjAriaRowIndex overrides the derived aria-rowindex', async () => {
+    const { container, fixture } = await render(Host);
+    fixture.componentInstance.override.set(7);
+    fixture.detectChanges();
+    expect(container.querySelector('tbody tr')!.getAttribute('aria-rowindex')).toBe('7');
   });
 
   it('reflects aria-selected when row is selected', async () => {

@@ -20,5 +20,6 @@ export { KjTableSelectionExample } from './table.selection.example';
 export { KjTableServerModeExample } from './table.server-mode.example';
 export { KjTableSortableExample } from './table.sortable.example';
 export { KjTableThemingExample } from './table.theming.example';
+export { KjTableTreeExample } from './table.tree.example';
 export { KjTableUsageExample } from './table.usage.example';
 export { KjTableVirtualizedExample } from './table.virtualized.example';
