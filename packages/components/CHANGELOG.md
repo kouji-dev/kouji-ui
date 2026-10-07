@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.12.1
+
+### Patch Changes
+
+- 9521e64: `<kj-table>` tree rows: parent rows render their cells again. TanStack reports every cell of a row with sub-rows as aggregated, so tree parents rendered the (empty) aggregate instead of their `kjCellTemplate` / accessor value; only grouping rows render aggregates now.
+
 ## 0.12.0
 
 ### Minor Changes
