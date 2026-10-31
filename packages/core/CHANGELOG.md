@@ -1,5 +1,11 @@
 # @kouji-ui/core
 
+## 0.11.1
+
+### Patch Changes
+
+- 4a75561: `bindPresets` keeps the enclosing size/variant preset when a config has no `sizes`/`variants` list. `KjTabs` binds a variant-only config, so a `KjSize` element inside a tab panel (e.g. `kj-kbd`) read `values: undefined` and threw `Cannot read properties of undefined (reading 'includes')` in its dev-mode check.
+
 ## 0.11.0
 
 ### Minor Changes
