@@ -56,6 +56,7 @@ export * from './skip-link/index';
 export * from './slider/index';
 export * from './speed-dial/index';
 export * from './spinner/index';
+export * from './stat/index';
 export * from './stepper/index';
 export * from './table/index';
 export * from './tabs/index';
@@ -67,6 +68,7 @@ export * from './toggle/index';
 export * from './tooltip/index';
 export * from './cascade-select/index';
 export * from './command-palette/index';
+export * from './tree/index';
 export * from './tree-select/index';
 export * from './typography/index';
 
