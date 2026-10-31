@@ -1,5 +1,11 @@
 # @kouji-ui/components
 
+## 0.12.2
+
+### Patch Changes
+
+- 052a4a9: Declare echarts as an optional peer dependency (needed only for kj-chart).
+
 ## 0.12.1
 
 ### Patch Changes
