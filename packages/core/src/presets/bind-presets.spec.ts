@@ -52,6 +52,25 @@ describe('bindPresets', () => {
     });
     expect(TestBed.inject(KJ_SIZE_PRESET)).toEqual({ values: ['s', 'm', 'l'], default: 'l' });
   });
+
+  it('a config with no size list keeps the enclosing KJ_SIZE_PRESET, never values: undefined', async () => {
+    // KjTabs binds a variant-only config; a KjSize under it once read
+    // `values: undefined` and threw in its dev-mode check.
+    @Directive({
+      // eslint-disable-next-line @angular-eslint/directive-selector -- test-only host
+      selector: '[variantOnly]',
+      standalone: true,
+      providers: [
+        { provide: DUMMY_CONFIG, useValue: { variants: ['a'], defaults: { variant: 'a' } } },
+        ...bindPresets(DUMMY_CONFIG),
+      ],
+    })
+    class VariantOnly {}
+    const { container } = await render(`<div variantOnly><span kjSize="md"></span></div>`, {
+      imports: [VariantOnly, KjSize],
+    });
+    expect(container.querySelector('span')!.getAttribute('data-size')).toBe('md');
+  });
 });
 
 describe('the preset system is supported public API (cust F-11)', () => {
