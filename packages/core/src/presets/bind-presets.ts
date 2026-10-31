@@ -63,6 +63,9 @@ export function bindPresets<T extends KjBindablePresetConfig>(
       provide: KJ_VARIANT_PRESET,
       useFactory: () => {
         const c = inject(configToken);
+        // A config without a variant list (e.g. one that only sizes) keeps the
+        // enclosing preset, so it never hands descendants `values: undefined`.
+        if (!c.variants) return inject(KJ_VARIANT_PRESET, { skipSelf: true });
         return { values: c.variants, default: c.defaults.variant };
       },
     },
@@ -70,6 +73,9 @@ export function bindPresets<T extends KjBindablePresetConfig>(
       provide: KJ_SIZE_PRESET,
       useFactory: () => {
         const c = inject(configToken);
+        // Same for sizes: `KjTabs` binds a variant-only config, and a `KjSize`
+        // descendant (a `kj-kbd` in a tab panel) must see the enclosing preset.
+        if (!c.sizes) return inject(KJ_SIZE_PRESET, { skipSelf: true });
         return { values: c.sizes, default: c.defaults.size };
       },
     },
