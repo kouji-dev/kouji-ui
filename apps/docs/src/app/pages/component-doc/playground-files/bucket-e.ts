@@ -12,6 +12,7 @@ import type { PlaygroundLoader } from '../playground-types';
  */
 export const BUCKET_E_LOADERS: Record<string, PlaygroundLoader> = {
   KjSpinnerComponent: () => import('@kouji-ui/components/spinner/spinner.playground').then((m) => m.PLAYGROUND),
+  KjStat: () => import('@kouji-ui/components/stat/stat.playground').then((m) => m.PLAYGROUND),
   KjStepperComponent: () => import('@kouji-ui/components/stepper/stepper.playground').then((m) => m.PLAYGROUND),
   KjTabsComponent: () => import('@kouji-ui/components/tabs/tabs.playground').then((m) => m.PLAYGROUND),
   KjTagComponent: () => import('@kouji-ui/components/tag/tag.playground').then((m) => m.PLAYGROUND),
@@ -20,6 +21,7 @@ export const BUCKET_E_LOADERS: Record<string, PlaygroundLoader> = {
   KjToastWrapper: () => import('@kouji-ui/components/toast/toast.playground').then((m) => m.PLAYGROUND),
   KjToggleComponent: () => import('@kouji-ui/components/toggle/toggle.playground').then((m) => m.PLAYGROUND),
   KjTooltip: () => import('@kouji-ui/components/tooltip/tooltip.playground').then((m) => m.PLAYGROUND),
+  KjTree: () => import('@kouji-ui/components/tree/tree.playground').then((m) => m.PLAYGROUND),
   KjTreeSelectComponent: () => import('@kouji-ui/components/tree-select/tree-select.playground').then((m) => m.PLAYGROUND),
   KjTypographyDocs: () => import('@kouji-ui/components/typography/typography.playground').then((m) => m.PLAYGROUND),
 };

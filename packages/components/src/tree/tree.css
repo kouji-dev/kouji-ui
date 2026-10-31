@@ -1,0 +1,87 @@
+@layer kj.component {
+  .kj-tree-host {
+    display: block;
+  }
+
+  .kj-tree,
+  .kj-tree-group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .kj-tree {
+    --kj-tree-indent: 1rem;
+    --kj-tree-row-height: 2rem;
+    --kj-tree-selected-bg: color-mix(in oklab, var(--kj-bg-primary) 12%, transparent);
+
+    color: var(--kj-fg-default);
+    font: 0.875rem var(--kj-font-sans);
+  }
+
+  .kj-tree-item {
+    outline: none;
+  }
+
+  .kj-tree-row {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-xs);
+    min-height: var(--kj-tree-row-height);
+    padding-inline-start: calc(
+      var(--kj-tree-level, 0) * var(--kj-tree-indent) + var(--kj-space-xs)
+    );
+    padding-inline-end: var(--kj-space-sm);
+    border-radius: var(--kj-radius-selector);
+    cursor: pointer;
+    user-select: none;
+  }
+  .kj-tree-row:hover {
+    background: var(--kj-bg-surface);
+  }
+  .kj-tree-item:focus-visible > .kj-tree-row {
+    outline: 2px solid var(--kj-bg-primary);
+    outline-offset: -2px;
+  }
+  .kj-tree-item[aria-selected='true'] > .kj-tree-row {
+    background: var(--kj-tree-selected-bg);
+    color: var(--kj-fg-primary);
+    font-weight: 600;
+  }
+  .kj-tree-item[aria-disabled='true'] > .kj-tree-row {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .kj-tree-twisty {
+    flex: none;
+    width: 1em;
+    text-align: center;
+    transition: transform var(--kj-transition);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kj-tree-twisty {
+      transition: none;
+    }
+  }
+  .kj-tree-item[aria-expanded='true'] > .kj-tree-row > .kj-tree-twisty {
+    transform: rotate(90deg);
+  }
+  [dir='rtl'] .kj-tree-item[aria-expanded='false'] > .kj-tree-row > .kj-tree-twisty {
+    transform: scaleX(-1);
+  }
+
+  .kj-tree-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kj-tree-empty {
+    padding: var(--kj-space-sm) var(--kj-space-md);
+    color: color-mix(in oklab, var(--kj-fg-default) 60%, transparent);
+    font: 0.875rem var(--kj-font-sans);
+  }
+}
