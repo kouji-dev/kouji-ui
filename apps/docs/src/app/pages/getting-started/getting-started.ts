@@ -55,7 +55,7 @@ export default defineConfig({
   readonly optionalPeers = `# Optional peers are genuinely optional: every heavy integration sits behind a
 # dynamic import() or an "import type", so a bare import of '@kouji-ui/core'
 # never fails on a missing one. Install only what you actually render.
-pnpm add echarts                                # <kj-chart> / [kjChart]
+pnpm add echarts                                # optional peer, only for <kj-chart> / [kjChart]
 pnpm add monaco-editor @monaco-editor/loader    # <kj-editor>
 pnpm add lexical @lexical/rich-text @lexical/list @lexical/link @lexical/history @lexical/markdown @lexical/code @lexical/html @lexical/selection   # <kj-rich-text-editor>
 pnpm add @tanstack/virtual-core                 # windowed <kj-table>
