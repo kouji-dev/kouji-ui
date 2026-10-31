@@ -40,7 +40,8 @@
     "@tanstack/virtual-core": "^3.14.0",
     "lexical": "^0.38.0",
     "lucide-static": "^1.14.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "echarts": "^6.0.0"
   },
   "devDependencies": {
     "@kouji-ui/core": "workspace:*",
@@ -96,6 +97,9 @@
       "optional": true
     },
     "@tanstack/virtual-core": {
+      "optional": true
+    },
+    "echarts": {
       "optional": true
     }
   }
