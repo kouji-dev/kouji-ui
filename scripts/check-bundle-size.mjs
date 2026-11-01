@@ -45,8 +45,10 @@ const BUDGETS = [
     // measured: raw 1 731 789 · gzip 293 171
     // Raw is comfortably inside the old ceiling; only gzip moved (by ~1 kB),
     // from the round-2 table / chat / chart and preset work. ~6% headroom.
+    // 2026-11-01: gzip 314 778 (raw 1 838 999) after kj-select search + foldable
+    // kj-option-group (+~3.7 kB gzip). Raised to keep ~2% headroom.
     maxRaw: 1_880_000,
-    maxGzip: 311_000,
+    maxGzip: 321_000,
   },
 ];
 
