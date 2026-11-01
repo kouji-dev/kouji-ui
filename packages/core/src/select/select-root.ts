@@ -110,7 +110,19 @@ export class KjSelect implements KjListNavigatorConfig {
    * inside a palette, a menu inside a select) answer to that composite,
    * not to this one.
    */
-  readonly items = ownListItems(this, this.allItems);
+  private readonly _viewItems = signal<Signal<readonly KjListItem<unknown>[]> | null>(null);
+  private readonly viewItems = computed(() => this._viewItems()?.() ?? null);
+
+  /**
+   * @internal Register rows a wrapper stamps in its OWN view
+   * (`<kj-select [kjOptions]>`). A content query never crosses into a
+   * component's view, so those rows join `items()` only through here.
+   */
+  _setViewItems(items: Signal<readonly KjListItem<unknown>[]> | null): void {
+    this._viewItems.set(items);
+  }
+
+  readonly items = ownListItems(this, this.allItems, this.viewItems);
 
   /**
    * Implements `KjListNavigatorConfig.visibleItems`: the items a wrapper has

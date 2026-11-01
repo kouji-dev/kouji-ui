@@ -4,3 +4,5 @@ export { KjSelectDefaultExample } from './select.default.example';
 export { KjSelectDisabledExample } from './select.disabled.example';
 export { KjSelectGroupedExample } from './select.grouped.example';
 export { KjSelectPlaceholderExample } from './select.placeholder.example';
+export { KjSelectSearchableExample } from './select.searchable.example';
+export { KjSelectDataExample } from './select.data.example';

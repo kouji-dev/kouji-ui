@@ -17,6 +17,7 @@ import {
   Component,
   ChangeDetectionStrategy,
   ViewEncapsulation,
+  booleanAttribute,
   inject,
   input,
 } from '@angular/core';
@@ -52,6 +53,9 @@ import type { KjToastVariant } from '@kouji-ui/core';
  * @doc-example With action
  *   Project a secondary `<kj-button>` inside the template to offer an action.
  *   @doc-file toast.with-action.example.ts
+ * @doc-example Expanded list
+ *   `kjToastExpand` on `<kj-toast-viewport>` spreads stacked toasts out so none overlaps.
+ *   @doc-file toast.expanded.example.ts
  * @doc-example Dismissible
  *   `<kj-toast-close>` calls the service's `dismiss(id)` for the current toast.
  *   @doc-file toast.dismissible.example.ts
@@ -104,6 +108,17 @@ export class KjToastWrapper {}
  * Toast viewport. Mount once near your trigger button (or in your app shell).
  * Renders each active toast using the per-call template passed to
  * `KjToastService.show(template, options)`.
+ *
+ * The toasts share one grid cell, so the viewport sizes to its widest toast:
+ * `width: auto` on `.kj-toast-viewport` is safe (each toast keeps its own
+ * `min-width`), and a fixed width (default `22rem`) stretches them to it.
+ *
+ * Limits:
+ * - Spread-out (`kjToastExpand`) offsets each toast by its OWN height times
+ *   its index, so toasts of very different heights can still touch or overlap
+ *   a little. Keep stacked messages to similar heights, or cap `maxVisible`.
+ * - Expanded, the stack grows past the viewport box (it is translated, not
+ *   laid out), so it does not push page content or scroll.
  */
 @Component({
   selector: 'kj-toast-viewport',
@@ -114,6 +129,7 @@ export class KjToastWrapper {}
       kjToastViewport
       class="kj-toast-viewport"
       #vp="kjToastViewport"
+      [kjToastExpand]="kjToastExpand()"
       [attr.aria-label]="regionLabel()"
     >
       @for (r of vp.renderable(); track r.id) {
@@ -134,6 +150,17 @@ export class KjToastViewportComponent {
    * template.
    */
   protected readonly regionLabel = inject(KjTranslateService).translation('toast.region');
+
+  /**
+   * Spread the stack out so toasts sit one above another instead of
+   * overlapping. Unset (`undefined`) follows the strategy: hover with
+   * `KJ_TOAST_SONNER_STRATEGY`, always collapsed otherwise — so a
+   * `provideKjToastListStrategy()` app sets `kjToastExpand` for a plain list.
+   */
+  readonly kjToastExpand = input<boolean | undefined, unknown>(undefined, {
+    // Tri-state, as on the core directive: a bare attribute reads as `true`.
+    transform: (value) => (value === undefined ? undefined : booleanAttribute(value)),
+  });
 }
 
 /**

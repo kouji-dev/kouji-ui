@@ -23,17 +23,21 @@
   .kj-toast-viewport[data-position-x="start"]  { left: 1rem; right: auto; }
   .kj-toast-viewport[data-position-x="center"] { left: 50%; right: auto; transform: translateX(-50%); }
 
-  /* Each <li> wraps a toast — absolutely positioned so siblings overlap. */
+  /* Each <li> wraps a toast. They share one grid cell so siblings overlap
+     while the viewport still sizes to its widest toast: `width: auto` on the
+     viewport keeps every toast at its own width (absolute items collapsed
+     it to zero). */
+  .kj-toast-viewport {
+    display: grid;
+    align-items: end;
+  }
+  .kj-toast-viewport[data-position-y="top"] { align-items: start; }
   .kj-toast-viewport li {
-    position: absolute;
-    left: 0;
-    right: 0;
+    grid-area: 1 / 1;
     transition:
       transform 0.4s cubic-bezier(0.21, 0.61, 0.35, 1),
       opacity 0.3s ease;
   }
-  .kj-toast-viewport[data-position-y="bottom"] li { bottom: 0; }
-  .kj-toast-viewport[data-position-y="top"]    li { top: 0; }
 
   /* ── Collapsed (stacked) state ── */
   .kj-toast-viewport[data-expanded="false"] .kj-toast:not([data-front="true"]) {

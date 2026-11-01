@@ -13,6 +13,7 @@ import {
   untracked,
   afterNextRender,
   viewChild,
+  viewChildren,
   ElementRef,
   Injector,
   DestroyRef,
@@ -48,7 +49,21 @@ interface Stop {
  * options in `<kj-option-group kjLabel="…">` for headings — with
  * `kjCollapsible` / `[(kjCollapsed)]` a heading folds its group.
  *
+ * Or pass the options as data: `[kjOptions]="users" kjValueKey="id"
+ * kjLabelKey="name"`, plus `kjGroupKey="team"` (and `kjGroupsCollapsible`)
+ * for headings. `[kjDisplayWith]` names a value no option matches.
+ *
  * Limits:
+ * - `kjOptions` rows are plain text (the label). For icons or two-line rows,
+ *   project `<kj-option>`s instead. Both may be mixed; the data rows render
+ *   first.
+ * - Each `kjOptions` value must be unique (rows are tracked by value), and
+ *   values are compared with `Object.is` — with `kjValueKey` unset an object
+ *   item matches only the same reference.
+ * - `kjGroupKey` groups keep their own fold state; there is no per-group
+ *   `[(kjCollapsed)]` binding. Project `<kj-option-group>`s to control it.
+ * - `kjDisplayWith` runs only for a value no option has; a matched value
+ *   always shows its option's label.
  * - Search is a case-insensitive substring match on the option label
  *   (`kjLabel`, else its text). No fuzzy match, no async source — use
  *   `kj-combobox` for those.
@@ -130,6 +145,9 @@ interface Stop {
  * @doc-example Grouped options
  *   Cluster options under `<kj-option-group>` headings; `kjCollapsible` makes a heading fold its group.
  *   @doc-file select.grouped.example.ts
+ * @doc-example Data-driven options
+ *   `[kjOptions]` with `kjValueKey` / `kjLabelKey` / `kjGroupKey`, and `[kjDisplayWith]` for a value not in the list.
+ *   @doc-file select.data.example.ts
  * @doc-example Searchable
  *   `kjSearchable` puts a filter field at the top of the panel; `[kjSelectEmpty]` replaces the "No matches" text.
  *   @doc-file select.searchable.example.ts
@@ -145,7 +163,7 @@ interface Stop {
   hostDirectives: [
     { directive: KjSelect, inputs: ['kjSelectValue: value'], outputs: ['kjSelectValueChange: valueChange'] },
   ],
-  imports: [KjIcon, KjSelectTrigger, KjSelectContent],
+  imports: [KjIcon, KjSelectTrigger, KjSelectContent, KjOptionGroup, forwardRef(() => KjOptionComponent)],
   template: `
     <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" [disabled]="disabled() || null" [kjMultiple]="multiple()">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
@@ -191,6 +209,19 @@ interface Stop {
         (keydown)="onListKeydown($event)"
         (focusin)="onListFocusin($event)"
       >
+        @for (g of dataGroups(); track g.key) {
+          @if (g.key === null) {
+            @for (o of g.rows; track o.value) {
+              <kj-option [value]="o.value" [kjLabel]="o.label">{{ o.label }}</kj-option>
+            }
+          } @else {
+            <kj-option-group [kjLabel]="g.key" [kjCollapsible]="kjGroupsCollapsible()">
+              @for (o of g.rows; track o.value) {
+                <kj-option [value]="o.value" [kjLabel]="o.label">{{ o.label }}</kj-option>
+              }
+            </kj-option-group>
+          }
+        }
         <ng-content />
       </div>
       @if (noMatches()) {
@@ -229,6 +260,58 @@ export class KjSelectComponent {
   /** Placeholder and accessible name of the search field. Defaults to `'Search…'`. */
   readonly kjSearchPlaceholder = input<string>('Search…');
 
+  /**
+   * Options as data: objects or primitives, rendered as `<kj-option>` rows
+   * (inside `<kj-option-group>`s with `kjGroupKey`). May be mixed with
+   * projected `<kj-option>`s: the data rows come first. Defaults to `[]`.
+   */
+  readonly kjOptions = input<readonly unknown[]>([]);
+
+  /** Property of each `kjOptions` item used as its value. Unset: the item itself. */
+  readonly kjValueKey = input<string | null>(null);
+
+  /**
+   * Property of each `kjOptions` item shown in the list, on the trigger and
+   * matched by search. Unset: `String(item)`.
+   */
+  readonly kjLabelKey = input<string | null>(null);
+
+  /**
+   * Property of each `kjOptions` item to group by: one `<kj-option-group>`
+   * per distinct value, in first-seen order, headed by `String(value)`. Items
+   * whose value is `null` / `undefined` stay ungrouped. Unset: no groups.
+   */
+  readonly kjGroupKey = input<string | null>(null);
+
+  /** Makes every `kjGroupKey` group `kjCollapsible`. Defaults to `false`. */
+  readonly kjGroupsCollapsible = input(false, { transform: booleanAttribute });
+
+  /**
+   * Trigger text for a value no option matches (a raw id whose option is not
+   * loaded yet, say). Unset: `String(value)`.
+   */
+  readonly kjDisplayWith = input<((value: unknown) => string) | null>(null);
+
+  /** @internal — `kjOptions` resolved to rows, bucketed by group (`key: null` = ungrouped). */
+  protected readonly dataGroups = computed(() => {
+    const vk = this.kjValueKey();
+    const lk = this.kjLabelKey();
+    const gk = this.kjGroupKey();
+    const field = (item: unknown, k: string): unknown => (item as Record<string, unknown> | null)?.[k];
+    const groups = new Map<string | null, { key: string | null; rows: { value: unknown; label: string }[] }>();
+    for (const item of this.kjOptions()) {
+      const g = gk ? field(item, gk) : null;
+      const key = g === null || g === undefined ? null : String(g);
+      let bucket = groups.get(key);
+      if (!bucket) groups.set(key, (bucket = { key, rows: [] }));
+      bucket.rows.push({
+        value: vk ? field(item, vk) : item,
+        label: String((lk ? field(item, lk) : item) ?? ''),
+      });
+    }
+    return [...groups.values()];
+  });
+
   private readonly select = inject(KjSelect);
 
   /** The search field's text. Reset every time the panel opens. */
@@ -248,7 +331,9 @@ export class KjSelectComponent {
   protected readonly searchId = this.ids.mint('select-search');
   /** @internal */
   protected readonly listboxId = this.ids.mint('select-listbox');
-  private readonly groups = contentChildren(KjOptionGroup, { descendants: true });
+  private readonly contentGroups = contentChildren(KjOptionGroup, { descendants: true });
+  private readonly viewGroups = viewChildren(KjOptionGroup);
+  private readonly groups = computed(() => [...this.viewGroups(), ...this.contentGroups()]);
 
   /** @internal */
   protected readonly noMatches = computed(
@@ -261,6 +346,7 @@ export class KjSelectComponent {
   constructor() {
     const injector = inject(Injector);
     const win = inject(DOCUMENT).defaultView;
+    this.select._setViewItems(this.viewItems);
 
     // Filter and fold decide every option's visibility in one pass.
     effect(() => {
@@ -423,14 +509,20 @@ export class KjSelectComponent {
    *  `KjOptionComponent` is declared later in the same file. The trigger
    *  label is resolved by matching the active value against each option's
    *  composed `KjListItem`, which is now the `<kj-option>` host itself. */
-  private readonly options = contentChildren<KjOptionComponent>(
+  private readonly contentOptions = contentChildren<KjOptionComponent>(
     forwardRef(() => KjOptionComponent) as unknown as typeof KjOptionComponent,
     // descendants: options inside a <kj-option-group> count too
     { descendants: true },
   );
+  /** Rows stamped from `kjOptions` — in this view, so no content query sees them. */
+  private readonly viewOptions = viewChildren<KjOptionComponent>(
+    forwardRef(() => KjOptionComponent) as unknown as typeof KjOptionComponent,
+  );
+  private readonly viewItems = viewChildren(KjListItem);
+  private readonly options = computed(() => [...this.viewOptions(), ...this.contentOptions()]);
 
   /** Resolve a value to its matching option's label. Falls back to
-   *  `String(v)` only when no option has registered for that value yet. */
+   *  `kjDisplayWith(v)`, else `String(v)`, when no option has that value. */
   private labelFor(v: unknown): string {
     for (const opt of this.options()) {
       const row = opt._row;
@@ -439,7 +531,7 @@ export class KjSelectComponent {
         return explicit || String(v);
       }
     }
-    return String(v);
+    return this.kjDisplayWith()?.(v) ?? String(v);
   }
 
   /** The trigger's rendered text: the selected option label(s), else the placeholder. */

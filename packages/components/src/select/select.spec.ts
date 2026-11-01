@@ -503,3 +503,120 @@ describe('<kj-select kjSearchable> and <kj-option-group>', () => {
     });
   });
 });
+
+describe('<kj-select [kjOptions]> (data-driven) and kjDisplayWith', () => {
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  const USERS = [
+    { id: 1, name: 'Ada', team: 'Platform' },
+    { id: 2, name: 'Linus', team: 'Platform' },
+    { id: 3, name: 'Grace', team: 'Design' },
+  ];
+
+  async function setup(attrs: string, props: Record<string, unknown> = {}, body = '') {
+    const r = await render(`<kj-select [(value)]="value" [kjOptions]="opts" ${attrs}>${body}</kj-select>`, {
+      imports: [KjSelectComponent, KjOptionComponent],
+      componentProperties: { value: undefined, opts: USERS, ...props },
+    });
+    return r;
+  }
+  type Setup = Awaited<ReturnType<typeof setup>>;
+  async function open(r: Setup) {
+    fireEvent.click(r.container.querySelector('.kj-select-trigger')!);
+    r.fixture.detectChanges();
+    await tick();
+    r.fixture.detectChanges();
+  }
+  const label = (r: Setup) => r.container.querySelector('.kj-select-trigger-label')!.textContent!.trim();
+  const rows = () => [...document.querySelectorAll<HTMLElement>('.kj-select-content [role="option"]')];
+  const shown = () => rows().filter(o => !o.hidden).map(o => o.textContent!.trim());
+  const value = (r: Setup) => (r.fixture.componentInstance as unknown as { value: unknown }).value;
+
+  afterEach(() => {
+    document.querySelectorAll('.kj-overlay-wrapper, .kj-overlay-container').forEach(w => w.remove());
+  });
+
+  it('renders objects by kjLabelKey and selects by kjValueKey; the trigger shows the label', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name"', { value: 2 });
+    expect(label(r)).toBe('Linus');
+    await open(r);
+    expect(rows().map(o => o.textContent!.trim())).toEqual(['Ada', 'Linus', 'Grace']);
+    expect(rows().map(o => o.getAttribute('aria-selected'))).toEqual(['false', 'true', 'false']);
+    fireEvent.click(rows()[2]);
+    r.fixture.detectChanges();
+    expect(value(r)).toBe(3);
+    expect(label(r)).toBe('Grace');
+  });
+
+  it('primitives: the item is both value and label', async () => {
+    const r = await setup('', { opts: ['red', 'green'], value: 'green' });
+    expect(label(r)).toBe('green');
+    await open(r);
+    expect(rows().map(o => o.textContent!.trim())).toEqual(['red', 'green']);
+  });
+
+  it('keyboard: focus lands on the selected row and ArrowDown moves on', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name"', { value: 1 });
+    await open(r);
+    expect(document.activeElement).toBe(rows()[0]);
+    document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    r.fixture.detectChanges();
+    expect(document.activeElement).toBe(rows()[1]);
+  });
+
+  it('kjGroupKey renders one labelled group per value, collapsible with kjGroupsCollapsible', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name" kjGroupKey="team" kjGroupsCollapsible');
+    await open(r);
+    const groups = [...document.querySelectorAll<HTMLElement>('.kj-select-content kj-option-group')];
+    expect(groups.map(g => g.querySelector('.kj-option-group-label')!.textContent!.trim())).toEqual(['Platform', 'Design']);
+    groups.forEach(g => {
+      expect(g.getAttribute('role')).toBe('group');
+      expect(document.getElementById(g.getAttribute('aria-labelledby')!)).not.toBeNull();
+    });
+    const heading = groups[0].querySelector<HTMLButtonElement>('button.kj-option-group-label')!;
+    expect(heading.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(heading);
+    r.fixture.detectChanges();
+    expect(heading.getAttribute('aria-expanded')).toBe('false');
+    expect(shown()).toEqual(['Grace']);
+  });
+
+  it('kjSearchable filters data rows by label', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name" kjSearchable');
+    await open(r);
+    const el = document.querySelector<HTMLInputElement>('.kj-select-search')!;
+    el.value = 'li';
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    r.fixture.detectChanges();
+    await tick();
+    r.fixture.detectChanges();
+    expect(shown()).toEqual(['Linus']);
+  });
+
+  it('mixes with projected options: data rows first, both selectable', async () => {
+    const r = await setup('', { opts: ['a'], value: 'z' }, '<kj-option value="z" kjLabel="Zed">Zed</kj-option>');
+    expect(label(r)).toBe('Zed');
+    await open(r);
+    expect(rows().map(o => o.textContent!.trim())).toEqual(['a', 'Zed']);
+  });
+
+  it('kjDisplayWith labels a value no option matches', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name" [kjDisplayWith]="fmt"', {
+      value: 42,
+      fmt: (v: unknown) => `User #${String(v)}`,
+    });
+    expect(label(r)).toBe('User #42');
+  });
+
+  it('without kjDisplayWith an unmatched value still prints String(value)', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name"', { value: 42 });
+    expect(label(r)).toBe('42');
+  });
+
+  it('kjDisplayWith never overrides a matched option label', async () => {
+    const r = await setup('kjValueKey="id" kjLabelKey="name" [kjDisplayWith]="fmt"', {
+      value: 1,
+      fmt: () => 'nope',
+    });
+    expect(label(r)).toBe('Ada');
+  });
+});

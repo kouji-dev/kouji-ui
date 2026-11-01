@@ -2,6 +2,7 @@
 // One barrel per component folder — used by the docs app as a lazy chunk.
 export { KjToastDefaultExample } from './toast.default.example';
 export { KjToastDismissibleExample } from './toast.dismissible.example';
+export { KjToastExpandedExample } from './toast.expanded.example';
 export { KjToastUsageExample } from './toast.usage.example';
 export { KjToastVariantsExample } from './toast.variants.example';
 export { KjToastWithActionExample } from './toast.with-action.example';
