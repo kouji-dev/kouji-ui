@@ -1,37 +1,33 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { KjSelectComponent, KjOptionComponent } from '../select';
+import { KjOptionGroup } from '../option-group';
 
 @Component({
   selector: 'kj-select-grouped-example',
   standalone: true,
-  imports: [KjSelectComponent, KjOptionComponent],
+  imports: [KjSelectComponent, KjOptionComponent, KjOptionGroup],
   styles: [
     `
       :host {
         display: block;
-      }
-      .group-label {
-        padding: 4px 12px;
-        font-size: 0.75rem;
-        color: var(--kj-fg-default);
-        opacity: 0.6;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
       }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <kj-select [(value)]="city" placeholder="Choose a city">
-      <div class="group-label">Europe</div>
-      <kj-option [value]="'london'">London</kj-option>
-      <kj-option [value]="'berlin'">Berlin</kj-option>
-      <div class="group-label">Asia</div>
-      <kj-option [value]="'tokyo'">Tokyo</kj-option>
-      <kj-option [value]="'seoul'">Seoul</kj-option>
+      <kj-option-group kjLabel="Europe" kjCollapsible [(kjCollapsed)]="europeFolded">
+        <kj-option [value]="'london'">London</kj-option>
+        <kj-option [value]="'berlin'">Berlin</kj-option>
+      </kj-option-group>
+      <kj-option-group kjLabel="Asia" kjCollapsible>
+        <kj-option [value]="'tokyo'">Tokyo</kj-option>
+        <kj-option [value]="'seoul'">Seoul</kj-option>
+      </kj-option-group>
     </kj-select>
   `,
 })
 export class KjSelectGroupedExample {
   readonly city = signal<string | undefined>(undefined);
+  readonly europeFolded = signal(false);
 }

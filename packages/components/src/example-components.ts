@@ -333,6 +333,7 @@ export const EXAMPLE_OWNER: Record<string, string> = {
   KjSelectDisabledExample: 'select',
   KjSelectGroupedExample: 'select',
   KjSelectPlaceholderExample: 'select',
+  KjSelectSearchableExample: 'select',
   KjSheetExample: 'sheet',
   KjSheetDetentsExample: 'sheet',
   KjSheetScrollableExample: 'sheet',
