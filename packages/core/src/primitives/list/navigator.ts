@@ -96,7 +96,8 @@ export const KJ_LIST_NAVIGATOR_ITEMS = new InjectionToken<Signal<readonly KjList
     // really holds focus — must not publish it as well. A container that pins
     // `KJ_LIST_FOCUS_MODE_DEFAULT` to `'roving'` (menu, menubar, tree-select)
     // therefore drops the attribute entirely.
-    '[attr.aria-activedescendant]': 'kjFocusMode() === "activedescendant" ? activeId() : null',
+    '[attr.aria-activedescendant]':
+      'kjFocusMode() === "activedescendant" && kjHostActiveDescendant() ? activeId() : null',
     '(keydown)': '_onKeydown($event)',
     '(focusin)': '_onFocusin($event)',
   },
@@ -110,6 +111,12 @@ export class KjListNavigator {
   readonly kjPageSize        = input<number>(10);
   /** Activate item on pointer hover. Default: `false`. */
   readonly kjActivateOnHover = input(false, { transform: booleanAttribute });
+  /**
+   * Publish `aria-activedescendant` on this host in `'activedescendant'`
+   * mode. Turn off when another element keeps DOM focus and publishes
+   * `activeId` itself (a search field above the list). Default: `true`.
+   */
+  readonly kjHostActiveDescendant = input(true, { transform: booleanAttribute });
   /**
    * Focus model. `'activedescendant'` (default) keeps DOM focus on the
    * navigator host and signals the active option via

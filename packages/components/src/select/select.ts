@@ -25,10 +25,17 @@ import {
   KjSelectContent,
   KjListItem,
   KjListNavigator,
-  KjOverlayPanel,
+  KjId,
   injectListItem,
 } from '@kouji-ui/core';
 import { KjOptionGroup } from './option-group';
+
+/** One keyboard stop in the panel: an option row or a collapsible heading. */
+interface Stop {
+  readonly el: HTMLElement;
+  readonly item?: KjListItem<unknown>;
+  readonly group?: KjOptionGroup;
+}
 
 /**
  * Select root. Two-way bind via `[(value)]`.
@@ -46,12 +53,14 @@ import { KjOptionGroup } from './option-group';
  *   (`kjLabel`, else its text). No fuzzy match, no async source — use
  *   `kj-combobox` for those.
  * - The query resets every time the panel opens.
- * - The search field sits inside the `listbox` panel, which ARIA does not
- *   list as an allowed listbox child. The field is still a named `combobox`
- *   with `aria-activedescendant`, which screen readers follow.
- * - A folded group's heading is pointer-only: Tab closes the panel and the
- *   arrow keys walk options. Keyboard users reach folded options through
- *   search, which shows every group with a match expanded.
+ * - Fold keys follow the APG treeview: ArrowLeft on an option folds its
+ *   group and moves to the heading; ArrowRight or Enter on a folded heading
+ *   unfolds it. In the search field they only fold while the field is empty;
+ *   once it holds text they move the caret, and every group with a match is
+ *   shown expanded anyway.
+ * - A group heading is a `button` inside a `role="group"` of the listbox.
+ *   ARIA allows only options there, so some screen readers read the heading
+ *   as a plain button with its expanded state rather than as part of the list.
  * - With `multiple` and search, clicking an option moves focus out of the
  *   field; click the field to type again.
  *
@@ -67,19 +76,23 @@ import { KjOptionGroup } from './option-group';
  *   Tab            — Closes the listbox, returns focus to the trigger and moves on to the next focusable element
  *   Printable keys (kjSearchable) — Typed into the search field, which is focused on open; filters the options by label
  *   Escape (kjSearchable) — Clears the search field when it holds text, else closes the listbox
+ *   ArrowDown|ArrowUp (groups) — Also stop on each `kjCollapsible` group heading, in document order
+ *   ArrowLeft (groups) — On an option of a collapsible group: folds the group and moves to its heading
+ *   ArrowRight (groups) — On a folded heading: unfolds it
+ *   Enter|Space (groups) — On a heading: folds or unfolds it
  *
  * @doc-aria
- *   aria-haspopup        — set to "listbox" on the trigger button
+ *   aria-haspopup        — set to "listbox" on the trigger button ("dialog" with [kjSearchable])
  *   aria-expanded        — set on the trigger; reflects the open/closed state of the listbox
  *   aria-controls        — links the trigger to the panel id
  *   tabindex             — roving: the focused option is the active one ("0"), every other option is "-1"
  *   aria-multiselectable  — set on the panel to "true" when [multiple] is true
- *   role="listbox"       — on the content panel (provided via KJ_OVERLAY_PANEL_ROLE)
+ *   role="listbox"       — on the content panel; with [kjSearchable] the panel is role="dialog" holding the search combobox above an inner role="listbox"
  *   role="option"        — on each kj-option child
  *   aria-selected        — set on each option to "true" or "false"
  *   aria-disabled        — set on options when [kjDisabled] is true
  *   data-disabled / data-multiple — mirrors of the disabled / multiple state for CSS
- *   role="combobox"      — on the search field ([kjSearchable]); `aria-activedescendant` tracks the active option while DOM focus stays in the field
+ *   role="combobox"      — on the search field ([kjSearchable]), outside the listbox; `aria-controls` names the listbox, `aria-autocomplete="list"`, `aria-expanded`, and `aria-activedescendant` tracks the active option (or heading) while DOM focus stays in the field
  *   role="group"         — on each `<kj-option-group>`, named by its heading through `aria-labelledby`
  *   aria-expanded        — on a `kjCollapsible` group's heading button
  *   role="status"        — on the "no matches" message, announced politely
@@ -134,33 +147,52 @@ import { KjOptionGroup } from './option-group';
   ],
   imports: [KjIcon, KjSelectTrigger, KjSelectContent],
   template: `
-    <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" aria-haspopup="listbox" [disabled]="disabled() || null" [kjMultiple]="multiple()">
+    <button type="button" kjSelectTrigger #trig="kjSelectTrigger" class="kj-select-trigger" [disabled]="disabled() || null" [kjMultiple]="multiple()">
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
       <span kjIcon="chevron-down" class="kj-select-trigger-caret" aria-hidden="true"></span>
     </button>
     <kj-select-content
       [kjFor]="trig"
       class="kj-select-content"
+      [kjSearchable]="kjSearchable()"
       [kjFocusMode]="kjSearchable() ? 'activedescendant' : 'roving'"
+      [kjHostActiveDescendant]="!kjSearchable()"
+      [attr.aria-labelledby]="kjSearchable() ? searchId : null"
     >
       @if (kjSearchable()) {
         <input
           #search
+          [id]="searchId"
           type="text"
           class="kj-select-search"
           role="combobox"
           autocomplete="off"
           aria-autocomplete="list"
           aria-expanded="true"
-          [attr.aria-controls]="panel()?.panelId ?? null"
+          [attr.aria-controls]="listboxId"
           [attr.aria-label]="kjSearchPlaceholder()"
-          [attr.aria-activedescendant]="activeId()"
+          [attr.aria-activedescendant]="activeDescendant()"
           [placeholder]="kjSearchPlaceholder()"
           [value]="query()"
           (input)="query.set(search.value)"
+          (keydown)="onListKeydown($event)"
         />
       }
-      <ng-content />
+      <!-- Without search the panel itself is the listbox and this wrapper is
+           a role-less pass-through; with search it is the listbox. Its key
+           handlers catch keys bubbling up from the focused option or heading. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+      <div
+        class="kj-select-listbox"
+        [id]="listboxId"
+        [attr.role]="kjSearchable() ? 'listbox' : null"
+        [attr.aria-labelledby]="kjSearchable() ? searchId : null"
+        [attr.aria-multiselectable]="kjSearchable() && multiple() ? 'true' : null"
+        (keydown)="onListKeydown($event)"
+        (focusin)="onListFocusin($event)"
+      >
+        <ng-content />
+      </div>
       @if (noMatches()) {
         <div class="kj-select-empty" role="status" aria-live="polite">
           <ng-content select="[kjSelectEmpty]">No matches</ng-content>
@@ -207,8 +239,15 @@ export class KjSelectComponent {
   protected readonly nav = viewChild(KjListNavigator);
   /** @internal — id of the active option, or `null`. */
   readonly activeId = computed(() => this.nav()?.activeId() ?? null);
-  /** @internal — the panel, read for the field's `aria-controls`. */
-  protected readonly panel = viewChild(KjOverlayPanel);
+  /** @internal — the collapsible group whose heading holds the keyboard cursor. */
+  private readonly activeHeader = signal<KjOptionGroup | null>(null);
+  /** @internal — what the search field's `aria-activedescendant` points at. */
+  readonly activeDescendant = computed(() => this.activeHeader()?.labelId ?? this.activeId());
+  private readonly ids = inject(KjId);
+  /** @internal */
+  protected readonly searchId = this.ids.mint('select-search');
+  /** @internal */
+  protected readonly listboxId = this.ids.mint('select-listbox');
   private readonly groups = contentChildren(KjOptionGroup, { descendants: true });
 
   /** @internal */
@@ -237,10 +276,16 @@ export class KjSelectComponent {
       }
     });
 
+    effect(() => {
+      const active = this.activeHeader();
+      for (const g of this.groups()) g._cursor.set(g === active);
+    });
+
     // A new query puts the cursor on the first match (APG combobox).
     effect(() => {
       this.query();
       untracked(() => {
+        this.activeHeader.set(null);
         if (!this.kjSearchable() || !this.select.open()) return;
         afterNextRender(() => this.nav()?.moveToFirst(), { injector });
       });
@@ -249,7 +294,10 @@ export class KjSelectComponent {
     // Open: start from an empty query with the field focused.
     effect(() => {
       if (!this.select.open() || !this.kjSearchable()) return;
-      untracked(() => this.query.set(''));
+      untracked(() => {
+        this.query.set('');
+        this.activeHeader.set(null);
+      });
       afterNextRender(() => this.searchEl()?.nativeElement.focus(), { injector });
     });
 
@@ -265,6 +313,96 @@ export class KjSelectComponent {
     };
     win?.addEventListener('keydown', onKeydown, true);
     inject(DestroyRef).onDestroy(() => win?.removeEventListener('keydown', onKeydown, true));
+  }
+
+  /**
+   * @internal Keyboard for groups, on both the search field and the listbox:
+   * ArrowUp / ArrowDown also stop on collapsible headings, ArrowLeft folds the
+   * active option's group onto its heading, ArrowRight unfolds a heading and
+   * Enter / Space toggle it. Runs before the panel's navigator, which skips
+   * any key handled here.
+   */
+  onListKeydown(e: KeyboardEvent): void {
+    const nav = this.nav();
+    if (e.defaultPrevented || !nav) return;
+    const header = this.activeHeader();
+    const searching = this.query().trim() !== '';
+    const inField = e.target === this.searchEl()?.nativeElement;
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowUp': {
+        const stops = this.stops();
+        if (!stops.some(s => s.group)) return;
+        const current = header ? header._header() : nav.activeItem()?._host() ?? null;
+        const d = e.key === 'ArrowDown' ? 1 : -1;
+        let i = stops.findIndex(s => s.el === current);
+        i = i === -1 ? (d > 0 ? 0 : stops.length - 1) : (i + d + stops.length) % stops.length;
+        e.preventDefault();
+        this.moveTo(stops[i]);
+        return;
+      }
+      case 'ArrowLeft': {
+        if (searching) return;
+        const item = nav.activeItem();
+        const g = header ?? (item ? this.groups().find(x => x._items().includes(item)) : undefined);
+        const el = g?._header();
+        if (!g || !el) return;
+        e.preventDefault();
+        g.kjCollapsed.set(true);
+        this.moveTo({ el, group: g });
+        return;
+      }
+      case 'ArrowRight':
+        if (!header || searching) return;
+        e.preventDefault();
+        header.kjCollapsed.set(false);
+        return;
+      case 'Enter':
+      case ' ':
+        if (!header || (e.key === ' ' && inField)) return;
+        // Also cancels the button's native click, so the fold toggles once.
+        e.preventDefault();
+        header.kjCollapsed.update(v => !v);
+        return;
+      case 'Escape':
+      case 'Tab':
+      case 'Shift':
+        return;
+      default:
+        // Home / End / type-ahead belong to the navigator, which moves off the heading.
+        if (header) this.activeHeader.set(null);
+    }
+  }
+
+  /** @internal Roving mode: focus landing on a heading (pointer or script) puts the cursor there. */
+  onListFocusin(e: FocusEvent): void {
+    const g = this.groups().find(x => x._header() === e.target);
+    this.activeHeader.set(g ?? null);
+  }
+
+  /** Navigable options plus collapsible headings, in document order. */
+  private stops(): Stop[] {
+    const stops: Stop[] = (this.nav()?.navigable() ?? []).map(item => ({ el: item._host(), item }));
+    for (const group of this.groups()) {
+      const el = group._header();
+      if (el && !group._searching()) stops.push({ el, group });
+    }
+    // 4 = Node.DOCUMENT_POSITION_FOLLOWING: b comes after a.
+    return stops.sort((a, b) => (a.el.compareDocumentPosition(b.el) & 4 ? -1 : 1));
+  }
+
+  private moveTo(stop: Stop): void {
+    if (stop.group) {
+      this.activeHeader.set(stop.group);
+      if (!this.kjSearchable()) stop.el.focus();
+      return;
+    }
+    this.activeHeader.set(null);
+    const nav = this.nav();
+    if (stop.item && nav) {
+      nav.setActive(stop.item.id);
+      nav.focusActive();
+    }
   }
 
   /**
@@ -366,6 +504,6 @@ export class KjOptionComponent {
 
   /** @internal — the `aria-activedescendant` row while the search field holds focus. */
   protected readonly isActive = computed(
-    () => !!this.owner?.kjSearchable() && this.owner.activeId() === this._row.id,
+    () => !!this.owner?.kjSearchable() && this.owner.activeDescendant() === this._row.id,
   );
 }

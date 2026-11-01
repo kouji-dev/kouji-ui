@@ -119,7 +119,8 @@
   .kj-select-search:focus-visible { outline: 2px solid var(--kj-fg-primary); outline-offset: -2px; }
   /* With search, focus stays in the field: the active row is drawn from
      `aria-activedescendant`, not from focus. */
-  .kj-option[data-active] {
+  .kj-option[data-active],
+  .kj-option-group-label[data-active] {
     outline: 2px solid var(--kj-fg-primary);
     outline-offset: -2px;
     background: var(--kj-bg-field);

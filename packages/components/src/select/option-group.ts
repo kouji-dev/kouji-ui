@@ -9,6 +9,8 @@ import {
   input,
   model,
   signal,
+  viewChild,
+  type ElementRef,
 } from '@angular/core';
 import { KjIcon, KjId, KjListItem } from '@kouji-ui/core';
 
@@ -30,8 +32,10 @@ import { KjIcon, KjId, KjListItem } from '@kouji-ui/core';
   template: `
     @if (kjCollapsible()) {
       <button
+        #header
         type="button"
         class="kj-option-group-label"
+        [attr.data-active]="_cursor() ? '' : null"
         [id]="labelId"
         [attr.aria-expanded]="expanded()"
         (click)="toggle()"
@@ -68,8 +72,17 @@ export class KjOptionGroup {
    */
   readonly kjCollapsed = model(false);
 
-  /** @internal — the heading id, target of `aria-labelledby`. */
-  protected readonly labelId = inject(KjId).mint('option-group-label');
+  /** @internal — the heading id, target of `aria-labelledby` and of the search field's `aria-activedescendant`. */
+  readonly labelId = inject(KjId).mint('option-group-label');
+
+  private readonly header = viewChild<ElementRef<HTMLElement>>('header');
+  /** @internal — the fold toggle, present only with `kjCollapsible`. */
+  _header(): HTMLElement | null {
+    return this.header()?.nativeElement ?? null;
+  }
+
+  /** @internal — set by `<kj-select>` while the keyboard cursor is on this heading. */
+  readonly _cursor = signal(false);
 
   /** @internal — every option under this group. */
   readonly _items = contentChildren(KjListItem, { descendants: true });

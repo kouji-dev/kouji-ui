@@ -79,6 +79,9 @@ export class KjSelect implements KjListNavigatorConfig {
   /** Whether multi-select is enabled. */
   readonly multiple = this._multiple.asReadonly();
 
+  /** @internal — written by `KjSelectContent`'s `kjSearchable` input. */
+  readonly _searchable = signal(false);
+
   /** @internal — set by `KjSelectTrigger` at construction time. */
   readonly _triggerEl = signal<ElementRef<HTMLElement> | null>(null);
   /**

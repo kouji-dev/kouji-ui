@@ -2,6 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  booleanAttribute,
+  effect,
+  inject,
   input,
 } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
@@ -16,6 +19,7 @@ import { anchoredTo, injectAnchoredPosition, pxOffset } from '../primitives/over
 import { KjListNavigator, injectSelectionModel } from '../primitives/list';
 import { KJ_LIST_FOCUS_MODE_DEFAULT } from '../primitives/list/navigator';
 import { KjListPanelFocus } from './list-panel-focus';
+import { KJ_SELECT } from './select-root';
 
 /**
  * Listbox panel for `KjSelect`. Composes `KjOverlayPanel` for
@@ -34,7 +38,7 @@ import { KjListPanelFocus } from './list-panel-focus';
     { directive: KjOverlayPanel, inputs: ['kjFor'] },
     // `kjFocusMode` is forwarded so a wrapper that keeps DOM focus in a
     // search field can switch the panel to `aria-activedescendant`.
-    { directive: KjListNavigator, inputs: ['kjFocusMode'] },
+    { directive: KjListNavigator, inputs: ['kjFocusMode', 'kjHostActiveDescendant'] },
     KjListPanelFocus,
   ],
   providers: [
@@ -47,8 +51,13 @@ import { KjListPanelFocus } from './list-panel-focus';
     { provide: KJ_LIST_FOCUS_MODE_DEFAULT, useValue: 'roving' as const },
   ],
   host: {
+    // With `kjSearchable` the panel is a `dialog` holding a search combobox
+    // and an inner `listbox` the wrapper renders, so the listbox-only
+    // attributes move to that inner element. These run after the composed
+    // panel's / navigator's own bindings, so they win.
+    '[attr.role]': 'kjSearchable() ? "dialog" : "listbox"',
     '[attr.aria-multiselectable]':
-      'selection.mode() === "multi" ? "true" : null',
+      '!kjSearchable() && selection.mode() === "multi" ? "true" : null',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -65,7 +74,17 @@ export class KjSelectContent {
   /** Pixel offset between trigger and panel. */
   readonly kjOffset = input<number, unknown>(4, { transform: pxOffset(4) });
 
+  /**
+   * The panel holds a search field above an inner listbox the consumer
+   * renders: the panel becomes `role="dialog"` and the trigger advertises
+   * `aria-haspopup="dialog"`. Defaults to `false`.
+   */
+  readonly kjSearchable = input(false, { transform: booleanAttribute });
+
   constructor() {
+    const select = inject(KJ_SELECT, { optional: true });
+    effect(() => select?._searchable.set(this.kjSearchable()));
+
     injectAnchoredPosition({
       side: this.kjSide,
       align: this.kjAlign,

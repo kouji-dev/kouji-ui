@@ -16,7 +16,7 @@ import {
   type KjTriggerEventStrategy,
 } from '../primitives/overlay/tokens';
 import { onClick } from '../primitives/overlay/strategies/trigger-event/on-click';
-import { KjFieldControl } from '../field/field-control';
+import { KjFieldControl } from '../field/field-control';
 import { KJ_SELECT } from './select-root';
 
 /**
@@ -78,12 +78,15 @@ function listboxClickTrigger(): KjTriggerEventStrategy {
   ],
   host: {
     '(keydown)': 'onKeydown($event)',
+    // Runs after the composed `KjOverlayTrigger`'s binding, so it wins: a
+    // searchable panel is a dialog (search field + listbox), not a listbox.
+    '[attr.aria-haspopup]': 'select?._searchable() ? "dialog" : "listbox"',
   },
 })
 export class KjSelectTrigger {
   /** @internal — same instance as the one provided on KjSelect root. */
   readonly controller = inject(KjOverlayController);
-  private readonly select = inject(KJ_SELECT, { optional: true });
+  protected readonly select = inject(KJ_SELECT, { optional: true });
 
   /** Whether the listbox supports multiple selection (absorbs `multi-select`). Defaults to `false`. */
   readonly kjMultiple = input(false, { transform: booleanAttribute });

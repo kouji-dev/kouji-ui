@@ -284,9 +284,36 @@ describe('<kj-select kjSearchable> and <kj-option-group>', () => {
     expect(el.getAttribute('role')).toBe('combobox');
     expect(el.getAttribute('placeholder')).toBe('Find');
     expect(el.getAttribute('aria-label')).toBe('Find');
+    expect(el.getAttribute('aria-autocomplete')).toBe('list');
+    expect(el.getAttribute('aria-expanded')).toBe('true');
+
+    // panel = dialog holding the combobox ABOVE the listbox, never inside it
     const panel = document.querySelector('.kj-select-content')!;
-    expect(el.getAttribute('aria-controls')).toBe(panel.id);
+    const listbox = panel.querySelector('[role="listbox"]')!;
+    expect(panel.getAttribute('role')).toBe('dialog');
+    expect(panel.getAttribute('aria-labelledby')).toBe(el.id);
+    expect(panel.hasAttribute('aria-activedescendant')).toBe(false);
+    expect(listbox.contains(el)).toBe(false);
+    expect(el.getAttribute('aria-controls')).toBe(listbox.id);
+    expect(listbox.getAttribute('aria-labelledby')).toBe(el.id);
+    expect(listbox.querySelectorAll('[role="option"]').length).toBe(3);
+    const trigger = document.querySelector('.kj-select-trigger')!;
+    expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(trigger.getAttribute('aria-controls')).toBe(panel.id);
+  });
+
+  it('without kjSearchable the panel stays the listbox and the wrapper has no role', async () => {
+    const r = await render(
+      `<kj-select multiple><kj-option value="a" kjLabel="A">A</kj-option></kj-select>`,
+      { imports: [KjSelectComponent, KjOptionComponent] },
+    );
+    fireEvent.click(r.container.querySelector('.kj-select-trigger')!);
+    await settle(r);
+    const panel = document.querySelector('.kj-select-content')!;
     expect(panel.getAttribute('role')).toBe('listbox');
+    expect(panel.getAttribute('aria-multiselectable')).toBe('true');
+    expect(panel.querySelector('.kj-select-listbox')!.hasAttribute('role')).toBe(false);
+    expect(r.container.querySelector('.kj-select-trigger')!.getAttribute('aria-haspopup')).toBe('listbox');
   });
 
   it('filters options by label, case-insensitively', async () => {
@@ -376,5 +403,103 @@ describe('<kj-select kjSearchable> and <kj-option-group>', () => {
     await type(r, '');
     expect(shown()).toEqual(['Carrot']);
     expect(groups[0].querySelector('button')!.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  describe('fold keys (APG treeview-style)', () => {
+    const header = () => document.querySelector<HTMLButtonElement>('button.kj-option-group-label')!;
+    const opt = (label: string) => rows().find(o => o.textContent!.trim() === label)!;
+    const key = async (r: Setup, k: string) => {
+      document.activeElement!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }),
+      );
+      await settle(r);
+    };
+
+    async function roving() {
+      const r = await render(
+        `<kj-select [(value)]="value">
+           <kj-option-group kjLabel="Fruit" kjCollapsible [(kjCollapsed)]="fruitFolded">
+             <kj-option value="a" kjLabel="Apple">Apple</kj-option>
+             <kj-option value="b" kjLabel="Banana">Banana</kj-option>
+           </kj-option-group>
+           <kj-option-group kjLabel="Veg">
+             <kj-option value="c" kjLabel="Carrot">Carrot</kj-option>
+           </kj-option-group>
+         </kj-select>`,
+        {
+          imports: [KjSelectComponent, KjOptionComponent, KjOptionGroup],
+          componentProperties: { value: 'b', fruitFolded: false },
+        },
+      );
+      fireEvent.click(r.container.querySelector('.kj-select-trigger')!);
+      await settle(r);
+      return r;
+    }
+
+    it('ArrowLeft on an option folds its group onto the heading; ArrowRight unfolds; Enter toggles', async () => {
+      const r = await roving();
+      expect(document.activeElement).toBe(opt('Banana'));
+
+      await key(r, 'ArrowLeft');
+      expect(document.activeElement).toBe(header());
+      expect(header().getAttribute('aria-expanded')).toBe('false');
+      expect(host(r).fruitFolded).toBe(true);
+      expect(shown()).toEqual(['Carrot']);
+
+      await key(r, 'ArrowRight');
+      expect(header().getAttribute('aria-expanded')).toBe('true');
+      expect(document.activeElement).toBe(header());
+
+      await key(r, 'Enter');
+      expect(header().getAttribute('aria-expanded')).toBe('false');
+      await key(r, 'Enter');
+      expect(header().getAttribute('aria-expanded')).toBe('true');
+      expect(panelOpen()).toBe(true);
+    });
+
+    it('ArrowUp / ArrowDown stop on the heading, folded or not', async () => {
+      const r = await roving();
+      host(r).fruitFolded = true;
+      await settle(r);
+      // Banana was focused and is now folded away: Down from the heading reaches Carrot
+      header().focus();
+      await settle(r);
+      await key(r, 'ArrowDown');
+      expect(document.activeElement).toBe(opt('Carrot'));
+      await key(r, 'ArrowDown'); // wraps to the heading
+      expect(document.activeElement).toBe(header());
+      await key(r, 'ArrowRight');
+      await key(r, 'ArrowDown');
+      expect(document.activeElement).toBe(opt('Apple'));
+      await key(r, 'ArrowUp');
+      expect(document.activeElement).toBe(header());
+    });
+
+    it('with search, the heading becomes the aria-activedescendant and the fold keys still work', async () => {
+      const r = await setup();
+      const el = search();
+      await press(r, 'ArrowDown'); // first option -> next stop
+      await press(r, 'ArrowLeft');
+      expect(header().getAttribute('aria-expanded')).toBe('false');
+      expect(el.getAttribute('aria-activedescendant')).toBe(header().id);
+      expect(header().hasAttribute('data-active')).toBe(true);
+      expect(document.activeElement).toBe(el);
+
+      await press(r, 'ArrowRight');
+      expect(header().getAttribute('aria-expanded')).toBe('true');
+      await press(r, 'ArrowDown');
+      expect(el.getAttribute('aria-activedescendant')).toBe(opt('Apple').id);
+      expect(header().hasAttribute('data-active')).toBe(false);
+    });
+
+    it('with text in the search field, ArrowLeft / ArrowRight are left to the caret', async () => {
+      const r = await setup();
+      await type(r, 'a');
+      const e = new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true });
+      search().dispatchEvent(e);
+      await settle(r);
+      expect(e.defaultPrevented).toBe(false);
+      expect(header().getAttribute('aria-expanded')).toBe('true');
+    });
   });
 });

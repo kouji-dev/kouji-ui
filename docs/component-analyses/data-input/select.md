@@ -34,10 +34,13 @@ sibling overlays-of-options
 **Search and groups (shipped):** `<kj-select kjSearchable>` adds a filter field
 at the top of the panel (case-insensitive label substring, `aria-activedescendant`
 from the field, Escape clears then closes, `[kjSelectEmpty]` slot for the
-no-matches text), and `<kj-option-group kjLabel>` groups options, foldable with
-`kjCollapsible` / `[(kjCollapsed)]`. Limits: the field sits inside the
-`listbox` panel; a folded heading is pointer-only (search reaches folded
-options); the query resets on open.
+no-matches text; the panel becomes a `dialog` with the search `combobox` above
+an inner `listbox`, trigger `aria-haspopup="dialog"`), and `<kj-option-group kjLabel>` groups options, foldable with
+`kjCollapsible` / `[(kjCollapsed)]`. Fold keys follow the APG treeview: ArrowUp/Down also
+stop on collapsible headings, ArrowLeft on an option folds its group onto the
+heading, ArrowRight unfolds, Enter/Space toggle. Limits: a heading is a `button`
+inside a listbox `group` (ARIA expects only options there); in the search field
+the fold keys work only while it is empty; the query resets on open.
 
 ## Source comparison
 
