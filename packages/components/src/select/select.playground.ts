@@ -7,6 +7,7 @@ const placeholder = signal<string>('Choose a fruit');
 const optionCount = signal<2 | 3 | 4 | 5 | 6>(4);
 const disabled = signal(false);
 const multiple = signal(false);
+const searchable = signal(false);
 
 const ITEMS: ReadonlyArray<{ value: string; label: string }> = [
   { value: 'apple', label: 'Apple' },
@@ -27,6 +28,7 @@ const ITEMS: ReadonlyArray<{ value: string; label: string }> = [
       [placeholder]="placeholder()"
       [disabled]="disabled()"
       [multiple]="multiple()"
+      [kjSearchable]="searchable()"
     >
       @for (item of visibleItems(); track item.value) {
         <kj-option [value]="item.value">{{ item.label }}</kj-option>
@@ -41,6 +43,7 @@ export class KjSelectPlaygroundDemo {
   protected readonly optionCount = optionCount;
   protected readonly disabled = disabled;
   protected readonly multiple = multiple;
+  protected readonly searchable = searchable;
 
   protected readonly visibleItems = computed(() => ITEMS.slice(0, optionCount()));
 }
@@ -53,11 +56,13 @@ export const PLAYGROUND: PlaygroundFile = {
     optionCount: optionCount as unknown as ReturnType<typeof signal>,
     disabled: disabled as unknown as ReturnType<typeof signal>,
     multiple: multiple as unknown as ReturnType<typeof signal>,
+    searchable: searchable as unknown as ReturnType<typeof signal>,
   },
   controls: [
     { kind: 'text', name: 'placeholder', label: 'placeholder' },
     { kind: 'chips', name: 'optionCount', label: 'options', options: [2, 3, 4, 5, 6] },
     { kind: 'toggle', name: 'multiple', label: 'multiple' },
+    { kind: 'toggle', name: 'searchable', label: 'kjSearchable' },
     { kind: 'toggle', name: 'disabled', label: 'disabled' },
   ],
   snippet: (values) => {
@@ -66,12 +71,14 @@ export const PLAYGROUND: PlaygroundFile = {
       optionCount: number;
       disabled: boolean;
       multiple: boolean;
+      searchable: boolean;
     };
     const attrs: string[] = [
       `[(value)]="selected"`,
       `placeholder="${s.placeholder}"`,
     ];
     if (s.multiple) attrs.push('[multiple]="true"');
+    if (s.searchable) attrs.push('kjSearchable');
     if (s.disabled) attrs.push('[disabled]="true"');
     const options = ITEMS.slice(0, s.optionCount)
       .map((item) => `  <kj-option [value]="'${item.value}'">${item.label}</kj-option>`)

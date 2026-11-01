@@ -32,7 +32,9 @@ import { KjListPanelFocus } from './list-panel-focus';
   standalone: true,
   hostDirectives: [
     { directive: KjOverlayPanel, inputs: ['kjFor'] },
-    KjListNavigator,
+    // `kjFocusMode` is forwarded so a wrapper that keeps DOM focus in a
+    // search field can switch the panel to `aria-activedescendant`.
+    { directive: KjListNavigator, inputs: ['kjFocusMode'] },
     KjListPanelFocus,
   ],
   providers: [

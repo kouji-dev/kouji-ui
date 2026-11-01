@@ -100,4 +100,60 @@
   .kj-option[aria-selected="true"]:hover {
     background: color-mix(in oklab, var(--kj-bg-primary) 18%, transparent);
   }
+
+  /* Search field (kjSearchable): stays put at the top while options scroll. */
+  .kj-select-search {
+    position: sticky;
+    top: -4px;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 4px;
+    padding: var(--kj-space-sm) var(--kj-space-md);
+    background: var(--kj-bg-field);
+    color: var(--kj-fg-default);
+    border: var(--kj-border) solid var(--kj-border-control);
+    border-radius: var(--kj-radius-selector);
+    font: 0.875rem var(--kj-font-sans);
+  }
+  .kj-select-search:focus-visible { outline: 2px solid var(--kj-fg-primary); outline-offset: -2px; }
+  /* With search, focus stays in the field: the active row is drawn from
+     `aria-activedescendant`, not from focus. */
+  .kj-option[data-active] {
+    outline: 2px solid var(--kj-fg-primary);
+    outline-offset: -2px;
+    background: var(--kj-bg-field);
+  }
+  .kj-select-empty {
+    padding: var(--kj-space-sm) var(--kj-space-md);
+    color: var(--kj-fg-muted);
+    font: 0.875rem var(--kj-font-sans);
+  }
+
+  .kj-option-group { display: block; }
+  .kj-option-group[hidden] { display: none; }
+  .kj-option-group-label {
+    display: flex;
+    align-items: center;
+    gap: var(--kj-space-xs);
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--kj-space-xs) var(--kj-space-md);
+    background: none;
+    border: 0;
+    border-radius: var(--kj-radius-selector);
+    color: var(--kj-fg-muted);
+    font: 600 0.75rem var(--kj-font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+  }
+  button.kj-option-group-label { cursor: pointer; }
+  button.kj-option-group-label:hover { background: var(--kj-bg-field); }
+  button.kj-option-group-label:focus-visible { outline: 2px solid var(--kj-fg-primary); outline-offset: -2px; }
+  .kj-option-group-chevron { flex: none; transition: transform 120ms ease; }
+  .kj-option-group[data-collapsed] .kj-option-group-chevron { transform: rotate(-90deg); }
+  @media (prefers-reduced-motion: reduce) {
+    .kj-option-group-chevron { transition: none; }
+  }
 }

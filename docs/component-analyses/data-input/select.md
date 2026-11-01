@@ -31,6 +31,14 @@ sibling overlays-of-options
 ([`combobox.md`](./combobox.md), [`multi-select.md`](./multi-select.md),
 [`cascade-select.md`](./cascade-select.md), [`tree-select.md`](./tree-select.md)).
 
+**Search and groups (shipped):** `<kj-select kjSearchable>` adds a filter field
+at the top of the panel (case-insensitive label substring, `aria-activedescendant`
+from the field, Escape clears then closes, `[kjSelectEmpty]` slot for the
+no-matches text), and `<kj-option-group kjLabel>` groups options, foldable with
+`kjCollapsible` / `[(kjCollapsed)]`. Limits: the field sits inside the
+`listbox` panel; a folded heading is pointer-only (search reaches folded
+options); the query resets on open.
+
 ## Source comparison
 
 ### PrimeNG — `<p-select>` ([primeng.org/select](https://primeng.org/select))

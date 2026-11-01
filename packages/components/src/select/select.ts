@@ -8,8 +8,27 @@ import {
   input,
   inject,
   computed,
+  signal,
+  effect,
+  untracked,
+  afterNextRender,
+  viewChild,
+  ElementRef,
+  Injector,
+  DestroyRef,
 } from '@angular/core';
-import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectListItem } from '@kouji-ui/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  KjIcon,
+  KjSelect,
+  KjSelectTrigger,
+  KjSelectContent,
+  KjListItem,
+  KjListNavigator,
+  KjOverlayPanel,
+  injectListItem,
+} from '@kouji-ui/core';
+import { KjOptionGroup } from './option-group';
 
 /**
  * Select root. Two-way bind via `[(value)]`.
@@ -17,6 +36,24 @@ import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectL
  * Users only need `<kj-select>` and `<kj-option>`. The trigger button and
  * listbox panel are rendered internally so the consumer markup stays minimal,
  * with theme tokens, placeholder text, and keyboard navigation already wired.
+ *
+ * Add `kjSearchable` for a filter field at the top of the panel, and wrap
+ * options in `<kj-option-group kjLabel="…">` for headings — with
+ * `kjCollapsible` / `[(kjCollapsed)]` a heading folds its group.
+ *
+ * Limits:
+ * - Search is a case-insensitive substring match on the option label
+ *   (`kjLabel`, else its text). No fuzzy match, no async source — use
+ *   `kj-combobox` for those.
+ * - The query resets every time the panel opens.
+ * - The search field sits inside the `listbox` panel, which ARIA does not
+ *   list as an allowed listbox child. The field is still a named `combobox`
+ *   with `aria-activedescendant`, which screen readers follow.
+ * - A folded group's heading is pointer-only: Tab closes the panel and the
+ *   arrow keys walk options. Keyboard users reach folded options through
+ *   search, which shows every group with a match expanded.
+ * - With `multiple` and search, clicking an option moves focus out of the
+ *   field; click the field to type again.
  *
  * @doc-keyboard
  *   Enter|Space    — Opens the listbox from the trigger; activates the focused option when open
@@ -28,6 +65,8 @@ import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectL
  *   A-Z (type-ahead) — Focuses the first option whose visible text starts with the typed character
  *   Escape         — Closes the listbox and returns focus to the trigger
  *   Tab            — Closes the listbox, returns focus to the trigger and moves on to the next focusable element
+ *   Printable keys (kjSearchable) — Typed into the search field, which is focused on open; filters the options by label
+ *   Escape (kjSearchable) — Clears the search field when it holds text, else closes the listbox
  *
  * @doc-aria
  *   aria-haspopup        — set to "listbox" on the trigger button
@@ -40,6 +79,10 @@ import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectL
  *   aria-selected        — set on each option to "true" or "false"
  *   aria-disabled        — set on options when [kjDisabled] is true
  *   data-disabled / data-multiple — mirrors of the disabled / multiple state for CSS
+ *   role="combobox"      — on the search field ([kjSearchable]); `aria-activedescendant` tracks the active option while DOM focus stays in the field
+ *   role="group"         — on each `<kj-option-group>`, named by its heading through `aria-labelledby`
+ *   aria-expanded        — on a `kjCollapsible` group's heading button
+ *   role="status"        — on the "no matches" message, announced politely
  *
  * @doc-css-var
  *   --kj-select-trigger-height — Height of the trigger button. Sizes (sm/md/lg) override.
@@ -72,8 +115,11 @@ import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectL
  *   `[disabled]="true"` removes the trigger from the tab order.
  *   @doc-file select.disabled.example.ts
  * @doc-example Grouped options
- *   Cluster options under headings for richer listbox menus.
+ *   Cluster options under `<kj-option-group>` headings; `kjCollapsible` makes a heading fold its group.
  *   @doc-file select.grouped.example.ts
+ * @doc-example Searchable
+ *   `kjSearchable` puts a filter field at the top of the panel; `[kjSelectEmpty]` replaces the "No matches" text.
+ *   @doc-file select.searchable.example.ts
  * @doc-category Library/Data input
  * @doc
  * @doc-name select
@@ -92,8 +138,34 @@ import { KjIcon, KjSelect, KjSelectTrigger, KjSelectContent, KjListItem, injectL
       <span class="kj-select-trigger-label">{{ displayLabel() }}</span>
       <span kjIcon="chevron-down" class="kj-select-trigger-caret" aria-hidden="true"></span>
     </button>
-    <kj-select-content [kjFor]="trig" class="kj-select-content">
+    <kj-select-content
+      [kjFor]="trig"
+      class="kj-select-content"
+      [kjFocusMode]="kjSearchable() ? 'activedescendant' : 'roving'"
+    >
+      @if (kjSearchable()) {
+        <input
+          #search
+          type="text"
+          class="kj-select-search"
+          role="combobox"
+          autocomplete="off"
+          aria-autocomplete="list"
+          aria-expanded="true"
+          [attr.aria-controls]="panel()?.panelId ?? null"
+          [attr.aria-label]="kjSearchPlaceholder()"
+          [attr.aria-activedescendant]="activeId()"
+          [placeholder]="kjSearchPlaceholder()"
+          [value]="query()"
+          (input)="query.set(search.value)"
+        />
+      }
       <ng-content />
+      @if (noMatches()) {
+        <div class="kj-select-empty" role="status" aria-live="polite">
+          <ng-content select="[kjSelectEmpty]">No matches</ng-content>
+        </div>
+      }
     </kj-select-content>
   `,
   styleUrl: './select.css',
@@ -119,7 +191,81 @@ export class KjSelectComponent {
   /** Control height preset, reflected as `data-size`. Defaults to `'md'`. */
   readonly kjSize = input<'xs' | 'sm' | 'md' | 'lg'>('md');
 
+  /** Adds a search field at the top of the panel that filters options by label. Defaults to `false`. */
+  readonly kjSearchable = input(false, { transform: booleanAttribute });
+
+  /** Placeholder and accessible name of the search field. Defaults to `'Search…'`. */
+  readonly kjSearchPlaceholder = input<string>('Search…');
+
   private readonly select = inject(KjSelect);
+
+  /** The search field's text. Reset every time the panel opens. */
+  readonly query = signal('');
+
+  private readonly searchEl = viewChild<ElementRef<HTMLInputElement>>('search');
+  /** @internal — the panel's navigator, read for the field's `aria-activedescendant`. */
+  protected readonly nav = viewChild(KjListNavigator);
+  /** @internal — id of the active option, or `null`. */
+  readonly activeId = computed(() => this.nav()?.activeId() ?? null);
+  /** @internal — the panel, read for the field's `aria-controls`. */
+  protected readonly panel = viewChild(KjOverlayPanel);
+  private readonly groups = contentChildren(KjOptionGroup, { descendants: true });
+
+  /** @internal */
+  protected readonly noMatches = computed(
+    () =>
+      this.kjSearchable() &&
+      this.query().trim() !== '' &&
+      this.options().every(o => !o._row.visible()),
+  );
+
+  constructor() {
+    const injector = inject(Injector);
+    const win = inject(DOCUMENT).defaultView;
+
+    // Filter and fold decide every option's visibility in one pass.
+    effect(() => {
+      const q = this.kjSearchable() ? this.query().trim().toLowerCase() : '';
+      const folded = new Set<KjListItem<unknown>>();
+      for (const g of this.groups()) {
+        g._searching.set(q !== '');
+        if (g._folded()) for (const item of g._items()) folded.add(item);
+      }
+      for (const opt of this.options()) {
+        const row = opt._row;
+        row.setVisible(!folded.has(row) && (q === '' || row.label().toLowerCase().includes(q)));
+      }
+    });
+
+    // A new query puts the cursor on the first match (APG combobox).
+    effect(() => {
+      this.query();
+      untracked(() => {
+        if (!this.kjSearchable() || !this.select.open()) return;
+        afterNextRender(() => this.nav()?.moveToFirst(), { injector });
+      });
+    });
+
+    // Open: start from an empty query with the field focused.
+    effect(() => {
+      if (!this.select.open() || !this.kjSearchable()) return;
+      untracked(() => this.query.set(''));
+      afterNextRender(() => this.searchEl()?.nativeElement.focus(), { injector });
+    });
+
+    // Escape clears a non-empty query instead of closing. The overlay stack
+    // listens on `document` in the capture phase, so only a capture listener
+    // on `window` runs before it.
+    const onKeydown = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape' || this.query() === '') return;
+      if (e.target !== this.searchEl()?.nativeElement) return;
+      e.stopPropagation();
+      e.preventDefault();
+      this.query.set('');
+    };
+    win?.addEventListener('keydown', onKeydown, true);
+    inject(DestroyRef).onDestroy(() => win?.removeEventListener('keydown', onKeydown, true));
+  }
 
   /**
    * Trigger element signal — sourced from the headless `KjSelect` root,
@@ -141,6 +287,8 @@ export class KjSelectComponent {
    *  composed `KjListItem`, which is now the `<kj-option>` host itself. */
   private readonly options = contentChildren<KjOptionComponent>(
     forwardRef(() => KjOptionComponent) as unknown as typeof KjOptionComponent,
+    // descendants: options inside a <kj-option-group> count too
+    { descendants: true },
   );
 
   /** Resolve a value to its matching option's label. Falls back to
@@ -205,6 +353,7 @@ export class KjSelectComponent {
   host: {
     'class': 'kj-option',
     'role': 'option',
+    '[attr.data-active]': "isActive() ? '' : null",
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -212,4 +361,11 @@ export class KjOptionComponent {
   /** @internal — the composed row. `KjSelectComponent` reads its value and
    *  its explicit label to render the trigger's displayed text. */
   readonly _row = injectListItem<unknown>();
+
+  private readonly owner = inject(KjSelectComponent, { optional: true });
+
+  /** @internal — the `aria-activedescendant` row while the search field holds focus. */
+  protected readonly isActive = computed(
+    () => !!this.owner?.kjSearchable() && this.owner.activeId() === this._row.id,
+  );
 }

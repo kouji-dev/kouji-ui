@@ -109,6 +109,13 @@ export class KjSelect implements KjListNavigatorConfig {
    */
   readonly items = ownListItems(this, this.allItems);
 
+  /**
+   * Implements `KjListNavigatorConfig.visibleItems`: the items a wrapper has
+   * not hidden through `KjListItem.setVisible` (a search filter, a folded
+   * group). The navigator and type-ahead walk only these.
+   */
+  readonly visibleItems = computed(() => this.items().filter(i => i.visible()));
+
   /** Implements `KjListNavigatorConfig.mode`. */
   readonly mode: Signal<KjListSelectionMode> = computed(() =>
     this._multiple() ? 'multi' : 'single',

@@ -6,6 +6,7 @@ import { fireEvent, render } from '@testing-library/angular';
 import postcss from 'postcss';
 import { afterEach, beforeEach, describe, expect, it, test } from 'vitest';
 import { KjOptionComponent, KjSelectComponent } from './select';
+import { KjOptionGroup } from './option-group';
 
 const css = readFileSync(resolve(import.meta.dirname, 'select.css'), 'utf-8');
 
@@ -214,5 +215,166 @@ describe('<kj-select> bare boolean attributes (arch F-2)', () => {
     expect(host).toHaveAttribute('data-disabled', '');
     expect(host).toHaveAttribute('data-multiple', '');
     expect(container.querySelector('.kj-select-trigger')).toHaveAttribute('disabled');
+  });
+});
+
+describe('<kj-select kjSearchable> and <kj-option-group>', () => {
+  const tick = () => new Promise(r => setTimeout(r, 0));
+
+  async function setup(extra = '', props: Record<string, unknown> = {}) {
+    const r = await render(
+      `<kj-select [(value)]="value" kjSearchable ${extra}>
+         <kj-option-group kjLabel="Fruit" kjCollapsible [(kjCollapsed)]="fruitFolded">
+           <kj-option value="a" kjLabel="Apple">Apple</kj-option>
+           <kj-option value="b" kjLabel="Banana">Banana</kj-option>
+         </kj-option-group>
+         <kj-option-group kjLabel="Veg">
+           <kj-option value="c" kjLabel="Carrot">Carrot</kj-option>
+         </kj-option-group>
+       </kj-select>`,
+      {
+        imports: [KjSelectComponent, KjOptionComponent, KjOptionGroup],
+        componentProperties: { value: undefined, fruitFolded: false, ...props },
+      },
+    );
+    fireEvent.click(r.container.querySelector('.kj-select-trigger')!);
+    r.fixture.detectChanges();
+    await tick();
+    r.fixture.detectChanges();
+    return r;
+  }
+  type Setup = Awaited<ReturnType<typeof setup>>;
+  const host = (r: Setup) =>
+    r.fixture.componentInstance as unknown as { value: unknown; fruitFolded: boolean };
+
+  const search = () => document.querySelector<HTMLInputElement>('.kj-select-search')!;
+  const rows = () => [...document.querySelectorAll<HTMLElement>('.kj-select-content kj-option')];
+  const shown = () => rows().filter(o => !o.hidden).map(o => o.textContent!.trim());
+  const panelOpen = () =>
+    document.querySelector('.kj-select-trigger')!.getAttribute('aria-expanded') === 'true';
+
+  async function settle(r: Setup) {
+    r.fixture.detectChanges();
+    await tick();
+    r.fixture.detectChanges();
+  }
+
+  async function type(r: Setup, text: string) {
+    const el = search();
+    el.value = text;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(r);
+  }
+
+  async function press(r: Setup, key: string) {
+    search().dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    await settle(r);
+  }
+
+  afterEach(() => {
+    document
+      .querySelectorAll('.kj-overlay-wrapper, .kj-overlay-container')
+      .forEach(w => w.remove());
+  });
+
+  it('opens with the search field focused, as a combobox tied to the listbox', async () => {
+    await setup('kjSearchPlaceholder="Find"');
+    const el = search();
+    expect(document.activeElement).toBe(el);
+    expect(el.getAttribute('role')).toBe('combobox');
+    expect(el.getAttribute('placeholder')).toBe('Find');
+    expect(el.getAttribute('aria-label')).toBe('Find');
+    const panel = document.querySelector('.kj-select-content')!;
+    expect(el.getAttribute('aria-controls')).toBe(panel.id);
+    expect(panel.getAttribute('role')).toBe('listbox');
+  });
+
+  it('filters options by label, case-insensitively', async () => {
+    const r = await setup();
+    expect(shown()).toEqual(['Apple', 'Banana', 'Carrot']);
+    await type(r, 'AN');
+    expect(shown()).toEqual(['Banana']);
+  });
+
+  it('shows the no-matches status when nothing matches, with a custom slot', async () => {
+    const r = await render(
+      `<kj-select kjSearchable>
+         <kj-option value="a" kjLabel="Apple">Apple</kj-option>
+         <span kjSelectEmpty>Nothing here</span>
+       </kj-select>`,
+      { imports: [KjSelectComponent, KjOptionComponent] },
+    );
+    fireEvent.click(r.container.querySelector('.kj-select-trigger')!);
+    await settle(r);
+    expect(document.querySelector('.kj-select-empty')).toBeNull();
+    await type(r, 'zzz');
+    const empty = document.querySelector('.kj-select-empty')!;
+    expect(empty.getAttribute('role')).toBe('status');
+    expect(empty.textContent!.trim()).toBe('Nothing here');
+  });
+
+  it('arrows move aria-activedescendant through visible options; Enter picks', async () => {
+    const r = await setup();
+    await type(r, 'a'); // all three labels contain "a"
+    const ids = rows().map(o => o.id);
+    expect(search().getAttribute('aria-activedescendant')).toBe(ids[0]);
+    await press(r, 'ArrowDown');
+    expect(search().getAttribute('aria-activedescendant')).toBe(ids[1]);
+    expect(document.getElementById(ids[1])!.hasAttribute('data-active')).toBe(true);
+    expect(document.activeElement).toBe(search());
+
+    await type(r, 'car');
+    expect(search().getAttribute('aria-activedescendant')).toBe(ids[2]);
+    await press(r, 'Enter');
+    expect(host(r).value).toBe('c');
+    expect(panelOpen()).toBe(false);
+  });
+
+  it('Escape clears the query first, then closes', async () => {
+    const r = await setup();
+    await type(r, 'ban');
+    await press(r, 'Escape');
+    expect(search().value).toBe('');
+    expect(shown()).toEqual(['Apple', 'Banana', 'Carrot']);
+    expect(panelOpen()).toBe(true);
+    await press(r, 'Escape');
+    expect(panelOpen()).toBe(false);
+  });
+
+  it('a collapsible group folds from its heading button and two-way binds kjCollapsed', async () => {
+    const r = await setup();
+    const header = document.querySelector<HTMLButtonElement>('button.kj-option-group-label')!;
+    const group = header.closest('kj-option-group')!;
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.getAttribute('aria-labelledby')).toBe(header.id);
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    // the non-collapsible group has a plain heading, no button
+    expect(document.querySelectorAll('button.kj-option-group-label').length).toBe(1);
+
+    fireEvent.click(header);
+    await settle(r);
+    expect(header.getAttribute('aria-expanded')).toBe('false');
+    expect(host(r).fruitFolded).toBe(true);
+    expect(shown()).toEqual(['Carrot']);
+
+    host(r).fruitFolded = false;
+    await settle(r);
+    expect(header.getAttribute('aria-expanded')).toBe('true');
+    expect(shown()).toEqual(['Apple', 'Banana', 'Carrot']);
+  });
+
+  it('while searching, a folded group with matches shows expanded and a group without is hidden', async () => {
+    const r = await setup('', { fruitFolded: true });
+    expect(shown()).toEqual(['Carrot']);
+    await type(r, 'apple');
+    const groups = [...document.querySelectorAll<HTMLElement>('kj-option-group')];
+    expect(shown()).toEqual(['Apple']);
+    expect(groups[0].hidden).toBe(false);
+    expect(groups[0].querySelector('button')!.getAttribute('aria-expanded')).toBe('true');
+    expect(groups[1].hidden).toBe(true);
+
+    await type(r, '');
+    expect(shown()).toEqual(['Carrot']);
+    expect(groups[0].querySelector('button')!.getAttribute('aria-expanded')).toBe('false');
   });
 });
