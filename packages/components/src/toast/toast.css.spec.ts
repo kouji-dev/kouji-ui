@@ -20,4 +20,10 @@ describe('toast.css', () => {
     const zIndexes = css.match(/z-index:[^;]+;/g) ?? [];
     expect(zIndexes).toHaveLength(1);
   });
+
+  it('stacks toasts in one grid cell, not absolutely, so width:auto keeps their width', () => {
+    expect(css).toMatch(/\.kj-toast-viewport\s*\{\s*display:\s*grid;/);
+    expect(ruleBody('.kj-toast-viewport li {')).toMatch(/grid-area:\s*1\s*\/\s*1/);
+    expect(ruleBody('.kj-toast-viewport li {')).not.toMatch(/position:\s*absolute/);
+  });
 });
