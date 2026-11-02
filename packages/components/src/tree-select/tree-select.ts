@@ -89,6 +89,8 @@ function flattenTree(
   standalone: true,
   imports: [KjTreeSelectNode, KjTreeSelectToggle],
   template: `
+    <!-- focusable through the composed KjListItem's tabindex binding -->
+    <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <div
       kjTreeSelectNode
       [kjValue]="value()"
@@ -98,6 +100,9 @@ function flattenTree(
       [kjNodePos]="pos()"
       [kjDisabled]="disabled()"
       [kjHasChildren]="hasChildren()"
+      (click)="foldBranch($event)"
+      (keydown.enter)="foldBranch($event)"
+      (keydown.space)="foldBranch($event)"
       class="kj-tree-select-node"
       [style.padding-inline-start.rem]="(level() - 1) * 1.25 + 0.75"
     >
@@ -161,6 +166,17 @@ export class KjTreeSelectNodeComponent {
     inject(DestroyRef).onDestroy(() => {
       if (registered) this.root?._unregisterRow(registeredKey);
     });
+  }
+
+  /**
+   * @internal — a branch row in single mode is a disclosure control: the
+   * selection model never commits a branch value, so a click (or Enter /
+   * Space) on the row folds or unfolds it instead of doing nothing.
+   */
+  foldBranch(event: Event): void {
+    if (!this.hasChildren() || this.multiMode() || this.disabled() || !this.root) return;
+    event.preventDefault();
+    this.root.ts.toggleNodeByValue(this.value());
   }
 
   /** The value this node represents. */
@@ -299,6 +315,19 @@ export class KjTreeSelectNodeComponent {
       <span class="kj-tree-select-caret" aria-hidden="true">▾</span>
     </button>
     <kj-tree-select-content [kjFor]="trig" class="kj-tree-select-panel">
+      @if (kjSearchable()) {
+        <input
+          #search
+          type="search"
+          class="kj-tree-select-search"
+          autocomplete="off"
+          [attr.aria-label]="kjSearchPlaceholder()"
+          [placeholder]="kjSearchPlaceholder()"
+          [value]="query()"
+          (input)="query.set(search.value)"
+          (keydown)="onSearchKeydown($event)"
+        />
+      }
       @for (row of visibleRows(); track row.node.value) {
         <kj-tree-select-node
           [value]="row.node.value"
@@ -313,6 +342,10 @@ export class KjTreeSelectNodeComponent {
       }
       @if (flatNodes().length === 0) {
         <div class="kj-tree-select-empty">No options</div>
+      } @else if (visibleRows().length === 0) {
+        <div class="kj-tree-select-empty" role="status" aria-live="polite">
+          <ng-content select="[kjTreeSelectEmpty]">No matches</ng-content>
+        </div>
       }
     </kj-tree-select-content>
   `,
@@ -344,6 +377,18 @@ export class KjTreeSelectComponent {
   /** Optional ARIA label for the trigger when no visible label exists. */
   readonly ariaLabel = input<string | undefined>(undefined);
 
+  /**
+   * A filter field above the tree: rows whose label contains the query stay,
+   * with every ancestor branch shown open; `[kjTreeSelectEmpty]` replaces the
+   * "No matches" text.
+   */
+  readonly kjSearchable = input(false, { transform: booleanAttribute });
+  /** Placeholder and accessible name of the filter field. */
+  readonly kjSearchPlaceholder = input<string>('Search…');
+
+  /** @internal — the filter text. */
+  readonly query = signal('');
+
   /** @internal — reference to the headless root directive. */
   readonly ts = inject(KjTreeSelect);
 
@@ -367,6 +412,18 @@ export class KjTreeSelectComponent {
    */
   readonly visibleRows = computed<FlatNode[]>(() => {
     const rows = this.flatNodes();
+    const q = this.kjSearchable() ? this.query().trim().toLowerCase() : '';
+    if (q) {
+      // A match keeps itself and opens its ancestors; nothing else shows.
+      const keep = new Set<unknown>();
+      for (const row of rows) {
+        if (row.node.label.toLowerCase().includes(q)) {
+          keep.add(row.node.value);
+          for (const a of row.ancestorValues) keep.add(a);
+        }
+      }
+      return rows.filter(row => keep.has(row.node.value));
+    }
     const expanded = this.ts.expandedValues();
     const out: FlatNode[] = [];
     // `Infinity` = nothing is being hidden. Otherwise every row deeper than
@@ -428,6 +485,16 @@ export class KjTreeSelectComponent {
     // template paints have to be handed to the headless root explicitly.
     this.ts._setViewItems(this.viewItems);
     inject(DestroyRef).onDestroy(() => this.ts._setViewItems(null));
+  }
+
+  /** @internal — ArrowDown from the filter field moves into the tree. */
+  onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowDown') return;
+    const panel = (event.target as HTMLElement).closest('.kj-tree-select-panel');
+    const first = panel?.querySelector<HTMLElement>('[role="treeitem"]');
+    if (!first) return;
+    event.preventDefault();
+    first.focus();
   }
 
   /** @internal — display label shown in the trigger button. */

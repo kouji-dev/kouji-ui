@@ -186,3 +186,38 @@ describe('KjTreeSelectComponent – keyboard reaches the rendered rows', () => {
     expect(document.activeElement!.textContent!.trim()).toBe('Apple');
   });
 });
+
+describe('KjTreeSelectComponent – branch rows and search', () => {
+  const open = async (template: string, extra: Record<string, unknown> = {}) => {
+    const r = await render(template, { imports: [KjTreeSelectComponent], componentProperties: { nodes, ...extra } });
+    fireEvent.click(r.container.querySelector('.kj-tree-select-trigger')!);
+    await r.fixture.whenStable();
+    return r;
+  };
+  const row = (label: string) => rows().find(r => r.textContent?.trim() === label)!.querySelector<HTMLElement>('[role="treeitem"]')!;
+
+  it('clicking a branch row (not only its arrow) unfolds and folds it, and never selects it', async () => {
+    let picked: unknown = 'unset';
+    const r = await open(`<kj-tree-select [kjNodes]="nodes" (kjValueChange)="onPick($event)" />`, { onPick: (v: unknown) => (picked = v) });
+    fireEvent.click(row('Fruits'));
+    r.fixture.detectChanges();
+    expect(labels()).toEqual(['Fruits', 'Apple', 'Banana', 'Vegetables']);
+    expect(picked).toBe('unset');
+    fireEvent.keyDown(row('Fruits'), { key: 'Enter' });
+    r.fixture.detectChanges();
+    expect(labels()).toEqual(['Fruits', 'Vegetables']);
+  });
+
+  it('kjSearchable keeps the matching rows with their ancestors open; no match shows the empty slot', async () => {
+    const r = await open(`<kj-tree-select [kjNodes]="nodes" kjSearchable kjSearchPlaceholder="Find"><span kjTreeSelectEmpty>Nothing here</span></kj-tree-select>`);
+    const field = document.querySelector<HTMLInputElement>('.kj-tree-select-search')!;
+    expect(field.getAttribute('aria-label')).toBe('Find');
+    fireEvent.input(field, { target: { value: 'ban' } });
+    r.fixture.detectChanges();
+    expect(labels()).toEqual(['Fruits', 'Banana']);
+    fireEvent.input(field, { target: { value: 'zzz' } });
+    r.fixture.detectChanges();
+    expect(labels()).toEqual([]);
+    expect(document.body.textContent).toContain('Nothing here');
+  });
+});

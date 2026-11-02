@@ -303,7 +303,7 @@ describe('overlay stacking — stylesheets read the stack level with the histori
         // Only the cascade sub-panel is a child of its own root panel (a
         // stacking context of its own) and keeps a literal level.
         // The select's sticky search field only sits above the options scrolling under it, inside its panel.
-        if (d.parent && 'selector' in d.parent && ['.kj-cascade-sub-panel', '.kj-select-search'].includes((d.parent as { selector: string }).selector)) return;
+        if (d.parent && 'selector' in d.parent && ['.kj-cascade-sub-panel', '.kj-select-search', '.kj-tree-select-search'].includes((d.parent as { selector: string }).selector)) return;
         expect(d.value, `${f}: ${d.value}`).toMatch(/var\(--kj-overlay-z, \d+\)/);
       });
     }

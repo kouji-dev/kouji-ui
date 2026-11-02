@@ -73,6 +73,23 @@
     display: none;
   }
 
+  /* Filter field (kjSearchable): stays put while the tree scrolls. Its local
+     z-index only lifts it above the rows inside the panel. */
+  .kj-tree-select-search {
+    position: sticky;
+    top: -4px;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 4px;
+    padding: var(--kj-space-sm) var(--kj-space-md);
+    background: var(--kj-bg-field);
+    color: var(--kj-fg-default);
+    border: var(--kj-border) solid var(--kj-border-control);
+    border-radius: var(--kj-radius-selector);
+    font: 0.875rem var(--kj-font-sans);
+  }
+
   .kj-tree-select-empty {
     padding: var(--kj-space-sm) var(--kj-space-md);
     color: color-mix(in oklab, var(--kj-fg-default) 55%, transparent);
