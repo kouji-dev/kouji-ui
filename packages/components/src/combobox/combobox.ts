@@ -388,7 +388,7 @@ export class KjComboboxComponent implements KjListVirtualSource {
   protected readonly rows = computed<readonly ComboRow[]>(() => {
     const all = this.allRows();
     if (!this.virtual() || !this.cb.shouldFilter()) return all;
-    const q = this.cb.query();
+    const q = this.cb.filterQuery();
     if (!q) return all;
     const match = this.cb.kjFilter();
     const out: ComboRow[] = [];
@@ -471,17 +471,29 @@ export class KjComboboxComponent implements KjListVirtualSource {
       this.filterSvc.setWindow(this.vlist()?.window().start ?? 0, this.rowCount());
     });
 
-    // A new query restarts the cursor at the top of the new result set —
-    // the APG combobox 1.2 discoverability rule the headless root applies to
-    // rendered items, applied to indices.
+    // Typed text restarts the cursor at the first match; opening with no
+    // typed text puts it on the picked row (else the first) — the rule the
+    // headless root applies to rendered items, applied to indices.
     effect(() => {
-      this.cb.query();
+      const typed = this.cb.filterQuery();
+      this.cb.open();
       if (!this.virtual()) return;
       untracked(() => {
+        if (!this.cb.kjAutoActivateFirst() || this.rowCount() === 0) {
+          this.vlist()?.scrollToStart();
+          this._cursor.set(-1);
+          return;
+        }
+        const value = this.cb.kjValue();
+        const picked = typed === '' && value !== null && value !== undefined
+          ? this.rows().findIndex(r => Object.is(r.value, value))
+          : -1;
+        if (picked > 0) {
+          this.setActiveIndex(picked);
+          return;
+        }
         this.vlist()?.scrollToStart();
-        this._cursor.set(
-          this.cb.kjAutoActivateFirst() && this.rowCount() > 0 ? 0 : -1,
-        );
+        this._cursor.set(0);
       });
     });
 
@@ -511,18 +523,25 @@ export class KjComboboxComponent implements KjListVirtualSource {
       });
     });
 
-    // Seed the input text from a preset value. The headless root does this
-    // from its rendered items, which a window cannot answer for a value
-    // whose row is scrolled out — the data can.
+    // Write the picked entry's name into the input when the VALUE changes.
+    // The headless root does this from its rendered items, which a window
+    // cannot answer for a value whose row is scrolled out — the data can.
+    // Never because the user emptied the field: an empty field lists all.
+    let shown: { readonly value: unknown; readonly label: string } | null = null;
+    let seeded = false;
     effect(() => {
       if (!this.virtual()) return;
       const value = this.cb.kjValue();
-      const rows = this.allRows();
-      if (value === null || value === undefined) return;
-      if (this.cb.query() !== '') return;
+      if (value === null || value === undefined) { shown = null; return; }
+      const label = this.allRows().find(r => Object.is(r.value, value))?.label;
+      if (label === undefined) return;
+      if (shown && Object.is(shown.value, value) && shown.label === label) return;
+      shown = { value, label };
+      const first = !seeded;
+      seeded = true;
       untracked(() => {
-        const match = rows.find(r => Object.is(r.value, value));
-        if (match) this.cb.kjQuery.set(match.label);
+        if (first && this.cb.query() !== '') return;
+        this.cb.kjQuery.set(label);
       });
     });
   }
@@ -614,7 +633,7 @@ export class KjComboboxEmpty {
     return this.cb.open()
       && !this.cb.loading()
       && this.cb.visibleCount() === 0
-      && this.cb.query().length > 0;
+      && this.cb.filterQuery().length > 0;
   }
 }
 

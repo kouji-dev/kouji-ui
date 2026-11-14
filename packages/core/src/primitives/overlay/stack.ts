@@ -282,8 +282,11 @@ export class KjOverlayStack {
   private handleKeydown(e: KeyboardEvent): void {
     if (e.key !== 'Escape') return;
     const top = this.topmost();
-    if (!top || !top.opts.closeOnEsc) return;
-    top.opts.onClose('escape');
+    if (!top) return;
+    // Handled (closed, or swallowed by an overlay that must be answered):
+    // app-level Escape listeners must not also close what sits behind it.
+    e.preventDefault();
+    if (top.opts.closeOnEsc) top.opts.onClose('escape');
   }
 
   /** Is `target` a press outside `entry`'s content — a candidate dismissal? */

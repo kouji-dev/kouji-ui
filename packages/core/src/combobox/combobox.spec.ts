@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { render, fireEvent } from '@testing-library/angular';
 import { afterEach, describe, it, expect } from 'vitest';
 import {
@@ -113,5 +113,130 @@ describe('KjCombobox navigator handover', () => {
 
     const active = document.querySelectorAll('[kjComboboxOption][data-active]');
     expect(active.length).toBe(1);
+  });
+});
+
+/**
+ * A combobox that already holds a value: the list it opens must show every
+ * option with the picked one under the cursor, and the field must read the
+ * picked row's name. Only text the user typed since the last open or pick
+ * filters the list.
+ */
+describe('KjCombobox with a picked value', () => {
+  afterEach(() => {
+    document.querySelectorAll('.kj-overlay-wrapper').forEach((el) => el.remove());
+  });
+
+  async function setup(initial: unknown) {
+    @Component({
+      selector: 'kj-cb-host',
+      standalone: true,
+      imports: [KjCombobox, KjComboboxInput, KjComboboxListbox, KjComboboxOption],
+      template: `
+        <div kjCombobox [(kjValue)]="value">
+          <input kjComboboxInput #t="kjOverlayTrigger" aria-label="Country" />
+          <div kjComboboxListbox [kjFor]="t">
+            <button kjComboboxOption [kjOptionValue]="'fr'">France</button>
+            <button kjComboboxOption [kjOptionValue]="'de'">Germany</button>
+            <button kjComboboxOption [kjOptionValue]="'it'">Italy</button>
+          </div>
+        </div>
+      `,
+    })
+    class Host { value = signal<unknown>(initial); }
+
+    const r = await render(Host);
+    const input = r.container.querySelector<HTMLInputElement>('input[kjComboboxInput]')!;
+    const settle = async () => {
+      r.fixture.detectChanges();
+      await r.fixture.whenStable();
+      await new Promise((res) => setTimeout(res, 0));
+      r.fixture.detectChanges();
+    };
+    const type = async (text: string) => {
+      input.value = text;
+      fireEvent.input(input);
+      await settle();
+    };
+    await settle();
+    return { input, settle, type, host: r.fixture.componentInstance };
+  }
+
+  const options = () => Array.from(document.querySelectorAll<HTMLElement>('[kjComboboxOption]'));
+  const text = (o: HTMLElement) => (o.textContent ?? '').trim();
+  const listed = () => options().filter((o) => !o.hidden).map(text);
+  const active = () => options().filter((o) => o.hasAttribute('data-active')).map(text);
+  const ALL = ['France', 'Germany', 'Italy'];
+
+  it('a preset value shows its row text in the field, read from the row once it renders', async () => {
+    const { input } = await setup('de');
+    expect(input.value).toBe('Germany');
+  });
+
+  it('opening puts the cursor on the picked row, not the first one', async () => {
+    const { input, settle } = await setup('it');
+    input.focus();
+    await settle();
+    expect(listed()).toEqual(ALL);
+    expect(active()).toEqual(['Italy']);
+  });
+
+  it('pick, reopen: every option is listed again and the field still reads the pick', async () => {
+    const { input, settle, host } = await setup(null);
+    input.focus();
+    await settle();
+    options()[2].click();
+    await settle();
+    expect(host.value()).toBe('it');
+    expect(input.value).toBe('Italy');
+
+    fireEvent.click(input);
+    await settle();
+    expect(listed()).toEqual(ALL);
+    expect(active()).toEqual(['Italy']);
+    expect(input.value).toBe('Italy');
+  });
+
+  it('clearing the field while a value is set lists every option and keeps the field empty', async () => {
+    const { input, settle, type, host } = await setup(null);
+    input.focus();
+    await settle();
+    options()[1].click();
+    await settle();
+    expect(input.value).toBe('Germany');
+    fireEvent.click(input);
+    await settle();
+    await type('');
+    expect(input.value).toBe('');
+    expect(listed()).toEqual(ALL);
+
+    // close and reopen: still empty, still everything
+    fireEvent.keyDown(input, { key: 'Escape' });
+    await settle();
+    fireEvent.click(input);
+    await settle();
+    expect(input.value).toBe('');
+    expect(listed()).toEqual(ALL);
+    expect(host.value()).toBe('de');
+  });
+
+  it('typing filters and puts the cursor on the first match; Enter picks it', async () => {
+    const { input, settle, type, host } = await setup('fr');
+    input.focus();
+    await settle();
+    await type('ital');
+    expect(listed()).toEqual(['Italy']);
+    expect(active()).toEqual(['Italy']);
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await settle();
+    expect(host.value()).toBe('it');
+    expect(input.value).toBe('Italy');
+  });
+
+  it('a value set from outside rewrites the field', async () => {
+    const { input, settle, host } = await setup('fr');
+    host.value.set('it');
+    await settle();
+    expect(input.value).toBe('Italy');
   });
 });
