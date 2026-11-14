@@ -47,6 +47,26 @@ describe('KjOverlayStack', () => {
     expect(free.defaultPrevented).toBe(false);
   });
 
+  it('a released (closing) entry keeps its level but stops owning Escape', () => {
+    const stack = TestBed.inject(KjOverlayStack);
+    const closeA = vi.fn();
+    const closeB = vi.fn();
+    const ha = stack.register('a', { onClose: closeA });
+    const hb = stack.register('b', { onClose: closeB });
+    hb.release();
+    expect(hb.isTopmost()).toBe(false);
+    expect(ha.isTopmost()).toBe(true);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+    expect(closeB).not.toHaveBeenCalled();
+    expect(closeA).toHaveBeenCalledWith('escape');
+    ha.unregister();
+
+    const free = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    document.dispatchEvent(free);
+    expect(free.defaultPrevented, 'an Escape during the close animation reaches the app').toBe(false);
+    hb.unregister();
+  });
+
   it('an outside press dismisses on its click, not on the down event, and only when it began outside contentEl', () => {
     const stack = TestBed.inject(KjOverlayStack);
     const onClose = vi.fn();

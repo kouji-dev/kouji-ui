@@ -461,6 +461,24 @@ describe('KjOverlayController', () => {
       expect(calls.filter(c => c === 'scrollLock:onClose')).toHaveLength(2);
     });
 
+    it('a closing overlay keeps the Escape that closed it, then stops owning gestures for the rest of its close transition', async () => {
+      ctrl.attachStrategies(makeStub().strategies);
+      ctrl.open();
+      await settle();
+
+      ctrl.close('escape');
+      expect(ctrl.state()).toBe('closing');
+      expect(ctrl.isTopmost(), 'the event that closed it is still in flight').toBe(true);
+      await new Promise(r => setTimeout(r, 0));
+      expect(ctrl.state()).toBe('closing');
+      expect(ctrl.isTopmost()).toBe(false);
+      const second = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+      document.dispatchEvent(second);
+      expect(second.defaultPrevented, 'an Escape during the close animation reaches the app').toBe(false);
+      await settle();
+      expect(ctrl.state()).toBe('closed');
+    });
+
     it('toggle() during the close transition re-opens — unless the close came from a press outside the panel (F-22)', async () => {
       ctrl.attachStrategies(makeStub().strategies);
       ctrl.open();
