@@ -390,6 +390,12 @@ export class KjOverlayController {
 
   private beginClose(): void {
     if (!this.strategies) return;
+    // A closing overlay no longer owns Escape / outside presses: one made
+    // during its close animation belongs to what is beneath it. Released
+    // after the current event, so the press that closed it does not also
+    // reach the overlay beneath (its backdrop, its own Escape handler).
+    const handle = this.stackHandle;
+    if (handle) setTimeout(() => handle.release());
     this.runTransition('close', () => this.finishClose());
   }
 

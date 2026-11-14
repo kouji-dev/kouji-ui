@@ -36,6 +36,12 @@ export interface KjOverlayRegistration {
 /** Returned by `KjOverlayStack.register()` — the overlay's live stack position and its unregister hook. */
 export interface KjOverlayStackHandle {
   unregister: () => void;
+  /**
+   * Stop owning gestures but keep the stack level: called when the overlay
+   * starts closing. Its close animation still paints at its level, while an
+   * Escape or outside press made during it goes to what is beneath.
+   */
+  release: () => void;
   /** Whether this overlay owns gestures right now: no non-passive overlay is open above it. Always `false` for a passive entry. */
   isTopmost: Signal<boolean>;
   /**
@@ -176,7 +182,7 @@ export class KjOverlayStack {
 
   register(id: string, opts: KjOverlayRegistration): KjOverlayStackHandle {
     if (!this.isBrowser) {
-      return { unregister: () => {}, isTopmost: computed(() => false), zIndex: this.configuredBase };
+      return { unregister: () => {}, release: () => {}, isTopmost: computed(() => false), zIndex: this.configuredBase };
     }
     const entry: StackEntry = {
       id,
@@ -198,6 +204,11 @@ export class KjOverlayStack {
         this._stack.update(s => s.filter(e => e !== entry));
         if (this.pressEntry === entry) { this.pressEntry = null; this.press.reset(); }
         this.maybeRemoveListeners();
+      },
+      release: () => {
+        if (entry.opts.passive || !this._stack().includes(entry)) return;
+        entry.opts.passive = true;
+        this._stack.update(s => [...s]);
       },
       isTopmost,
       zIndex: entry.zIndex,
