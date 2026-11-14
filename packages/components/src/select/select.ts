@@ -367,12 +367,14 @@ export class KjSelectComponent {
       for (const g of this.groups()) g._cursor.set(g === active);
     });
 
-    // A new query puts the cursor on the first match (APG combobox).
+    // A new query puts the cursor on the first match (APG combobox). An
+    // empty one does not: the open-reset below would otherwise pull the
+    // cursor off the picked row the panel just landed on.
     effect(() => {
-      this.query();
+      const q = this.query();
       untracked(() => {
         this.activeHeader.set(null);
-        if (!this.kjSearchable() || !this.select.open()) return;
+        if (!this.kjSearchable() || !this.select.open() || q === '') return;
         afterNextRender(() => this.nav()?.moveToFirst(), { injector });
       });
     });

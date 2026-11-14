@@ -168,6 +168,15 @@ export class KjCombobox implements KjListNavigatorConfig {
     () => this.filter.visibleItems() as readonly KjListItem<unknown>[],
   );
 
+  /**
+   * Text the user typed since the list last closed or a value was picked —
+   * the only text that filters the list. `kjQuery` also carries the picked
+   * row's name (so the field reads as a picker), and filtering by it would
+   * list nothing but the picked row on every later open.
+   */
+  private readonly _typed = signal('');
+  readonly filterQuery = this._typed.asReadonly();
+
   /** Public surface read by children. */
   readonly query         = this.kjQuery.asReadonly();
   readonly open          = this.controller.isOpen;
@@ -225,7 +234,7 @@ export class KjCombobox implements KjListNavigatorConfig {
   constructor() {
     this.filter.bind({
       items:             this.items,
-      query:             this.kjQuery,
+      query:             this._typed,
       filterFn:          this.adaptedFilter,
       // A windowed wrapper has already filtered the DATA; every rendered
       // row is a match by construction.
@@ -240,50 +249,63 @@ export class KjCombobox implements KjListNavigatorConfig {
     });
     effect(() => this.kjQueryChange.emit(this.kjQuery()));
 
-    // Auto-activate first visible item on query change so Enter can
-    // commit it without an explicit ArrowDown press. APG combobox 1.2
-    // discoverability pattern.
+    // Typed text lasts until the list closes (a pick closes it too).
     effect(() => {
-      this.kjQuery();
-      const autoFirst = this.kjAutoActivateFirst();
+      if (!this.open()) untracked(() => this._typed.set(''));
+    });
+
+    // Place the cursor on open, on typing and once the navigator attaches.
+    // Typed text: the first match, so Enter commits it without an ArrowDown
+    // (APG combobox 1.2). No typed text: the picked row when it is listed,
+    // else the first — never the first row while another one is picked, or
+    // two rows read as chosen.
+    effect(() => {
+      const typed = this._typed();
+      this.open();
       const nav = this._nav();
-      if (!autoFirst || !nav || this._virtual() !== null) return;
+      if (!this.kjAutoActivateFirst() || !nav || this._virtual() !== null) return;
       untracked(() => {
         const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
-        nav.setActive(visible.length ? visible[0].id : null);
+        const picked = typed === '' ? visible.find(i => this.isPicked(i)) : undefined;
+        nav.setActive((picked ?? visible[0])?.id ?? null);
       });
     });
 
-    // Seed the active item once the navigator attaches (input mounts).
+    // Write the picked row's name into the field when the VALUE changes, or
+    // when that row's text first renders (`label()` falls back to the row's
+    // text after its first render). Never because the user emptied the
+    // field: an empty field lists every option. A windowed wrapper owns this
+    // too: `items()` is a window, so a value whose row is scrolled out would
+    // never be found here.
+    let shown: { readonly value: unknown; readonly label: string } | null = null;
+    let seeded = false;
     effect(() => {
-      const nav = this._nav();
-      if (!nav || !this.kjAutoActivateFirst() || this._virtual() !== null) return;
-      if (nav.activeId() !== null) return;
-      untracked(() => {
-        const visible = this.filter.visibleItems() as readonly KjListItem<unknown>[];
-        if (visible.length > 0) nav.setActive(visible[0].id);
-      });
-    });
-
-    // Seed `kjQuery` from the selected item's label whenever the input
-    // would otherwise render blank. Covers the case where `kjValue` is
-    // bound up-front (preset) but no query text has been typed yet.
-    // A windowed wrapper owns this too: `items()` is a window, so a preset
-    // value whose row is scrolled out would never be found here.
-    effect(() => {
-      const items = this.items();
       const v = this.kjValue();
-      if (v === null || v === undefined || this._virtual() !== null) return;
-      if (this.kjQuery() !== '') return;
+      if (v === null || v === undefined) { shown = null; return; }
+      if (this._virtual() !== null) return;
+      const label = this.items().find(i => i.value() === v)?.label();
+      if (!label) return;
+      if (shown && Object.is(shown.value, v) && shown.label === label) return;
+      shown = { value: v, label };
+      const first = !seeded;
+      seeded = true;
       untracked(() => {
-        const match = items.find(i => i.value() === v);
-        if (match) this.kjQuery.set(match.label());
+        // A consumer-bound `kjQuery` beats the preset value's name on first render.
+        if (first && this.kjQuery() !== '') return;
+        this.kjQuery.set(label);
       });
     });
   }
 
+  private isPicked(item: KjListItem<unknown>): boolean {
+    const v = item.value();
+    return v !== undefined && this._selection.isSelected(v);
+  }
+
+  /** Text typed into the input: sets the query, filters the list by it and opens it. */
   setQuery(value: string): void {
     if (this.kjQuery() !== value) this.kjQuery.set(value);
+    this._typed.set(value);
     this.controller.open();
   }
 

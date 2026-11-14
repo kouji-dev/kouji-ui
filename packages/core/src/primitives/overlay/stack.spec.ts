@@ -32,6 +32,21 @@ describe('KjOverlayStack', () => {
     ha.unregister(); hb.unregister();
   });
 
+  it('marks an Escape it consumed as handled (defaultPrevented), and leaves one with nothing open alone', () => {
+    const stack = TestBed.inject(KjOverlayStack);
+    const onClose = vi.fn();
+    const handle = stack.register('a', { onClose });
+    const consumed = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    document.dispatchEvent(consumed);
+    expect(onClose).toHaveBeenCalledWith('escape');
+    expect(consumed.defaultPrevented, 'an app-level Escape listener must be able to tell').toBe(true);
+    handle.unregister();
+
+    const free = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    document.dispatchEvent(free);
+    expect(free.defaultPrevented).toBe(false);
+  });
+
   it('an outside press dismisses on its click, not on the down event, and only when it began outside contentEl', () => {
     const stack = TestBed.inject(KjOverlayStack);
     const onClose = vi.fn();
@@ -123,9 +138,11 @@ describe('KjOverlayStack', () => {
     const closeB = vi.fn();
     const ha = stack.register('a', { onClose: closeA });
     const hb = stack.register('b', { onClose: closeB, closeOnEsc: false });
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    const esc = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    document.dispatchEvent(esc);
     expect(closeA).not.toHaveBeenCalled();
     expect(closeB).not.toHaveBeenCalled();
+    expect(esc.defaultPrevented, 'a swallowed Escape is a handled one').toBe(true);
     hb.unregister(); ha.unregister();
   });
 

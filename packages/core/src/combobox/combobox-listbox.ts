@@ -1,4 +1,5 @@
-import { Directive, inject, input } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Directive, Injector, afterNextRender, effect, inject, input } from '@angular/core';
 import { KjOverlayPanel } from '../primitives/overlay/panel';
 import {
   KJ_OVERLAY_MOUNT_STRATEGY,
@@ -49,6 +50,17 @@ export class KjComboboxListbox {
       align: this.kjAlign,
       offset: this.kjOffset,
       matchTriggerWidth: 'min',
+    });
+
+    // Keep the cursor's row in view: `aria-activedescendant` never moves DOM
+    // focus, so nothing else scrolls the list to it (a picked row far down the
+    // list on open, ArrowDown past the last visible row).
+    const doc = inject(DOCUMENT);
+    const injector = inject(Injector);
+    effect(() => {
+      const id = this.ctx.activeId();
+      if (!id || !this.ctx.open()) return;
+      afterNextRender(() => doc.getElementById(id)?.scrollIntoView?.({ block: 'nearest' }), { injector });
     });
   }
 }

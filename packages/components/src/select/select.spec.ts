@@ -357,6 +357,20 @@ describe('<kj-select kjSearchable> and <kj-option-group>', () => {
     expect(panelOpen()).toBe(false);
   });
 
+  it('reopening after a search and a pick lists every option with the cursor on the pick', async () => {
+    const r = await setup();
+    await type(r, 'car');
+    await press(r, 'Enter');
+    expect(host(r).value).toBe('c');
+    fireEvent.click(document.querySelector('.kj-select-trigger')!);
+    await settle(r);
+    await settle(r);
+    expect(search().value).toBe('');
+    expect(shown()).toEqual(['Apple', 'Banana', 'Carrot']);
+    const carrot = rows().find(o => o.textContent!.trim() === 'Carrot')!;
+    expect(search().getAttribute('aria-activedescendant')).toBe(carrot.id);
+  });
+
   it('Escape clears the query first, then closes', async () => {
     const r = await setup();
     await type(r, 'ban');

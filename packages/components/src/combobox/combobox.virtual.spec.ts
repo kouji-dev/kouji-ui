@@ -119,6 +119,23 @@ describe('<kj-combobox [virtual]> — windowed listbox (perf F-4)', () => {
     expect(input().value).toBe('Country 4999');
   });
 
+  it('pick, reopen: every option is listed with the cursor on the pick; clearing the field keeps it empty and lists all', () => {
+    const height = (): number =>
+      parseInt((listbox().querySelector('.kj-combobox-virtual') as HTMLElement).style.height, 10);
+    press('End');
+    press('Enter');
+    expect(input().value).toBe('Country 4999');
+
+    input().click();
+    settle();
+    expect(height(), 'the picked name does not filter the reopened list').toBe(5000 * 32);
+    expect(activeRow()?.textContent?.trim()).toBe('Country 4999');
+
+    type('');
+    expect(input().value).toBe('');
+    expect(height()).toBe(5000 * 32);
+  });
+
   it('reports the option-list position, not the window position, through ARIA', () => {
     press('End');
     const active = activeRow()!;
