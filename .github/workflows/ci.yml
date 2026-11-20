@@ -68,7 +68,8 @@ jobs:
 
   e2e:
     name: E2E (Playwright, chromium)
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, which Playwright 1.59 cannot install chromium on.
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
 
     steps:
